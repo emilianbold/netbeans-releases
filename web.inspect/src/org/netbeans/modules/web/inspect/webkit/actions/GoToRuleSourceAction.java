@@ -159,14 +159,16 @@ public class GoToRuleSourceAction extends NodeAction {
                         Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
                         if (modelRule != null) {
                             found[0] = true;
-                            int snapshotOffset = modelRule.getStartOffset();
-                            final int offset = result.getSnapshot().getOriginalOffset(snapshotOffset);
-                            EventQueue.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    CSSUtils.open(fob, offset);
-                                }
-                            });
+                            if (!Utilities.goToMetaSource(modelRule)) {
+                                int snapshotOffset = modelRule.getStartOffset();
+                                final int offset = result.getSnapshot().getOriginalOffset(snapshotOffset);
+                                EventQueue.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        CSSUtils.openAtOffset(fob, offset);
+                                    }
+                                });
+                            }
                         }
                     }
                 });

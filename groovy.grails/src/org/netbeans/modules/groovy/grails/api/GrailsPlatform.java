@@ -224,12 +224,14 @@ public final class GrailsPlatform {
     
     private List<File> getJarsRecursively(File parentDir) {
         List<File> jars = new ArrayList<File>();
-        for (File file : parentDir.listFiles()) {
-            if (file.isDirectory()) {
-                jars.addAll(getJarsRecursively(file));
-            } else {
-                if (file.getName().toLowerCase().endsWith(".jar")) { // NOI18N
-                    jars.add(file);
+        if (parentDir != null) {
+            for (File file : parentDir.listFiles()) {
+                if (file.isDirectory()) {
+                    jars.addAll(getJarsRecursively(file));
+                } else {
+                    if (file.getName().toLowerCase().endsWith(".jar")) { // NOI18N
+                        jars.add(file);
+                    }
                 }
             }
         }

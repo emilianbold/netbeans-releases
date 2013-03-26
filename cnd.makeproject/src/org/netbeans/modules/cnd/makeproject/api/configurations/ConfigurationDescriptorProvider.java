@@ -52,6 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ComponentType;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
@@ -70,7 +72,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
-public class ConfigurationDescriptorProvider {
+public class ConfigurationDescriptorProvider{
     public static final boolean VCS_WRITE = true; // Boolean.getBoolean("cnd.make.vcs.write");//org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE;
     
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
@@ -81,11 +83,14 @@ public class ConfigurationDescriptorProvider {
     private final static RequestProcessor RP = new RequestProcessor("Configuration Updater", 1); // NOI18N
     private final FileObject projectDirectory;
     private final Project project;
-    private volatile MakeConfigurationDescriptor projectDescriptor = null;
-    private volatile boolean hasTried = false;
-    private String relativeOffset = null;
+    private final Object readLock = new Object();
+    private final AtomicBoolean isOpened = new AtomicBoolean();
     private final FileChangeListener configFilesListener = new ConfigurationXMLChangeListener();
     private final List<FileObject> trackedConfigFiles = new ArrayList(2);
+    
+    private volatile MakeConfigurationDescriptor projectDescriptor;
+    private volatile boolean hasTried;
+    private String relativeOffset;
     private volatile boolean needReload;   
 
     // for unit tests only
@@ -96,15 +101,15 @@ public class ConfigurationDescriptorProvider {
     public ConfigurationDescriptorProvider(Project project, FileObject projectDirectory) {
         this.project = project;
         this.projectDirectory = projectDirectory;
+        isOpened.set(true);
     }
-
+    
     public void setRelativeOffset(String relativeOffset) {
         this.relativeOffset = relativeOffset;
     }
-    private final Object readLock = new Object();
-
+    
     public MakeConfigurationDescriptor getConfigurationDescriptor() {
-        return getConfigurationDescriptor(true);
+        return getConfigurationDescriptor(true, null);
     }
 
     private boolean shouldBeLoaded() {
@@ -112,7 +117,10 @@ public class ConfigurationDescriptorProvider {
 
     }
 
-    public MakeConfigurationDescriptor getConfigurationDescriptor(boolean waitReading) {
+    private MakeConfigurationDescriptor getConfigurationDescriptor(boolean waitReading, Interrupter interrupter) {
+        if (!isOpened.get()) {
+            return null;
+        }
         if (shouldBeLoaded()) {
             // attempt to read configuration descriptor
             // do this only once
@@ -137,7 +145,7 @@ public class ConfigurationDescriptorProvider {
                     //                        }
                     try {
                         SnapShot delta = startModifications();
-                        MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
+                        MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset, interrupter);
                         LOGGER.log(Level.FINE, "End of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", // NOI18N
                                 new Object[]{projectDirectory.getNameExt(), System.identityHashCode(this)});
                         if (projectDescriptor == null) {
@@ -170,7 +178,7 @@ public class ConfigurationDescriptorProvider {
                     hasTried = true;
                 }
             }
-            }
+        }
         if (waitReading && projectDescriptor != null) {
             projectDescriptor.waitInitTask();
         }
@@ -198,7 +206,7 @@ public class ConfigurationDescriptorProvider {
     }
     
     public boolean gotDescriptor() {
-        return projectDescriptor != null && projectDescriptor.getState() != State.READING;
+        return isOpened.get() && projectDescriptor != null && projectDescriptor.getState() != State.READING;
     }
 
     public static ConfigurationAuxObjectProvider[] getAuxObjectProviders() {
@@ -401,12 +409,26 @@ public class ConfigurationDescriptorProvider {
         if (descr != null) {
             descr.closed();
         }
+        
+        // clean up
+        isOpened.set(false);
+        if (projectDescriptor != null) {
+            projectDescriptor.clean();
+        }
+        projectDescriptor = null;
+        hasTried = false;
+        relativeOffset = null;
+        needReload = false;
     }
 
-    public void opened() {
-        MakeConfigurationDescriptor descr = getConfigurationDescriptor(true);
+    public void opened(Interrupter interrupter) {
+        isOpened.set(true);
+        MakeConfigurationDescriptor descr = getConfigurationDescriptor(true, interrupter);
         if (descr != null) {
-            descr.opened();
+            descr.opened(interrupter);
+        }
+        if (interrupter != null && interrupter.cancelled()) {
+            return;
         }
         attachConfigurationFilesListener();
     }

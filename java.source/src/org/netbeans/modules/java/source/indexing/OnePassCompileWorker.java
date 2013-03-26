@@ -130,11 +130,19 @@ final class OnePassCompileWorker extends CompileWorker {
                                 mem.free();
                             }
                             if (jt == null) {
-                                jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), dc, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
-                                    public @Override boolean isCanceled() {
-                                        return context.isCancelled() || mem.isLowMemory();
-                                    }
-                                }, tuple.aptGenerated ? null : APTUtils.get(context.getRoot()));
+                                jt = JavacParser.createJavacTask(
+                                    javaContext.getClasspathInfo(),
+                                    dc,
+                                    javaContext.getSourceLevel(),
+                                    javaContext.getProfile(),
+                                    cnffOraculum,
+                                    javaContext.getFQNs(),
+                                    new CancelService() {
+                                        public @Override boolean isCanceled() {
+                                            return context.isCancelled() || mem.isLowMemory();
+                                        }
+                                    },
+                                    tuple.aptGenerated ? null : APTUtils.get(context.getRoot()));
                             }
                             for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
                                 if (units != null) {

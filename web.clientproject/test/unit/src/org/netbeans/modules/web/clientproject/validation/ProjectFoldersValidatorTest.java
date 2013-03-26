@@ -43,6 +43,7 @@ package org.netbeans.modules.web.clientproject.validation;
 
 import java.io.File;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 
 public class ProjectFoldersValidatorTest extends NbTestCase {
 
@@ -91,6 +92,17 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
         assertTrue(readme.createNewFile());
         ValidationResult result = new ProjectFoldersValidator()
                 .validateSiteRootFolder(readme)
+                .getResult();
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals(ProjectFoldersValidator.SITE_ROOT_FOLDER, result.getErrors().get(0).getSource());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    public void testNonExistingFolder() throws Exception {
+        File subdir = new File(projectDir, "subdir");
+        assertFalse(subdir.exists());
+        ValidationResult result = new ProjectFoldersValidator()
+                .validateSiteRootFolder(subdir)
                 .getResult();
         assertFalse(result.getErrors().isEmpty());
         assertEquals(ProjectFoldersValidator.SITE_ROOT_FOLDER, result.getErrors().get(0).getSource());

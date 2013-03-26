@@ -52,14 +52,14 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
@@ -69,11 +69,11 @@ import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
  * @author Tomas Stupka
  * @author Marian Petras
  */
-public class HgQueueHookPanel extends VerticallyNonResizingPanel implements ItemListener, PropertyChangeListener {
+public class HgQueueHookPanel extends VerticallyNonResizingPanel implements ItemListener, ChangeListener {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HookPanel");  // NOI18N
 
-    private QuickSearchComboBar qs;
+    private IssueQuickSearch qs;
     private boolean blockEvents;
     private Issue preselectedIssue;
 
@@ -105,9 +105,9 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
         initComponents();
         this.fieldValues = new FieldValues();
 
-        qs = new QuickSearchComboBar(this);
-        issuePanel.add(qs, BorderLayout.NORTH);
-        issueLabel.setLabelFor(qs.getIssueComponent());
+        qs = new IssueQuickSearch(this);
+        issuePanel.add(qs.getComponent(), BorderLayout.NORTH);
+        issueLabel.setLabelFor(qs.getComponent());
 
         linkCheckBox.setSelected(link);
         resolveCheckBox.setSelected(resolve);
@@ -162,10 +162,7 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
     }
 
     private void preselectIssue () {
-        if (qs.getIssueComponent() instanceof JComboBox) {
-            //TODO: probably should make qs.setIssue public
-            ((JComboBox) qs.getIssueComponent()).getEditor().setItem(preselectedIssue);
-        }
+        qs.setIssue(preselectedIssue);
         enableFields();
     }
 
@@ -343,21 +340,19 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
 
     @Override
     public void addNotify() {
-        qs.addPropertyChangeListener(this);
+        qs.addChangeListener(this);
         super.addNotify();
     }
 
     @Override
     public void removeNotify() {
-        qs.removePropertyChangeListener(this);
+        qs.removeChangeListener(this);
         super.removeNotify();
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(QuickSearchComboBar.EVT_ISSUE_CHANGED)) {
-            enableFields();
-        }
+    public void stateChanged(ChangeEvent e) {
+        enableFields();
     }
-
+    
 }

@@ -742,6 +742,7 @@ public final class ClusteredIndexables {
         static final String FIELD_PRIMARY_KEY = "_sn";  //NOI18N
 
         private final List<Fieldable> fields = new ArrayList<Fieldable>();
+        boolean consumed;
 
         MemIndexDocument(@NonNull final String primaryKey) {
             Parameters.notNull("primaryKey", primaryKey);   //NOI18N
@@ -759,6 +760,9 @@ public final class ClusteredIndexables {
 
         @Override
         public void addPair(String key, String value, boolean searchable, boolean stored) {
+            if (consumed) {
+                throw new IllegalStateException("Modifying Document after adding it into index.");  //NOI18N
+            }
             final Field field = new Field (key, value,
                     stored ? Field.Store.YES : Field.Store.NO,
                     searchable ? Field.Index.NOT_ANALYZED_NO_NORMS : Field.Index.NO);
@@ -862,11 +866,12 @@ public final class ClusteredIndexables {
         }
         
         boolean addDocument(@NonNull final IndexDocument doc) {
-            boolean res = false;
+            boolean res = false;            
             if (!(doc instanceof MemIndexDocument)) {
                 throw new IllegalArgumentException();
             }
-            for (Fieldable fld : ((MemIndexDocument)doc).getFields()) {
+            final MemIndexDocument mdoc = (MemIndexDocument)doc;
+            for (Fieldable fld : mdoc.getFields()) {
                 final String fldName = fld.name();
                 final boolean stored = fld.isStored();
                 final boolean indexed = fld.isIndexed();
@@ -906,6 +911,7 @@ public final class ClusteredIndexables {
             }
             docs[docsPointer++] = 0;
             size++;
+            mdoc.consumed = true;
             return res;
         }
 

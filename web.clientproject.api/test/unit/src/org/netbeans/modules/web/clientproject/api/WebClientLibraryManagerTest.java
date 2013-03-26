@@ -79,7 +79,7 @@ public class WebClientLibraryManagerTest {
      */
     @Test
     public void testGetLibraries() {
-        List result = WebClientLibraryManager.getLibraries();
+        List result = WebClientLibraryManager.getDefault().getLibraries();
         assertTrue("libraries are succcessfully parsed and available", result.size() >= (111+476));
     }
 
@@ -88,7 +88,7 @@ public class WebClientLibraryManagerTest {
      */
     @Test
     public void testFindLibrary() {
-        Library result = WebClientLibraryManager.findLibrary("backbone.js", "0.9.2");
+        Library result = WebClientLibraryManager.getDefault().findLibrary("backbone.js", "0.9.2");
         assertNotNull("backbone 0.9.2 is available", result);
     }
 
@@ -97,7 +97,7 @@ public class WebClientLibraryManagerTest {
      */
     @Test
     public void testGetVersions() {
-        Set<String> result = new HashSet<String>(Arrays.asList(WebClientLibraryManager.getVersions("backbone.js")));
+        Set<String> result = new HashSet<String>(Arrays.asList(WebClientLibraryManager.getDefault().getVersions("backbone.js")));
         assertTrue("backbone 0.9.2 is available", result.contains("0.9.2"));
         assertTrue("backbone 0.5.3 is available", result.contains("0.5.3"));
     }
@@ -107,8 +107,8 @@ public class WebClientLibraryManagerTest {
      */
     @Test
     public void testGetLibraryFilePaths() {
-        Library lib = WebClientLibraryManager.findLibrary("backbone.js", "0.9.2");
-        List result = WebClientLibraryManager.getLibraryFilePaths(lib, WebClientLibraryManager.VOL_MINIFIED);
+        Library lib = WebClientLibraryManager.getDefault().findLibrary("backbone.js", "0.9.2");
+        List result = WebClientLibraryManager.getDefault().getLibraryFilePaths(lib, WebClientLibraryManager.VOL_MINIFIED);
         assertEquals("backbone has one path", 1, result.size());
         assertEquals("backbone path is right", "backbone.js-0.9.2/backbone-min.js", result.get(0));
     }

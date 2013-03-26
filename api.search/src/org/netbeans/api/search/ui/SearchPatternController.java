@@ -323,7 +323,7 @@ public final class SearchPatternController
      *
      * @param comboBox Combo box to control and display the match type. The
      * model of the combo box can contain only items of type {@link MatchType}.
-     * {@link MatchType.LITERAL} and {@link MatchType.REGEXP} are mandatory in
+     * {@link MatchType#LITERAL} and {@link MatchType#REGEXP} are mandatory in
      * the model.
      *
      * @since api.search/1.11

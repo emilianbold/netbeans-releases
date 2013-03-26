@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.git.ui.blame;
 
-import java.awt.EventQueue;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 import javax.swing.*;
@@ -68,10 +67,16 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.windows.TopComponent;
 import org.openide.text.NbDocument;
+import org.openide.util.Mutex;
 
 @ActionID(id = "org.netbeans.modules.git.ui.blame.AnnotateAction", category = "Git")
 @ActionRegistration(displayName = "#CTL_MenuItem_ShowAnnotations")
 public class AnnotateAction extends GitAction {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/annotate.png"; //NOI18N
+    
+    public AnnotateAction () {
+        super(ICON_RESOURCE);
+    }
     
     @Override
     protected boolean enable (Node[] nodes) {
@@ -95,7 +100,7 @@ public class AnnotateAction extends GitAction {
 
     @Override
     protected String iconResource () {
-        return "org/netbeans/modules/git/resources/icons/annotate.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 
     @Override
@@ -185,9 +190,14 @@ public class AnnotateAction extends GitAction {
      * does not have any or more nodes selected.
      */
     private JEditorPane activatedEditorPane(Node[] nodes) {
-        EditorCookie ec = activatedEditorCookie(nodes);
-        if (ec != null && EventQueue.isDispatchThread()) {
-            return NbDocument.findRecentEditorPane(ec);
+        final EditorCookie ec = activatedEditorCookie(nodes);
+        if (ec != null) {
+            return Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
+                @Override
+                public JEditorPane run () {
+                    return NbDocument.findRecentEditorPane(ec);
+                }
+            });
         }
         return null;
     }

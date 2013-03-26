@@ -122,7 +122,7 @@ public class Tiny {
     }
 
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.stringEqualsEmpty", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.stringEqualsEmpty", category="performance", enabled=false, suppressWarnings="StringEqualsEmpty")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.stringEqualsEmpty", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.stringEqualsEmpty", category="performance", enabled=false, suppressWarnings={"StringEqualsEmpty", "", "StringEqualsEmptyString"})
     @TriggerPattern(value="$string.equals(\"\")",
                     constraints=@ConstraintVariableType(variable="$string", type="java.lang.String"))
     public static ErrorDescription stringEqualsEmpty(HintContext ctx) {

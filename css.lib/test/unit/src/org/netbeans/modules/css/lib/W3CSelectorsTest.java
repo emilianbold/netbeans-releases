@@ -2622,7 +2622,7 @@ public class W3CSelectorsTest extends CssTestBase {
                 + "  p { background: lime; }"
                 + "  foo & address, p { background: red; }"
                 + "";
-        assertResult(TestUtil.parse(code), 2);
+        assertResultOK(TestUtil.parse(code));
     }
 
     public void tests_css3_modsel_156b_xml() throws BadLocationException, ParseException {
@@ -2630,7 +2630,7 @@ public class W3CSelectorsTest extends CssTestBase {
                 + "  foo & address, p { background: red; }"
                 + "  p { background: lime; }"
                 + "";
-        assertResult(TestUtil.parse(code), 2);
+        assertResultOK(TestUtil.parse(code));
     }
 
     public void tests_css3_modsel_156c_xml() throws BadLocationException, ParseException {
@@ -2638,7 +2638,7 @@ public class W3CSelectorsTest extends CssTestBase {
                 + "  foo & address, p { background: red ! important; }"
                 + "  p { background: lime; }"
                 + "";
-        assertResult(TestUtil.parse(code), 2);
+        assertResultOK(TestUtil.parse(code));
     }
 
     public void tests_css3_modsel_157_xml() throws BadLocationException, ParseException {
@@ -2912,7 +2912,7 @@ public class W3CSelectorsTest extends CssTestBase {
                 + " p { color: red; }"
                 + " .\31 \33 { color: green; }"
                 + "";
-        assertResult(TestUtil.parse(code), 4);
+        assertResult(TestUtil.parse(code), 3);
     }
 
     public void tests_css3_modsel_176_xml() throws BadLocationException, ParseException {
@@ -3013,7 +3013,7 @@ public class W3CSelectorsTest extends CssTestBase {
                 + ".foo..quux { background: red; color: yellow; }"
                 + ".bar. { background: red; color: yellow; }"
                 + "";
-        assertResult(TestUtil.parse(code), 3);
+        assertResult(TestUtil.parse(code), 1);
     }
 
     public void tests_css3_modsel_184a_xml() throws BadLocationException, ParseException {

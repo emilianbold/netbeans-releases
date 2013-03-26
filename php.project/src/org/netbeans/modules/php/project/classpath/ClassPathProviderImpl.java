@@ -61,7 +61,6 @@ import org.netbeans.modules.php.project.SourceRoots;
 import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.php.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -236,11 +235,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                 synchronized (cache) {
                     cp = cache.get(ClassPathCache.TEST);
                     if (cp == null) {
-                        // return both because people expect such behaviour (in CC e.g.)
                         ClassPath testsCp = ClassPathFactory.createClassPath(new SourcePathImplementation(project, tests));
                         ClassPath seleniumCp = ClassPathFactory.createClassPath(new SourcePathImplementation(project, selenium));
-                        ClassPath sourcesCp = ClassPathFactory.createClassPath(new SourcePathImplementation(project, sources, tests, selenium));
-                        cp = ClassPathSupport.createProxyClassPath(testsCp, seleniumCp, sourcesCp);
+                        cp = ClassPathSupport.createProxyClassPath(testsCp, seleniumCp);
                         cache.put(ClassPathCache.TEST, cp);
                     }
                 }
@@ -272,10 +269,17 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return cp;
     }
 
+    private ClassPath getProjectBootClassPath() {
+        return getSourcePath(FileType.SOURCE);
+    }
+
     @Override
     public ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(PhpSourcePath.BOOT_CP)) {
             return getBootClassPath();
+        } else if (type.equals(PhpSourcePath.PROJECT_BOOT_CP)) {
+            // XXX check source root and return null for Source Files (FOQ -> project > source roots)
+            return getProjectBootClassPath();
         } else if (type.equals(PhpSourcePath.SOURCE_CP)) {
             return getSourcePath(file);
 //        } else if (type.equals(ClassPath.COMPILE)) {
@@ -295,6 +299,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     public ClassPath[] getProjectClassPaths(String type) {
         if (PhpSourcePath.BOOT_CP.equals(type)) {
             return new ClassPath[] {getBootClassPath()};
+        } else if (PhpSourcePath.PROJECT_BOOT_CP.equals(type)) {
+            return new ClassPath[] {getProjectBootClassPath()};
         } else if (PhpSourcePath.SOURCE_CP.equals(type)) {
             return new ClassPath[] {
                 getSourcePath(FileType.SOURCE),

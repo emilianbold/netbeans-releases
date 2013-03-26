@@ -76,7 +76,7 @@ public class JsfLibrariesSupport {
         return new JsfLibrariesSupport(tc);
     }
     private JTextComponent tc;
-    private Map<DefaultLibraryInfo, LibraryImport> map;
+    private Map<DefaultLibraryInfo, LibraryImport> map = new EnumMap<DefaultLibraryInfo, LibraryImport>(DefaultLibraryInfo.class);
 
     public JsfLibrariesSupport(JTextComponent tc) {
         this.tc = tc;
@@ -117,8 +117,6 @@ public class JsfLibrariesSupport {
         }
 
         HtmlParsingResult htmlresult = result.get();
-
-        map = new EnumMap<DefaultLibraryInfo, LibraryImport>(DefaultLibraryInfo.class);
         Map<String, Collection<String>> ns2prefixes = htmlresult != null
                 ? htmlresult.getSyntaxAnalyzerResult().getAllDeclaredNamespaces()
                 : Collections.<String, Collection<String>>emptyMap();

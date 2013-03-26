@@ -46,7 +46,6 @@ import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbModuleSuite.Configuration;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 
 /**
  *
@@ -66,36 +65,28 @@ public class ServerTest extends NbTestCase {
 
     public static Test suite() {
         Configuration conf = NbModuleSuite.createConfiguration(ServerTest.class).
-            addTest(AddRemovePreludeInstanceMethods.class, "addPreludeInstance").
-            addTest(StartStopServer.class, "startPreludeServer").
-            addTest(ServerResourceProperties.class, "V3PreludeServerProperties").
-            addTest(StartStopServer.class, "restartPreludeServer").
-            addTest(StartStopServer.class, "stopPreludeServer", "startDebugPreludeServer", "stopPreludeServer").
-            addTest(StartStopServer.class, "startPreludeServer").
-            addTest(ServerResourceProperties.class, "VerifyV3PreludeDerbyPool").
-            addTest(AddRemovePreludeInstanceMethods.class, "checkJavaDB").
-            addTest(StartStopServer.class, "stopPreludeServer").
-            addTest(AddRemovePreludeInstanceMethods.class, "removePreludeInstance");
+                addTest(StartStopServer.class, "startPreludeServer").
+                addTest(ServerResourceProperties.class, "V3PreludeServerProperties").
+                addTest(StartStopServer.class, "restartPreludeServer").
+                addTest(StartStopServer.class, "stopPreludeServer", "startDebugPreludeServer", "stopPreludeServer").
+                addTest(StartStopServer.class, "startPreludeServer").
+                addTest(ServerResourceProperties.class, "VerifyV3PreludeDerbyPool").
+                addTest(StartStopServer.class, "stopPreludeServer");
 
-        if (null != GlassfishInstanceProvider.getEe6()) {
-            conf = conf.addTest(AddRemoveV3InstanceMethods.class, "addV3Instance");
-            String javaExe = System.getProperty("v3.server.javaExe");
-            if (null != javaExe && javaExe.trim().length() > 0) {
-                conf = conf.addTest(StartStopServer.class, "startV3Server").
-                       addTest(ServerResourceProperties.class, "V3ServerProperties").
-                       addTest(StartStopServer.class, "restartV3Server").
-                       addTest(StartStopServer.class, "stopV3Server", "startDebugV3Server", "stopV3Server").
-                       addTest(StartStopServer.class, "startV3Server").
-                       addTest(ServerResourceProperties.class, "VerifyDefaultV3DerbyPool").
-                       addTest(ServerResourceProperties.class, "VerifyDefaultTimerV3Resouce").
-                       addTest(StartStopServer.class, "stopV3Server");
-            }
-            return NbModuleSuite.create(conf.addTest(AddRemoveV3InstanceMethods.class, "removeV3Instance").
-                    addTest(AddRemovePreludeInstanceMethods.class, "deleteJunkInstall").
-                    addTest(AddRemoveV3InstanceMethods.class, "deleteJunkInstall").enableModules(".*").clusters(".*"));
-        } else {
-            return NbModuleSuite.create(conf.addTest(AddRemovePreludeInstanceMethods.class, "deleteJunkInstall").enableModules(".*").clusters(".*"));
+        conf = conf.addTest(AddRemoveV3InstanceMethods.class, "addV3Instance");
+        String javaExe = System.getProperty("v3.server.javaExe");
+        if (null != javaExe && javaExe.trim().length() > 0) {
+            conf = conf.addTest(StartStopServer.class, "startV3Server").
+                    addTest(ServerResourceProperties.class, "V3ServerProperties").
+                    addTest(StartStopServer.class, "restartV3Server").
+                    addTest(StartStopServer.class, "stopV3Server", "startDebugV3Server", "stopV3Server").
+                    addTest(StartStopServer.class, "startV3Server").
+                    addTest(ServerResourceProperties.class, "VerifyDefaultV3DerbyPool").
+                    addTest(ServerResourceProperties.class, "VerifyDefaultTimerV3Resouce").
+                    addTest(StartStopServer.class, "stopV3Server");
         }
+        return conf.addTest(AddRemoveV3InstanceMethods.class, "removeV3Instance").
+                addTest(AddRemoveV3InstanceMethods.class, "deleteJunkInstall").enableModules(".*").clusters(".*").suite();
     }
     
 }

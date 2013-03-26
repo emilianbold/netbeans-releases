@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.32.1
+#Version 1.37.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -172,6 +172,7 @@ supr java.lang.Object
 
 CLSS public abstract org.netbeans.modules.versioning.spi.VCSVisibilityQuery
 cons public init()
+meth protected !varargs final void fireVisibilityChanged(java.io.File[])
 meth protected final void fireVisibilityChanged()
 meth public abstract boolean isVisible(java.io.File)
 supr java.lang.Object

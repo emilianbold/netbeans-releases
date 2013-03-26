@@ -41,14 +41,13 @@
  */
 package org.netbeans.modules.tasks.ui;
 
-import java.awt.event.ItemListener;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.model.Category;
 import org.openide.util.NbBundle;
@@ -60,7 +59,7 @@ import org.openide.util.NbBundle;
 public class QuickSearchPanel extends javax.swing.JPanel {
 
     private List<Category> categories;
-    private final QuickSearchComboBar quickSearchComboBar;
+    private final IssueQuickSearch quickIssueSearch;
     private final Repository repository;
 
     /**
@@ -69,10 +68,10 @@ public class QuickSearchPanel extends javax.swing.JPanel {
     public QuickSearchPanel(Repository repository) {
         this.repository = repository;
         initComponents();
-        quickSearchComboBar = new QuickSearchComboBar(this);
+        quickIssueSearch = new IssueQuickSearch(this);
         GroupLayout layout = (GroupLayout) this.getLayout();
-        quickSearchComboBar.setRepository(repository);
-        layout.replace(placeholderTask, quickSearchComboBar);
+        quickIssueSearch.setRepository(repository);
+        layout.replace(placeholderTask, quickIssueSearch.getComponent());
     }
 
     private DefaultComboBoxModel getCategoryModel() {
@@ -158,12 +157,12 @@ public class QuickSearchPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox placeholderTask;
     // End of variables declaration//GEN-END:variables
 
-    public void addQuickSearchListener(PropertyChangeListener listener) {
-        quickSearchComboBar.addPropertyChangeListener(listener);
+    public void addQuickSearchListener(ChangeListener listener) {
+        quickIssueSearch.addChangeListener(listener);
     }
 
-    public void removeQuickSearchListener(PropertyChangeListener listener) {
-        quickSearchComboBar.removePropertyChangeListener(listener);
+    public void removeQuickSearchListener(ChangeListener listener) {
+        quickIssueSearch.removeChangeListener(listener);
     }
 
     public Category getSelectedCategory() {
@@ -176,10 +175,7 @@ public class QuickSearchPanel extends javax.swing.JPanel {
     }
 
     public Issue getSelectedTask() {
-        return quickSearchComboBar.getIssue();
+        return quickIssueSearch.getIssue();
     }
 
-    public static String getTaskEvent() {
-        return QuickSearchComboBar.EVT_ISSUE_CHANGED;
-    }
 }

@@ -48,6 +48,7 @@ import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -77,6 +78,7 @@ public final class FontAndColorsPanelController extends OptionsPanelController {
     
     private final Lookup.Result<? extends FontsColorsController> lookupResult;
     private final LookupListener lookupListener = new LookupListener() {
+        @Override
         public void resultChanged(LookupEvent ev) {
             rebuild();
         }
@@ -96,44 +98,72 @@ public final class FontAndColorsPanelController extends OptionsPanelController {
         rebuild();
     }
     
+    @Override
     public void update() {
-        getFontAndColorsPanel().update();
+        if (getFontAndColorsPanel() != null) {
+            getFontAndColorsPanel().update();
+        }
     }
     
+    @Override
     public void applyChanges() {
-        getFontAndColorsPanel().applyChanges();
+        if (getFontAndColorsPanel() != null) {
+            getFontAndColorsPanel().applyChanges();
+        }
     }
     
+    @Override
     public void cancel() {
-        getFontAndColorsPanel().cancel();
+        if (getFontAndColorsPanel() != null) {
+            getFontAndColorsPanel().cancel();
+        }
     }
     
+    @Override
     public boolean isValid() {
-        return getFontAndColorsPanel().dataValid();
+        if (getFontAndColorsPanel() != null) {
+            return getFontAndColorsPanel().dataValid();
+        } else {
+            return true;
+        }
     }
     
+    @Override
     public boolean isChanged() {
-        return getFontAndColorsPanel().isChanged();
+        if (getFontAndColorsPanel() != null) {
+            return getFontAndColorsPanel().isChanged();
+        } else {
+            return false;
+        }
     }
+
     
+    @Override
     public JComponent getComponent(Lookup masterLookup) {
         return getFontAndColorsPanel();
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("netbeans.optionsDialog.fontAndColorsPanel");
     }
     
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
-        getFontAndColorsPanel().addPropertyChangeListener(l);
+        if (getFontAndColorsPanel() != null) {
+            getFontAndColorsPanel().addPropertyChangeListener(l);
+        }
     }
     
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
-        getFontAndColorsPanel().removePropertyChangeListener(l);
+        if (getFontAndColorsPanel() != null) {
+            getFontAndColorsPanel().removePropertyChangeListener(l);
+        }
     }
     
-    private FontAndColorsPanel getFontAndColorsPanel() {
-        if (component == null) {
+    private synchronized FontAndColorsPanel getFontAndColorsPanel() {
+        if (component == null && SwingUtilities.isEventDispatchThread()) {
             component = new FontAndColorsPanel(delegates);
         }
         return component;

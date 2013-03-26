@@ -54,21 +54,19 @@ import java.util.logging.Level;
  * @author alsimon
  */
 public class AnalyzeStat {
-    private final TreeMap<String, AgregatedStat> gatherStat;
     
-    AnalyzeStat(TreeMap<String, AgregatedStat> gatherStat) {
-        this.gatherStat = gatherStat;
+    private AnalyzeStat() {
     }
     
-    void process() {
-        upEmptyFolder();
-        dumpAll();
-        getBigUnused();
-        groupByReadingSpeed();
-        getSlowReading();
+    static void process(TreeMap<String, AgregatedStat> gatherStat) {
+        upEmptyFolder(gatherStat);
+        getBigUnused(gatherStat);
+        groupByReadingSpeed(gatherStat);
+        dumpAll(gatherStat);
+        getSlowReading(gatherStat);
     }
 
-    private void getBigUnused() {
+    static List<Map.Entry<String, AgregatedStat>> getBigUnused(TreeMap<String, AgregatedStat> gatherStat) {
         List<Map.Entry<String, AgregatedStat>> orphan = new ArrayList<Map.Entry<String, AgregatedStat>>();
         List<Map.Entry<String, AgregatedStat>> list = new ArrayList<Map.Entry<String, AgregatedStat>>(gatherStat.entrySet());
         int i = 0;
@@ -80,7 +78,9 @@ public class AnalyzeStat {
                 if (i + 1 < list.size()) {
                     Map.Entry<String, AgregatedStat> next = list.get(i + 1);
                     if (!(next.getKey().startsWith(path + "/") || next.getKey().startsWith(path + "\\"))) { // NOI18N
-                        orphan.add(entry);
+                        AgregatedStat copy = new AgregatedStat();
+                        mergeEntryes(copy, entry.getValue());
+                        orphan.add(new MyEntry(entry.getKey(), copy));
                     }
                 }
             }
@@ -94,15 +94,11 @@ public class AnalyzeStat {
                 return (int)(o2.getValue().itemTime/1000/1000 - o1.getValue().itemTime/1000/1000);
             }
         });
-        for (Map.Entry<String, AgregatedStat> entry : orphan) {
-            PerformanceIssueDetector.LOG.log(Level.INFO, "Unused folder {0} contains {1} items and consumes {2}s.", // NOI18N
-                    new Object[]{entry.getKey(),
-                                 PerformanceIssueDetector.format(entry.getValue().itemNumber),
-                                 PerformanceIssueDetector.format(entry.getValue().itemTime/PerformanceIssueDetector.NANO_TO_SEC)});
-        }
+        
+        return orphan;
     }
 
-    private void getSlowReading() {
+    static List<Map.Entry<String, AgregatedStat>> getSlowReading(TreeMap<String, AgregatedStat> gatherStat) {
         List<Map.Entry<String, AgregatedStat>> slow = new ArrayList<Map.Entry<String, AgregatedStat>>();
         List<Map.Entry<String, AgregatedStat>> list = new ArrayList<Map.Entry<String, AgregatedStat>>(gatherStat.entrySet());
         int i = 0;
@@ -114,7 +110,9 @@ public class AnalyzeStat {
                 if (i + 1 < list.size()) {
                     Map.Entry<String, AgregatedStat> next = list.get(i + 1);
                     if (!(next.getKey().startsWith(path + "/") || next.getKey().startsWith(path + "\\"))) { // NOI18N
-                        slow.add(entry);
+                        AgregatedStat copy = new AgregatedStat();
+                        mergeEntryes(copy, entry.getValue());
+                        slow.add(new MyEntry(entry.getKey(), copy));
                     }
                 }
             }
@@ -129,15 +127,10 @@ public class AnalyzeStat {
                 return (int)(k2 - k1);
             }
         });
-        for (Map.Entry<String, AgregatedStat> entry : slow) {
-             PerformanceIssueDetector.LOG.log(Level.INFO, "Slow reading files in the folder {0}. Reading {1} lines consumes {2}s.", // NOI18N
-                     new Object[]{entry.getKey(),
-                                  PerformanceIssueDetector.format(entry.getValue().readLines),
-                                  PerformanceIssueDetector.format(entry.getValue().readTime/PerformanceIssueDetector.NANO_TO_SEC)});
-        }
+        return slow;
     }
     
-    private void upEmptyFolder() {
+    static void upEmptyFolder(TreeMap<String, AgregatedStat> gatherStat) {
         List<Map.Entry<String, AgregatedStat>> list = new ArrayList<Map.Entry<String, AgregatedStat>>(gatherStat.entrySet());
         int i = 0;
         while(i < list.size()) {
@@ -184,17 +177,17 @@ public class AnalyzeStat {
         }
     }
     
-    private void groupByReadingSpeed() {
+    static void groupByReadingSpeed(TreeMap<String, AgregatedStat> gatherStat) {
         while(true) {
             int start = gatherStat.size();
-            getGroupByReadingSpeedImpl();
+            getGroupByReadingSpeedImpl(gatherStat);
             if (gatherStat.size() == start) {
                 break;
             }
         }
     }
     
-    private void getGroupByReadingSpeedImpl() {
+    private static void getGroupByReadingSpeedImpl(TreeMap<String, AgregatedStat> gatherStat) {
         List<Map.Entry<String, AgregatedStat>> list = new ArrayList<Map.Entry<String, AgregatedStat>>(gatherStat.entrySet());
         int i = 0;
         while (i < list.size()) {
@@ -296,7 +289,7 @@ public class AnalyzeStat {
         }
     }
 
-    private void mergeEntryes(AgregatedStat stat, AgregatedStat from) {
+    private static void mergeEntryes(AgregatedStat stat, AgregatedStat from) {
         stat.itemNumber += from.itemNumber;
         stat.itemTime += from.itemTime;
         stat.itemCPU += from.itemCPU;
@@ -315,8 +308,8 @@ public class AnalyzeStat {
         stat.parseCPU += from.parseCPU;
         stat.parseUser += from.parseUser;
     }
-    
-    private void dumpAll() {
+
+    static void dumpAll(TreeMap<String, AgregatedStat> gatherStat) {
         if (!PerformanceIssueDetector.LOG.isLoggable(PerformanceIssueDetector.level)) {
             return;
         }
@@ -377,5 +370,31 @@ public class AnalyzeStat {
         long parseTime;
         long parseCPU;
         long parseUser;       
+    }
+    private static final class MyEntry implements Map.Entry<String, AgregatedStat> {
+        private final String key;
+        private AgregatedStat value;
+        
+        MyEntry(String key, AgregatedStat value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        @Override
+        public String getKey() {
+            return key;
+        }
+
+        @Override
+        public AgregatedStat getValue() {
+            return value;
+        }
+
+        @Override
+        public AgregatedStat setValue(AgregatedStat value) {
+            AgregatedStat prev = this.value;
+            this.value = value;
+            return prev;
+        }
     }
 }

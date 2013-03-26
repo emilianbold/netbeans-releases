@@ -198,6 +198,65 @@ public class Css3LexerTest extends NbTestCase {
         assertANTLRToken(null ,Css3Lexer.URI, lexer.nextToken());
     }
      
+     public void testSassVar() throws Exception {
+        String source = "$var ";     
+        Lexer lexer = createLexer(source);
+        assertANTLRToken(null ,Css3Lexer.SASS_VAR, lexer.nextToken());
+    }
+     
+     public void testCPLineComment() throws Exception {
+        String source = "//line comment\n";
+        Lexer lexer = createLexer(source);
+        assertANTLRToken(null ,Css3Lexer.LINE_COMMENT, lexer.nextToken());
+        
+    }
+     
+    public void testExtendOnlySelector() throws Exception {
+        String source = "body%my";
+        Lexer lexer = createLexer(source);
+        assertANTLRToken(null ,Css3Lexer.IDENT, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.SASS_EXTEND_ONLY_SELECTOR, lexer.nextToken());
+    }
+    
+    public void testExtendOnlySelector2() throws Exception {
+        String source = "#context a%extreme {";
+        Lexer lexer = createLexer(source);
+        assertANTLRToken(null ,Css3Lexer.HASH, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.IDENT, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.SASS_EXTEND_ONLY_SELECTOR, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.LBRACE, lexer.nextToken());
+    }
+    
+//    public void testSASS_ElseIf() throws Exception {
+//        String source = "@else if cau";
+//        Lexer lexer = createLexer(source);
+//        assertANTLRToken(null ,Css3Lexer.SASS_ELSEIF, lexer.nextToken());
+//        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
+//        assertANTLRToken(null ,Css3Lexer.IDENT, lexer.nextToken());
+//        
+//        source = "@elseif cau";
+//        lexer = createLexer(source);
+//        assertANTLRToken(null ,Css3Lexer.SASS_ELSEIF, lexer.nextToken());
+//        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
+//        assertANTLRToken(null ,Css3Lexer.IDENT, lexer.nextToken());
+//        
+//        source = "@else        if cau";
+//        lexer = createLexer(source);
+//        assertANTLRToken(null ,Css3Lexer.SASS_ELSEIF, lexer.nextToken());
+//        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
+//        assertANTLRToken(null ,Css3Lexer.IDENT, lexer.nextToken());
+//    }
+    
+    public void testSASS_Else() throws Exception {
+        String source = "@else cau";
+        Lexer lexer = createLexer(source);
+        assertANTLRToken(null ,Css3Lexer.SASS_ELSE, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.IDENT, lexer.nextToken());
+    }
+     
      /**
     * @param expectedImage - use null if you do not want to check the image
     */

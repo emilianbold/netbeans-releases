@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePathScanner;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
@@ -133,7 +134,9 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
             return;
         }
 
-        if (handle!=null && handle.getElementHandle() != null && (handle.getElementHandle().getKind() == ElementKind.FIELD
+        if (handle!=null && handle.getKind() != Tree.Kind.LABELED_STATEMENT &&
+                handle.getElementHandle() != null 
+                && (handle.getElementHandle().getKind() == ElementKind.FIELD
                 || handle.getElementHandle().getKind() == ElementKind.CLASS
 		|| handle.getElementHandle().getKind() == ElementKind.METHOD)) {
             JavaSource source = JavaSource.forFileObject(handle.getFileObject());

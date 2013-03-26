@@ -52,6 +52,7 @@ import org.openide.windows.TopComponent;
 import org.openide.LifecycleManager;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.ImageUtilities;
 
 /**
  * Base for all context-sensitive HG actions.
@@ -64,8 +65,16 @@ public abstract class ContextAction extends NodeAction {
     // do not declare any instance data
 
     protected ContextAction() {
-        setIcon(null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        this(null);
+    }
+
+    protected ContextAction (String menuIcon) {
+        if (menuIcon == null) {
+            setIcon(null);
+            putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        } else {
+            setIcon(ImageUtilities.loadImageIcon(menuIcon, true));
+        }
     }
 
     /**

@@ -92,15 +92,7 @@ public final class GroovyBracesMatcher implements BracesMatcher {
                 
                 TokenId id = token.id();
                 
-                if (id == GroovyTokenId.STRING_BEGIN) {
-                    return new int [] { ts.offset(), ts.offset() + token.length() };
-                } else if (id == GroovyTokenId.STRING_END) {
-                    return new int [] { ts.offset(), ts.offset() + token.length() };
-                } else if (id == GroovyTokenId.REGEXP_BEGIN) {
-                    return new int [] { ts.offset(), ts.offset() + token.length() };
-                } else if (id == GroovyTokenId.REGEXP_END) {
-                    return new int [] { ts.offset(), ts.offset() + token.length() };
-                } else if (id == GroovyTokenId.LPAREN) {
+                if (id == GroovyTokenId.LPAREN) {
                     return new int [] { ts.offset(), ts.offset() + token.length() };
                 } else if (id == GroovyTokenId.RPAREN) {
                     return new int [] { ts.offset(), ts.offset() + token.length() };
@@ -145,19 +137,7 @@ public final class GroovyBracesMatcher implements BracesMatcher {
                 TokenId id = token.id();
                 
                 OffsetRange r;
-                if (id == GroovyTokenId.STRING_BEGIN) {
-                    r = LexUtilities.findFwd(doc, ts, GroovyTokenId.STRING_BEGIN, GroovyTokenId.STRING_END);
-                    return new int [] {r.getStart(), r.getEnd() };
-                } else if (id == GroovyTokenId.STRING_END) {
-                    r = LexUtilities.findBwd(doc, ts, GroovyTokenId.STRING_BEGIN, GroovyTokenId.STRING_END);
-                    return new int [] {r.getStart(), r.getEnd() };
-                } else if (id == GroovyTokenId.REGEXP_BEGIN) {
-                    r = LexUtilities.findFwd(doc, ts, GroovyTokenId.REGEXP_BEGIN, GroovyTokenId.REGEXP_END);
-                    return new int [] {r.getStart(), r.getEnd() };
-                } else if (id == GroovyTokenId.REGEXP_END) {
-                    r = LexUtilities.findBwd(doc, ts, GroovyTokenId.REGEXP_BEGIN, GroovyTokenId.REGEXP_END);
-                    return new int [] {r.getStart(), r.getEnd() };
-                } else if (id == GroovyTokenId.LPAREN) {
+                if (id == GroovyTokenId.LPAREN) {
                     r = LexUtilities.findFwd(doc, ts, GroovyTokenId.LPAREN, GroovyTokenId.RPAREN);
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == GroovyTokenId.RPAREN) {

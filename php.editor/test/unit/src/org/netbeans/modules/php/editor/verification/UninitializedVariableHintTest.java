@@ -54,23 +54,23 @@ public class UninitializedVariableHintTest extends PHPHintsTestBase {
     }
 
     public void testWithRefs() throws Exception {
-        checkHintsInStartEndFile(new UninitializedVariableHintStub(true), "testUninitializedVariableHint.php");
+        checkHints(new UninitializedVariableHintStub(true), "testUninitializedVariableHint.php");
     }
 
     public void testWithoutRefs() throws Exception {
-        checkHintsInStartEndFile(new UninitializedVariableHintStub(false), "testUninitializedVariableHint.php");
+        checkHints(new UninitializedVariableHintStub(false), "testUninitializedVariableHint.php");
     }
 
     public void testIssue225818() throws Exception {
-        checkHintsInStartEndFile(new UninitializedVariableHintStub(false), "testIssue225818.php");
+        checkHints(new UninitializedVariableHintStub(false), "testIssue225818.php");
     }
 
     public void testGlobalContext() throws Exception {
-        checkHintsInStartEndFile(new UninitializedVariableHintStub(false), "testGlobalContext.php");
+        checkHints(new UninitializedVariableHintStub(false), "testGlobalContext.php");
     }
 
     public void testIssue226041() throws Exception {
-        checkHintsInStartEndFile(new UninitializedVariableHintStub(false), "testIssue226041.php");
+        checkHints(new UninitializedVariableHintStub(false), "testIssue226041.php");
     }
 
     private class UninitializedVariableHintStub extends UninitializedVariableHint {

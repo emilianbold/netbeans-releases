@@ -44,7 +44,6 @@ package org.netbeans.modules.bugtracking.issuetable;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.netbeans.modules.bugtracking.IssueImpl;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 

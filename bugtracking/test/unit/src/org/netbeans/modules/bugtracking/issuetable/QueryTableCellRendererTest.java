@@ -128,7 +128,7 @@ public class QueryTableCellRendererTest {
 
         
         // issue seen, not selected
-        RendererIssue rendererIssue = new RendererIssue("");
+        RendererIssue rendererIssue = new RendererIssue(rendererRepository, "");
         IssueProperty property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
         rendererQuery.containsIssue = true;
         boolean selected = false;
@@ -142,7 +142,7 @@ public class QueryTableCellRendererTest {
 
         // issue seen, selected
         rendererQuery.containsIssue = true;
-        rendererIssue = new RendererIssue("");
+        rendererIssue = new RendererIssue(rendererRepository, "");
         property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
         selected = true;
         setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_SEEN, true);
@@ -155,7 +155,7 @@ public class QueryTableCellRendererTest {
 
         // obsolete issue, not selected
         rendererQuery.containsIssue = false;
-        rendererIssue = new RendererIssue("");
+        rendererIssue = new RendererIssue(rendererRepository, "");
         property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
         selected = false;
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
@@ -168,7 +168,7 @@ public class QueryTableCellRendererTest {
         // obsolete issue, selected
         rendererQuery.containsIssue = false;
         selected = true;
-        rendererIssue = new RendererIssue("");
+        rendererIssue = new RendererIssue(rendererRepository, "");
         property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
@@ -180,7 +180,7 @@ public class QueryTableCellRendererTest {
         // modified issue, not selected
         rendererQuery.containsIssue = true;
         selected = false;
-        rendererIssue = new RendererIssue("changed");
+        rendererIssue = new RendererIssue(rendererRepository, "changed");
         property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
         setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_MODIFIED, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
@@ -194,7 +194,7 @@ public class QueryTableCellRendererTest {
         // modified issue, selected
         rendererQuery.containsIssue = true;
         selected = true;
-        rendererIssue = new RendererIssue("changed");
+        rendererIssue = new RendererIssue(rendererRepository, "changed");
         property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
         setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_MODIFIED, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
@@ -207,7 +207,7 @@ public class QueryTableCellRendererTest {
         // new issue, not selected
         rendererQuery.containsIssue = true;
         selected = false;
-        rendererIssue = new RendererIssue("");
+        rendererIssue = new RendererIssue(rendererRepository, "");
         property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
         setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_NEW, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
@@ -221,7 +221,7 @@ public class QueryTableCellRendererTest {
         // new issue, selected
         rendererQuery.containsIssue = true;
         selected = true;
-        rendererIssue = new RendererIssue("");
+        rendererIssue = new RendererIssue(rendererRepository, "");
         property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
         setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_NEW, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
@@ -240,8 +240,8 @@ public class QueryTableCellRendererTest {
     @Test
     public void testGetDefaultCellStyle() {
         JTable table = new JTable();
-        RendererIssue issue = new RendererIssue("");
         RendererRepository rendererRepository = new RendererRepository();
+        RendererIssue issue = new RendererIssue(rendererRepository, "");
         RendererQuery query = new RendererQuery(rendererRepository);
         IssueProperty property = new RendererNode(issue, "some value", rendererRepository).createProperty();
 
@@ -371,9 +371,11 @@ public class QueryTableCellRendererTest {
     private static class RendererIssue extends TestIssue {
         private static int id = 0;
         private String recentChanges;
-        public RendererIssue(String recentChanges) {
+        private final RendererRepository repo;
+        public RendererIssue(RendererRepository repo, String recentChanges) {
             id++;
             this.recentChanges = recentChanges;
+            this.repo = repo;
         }
 
         @Override
@@ -454,16 +456,34 @@ public class QueryTableCellRendererTest {
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             
         }
-
-        @Override
-        public TestIssue createFor(String id) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
         
         @Override
         public String[] getSubtasks() {
             throw new UnsupportedOperationException("Not supported yet.");
         }        
+
+        @Override
+        public IssueStatusProvider.Status getStatus() {
+            int s = repo.cache.getStatus(getID());
+            switch(s) {
+                case IssueCache.ISSUE_STATUS_NEW:
+                    return IssueStatusProvider.Status.NEW;
+                case IssueCache.ISSUE_STATUS_MODIFIED:
+                    return IssueStatusProvider.Status.MODIFIED;
+                case IssueCache.ISSUE_STATUS_SEEN:
+                    return IssueStatusProvider.Status.SEEN;
+            }
+            return null;
+        }
+
+        @Override
+        public void setSeen(boolean seen) {
+            try {
+                repo.cache.setSeen(getID(), seen);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     private class RendererRepository extends TestRepository {

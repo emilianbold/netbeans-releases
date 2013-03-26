@@ -292,14 +292,15 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         SourceGroup[] sources = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sources.length == 0) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_No_Sources_found"));
+                        NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_No_Sources_found")); //NOI18N
             return false;
         }
 
-        if (configFile==null) {
-            if (!Utilities.isJavaEE6((TemplateWizard) wizardDescriptor) && !isAddBeanToConfig() && !(JSFUtils.isJavaEE5((TemplateWizard) wizardDescriptor) && JSFUtils.isJSF20Plus(wm))) {
+        if (configFile == null) {
+            if (!Utilities.isJavaEE6Plus((TemplateWizard) wizardDescriptor) && !isAddBeanToConfig()
+                    && !(JSFUtils.isJavaEE5((TemplateWizard) wizardDescriptor) && JSFUtils.isJSF20Plus(wm, true))) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_NoConfigFile"));
+                        NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_NoConfigFile")); //NOI18N
                 return false;
             }
             return true;
@@ -310,22 +311,23 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         FacesConfig facesConfig = ConfigurationUtils.getConfigModel(fo, true).getRootComponent();
         if (facesConfig == null) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_InvalidConfigFile"));
+                    NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_InvalidConfigFile")); //NOI18N
             return false;
         }
 
         String name = jTextFieldName.getText();
-        if (name.trim().equals("")) {
+        if (name.trim().equals("")) { // NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_InvalidBeanName"));
+                    NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_InvalidBeanName")); //NOI18N
             return false;
         }
 
         Object scope = jComboBoxScope.getSelectedItem();
         if (scope instanceof NamedScope && scope == NamedScope.FLOW) {
-            JSFVersion jsfVersion = JSFVersion.forWebModule(wm, true);
-            if (!jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,Bundle.ManagedBeanPanelVisual_warn_flowScoped_low_version());
+            JSFVersion jsfVersion = JSFVersion.forWebModule(wm);
+            if (jsfVersion != null && !jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        Bundle.ManagedBeanPanelVisual_warn_flowScoped_low_version());
                 return false;
             }
         }

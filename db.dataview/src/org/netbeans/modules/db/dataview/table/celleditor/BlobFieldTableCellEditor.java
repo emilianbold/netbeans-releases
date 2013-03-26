@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
 
 public class BlobFieldTableCellEditor extends AbstractCellEditor
         implements TableCellEditor,
-        ActionListener {
+        ActionListener, AlwaysEnable {
     private static final Logger LOG = Logger.getLogger(
             BlobFieldTableCellEditor.class.getName());
 
@@ -82,6 +82,8 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
     protected JTable table;
     protected JMenuItem saveContentMenuItem;
     protected JMenuItem miOpenImageMenuItem;
+    protected JMenuItem miLobLoadAction;
+    protected JMenuItem miLobNullAction;
 
     @SuppressWarnings("LeakingThisInConstructor")
     public BlobFieldTableCellEditor() {
@@ -97,8 +99,8 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
         button.setFont(new Font(button.getFont().getFamily(), Font.ITALIC, 9));
 
         popup = new JPopupMenu();
-        final JMenuItem miLobSaveAction = new JMenuItem(NbBundle.getMessage(BlobFieldTableCellEditor.class, "saveLob.title"));
-        miLobSaveAction.addActionListener(new ActionListener() {
+        saveContentMenuItem = new JMenuItem(NbBundle.getMessage(BlobFieldTableCellEditor.class, "saveLob.title"));
+        saveContentMenuItem.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -106,11 +108,10 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
                 fireEditingCanceled();
             }
         });
-        saveContentMenuItem = miLobSaveAction;
-        popup.add(miLobSaveAction);
+        popup.add(saveContentMenuItem);
 
-        final JMenuItem miOpenImageAction = new JMenuItem("Open as Image");
-        miOpenImageAction.addActionListener(new ActionListener() {
+        miOpenImageMenuItem = new JMenuItem("Open as Image");
+        miOpenImageMenuItem.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -118,10 +119,9 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
                 fireEditingCanceled();
             }
         });
-        miOpenImageMenuItem = miOpenImageAction;
-        popup.add(miOpenImageAction);
+        popup.add(miOpenImageMenuItem);
 
-        final JMenuItem miLobLoadAction = new JMenuItem(NbBundle.getMessage(BlobFieldTableCellEditor.class, "loadLob.title"));
+        miLobLoadAction = new JMenuItem(NbBundle.getMessage(BlobFieldTableCellEditor.class, "loadLob.title"));
         miLobLoadAction.addActionListener(new ActionListener() {
 
             @Override
@@ -134,7 +134,7 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
             }
         });
         popup.add(miLobLoadAction);
-        final JMenuItem miLobNullAction = new JMenuItem(NbBundle.getMessage(BlobFieldTableCellEditor.class, "nullLob.title"));
+        miLobNullAction = new JMenuItem(NbBundle.getMessage(BlobFieldTableCellEditor.class, "nullLob.title"));
         miLobNullAction.addActionListener(new ActionListener() {
 
             @Override
@@ -157,6 +157,9 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
         currentValue = (java.sql.Blob) value;
+        int modelRow = table.convertRowIndexToModel(row);
+        int modelColumn = table.convertColumnIndexToModel(column);
+        boolean editable = table.getModel().isCellEditable(modelRow, modelColumn);
         if (currentValue != null) {
             saveContentMenuItem.setEnabled(true);
             miOpenImageMenuItem.setEnabled(true);
@@ -181,6 +184,8 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
             miOpenImageMenuItem.setEnabled(false);
             button.setText("<NULL>");
         }
+        miLobLoadAction.setEnabled(editable);
+        miLobNullAction.setEnabled(editable);
         this.table = table;
         return button;
     }

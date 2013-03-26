@@ -46,11 +46,8 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.ConcurrentRefUpdateException;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.api.errors.NoHeadException;
-import org.eclipse.jgit.api.errors.NoMessageException;
-import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuilder;
 import org.eclipse.jgit.dircache.DirCacheEditor;
@@ -164,17 +161,11 @@ public class CommitCommand extends GitCommand {
                     backup.unlock();
                 }
             }
-        } catch (NoHeadException ex) {
-            throw new GitException(ex);
-        } catch (NoMessageException ex) {
+        } catch (GitAPIException ex) {
             throw new GitException(ex);
         } catch (UnmergedPathException ex) {
             throw new GitException(ex);
-        } catch (ConcurrentRefUpdateException ex) {
-            throw new GitException(ex);
         } catch (JGitInternalException ex) {
-            throw new GitException(ex);
-        } catch (WrongRepositoryStateException ex) {
             throw new GitException(ex);
         } catch (NoWorkTreeException ex) {
             throw new GitException(ex);

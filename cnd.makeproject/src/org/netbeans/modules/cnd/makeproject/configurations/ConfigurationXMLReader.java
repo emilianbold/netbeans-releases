@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLDocReader;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -64,6 +65,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.DialogDisplayer;
@@ -72,6 +75,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.lookup.Lookups;
 import org.xml.sax.Attributes;
 
 /**
@@ -95,7 +99,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
     /*
      * was: readFromDisk
      */
-    public MakeConfigurationDescriptor read(final String relativeOffset) throws IOException {
+    public MakeConfigurationDescriptor read(final String relativeOffset, final Interrupter interrupter) throws IOException {
         final String tag;
         final FileObject xml;
         // Try first new style file
@@ -131,9 +135,15 @@ public class ConfigurationXMLReader extends XMLDocReader {
                             ex.printStackTrace(System.err);
                         }
                     }
-                    if (_read(relativeOffset, tag, xml, configurationDescriptor) == null) {
+                    if (_read(relativeOffset, interrupter, tag, xml, configurationDescriptor) == null) {
                         // TODO configurationDescriptor is broken
                         configurationDescriptor.setState(State.BROKEN);
+                        return;
+                    }
+                    String customizerId = configurationDescriptor.getActiveConfiguration() == null ? null : 
+                            configurationDescriptor.getActiveConfiguration().getCustomizerId();
+                    for (ProjectMetadataFactory f : Lookups.forPath(MakeProjectTypeImpl.projectMetadataFactoryPath(customizerId)).lookupAll(ProjectMetadataFactory.class)){
+                        f.read(project.getProjectDirectory());
                     }
                 } catch (IOException ex) {
                     configurationDescriptor.setState(State.BROKEN);
@@ -144,7 +154,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         return configurationDescriptor;
     }
 
-    private ConfigurationDescriptor _read(String relativeOffset,
+    private ConfigurationDescriptor _read(String relativeOffset, Interrupter interrupter,
             String tag, FileObject xml, final MakeConfigurationDescriptor configurationDescriptor) throws IOException {
 
         boolean success;
@@ -154,7 +164,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         InputStream inputStream = null;
         try {
             inputStream = xml.getInputStream();
-            success = read(inputStream, xml.getPath());
+            success = read(inputStream, xml.getPath(), interrupter);
             if (getMasterComment() != null && project instanceof MakeProject) {
                 ((MakeProject) project).setConfigurationXMLComment(getMasterComment());
             }
@@ -184,7 +194,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             inputStream = null;
             try {
                 inputStream = xml.getInputStream();
-                success = read(inputStream, projectDirectory.getName());
+                success = read(inputStream, projectDirectory.getName(), interrupter);
             } finally {
                 deregisterXMLDecoder(auxDecoder);
                 if (inputStream != null) {
@@ -226,7 +236,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() < CommonConfigurationXMLCodec.VERSION_WITH_INVERTED_SERIALIZATION) {
             schemeWithExcludedItems = true;
         }
-        prepareFoldersTask(configurationDescriptor, schemeWithExcludedItems);
+        prepareFoldersTask(configurationDescriptor, schemeWithExcludedItems, interrupter);
         configurationDescriptor.setState(State.READY);
 
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
@@ -283,10 +293,11 @@ public class ConfigurationXMLReader extends XMLDocReader {
     }
 
     // Attach listeners to all disk folders
-    private void prepareFoldersTask(final MakeConfigurationDescriptor configurationDescriptor, final boolean oldSchemeWasRestored) {
-        Task task = REQUEST_PROCESSOR.create(new Runnable() {
+    private void prepareFoldersTask(final MakeConfigurationDescriptor configurationDescriptor, final boolean oldSchemeWasRestored, final Interrupter interrupter) {
+        final List<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
+        REQUEST_PROCESSOR.post(new Runnable() {
             // retstore in only scheme only once, then switch to new scheme
-            private volatile boolean restoreInOldScheme = oldSchemeWasRestored;
+            private boolean restoreInOldScheme = oldSchemeWasRestored;
             @Override
             public void run() {
                 String postfix = configurationDescriptor.getBaseDir();
@@ -297,18 +308,17 @@ public class ConfigurationXMLReader extends XMLDocReader {
                 try {
                     //boolean currentState = configurationDescriptor.getModified();
                     Thread.currentThread().setName(threadName); // NOI18N
-                    List<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
                     for (Folder f : firstLevelFolders) {
                         if (f.isDiskFolder()) {
                             if (restoreInOldScheme) {
                                 LOGGER.log(Level.FINE, "Restore based on old scheme {0}", f);
                                 restoreInOldScheme = false;
-                                f.refreshDiskFolderAfterRestoringOldScheme();
+                                f.refreshDiskFolderAfterRestoringOldScheme(interrupter);
                             } else {
                                 LOGGER.log(Level.FINE, "Restore based on new scheme {0}", f);
-                                f.refreshDiskFolder();
+                                f.refreshDiskFolder(interrupter);
                             }
-                            f.attachListeners();
+                            f.attachListeners(interrupter);
                         }
                     }
                     //configurationDescriptor.setModified(currentState);
@@ -323,7 +333,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // Refresh disk folders in background process
         // revert changes bacause opening project time is increased.
         //task.waitFinished(); // See IZ https://netbeans.org/bugzilla/show_bug.cgi?id=184260
-        configurationDescriptor.setFoldersTask(task);
+        //configurationDescriptor.setFoldersTask(task);
     }
 
     // interface XMLDecoder

@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.maven;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,6 +62,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -67,6 +72,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -74,6 +81,7 @@ import org.openide.loaders.DataObject;
  */
 @ProjectServiceProvider(service=CreateFromTemplateAttributesProvider.class, projectType="org-netbeans-modules-maven")
 public class TemplateAttrProvider implements CreateFromTemplateAttributesProvider {
+    private static final Logger LOG = Logger.getLogger(TemplateAttrProvider.class.getName());
 
     private final Project project;
     
@@ -83,28 +91,23 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
     
     public @Override Map<String,?> attributesFor(DataObject template, DataFolder target, String name) {
         Map<String,Object> values = new TreeMap<String,Object>();
-        String license = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_LICENSE, true); //NOI18N
+        AuxiliaryProperties auxProps = project.getLookup().lookup(AuxiliaryProperties.class);
+        String licensePath = auxProps.get(Constants.HINT_LICENSE_PATH, true); //NOI18N
+        if (licensePath != null) {
+            File path = FileUtil.normalizeFile(FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), licensePath));
+            if (path.exists() && path.isAbsolute()) { //is this necessary? should prevent failed license header inclusion
+                URI uri = Utilities.toURI(path);
+                licensePath = uri.toString();
+                values.put("licensePath", licensePath);
+            } else {
+               LOG.log(Level.INFO, "project.licensePath value not accepted - " + licensePath);
+            }
+        }
+        
+        String license = auxProps.get(Constants.HINT_LICENSE, true); //NOI18N
         MavenProject mp = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
         if (license == null) {
-            // try to match the project's license URL and the mavenLicenseURL attribute of license template
-            List<License> lst = mp.getLicenses();
-            if (!lst.isEmpty()) {
-                String url = lst.get(0).getUrl();
-                FileObject licenses = FileUtil.getConfigFile("Templates/Licenses"); //NOI18N
-                if (url != null && licenses != null) {
-                    for (FileObject fo : licenses.getChildren()) {
-                        String str = (String)fo.getAttribute("mavenLicenseURL"); //NOI18N
-                        if (str != null && str.equalsIgnoreCase(url)) {
-                            if (fo.getName().startsWith("license-")) { // NOI18N
-                                license = fo.getName().substring("license-".length()); //NOI18N
-                            } else {
-                                Logger.getLogger(TemplateAttrProvider.class.getName()).log(Level.WARNING, "Bad license file name {0} (expected to start with ''license-'' prefix)", fo.getName());
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
+            license = findLicenseByMavenProjectContent(mp);
         }
         if (license != null) {
             values.put("license", license); // NOI18N
@@ -143,7 +146,7 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
         }
 
         if (values.size() > 0) {
-            return Collections.singletonMap("project", values); // NOI18N
+            return Collections.singletonMap("project", values); // NOI18N        
         } else {
             return null;
         }
@@ -170,5 +173,29 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
                 putProp(Arrays.copyOfRange(split, 1, split.length), childProp, value);
             }
         }
+    }
+
+    public static String findLicenseByMavenProjectContent(MavenProject mp) {
+        // try to match the project's license URL and the mavenLicenseURL attribute of license template
+        String toRet = null;
+        List<License> lst = mp.getLicenses();
+        if (!lst.isEmpty()) {
+            String url = lst.get(0).getUrl();
+            FileObject licenses = FileUtil.getConfigFile("Templates/Licenses"); //NOI18N
+            if (url != null && licenses != null) {
+                for (FileObject fo : licenses.getChildren()) {
+                    String str = (String)fo.getAttribute("mavenLicenseURL"); //NOI18N
+                    if (str != null && str.equalsIgnoreCase(url)) {
+                        if (fo.getName().startsWith("license-")) { // NOI18N
+                            toRet = fo.getName().substring("license-".length()); //NOI18N
+                        } else {
+                            Logger.getLogger(TemplateAttrProvider.class.getName()).log(Level.WARNING, "Bad license file name {0} (expected to start with ''license-'' prefix)", fo.getName());
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        return toRet;
     }
 }

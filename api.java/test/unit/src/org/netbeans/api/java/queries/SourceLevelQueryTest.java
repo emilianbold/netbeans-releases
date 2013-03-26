@@ -71,10 +71,17 @@ public class SourceLevelQueryTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        MockServices.setServices(SLQ.class,SLQ2.class);
-        LEVEL = null;
+        MockServices.setServices(SLQ.class,SLQ2.class);        
         f = FileUtil.createMemoryFileSystem().getRoot();
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        LEVEL = null;
+        slq2Files.clear();
+        super.tearDown();
+    }
+
 
     public void testBasicUsage() throws Exception {
         assertNull(SourceLevelQuery.getSourceLevel(f));
@@ -90,6 +97,18 @@ public class SourceLevelQueryTest extends NbTestCase {
         // #83994: should only return well-formed source levels.
         LEVEL = "${default.javac.source}";
         assertNull(SourceLevelQuery.getSourceLevel(f));
+    }
+
+    public void testRobustness2() throws Exception {
+        // #83994: should only return well-formed source levels.
+        slq2Files.put(f, "1.8");        //NOI18N
+        assertEquals("1.8",SourceLevelQuery.getSourceLevel2(f).getSourceLevel());
+        slq2Files.put(f, "8");          //NOI18N
+        assertEquals("1.8",SourceLevelQuery.getSourceLevel2(f).getSourceLevel());
+        slq2Files.put(f, "osm");        //NOI18N
+        assertNull(SourceLevelQuery.getSourceLevel2(f).getSourceLevel());
+        slq2Files.put(f, null);
+        assertNull(SourceLevelQuery.getSourceLevel2(f).getSourceLevel());
     }
 
     public void testSLQ2() throws Exception {

@@ -75,7 +75,7 @@ public class IgnoreAction extends ContextAction {
         if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.isEmpty()) {
             return false;
         }
-        return true;
+        return !HgUtils.onlyProjects(nodes);
     }
 
     @Override

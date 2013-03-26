@@ -407,7 +407,9 @@ public class KeymapModel {
         }
 
         for (KeymapManager m : getKeymapManagerInstances()) {
-            m.refreshActions();
+            synchronized(LOCK) {
+                m.refreshActions();
+            }
         }
     }
     
@@ -547,7 +549,9 @@ public class KeymapModel {
     public void deleteProfile(String profile) {
         profile = displayNameToName(profile);
         for (KeymapManager m : getKeymapManagerInstances()) {
-            m.deleteProfile(profile);
+            synchronized(LOCK) {
+                m.deleteProfile(profile);
+            }
         }
     }
     
@@ -740,9 +744,17 @@ public class KeymapModel {
         String name = getProfilesMap().get(keymapDisplayName);
         return name == null ? keymapDisplayName : name;
     }
+    
+    static final Object LOCK = new String("Keymap lock");
 
-    private void waitFinished(Runnable r) {
-        synchronized (this) {
+    /**
+     * All calls to KeymapManagers should go through this method. Keymap managers themselves are not
+     * too synchronized, that keeps them relatively simple.
+     * 
+     * @param r A the action to execute
+     */
+    static void waitFinished(Runnable r) {
+        synchronized (LOCK) {
             r.run();
         }
         /*

@@ -4,13 +4,15 @@
   "manifest_version": 2,
   "minimum_chrome_version": "21",
 
-  "version": "1.0.0",
+  "version": "1.0.1",
 
   "homepage_url": "https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa",
 
   "background": {
     "page": "html/main.html"
   },
+
+  "devtools_page": "html/devtools.html",
 
   "options_page": "html/options.html",
 

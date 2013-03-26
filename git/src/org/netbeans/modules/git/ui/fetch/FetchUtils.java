@@ -48,8 +48,7 @@ import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -92,26 +91,6 @@ final class FetchUtils {
         return remoteName;
     }
 
-    @Messages({"# {0} - branch name", "MSG_Err.noTrackedBranch=No tracked remote branch specified for local {0}",
-        "# {0} - branch name", "MSG_Err.trackedBranchLocal=Tracked branch {0} is not a remote branch"})
-    static GitBranch getTrackedBranch (RepositoryInfo info, String errorLabel) {
-        GitBranch activeBranch = info.getActiveBranch();
-        if (activeBranch == null) {
-            return null;
-        }
-        GitBranch trackedBranch = activeBranch.getTrackedBranch();
-        if (trackedBranch == null) {
-            notifyError(errorLabel,
-                    Bundle.MSG_Err_noTrackedBranch(activeBranch.getName())); //NOI18N
-            return null;
-        }
-        if (!trackedBranch.isRemote()) {
-            notifyError(errorLabel, Bundle.MSG_Err_trackedBranchLocal(trackedBranch.getName())); //NOI18N
-            return null;
-        }
-        return trackedBranch;
-    }
-
     @Messages({"# {0} - branch name", "MSG_Err.noRemote=No remote found for branch {0}",
         "# {0} - branch name", "MSG_Err.noUri=No URI specified for remote {0}",
         "# {0} - branch name", "MSG_Err.noSpecs=No fetch ref specs specified for remote {0}"})
@@ -120,29 +99,18 @@ final class FetchUtils {
         String remoteName = parseRemote(trackedBranch.getName());
         GitRemoteConfig cfg = remoteName == null ? null : remotes.get(remoteName);
         if (cfg == null) {
-            notifyError(errorLabel, Bundle.MSG_Err_noRemote(trackedBranch.getName()));
+            GitUtils.notifyError(errorLabel, Bundle.MSG_Err_noRemote(trackedBranch.getName()));
             return null;
         }
         if (cfg.getUris().isEmpty()) {
-            notifyError(errorLabel, Bundle.MSG_Err_noUri(cfg.getRemoteName()));
+            GitUtils.notifyError(errorLabel, Bundle.MSG_Err_noUri(cfg.getRemoteName()));
             return null;
         }
         if (cfg.getFetchRefSpecs().isEmpty()) {
-            notifyError(errorLabel, Bundle.MSG_Err_noSpecs(cfg.getRemoteName()));
+            GitUtils.notifyError(errorLabel, Bundle.MSG_Err_noSpecs(cfg.getRemoteName()));
             return null;
         }
         return cfg;
-    }
-
-    private static void notifyError (String errorLabel, String errorMessage) {
-        NotifyDescriptor nd = new NotifyDescriptor(
-            errorMessage,
-            errorLabel,
-            NotifyDescriptor.DEFAULT_OPTION,
-            NotifyDescriptor.ERROR_MESSAGE,
-            new Object[]{NotifyDescriptor.OK_OPTION},
-            NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notify(nd);
     }
     
     private FetchUtils() {

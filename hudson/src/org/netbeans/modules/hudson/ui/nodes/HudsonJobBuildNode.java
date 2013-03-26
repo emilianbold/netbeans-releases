@@ -94,9 +94,7 @@ class HudsonJobBuildNode extends AbstractNode {
         List<Action> actions = new ArrayList<Action>();
         actions.add(UI.showChangesAction(build));
         actions.add(UI.showConsoleAction(build));
-        if (build.getResult() == HudsonJobBuild.Result.UNSTABLE && build.getMavenModules().isEmpty()) {
-            actions.add(UI.showFailuresAction(build));
-        }
+        actions.add(UI.showFailuresAction());
         actions.add(null);
         if (build instanceof OpenableInBrowser) {
             actions.add(OpenUrlAction.forOpenable((OpenableInBrowser) build));

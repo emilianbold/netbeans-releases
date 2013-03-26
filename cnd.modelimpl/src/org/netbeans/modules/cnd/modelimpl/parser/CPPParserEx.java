@@ -92,7 +92,7 @@ public class CPPParserEx extends CPPParser {
 
     private boolean lazyCompound = TraceFlags.EXCLUDE_COMPOUND;
     protected final CppParserActionEx action;
-    
+
     private static class AstFactoryEx extends org.netbeans.modules.cnd.antlr.ASTFactory {
 
         @SuppressWarnings("UseOfObsoleteCollectionType") 
@@ -111,6 +111,10 @@ public class CPPParserEx extends CPPParser {
         }
     }
 
+    int getTokenCount() {
+        return super.input.size();
+    }
+    
     //Change statementTrace from cppparser.g directly 
     //private final boolean trace = Boolean.getBoolean("cnd.parser.trace");
     //private TokenStreamSelector selector = new TokenStreamSelector();

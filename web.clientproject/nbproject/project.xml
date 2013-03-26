@@ -133,7 +133,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.18</specification-version>
+                        <specification-version>1.25</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -256,7 +256,7 @@
                         <test/>
                     </test-dependency>
                 </test-type>
-                 <test-type>
+                <test-type>
                     <name>qa-functional</name>
                     <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
@@ -298,7 +298,7 @@
                 <package>org.netbeans.modules.web.clientproject</package>
                 <package>org.netbeans.modules.web.clientproject.sites</package>
                 <package>org.netbeans.modules.web.clientproject.util</package>
-            <!-- the exported API is going to be removed soon:
+                <!-- the exported API is going to be removed soon:
                  see issue "222525 - Get rid of the web.clientproject exported API" -->
             </friend-packages>
         </data>

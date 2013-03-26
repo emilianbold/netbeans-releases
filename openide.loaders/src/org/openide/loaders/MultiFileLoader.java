@@ -99,6 +99,9 @@ public abstract class MultiFileLoader extends DataLoader {
         if (!fo.isValid()) {
             return null;
         }
+        
+        assert !Thread.holdsLock(DataObjectPool.getPOOL());
+        
         // finds primary file for given file
         FileObject primary = findPrimaryFileImpl (fo);
 
@@ -231,13 +234,17 @@ public abstract class MultiFileLoader extends DataLoader {
         if (willLog) {
             ERR.log(Level.FINE, "{0} register entry: {1}", new Object[]{getClass().getName(), fo}); // NOI18N
         }
-        org.openide.loaders.MultiDataObject.Entry e;
+        boolean tryAgain = false;
+        org.openide.loaders.MultiDataObject.Entry e = null;
         synchronized (DataObjectPool.getPOOL()) {
             if (originalItem != obj.item() || !originalItem.isValid()) {
-                // try again
-                return handleFindDataObject(fo, recognized);
+                tryAgain = true;
+            } else {
+                e = obj.registerEntry (fo);
             }
-            e = obj.registerEntry (fo);
+        }
+        if (tryAgain) {
+            return handleFindDataObject(fo, recognized);
         }
         if (willLog) {
             ERR.log(Level.FINE, "{0} success: {1}", new Object[]{getClass().getName(), e}); // NOI18N

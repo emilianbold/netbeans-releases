@@ -87,7 +87,6 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
  */
 public class ProjectSettingsValidator {
     
-    private static final boolean TRACE = Boolean.getBoolean("cnd.modelimpl.validator.trace");
     private static final Logger LOG = Logger.getLogger(ProjectSettingsValidator.class.getName());
     
     public ProjectSettingsValidator(ProjectBase csmProject) {
@@ -107,7 +106,7 @@ public class ProjectSettingsValidator {
         }
 	long time = 0;
 	if( TraceFlags.TIMING ) {
-	    System.err.printf("ProjectSettingsValidator.storeSettings for %s\n", csmProject.getName());
+	    System.err.printf("ProjectSettingsValidator.storeSettings for %s\n", csmProject.getName()); //NOI18N
 	    time = System.currentTimeMillis();
 	}
 	data = new Data();
@@ -135,7 +134,7 @@ public class ProjectSettingsValidator {
 	RepositoryUtils.put(key, data);
 	if( TraceFlags.TIMING ) {
 	    time = System.currentTimeMillis() - time;
-	    System.err.printf("ProjectSettingsValidator.storeSettings for %s took %d ms\n", csmProject.getName(), time);
+	    System.err.printf("ProjectSettingsValidator.storeSettings for %s took %d ms\n", csmProject.getName(), time); //NOI18N
 	}
         if (LOG.isLoggable(Level.INFO)) {
             LOG.log(Level.INFO, "Finish CRC counting for {0}", csmProject.getName()); // NOI18N
@@ -176,15 +175,15 @@ public class ProjectSettingsValidator {
 	assert data != null;
 	long savedCrc = data.getCrc(item.getAbsolutePath());
 	long currentCrc = calculateCrc(item);
-	if( TRACE ) {
-            System.err.printf("arePropertiesChanged %s OLD=%d CUR=%d %b\n", item.getName(), savedCrc, currentCrc, (savedCrc != currentCrc));
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "arePropertiesChanged {0} OLD={1} CUR={2} {3}", new Object[]{item.getName(), savedCrc, currentCrc, savedCrc != currentCrc}); //NOI18N
         }
 	return savedCrc != currentCrc;
     }
     
     private long calculateCrc(NativeFileItem item) {
-	if( TRACE ) {
-            System.err.printf(">>> CRC %s\n", item.getName());
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, ">>> CRC {0}", item.getName()); //NOI18N
         }
 	Checksum checksum = new Adler32();
 	updateCrc(checksum, item.getLanguage().toString());
@@ -193,16 +192,16 @@ public class ProjectSettingsValidator {
 	updateCrcByFSPaths(checksum, item.getUserIncludePaths());
 	updateCrcByStrings(checksum, item.getSystemMacroDefinitions());
 	updateCrcByStrings(checksum, item.getUserMacroDefinitions());
-	if( TRACE ) {
-            System.err.printf("<<< CRC %s %d\n", item.getName(), checksum.getValue());
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "<<< CRC {0} {1}", new Object[]{item.getName(), checksum.getValue()}); //NOI18N
         }
 	return checksum.getValue();
     }
     
     private void updateCrc(Checksum checksum, String s) {
 	checksum.update(s.getBytes(), 0, s.length());
-	if( TRACE ) {
-            System.err.printf("\tupdateCrc %s -> %d\n", s, checksum.getValue());
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.log(Level.FINE, "\tupdateCrc {0} -> {1}", new Object[]{s, checksum.getValue()}); //NOI18N
         }
     }
     

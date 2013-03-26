@@ -252,7 +252,7 @@ public class FileObjectsTest extends NbTestCase {
         private final String archiveURI;
         
         public TestZipFileObject (final String archiveUri, final String folderName, final String fileName, final long mtime) {
-            super(folderName,fileName,mtime);
+            super(folderName, null, fileName, mtime);
             this.archiveURI = archiveUri;
         }
 

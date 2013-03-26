@@ -56,6 +56,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -64,6 +65,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -74,14 +76,18 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -233,6 +239,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
                 List<RepositoryConnection> recentUrls = SvnModuleConfig.getDefault().getRecentUrls();
                 final Set<RepositoryConnection> recentRoots = new LinkedHashSet<RepositoryConnection>();
                 recentRoots.addAll(recentUrls);
+                addProjects(recentRoots);
                 if (repositoryPanel.urlComboBox.isEditable()) {
                     // templates for supported connection methods
                     recentRoots.add(new RepositoryConnection("file:///"));      // NOI18N
@@ -242,18 +249,18 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
                     recentRoots.add(new RepositoryConnection("svn+ssh://"));    // NOI18N
                 }
 
-                ComboBoxModel rootsModel = new RepositoryModel(new Vector<RepositoryConnection>(recentRoots));
-                repositoryPanel.urlComboBox.setModel(rootsModel);
-                if (recentRoots.size() > 0) {
-                    repositoryPanel.urlComboBox.setSelectedIndex(0);
-                    onSelectedRepositoryChange();
-                    currentPanel.refresh(getSelectedRCIntern());
-                }
-                repositoryPanel.urlComboBox.setEnabled(isSet(FLAG_URL_ENABLED));
-
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
+                        ComboBoxModel rootsModel = new RepositoryModel(new Vector<RepositoryConnection>(recentRoots));
+                        repositoryPanel.urlComboBox.setModel(rootsModel);
+                        if (recentRoots.size() > 0) {
+                            repositoryPanel.urlComboBox.setSelectedIndex(0);
+                            onSelectedRepositoryChange();
+                            currentPanel.refresh(getSelectedRCIntern());
+                        }
+                        repositoryPanel.urlComboBox.setEnabled(isSet(FLAG_URL_ENABLED));
+
                         if (repositoryPanel.urlComboBox.isEditable()) {
                             JTextComponent textEditor = getUrlComboEditor();
                             textEditor.selectAll();
@@ -261,6 +268,25 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
                         updateVisibility();
                     }
                 });
+            }
+
+            private void addProjects (final Set<RepositoryConnection> recentRoots) {
+                for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+                    File projectFolder = FileUtil.toFile(p.getProjectDirectory());
+                    if (projectFolder != null && SvnUtils.isManaged(projectFolder)) {
+                        try {
+                            SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(projectFolder);
+                            if (repositoryUrl != null) {
+                                RepositoryConnection rc = new RepositoryConnection(repositoryUrl.toString());
+                                if (!recentRoots.contains(rc)) {
+                                    recentRoots.add(rc);
+                                }
+                            }
+                        } catch (SVNClientException ex) {
+                            Logger.getLogger(Repository.class.getName()).log(Level.FINE, null, ex);
+                        }
+                    }
+                }
             }
         };
         if (EventQueue.isDispatchThread()) {

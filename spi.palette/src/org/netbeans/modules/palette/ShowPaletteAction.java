@@ -64,7 +64,7 @@ import org.openide.windows.WindowManager;
  */
 @ActionID(id = "org.netbeans.modules.palette.ShowPaletteAction", category = "Window")
 @ActionRegistration(displayName = "#CTL_PaletteAction", iconBase = "org/netbeans/modules/palette/resources/palette.png")
-@ActionReference(position = 600, name = "ShowPaletteAction", path = "Menu/Window")
+@ActionReference(position = 100, name = "ShowPaletteAction", path = "Menu/Window/Tools")
 public class ShowPaletteAction implements ActionListener {
 
     /** Opens component palette. */

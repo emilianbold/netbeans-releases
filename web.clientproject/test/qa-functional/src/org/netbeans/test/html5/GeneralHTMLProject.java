@@ -77,13 +77,30 @@ public class GeneralHTMLProject extends JellyTestCase {
     public static final String PROJECT_NAME = "HTML5 Application";
     public static final String SAMPLES = "Samples";
     public static final String SAMPLES_CATEGORY = "HTML5";
+    public static int RUN_WAIT_TIMEOUT = 1000;
     public static String current_project = "";
-    public boolean inEmbeddedBrowser = false;
+    public static boolean inEmbeddedBrowser = false;
+    public static String currentBrowser = "Chrome";
     public static final Logger LOGGER = Logger.getLogger(GeneralHTMLProject.class.getName());
 
     public GeneralHTMLProject(String arg0) {
         super(arg0);
         this.evt = new EventTool();
+    }
+
+    /**
+     * Sets time to wait when run file action is performed based on browser
+     *
+     * @param browserName
+     */
+    public static void setRunTimeout(String browserName) {
+        if (browserName.startsWith("Chrome") || browserName.startsWith("Chromium")) {
+            GeneralHTMLProject.RUN_WAIT_TIMEOUT = 5000;
+        } else if (browserName.startsWith("Embedded")) {
+            GeneralHTMLProject.RUN_WAIT_TIMEOUT = 1000;
+        } else {
+            GeneralHTMLProject.RUN_WAIT_TIMEOUT = 2000;
+        }
     }
 
     public void createDefaultProject(String projectName) {
@@ -231,7 +248,8 @@ public class GeneralHTMLProject extends JellyTestCase {
         new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
         JComboBoxOperator browsers = new JComboBoxOperator(propertiesDialogOper, "Browser");
         ClientProjectConfigurationImpl browser;
-
+        GeneralHTMLProject.setRunTimeout(browserName);
+        GeneralHTMLProject.currentBrowser = browserName;
         for (int i = 0; i < browsers.getModel().getSize(); i++) {
             browser = (ClientProjectConfigurationImpl) browsers.getModel().getElementAt(i);
 
@@ -243,11 +261,8 @@ public class GeneralHTMLProject extends JellyTestCase {
                 }
                 propertiesDialogOper.ok();
                 waitScanFinished();
-                if (browserName.equalsIgnoreCase("Embedded WebKit Browser")) {
-                    this.inEmbeddedBrowser = true;
-                } else {
-                    this.inEmbeddedBrowser = false;
-                }
+                GeneralHTMLProject.inEmbeddedBrowser = browserName.equalsIgnoreCase("Embedded WebKit Browser");
+
                 return;
             }
         }
@@ -258,7 +273,33 @@ public class GeneralHTMLProject extends JellyTestCase {
     public void openProject(String projectName) throws IOException {
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects(projectName);
-        evt.waitNoEvent(3000);
+        waitScanFinished();
+    }
+
+    /**
+     * Waits for Remote Files node to appear in Projects tab
+     *
+     * @param projectName
+     */
+    public void waitForRemoteFiles(String projectName) {
+        final String project = projectName;
+        try {
+            Waiter waiter = new Waiter(new Waitable() {
+                @Override
+                public Object actionProduced(Object obj) {
+                    Node rootNode = new ProjectsTabOperator().getProjectRootNode(project);
+                    return rootNode.isChildPresent("Remote Files") ? Boolean.TRUE : null;
+                }
+
+                @Override
+                public String getDescription() {
+                    return ("Wait for Remote Files node to appear");
+                }
+            });
+
+            waiter.waitAction(null);
+        } catch (InterruptedException e) {
+        }
     }
 
     /**
@@ -336,6 +377,30 @@ public class GeneralHTMLProject extends JellyTestCase {
         PageModel page = PageInspectorImpl.getDefault().getPage();
         List<? extends org.openide.nodes.Node> nodes = page.getNodesMatchingSelectedRule();
         return getElements(nodes);
+    }
+
+    /**
+     * Opens given file and types space at the end of first line (on slow system this seems to help with parsing Remote files)
+     * @param pathAndFileName
+     * @param projectName
+     * @param fileName
+     */
+    public void dummyEdit(String pathAndFileName, String projectName, String fileName){
+
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        Node node = new Node(rootNode, "Site Root|" + pathAndFileName);
+        evt.waitNoEvent(500);
+
+        if (node.isLeaf()) {
+            node.select();
+            node.performPopupAction("Open");
+        }
+
+        EditorOperator ep = new EditorOperator(fileName);
+        ep.setCaretPositionToEndOfLine(1);
+        type(ep, " ");
+        ep.save();
+        ep.close();
     }
 
     private HTMLElement[] getElements(List<? extends org.openide.nodes.Node> nodes) {

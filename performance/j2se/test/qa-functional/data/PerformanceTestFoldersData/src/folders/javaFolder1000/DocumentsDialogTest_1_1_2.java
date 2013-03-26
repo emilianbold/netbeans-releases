@@ -87,7 +87,6 @@ public class DocumentsDialogTest_1_1_2 extends PerformanceTestCase {
     @Override
     public void initialize(){
         CommonUtilities.openFiles("PerformanceTestFoldersData", getTenSelectedFiles());
-        CommonUtilities.waitProjectTasksFinished();
     }
     
     public void prepare() {

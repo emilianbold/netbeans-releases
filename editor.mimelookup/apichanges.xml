@@ -107,7 +107,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-
+        <change id="MimePath.inherited">
+            <summary>Access to parent MIME type and all included paths</summary>
+            <version major="1" minor="31"/>
+            <date day="27" month="2" year="2013"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no" modification="no" deprecation="yes"/>
+            <description>
+                <p>
+                    <code>getIncludedPaths</code> can be now used to compute all MimePaths that should
+                    be considered for the content. In the past, reflection was used to access this functionality.
+                </p>
+                <p>
+                    <code>getInheritedType</code> provides generalized or parent MIME type for the content, 
+                    which allows to search settings (services) fallbacks.
+                </p>
+            </description>
+            <class package="org.netbeans.api.editor.mimelookup" name="MimePath"/>
+            <issue number="226122"/>
+        </change>
         <change id="Class2LayerFolder.deprecated">
             <summary>Class2LayerFolder Deprecated and not used</summary>
             <version major="1" minor="20"/>

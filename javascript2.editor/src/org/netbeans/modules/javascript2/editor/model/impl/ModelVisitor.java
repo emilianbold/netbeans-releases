@@ -166,6 +166,9 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             } else {
                 JsObject current = modelBuilder.getCurrentDeclarationFunction();
+                while(current instanceof JsFunction && current.getParent() != null && current.getModifiers().contains(Modifier.PROTECTED)) {
+                    current = current.getParent();
+                }
                 JsObject property = current.getProperty(accessNode.getProperty().getName());
                 if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                         || current.getParent().getJSKind() == JsElement.Kind.OBJECT
@@ -187,7 +190,11 @@ public class ModelVisitor extends PathNodeVisitor {
             JsObjectImpl property = (JsObjectImpl)fromAN.getProperty(accessNode.getProperty().getName());
             int pathSize = getPath().size();
             Node lastVisited = getPath().get(pathSize - 2);
-            boolean onLeftSite =  lastVisited instanceof BinaryNode && ((BinaryNode)lastVisited).lhs().equals(accessNode);
+            boolean onLeftSite = false;
+            if (lastVisited instanceof BinaryNode) {
+                BinaryNode bNode = (BinaryNode)lastVisited;
+                onLeftSite = bNode.tokenType() == TokenType.ASSIGN && bNode.lhs().equals(accessNode);       
+            }
             if (property != null) {
                 if(onLeftSite && !property.isDeclared()) {
                     property.setDeclared(true);
@@ -827,12 +834,12 @@ public class ModelVisitor extends PathNodeVisitor {
                             String iName = iNode.getName();
                             JsObjectImpl param = (JsObjectImpl)function.getParameter(iName);
                             if(param != null) {
-                                param.addOccurrence(ModelUtils.documentOffsetRange(parserResult, LexUtilities.getLexerOffset(parserResult, iNode.getStart()), iNode.getFinish()));
+                                param.addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
                             } else {
                                 Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)function);
                                 for (JsObject variable : variables) {
                                     if (iName.equals(variable.getName())) {
-                                        ((JsObjectImpl)variable).addOccurrence(ModelUtils.documentOffsetRange(parserResult, LexUtilities.getLexerOffset(parserResult, iNode.getStart()), iNode.getFinish()));
+                                        ((JsObjectImpl)variable).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
                                         break;
                                     }
                                 }

@@ -430,7 +430,7 @@ public class RepositoryRevision {
                         ? new HistoryRegistry.ChangePathCollector() {
                             @Override
                             public HgLogMessageChangedPath[] getChangePaths () {
-                                HgLogMessage[] messages = HgCommand.getIncomingMessages(repositoryRoot, getLog().getCSetShortID(), true, true, false, 1, getLogger());
+                                HgLogMessage[] messages = HgCommand.getIncomingMessages(repositoryRoot, getLog().getCSetShortID(), null, true, true, false, 1, getLogger());
                                 return messages == null || messages.length == 0 ? new HgLogMessageChangedPath[0] : messages[0].getChangedPaths();
                             }
                         }

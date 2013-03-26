@@ -53,7 +53,6 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.hints.introduce.PositionRefresherHelperImpl.DocumentVersionImpl;
 import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
 import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper.DocumentVersion;
-import org.netbeans.modules.java.hints.spiimpl.hints.HintsTask.HintPositionRefresherHelper;
 import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -79,7 +78,7 @@ public class PositionRefresherHelperImpl extends PositionRefresherHelper<Documen
 
         if (selection == null) return false;
         
-        return oldVersion.introduceSelStart != selection[0] || oldVersion.introduceSelEnd != selection[1];
+        return oldVersion.introduceSelStart == selection[0] && oldVersion.introduceSelEnd == selection[1];
     }
 
     @Override

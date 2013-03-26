@@ -40,7 +40,7 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
 
-                <file name="org-netbeans-modules-groovy-gsp-EmbeddedSectionsHighlighting$Factory.instance">
+                <file name="org-netbeans-modules-groovy-gsp-editor-embedding-EmbeddedSectionsHighlighting$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
                 </file>
                 <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance">
@@ -69,7 +69,9 @@
                 </folder>
    
                 <folder name="FoldManager">
-                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance">
+                	<attr name="position" intvalue="1000"/>
+            	    </file>
                 </folder>
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">

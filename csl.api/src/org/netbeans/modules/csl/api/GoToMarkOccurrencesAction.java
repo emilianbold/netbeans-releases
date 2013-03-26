@@ -114,10 +114,10 @@ public final class GoToMarkOccurrencesAction extends BaseAction {
         if (hs.moveNext()) {
             if (directionForward) {
                 int firstStart = hs.getStartOffset(), firstEnd = hs.getEndOffset();
+                boolean hasElements = true;
+                while (hs.getStartOffset() <= curPos && (hasElements = hs.moveNext()));
 
-                while (hs.getStartOffset() <= curPos && hs.moveNext());
-
-                if (hs.getStartOffset() > curPos) {
+                if (hasElements && hs.getStartOffset() > curPos) {
                     // we found next occurrence
                     return hs.getStartOffset();
                 } else if (!(firstEnd >= curPos && firstStart <= curPos)) {
@@ -134,9 +134,14 @@ public final class GoToMarkOccurrencesAction extends BaseAction {
 
                 if (last == current) {
                     // we got no options to jump, cyclic jump to last in file unless we already there
-                    while (hs.moveNext());
-                    if (!(hs.getEndOffset() >= curPos && hs.getStartOffset() <= curPos)) {
-                        return hs.getStartOffset();
+                    int lastSO = current;
+                    int lastEO = Integer.MAX_VALUE;
+                    while (hs.moveNext()) {
+                        lastSO = hs.getStartOffset();
+                        lastEO = hs.getEndOffset();
+                    }
+                    if (!(lastEO >= curPos && lastSO <= curPos)) {
+                        return lastSO;
                     }
                 } else if (stuck) {
                     // just move to previous occurence

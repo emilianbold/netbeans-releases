@@ -424,10 +424,15 @@ public class FileModel2Test extends TraceModelTestBase {
         //  improving specialisations - skip explicit template function specialisation
         performTest("explicit_specialization.cc");
     }
-
+    
     public void testBug195338() throws Exception {
         // Bug 195338 - Unnamed bit sets issue
         performTest("bug195338.cpp");
+    }
+    
+    public void testBug227479() throws Exception {
+        // Bug 227479 - SQL EXEC support is broken
+        performTest("iz227479.pc");
     }
 
     public void testBug198460() throws Exception {

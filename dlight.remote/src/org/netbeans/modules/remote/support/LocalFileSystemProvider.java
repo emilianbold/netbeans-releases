@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.support;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -51,6 +52,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -323,8 +325,13 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
 
     @Override
     public void addRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath) {
+        addRecursiveListener(listener, fileSystem, absPath, null, null);
+    }
+    
+    @Override
+    public void addRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath,  FileFilter recurseInto, Callable<Boolean> interrupter) {
         File file = new File(absPath);
-        FileUtil.addRecursiveListener(listener, file);
+        FileUtil.addRecursiveListener(listener, file, recurseInto, interrupter);
     }
 
     @Override

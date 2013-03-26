@@ -137,7 +137,22 @@ public class CssCompletion implements CodeCompletionHandler {
         }
 
         int diff = ts.move(astCaretOffset);
-        boolean tokenFound = diff == 0 ? ts.movePrevious() : ts.moveNext();
+        boolean tokenFound;
+        if(diff == 0) {
+            if(ts.movePrevious()) {
+                tokenFound = true;
+            } else {
+                //no token, try next
+                tokenFound = ts.moveNext();
+            }
+        } else {
+            if(ts.moveNext()) {
+               tokenFound = true; 
+            } else {
+                //no token, try next
+                tokenFound = ts.movePrevious();
+            }
+        }
 
         Node root = info.getParseTree();
         if (root == null) {
@@ -448,7 +463,10 @@ public class CssCompletion implements CodeCompletionHandler {
         Snapshot snapshot = info.getSnapshot();
         TokenHierarchy hi = snapshot.getTokenHierarchy();
         String prefix = getPrefix(hi.tokenSequence(), snapshot.getEmbeddedOffset(caretOffset));
-
+        if(prefix == null) {
+            return null;
+        }
+        
         //really ugly handling of class or id selector prefix:
         //Since the getPrefix() method is parser result based it is supposed
         //to work on top of the snapshot, while GsfCompletionProvider$Task.canFilter()
@@ -826,6 +844,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                 break;
             case selectorsGroup:
+            case simpleSelectorSequence:
             case combinator:
             case selector:
                 //complete selector list without prefix in selector list e.g. BODY, | { ... }
@@ -841,6 +860,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     //completion of selectors after universal selector * | { ... }
                     case WS:
                         switch (parentNode.type()) {
+                            case rule:
                             case typeSelector:
                             case simpleSelectorSequence:
                                 //complete selector list in selector list with an error
@@ -862,6 +882,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 || nodeType == NodeType.page 
                 || nodeType == NodeType.charSet
                 || nodeType == NodeType.generic_at_rule
+                || nodeType == NodeType.bodyItem
                 || nodeType == NodeType.fontFace) {
             //complete at keywords with prefix - parse tree OK
             if (tokenFound) {
@@ -870,7 +891,7 @@ public class CssCompletion implements CodeCompletionHandler {
                         || id == CssTokenId.MEDIA_SYM 
                         || id == CssTokenId.PAGE_SYM 
                         || id == CssTokenId.CHARSET_SYM
-                        || id == CssTokenId.GENERIC_AT_RULE
+                        || id == CssTokenId.AT_IDENT
                         || id == CssTokenId.FONT_FACE_SYM
                         || id == CssTokenId.ERROR) {
                     //we are on the right place in the node
@@ -898,7 +919,12 @@ public class CssCompletion implements CodeCompletionHandler {
         //2. in a garbage (may be for example a dash prefix in a ruleset
         if (nodeType == NodeType.recovery || nodeType == NodeType.error) {
             Node parent = cc.getActiveNode().parent();
-            if (parent != null && (parent.type() == NodeType.rule || parent.type() == NodeType.moz_document)) {
+            if (parent != null && (
+                    parent.type() == NodeType.property
+                    || parent.type() == NodeType.rule 
+                    || parent.type() == NodeType.declarations 
+                    || parent.type() == NodeType.declaration //related to the declarations rule error recovery issue
+                    || parent.type() == NodeType.moz_document)) {
                 
                 //>>> Bug 204821 - Incorrect completion for vendor specific properties
                 boolean bug204821 = false;
@@ -1062,11 +1088,13 @@ public class CssCompletion implements CodeCompletionHandler {
 
             case error:
                 NodeType parentType = node.parent().type();
-                if (!(parentType == NodeType.term || parentType == NodeType.expression || parentType == NodeType.operator)) {
+                if (!(parentType == NodeType.propertyValue || parentType == NodeType.term || parentType == NodeType.expression || parentType == NodeType.operator)) {
                     break;
                 }
             //fall through
 
+            case hexColor:
+            case propertyValue:
             case function:
             case functionName:
             case term:
@@ -1113,6 +1141,10 @@ public class CssCompletion implements CodeCompletionHandler {
                 propertySearch.visitChildren(declaratioNode);
 
                 Node property = result[0];
+                if(property == null) {
+                    //the property part may be replaced by the scss interpolation expression
+                    return ;
+                }
 
                 String propertyName = property.image().toString();
                 PropertyDefinition propertyDefinition = Properties.getPropertyDefinition(propertyName);
@@ -1123,7 +1155,13 @@ public class CssCompletion implements CodeCompletionHandler {
                 //text from the node start to the embedded anchor offset (=embedded caret offset - prefix length)
 
                 Node expressionNode = NodeUtil.query(declaratioNode, "propertyValue/expression"); //NOI18N
-
+                if(expressionNode == null) {
+                    //no expression node, broken source => try just propertyValue node
+                    expressionNode = NodeUtil.query(declaratioNode, "propertyValue"); //NOI18N
+                    if(expressionNode == null) {
+                        return ;
+                    }
+                }
                 String expressionText = context.getSnapshot().getText().subSequence(
                         expressionNode.from(),
                         context.getEmbeddedAnchorOffset()).toString();
@@ -1136,6 +1174,8 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
 
                 ResolvedProperty propVal = new ResolvedProperty(context.getFileObject(), propertyDefinition, expressionText);
+                
+                
                 Collection<ValueGrammarElement> alts = propVal.getAlternatives();
                 Collection<ValueGrammarElement> filteredByPrefix = filterElements(alts, prefix);
 

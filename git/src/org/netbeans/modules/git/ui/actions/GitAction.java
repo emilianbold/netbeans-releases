@@ -48,6 +48,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.LifecycleManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
@@ -62,8 +63,16 @@ public abstract class GitAction extends NodeAction {
     // do not declare any instance data
 
     protected GitAction () {
-        setIcon(null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        this(null);
+    }
+
+    protected GitAction (String iconResource) {
+        if (iconResource == null) {
+            setIcon(null);
+            putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        } else {
+            setIcon(ImageUtilities.loadImageIcon(iconResource, true));
+        }
     }
 
     @Override

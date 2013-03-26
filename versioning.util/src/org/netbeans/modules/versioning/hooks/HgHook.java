@@ -43,8 +43,7 @@
 package org.netbeans.modules.versioning.hooks;
 
 import java.io.IOException;
-import javax.swing.JPanel;
-import org.netbeans.modules.versioning.hooks.VCSHook;
+import java.util.Map;
 
 /**
  *
@@ -66,6 +65,11 @@ public abstract class HgHook extends VCSHook<HgHookContext>{
 
     public void afterPush(HgHookContext context) {
 
+    }
+
+    public void afterCommitReplace (HgHookContext originalContext, HgHookContext newContext,
+            Map<String, String> changesetMapping) {
+        
     }
 
 }

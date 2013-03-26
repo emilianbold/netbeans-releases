@@ -181,7 +181,7 @@ public class SelectorsModule extends CssEditorModule {
                 break;
         }
 
-        return Css3Utils.filterCompletionProposals(proposals, context.getPrefix(), true);
+        return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);
     }
 
     private static List<CompletionProposal> getPseudoClasses(CompletionContext context) {

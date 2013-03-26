@@ -208,7 +208,8 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
 
         J2EE14,
         JAVAEE5,
-        JAVAEE6;
+        JAVAEE6,
+        JAVAEE7;
 
         @Override
         public String toString() {
@@ -222,6 +223,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 case JAVAEE6:
                     //Java EE 6
                     return Bundle.getStringTrimmed("org.netbeans.api.j2ee.core.Bundle", "JavaEE6Full.displayName");
+                case JAVAEE7:
+                    //Java EE 7
+                    return "Java EE 7";
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }

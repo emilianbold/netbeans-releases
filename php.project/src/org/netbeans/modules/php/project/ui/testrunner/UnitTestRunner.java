@@ -45,27 +45,17 @@ package org.netbeans.modules.php.project.ui.testrunner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
-import org.netbeans.modules.gsf.testrunner.api.OutputLineHandler;
-import org.netbeans.modules.gsf.testrunner.api.Status;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
-import org.netbeans.modules.gsf.testrunner.api.TestSuite;
-import org.netbeans.modules.gsf.testrunner.api.Testcase;
-import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
-import org.netbeans.modules.php.spi.testing.run.TestCase;
-import org.netbeans.modules.php.spi.testing.run.TestCase.Diff;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.windows.OutputWriter;
 
 /**
  * Test runner UI for PHP unit tests.
@@ -109,9 +99,9 @@ public final class UnitTestRunner {
         try {
             rerunHandler.disable();
             MANAGER.testStarted(testSession);
-            org.netbeans.modules.php.spi.testing.run.TestSession session = runInternal();
+            TestSessionImpl session = runInternal();
             if (session != null) {
-                handleCodeCoverage(session.getCoverage());
+                handleCodeCoverage(session.getCoverage(), session.isCoverageSet());
             }
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -121,75 +111,16 @@ public final class UnitTestRunner {
         }
     }
 
-    private org.netbeans.modules.php.spi.testing.run.TestSession runInternal() {
-        org.netbeans.modules.php.spi.testing.run.TestSession session;
+    private TestSessionImpl runInternal() {
+        TestSessionImpl testSessionImpl = new TestSessionImpl(MANAGER, testSession);
         try {
-            session = testingProvider.runTests(project.getPhpModule(), info);
+            testingProvider.runTests(project.getPhpModule(), info, testSessionImpl);
         } catch (TestRunException exc) {
             LOGGER.log(Level.INFO, null, exc);
             MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_PerhapsError"), true);
             return null;
         }
-        if (session == null) {
-            // some error occured
-            return null;
-        }
-
-        org.netbeans.modules.php.spi.testing.run.OutputLineHandler outputLineHandler = session.getOutputLineHandler();
-        if (outputLineHandler != null) {
-            testSession.setOutputLineHandler(map(outputLineHandler));
-        }
-
-        String initMessage = session.getInitMessage();
-        if (initMessage != null) {
-            MANAGER.displayOutput(testSession, initMessage, false);
-            MANAGER.displayOutput(testSession, "", false); // NOI18N
-        }
-
-        for (org.netbeans.modules.php.spi.testing.run.TestSuite suite : session.getTestSuites()) {
-            MANAGER.displaySuiteRunning(testSession, suite.getName());
-
-            TestSuite testSuite = new TestSuite(suite.getName());
-            testSession.addSuite(testSuite);
-
-            for (TestCase kase : suite.getTestCases()) {
-                Testcase testCase = new Testcase(kase.getName(), kase.getType(), testSession);
-                testCase.setClassName(getClassName(kase, suite));
-                testCase.setLocation(getLocation(kase, suite));
-                testCase.setTimeMillis(kase.getTime());
-                testCase.setStatus(map(kase.getStatus()));
-
-                String[] stacktrace = kase.getStackTrace();
-                if (stacktrace.length > 0) {
-                    boolean isError = kase.isError();
-                    Trouble trouble = new Trouble(isError);
-                    trouble.setStackTrace(stacktrace);
-
-                    Diff diff = kase.getDiff();
-                    if (diff.isValid()) {
-                        Trouble.ComparisonFailure failure = new Trouble.ComparisonFailure(diff.getExpected(), diff.getActual());
-                        trouble.setComparisonFailure(failure);
-                    }
-                    testCase.setTrouble(trouble);
-                    MANAGER.displayOutput(testSession, getClassName(kase, suite) + "::"  + kase.getName() + "()", isError); // NOI18N
-                    testSession.addOutput("<u>" + kase.getName() + ":</u>"); // NOI18N
-                    for (String s : stacktrace) {
-                        MANAGER.displayOutput(testSession, s, isError);
-                        testSession.addOutput(s.replace("<", "&lt;")); // NOI18N
-                    }
-                    MANAGER.displayOutput(testSession, "", false); // NOI18N
-                    testSession.addOutput(""); // NOI18N
-                }
-                testSession.addTestCase(testCase);
-            }
-            MANAGER.displayReport(testSession, testSession.getReport(suite.getTime()));
-        }
-
-        String finishMessage = session.getFinishMessage();
-        if (finishMessage != null) {
-            MANAGER.displayOutput(testSession, finishMessage, false);
-        }
-        return session;
+        return testSessionImpl;
     }
 
     @NbBundle.Messages("UnitTestRunner.error.noProviders=No PHP testing provider found, install one via Plugins (e.g. PHPUnit).")
@@ -202,12 +133,15 @@ public final class UnitTestRunner {
         return false;
     }
 
-    private void handleCodeCoverage(Coverage coverage) {
+    private void handleCodeCoverage(Coverage coverage, boolean coverageSet) {
         if (!coverageProvider.isEnabled()) {
             return;
         }
         if (!testingProvider.isCoverageSupported(project.getPhpModule())) {
             return;
+        }
+        if (!coverageSet) {
+            throw new IllegalStateException("Code coverage was not set (forgot to call TestSession.setCoverage(Coverage)?)");
         }
         if (coverage == null) {
             // some error
@@ -223,48 +157,15 @@ public final class UnitTestRunner {
     private String getOutputTitle(PhpProject project, TestRunInfo info) {
         StringBuilder sb = new StringBuilder(30);
         sb.append(project.getName());
-        String testName = info.getTestName();
-        if (testName != null) {
+        String suiteName = info.getSuiteName();
+        if (suiteName != null) {
             sb.append(":"); // NOI18N
-            sb.append(testName);
+            sb.append(suiteName);
         }
         return sb.toString();
     }
 
-    private String getClassName(TestCase testCase, org.netbeans.modules.php.spi.testing.run.TestSuite testSuite) {
-        String className = testCase.getClassName();
-        if (className != null) {
-            return className;
-        }
-        className = testSuite.getName();
-        assert className != null;
-        return className;
-    }
-
-    private String getLocation(TestCase testCase, org.netbeans.modules.php.spi.testing.run.TestSuite testSuite) {
-        Locations.Line locationWithLine = testCase.getLocation();
-        if (locationWithLine != null) {
-            return FileUtil.toFile(locationWithLine.getFile()).getAbsolutePath();
-        }
-        FileObject location = testSuite.getLocation();
-        assert location != null;
-        return FileUtil.toFile(location).getAbsolutePath();
-    }
-
     //~ Mappers
-
-    private OutputLineHandler map(final org.netbeans.modules.php.spi.testing.run.OutputLineHandler outputLineHandler) {
-        return new OutputLineHandler() {
-            @Override
-            public void handleLine(OutputWriter out, String text) {
-                outputLineHandler.handleLine(out, text);
-            }
-        };
-    }
-
-    private Status map(TestCase.Status status) {
-        return Status.valueOf(status.name());
-    }
 
     private TestSession.SessionType map(TestRunInfo.SessionType type) {
         return TestSession.SessionType.valueOf(type.name());

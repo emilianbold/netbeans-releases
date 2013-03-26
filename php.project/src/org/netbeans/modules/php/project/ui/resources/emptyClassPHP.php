@@ -2,7 +2,7 @@
 <#assign licenseFirst = "/* ">
 <#assign licensePrefix = " * ">
 <#assign licenseLast = " */">
-<#include "../Licenses/license-${project.license}.txt">
+<#include "${project.licensePath}">
 
 <#if namespace?? && namespace?length &gt; 0>
 namespace ${namespace};

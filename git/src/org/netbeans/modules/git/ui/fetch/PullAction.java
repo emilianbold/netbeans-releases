@@ -52,22 +52,32 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
+import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitClient.RebaseOperationType;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.GitPullResult;
+import org.netbeans.libs.git.GitMergeResult;
+import org.netbeans.libs.git.GitRebaseResult;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
+import org.netbeans.modules.git.ui.rebase.RebaseAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
 
@@ -103,57 +113,187 @@ public class PullAction extends SingleRepositoryAction {
     }
     
     @NbBundle.Messages({
-        "# {0} - repository name", "LBL_PullAction.progressName=Pulling - {0}"
+        "# {0} - repository name", "LBL_PullAction.progressName=Pulling - {0}",
+        "MSG_PullAction.fetching=fetching remote changes",
+        "MSG_PullAction.merging=merging remote changes",
+        "MSG_PullAction.rebasing=rebasing onto fetched head"
     })
     public Task pull (File repository, final String target, final List<String> fetchRefSpecs, final String branchToMerge, final String remoteNameToUpdate) {
-        GitProgressSupport supp = new GitProgressSupport() {
-            @Override
-            protected void perform () {
-                final File repository = getRepositoryRoot();
-                LOG.log(Level.FINE, "Pulling {0}/{1} from {2}", new Object[] { fetchRefSpecs, branchToMerge, target }); //NOI18N
-                try {
-                    final GitClient client = getClient();
-                    if (remoteNameToUpdate != null) {
-                        GitRemoteConfig config = client.getRemote(remoteNameToUpdate, getProgressMonitor());
-                        if (isCanceled()) {
-                            return;
-                        }
-                        config = FetchAction.prepareConfig(config, remoteNameToUpdate, target, fetchRefSpecs);
-                        client.setRemote(config, getProgressMonitor());
-                        if (isCanceled()) {
-                            return;
-                        }
-                    }
-                    GitUtils.runWithoutIndexing(new Callable<Void>() {
-                        @Override
-                        public Void call () throws Exception {
-                            boolean cont;
-                            MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, branchToMerge, getLogger(), getProgressMonitor());
-                            do {
-                                cont = false;
-                                try {
-                                    GitPullResult result = client.pull(target, fetchRefSpecs, branchToMerge, getProgressMonitor());
-                                    FetchUtils.log(result.getFetchResult(), getLogger());
-                                    mrp.processResult(result.getMergeResult());
-                                } catch (GitException.CheckoutConflictException ex) {
-                                    if (LOG.isLoggable(Level.FINE)) {
-                                        LOG.log(Level.FINE, "Local modifications in WT during merge: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
-                                    }
-                                    cont = mrp.resolveLocalChanges(ex.getConflicts());
-                                }
-                            } while (cont);
-                            return null;
-                        }
-                    }, repository);
-                } catch (GitException ex) {
-                    GitClientExceptionHandler.notifyException(ex, true);
-                } finally {
-                    setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
-                    Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, Git.getInstance().getSeenRoots(repository)));
-                    GitUtils.headChanged(repository);
-                }
-            }
-        };
+        GitProgressSupport supp = new GitProgressSupportImpl(fetchRefSpecs, branchToMerge, target, remoteNameToUpdate);
         return supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_PullAction_progressName(repository.getName()));
     }
+
+    private class GitProgressSupportImpl extends GitProgressSupport {
+
+        private final List<String> fetchRefSpecs;
+        private final String branchToMerge;
+        private final String target;
+        private final String remoteNameToUpdate;
+
+        public GitProgressSupportImpl (List<String> fetchRefSpecs, String branchToMerge, String target, String remoteNameToUpdate) {
+            this.fetchRefSpecs = fetchRefSpecs;
+            this.branchToMerge = branchToMerge;
+            this.target = target;
+            this.remoteNameToUpdate = remoteNameToUpdate;
+        }
+
+        @Override
+        protected void perform () {
+            final File repository = getRepositoryRoot();
+            LOG.log(Level.FINE, "Pulling {0}/{1} from {2}", new Object[] { fetchRefSpecs, branchToMerge, target }); //NOI18N
+            try {
+                final GitClient client = getClient();
+                if (remoteNameToUpdate != null) {
+                    GitRemoteConfig config = client.getRemote(remoteNameToUpdate, getProgressMonitor());
+                    if (isCanceled()) {
+                        return;
+                    }
+                    config = FetchAction.prepareConfig(config, remoteNameToUpdate, target, fetchRefSpecs);
+                    client.setRemote(config, getProgressMonitor());
+                    if (isCanceled()) {
+                        return;
+                    }
+                }
+                GitUtils.runWithoutIndexing(new Callable<Void>() {
+                    @Override
+                    public Void call () throws Exception {
+                        setProgress(Bundle.MSG_PullAction_fetching());
+                        Map<String, GitTransportUpdate> fetchResult = client.fetch(target, fetchRefSpecs, getProgressMonitor());
+                        FetchUtils.log(fetchResult, getLogger());
+                        if (isCanceled()) {
+                            return null;
+                        }
+                        Callable<Void> nextAction = getNextAction();
+                        if (nextAction != null) {
+                            nextAction.call();
+                        }
+                        return null;
+                    }
+                }, repository);
+            } catch (GitException ex) {
+                GitClientExceptionHandler.notifyException(ex, true);
+            } finally {
+                setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
+                Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, Git.getInstance().getSeenRoots(repository)));
+                GitUtils.headChanged(repository);
+            }
+        }
+        
+        private Callable<Void> getNextAction () {
+            Callable<Void> nextAction = null;
+            try {
+                GitClient client = getClient();
+                String currentHeadId = null;
+                String branchId = null;
+                Map<String, GitBranch> branches = client.getBranches(true, GitUtils.NULL_PROGRESS_MONITOR);
+                for (Map.Entry<String, GitBranch> e : branches.entrySet()) {
+                    if (e.getValue().isActive()) {
+                        currentHeadId = e.getValue().getId();
+                    }
+                    if (e.getKey().equals(branchToMerge)) {
+                        branchId = e.getValue().getId();
+                    }
+                }
+                if (branchId == null || currentHeadId == null) {
+                    nextAction = new Merge(); // just for sure
+                } else if (!branchId.equals(currentHeadId)) {
+                    GitRevisionInfo info = client.getCommonAncestor(new String[] { currentHeadId, branchId }, GitUtils.NULL_PROGRESS_MONITOR);
+                    if (info == null || !(info.getRevision().equals(branchId) || info.getRevision().equals(currentHeadId))) {
+                        // ask
+                        return askForNextAction();
+                    } else if (info.getRevision().equals(currentHeadId)) {
+                        // FF merge
+                        nextAction = new Merge();
+                    }                    
+                }
+            } catch (GitException ex) {
+                LOG.log(Level.INFO, null, ex);
+            }
+            return nextAction;
+        }
+
+        @NbBundle.Messages({
+            "# {0} - branch to merge",
+            "MSG_PullAction_mergeNeeded_text=A merge commit is needed to synchronize current branch with {0}.\n\n"
+                + "Do you want to Merge the current branch with {0} or Rebase it onto {0}?",
+            "LBL_PullAction_mergeNeeded_title=Merge Commit Needed",
+            "CTL_PullAction_mergeButton_text=&Merge",
+            "CTL_PullAction_mergeButton_TTtext=Merge the two created heads",
+            "CTL_PullAction_rebaseButton_text=&Rebase",
+            "CTL_PullAction_rebaseButton_TTtext=Rebase local changesets onto "
+            + "the tipmost branch head"
+        })
+        private Callable<Void> askForNextAction () {
+            JButton btnMerge = new JButton();
+            Mnemonics.setLocalizedText(btnMerge, Bundle.CTL_PullAction_mergeButton_text());
+            btnMerge.setToolTipText(Bundle.CTL_PullAction_mergeButton_TTtext());
+            JButton btnRebase = new JButton();
+            Mnemonics.setLocalizedText(btnRebase, Bundle.CTL_PullAction_rebaseButton_text());
+            btnRebase.setToolTipText(Bundle.CTL_PullAction_rebaseButton_TTtext());
+            Object value = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+                    Bundle.MSG_PullAction_mergeNeeded_text(branchToMerge),
+                    Bundle.LBL_PullAction_mergeNeeded_title(),
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE,
+                    new Object[] { btnMerge, btnRebase, NotifyDescriptor.CANCEL_OPTION },
+                    btnMerge));
+            if (value == btnMerge) {
+                return new Merge();
+            } else if (value == btnRebase) {
+                return new Rebase();
+            }
+            return null;
+        }
+        
+        private class Merge implements Callable<Void> {
+
+            @Override
+            public Void call () throws GitException {
+                boolean cont;
+                GitClient client = getClient();
+                File repository = getRepositoryRoot();
+                setProgress(Bundle.MSG_PullAction_merging());
+                do {
+                    MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, branchToMerge, getLogger(), getProgressMonitor());
+                    cont = false;
+                    try {
+                        GitMergeResult result = client.merge(branchToMerge, getProgressMonitor());
+                        mrp.processResult(result);
+                    } catch (GitException.CheckoutConflictException ex) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "Local modifications in WT during merge: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
+                        }
+                        cont = mrp.resolveLocalChanges(ex.getConflicts());
+                    }
+                } while (cont && !isCanceled());
+                return null;
+            }
+
+        }
+
+        private class Rebase implements Callable<Void> {
+
+            @Override
+            public Void call () throws GitException  {
+                setProgress(Bundle.MSG_PullAction_rebasing());
+                RebaseOperationType op = RebaseOperationType.BEGIN;
+                GitClient client = getClient();
+                File repository = getRepositoryRoot();
+                String origHead = client.log(GitUtils.HEAD, getProgressMonitor()).getRevision();
+                RebaseAction.RebaseResultProcessor rrp = new RebaseAction.RebaseResultProcessor(client, repository,
+                        branchToMerge, branchToMerge, origHead, getProgressSupport());
+                while (op != null && !isCanceled()) {
+                    GitRebaseResult result = client.rebase(op, branchToMerge, getProgressMonitor());
+                    rrp.processResult(result);
+                    op = rrp.getNextAction();
+                }
+                return null;
+            }
+        }
+
+        private GitProgressSupport getProgressSupport () {
+            return this;
+        }
+    }
+    
 }

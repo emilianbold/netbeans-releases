@@ -107,6 +107,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @ProjectServiceProvider(service={CustomizerProvider.class, CustomizerProviderImpl.class}, projectType="org-netbeans-modules-maven")
 public class CustomizerProviderImpl implements CustomizerProvider {
+    public static final HelpCtx HELP_CTX = new HelpCtx("maven_settings");
     
     private final Project project;
     private ModelHandle handle;
@@ -165,7 +166,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                                                 public void actionPerformed(ActionEvent ae) {
                                                     //noop
                                                 }
-                                            }, listener, new HelpCtx("maven_settings"));
+                                            }, listener, HELP_CTX);
             dialog.setTitle( TIT_Project_Properties(ProjectUtils.getInformation(project).getDisplayName()));
             dialog.setModal(true);
             dialog.setVisible(true);
@@ -395,7 +396,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 OutputStreamWriter outStr = null;
                 try {
                     Document doc;
-                    if (mapping.getActions().isEmpty()) { //#224450 don't write emtpy nbactions.xml files
+                    if (mapping.getActions().isEmpty()) { //#224450 don't write empty nbactions.xml files
                         FileObject fo = pomDir.getFileObject(path);
                         if (fo != null) {
                             fo.delete();
@@ -420,11 +421,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     outStr = new OutputStreamWriter(fo.getOutputStream(lock), encoding);
                     Format form = Format.getRawFormat().setEncoding(encoding);
                     form = form.setLineSeparator(System.getProperty("line.separator")); //NOI18N
-                    List<NetbeansActionMapping> maps = mapping.getActions();
-                    //no packaging elements make sense in nbactions files.
-                    for (NetbeansActionMapping m : maps) {
-                        m.setPackagings(null);
-                    }
                     writer.write(mapping, doc, outStr, form);
                 } catch (JDOMException exc){
                     //throw (IOException) new IOException("Cannot parse the nbactions.xml by JDOM.").initCause(exc); //NOI18N

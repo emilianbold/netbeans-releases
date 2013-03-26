@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.db.dataview.table;
 
-import java.awt.Color;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
@@ -60,12 +59,12 @@ import java.util.logging.Logger;
 import javax.swing.DefaultRowSorter;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
-import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.plaf.UIResource;
 import javax.swing.table.*;
 import org.jdesktop.swingx.JXTable;
@@ -78,7 +77,6 @@ import org.jdesktop.swingx.renderer.JRendererCheckBox;
 import org.jdesktop.swingx.renderer.StringValues;
 import org.jdesktop.swingx.table.DatePickerCellEditor;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
-import org.netbeans.modules.db.dataview.output.DataView;
 import org.netbeans.modules.db.dataview.table.celleditor.*;
 import org.netbeans.modules.db.dataview.util.BinaryToStringConverter;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
@@ -95,24 +93,30 @@ import org.openide.util.datatransfer.ExClipboard;
  * @author Ahimanikya Satapathy
  */
 public class ResultSetJXTable extends JXTableDecorator {
+    private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE."; // NOI18N
+    private static final Logger mLogger = Logger.getLogger(ResultSetJXTable.class.getName());
+    private static final int MAX_COLUMN_WIDTH = 25;
+
+    private final int multiplier;
 
     private DateFormat timeFormat = new SimpleDateFormat(TimeType.DEFAULT_FOMAT_PATTERN);
     private DateFormat dateFormat = new SimpleDateFormat(DateType.DEFAULT_FOMAT_PATTERN);
     private DateFormat timestampFormat = new SimpleDateFormat(TimestampType.DEFAULT_FORMAT_PATTERN);
 
-    private String[] columnToolTips;
-    private final int multiplier;
-    private static final String data = "WE WILL EITHER FIND A WAY, OR MAKE ONE."; // NOI18N
-    private static final Logger mLogger = Logger.getLogger(ResultSetJXTable.class.getName());
-    protected DataView dView;
-    private final List<Integer> columnWidthList;
-    private final static int MAX_COLUMN_WIDTH = 25;
+    // If structure changes, enforce relayout
+    private TableModelListener dataExchangedListener = new TableModelListener() {
+        @Override
+        public void tableChanged(TableModelEvent e) {
+            if(e.getFirstRow() == TableModelEvent.HEADER_ROW) {
+                updateHeader();
+            }
+        }
+    };
 
     @SuppressWarnings("OverridableMethodCallInConstructor")
-    public ResultSetJXTable(final DataView dataView) {
+    public ResultSetJXTable() {
+        this.setAutoCreateColumnsFromModel(false);
         this.setTransferHandler(new TableTransferHandler());
-
-        this.dView = dataView;
 
         setShowGrid(true, true);
         setGridColor(GRID_COLOR);
@@ -130,12 +134,9 @@ public class ResultSetJXTable extends JXTableDecorator {
         setDefaultCellRenderers();
         setDefaultCellEditors();
 
-        if (dView.getDataViewDBTable() != null) {
-            columnToolTips = dView.getDataViewDBTable().getColumnToolTips();
-        }
         multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 4;
-        columnWidthList = getColumnWidthList();
         putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        this.setModel(createDefaultDataModel());
     }
 
     @Override
@@ -149,6 +150,11 @@ public class ResultSetJXTable extends JXTableDecorator {
     }
 
     @Override
+    protected TableModel createDefaultDataModel() {
+        return new ResultSetTableModel(new DBColumn[0]);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <R extends TableModel> void setRowFilter(RowFilter<? super R, ? super Integer> filter) {
         if(getRowSorter() instanceof DefaultRowSorter) {
@@ -158,17 +164,25 @@ public class ResultSetJXTable extends JXTableDecorator {
         }
     }
 
-    public void createTableModel(List<Object[]> rows, final JXTableRowHeader rowHeader) {
-        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
-        assert rows != null;
-        final TableModel tempModel = createModelFrom(rows);
-        setModel(tempModel);
-        if (!columnWidthList.isEmpty()) {
-            setHeader(ResultSetJXTable.this, columnWidthList);
+    @Override
+    public void setModel(TableModel dataModel) {
+        if(! (dataModel instanceof ResultSetTableModel)) {
+            throw new IllegalArgumentException(
+                    "TableModel for ResultSetJXTable must be an "  // NOI18N
+                    + " instance of ResultSetTableModel"           // NOI18N
+            );
         }
-        if (rowHeader != null) {
-            rowHeader.setTable(ResultSetJXTable.this);
+        if(getModel() != null) {
+            getModel().removeTableModelListener(dataExchangedListener);
         }
+        super.setModel(dataModel);
+        updateHeader();
+        dataModel.addTableModelListener(dataExchangedListener);
+    }
+
+    @Override
+    public ResultSetTableModel getModel() {
+        return (ResultSetTableModel) super.getModel();
     }
 
     @SuppressWarnings("deprecation")
@@ -237,86 +251,62 @@ public class ResultSetJXTable extends JXTableDecorator {
         };
     }
 
-    private void setHeader(JTable table, List<Integer> columnWidthList) {
-        try {
-            TableColumnModel cModel = table.getColumnModel();
-            for (int i = 0; i < columnWidthList.size(); i++) {
-                TableColumn column = cModel.getColumn(i);
-                column.setPreferredWidth(columnWidthList.get(i));
+    protected void updateHeader() {
+        DefaultTableColumnModel dtcm = new DefaultTableColumnModel();
+
+        DBColumn[] columns = getModel().getColumns();
+
+        List<Integer> columnWidthList = getColumnWidthList(columns);
+
+        for (int i = 0; i < columns.length; i++) {
+            TableColumn tc = getColumnFactory().createTableColumn(i);
+            tc.setPreferredWidth(columnWidthList.get(i));
+
+            DBColumn col = columns[i];
+            StringBuilder sb = new StringBuilder();
+            sb.append("<html>");                                    //NOI18N
+            if (col.getDisplayName() != null) {
+                sb.append(DataViewUtils.escapeHTML(
+                        col.getDisplayName().toString()));
             }
-            table.getTableHeader().setColumnModel(cModel);
-            for (int i = 0, I = getRSColumnCount(); i < I; i++) {
-                DBColumn col = getDBColumn(i);
-                TableColumn tc = cModel.getColumn(i);
-                StringBuilder sb = new StringBuilder();
-                sb.append("<html>");                                    //NOI18N
-                if (col.getDisplayName() != null) {
-                    sb.append(DataViewUtils.escapeHTML(
-                            col.getDisplayName().toString()));
-                }
-                sb.append("</html>");                                  // NOI18N
-                tc.setHeaderValue(sb.toString());
-                tc.setIdentifier(col.getDisplayName() == null
-                        ? "COL_" + i : col.getDisplayName());           //NOI18N
+            sb.append("</html>");                                  // NOI18N
+            tc.setHeaderValue(sb.toString());
+            tc.setIdentifier(col.getDisplayName() == null
+                    ? "COL_" + i : col.getDisplayName());           //NOI18N
+
+            dtcm.addColumn(tc);
+        }
+
+        setColumnModel(dtcm);
+    }
+
+    private List<Integer> getColumnWidthList(DBColumn[] columns) {
+        List<Integer> result = new ArrayList<Integer>();
+
+        for (DBColumn col : columns) {
+            int fieldWidth = col.getDisplaySize();
+            int labelWidth = col.getDisplayName().length();
+            int colWidth = Math.max(fieldWidth, labelWidth) * multiplier;
+            if (colWidth < 5) {
+                colWidth = 15 * multiplier;
             }
-        } catch (Exception e) {
-            mLogger.log(Level.INFO, "Failed to set the size of the table headers" + e, e);
-        }
-    }
-
-    private List<Integer> getColumnWidthList() {
-        List<Integer> colWidthList = new ArrayList<Integer>();
-        try {
-            for (int i = 0, I = getRSColumnCount(); i < I; i++) {
-                DBColumn col = getDBColumn(i);
-                int fieldWidth = col.getDisplaySize();
-                int labelWidth = col.getDisplayName().length();
-                int colWidth = Math.max(fieldWidth, labelWidth) * multiplier;
-                if (colWidth < 5) {
-                    colWidth = 15 * multiplier;
-                }
-                if (colWidth > MAX_COLUMN_WIDTH * multiplier) {
-                    colWidth = MAX_COLUMN_WIDTH * multiplier;
-                }
-                colWidthList.add(colWidth);
+            if (colWidth > MAX_COLUMN_WIDTH * multiplier) {
+                colWidth = MAX_COLUMN_WIDTH * multiplier;
             }
-        } catch (Exception e) {
-            mLogger.log(Level.INFO, "Failed to set the size of the table headers" + e, e); // NOI18N
+            result.add(colWidth);
         }
-        return colWidthList;
-    }
-
-    private TableModel createModelFrom(List<Object[]> rows) {
-        DefaultTableModel dtm = getDefaultTableModel();
-        for (int i = 0, I = getRSColumnCount(); i < I; i++) {
-            DBColumn col = getDBColumn(i);
-            dtm.addColumn(col.getDisplayName() != null
-                    ? col.getDisplayName() : "COL_" + i);               //NOI18N
-        }
-
-        for (Object[] row : rows) {
-            dtm.addRow(row);
-        }
-        return dtm;
-    }
-
-    public DBColumn getDBColumn(int col) {
-        DBColumn dbcol = dView.getDataViewDBTable().getColumn(col);
-        return dbcol;
-    }
-
-    public int getRSColumnCount() {
-        return dView.getDataViewDBTable().getColumnCount();
-    }
-
-    protected DefaultTableModel getDefaultTableModel() {
-        return new ResultSetTableModel(this);
+        return result;
     }
 
     @Override
-    public boolean isEditable() {
-        if(dView != null && dView.isEditable()) {
-            return dView.isEditable();
+    public boolean isCellEditable(int row, int column) {
+        if (getCellEditor(row, column) instanceof AlwaysEnable) {
+            return true;
+        }
+        if(getModel() != null) {
+            int modelRow = convertRowIndexToModel(row);
+            int modelColumn = convertColumnIndexToModel(column);
+            return getModel().isCellEditable(modelRow, modelColumn);
         }
         return false;
     }
@@ -459,7 +449,12 @@ public class ResultSetJXTable extends JXTableDecorator {
             int index = columnModel.getColumnIndexAtX(p.x);
             try {
                 int realIndex = columnModel.getColumn(index).getModelIndex();
-                return columnToolTips[realIndex];
+                ResultSetTableModel tm = getModel();
+                if (tm != null) {
+                    return tm.getColumnTooltip(realIndex);
+                } else {
+                    return "";
+                }
             } catch (ArrayIndexOutOfBoundsException aio) {
                 return null;
             }

@@ -52,7 +52,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.MainMenuAction;
-import org.netbeans.modules.editor.lib.NavigationHistory;
+import org.netbeans.api.editor.NavigationHistory;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 

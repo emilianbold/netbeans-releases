@@ -268,6 +268,19 @@ implements ChangeListener {
                     exitAllowConstructor (findPrev);
                 }
             }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) return false;
+                return action.equals(obj) || obj.equals(action);
+            }
+
+            @Override
+            public int hashCode() {
+                return action.hashCode();
+            }
+            
+            
         } // end of WrapAtomicAction
         
         target.getFileSystem ().runAtomicAction(new WrapAtomicAction ());

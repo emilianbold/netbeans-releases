@@ -119,6 +119,7 @@ import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
+import org.netbeans.modules.j2ee.common.project.BaseClientSideDevelopmentSupport;
 import org.netbeans.modules.j2ee.common.project.EMGenStrategyResolverImpl;
 import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
@@ -149,7 +150,11 @@ import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
+import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
+import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
@@ -157,6 +162,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.ConfigSupport.DeployOnSaveListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -194,6 +200,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.loaders.DataObject;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -1068,7 +1075,8 @@ public final class WebProject implements Project {
         private void updateProject() {
             // Make it easier to run headless builds on the same machine at least.
             EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-            File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
+
+            File buildProperties = new File(Places.getUserDirectory(), "build.properties"); // NOI18N
             ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
 
             //remove jaxws.endorsed.dir property
@@ -2367,16 +2375,10 @@ public final class WebProject implements Project {
 
     }
 
-    private class ClientSideDevelopmentSupport implements ServerURLMappingImplementation, 
-            URLDisplayerImplementation, PageInspectorCustomizer {
-
-        private String projectRootURL = null;
-        private FileObject webDocumentRoot;
-        private boolean initialized = false;
-        private BrowserSupport browserSupport = null;
-        private boolean browserSupportInitialized = false;
+    private class ClientSideDevelopmentSupport extends BaseClientSideDevelopmentSupport {
 
         public ClientSideDevelopmentSupport() {
+            super (WebProject.this);
             evaluator().addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -2388,115 +2390,16 @@ public final class WebProject implements Project {
         }
 
         @Override
-        public void showURL(URL applicationRootURL, URL urlToOpenInBrowser, FileObject context) {
-            projectRootURL = WebUtils.urlToString(applicationRootURL);
-            if (projectRootURL != null && !projectRootURL.endsWith("/")) {
-                projectRootURL += "/";
-            }
-            BrowserSupport bs = getBrowserSupport();
-            if (bs != null) {
-                bs.load(urlToOpenInBrowser, context);
-            } else {
-                HtmlBrowser.URLDisplayer.getDefault().showURL(urlToOpenInBrowser);
-            }
+        protected String getBrowserID() {
+            return evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
         }
 
         @Override
-        public URL toServer(int projectContext, FileObject projectFile) {
-            init();
-            if (projectRootURL == null || webDocumentRoot == null) {
-                return null;
-            }
-            String relPath = FileUtil.getRelativePath(webDocumentRoot, projectFile);
-            try {
-                return new URL(projectRootURL + relPath);
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-        }
-
-        @Override
-        public FileObject fromServer(int projectContext, URL serverURL) {
-            init();
-            if (projectRootURL == null || webDocumentRoot == null) {
-                return null;
-            }
-            String u = WebUtils.urlToString(serverURL);
-            if (u.startsWith(projectRootURL)) {
-                return webDocumentRoot.getFileObject(u.substring(projectRootURL.length()));
-            }
-            return null;
-        }
-
-        boolean canReload() {
-            String selectedBrowser = evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
-            return WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
-        }
-
-        void reload(FileObject fo) {
+        public void reload(FileObject fo) {
             if (!RefreshOnSaveSupport.canRefreshOnSaveFileFilter(fo)) {
                 return;
             }
-            BrowserSupport bs = getBrowserSupport();
-            if (bs == null) {
-                return;
-            }
-            URL u = bs.getBrowserURL(fo, true);
-            if (u != null) {
-                assert bs.canReload(u) : u;
-                bs.reload(u);
-            }
-        }
-
-        private FileObject getWebRoot() {
-            WebModule webModule = WebModule.getWebModule(getProjectDirectory());
-            return webModule != null ? webModule.getDocumentBase() : null;
-        }
-
-        private void init() {
-            if (initialized) {
-                return;
-            }
-            webDocumentRoot = getWebRoot();
-            initialized = true;
-        }
-
-        @Override
-        public boolean isHighlightSelectionEnabled() {
-            return true;
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener l) {
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener l) {
-        }
-
-        private synchronized void resetBrowserSupport() {
-            if (browserSupport != null) {
-                browserSupport.close(false);
-            }
-            browserSupport = null;
-            browserSupportInitialized = false;
-        }
-
-        private synchronized BrowserSupport getBrowserSupport() {
-            if (browserSupportInitialized) {
-                return browserSupport;
-            }
-            String selectedBrowser = evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
-            WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
-            boolean integrated = WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
-            if (browser == null) {
-                browserSupport = null;
-            } else {
-                browserSupport = BrowserSupport.create(browser, !integrated);
-            }
-            browserSupportInitialized = true;
-            return browserSupport;
+            super.reload(fo);
         }
 
     }

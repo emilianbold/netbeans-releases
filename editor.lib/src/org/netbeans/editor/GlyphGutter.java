@@ -65,7 +65,6 @@ import java.beans.PropertyChangeEvent;
 import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -88,14 +87,10 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.View;
-import org.netbeans.api.editor.fold.FoldHierarchy;
-import org.netbeans.api.editor.fold.FoldHierarchyEvent;
-import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.editor.AnnotationType.CombinationMember;
 import org.netbeans.editor.Annotations.AnnotationCombination;
 import org.netbeans.modules.editor.lib.ColoringMap;
 import org.netbeans.modules.editor.lib2.view.*;
@@ -182,9 +177,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     /** Property change listener on AnnotationTypes changes */
     private PropertyChangeListener annoTypesListener;
     private PropertyChangeListener editorUIListener;
-    private GlyphGutter.GlyphGutterFoldHierarchyListener glyphGutterFoldHierarchyListener;
     private GutterMouseListener gutterMouseListener;
-    private FoldHierarchy foldHierarchy;
 
     private ColoringMap coloringMap;
     private final PropertyChangeListener coloringMapListener = new PropertyChangeListener() {
@@ -234,9 +227,6 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         init();
         update();
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        foldHierarchy = FoldHierarchy.get(eui.getComponent());
-        glyphGutterFoldHierarchyListener = new GlyphGutterFoldHierarchyListener();
-        foldHierarchy.addFoldHierarchyListener(glyphGutterFoldHierarchyListener);
         editorUIListener = new EditorUIListener();
         eui.addPropertyChangeListener(editorUIListener);
         eui.getComponent().addPropertyChangeListener(editorUIListener);
@@ -892,6 +882,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             EditorUI eui = editorUI;
             if (eui==null)
                 return;
+            eui.getComponent().requestFocus();
             // cycling button was clicked by left mouse button
             if (e.getModifiers() == InputEvent.BUTTON1_MASK) {
                 if (isMouseOverCycleButton(e)) {
@@ -1096,24 +1087,6 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         
     }
 
-    class GlyphGutterFoldHierarchyListener implements FoldHierarchyListener, Runnable {
-    
-        public GlyphGutterFoldHierarchyListener(){
-        }
-        
-        public @Override void foldHierarchyChanged(FoldHierarchyEvent evt) {
-            // Do not react to fold changes since fold expanding/collapsing should trigger
-            // corresponding view hierarchy changes covered by view hierarchy listener.
-
-//            SwingUtilities.invokeLater(this);
-        }
-
-        @Override
-        public void run() {
-            repaint();
-        }
-    }
-    
     /** Listening to EditorUI to properly deinstall attached listeners */
     class EditorUIListener implements PropertyChangeListener{
         public @Override void propertyChange (PropertyChangeEvent evt) {
@@ -1126,7 +1099,6 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                             ((JTextComponent) evt.getOldValue()).removePropertyChangeListener(this);
                         }
                         annos.removeAnnotationsListener(GlyphGutter.this);
-                        foldHierarchy.removeFoldHierarchyListener(glyphGutterFoldHierarchyListener);
                         if (gutterMouseListener!=null){
                             removeMouseListener(gutterMouseListener);
                             removeMouseMotionListener(gutterMouseListener);
@@ -1134,8 +1106,6 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                         if (annoTypesListener !=null){
                             AnnotationTypes.getTypes().removePropertyChangeListener(annoTypesListener);
                         }
-                        foldHierarchy.removeFoldHierarchyListener(glyphGutterFoldHierarchyListener);
-                        foldHierarchy = null;
                         editorUI = null;
                         annos = null;
                     }

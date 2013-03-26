@@ -183,11 +183,22 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     private Dimension setDesignerSizeImpl(Dimension value, boolean persistent) {
-        Dimension old = designerSize;
+        final Dimension old = designerSize;
         designerSize = value;
         setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, persistent ? value : null);
         if (getNodeReference() != null) { // propagate the change to node
-            getNodeReference().firePropertyChangeHelper(FormDesigner.PROP_DESIGNER_SIZE, old, value);
+            if (!FormLAF.inLAFBlock()) {
+                getNodeReference().firePropertyChangeHelper(FormDesigner.PROP_DESIGNER_SIZE, old, value);
+            } else { // firing the change may lead to UI update out of GUI builder, we don't want that in LAF block
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (getNodeReference() != null) {
+                            getNodeReference().firePropertyChangeHelper(FormDesigner.PROP_DESIGNER_SIZE, old, designerSize);
+                        }
+                    }
+                });
+            }
         }
         return old;
     }
@@ -224,6 +235,11 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
     public void setGenerateCenter(boolean value) {
         boolean old = generateCenter;
+        if (isInternalFrame()) {
+            // bug 226740 - centering on screen does not make sense for JInternalFrame,
+            // but old forms may have this set (we must keep the property)
+            value = false;
+        }
         generateCenter = value;
         getFormModel().fireSyntheticPropertyChanged(this, PROP_GENERATE_CENTER,
                                         old ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
@@ -234,8 +250,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public int getFormSizePolicy() {
-        return java.awt.Window.class.isAssignableFrom(getBeanClass())
-                   || javax.swing.JInternalFrame.class.isAssignableFrom(getBeanClass())
+        return java.awt.Window.class.isAssignableFrom(getBeanClass()) || isInternalFrame()
                ? formSizePolicy : GEN_NOTHING;
     }
 
@@ -442,7 +457,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
             @Override
             public boolean canWrite() {
-                return !isReadOnly() && getFormSizePolicy() != GEN_NOTHING;
+                return !isReadOnly() && getFormSizePolicy() != GEN_NOTHING && !isInternalFrame();
             }
         };
 
@@ -475,9 +490,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
         propList.add(JavaCodeGenerator.createBeanClassNameProperty(this));
 
-        if (java.awt.Window.class.isAssignableFrom(getBeanClass())
-            || javax.swing.JInternalFrame.class.isAssignableFrom(getBeanClass()))
-        {            
+        if (java.awt.Window.class.isAssignableFrom(getBeanClass()) || isInternalFrame()) {            
             propList.add(sizeProperty);
             propList.add(positionProperty);
             propList.add(policyProperty);
@@ -485,7 +498,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             propList.add(genSizeProperty);
             propList.add(genCenterProperty);
         }
-                
+
         propList.add(designerSizeProperty);
 
         Node.Property[] props = new Node.Property[propList.size()];
@@ -542,6 +555,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 });
             }
         }
+    }
+
+    private boolean isInternalFrame() {
+        return javax.swing.JInternalFrame.class.isAssignableFrom(getBeanClass());
     }
 
     // ------------------------------------------------------------------------------------------

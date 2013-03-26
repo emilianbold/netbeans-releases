@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.project.uiapi;
 
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,6 +53,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -68,6 +70,7 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
     
     private static final String ATTR_PROJECT = "project"; // NOI18N
     private static final String ATTR_LICENSE = "license"; // NOI18N
+    private static final String ATTR_LICENSE_PATH = "licensePath"; // NOI18N
     private static final String ATTR_ENCODING = "encoding"; // NOI18N
     
     public Map<String, ? extends Object> attributesFor(
@@ -94,11 +97,9 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
         Object prjAttrObj = m != null? m.get(ATTR_PROJECT): null;
         if (prjAttrObj instanceof Map) {
             Map<String, Object> prjAttrs = NbCollections.checkedMapByFilter((Map) prjAttrObj, String.class, Object.class, false);
-            if (prjAttrs.get(ATTR_LICENSE) == null || prjAttrs.get(ATTR_ENCODING) == null) {
-                Map<String, Object> newPrjAttrs = new HashMap<String, Object>(prjAttrs);
-                m.put(ATTR_PROJECT, newPrjAttrs);
-                ensureProjectAttrs(newPrjAttrs, parent);
-            }
+            Map<String, Object> newPrjAttrs = new HashMap<String, Object>(prjAttrs);
+            m.put(ATTR_PROJECT, newPrjAttrs);
+            ensureProjectAttrs(newPrjAttrs, parent);
             return m;
         }
         if (prjAttrObj != null) {
@@ -118,6 +119,26 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
         if (map.get(ATTR_LICENSE) == null) {
             map.put(ATTR_LICENSE, "default"); // NOI18N
         }
+        if (map.get(ATTR_LICENSE_PATH) == null) {
+            map.put(ATTR_LICENSE_PATH, "Templates/Licenses/license-" + map.get(ATTR_LICENSE).toString() + ".txt"); // NOI18N
+        }
+        String url = map.get(ATTR_LICENSE_PATH).toString();
+        if (FileUtil.getConfigFile(url) == null) { //now we have filesystem based template for sure, convert to file:///path to have freemarker process it
+            try {
+                URI uri = URI.create(url);
+                //freemarker.cache.TemplateCache.normalizeName appears to 
+                // check for :// to skip processing the path
+                map.put(ATTR_LICENSE_PATH, new URI("file", "", uri.getPath(), null).toString());
+            } catch (Exception malformedURLException) {
+            }
+        } else {
+            // now we have to assume we are dealing with the teplate from system filesystem.
+            // in order to get through the freemarker, the path needs to "absolute" in freemarker terms - http://freemarker.sourceforge.net/docs/ref_directive_include.html
+            // relative would mean relative to the template and we cannot be sure what the path from template to license template is..
+            // it used to be, ../Licenses/ or ../../Licenses but can be anything similar, just based on where the template resides.
+            map.put(ATTR_LICENSE_PATH, "/" + url);
+            //appears to cover both the new and old default value of the include path
+        }  
         if (map.get(ATTR_ENCODING) == null) {
             Charset charset = FileEncodingQuery.getEncoding(parent);
             String encoding = charset != null ? charset.name() : "UTF-8"; // NOI18N

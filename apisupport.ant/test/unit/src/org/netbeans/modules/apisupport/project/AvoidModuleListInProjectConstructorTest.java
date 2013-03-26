@@ -64,15 +64,15 @@ public class AvoidModuleListInProjectConstructorTest extends TestBase {
 
     // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testNetBeansOrgModules() throws Exception {
-        assertEquals("no scans of netbeans.org initially", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/ide/org-apache-tools-ant-module.jar")).size());
+        assertEquals("no scans of netbeans.org initially", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/extide/org-apache-tools-ant-module.jar")).size());
         FileObject fo = nbRoot().getFileObject("o.apache.tools.ant.module");
         Project p = ProjectManager.getDefault().findProject(fo);
         assertNotNull(p);
-        assertEquals("still no scans", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-apache-tools-ant-module.jar")).size());
+        assertEquals("still no scans", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + "extide" + "/modules/org-apache-tools-ant-module.jar")).size());
         assertEquals("org.apache.tools.ant.module", ProjectUtils.getInformation(p).getName());
-        assertEquals("still no scans", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-apache-tools-ant-module.jar")).size());
+        assertEquals("still no scans", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + "extide" + "/modules/org-apache-tools-ant-module.jar")).size());
         ClassPath.getClassPath(fo.getFileObject("src"), ClassPath.COMPILE);
-        assertEquals("now have scanned something", 1, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-apache-tools-ant-module.jar")).size());
+        assertEquals("now have scanned something", 1, ModuleList.getKnownEntries(file("nbbuild/netbeans/" + "extide" + "/modules/org-apache-tools-ant-module.jar")).size());
     }
     
 }

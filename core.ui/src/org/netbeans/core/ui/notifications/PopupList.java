@@ -106,7 +106,10 @@ public class PopupList {
         final JPanel panel = new JPanel( new GridBagLayout());
         final JScrollPane scroll = new JScrollPane(panel);
         panel.setOpaque(true);
-        panel.setBackground(Color.white);
+        Color panelBackground = UIManager.getColor("nb.core.ui.popupList.background"); //NOI18N
+        if( null == panelBackground )
+            panelBackground = UIManager.getColor("Tree.background"); //NOI18N
+        panel.setBackground( panelBackground );
         for( NotificationImpl n : notifications ) {
             final JPanel row = new JPanel(new GridBagLayout());
             row.setOpaque(false);

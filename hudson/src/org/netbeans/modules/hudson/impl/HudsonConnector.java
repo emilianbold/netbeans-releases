@@ -63,6 +63,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
+import org.netbeans.modules.hudson.api.HudsonFolder;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
@@ -119,6 +120,7 @@ public class HudsonConnector extends BuilderConnector {
         Document docInstance = getDocument(instanceUrl + XML_API_URL + (canUseTree(authentication) ?
                 "?tree=primaryView[name],views[name,url,jobs[name]]," +
                 "jobs[name,url,color,displayName,buildable,inQueue," +
+                "primaryView," + // #215135: marker for folders
                 "lastBuild[number],lastFailedBuild[number],lastStableBuild[number],lastSuccessfulBuild[number],lastCompletedBuild[number]," +
                 "modules[name,displayName,url,color]]," +
                 "securedJobs[name,url]" : // HUDSON-3924
@@ -131,14 +133,35 @@ public class HudsonConnector extends BuilderConnector {
         if (null == docInstance) {
             return new InstanceData(
                     Collections.<JobData>emptyList(),
-                    Collections.<ViewData>emptyList());
+                    Collections.<ViewData>emptyList(),
+                    Collections.<FolderData>emptyList());
         }
         // Clear cache
         cache.clear();
         // Parse jobs and return them
-        Collection<ViewData> viewsData = getViewData(docInstance);
-        Collection<JobData> jobsData = getJobsData(docInstance, viewsData);
-        return new InstanceData(jobsData, viewsData);
+        Collection<ViewData> viewsData = getViewData(docInstance, instanceUrl);
+        Collection<FolderData> foldersData = new ArrayList<FolderData>();
+        Collection<JobData> jobsData = getJobsData(docInstance, instanceUrl, viewsData, foldersData, null);
+        return new InstanceData(jobsData, viewsData, foldersData);
+    }
+
+    @Override public InstanceData getInstanceData(HudsonFolder parentFolder, boolean authentication) {
+        Document docInstance = getDocument(parentFolder.getUrl() + XML_API_URL + "?tree=jobs[name,url,color,displayName,buildable,inQueue,primaryView," +
+                "lastBuild[number],lastFailedBuild[number],lastStableBuild[number],lastSuccessfulBuild[number],lastCompletedBuild[number]," +
+                "modules[name,displayName,url,color]]," +
+                "securedJobs[name,url]", authentication); // NOI18N
+
+        if (null == docInstance) {
+            return new InstanceData(
+                    Collections.<JobData>emptyList(),
+                    Collections.<ViewData>emptyList(),
+                    Collections.<FolderData>emptyList());
+        }
+        // Clear cache
+        cache.clear();
+        Collection<FolderData> foldersData = new ArrayList<FolderData>();
+        Collection<JobData> jobsData = getJobsData(docInstance, parentFolder.getUrl(), Collections.<ViewData>emptySet(), foldersData, parentFolder);
+        return new InstanceData(jobsData, Collections.<ViewData>emptySet(), foldersData);
     }
 
     @Override
@@ -235,7 +258,7 @@ public class HudsonConnector extends BuilderConnector {
         
     }
     
-    private Collection<ViewData> getViewData(Document doc) {
+    private Collection<ViewData> getViewData(Document doc, String baseUrl) {
         String primaryViewName = null;
         Element primaryViewEl = XMLUtil.findElement(doc.getDocumentElement(), "primaryView", null); // NOI18N
         if (primaryViewEl != null) {
@@ -267,7 +290,7 @@ public class HudsonConnector extends BuilderConnector {
                     name = o.getFirstChild().getTextContent();
                     isPrimary = name.equals(primaryViewName);
                 } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                    url = normalizeUrl(o.getFirstChild().getTextContent(), isPrimary ? "" : "view/[^/]+/"); // NOI18N
+                    url = normalizeUrl(baseUrl, o.getFirstChild().getTextContent(), isPrimary ? "" : "view/[^/]+/"); // NOI18N
                 }
             }
             
@@ -300,8 +323,9 @@ public class HudsonConnector extends BuilderConnector {
         return views;
     }
     
-    private Collection<JobData> getJobsData(Document doc,
-            Collection<ViewData> viewsData) {
+    private Collection<JobData> getJobsData(Document doc, String baseUrl,
+            Collection<ViewData> viewsData, Collection<FolderData> foldersData,
+            HudsonFolder parentFolder) {
         Collection<JobData> jobs = new ArrayList<JobData>();
         
         NodeList nodes = doc.getDocumentElement().getChildNodes();
@@ -314,6 +338,8 @@ public class HudsonConnector extends BuilderConnector {
             
             JobData jd = new JobData();
             jd.setSecured(secured);
+            FolderData fd = new FolderData();
+            boolean isFolder = false;
             
             NodeList jobDetails = n.getChildNodes();
             for (int k = 0; k < jobDetails.getLength(); k++) {
@@ -323,9 +349,17 @@ public class HudsonConnector extends BuilderConnector {
                 }
                 String nodeName = d.getNodeName();
                 if (nodeName.equals(XML_API_NAME_ELEMENT)) {
-                    jd.setJobName(d.getFirstChild().getTextContent());
+                    String folder = parentFolder == null
+                            ? "" : parentFolder.getName() + "/";        //NOI18N
+                    String name = folder + d.getFirstChild().getTextContent();
+                    jd.setJobName(name);
+                    fd.setName(name);
                 } else if (nodeName.equals(XML_API_URL_ELEMENT)) {
-                    jd.setJobUrl(normalizeUrl(d.getFirstChild().getTextContent(), "job/[^/]+/")); // NOI18N
+                    String u = normalizeUrl(baseUrl, d.getFirstChild().getTextContent(), "job/[^/]+/"); // NOI18N
+                    jd.setJobUrl(u);
+                    fd.setUrl(u);
+                } else if (nodeName.equals("primaryView")) { // NOI18N
+                    isFolder = true;
                 } else if (nodeName.equals(XML_API_COLOR_ELEMENT)) {
                     jd.setColor(Color.find(d.getFirstChild().getTextContent().trim()));
                 } else if (nodeName.equals(XML_API_DISPLAY_NAME_ELEMENT)) {
@@ -362,7 +396,7 @@ public class HudsonConnector extends BuilderConnector {
                             } else if (nodeName2.equals("displayName")) { // NOI18N
                                 displayName = text;
                             } else if (nodeName2.equals("url")) { // NOI18N
-                                url = normalizeUrl(text, "job/[^/]+/[^/]+/"); // NOI18N
+                                url = normalizeUrl(baseUrl, text, "job/[^/]+/[^/]+/"); // NOI18N
                             } else if (nodeName2.equals("color")) { // NOI18N
                                 color = Color.find(text);
                             } else {
@@ -391,7 +425,11 @@ public class HudsonConnector extends BuilderConnector {
                     jd.addView(v.getName());
                 }
             }
-            jobs.add(jd);
+            if (isFolder) {
+                foldersData.add(fd);
+            } else {
+                jobs.add(jd);
+            }
         }
         return jobs;
     }
@@ -403,7 +441,7 @@ public class HudsonConnector extends BuilderConnector {
      * @return analogous URL constructed from instance root, e.g. {@code https://my.facade/hudson/job/My%20Job/}
      * @see "#165735"
      */
-    private String normalizeUrl(String suggested, String relativePattern) {
+    private static String normalizeUrl(String instanceUrl, String suggested, String relativePattern) {
         Pattern tailPattern;
         synchronized (tailPatterns) {
             tailPattern = tailPatterns.get(relativePattern);
@@ -620,4 +658,5 @@ public class HudsonConnector extends BuilderConnector {
         }
         return items;
     }
+
 }

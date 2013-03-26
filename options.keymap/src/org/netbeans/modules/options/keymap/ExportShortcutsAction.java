@@ -105,6 +105,7 @@ public class ExportShortcutsAction {
             Map<String, Map<String, ShortcutAction>> allKeyMaps = 
                     new HashMap<String, Map<String, ShortcutAction>> ();
             LayersBridge layersBridge = new LayersBridge ();
+            // no synchronization needed; the bridge is a new instance
             layersBridge.getActions ();
             List keyMaps = layersBridge.getProfiles ();
             Iterator it3 = keyMaps.iterator ();
@@ -135,9 +136,15 @@ public class ExportShortcutsAction {
                 }
             }
             if (editorBridge != null) {
-                Map<ShortcutAction, Set<String>> actionToShortcuts = 
-                        editorBridge.getKeymap(editorBridge.getCurrentProfile ());
-                generateEditorXML (actionToShortcuts);
+                final KeymapManager feb = editorBridge;
+                // FIXME - synchronize
+                final Object[] o = new Object[1];
+                KeymapModel.waitFinished(new Runnable() { 
+                    public void run() {
+                        o[0] = feb.getKeymap(feb.getCurrentProfile ());
+                    }
+                });
+                generateEditorXML ((Map<ShortcutAction, Set<String>>)o[0]);
             }
         }
     };

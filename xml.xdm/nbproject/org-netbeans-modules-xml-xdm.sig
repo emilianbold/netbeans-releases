@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.19.1
+#Version 1.23.1
 
 CLSS public abstract interface java.beans.PropertyChangeListener
 intf java.util.EventListener
@@ -143,8 +143,8 @@ meth public {java.util.HashMap%1} get(java.lang.Object)
 meth public {java.util.HashMap%1} put({java.util.HashMap%0},{java.util.HashMap%1})
 meth public {java.util.HashMap%1} remove(java.lang.Object)
 supr java.util.AbstractMap<{java.util.HashMap%0},{java.util.HashMap%1}>
-hfds DEFAULT_INITIAL_CAPACITY,DEFAULT_LOAD_FACTOR,MAXIMUM_CAPACITY,entrySet,frontCache,frontCacheEnabled,loadFactor,modCount,serialVersionUID,size,table,threshold
-hcls Entry,EntryIterator,EntrySet,FrontCache,HashIterator,KeyIterator,KeySet,ValueIterator,Values
+hfds DEFAULT_INITIAL_CAPACITY,DEFAULT_LOAD_FACTOR,MAXIMUM_CAPACITY,entrySet,loadFactor,modCount,serialVersionUID,size,table,threshold
+hcls Entry,EntryIterator,EntrySet,HashIterator,KeyIterator,KeySet,ValueIterator,Values
 
 CLSS public java.util.HashSet<%0 extends java.lang.Object>
 cons public init()
@@ -265,6 +265,11 @@ meth public void setDirty()
 meth public void unsetDirty()
 supr org.netbeans.modules.xml.xam.ModelAccess
 hfds dirtyTimeMillis
+
+CLSS public abstract org.netbeans.modules.xml.xam.dom.DocumentModelAccess2
+cons public init()
+meth public abstract int findEndPosition(org.w3c.dom.Node)
+supr org.netbeans.modules.xml.xam.dom.DocumentModelAccess
 
 CLSS public abstract interface org.netbeans.modules.xml.xam.dom.ElementIdentity
 meth public abstract boolean compareElement(org.w3c.dom.Element,org.w3c.dom.Element,org.w3c.dom.Document,org.w3c.dom.Document)
@@ -930,6 +935,18 @@ meth public void visit(org.netbeans.modules.xml.xdm.nodes.Element)
 meth public void visit(org.netbeans.modules.xml.xdm.nodes.Text)
 supr java.lang.Object
 
+CLSS public org.netbeans.modules.xml.xdm.visitor.EndPositionFinderVisitor
+cons public init()
+intf org.netbeans.modules.xml.xdm.visitor.XMLNodeVisitor
+meth public int findPosition(org.netbeans.modules.xml.xdm.nodes.Node,org.netbeans.modules.xml.xdm.nodes.Node)
+meth public void reset()
+meth public void visit(org.netbeans.modules.xml.xdm.nodes.Attribute)
+meth public void visit(org.netbeans.modules.xml.xdm.nodes.Document)
+meth public void visit(org.netbeans.modules.xml.xdm.nodes.Element)
+meth public void visit(org.netbeans.modules.xml.xdm.nodes.Text)
+supr java.lang.Object
+hfds found,node,position
+
 CLSS public org.netbeans.modules.xml.xdm.visitor.FindNamespaceVisitor
 cons public init(org.netbeans.modules.xml.xdm.nodes.Document)
 meth protected void visitNode(org.netbeans.modules.xml.xdm.nodes.Node)
@@ -1075,6 +1092,7 @@ cons public init(org.netbeans.modules.xml.xam.dom.AbstractDocumentModel)
 innr public AttributeKeySet
 innr public AttributeMap
 meth public boolean areSameNodes(org.w3c.dom.Node,org.w3c.dom.Node)
+meth public int findEndPosition(org.w3c.dom.Node)
 meth public int findPosition(org.w3c.dom.Node)
 meth public int getElementIndexOf(org.w3c.dom.Node,org.w3c.dom.Element)
 meth public java.lang.String getCurrentDocumentText()
@@ -1118,7 +1136,7 @@ meth public void setIndentation(java.lang.String)
 meth public void setPrefix(org.w3c.dom.Element,java.lang.String)
 meth public void setText(org.w3c.dom.Element,java.lang.String,org.netbeans.modules.xml.xam.dom.DocumentModelAccess$NodeUpdater)
 meth public void setXmlFragment(org.w3c.dom.Element,java.lang.String,org.netbeans.modules.xml.xam.dom.DocumentModelAccess$NodeUpdater) throws java.io.IOException
-supr org.netbeans.modules.xml.xam.dom.DocumentModelAccess
+supr org.netbeans.modules.xml.xam.dom.DocumentModelAccess2
 hfds model,xdmListener,xdmModel
 
 CLSS public org.netbeans.modules.xml.xdm.xam.XDMAccess$AttributeKeySet<%0 extends java.lang.Object>

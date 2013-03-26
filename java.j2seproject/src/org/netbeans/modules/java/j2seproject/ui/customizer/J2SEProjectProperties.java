@@ -45,8 +45,11 @@
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
 import java.awt.event.ActionListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -147,6 +150,7 @@ public class J2SEProjectProperties {
     public static final String JAR_COMPRESS = "jar.compress"; // NOI18N
     public static final String JAVAC_SOURCE = "javac.source"; // NOI18N
     public static final String JAVAC_TARGET = "javac.target"; // NOI18N
+    public static final String JAVAC_PROFILE = "javac.profile"; // NOI18N
     public static final String JAVAC_DEBUG = "javac.debug"; // NOI18N
     public static final String JAVAC_DEPRECATION = "javac.deprecation"; // NOI18N
     public static final String JAVAC_COMPILER_ARG = "javac.compilerargs";    //NOI18N
@@ -176,6 +180,9 @@ public class J2SEProjectProperties {
     public static final String APPLICATION_HOMEPAGE ="application.homepage"; // NOI18N
     public static final String APPLICATION_SPLASH ="application.splash"; // NOI18N
     
+    public static final String LICENSE_NAME = "project.license";
+    public static final String LICENSE_PATH = "project.licensePath";
+    
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
     // Main build.xml location
@@ -195,6 +202,7 @@ public class J2SEProjectProperties {
     DefaultTableModel SOURCE_ROOTS_MODEL;
     DefaultTableModel TEST_ROOTS_MODEL;
     ComboBoxModel JAVAC_SOURCE_MODEL;
+    ComboBoxModel JAVAC_PROFILE_MODEL;
      
     // CustomizerLibraries
     DefaultListModel JAVAC_CLASSPATH_MODEL;
@@ -207,6 +215,7 @@ public class J2SEProjectProperties {
     ListCellRenderer CLASS_PATH_LIST_RENDERER;
     ListCellRenderer PLATFORM_LIST_RENDERER;
     ListCellRenderer JAVAC_SOURCE_RENDERER;
+    ListCellRenderer JAVAC_PROFILE_RENDERER;
     Document SHARED_LIBRARIES_MODEL;
     
     // CustomizerCompile
@@ -254,6 +263,11 @@ public class J2SEProjectProperties {
     Document APPLICATION_HOMEPAGE_DOC;
     Document APPLICATION_SPLASH_DOC;
     
+    //customizer license headers
+    String LICENSE_NAME_VALUE;
+    String LICENSE_PATH_VALUE;
+    String CHANGED_LICENSE_PATH_CONTENT;
+    
     // CustomizerRunTest
 
     // Private fields ----------------------------------------------------------    
@@ -291,6 +305,12 @@ public class J2SEProjectProperties {
         
         init(); // Load known properties        
     }
+    
+
+    public PropertyEvaluator getEvaluator() {
+        return evaluator;
+    }
+    
 
     /** Initializes the visual models 
      */
@@ -325,6 +345,9 @@ public class J2SEProjectProperties {
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET));
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
+        JAVAC_PROFILE_MODEL = PlatformUiSupport.createProfileComboBoxModel(JAVAC_SOURCE_MODEL, evaluator.getProperty(JAVAC_PROFILE), null);
+        JAVAC_PROFILE_RENDERER = PlatformUiSupport.createProfileListCellRenderer();
+
         SHARED_LIBRARIES_MODEL = new PlainDocument(); 
         try {
             SHARED_LIBRARIES_MODEL.insertString(0, project.getAntProjectHelper().getLibrariesLocation(), null);
@@ -428,6 +451,12 @@ public class J2SEProjectProperties {
         APPLICATION_HOMEPAGE_DOC = projectGroup.createStringDocument(evaluator, APPLICATION_HOMEPAGE);
         APPLICATION_SPLASH_DOC = projectGroup.createStringDocument(evaluator, APPLICATION_SPLASH);
         
+        //oh well we want unresolved value, force it.
+        LICENSE_PATH_VALUE = projectProperties.get(LICENSE_PATH);
+        LICENSE_NAME_VALUE = projectProperties.get(LICENSE_NAME);
+        
+        CHANGED_LICENSE_PATH_CONTENT = null;
+        
         if(!isFXProject()) {
             // CustomizerRun
             RUN_CONFIGS = readRunConfigs();
@@ -439,6 +468,24 @@ public class J2SEProjectProperties {
     public void save() {
         try {                        
             saveLibrariesLocation();
+            if (CHANGED_LICENSE_PATH_CONTENT != null) {
+                String path = LICENSE_PATH_VALUE;
+                assert path != null; //path needs to exist once we have content?
+                String evaluated = getEvaluator().evaluate(path);
+                File file = project.getAntProjectHelper().resolveFile(evaluated);
+                FileObject fo;
+                if (!file.exists()) {
+                    fo = FileUtil.createData(file);
+                } else {
+                    fo = FileUtil.toFileObject(file);
+                }
+                OutputStream out = fo.getOutputStream();
+                try {
+                    FileUtil.copy(new ByteArrayInputStream(CHANGED_LICENSE_PATH_CONTENT.getBytes()), out);
+                } finally {
+                    out.close();
+                }
+            }
             // Store properties
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
@@ -540,6 +587,17 @@ public class J2SEProjectProperties {
         projectGroup.store( projectProperties );        
         privateGroup.store( privateProperties );
         
+        if (LICENSE_PATH_VALUE != null) {
+            projectProperties.setProperty(LICENSE_PATH, LICENSE_PATH_VALUE);
+        } else {
+            projectProperties.remove(LICENSE_PATH);
+        }
+        if (LICENSE_NAME_VALUE != null) {
+            projectProperties.setProperty(LICENSE_NAME, LICENSE_NAME_VALUE);
+        } else {
+            projectProperties.remove(LICENSE_NAME);
+        }
+        
         final boolean isFXProject = isFXProject();
         if(!isFXProject) {
             storeRunConfigs(RUN_CONFIGS, projectProperties, privateProperties);
@@ -578,6 +636,7 @@ public class J2SEProjectProperties {
                 J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,
                 PLATFORM_MODEL.getSelectedItem(),
                 JAVAC_SOURCE_MODEL.getSelectedItem(),
+                JAVAC_PROFILE_MODEL.getSelectedItem(),
                 !isFXProject);
                                 
         // Handle other special cases
@@ -621,7 +680,7 @@ public class J2SEProjectProperties {
         } else {
             projectProperties.remove(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS);
         }
-
+        
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );

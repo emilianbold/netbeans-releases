@@ -296,7 +296,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
            return result; 
         }
         visited.add(fqn);
-        Collection<? extends Type> offsetAssignments = Collections.EMPTY_LIST;
+        Collection<? extends TypeUsage> offsetAssignments = Collections.EMPTY_LIST;
         Map.Entry<Integer, Collection<TypeUsage>> found = ((JsObjectImpl)jsObject).assignments.floorEntry(offset);
         if (found != null) {
             offsetAssignments = found.getValue();
@@ -304,18 +304,17 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         if (offsetAssignments.isEmpty() && !jsObject.getProperties().isEmpty()) {
             result.add(new TypeUsageImpl(ModelUtils.createFQN(jsObject), jsObject.getOffset(), true));
         } else {
-            for (Type assignment : offsetAssignments) {
-                TypeUsageImpl assign = (TypeUsageImpl)assignment;
-                if (!visited.contains(assign.getType())) {
-                    if(assign.isResolved()) {
-                        result.add(assign);
+            for (TypeUsage assignment : offsetAssignments) {
+                if (!visited.contains(assignment.getType())) {
+                    if(assignment.isResolved()) {
+                        result.add(assignment);
                     } else {
                         DeclarationScope scope = ModelUtils.getDeclarationScope(jsObject);
-                        JsObject object = ModelUtils.getJsObjectByName(scope, assign.getType());
+                        JsObject object = ModelUtils.getJsObjectByName(scope, assignment.getType());
                         if(object != null) {
                             Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, found != null ? found.getKey() : -1, visited);
                             if(resolvedFromObject.isEmpty()) {
-                                result.add(new TypeUsageImpl(ModelUtils.createFQN(object), assign.getOffset(), true));
+                                result.add(new TypeUsageImpl(ModelUtils.createFQN(object), assignment.getOffset(), true));
                             } else {
                                 result.addAll(resolvedFromObject);
                             }
@@ -337,7 +336,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             JsObject global = ModelUtils.getGlobalObject(parent);
             for (TypeUsage type : unresolved) {
                 Collection<TypeUsage> resolvedHere = new ArrayList<TypeUsage>();
-                if(!((TypeUsageImpl)type).isResolved()){
+                if(!type.isResolved()){
                     resolvedHere.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
                 } else {
                     resolvedHere.add(type);

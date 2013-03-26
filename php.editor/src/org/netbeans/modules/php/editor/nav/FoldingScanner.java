@@ -47,6 +47,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.fold.FoldTemplate;
+import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
@@ -77,17 +79,45 @@ import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
+import org.openide.util.NbBundle;
+import static org.netbeans.modules.php.editor.nav.Bundle.*;
+import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public final class FoldingScanner {
 
-    private static final String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
-    private static final String FOLD_CLASS = "inner-classes"; //NOI18N
-    private static final String FOLD_PHPDOC = "comments"; //NOI18N
-    private static final String FOLD_COMMENT = "initial-comment"; //NOI18N
-    private static final String FOLD_OTHER_CODE_BLOCKS = "othercodeblocks"; //NOI18N
+    public static final FoldType TYPE_CODE_BLOCKS = FoldType.CODE_BLOCK;
+
+    /**
+     * FoldType for the PHP class (either nested, or top-level)
+     */
+    @NbBundle.Messages("FT_Classes=Classes")
+    public static final FoldType TYPE_CLASS = FoldType.NESTED.derive(
+            "class",
+            FT_Classes(), FoldTemplate.DEFAULT_BLOCK);
+
+    /**
+     * PHP documentation comments
+     */
+    @NbBundle.Messages("FT_PHPDoc=PHPDoc documentation")
+    public static final FoldType TYPE_PHPDOC = FoldType.DOCUMENTATION.override(
+            FT_PHPDoc(),        // NOI18N
+            new FoldTemplate(3, 2, "/**...*/")); // NOI18N
+
+    public static final FoldType TYPE_COMMENT = FoldType.COMMENT.override(
+            FoldType.COMMENT.getLabel(),
+            new FoldTemplate(2, 2, "/*...*/")); // NOI18N
+
+    /**
+     *
+     */
+    @NbBundle.Messages("FT_Functions=Functions and methods")
+    public static final FoldType TYPE_FUNCTION = FoldType.MEMBER.derive("function",
+            FT_Functions(),
+            FoldTemplate.DEFAULT_BLOCK);
+
     private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY"; //NOI18N
 
     public static FoldingScanner create() {
@@ -120,10 +150,10 @@ public final class FoldingScanner {
             if (comments != null) {
                 for (Comment comment : comments) {
                     if (comment.getCommentType() == Comment.Type.TYPE_PHPDOC) {
-                        getRanges(folds, FOLD_PHPDOC).add(createOffsetRange(comment));
+                        getRanges(folds, TYPE_PHPDOC).add(createOffsetRange(comment, -3));
                     } else {
                         if (comment.getCommentType() == Comment.Type.TYPE_MULTILINE) {
-                            getRanges(folds, FOLD_COMMENT).add(createOffsetRange(comment));
+                            getRanges(folds, TYPE_COMMENT).add(createOffsetRange(comment));
                         }
                     }
                 }
@@ -138,10 +168,10 @@ public final class FoldingScanner {
                     continue;
                 }
                 if (scope instanceof TypeScope) {
-                    getRanges(folds, FOLD_CLASS).add(offsetRange);
+                    getRanges(folds, TYPE_CLASS).add(offsetRange);
                 } else {
                     if (scope instanceof FunctionScope || scope instanceof MethodScope) {
-                        getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
+                        getRanges(folds, TYPE_FUNCTION).add(offsetRange);
                     }
                 }
             }
@@ -158,15 +188,19 @@ public final class FoldingScanner {
         return Collections.emptyMap();
     }
 
-    private OffsetRange createOffsetRange(ASTNode node) {
-        return new OffsetRange(node.getStartOffset(), node.getEndOffset());
+    private OffsetRange createOffsetRange(ASTNode node, int startShift) {
+        return new OffsetRange(node.getStartOffset() + startShift, node.getEndOffset());
     }
 
-    private List<OffsetRange> getRanges(Map<String, List<OffsetRange>> folds, String kind) {
-        List<OffsetRange> ranges = folds.get(kind);
+    private OffsetRange createOffsetRange(ASTNode node) {
+        return createOffsetRange(node, 0);
+    }
+
+    private List<OffsetRange> getRanges(Map<String, List<OffsetRange>> folds, FoldType kind) {
+        List<OffsetRange> ranges = folds.get(kind.code());
         if (ranges == null) {
             ranges = new ArrayList<OffsetRange>();
-            folds.put(kind, ranges);
+            folds.put(kind.code(), ranges);
         }
         return ranges;
     }
@@ -286,11 +320,13 @@ public final class FoldingScanner {
         }
 
         private void addFold(final ASTNode node) {
-            addFold(createOffsetRange(node));
+            if (!(node instanceof ASTError) && !(node instanceof EmptyStatement)) {
+                addFold(createOffsetRange(node));
+            }
         }
 
         private void addFold(final OffsetRange offsetRange) {
-            getRanges(folds, FOLD_OTHER_CODE_BLOCKS).add(offsetRange);
+            getRanges(folds, TYPE_CODE_BLOCKS).add(offsetRange);
         }
 
     }

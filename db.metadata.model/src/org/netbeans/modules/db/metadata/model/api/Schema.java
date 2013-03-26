@@ -137,7 +137,7 @@ public class Schema extends MetadataElement {
     }
 
     /**
-     * Get the list of procedures for thi shema
+     * Get the list of procedures for this schema
      *
      * @return the procedures
      * @throws MetadataException if an error occurs while retrieving the metadata
@@ -155,6 +155,32 @@ public class Schema extends MetadataElement {
      */
     public Procedure getProcedure(String name) {
         return impl.getProcedure(name);
+    }
+
+    /**
+     * Get the list of functions for this schema
+     *
+     * @return the functions
+     * @throws MetadataException if an error occurs while retrieving the
+     * metadata
+     * @since db.metadata.model/1.0
+     */
+    public Collection<Function> getFunctions() {
+        return impl.getFunctions();
+    }
+
+    /**
+     * Return a function with the given name
+     *
+     * @param name a function name
+     * @return a function named {@code name} or {@code null} if there is no such
+     * function.
+     * @throws MetadataException if an error occurs while retrieving the
+     * metadata
+     * @since db.metadata.model/1.0
+     */
+    public Function getFunction(String name) {
+        return impl.getFunction(name);
     }
 
     /**

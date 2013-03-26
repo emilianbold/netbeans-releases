@@ -91,43 +91,50 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
             Line line = lineBreakpoint.getLine();
             DataObject dataObject = DataEditorSupport.findDataObject(line);
             EditorCookie editorCookie = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
-            StyledDocument document = editorCookie.getDocument();
+            final StyledDocument document = editorCookie.getDocument();
             if (document != null) {
-                boolean isValid = false;
+                final boolean[] isValid = new boolean[1];
+                isValid[0] = false;
                 try {
                     int l = line.getLineNumber();
                     Element lineElem = NbDocument.findLineRootElement(document).getElement(l);
-                    int startOffset = lineElem.getStartOffset();
-                    int endOffset = lineElem.getEndOffset();
-                    TokenHierarchy th = TokenHierarchy.get(document);
-                    TokenSequence<TokenId> ts = th.tokenSequence();
-                    if (ts != null) {
-                        ts.move(startOffset);
-                        boolean moveNext = ts.moveNext();
-                        for (; moveNext && !isValid && ts.offset() < endOffset;) {
-                            TokenId id = ts.token().id();
-                            if (id == PHPTokenId.PHPDOC_COMMENT
-                                    || id == PHPTokenId.PHPDOC_COMMENT_END
-                                    || id == PHPTokenId.PHPDOC_COMMENT_START
-                                    || id == PHPTokenId.PHP_LINE_COMMENT
-                                    || id == PHPTokenId.PHP_COMMENT_START
-                                    || id == PHPTokenId.PHP_COMMENT_END
-                                    || id == PHPTokenId.PHP_COMMENT
-                                    ) {
-                                break;
-                            }
+                    final int startOffset = lineElem.getStartOffset();
+                    final int endOffset = lineElem.getEndOffset();
+                    document.render(new Runnable() {
 
-                            isValid = id != PHPTokenId.T_INLINE_HTML && id != PHPTokenId.WHITESPACE;
-                            if (!ts.moveNext()) {
-                                break;
+                        @Override
+                        public void run() {
+                            TokenHierarchy th = TokenHierarchy.get(document);
+                            TokenSequence<TokenId> ts = th.tokenSequence();
+                            if (ts != null) {
+                                ts.move(startOffset);
+                                boolean moveNext = ts.moveNext();
+                                for (; moveNext && !isValid[0] && ts.offset() < endOffset;) {
+                                    TokenId id = ts.token().id();
+                                    if (id == PHPTokenId.PHPDOC_COMMENT
+                                            || id == PHPTokenId.PHPDOC_COMMENT_END
+                                            || id == PHPTokenId.PHPDOC_COMMENT_START
+                                            || id == PHPTokenId.PHP_LINE_COMMENT
+                                            || id == PHPTokenId.PHP_COMMENT_START
+                                            || id == PHPTokenId.PHP_COMMENT_END
+                                            || id == PHPTokenId.PHP_COMMENT
+                                            ) {
+                                        break;
+                                    }
+
+                                    isValid[0] = id != PHPTokenId.T_INLINE_HTML && id != PHPTokenId.WHITESPACE;
+                                    if (!ts.moveNext()) {
+                                        break;
+                                    }
+                                }
                             }
                         }
-                    }
+                    });
                 } catch (IndexOutOfBoundsException ex) {
                     LOGGER.fine("Line number is no more valid.");
-                    isValid = false;
+                    isValid[0] = false;
                 }
-                if (!isValid) {
+                if (!isValid[0]) {
                     lineBreakpoint.setInvalid(null);
                 } else {
                     lineBreakpoint.setValid(null);

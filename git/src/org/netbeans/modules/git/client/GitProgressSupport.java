@@ -189,7 +189,7 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
         return repositoryRoot;
     }
 
-    protected void setProgress (String progressMessage) {
+    public void setProgress (String progressMessage) {
         if (progressHandle != null) {
             setProgressMessage(progressHandle, progressMessage == null ? displayName
                     : NbBundle.getMessage(GitProgressSupport.class, "LBL_Progress", new Object[] { displayName, progressMessage })); // NOI18N

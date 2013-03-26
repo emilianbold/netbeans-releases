@@ -56,10 +56,10 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
 import org.netbeans.installer.utils.helper.Version;
-import org.netbeans.installer.utils.system.launchers.LauncherProperties;
-import org.netbeans.installer.utils.system.launchers.LauncherResource;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.NativeUtils;
+import org.netbeans.installer.utils.system.launchers.LauncherProperties;
+import org.netbeans.installer.utils.system.launchers.LauncherResource;
 
 /**
  *
@@ -85,7 +85,7 @@ public class ExeLauncher extends CommonLauncher {
     /**
      * See <code>ShLauncher#MIN_JAVA_VERSION_UNIX</code> for details.
      */
-    public static final String MIN_JAVA_VERSION_WINDOWS_ALL   = "1.6.0";
+    public static final String MIN_JAVA_VERSION_WINDOWS_ALL   = "1.7.0";
     public static final String MIN_JAVA_VERSION_WINDOWS       = "1.5.0_03";
     public static final String MIN_JAVA_VERSION_WINDOWS_VISTA = "1.5.0_11";
     public static final String MIN_JAVA_VERSION_WINDOWS_2K8   = "1.5.0_17";
@@ -105,11 +105,14 @@ public class ExeLauncher extends CommonLauncher {
     public ExeLauncher(LauncherProperties props) {
         super(props);
     }
+    
+    @Override
     public void initialize() throws IOException {
         LogManager.log("Checking EXE launcher parameters..."); //NOI18N
         checkAllParameters();
     }
     
+    @Override
     public File create(Progress progress) throws IOException {
         
         FileOutputStream fos = null;
@@ -204,6 +207,7 @@ public class ExeLauncher extends CommonLauncher {
         return outputFile;
     }
     
+    @Override
     public String[] getExecutionCommand() {
         return new String [] {outputFile.getAbsolutePath()};
     }
@@ -418,6 +422,7 @@ public class ExeLauncher extends CommonLauncher {
         fos.write(0);
     }
     
+    @Override
     public String getExtension() {
         return EXE_EXT;
     }

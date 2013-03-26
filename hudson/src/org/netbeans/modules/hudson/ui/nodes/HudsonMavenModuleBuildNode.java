@@ -85,11 +85,7 @@ class HudsonMavenModuleBuildNode extends AbstractNode {
     public @Override Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
         actions.add(UI.showConsoleAction(module));
-        switch (module.getColor()) {
-        case yellow:
-        case yellow_anime:
-            actions.add(UI.showFailuresAction(module));
-        }
+        actions.add(UI.showFailuresAction());
         actions.add(null);
         if (module instanceof OpenableInBrowser) {
             actions.add(OpenUrlAction.forOpenable((OpenableInBrowser) module));

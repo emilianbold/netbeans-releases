@@ -84,7 +84,16 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Petr Kuzel
  */ 
 public class UpdateAction extends ContextAction {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/update.png"; //NOI18N
 
+    public UpdateAction () {
+        this(ICON_RESOURCE);
+    }
+
+    protected UpdateAction (String iconResource) {
+        super(iconResource);
+    }
+    
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Update";    // NOI18N
     }
@@ -103,7 +112,7 @@ public class UpdateAction extends ContextAction {
 
     @Override
     protected String iconResource () {
-        return "org/netbeans/modules/subversion/resources/icons/update.png"; // NOI18N
+        return ICON_RESOURCE;
     }
     
     @Override
@@ -116,7 +125,7 @@ public class UpdateAction extends ContextAction {
         });
     }
 
-    protected void performUpdate(final Node[] nodes) {
+    void performUpdate(final Node[] nodes) {
         // FIXME add shalow logic allowing to ignore nested projects
         // look into CVS, it's very tricky:
         // project1/

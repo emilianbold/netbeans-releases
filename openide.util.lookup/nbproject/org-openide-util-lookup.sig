@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.15.2
+#Version 8.19.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -90,7 +90,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds defaultLookup
+hfds LOG,defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract static org.openide.util.Lookup$Item<%0 extends java.lang.Object>
@@ -159,7 +159,7 @@ meth public final <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{
 meth public final <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public java.lang.String toString()
 supr org.openide.util.Lookup
-hfds count,serialVersionUID,tree,treeLock
+hfds LOG,count,serialVersionUID,tree,treeLock
 hcls CycleError,ISE,Info,NotifyListeners,R,ReferenceIterator,ReferenceToResult,Storage
 
 CLSS public static org.openide.util.lookup.AbstractLookup$Content
@@ -273,7 +273,9 @@ CLSS public abstract org.openide.util.lookup.implspi.NamedServicesProvider
 cons protected init()
 meth protected <%0 extends java.lang.Object> {%%0} lookupObject(java.lang.String,java.lang.Class<{%%0}>)
 meth protected abstract org.openide.util.Lookup create(java.lang.String)
+meth protected org.openide.util.Lookup lookupFor(java.lang.Object)
 meth public static <%0 extends java.lang.Object> {%%0} getConfigObject(java.lang.String,java.lang.Class<{%%0}>)
+meth public static org.openide.util.Lookup createLookupFor(java.lang.Object)
 meth public static org.openide.util.Lookup forPath(java.lang.String)
 supr java.lang.Object
 hfds namedServicesProviders

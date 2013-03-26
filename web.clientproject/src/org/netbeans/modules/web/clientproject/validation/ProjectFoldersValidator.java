@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.clientproject.validation;
 
 import java.io.File;
+import org.netbeans.modules.web.clientproject.api.validation.FolderValidator;
+import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -70,8 +72,14 @@ public final class ProjectFoldersValidator {
 
     @NbBundle.Messages("ProjectFoldersValidator.error.siteRoot.invalid=Site Root must be a valid directory.")
     public ProjectFoldersValidator validateSiteRootFolder(File siteRootFolder) {
-        if (siteRootFolder == null || !siteRootFolder.isDirectory()) {
-            result.addError(new ValidationResult.Message(SITE_ROOT_FOLDER, Bundle.ProjectFoldersValidator_error_siteRoot_invalid()));
+        ValidationResult folderValidationResult = new FolderValidator()
+                .validateFolder(siteRootFolder)
+                .getResult();
+        for (ValidationResult.Message error : folderValidationResult.getErrors()) {
+            result.addError(new ValidationResult.Message(SITE_ROOT_FOLDER, error.getMessage()));
+        }
+        for (ValidationResult.Message warning : folderValidationResult.getWarnings()) {
+            result.addWarning(new ValidationResult.Message(SITE_ROOT_FOLDER, warning.getMessage()));
         }
         return this;
     }

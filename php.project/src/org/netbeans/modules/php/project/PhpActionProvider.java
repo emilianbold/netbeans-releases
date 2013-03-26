@@ -53,6 +53,7 @@ import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.actions.CopyCommand;
 import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
 import org.netbeans.modules.php.project.ui.actions.DebugProjectCommand;
+import org.netbeans.modules.php.project.ui.actions.DebugTestMethodCommand;
 import org.netbeans.modules.php.project.ui.actions.DeleteCommand;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.MoveCommand;
@@ -60,6 +61,7 @@ import org.netbeans.modules.php.project.ui.actions.RenameCommand;
 import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
 import org.netbeans.modules.php.project.ui.actions.RunProjectCommand;
 import org.netbeans.modules.php.project.ui.actions.RunTestCommand;
+import org.netbeans.modules.php.project.ui.actions.RunTestMethodCommand;
 import org.netbeans.modules.php.project.ui.actions.RunTestsCommand;
 import org.netbeans.modules.php.project.ui.actions.SyncCommand;
 import org.netbeans.modules.php.project.ui.actions.TestProjectCommand;
@@ -89,6 +91,8 @@ public class PhpActionProvider implements ActionProvider {
             new DebugFileCommand(project),
             new RunTestCommand(project),
             new RunTestsCommand(project),
+            new RunTestMethodCommand(project),
+            new DebugTestMethodCommand(project),
             new DeleteCommand(project),
             new CopyCommand(project),
             new MoveCommand(project),

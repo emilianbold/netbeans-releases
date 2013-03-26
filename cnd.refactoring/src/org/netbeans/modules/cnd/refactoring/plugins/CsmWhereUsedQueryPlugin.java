@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
@@ -349,7 +349,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         };
         RequestProcessor rp = new RequestProcessor("FindUsagesQuery", CndUtils.getNumberCndWorkerThreads() + 1); // NOI18N
         
-        long time = System.currentTimeMillis();
+        final long time = System.currentTimeMillis();
         List<CsmFile> sortedFiles = new ArrayList<CsmFile>(files);
         Collections.sort(sortedFiles, new Comparator<CsmFile>() {
             @Override
@@ -374,6 +374,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         final Collection<RefactoringElementImplementation> elements = new ArrayList<RefactoringElementImplementation>(work.size()*2);
         int indexNonEmpty = 0;
         int total = 0;
+        boolean firstResults = true;
         // wait files one by one
         // we need sorted output to support Background mode without insertions between tree nodes
         for (OneFileWorker workUnit : work) {
@@ -398,6 +399,10 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             }
             assert exposedElements != null || isCancelled();
             if (exposedElements != null && !exposedElements.isEmpty()) {
+                if (firstResults) {
+                    firstResults = false;
+                    LOG.log(Level.FINE, "creation of the first {0} elements took {1}ms", new Object[] {exposedElements.size(), System.currentTimeMillis()-time});
+                }
                 if (bagToAdd == null) {
                     elements.addAll(exposedElements);
                 } else {

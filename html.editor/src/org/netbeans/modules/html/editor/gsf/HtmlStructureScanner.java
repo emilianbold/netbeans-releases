@@ -47,6 +47,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -58,12 +59,26 @@ import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.Pair;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
+import static org.netbeans.modules.html.editor.gsf.Bundle.*;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
 public class HtmlStructureScanner implements StructureScanner {
+    
+    /**
+     * Tag fold type. Overrides the default label.
+     */
+    @NbBundle.Messages("FT_Tag=Tags")
+    public static final FoldType TYPE_TAG = FoldType.TAG.override(
+            FT_Tag(), FoldType.TAG.getTemplate());
+    
+    /**
+     * HTML comments
+     */
+    public static final FoldType TYPE_COMMENT = FoldType.COMMENT;
 
     private static final Logger LOGGER = Logger.getLogger(HtmlStructureScanner.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
@@ -187,8 +202,8 @@ public class HtmlStructureScanner implements StructureScanner {
         } finally {
             doc.readUnlock();
         }
-        folds.put("tags", tags);
-        folds.put("comments", comments);
+        folds.put(TYPE_TAG.code(), tags);
+        folds.put(TYPE_COMMENT.code(), comments);
 
         return folds;
     }

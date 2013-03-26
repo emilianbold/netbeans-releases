@@ -44,7 +44,6 @@
 
 package org.openide.loaders;
 
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
@@ -69,6 +68,7 @@ public class DataShadowBrokenAreNotTestedTest extends NbTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         
         FileObject[] delete = FileUtil.getConfigRoot().getChildren();

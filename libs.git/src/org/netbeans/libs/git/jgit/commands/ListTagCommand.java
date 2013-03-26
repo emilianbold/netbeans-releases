@@ -43,7 +43,7 @@
 package org.netbeans.libs.git.jgit.commands;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
@@ -73,7 +73,7 @@ public class ListTagCommand extends GitCommand {
     protected void run () throws GitException {
         Repository repository = getRepository();
         Map<String, Ref> tags = repository.getTags();
-        allTags = new HashMap<String, GitTag>(tags.size());
+        allTags = new LinkedHashMap<String, GitTag>(tags.size());
         RevWalk walk = new RevWalk(repository);
         try {
             for (Map.Entry<String, Ref> e : tags.entrySet()) {

@@ -64,6 +64,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
@@ -633,6 +634,16 @@ public class JavaFixUtilities {
 //                           && !requiresParenthesis(((ParenthesizedTree) target).getExpression(), getCurrentPath().getParentPath().getLeaf())) {
 //                        target = ((ParenthesizedTree) target).getExpression();
 //                    }
+                    if (   getCurrentPath().getParentPath() != null
+                        && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.LOGICAL_COMPLEMENT
+                        && (   tp.getParentPath() == null
+                            || tp.getParentPath().getLeaf().getKind() != Kind.LOGICAL_COMPLEMENT)) {
+                        Tree negated = negate((ExpressionTree) tp.getLeaf(), getCurrentPath().getParentPath().getParentPath().getLeaf(), true);
+                        
+                        if (negated != null) {
+                            rewrite(getCurrentPath().getParentPath().getLeaf(), negated);
+                        }
+                    }
                     if (requiresParenthesis(target, node, getCurrentPath().getParentPath().getLeaf())) {
                         target = make.Parenthesized((ExpressionTree) target);
                     }
@@ -1151,6 +1162,72 @@ public class JavaFixUtilities {
             return in;
         }
 
+        private ExpressionTree negate(ExpressionTree original, Tree parent, boolean nullOnPlainNeg) {
+            ExpressionTree newTree;
+            switch (original.getKind()) {
+                case PARENTHESIZED:
+                    ExpressionTree expr = ((ParenthesizedTree) original).getExpression();
+                    return negate(expr, original, nullOnPlainNeg);
+                case LOGICAL_COMPLEMENT:
+                    newTree = ((UnaryTree) original).getExpression();
+                    while (newTree.getKind() == Kind.PARENTHESIZED && !JavaFixUtilities.requiresParenthesis(((ParenthesizedTree) newTree).getExpression(), original, parent)) {
+                        newTree = ((ParenthesizedTree) newTree).getExpression();
+                    }
+                    break;
+                case NOT_EQUAL_TO:
+                    newTree = negateBinaryOperator(original, Kind.EQUAL_TO, false);
+                    break;
+                case EQUAL_TO:
+                    newTree = negateBinaryOperator(original, Kind.NOT_EQUAL_TO, false);
+                    break;
+                case BOOLEAN_LITERAL:
+                    newTree = make.Literal(!(Boolean) ((LiteralTree) original).getValue());
+                    break;
+                case CONDITIONAL_AND:
+                    newTree = negateBinaryOperator(original, Kind.CONDITIONAL_OR, true);
+                    break;
+                case CONDITIONAL_OR:
+                    newTree = negateBinaryOperator(original, Kind.CONDITIONAL_AND, true);
+                    break;
+                case LESS_THAN:
+                    newTree = negateBinaryOperator(original, Kind.GREATER_THAN_EQUAL, false);
+                    break;
+                case LESS_THAN_EQUAL:
+                    newTree = negateBinaryOperator(original, Kind.GREATER_THAN, false);
+                    break;
+                case GREATER_THAN:
+                    newTree = negateBinaryOperator(original, Kind.LESS_THAN_EQUAL, false);
+                    break;
+                case GREATER_THAN_EQUAL:
+                    newTree = negateBinaryOperator(original, Kind.LESS_THAN, false);
+                    break;
+                default:
+                    if (nullOnPlainNeg)
+                        return null;
+                    newTree = make.Unary(Kind.LOGICAL_COMPLEMENT, original);
+            }
+         
+            if (JavaFixUtilities.requiresParenthesis(newTree, original, parent)) {
+                newTree = make.Parenthesized(newTree);
+            }
+            
+            return newTree;
+        }
+        
+        private ExpressionTree negateBinaryOperator(Tree original, Kind newKind, boolean negateOperands) {
+            BinaryTree bt = (BinaryTree) original;
+            if (negateOperands) {
+                ExpressionTree lo = negate(bt.getLeftOperand(), original, false);
+                ExpressionTree ro = negate(bt.getRightOperand(), original, false);
+                return make.Binary(newKind,
+                                   lo != null ? lo : bt.getLeftOperand(),
+                                   ro != null ? ro : bt.getRightOperand());
+            }
+            return make.Binary(newKind,
+                               bt.getLeftOperand(),
+                               bt.getRightOperand());
+        }
+        
         private void rewrite(Tree from, Tree to) {
             if (originalTrees.contains(from)) return ;
             rewriteFromTo.put(from, to);

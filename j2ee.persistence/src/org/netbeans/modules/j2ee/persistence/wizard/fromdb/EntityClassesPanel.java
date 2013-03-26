@@ -349,10 +349,10 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         } catch (InvalidPersistenceXmlException ipx) {
             createPUCheckbox.setVisible(false);
-            warning = NbBundle.getMessage(EntityClassesPanel.class, "ERR_InvalidPersistenceUnit", ipx.getPath());
+            warning = NbBundle.getMessage(EntityClassesPanel.class, "ERR_InvalidPersistenceXml", ipx.getPath());
         } catch (RuntimeException ipx) {
             createPUCheckbox.setVisible(false);
-            warning = NbBundle.getMessage(EntityClassesPanel.class, "ERR_InvalidPersistenceUnit", ipx.getMessage());
+            warning = NbBundle.getMessage(EntityClassesPanel.class, "ERR_InvalidPersistenceXml", ipx.getMessage());
         }
 
         if(warning.trim().length() == 0){//may need to show warning about sourc level

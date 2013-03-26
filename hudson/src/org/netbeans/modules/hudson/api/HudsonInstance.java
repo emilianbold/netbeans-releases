@@ -100,6 +100,9 @@ public interface HudsonInstance extends Comparable<HudsonInstance> {
      */
     public Collection<HudsonJob> getJobs();
 
+    /** @since hudson/1.31 */
+    Collection<HudsonFolder> getFolders();
+
     /**
      * Returns all Hudson views from registered instance
      *

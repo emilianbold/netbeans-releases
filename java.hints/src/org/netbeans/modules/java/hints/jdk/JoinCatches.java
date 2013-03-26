@@ -169,7 +169,7 @@ public class JoinCatches {
             if (duplicates.size() >= 2) {
                 String displayName = NbBundle.getMessage(JoinCatches.class, "ERR_JoinCatches");
 
-                return ErrorDescriptionFactory.forName(ctx, toTest.getParameter().getType(), displayName, new FixImpl(ctx.getInfo(), ctx.getPath(), new ArrayList<Integer>(duplicates.values())).toEditorFix());
+                return ErrorDescriptionFactory.forName(ctx, toTest.getParameter().getType(), displayName, new FixImpl(ctx.getInfo(), ctx.getPath(), Collections.unmodifiableList(new ArrayList<Integer>(duplicates.values()))).toEditorFix());
             }
         }
 
@@ -178,9 +178,9 @@ public class JoinCatches {
 
     private static final class FixImpl extends JavaFix {
 
-        private final Collection<Integer> duplicates;
+        private final List<Integer> duplicates;
         
-        public FixImpl(CompilationInfo info, TreePath tryStatement, Collection<Integer> duplicates) {
+        public FixImpl(CompilationInfo info, TreePath tryStatement, List<Integer> duplicates) {
             super(info, tryStatement);
             this.duplicates = duplicates;
         }
@@ -205,12 +205,12 @@ public class JoinCatches {
             TreePath tp = ctx.getPath();
             List<Tree> disjointTypes = new LinkedList<Tree>();
             TryTree tt = (TryTree) tp.getLeaf();
-            int first = duplicates.iterator().next();
-
-            duplicates.remove(first);
+            int first = duplicates.get(0);
+            List<Integer> remainingDuplicates = duplicates.subList(1, duplicates.size());
+            
             addDisjointType(disjointTypes, tt.getCatches().get(first).getParameter().getType());
 
-            for (Integer d : duplicates) {
+            for (Integer d : remainingDuplicates) {
                 addDisjointType(disjointTypes, tt.getCatches().get((int) d).getParameter().getType());
             }
 
@@ -222,7 +222,7 @@ public class JoinCatches {
                     wc.rewrite(ct.getParameter().getType(), wc.getTreeMaker().UnionType(disjointTypes));
                 }
                 
-                if (duplicates.contains(c++)) continue;
+                if (remainingDuplicates.contains(c++)) continue;
 
                 newCatches.add(ct);
             }

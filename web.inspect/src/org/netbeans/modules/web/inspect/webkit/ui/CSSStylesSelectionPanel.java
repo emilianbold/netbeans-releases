@@ -99,7 +99,9 @@ import javax.swing.text.View;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.lib.api.CssColor;
 import org.netbeans.modules.css.visual.api.EditCSSRulesAction;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
@@ -393,6 +395,15 @@ public class CSSStylesSelectionPanel extends JPanel {
                 };
                 list.addMouseMotionListener(adapter);
                 list.addMouseListener(adapter);
+            }
+
+            @Override
+            protected void showSelection(int[] indexes) {
+                super.showSelection(indexes);
+                // Issue 226899
+                if (indexes != null && indexes.length > 0) {
+                    list.ensureIndexIsVisible(indexes[0]);
+                }
             }
         };
         rulePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -899,6 +910,7 @@ public class CSSStylesSelectionPanel extends JPanel {
                 @Override
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                     String toolTip = null;
+                    boolean isColor = false;
                     if (value instanceof Node.Property) {
                         Node.Property property = (Node.Property)value;
                         toolTip = property.getShortDescription();
@@ -907,12 +919,25 @@ public class CSSStylesSelectionPanel extends JPanel {
                         } catch (IllegalAccessException ex) {
                         } catch (InvocationTargetException ex) {
                         }
+                        Object color = property.getValue(MatchedPropertyNode.COLOR_PROPERTY);
+                        isColor = (color == Boolean.TRUE);
                     }
                     Component component = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     if (component instanceof JComponent) {
                         JComponent jcomponent = ((JComponent)component);
                         jcomponent.setBorder(border[column]);
                         jcomponent.setToolTipText(toolTip);
+                    }
+                    if (isColor && (component instanceof JLabel)) {
+                        String colorCode = value.toString();
+                        CssColor color = CssColor.getColor(colorCode);
+                        if (color != null) {
+                            colorCode = color.colorCode();
+                        }
+                        if (colorCode.startsWith("#") || (color != null)) { // NOI18N
+                            JLabel label = (JLabel)component;
+                            label.setIcon(WebUtils.createColorIcon(colorCode));
+                        }
                     }
                     return component;
                 }
@@ -1043,17 +1068,26 @@ public class CSSStylesSelectionPanel extends JPanel {
                 String matchedNode = node.getDisplayName();
                 matchedNodeLabel.setText("<html>"+matchedNode); // NOI18N
                 String ruleLocation = null;
-                Resource ruleOrigin = node.getLookup().lookup(Resource.class);
-                if (ruleOrigin != null) {
-                    FileObject fob = ruleOrigin.toFileObject();
-                    if (fob == null) {
-                        ruleLocation = rule.getSourceURL();
-                    } else {
-                        ruleLocation = fob.getNameExt();
+                RuleInfo ruleInfo = node.getLookup().lookup(RuleInfo.class);
+                if (ruleInfo != null && ruleInfo.getMetaSourceFile() != null && ruleInfo.getMetaSourceLine() != -1) {
+                    ruleLocation = ruleInfo.getMetaSourceFile();
+                    int slashIndex = ruleLocation.lastIndexOf('/');
+                    ruleLocation = ruleLocation.substring(slashIndex+1);
+                    ruleLocation = ruleLocation.replaceAll("\\\\", ""); // NOI18N
+                    ruleLocation += ":" + ruleInfo.getMetaSourceLine(); // NOI18N
+                } else {
+                    Resource ruleOrigin = node.getLookup().lookup(Resource.class);
+                    if (ruleOrigin != null) {
+                        FileObject fob = ruleOrigin.toFileObject();
+                        if (fob == null) {
+                            ruleLocation = rule.getSourceURL();
+                        } else {
+                            ruleLocation = fob.getNameExt();
+                        }
+                        // Source line seems to be 0-based (i.e. is 0 for the first line).    
+                        int sourceLine = rule.getSourceLine() + 1;
+                        ruleLocation += ":" + sourceLine; // NOI18N
                     }
-                    // Source line seems to be 0-based (i.e. is 0 for the first line).    
-                    int sourceLine = rule.getSourceLine() + 1;
-                    ruleLocation += ":" + sourceLine; // NOI18N
                 }
                 ruleLocationLabel.setVisible(ruleLocation != null);
                 if (ruleLocation != null) {

@@ -54,19 +54,19 @@ public class AccidentalAssignmentHintTest extends PHPHintsTestBase {
     }
 
     public void testInSubAndInWhile() throws Exception {
-        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(true, true), "testAccidentalAssignmentHint.php");
+        checkHints(new AccidentalAssignmentHintStub(true, true), "testAccidentalAssignmentHint.php");
     }
 
     public void testInSubAndNotInWhile() throws Exception {
-        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(true, false), "testAccidentalAssignmentHint.php");
+        checkHints(new AccidentalAssignmentHintStub(true, false), "testAccidentalAssignmentHint.php");
     }
 
     public void testNotInSubAndNotInWhile() throws Exception {
-        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(false, false), "testAccidentalAssignmentHint.php");
+        checkHints(new AccidentalAssignmentHintStub(false, false), "testAccidentalAssignmentHint.php");
     }
 
     public void testNotInSubAndInWhile() throws Exception {
-        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(false, true), "testAccidentalAssignmentHint.php");
+        checkHints(new AccidentalAssignmentHintStub(false, true), "testAccidentalAssignmentHint.php");
     }
 
     private class AccidentalAssignmentHintStub extends AccidentalAssignmentHint {

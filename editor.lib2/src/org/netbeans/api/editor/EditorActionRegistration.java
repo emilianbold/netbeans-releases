@@ -168,6 +168,22 @@ public @interface EditorActionRegistration {
      * The default Integer.MAX_VALUE value means no toolbar representation.
      */
     int toolBarPosition() default Integer.MAX_VALUE;
+    
+    /**
+     * True if the action should not display its icon in menu.
+     * <br/>
+     * False by default (icon visible in menu).
+     * @since 1.74
+     */
+    boolean noIconInMenu() default false;
+    
+    /**
+     * True if the action should not be displayed in customizer for key bindings assignment.
+     * <br/>
+     * False by default (key binding can be configured for the action).
+     * @since 1.74
+     */
+    boolean noKeyBinding() default false;
 
     /**
      * Boolean key in preferences that corresponds to action's selected state.

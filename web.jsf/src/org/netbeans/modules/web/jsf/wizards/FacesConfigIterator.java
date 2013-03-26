@@ -178,7 +178,7 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
     }
 
     private static String findFacesConfigTemplate(WebModule wm) {
-        JSFVersion jsfVersion = JSFVersion.forWebModule(wm, true);
+        JSFVersion jsfVersion = JSFVersion.get(wm, false);
         // not found on project classpath (case of Maven project with JSF in deps)
         if (jsfVersion == null) {
             // XXX - rewrite using javaee.spec.support module

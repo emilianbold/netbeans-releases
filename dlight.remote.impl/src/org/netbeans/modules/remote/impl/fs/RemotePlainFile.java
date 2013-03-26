@@ -434,6 +434,11 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     // Fixing #206726 - If a remote file is saved frequently, "File modified externally" message appears, user changes are lost
     @Override
     protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        if (Boolean.getBoolean("cnd.remote.refresh.plain.file")) { //NOI18N
+            long time = System.currentTimeMillis();
+            getParent().refreshImpl(false, antiLoop, expected);
+            RemoteLogger.getInstance().log(Level.FINE, "Refreshing {0} took {1} ms", new Object[] { getPath(), System.currentTimeMillis() - time });
+        }
         if (RemoteFileObjectBase.DEFER_WRITES) {
             WritingQueue.getInstance(getExecutionEnvironment()).waitFinished(Collections.<FileObject>singleton(this.getOwnerFileObject()), null);
         }
