@@ -844,14 +844,14 @@ prio
     ;
     
 expression
-    : term ( ( ws | (operator ws?)?) term)*
+    : term ( ( ws | (ws? operator ws?) | /* nothing */) term)*
     ;
     
 term
     : 
     ( unaryOperator ws? )?
     (
-        (function)=>function
+        (functionName ws? LPAREN)=>function //"myfunction(" as predicate
         | IDENT
         | NUMBER
         | PERCENTAGE
@@ -876,12 +876,11 @@ function
 	: 	functionName ws?
 		LPAREN ws?
 		(
-                    (cp_args_list)=>cp_args_list
+                    (expression)=>expression ws?
+                    | (cp_args_list)=>cp_args_list
                     | (cp_expression_list)=>cp_expression_list ws?
-                    | expression ws?
-                    | fnAttribute (COMMA ws? fnAttribute )*
-                    |
-                    {isCssPreprocessorSource()}? //empty
+                    | (fnAttributeName ws? OPEQ)=>fnAttribute (COMMA ws? fnAttribute )*
+                    | {isCssPreprocessorSource()}? //empty
 		)
 		RPAREN
 	;
