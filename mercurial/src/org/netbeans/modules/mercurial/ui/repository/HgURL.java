@@ -786,11 +786,11 @@ public final class HgURL {
     }
 
     private static boolean isLegalUserInfoChar(char c) {
-        return isAlnumChar(c) || ("-_.!~*'();&=+$,".indexOf(c) != -1);  //NOI18N
+        return isAlnumChar(c) || ("-_.!~*'();&=+$,%".indexOf(c) != -1);  //NOI18N
     }
 
     private static boolean isLegalPathChar(char c) {
-        return isAlnumChar(c) || ("/-_.!~*'():@&=+$,".indexOf(c) != -1);//NOI18N
+        return isAlnumChar(c) || ("/-_.!~*'():@&=+$,%".indexOf(c) != -1);//NOI18N
     }
 
     private static boolean isAlnumChar(char c) {
