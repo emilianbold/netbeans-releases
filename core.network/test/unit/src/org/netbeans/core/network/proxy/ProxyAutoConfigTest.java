@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.core;
+package org.netbeans.core.network.proxy;
 
 import java.io.File;
 import java.net.Proxy;
@@ -50,7 +50,6 @@ import java.util.List;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Utilities;
 
 /**
  *

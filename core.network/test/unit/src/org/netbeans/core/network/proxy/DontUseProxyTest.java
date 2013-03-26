@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans.core.network.proxy;
 
 import org.netbeans.junit.*;
 
