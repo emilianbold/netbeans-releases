@@ -452,7 +452,7 @@ public final class ElementUtilities {
                         if (types.isSubsignature((ExecutableType)hiderType, (ExecutableType)memberType))
                             return true;
                     } else {
-                        return true;
+                        return false;
                     }
                 }
             }
