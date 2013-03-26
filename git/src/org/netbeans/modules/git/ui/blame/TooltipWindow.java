@@ -72,6 +72,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
@@ -328,7 +329,9 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 }
                 textPane.setDocument(doc);
                 textPane.setEditable(false);
-                Color color = new Color(233, 241, 255);
+                Color color = UIManager.getColor( "nb.versioning.tooltip.background.color"); //NOI18N
+                if( null == color )
+                    color = new Color(233, 241, 255);
                 textPane.setBackground(color);
                 Element rootElement = org.openide.text.NbDocument.findLineRootElement(doc);
                 int lineCount = rootElement.getElementCount();

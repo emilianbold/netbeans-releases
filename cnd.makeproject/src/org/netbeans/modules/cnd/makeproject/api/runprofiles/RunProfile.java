@@ -187,6 +187,12 @@ public final class RunProfile implements ConfigurationAuxObject {
         runCommand = new ComboStringConfiguration(null, DEFAULT_RUN_COMMAND, runCommandPicklist); // NOI18N
         arguments = new StringConfiguration(null, "");
         buildFirst = true;
+        if (makeConfiguration != null && makeConfiguration.isMakefileConfiguration()) {
+            // #225018 - when create project from existing source Build First should be "OFF"
+            // RunProfile is kept in private => for unmanaged projects shared in VCS it is missed.
+            // By default do not rebuild makefile based projects
+            buildFirst = false;
+        }
         dorun = getDorunScript();
         termPaths = new HashMap<String, String>();
         termOptions = new HashMap<String, String>();

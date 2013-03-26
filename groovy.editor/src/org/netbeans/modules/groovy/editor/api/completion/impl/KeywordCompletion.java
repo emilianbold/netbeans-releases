@@ -77,8 +77,13 @@ class KeywordCompletion extends BaseCompletion {
         String prefix = request.prefix;
 
         if (request.location == CaretLocation.INSIDE_PARAMETERS) {
-            LOG.log(Level.FINEST, "no keywords completion inside of parameters"); // NOI18N
             return false;
+        }
+        
+        if (request.dotContext != null) {
+            if (request.dotContext.isFieldsOnly() || request.dotContext.isMethodsOnly()) {
+                return false;
+            }
         }
 
         // We are after either implements or extends keyword

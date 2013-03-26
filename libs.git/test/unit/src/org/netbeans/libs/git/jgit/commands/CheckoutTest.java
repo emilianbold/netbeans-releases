@@ -547,14 +547,20 @@ public class CheckoutTest extends AbstractGitTestCase {
             @Override
             public void notifyFile (File file, String relativePathToRoot) { }
         });
-        try {
-            cmd.execute();
-            // and if somehow works...
-            client.checkoutRevision(Constants.MASTER, false, NULL_PROGRESS_MONITOR);
+        cmd.execute();
+        Map<File, GitStatus> status = client.getStatus(files, NULL_PROGRESS_MONITOR);
+        assertTrue(status.get(file).isConflict());
+        if (file.exists()) {
             // and do not forget to fix this code when JGit is fixed.
             fail("Hey, JGit is fixed, why don't you fix me as well?");
-        } catch (IllegalStateException ex) {
-            assertEquals("Mixed stages not allowed: 2 file", ex.getMessage());
+        } else {
+            // until JGit is fixed...
+            try {
+                client.checkoutRevision(Constants.MASTER, false, NULL_PROGRESS_MONITOR);
+                fail("Must not be allowed");
+            } catch (IllegalArgumentException ex) {
+                assertEquals("Currently unsupported. failOnConflict must be set to true. JGit lib is buggy.", ex.getMessage());
+            }
         }
     }
 

@@ -44,12 +44,8 @@
 
 package org.netbeans.modules.editor.fold;
 
-import java.lang.reflect.Constructor;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.editor.fold.FoldHierarchy;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Provides list of fold factories that produce fold managers
@@ -129,9 +125,7 @@ public abstract class FoldManagerFactoryProvider {
         // (public packages restrictions should not apply).
         if (!forceCustom) {
             try {
-                if (FileUtil.getConfigRoot() != null) {
-                    provider = new LayerProvider();
-                }
+                provider = new LayerProvider();
             } catch (Throwable t) {
                 // FileObject class not found -> use layer
             }

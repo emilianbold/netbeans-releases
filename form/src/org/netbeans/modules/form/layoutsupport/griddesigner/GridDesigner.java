@@ -78,6 +78,7 @@ import javax.swing.OverlayLayout;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.UIManager;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormLAF;
 import org.netbeans.modules.form.FormLoaderSettings;
@@ -235,7 +236,10 @@ public class GridDesigner extends JPanel {
         }
         innerPane.removeAll();
         JPanel mainPanel = new JPanel();
-        mainPanel.setBackground(Color.WHITE);
+        Color defaultBackground = UIManager.getColor( "Tree.background" ); //NOI18N
+        if( null == defaultBackground )
+            defaultBackground = Color.white;
+        mainPanel.setBackground(defaultBackground);
         GroupLayout layout = new GroupLayout(mainPanel);
         layout.setHonorsVisibility(false);
         GroupLayout.Group hGroup = layout.createSequentialGroup()

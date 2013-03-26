@@ -221,6 +221,13 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         });
     }
 
+    @Override
+    public Collection<? extends FieldElement> getFields() {
+        Set<FieldElement> allFields = new HashSet<FieldElement>();
+        allFields.addAll(getDeclaredFields());
+        allFields.addAll(getInheritedFields());
+        return allFields;
+    }
 
     @Override
     public Collection<? extends MethodScope> getInheritedMethods() {

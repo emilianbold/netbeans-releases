@@ -46,11 +46,16 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -73,27 +78,27 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
- * Provides a various methods to help with typical Maven Projects requirements.
+ * Provides a various methods to help with typical Maven Projects requirements
  * For example changing server for given project, changing pom.xml, creating de
- *
+ * 
  * @author Martin Janicek
  */
-public final class MavenProjectSupport {
+public class MavenProjectSupport {
 
     private MavenProjectSupport() {
     }
-
-
+    
+    
     /**
-     * Change server for given project according to the project lookup values.
-     *
+     * Change server for given project according to the project lookup values
+     * 
      * @param project for which we want to change server
      * @param initContextPath true if we want to initiate context path (f.e. when creating new project), false otherwise
      */
@@ -104,13 +109,13 @@ public final class MavenProjectSupport {
         String[] ids = obtainServerIds(project);
         String instanceID = ids[0];
         String serverID = ids[1];
-
+        
         ProblemReporter problems = project.getLookup().lookup(ProblemReporter.class);
 
         // We know server instance which should be assigned to the project
         if (instanceID != null && serverID == null) {
             assignServer(project, instanceID, initContextPath);
-
+            
         // We don't know anything which means we want to assign <No Server> value to the project
         } else if (instanceID == null && serverID == null) {
             assignServer(project, null, initContextPath);
@@ -119,7 +124,7 @@ public final class MavenProjectSupport {
         } else if (instanceID == null && serverID != null) {
             problems.addReport(createMissingServerReport(project, serverID));
         }
-
+        
         J2eeModuleProvider moduleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (moduleProvider != null) {
             if (!BrokenServerLibrarySupport.getMissingServerLibraries(project).isEmpty()) {
@@ -131,10 +136,10 @@ public final class MavenProjectSupport {
             }
         }
     }
-
+    
     /**
      * Assign specified server to given project
-     *
+     * 
      * @param project for we want to change server
      * @param instanceID server instance which should be assigned
      * @param initContextPath true if context path should be initialized to non-empty value
@@ -148,50 +153,50 @@ public final class MavenProjectSupport {
             initContextPath(project);
         }
     }
-
+    
     private static void setServer(Project project, J2eeModuleProvider moduleProvider, String serverID) {
         if (moduleProvider != null) {
             if (J2eeModule.Type.WAR.equals(moduleProvider.getJ2eeModule().getType())) {
                 MavenProjectSupport.createDDIfRequired(project, serverID);
             }
-
+            
             moduleProvider.setServerInstanceID(serverID);
             moduleProvider.getConfigSupport().ensureConfigurationReady();
         }
     }
-
+    
     /*
-     * Setup context path to a non-empty value (typically project artifactID).
+     * Setup context path to a non-empty value (typically project artifactID) 
      * Should be used f.e. when creating new project
      */
     private static void initContextPath(Project project) {
         NbMavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class);
         WebModuleProviderImpl webModuleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
-
+        
         if (NbMavenProject.TYPE_WAR.equals(mavenProject.getPackagingType()) == false || webModuleProvider == null) {
             return; // We want to set context path only for Web projects
         }
-
+        
         WebModuleImpl webModuleImpl = webModuleProvider.getModuleImpl();
         String contextPath = webModuleImpl.getContextPath();
-
+        
         if (contextPath == null || "".equals(contextPath)) {
             webModuleImpl.setContextPath("/" + mavenProject.getMavenProject().getArtifactId()); //NOI18N
         }
     }
-
+    
     private static ProblemReport createMissingServerReport(Project project, String serverID) {
         String serverName = Deployment.getDefault().getServerDisplayName(serverID);
         if (serverName == null) {
             serverName = serverID;
         }
-        ProblemReport serverProblem = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+        ProblemReport serverProblem = new ProblemReport(ProblemReport.SEVERITY_HIGH, 
                 NbBundle.getMessage(MavenProjectSupport.class, "MSG_AppServer", serverName),
                 NbBundle.getMessage(MavenProjectSupport.class, "HINT_AppServer"),
                 new AddServerAction(project));
         return serverProblem;
     }
-
+    
     private static ProblemReport createBrokenLibraryReport(Project project) {
         ProblemReport libProblem =  new ProblemReport(ProblemReport.SEVERITY_HIGH,
                 NbBundle.getMessage(MavenProjectSupport.class, "MSG_LibProblem"),
@@ -199,63 +204,55 @@ public final class MavenProjectSupport {
                 new ServerLibraryAction(project));
         return libProblem;
     }
-
+    
     public static boolean isWebSupported(Project project, String packaging) {
         if ("war".equals(packaging) || isBundlePackaging(project, packaging)) { // NOI18N
             return true;
         }
         return false;
     }
-
+    
     // #179584
     // if it is bundle packaging type but a valid "src/main/webapp" exists
     // then provide lookup content as for web application so that code
     // completion etc. works
     public static boolean isBundlePackaging(Project project, String packaging) {
         NbMavenProject proj = project.getLookup().lookup(NbMavenProject.class);
-
+        
         boolean isBundlePackaging = "bundle".equals(packaging); // NOI18N
         boolean webAppDirExists = org.openide.util.Utilities.toFile(proj.getWebAppDirectory()).exists();
-
+        
         if (isBundlePackaging && webAppDirExists) {
             return true;
         }
         return false;
     }
-
+    
     /**
-     * Return server instance ID if set (that is concrete server instance) and if
-     * not available try to return at least server ID.
-     *
-     * @return always array of two String values - first one is server instance ID and
+     * Return server instance ID if set (that is concrete server instance) and if not available
+     * try to return at least server ID
+     * @return always array of two String values - first one is server instance ID and 
      *    second one server ID; both can be null
      */
-    public static String[] obtainServerIds(Project project) {
+    public static String[] obtainServerIds (Project project) {
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
         if (sc != null && sc.getServerInstanceId() != null) {
             return new String[] {sc.getServerInstanceId(), null};
         }
-        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        // XXX should this first look up HINT_DEPLOY_J2EE_SERVER_ID in project (profile, ...) properties? Cf. Wrapper.createComboBoxUpdater.getDefaultValue
-        String val = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, true);
-        if (val != null) {
-            return new String[] {val, null};
-        }
-        String server = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
-        if (server == null) {
-            //try checking for old values..
-            server = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
-        }
-        return new String[]{null, server};
-    }
 
+        String serverID = readServerInstanceID(project);
+        String serverType = readServerID(project);
+        
+        return new String[]{serverID, serverType};
+    }
+    
     /**
-     * For given project returns server name.
-     *
+     * For given project returns server name
+     * 
      * @param project for which we want to get server name
      * @return server name or <code>null</code> if the assigned server instance were removed during the processing
      */
-    public static String obtainServerName(Project project) {
+    public static String obtainServerName (Project project) {
         String id = obtainServerIds(project)[0];
 
         if (id != null) {
@@ -273,8 +270,7 @@ public final class MavenProjectSupport {
     }
 
     /**
-     * For the given server instance ID returns serverID.
-     *
+     * For the given server instance ID returns serverID
      * @param serverInstanceID instance ID
      * @return server ID or <code>null</code> if the assigned server instance were removed during the processing
      */
@@ -286,10 +282,10 @@ public final class MavenProjectSupport {
             return null;
         }
     }
-
+    
     /**
-     * Store given property pair <name, value> to pom.xml file of the given project.
-     *
+     * Store given property pair <name, value> to pom.xml file of the given project
+     * 
      * @param projectFile project to which pom.xml should be updated
      * @param name property name
      * @param value property value
@@ -297,7 +293,7 @@ public final class MavenProjectSupport {
     public static void storeSettingsToPom(Project project, final String name, final String value) {
         storeSettingsToPom(project.getProjectDirectory(), name, value);
     }
-
+    
     public static void storeSettingsToPom(FileObject projectFile, final String name, final String value) {
         final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
 
@@ -323,15 +319,15 @@ public final class MavenProjectSupport {
             Exceptions.printStackTrace(ex);
         }
     }
-
+    
     public static void createDDIfRequired(Project project) {
         createDDIfRequired(project, null);
     }
-
+    
     /**
      * Creates web.xml deployment descriptor if it's required for given project (this method was created as a
-     * workaround for issue #204572 and probably won't be needed when WebLogic issue will be fixed).
-     *
+     * workaround for issue #204572 and probably won't be needed when WebLogic issue will be fixed)
+     * 
      * @param project project for which should DD be generated
      * @param serverID server ID of given project
      */
@@ -344,10 +340,10 @@ public final class MavenProjectSupport {
             createDD(project);
         }
     }
-
+    
     private static void createDD(Project project) {
         WebModuleProviderImpl webModule = project.getLookup().lookup(WebModuleProviderImpl.class);
-
+        
         if (webModule != null) {
             WebModuleImpl webModuleImpl = webModule.getModuleImpl();
             try {
@@ -358,12 +354,12 @@ public final class MavenProjectSupport {
                         return;
                     }
                 }
-
+                
                 FileObject webXml = webModuleImpl.getDeploymentDescriptor();
                 if (webXml == null) {
                     String j2eeVersion = readJ2eeVersion(project);
                     webXml = DDHelper.createWebXml(Profile.fromPropertiesString(j2eeVersion), webInf);
-
+    
                     // this should never happend if valid j2eeVersion has been parsed - see also issue #214600
                     assert webXml != null : "DDHelper wasn't able to create deployment descriptor for the J2EE version: " + j2eeVersion
                             + ", Profile.fromPropertiesString(j2eeVersion) returns: " + Profile.fromPropertiesString(j2eeVersion);
@@ -374,71 +370,109 @@ public final class MavenProjectSupport {
             }
         }
     }
-
+    
     /**
-     * Read server ID for the given project.
-     *
+     * Read server ID for the given project
+     * 
      * @param project project for which we want to get server ID
      * @return server ID
      */
     public static String readServerID(Project project) {
-        return readSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
+        return getPreferences(project, true).get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
     }
-
+    
     /**
-     * Read server instance ID for the given project.
-     *
+     * Read server instance ID for the given project
+     * 
      * @param project project for which we want to get server ID
      * @return server ID
      */
     public static String readServerInstanceID(Project project) {
-        return readSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, true);
+        return getPreferences(project, false).get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, null);
     }
 
     /**
-     * Read J2EE version for the given project.
-     *
+     * Read J2EE version for the given project
+     * 
      * @param projectfor which we want to get J2EE version
      * @return J2EE version
      */
     public static String readJ2eeVersion(Project project)  {
-        return readSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, true);
+        return getPreferences(project, true).get(MavenJavaEEConstants.HINT_J2EE_VERSION, null);
     }
-
-    private static String readSettings(Project project, String propertyName, boolean shared) {
-        return project.getLookup().lookup(AuxiliaryProperties.class).get(propertyName, shared);
-    }
-
-
-
+    
     public static void setJ2eeVersion(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, true);
     }
-
+    
     public static void setServerID(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, value, true);
     }
-
-    public static void setOldServerInstanceID(Project project, String value) {
-        setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, value, true);
-    }
-
+    
     public static void setServerInstanceID(Project project, String value) {
-        setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, value, true);
+        setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, value, false);
     }
-
+    
     private static void setSettings(Project project, String key, String value, boolean shared) {
-        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        props.put(key, value, shared);
+        if (value != null) {
+            getPreferences(project, shared).put(key, value);
+        } else {
+            getPreferences(project, shared).remove(key);
+        }
     }
+    
+    /**
+     * Set browser ID for the given {@link Project}.
+     * 
+     * @param project project for which we want to set new browser
+     * @param browerID browser that we want to set or null if we want to remove current browser
+     */
+    public static void setBrowserID(@NonNull Project project, @NullAllowed String browerID) {
+        Parameters.notNull("project", project);
 
-    private static final class AddServerAction extends AbstractAction {
+        Preferences preferences = getPreferences(project, false);
+        
+        if (browerID == null || "".equals(browerID)) {
+            preferences.remove(MavenJavaEEConstants.SELECTED_BROWSER);
+        } else {
+            preferences.put(MavenJavaEEConstants.SELECTED_BROWSER, browerID);
+        }
+        try {
+            preferences.flush();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    /**
+     * Returns selected browser ID for the given {@link Project}.
+     * 
+     * @param project project for which we want to know browserID
+     * @return browserID for the given project or null if the project doesn't have browser
+     */
+    public static String getBrowserID(@NonNull Project project) {
+        Parameters.notNull("project", project);
+        
+        return getPreferences(project, false).get(MavenJavaEEConstants.SELECTED_BROWSER, null);
+    }
+    
+    /**
+     * Returns preferences for the given {@link Project}.
+     * 
+     * @param project for which we want to find {@link Preferences}
+     * @return {@link Preferences} for the given project
+     */
+    private static Preferences getPreferences(@NonNull Project project, boolean shared) {
+        return ProjectUtils.getPreferences(project, MavenProjectSupport.class, shared);
+    }
+    
+    private static class AddServerAction extends AbstractAction {
         private Project prj;
         private AddServerAction(Project project) {
             prj = project;
             putValue(Action.NAME, NbBundle.getMessage(MavenProjectSupport.class, "TXT_Add_Server")); //NOI18N
         }
-
+        
         @Override
         public void actionPerformed(ActionEvent e) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -464,7 +498,7 @@ public final class MavenProjectSupport {
                             }
                         }
                     }));
-                    prj.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, newOne, false);
+                    MavenProjectSupport.setServerInstanceID(prj, newOne);
                 }
             });
         }

@@ -78,6 +78,8 @@ public class WebKitPageModel extends PageModel {
     WebKitDebugging webKit;
     /** Document node. */
     private DOMNode documentNode;
+    /** Lock that guards the access to {@code documentNode} field. */
+    private final Object DOCUMENT_NODE_LOCK = new Object();
     /** Nodes of the document (maps ID of the node to the node itself).*/
     private final Map<Integer,DOMNode> nodes = Collections.synchronizedMap(new HashMap<Integer,DOMNode>());
     /** Selected nodes. */
@@ -210,12 +212,14 @@ public class WebKitPageModel extends PageModel {
     @Override
     public org.openide.nodes.Node getDocumentNode() {
         assert !EventQueue.isDispatchThread();
-        synchronized (this) {
+        synchronized (DOCUMENT_NODE_LOCK) {
             if (documentNode == null) {
                 DOM dom = webKit.getDOM();
                 Node node = dom.getDocument();
                 if (node != null) {
-                    documentNode = updateNodes(node);
+                    synchronized (this) {
+                        documentNode = updateNodes(node);
+                    }
                 }
             }
             return documentNode;
@@ -298,19 +302,21 @@ public class WebKitPageModel extends PageModel {
 
             @Override
             public void documentUpdated() {
-                synchronized(WebKitPageModel.this) {
-                    nodes.clear();
-                    contentDocumentMap.clear();
-                    pseudoClassMap.clear();
+                synchronized (DOCUMENT_NODE_LOCK) {
                     documentNode = null;
-                    selectedNodes = Collections.EMPTY_LIST;
-                    highlightedNodes = Collections.EMPTY_LIST;
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            firePropertyChange(PROP_DOCUMENT, null, null);
-                        }
-                    });
+                    synchronized(WebKitPageModel.this) {
+                        nodes.clear();
+                        contentDocumentMap.clear();
+                        pseudoClassMap.clear();
+                        selectedNodes = Collections.EMPTY_LIST;
+                        highlightedNodes = Collections.EMPTY_LIST;
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                firePropertyChange(PROP_DOCUMENT, null, null);
+                            }
+                        });
+                    }
                 }
             }
 
@@ -356,7 +362,6 @@ public class WebKitPageModel extends PageModel {
                                 if (selected) {
                                     setSelectedNodes(selection);
                                     firePropertyChange(PageModel.PROP_BROWSER_SELECTED_NODES, null, null);
-                                    activateStylesView();
                                 } else {
                                     setHighlightedNodesImpl(selection);
                                 }
@@ -643,7 +648,6 @@ public class WebKitPageModel extends PageModel {
         if (!selectionMode) {
             setHighlightedNodesImpl(Collections.EMPTY_LIST);
         }
-        activateStylesView();
     }
 
     @Override
@@ -787,29 +791,6 @@ public class WebKitPageModel extends PageModel {
      */
     boolean isExternal() {
         return external;
-    }
-
-    /**
-     * Activates CSS Styles view (to fill the content of Navigator).
-     */
-    void activateStylesView() {
-//        if (!isExternal()) {
-//            return;
-//        }
-//        if (EventQueue.isDispatchThread()) {
-//            WindowManager manager = WindowManager.getDefault();
-//            TopComponent stylesTC = manager.findTopComponent(MatchedRules.ID);
-//            if (stylesTC != null) {
-//                stylesTC.requestActive();
-//            }
-//        } else {
-//            EventQueue.invokeLater(new Runnable() {
-//                @Override
-//                public void run() {
-//                    activateStylesView();
-//                }
-//            });
-//        }
     }
 
     class WebPaneSynchronizer implements PropertyChangeListener {

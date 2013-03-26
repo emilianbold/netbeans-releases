@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.editor.SideBarFactory;
 import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
 import org.netbeans.spi.editor.mimelookup.MimeLocation;
@@ -72,7 +71,7 @@ public final class SideBarFactoriesProvider implements InstanceProvider<SideBarF
     public static final String SIDEBAR_COMPONENTS_FOLDER_NAME = "SideBar"; //NOI18N
     
     private final List<FileObject> instanceFiles;
-    private Map<CustomizableSideBar.SideBarPosition, List<SideBarFactory>> factories;
+    private Map<CustomizableSideBar.SideBarPosition, List> factories;
 
     public SideBarFactoriesProvider() {
         this(Collections.<FileObject>emptyList());
@@ -82,7 +81,7 @@ public final class SideBarFactoriesProvider implements InstanceProvider<SideBarF
         this.instanceFiles = instanceFiles;
     }
     
-    public Map<CustomizableSideBar.SideBarPosition, List<SideBarFactory>> getFactories() {
+    public Map<CustomizableSideBar.SideBarPosition, List> getFactories() {
         if (factories == null) {
             factories = computeInstances();
         }
@@ -93,11 +92,13 @@ public final class SideBarFactoriesProvider implements InstanceProvider<SideBarF
         return new SideBarFactoriesProvider(fileObjectList);
     }
     
-    private Map<CustomizableSideBar.SideBarPosition, List<SideBarFactory>> computeInstances() {
-        Map <CustomizableSideBar.SideBarPosition, List<SideBarFactory>> factoriesMap = new HashMap<CustomizableSideBar.SideBarPosition, List<SideBarFactory>>();
+    @SuppressWarnings({"deprecation", "unchecked"})
+    private Map<CustomizableSideBar.SideBarPosition, List> computeInstances() {
+        Map <CustomizableSideBar.SideBarPosition, List> factoriesMap = new HashMap<CustomizableSideBar.SideBarPosition, List>();
         
         for(FileObject f : instanceFiles) {
-            SideBarFactory factory = null;
+            org.netbeans.editor.SideBarFactory factory = null;
+            org.netbeans.spi.editor.SideBarFactory factory2 = null;
             
             if (!f.isValid() || !f.isData()) {
                 continue;
@@ -105,9 +106,13 @@ public final class SideBarFactoriesProvider implements InstanceProvider<SideBarF
             
             try {
                 DataObject dob = DataObject.find(f);
-                InstanceCookie ic = dob.getCookie(InstanceCookie.class);
-                if (ic != null && SideBarFactory.class.isAssignableFrom(ic.instanceClass())) {
-                    factory = (SideBarFactory) ic.instanceCreate();
+                InstanceCookie.Of ic = dob.getCookie(InstanceCookie.Of.class);
+                if (ic != null) {
+                    if (ic.instanceOf(org.netbeans.editor.SideBarFactory.class)) {
+                        factory = (org.netbeans.editor.SideBarFactory) ic.instanceCreate();
+                    } else if (ic.instanceOf(org.netbeans.spi.editor.SideBarFactory.class)) {
+                        factory2 = (org.netbeans.spi.editor.SideBarFactory) ic.instanceCreate();
+                    }
                 }
             } catch (ClassNotFoundException cnfe) {
                 LOG.log(Level.INFO, null, cnfe);
@@ -117,16 +122,19 @@ public final class SideBarFactoriesProvider implements InstanceProvider<SideBarF
                 continue;
             }
 
-            if (factory != null) {
+            if (factory != null || factory2 != null) {
                 SideBarPosition position = new SideBarPosition(f);
-                List<SideBarFactory> factoriesList = factoriesMap.get(position);
+                List factoriesList = factoriesMap.get(position);
 
                 if (factoriesList == null) {
-                    factoriesList = new ArrayList<SideBarFactory>();
+                    factoriesList = new ArrayList();
                     factoriesMap.put(position, factoriesList);
                 }
-
-                factoriesList.add(factory);
+                if (factory != null) {
+                    factoriesList.add(factory);
+                } else {
+                    factoriesList.add(factory2);
+                }
             }
         }
         

@@ -1238,7 +1238,7 @@ public class InlineTest extends RefactoringTestBase {
                 + "public class A {\n"
                 + "    private int fact(int n) {\n"
                 + "        int result;\n"
-                + "        if (n == 1) {\n"
+                + "        if (n == 1)\n"
                 + "            result = 1;\n"
                 + "        else\n"
                 + "            result = fact(n - 1) * n;\n"

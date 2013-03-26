@@ -162,4 +162,29 @@ public final class DefaultRuleUtilities {
         Pattern p = Pattern.compile(regexp.toString());
         return p;
     }
+
+    /**Checks whether the given Java element is available in the particular source
+     * code or not.
+     * 
+     * The <code>elementDescription</code> format is as follows:
+     * <dl>
+     *   <dt>for type (class, enum, interface or annotation type)</dt>
+     *     <dd><em>the FQN of the type</em></dd>
+     *   <dt>for field or enum constant</dt>
+     *     <dd><em>the FQN of the enclosing type</em><code>.</code><em>field name</em></dd>
+     *   <dt>for method</dt>
+     *     <dd><em>the FQN of the enclosing type</em><code>.</code><em>method name</em><code>(</code><em>comma separated parameter types</em><code>)</code><br>
+     *         The parameter types may include type parameters, but these are ignored. The last parameter type can use ellipsis (...) to denote vararg method.</dd>
+     *   <dt>for constructor</dt>
+     *     <dd><em>the FQN of the enclosing type</em><code>.</code><em>simple name of enclosing type</em><code>(</code><em>comma separated parameter types</em><code>)</code><br>
+     *         See method format for more details on parameter types.</dd>
+     * </dl>
+     * 
+     * @param elementDescription the description of the element that should be checked for existence
+     * @return true if and only the specified element exists while processing the current source
+     * @since nb74
+     */
+    public boolean isAvailable(@NonNull String elementDescription) {
+        return context.isAvailable(elementDescription);
+    }
 }

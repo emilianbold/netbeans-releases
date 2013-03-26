@@ -57,11 +57,11 @@ import org.openide.util.ImageUtilities;
 
 class QueryTableHeaderRenderer extends DefaultTableCellRenderer {
 
-    private JLabel seenCell = new JLabel();
+    private final JLabel seenCell = new JLabel();
 
-    private static Icon seenHeaderIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-header.png")); // NOI18N
+    private static final Icon seenHeaderIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-header.png")); // NOI18N
     private final QueryImpl query;
-    private TableCellRenderer delegate;
+    private final TableCellRenderer delegate;
     private final IssueTable issueTable;
 
      public QueryTableHeaderRenderer(TableCellRenderer delegate, IssueTable issueTable, QueryImpl query) {

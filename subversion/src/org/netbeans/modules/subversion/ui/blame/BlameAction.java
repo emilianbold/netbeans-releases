@@ -64,6 +64,7 @@ import java.io.File;
 import java.util.*;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.openide.text.NbDocument;
+import org.openide.util.Mutex;
 import org.openide.windows.TopComponent;
 
 /**
@@ -71,6 +72,11 @@ import org.openide.windows.TopComponent;
  * @author Maros Sandor
  */
 public class BlameAction extends ContextAction {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/annotate.png"; //NOI18N
+    
+    public BlameAction () {
+        super(ICON_RESOURCE);
+    }
     
     @Override
     protected String getBaseName(Node [] activatedNodes) {
@@ -88,7 +94,7 @@ public class BlameAction extends ContextAction {
 
     @Override
     protected String iconResource() {
-        return "org/netbeans/modules/subversion/resources/icons/annotate.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 
     @Override
@@ -265,9 +271,14 @@ public class BlameAction extends ContextAction {
      * does not have any or more nodes selected.
      */
     private JEditorPane activatedEditorPane(Node[] nodes) {
-        EditorCookie ec = activatedEditorCookie(nodes);        
-        if (ec != null && SwingUtilities.isEventDispatchThread()) {              
-            return NbDocument.findRecentEditorPane(ec);
+        final EditorCookie ec = activatedEditorCookie(nodes);
+        if (ec != null) {
+            return Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
+                @Override
+                public JEditorPane run () {
+                    return NbDocument.findRecentEditorPane(ec);
+                }
+            });
         }
         return null;
     }

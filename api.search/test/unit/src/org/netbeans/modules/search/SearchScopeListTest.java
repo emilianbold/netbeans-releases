@@ -37,11 +37,15 @@
  */
 package org.netbeans.modules.search;
 
+import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -49,6 +53,7 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.search.SearchScopeDefinition;
 import org.netbeans.spi.search.SearchScopeDefinitionProvider;
+import org.openide.util.Mutex;
 
 
 /**
@@ -77,18 +82,43 @@ public class SearchScopeListTest extends NbTestCase {
         final CustomChangeListener cl = new CustomChangeListener();
         final CustomChangeListener cl2 = new CustomChangeListener();
 
-        SearchScopeList ssl = new SearchScopeList();
+        final SearchScopeList ssl = new SearchScopeList();
         ssl.addChangeListener(cl);
         ssl.addChangeListener(cl2);
 
-        for (SearchScopeDefinition ssd : ssl.getSeachScopeDefinitions()) {
-            if (ssd instanceof CustomSearchScope) {
-                ((CustomSearchScope) ssd).fireChangeEvent();
+        Mutex.EVENT.writeAccess(new Mutex.Action<Boolean>() {
+            @Override
+            public Boolean run() {
+                for (SearchScopeDefinition ssd
+                        : ssl.getSeachScopeDefinitions()) {
+                    if (ssd instanceof CustomSearchScope) {
+                        ((CustomSearchScope) ssd).fireChangeEvent();
+                    }
+                }
+                return true;
             }
-        }
+        });
 
         assertEquals(3, cl.getCounter());
         assertEquals(3, cl.getCounter());
+    }
+
+    public void testSearchScopesNotifiedAboutChangesInEDT()
+            throws InterruptedException {
+        CustomSearchScope css = new CustomSearchScope(true, 1);
+        SearchScopeList ssl = new SearchScopeList(css);
+        final Semaphore s = new Semaphore(0);
+        final AtomicBoolean notifiedInEDT = new AtomicBoolean(false);
+        ssl.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                notifiedInEDT.set(EventQueue.isDispatchThread());
+                s.release();
+            }
+        });
+        css.fireChangeEvent();
+        boolean acqrd = s.tryAcquire(10, TimeUnit.SECONDS);
+        assertTrue("Should be notified in EDT", acqrd && notifiedInEDT.get());
     }
 
     /**

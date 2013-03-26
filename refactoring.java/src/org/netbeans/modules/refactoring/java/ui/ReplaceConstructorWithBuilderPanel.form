@@ -67,6 +67,9 @@
               <Connection code="new javax.swing.table.DefaultTableModel(&#xa;                new Object[][]{}, columnNames) {&#xa;            public Class getColumnClass(int columnIndex) {&#xa;                return columnTypes[columnIndex];&#xa;            }&#xa;&#xa;            public boolean isCellEditable(int rowIndex, int columnIndex) {&#xa;                return columnCanEdit[columnIndex];&#xa;            }&#xa;        }" type="code"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JTable() {&#xa;&#xa;            @Override&#xa;            public boolean isCellEditable(int row, int column) {&#xa;                if(column == 2 || column == 3) {&#xa;                    return !parameterTypeVars.get(row);&#xa;                }&#xa;                return super.isCellEditable(row, column);&#xa;            }&#xa;        };"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

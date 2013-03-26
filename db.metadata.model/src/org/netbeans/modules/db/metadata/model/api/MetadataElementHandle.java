@@ -75,6 +75,7 @@ public class MetadataElementHandle<T extends MetadataElement> {
     private static final int FOREIGN_KEY = 3;
     private static final int FOREIGN_KEY_COLUMN = 4;
     private static final int INDEX_COLUMN = 4;
+    private static final int FUNCTION = 2;
 
     // The hierarchy of names for this element (e.g. ["mycatalog","myschema","mytable","mycolumn"])
     //
@@ -196,6 +197,10 @@ public class MetadataElementHandle<T extends MetadataElement> {
                 return (T) resolveForeignKeyColumn(metadata);
             case INDEX_COLUMN:
                 return (T) resolveIndexColumn(metadata);
+            case RETURN_VALUE:
+                return (T) resolveReturnValue(metadata);
+            case FUNCTION:
+                return (T) resolveFunction(metadata);
             default:
                 throw new IllegalStateException("Unhandled kind " + kinds[kinds.length -1]);
         }
@@ -236,8 +241,28 @@ public class MetadataElementHandle<T extends MetadataElement> {
 
     private Procedure resolveProcedure(Metadata metadata) {
         Schema schema = resolveSchema(metadata);
-        if (schema != null) {
+        if (schema != null && kinds[PROCEDURE] == Kind.PROCEDURE) {
             return schema.getProcedure(names[PROCEDURE]);
+        }
+        return null;
+    }
+
+    private Function resolveFunction(Metadata metadata) {
+        Schema schema = resolveSchema(metadata);
+        if (schema != null && kinds[FUNCTION] == Kind.FUNCTION) {
+            return schema.getFunction(names[FUNCTION]);
+        }
+        return null;
+    }
+
+    private Value resolveReturnValue(Metadata metadata) {
+        Function proc = resolveFunction(metadata);
+        if (proc != null) {
+            return proc.getReturnValue();
+        }
+        Procedure proc2 = resolveProcedure(metadata);
+        if (proc2 != null) {
+            return proc2.getReturnValue();
         }
         return null;
     }
@@ -282,6 +307,10 @@ public class MetadataElementHandle<T extends MetadataElement> {
         Procedure proc = resolveProcedure(metadata);
         if (proc != null) {
             return proc.getParameter(names[PARAMETER]);
+        }
+        Function proc2 = resolveFunction(metadata);
+        if (proc2 != null) {
+            return proc2.getParameter(names[PARAMETER]);
         }
         return null;
     }
@@ -335,7 +364,9 @@ public class MetadataElementHandle<T extends MetadataElement> {
         FOREIGN_KEY(ForeignKey.class),
         INDEX(Index.class),
         FOREIGN_KEY_COLUMN(ForeignKeyColumn.class),
-        INDEX_COLUMN(IndexColumn.class);
+        INDEX_COLUMN(IndexColumn.class),
+        RETURN_VALUE(Value.class),
+        FUNCTION(Function.class);
 
         public static Kind of(MetadataElement element) {
             return of(element.getClass());

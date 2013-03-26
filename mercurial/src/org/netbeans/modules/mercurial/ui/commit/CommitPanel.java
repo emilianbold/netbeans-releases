@@ -132,6 +132,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private static final boolean DEFAULT_DISPLAY_FILES = true;
     private static final boolean DEFAULT_DISPLAY_HOOKS = false;
     private static final Icon ICON_INFO = ImageUtilities.loadImageIcon("/org/netbeans/modules/mercurial/resources/icons/info.png", true); //NOI18N
+    private static final Icon ICON_WARNING = ImageUtilities.loadImageIcon("org/netbeans/modules/mercurial/resources/icons/warning.gif", true); //NOI18N
 
     final JLabel filesLabel = new JLabel();
     final PlaceholderPanel progressPanel = new PlaceholderPanel();
@@ -154,6 +155,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private JTabbedPane tabbedPane;
     private HashMap<File, MultiDiffPanel> displayedDiffs = new HashMap<File, MultiDiffPanel>();
     private UndoRedoSupport um;
+    private String warningMessage;
 
     /** Creates new form CommitPanel */
     public CommitPanel() {
@@ -167,8 +169,18 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     
     void setErrorLabel(String htmlErrorLabel) {
         jLabel2.setText(htmlErrorLabel);
-        jLabel2.setIcon(htmlErrorLabel == null || htmlErrorLabel.isEmpty() ? null : ICON_INFO);
-    }    
+        if (htmlErrorLabel == null || htmlErrorLabel.isEmpty()) {
+            jLabel2.setIcon(null);
+            displayWarning();
+        } else {
+            jLabel2.setIcon(ICON_INFO);
+        }
+    }
+
+    void setWarningMessage (String message) {
+        this.warningMessage = message;
+        displayWarning();
+    } 
 
     @Override
     public void addNotify() {
@@ -193,6 +205,12 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
         messageTextArea.selectAll();
         um = UndoRedoSupport.register(messageTextArea);
+    }
+
+    void closed () {
+        for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
+            e.getValue().componentClosed();
+        }
     }
 
     private void initCollapsibleSections() {
@@ -538,7 +556,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             File file = node.getFile();
             MultiDiffPanel panel = displayedDiffs.get(file);
             if (panel == null) {
-                panel = new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, false); // switch the last parameter to true if editable diff works poorly
+                panel = new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, node.getInformation(), false); // switch the last parameter to true if editable diff works poorly
                 displayedDiffs.put(file, panel);
             }
             if (tabbedPane.indexOfComponent(panel) == -1) {
@@ -623,5 +641,12 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             }
         }
         return modifiedFiles;
+    }
+
+    private void displayWarning () {
+        if (warningMessage != null && jLabel2.getText().isEmpty()) {
+            jLabel2.setText(warningMessage);
+            jLabel2.setIcon(ICON_WARNING);
+        }
     }
 }

@@ -45,11 +45,11 @@ package org.netbeans.modules.bugtracking.bridge.exportdiff;
 import java.awt.BorderLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
@@ -58,16 +58,16 @@ import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class AttachPanel extends javax.swing.JPanel implements ItemListener, PropertyChangeListener {
-    private QuickSearchComboBar qs;
-    private PropertyChangeListener issueListener;
+public class AttachPanel extends javax.swing.JPanel implements ItemListener, ChangeListener {
+    private IssueQuickSearch qs;
+    private ChangeListener issueListener;
     
-    public AttachPanel(PropertyChangeListener issueListener) {
+    public AttachPanel(ChangeListener issueListener) {
         initComponents();
         this.issueListener = issueListener;
-        qs = new QuickSearchComboBar(this);
-        issuePanel.add(qs, BorderLayout.NORTH);
-        issueLabel.setLabelFor(qs.getIssueComponent());
+        qs = new IssueQuickSearch(this);
+        issuePanel.add(qs.getComponent(), BorderLayout.NORTH);
+        issueLabel.setLabelFor(qs.getComponent());
     }
 
     void init(File referenceFile) {
@@ -99,7 +99,7 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         repositoryLabel = new javax.swing.JLabel();
-        jButton2 = new org.netbeans.modules.versioning.util.WideButton();
+        newButton = new org.netbeans.modules.versioning.util.WideButton();
         issueLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -109,10 +109,10 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
         repositoryLabel.setLabelFor(repositoryComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(repositoryLabel, org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.repositoryLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton2, org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.jButton2.text")); // NOI18N
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(newButton, org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.newButton.text")); // NOI18N
+        newButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                newButtonActionPerformed(evt);
             }
         });
 
@@ -158,8 +158,7 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(repositoryComboBox, 0, 367, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, 0))
+                        .addComponent(newButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(descriptionTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)))
         );
@@ -169,7 +168,7 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(repositoryLabel)
                     .addComponent(repositoryComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(newButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -180,19 +179,19 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
                     .addComponent(descriptionLabel)))
         );
 
-        jButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.jButton2.AccessibleContext.accessibleDescription")); // NOI18N
+        newButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.newButton.AccessibleContext.accessibleDescription")); // NOI18N
         repositoryComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.repositoryComboBox.AccessibleContext.accessibleDescription")); // NOI18N
         descriptionTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.descriptionTextField.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
         Repository repo = RepositoryManager.getInstance().createRepository();
         if(repo == null) {
             return;
         }
         repositoryComboBox.addItem(repo);
         repositoryComboBox.setSelectedItem(repo);
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_newButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -201,9 +200,9 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
     final javax.swing.JTextField descriptionTextField = new javax.swing.JTextField();
     private javax.swing.JLabel issueLabel;
     private javax.swing.JPanel issuePanel;
-    private org.netbeans.modules.versioning.util.WideButton jButton2;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
+    private org.netbeans.modules.versioning.util.WideButton newButton;
     final javax.swing.JComboBox repositoryComboBox = new javax.swing.JComboBox();
     private javax.swing.JLabel repositoryLabel;
     // End of variables declaration//GEN-END:variables
@@ -223,22 +222,21 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
 
     @Override
     public void addNotify() {
-        qs.addPropertyChangeListener(this);
-        qs.addPropertyChangeListener(issueListener);
+        qs.addChangeListener(this);
+        qs.addChangeListener(issueListener);
         super.addNotify();
     }
 
     @Override
     public void removeNotify() {
-        qs.removePropertyChangeListener(this);
-        qs.removePropertyChangeListener(issueListener);
+        qs.removeChangeListener(this);
+        qs.removeChangeListener(issueListener);
         super.removeNotify();
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(QuickSearchComboBar.EVT_ISSUE_CHANGED)) {
-            enableFields();
-        }
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        enableFields();
     }
 
     @Override
@@ -249,6 +247,7 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
 
         repositoryLabel.setEnabled(enabled);
         repositoryComboBox.setEnabled(enabled);
+        newButton.setEnabled(enabled);
     }
 
     private void enableFields() {
@@ -265,5 +264,6 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
         issueLabel.setEnabled(repoSelected && enable);
         qs.enableFields(repoSelected && enable);
     }
+
 
 }

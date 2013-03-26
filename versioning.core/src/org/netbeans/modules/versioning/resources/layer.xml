@@ -83,12 +83,5 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         
-        <folder name="Window">
-            <folder name="Versioning">
-                <attr name="position" intvalue="1550"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.versioning.core.Bundle"/>
-            </folder>
-        </folder>
-        
     </folder>   
 </filesystem>

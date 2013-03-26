@@ -291,7 +291,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
                 mainProjectDir = CndFileUtils.toFile(projectDirFO);
             }
             ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
-            MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor(true);
+            MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor();
             descriptor.getConfs().setActive(conf);
             descriptor.save(); // make sure all necessary configuration files in nbproject/ are written
         }

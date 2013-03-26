@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -104,7 +104,6 @@ made subject to such option by the copyright holder.
                 <xsl:value-of select="$changes-since-year" /> 
                 <xsl:text>). There are also other documents that list changes 
                 made for </xsl:text>
-                <a href="http://www.netbeans.org/download/release41/javadoc/apichanges.html">release 4.1</a>,
                 <a href="http://www.netbeans.org/download/5_0/javadoc/apichanges.html">release 5.0</a>, 
                 <a href="http://www.netbeans.org/download/5_5/javadoc/apichanges.html">release 5.5</a>,
                 <a href="http://bits.netbeans.org/6.0/javadoc/apichanges.html">release 6.0</a>,
@@ -119,8 +118,9 @@ made subject to such option by the copyright holder.
                 <a href="http://bits.netbeans.org/7.1/javadoc/apichanges.html">release 7.1</a>,
                 <a href="http://bits.netbeans.org/7.1.1/javadoc/apichanges.html">release 7.1.1</a>,
                 <a href="http://bits.netbeans.org/7.1.2/javadoc/apichanges.html">release 7.1.2</a>,
-                <a href="http://bits.netbeans.org/7.2/javadoc/apichanges.html">release 7.2</a>, and
-                <a href="http://bits.netbeans.org/7.2.1/javadoc/apichanges.html">release 7.2.1</a>.
+                <a href="http://bits.netbeans.org/7.2/javadoc/apichanges.html">release 7.2</a>,
+                <a href="http://bits.netbeans.org/7.2.1/javadoc/apichanges.html">release 7.2.1</a>,
+                <a href="http://bits.netbeans.org/7.3/javadoc/apichanges.html">release 7.3</a>.
             <xsl:call-template name="do-the-table" />
             </body>
             </html>

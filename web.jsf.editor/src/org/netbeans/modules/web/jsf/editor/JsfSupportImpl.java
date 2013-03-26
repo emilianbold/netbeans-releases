@@ -43,6 +43,8 @@ package org.netbeans.modules.web.jsf.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -59,7 +61,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
@@ -197,6 +198,14 @@ public class JsfSupportImpl implements JsfSupport {
     public ClassPath getClassPath() {
         return compileClasspath;
     }
+    
+    public FileObject[] getClassPathRoots() {
+        Collection<FileObject> roots = new ArrayList<FileObject>();
+        roots.addAll(Arrays.asList(sourceClassPath.getRoots()));
+        roots.addAll(Arrays.asList(compileClasspath.getRoots()));
+        roots.addAll(Arrays.asList(executeClassPath.getRoots()));
+        return roots.toArray(new FileObject[0]);
+    }
 
     /**
      * @return can return null if this supports wraps a project of non-web type.
@@ -221,7 +230,7 @@ public class JsfSupportImpl implements JsfSupport {
      * Once under the declared namespace key and once under the default cc namespace key.
      */
     @Override
-    public Map<String, AbstractFaceletsLibrary> getLibraries() {
+    public Map<String, Library> getLibraries() {
         return faceletsLibrarySupport.getLibraries();
     }
     

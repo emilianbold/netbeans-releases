@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.vcs;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
 import javax.swing.JPanel;
 import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
@@ -98,6 +99,11 @@ public class HgHookImpl extends HgHook {
             changesets[i] = logEntry.getChangeset();
         }        
         delegate.afterPush(context.getFiles(), changesets, "HG");
+    }
+
+    @Override
+    public void afterCommitReplace (HgHookContext originalContext, HgHookContext newContext, Map<String, String> mapping) {
+        delegate.afterChangesetReplace(newContext.getFiles(), mapping, "HG");
     }
 
     @Override

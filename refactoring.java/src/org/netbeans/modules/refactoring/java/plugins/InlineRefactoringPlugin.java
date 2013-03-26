@@ -99,7 +99,6 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
     protected ClasspathInfo getClasspathInfo(Set<FileObject> a) {
         ClasspathInfo cpInfo;
         cpInfo = JavaRefactoringUtils.getClasspathInfoFor(a.toArray(new FileObject[a.size()]));
-        refactoring.getContext().add(cpInfo);
         return cpInfo;
     }
 

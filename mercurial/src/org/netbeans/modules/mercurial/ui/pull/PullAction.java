@@ -56,6 +56,8 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgException;
@@ -67,6 +69,7 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.queues.QGoToPatchAction;
 import org.netbeans.modules.mercurial.ui.queues.QPatch;
+import org.netbeans.modules.mercurial.ui.rebase.RebaseAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
@@ -78,6 +81,8 @@ import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
 import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.actions.SystemAction;
 
@@ -192,7 +197,7 @@ public class PullAction extends ContextAction {
             }
         }
 
-        if (listIncomingAndLocalMod != null && listIncomingAndLocalMod.size() > 0) {
+        if (listIncomingAndLocalMod.size() > 0) {
             logger.outputInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_OVERWRITE_LOCAL")); // NOI18N
             logger.output(listIncomingAndLocalMod);
             int response = JOptionPane.showOptionDialog(null, 
@@ -298,11 +303,6 @@ public class PullAction extends ContextAction {
      * @param toPrjName
      * @param logger
      */
-    @NbBundle.Messages({
-        "MSG_PullAction.popingPatches=Popping applied patches",
-        "MSG_PullAction.pulling=Pulling changesets",
-        "MSG_PullAction.pushingPatches=Pushing patches"
-    })
     static void performPull(final PullType type, final File root, 
     final HgURL pullSource, final String fromPrjName, final String toPrjName, 
     final String revision, final String branch, final HgProgressSupport supp) {
@@ -348,84 +348,10 @@ public class PullAction extends ContextAction {
             if (bNoChanges || supp.isCanceled()) {
                 logger.output(HgUtils.replaceHttpPassword(listIncoming));
             } else {
-                final QPatch topPatch = FetchAction.selectPatch(root);
-                final File fileToUnbundle = bundleFile;
-                HgUtils.runWithoutIndexing(new Callable<Void>() {
-                    @Override
-                    public Void call () throws Exception {
-                        if (topPatch != null) {
-                            supp.setDisplayName(Bundle.MSG_PullAction_popingPatches());
-                            SystemAction.get(QGoToPatchAction.class).popAllPatches(root, logger);
-                            supp.setDisplayName(Bundle.MSG_PullAction_pulling());
-                            logger.output(""); // NOI18N
-                        }
-                        if (supp.isCanceled()) {
-                            return null;
-                        }
-                        List<String> list;
-                        if(type == PullType.LOCAL){
-                            list = HgCommand.doPull(root, revision, branch, logger);
-                        }else{
-                            list = HgCommand.doUnbundle(root, fileToUnbundle, false, logger);
-                        }
-                        if (list != null && !list.isEmpty()) {
-                            annotateChangeSets(HgUtils.replaceHttpPassword(listIncoming), PullAction.class, "MSG_CHANGESETS_TO_PULL", logger); // NOI18N
-                            
-                            boolean bMergeNeeded = false;
-                            boolean updateNeeded = false;
-                            for (String s : list) {
-                                logger.output(HgUtils.replaceHttpPassword(s));
-                                if (HgCommand.isMergeNeededMsg(s)) {
-                                    bMergeNeeded = true;
-                                } else if (HgCommand.isUpdateNeededMsg(s)) {
-                                    updateNeeded = true;
-                                }
-                            }
-                            
-                            // Handle Merge - both automatic and merge with conflicts
-                            boolean bConfirmMerge = false;
-                            boolean warnMoreHeads = true;
-                            if (!supp.isCanceled()) {
-                                if (bMergeNeeded) {
-                                    // updating to branch tip
-                                    HgCommand.doUpdateAll(root, false, null, false);
-                                    bConfirmMerge = HgUtils.confirmDialog(
-                                        PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_CONFIRM_QUERY"); // NOI18N
-                                    warnMoreHeads = false;
-                                } else if (updateNeeded) {
-                                    list = HgCommand.doUpdateAll(root, false, null);
-                                    logger.output(list);
-                                }
-                            }
-                            boolean finished = !bMergeNeeded;
-                            if (bConfirmMerge) {
-                                logger.output(""); //NOI18N
-                                logger.outputInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_MERGE_DO")); // NOI18N
-                                list = MergeAction.doMergeAction(root, null, logger);
-                            } else if (!supp.isCanceled() && finished && topPatch != null) {
-                                logger.output(""); //NOI18N
-                                supp.setDisplayName(Bundle.MSG_PullAction_pushingPatches());
-                                SystemAction.get(QGoToPatchAction.class).applyPatch(root, topPatch.getId(), logger);
-                                HgLogMessage parent = HgCommand.getParents(root, null, null).get(0);
-                                logger.output(""); //NOI18N
-                                HgUtils.logHgLog(parent, logger);
-                            }
-                            HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
-                            Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
-                            if (!branchHeads.isEmpty()) {
-                                MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads && !supp.isCanceled());
-                            }
-                            Mercurial.getInstance().refreshOpenedFiles(root);
-                            HgUtils.notifyUpdatedFiles(root, list);
-                            HgUtils.forceStatusRefresh(root);
-                        }
-
-                        return null;
-                    }
-                }, root);
-            }            
-                       
-            
+                HgUtils.runWithoutIndexing(new PullImpl(supp, root, type, 
+                        revision, branch, bundleFile, listIncoming),
+                        root);
+            }
         } catch (HgException.HgCommandCanceledException ex) {
             // canceled by user, do nothing
         } catch (HgException ex) {
@@ -442,6 +368,184 @@ public class PullAction extends ContextAction {
 
     private static String getMessage(String msgKey, String... args) {
         return NbBundle.getMessage(PullAction.class, msgKey, args);
+    }
+
+    private static boolean isRebaseAllowed (File reposiory, List<HgLogMessage> parents) {
+        try {
+            if (parents.size() == 1 && parents.get(0).getCSetShortID().equals(
+                    HgCommand.getParents(reposiory, null, null).get(0).getCSetShortID())) {
+                return true;
+            }
+        } catch (HgException.HgCommandCanceledException ex) {
+            
+        } catch (HgException ex) {
+            Logger.getLogger(PullAction.class.getName()).log(Level.INFO, null, ex);
+        }
+        return false;
+    }
+
+    @NbBundle.Messages({
+        "MSG_PullAction.popingPatches=Popping applied patches",
+        "MSG_PullAction.pulling=Pulling changesets",
+        "MSG_PullAction.pushingPatches=Pushing patches",
+        "# Capitalized letters used intentionally to emphasize the words in "
+            + "an output window, should be translated",
+        "MSG_PULL_MERGE_DO=INFO: Performing Merge with pulled changes",
+        "# Capitalized letters used intentionally to emphasize the words in "
+            + "the output window, should be translated",
+        "MSG_PULL_REBASE_DO=INFO: Performing Rebase of local commits "
+            + "onto pulled changes"
+    })
+    private static class PullImpl implements Callable<Void> {
+
+        private QPatch topPatch;
+        private final HgProgressSupport supp;
+        private final File root;
+        private final PullType type;
+        private final String revision;
+        private final String branch;
+        private final File fileToUnbundle;
+        private final List<String> listIncoming;
+        private boolean rebaseAccepted;
+        private boolean mergeAccepted;
+
+        public PullImpl (HgProgressSupport supp, File root, 
+                PullType type, String revision, String branch,
+                File fileToUnbundle, List<String> listIncoming) {
+            this.supp = supp;
+            this.root = root;
+            this.type = type;
+            this.revision = revision;
+            this.branch = branch;
+            this.fileToUnbundle = fileToUnbundle;
+            this.listIncoming = listIncoming;
+        }
+
+        @Override
+        public Void call () throws HgException {
+            OutputLogger logger = supp.getLogger();
+            topPatch = FetchAction.selectPatch(root);
+            if (topPatch != null) {
+                supp.setDisplayName(Bundle.MSG_PullAction_popingPatches());
+                SystemAction.get(QGoToPatchAction.class).popAllPatches(root, logger);
+                supp.setDisplayName(Bundle.MSG_PullAction_pulling());
+                logger.output(""); // NOI18N
+            }
+            if (supp.isCanceled()) {
+                return null;
+            }
+            List<String> list;
+            if(type == PullType.LOCAL){
+                list = HgCommand.doPull(root, revision, branch, logger);
+            }else{
+                list = HgCommand.doUnbundle(root, fileToUnbundle, false, logger);
+            }
+            if (list != null && !list.isEmpty()) {
+                annotateChangeSets(HgUtils.replaceHttpPassword(listIncoming), PullAction.class, "MSG_CHANGESETS_TO_PULL", logger); // NOI18N
+                handlePulledChangesets(list);
+            }
+
+            return null;
+        }
+
+        @NbBundle.Messages({
+            "MSG_PullAction_mergeNeeded_text=Pull has completed and created "
+                + "multiple heads.\n"
+                + "Do you want to Merge or Rebase the two heads or Keep them "
+                + "unmerged in the repository?",
+            "LBL_PullAction_mergeNeeded_title=Pull Created Multiple Heads",
+            "CTL_PullAction_mergeButton_text=&Merge",
+            "CTL_PullAction_mergeButton_TTtext=Merge the two created heads",
+            "CTL_PullAction_rebaseButton_text=&Rebase",
+            "CTL_PullAction_rebaseButton_TTtext=Rebase local changesets onto "
+                + "the tipmost branch head",
+            "CTL_PullAction_keepButton_text=&Keep Heads",
+            "CTL_PullAction_keepButton_TTtext=Leaves the heads alone and does "
+                + "nothing"
+        })
+        private void handlePulledChangesets (List<String> list) throws HgException {
+            OutputLogger logger = supp.getLogger();
+            boolean bMergeNeeded = false;
+            boolean updateNeeded = false;
+            for (String s : list) {
+                logger.output(HgUtils.replaceHttpPassword(s));
+                if (HgCommand.isMergeNeededMsg(s)) {
+                    bMergeNeeded = true;
+                } else if (HgCommand.isUpdateNeededMsg(s) || HgCommand.isHeadsNeededMsg(s)) {
+                    updateNeeded = true;
+                }
+            }
+            
+            // Handle Merge - both automatic and merge with conflicts
+            mergeAccepted = false;
+            rebaseAccepted = false;
+            boolean warnMoreHeads = true;
+            if (!supp.isCanceled()) {
+                if (bMergeNeeded) {
+                    List<HgLogMessage> parents = HgCommand.getParents(root, null, null);
+                    askForMerge(parents);
+                    warnMoreHeads = false;
+                } else if (updateNeeded) {
+                    list = HgCommand.doUpdateAll(root, false, null);
+                    logger.output(list);
+                }
+            }
+            boolean finished = !bMergeNeeded;
+            try {
+                if (rebaseAccepted) {
+                    logger.output(""); //NOI18N
+                    logger.outputInRed(Bundle.MSG_PULL_REBASE_DO());
+                    finished = RebaseAction.doRebase(root, null, null, null, supp);
+                } else if (mergeAccepted) {
+                    logger.output(""); //NOI18N
+                    logger.outputInRed(Bundle.MSG_PULL_MERGE_DO());
+                    list = MergeAction.doMergeAction(root, null, logger);
+                }
+                if (!supp.isCanceled() && finished && topPatch != null) {
+                    logger.output(""); //NOI18N
+                    supp.setDisplayName(Bundle.MSG_PullAction_pushingPatches());
+                    SystemAction.get(QGoToPatchAction.class).applyPatch(root, topPatch.getId(), logger);
+                    HgLogMessage parent = HgCommand.getParents(root, null, null).get(0);
+                    logger.output(""); //NOI18N
+                    HgUtils.logHgLog(parent, logger);
+                }
+            } finally {
+                HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, false, OutputLogger.getLogger(null));
+                Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
+                if (!branchHeads.isEmpty()) {
+                    MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads && !supp.isCanceled());
+                }
+                Mercurial.getInstance().refreshOpenedFiles(root);
+                HgUtils.notifyUpdatedFiles(root, list);
+                HgUtils.forceStatusRefresh(root);
+            }
+        }
+
+        private void askForMerge (List<HgLogMessage> parents) {
+            if (isRebaseAllowed(root, parents)) {
+                JButton btnMerge = new JButton();
+                Mnemonics.setLocalizedText(btnMerge, Bundle.CTL_PullAction_mergeButton_text());
+                btnMerge.setToolTipText(Bundle.CTL_PullAction_mergeButton_TTtext());
+                JButton btnRebase = new JButton();
+                Mnemonics.setLocalizedText(btnRebase, Bundle.CTL_PullAction_rebaseButton_text());
+                btnRebase.setToolTipText(Bundle.CTL_PullAction_rebaseButton_TTtext());
+                JButton btnKeep = new JButton();
+                Mnemonics.setLocalizedText(btnKeep, Bundle.CTL_PullAction_keepButton_text());
+                btnKeep.setToolTipText(Bundle.CTL_PullAction_keepButton_TTtext());
+                Object value = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+                        Bundle.MSG_PullAction_mergeNeeded_text(),
+                        Bundle.LBL_PullAction_mergeNeeded_title(),
+                        NotifyDescriptor.DEFAULT_OPTION,
+                        NotifyDescriptor.QUESTION_MESSAGE,
+                        new Object[] { btnMerge, btnRebase, btnKeep },
+                        btnMerge));
+                mergeAccepted = value == btnMerge;
+                rebaseAccepted = value == btnRebase;
+            } else {
+                mergeAccepted = HgUtils.confirmDialog(
+                        PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_CONFIRM_QUERY"); //NOI18N
+            }
+        }
     }
 
 }

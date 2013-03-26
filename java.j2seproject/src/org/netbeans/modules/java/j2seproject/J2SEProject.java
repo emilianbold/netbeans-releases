@@ -199,6 +199,7 @@ public final class J2SEProject implements Project {
     private SourceRoots testRoots;
     private final ClassPathProviderImpl cpProvider;
     private final ClassPathModifier cpMod;
+    private final GeneratedFilesInterceptorSupport gfis;
 
     private AntBuildExtender buildExtender;
 
@@ -232,6 +233,7 @@ public final class J2SEProject implements Project {
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         this.cpMod = new ClassPathModifier(this, this.updateHelper, evaluator(), refHelper, null, createClassPathModifierCallback(), null);
         lookup = createLookup(aux, new J2SEProjectOperations(this, updateProject));
+        this.gfis = new GeneratedFilesInterceptorSupport(this, genFilesHelper);
     }
 
     private ClassPathModifier.Callback createClassPathModifierCallback() {
@@ -522,16 +524,16 @@ public final class J2SEProject implements Project {
                                 }
                             }
                             if (forceRewriteBuildImpl) {
-                                genFilesHelper.generateBuildScriptFromStylesheet(                                        
+                                gfis.generateBuildScriptFromStylesheet(
                                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                                     J2SEProject.class.getResource("resources/build-impl.xsl"));
                             } else {
-                                genFilesHelper.refreshBuildScript(
+                                gfis.refreshBuildScript(
                                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                                     J2SEProject.class.getResource("resources/build-impl.xsl"),
                                     false);
                             }
-                            genFilesHelper.refreshBuildScript(
+                            gfis.refreshBuildScript(
                                 J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
                                 J2SEProject.class.getResource("resources/build.xsl"),
                                 false);
@@ -558,11 +560,11 @@ public final class J2SEProject implements Project {
             try {
                 if (updateHelper.isCurrent()) {
                     //Refresh build-impl.xml only for j2seproject/2
-                    genFilesHelper.refreshBuildScript(
+                    gfis.refreshBuildScript(
                         GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                         J2SEProject.class.getResource("resources/build-impl.xsl"),
                         true);
-                    genFilesHelper.refreshBuildScript(
+                    gfis.refreshBuildScript(
                         J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
                         J2SEProject.class.getResource("resources/build.xsl"),
                         true);

@@ -44,6 +44,7 @@ package org.netbeans.modules.db.metadata.model.jdbc.mysql;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.netbeans.modules.db.metadata.model.api.MetadataElement;
 import org.netbeans.modules.db.metadata.model.api.Nullable;
 import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
 import org.netbeans.modules.db.metadata.model.api.SQLType;
@@ -64,13 +65,13 @@ public class MySQLProcedure extends JDBCProcedure {
 
     @Override
     protected JDBCParameter createJDBCParameter(int position, ResultSet rs) throws SQLException {
-        Direction direction = JDBCUtils.getDirection(rs.getShort("COLUMN_TYPE"));
-        return new JDBCParameter(this, createValue(rs), direction, position);
+        Direction direction = JDBCUtils.getProcedureDirection(rs.getShort("COLUMN_TYPE"));
+        return new JDBCParameter(this.getProcedure(), createValue(rs, this.getProcedure()), direction, position);
     }
 
     @Override
     protected JDBCValue createJDBCValue(ResultSet rs) throws SQLException {
-        return createValue(rs);
+        return createValue(rs, this.getProcedure());
     }
 
     @Override
@@ -85,7 +86,7 @@ public class MySQLProcedure extends JDBCProcedure {
      * Logged as a MySQL bug - http://bugs.mysql.com/bug.php?id=41269
      * When this is fixed this workaround will need to be backed out.
      */
-    private static JDBCValue createValue(ResultSet rs) throws SQLException {
+    private static JDBCValue createValue(ResultSet rs, MetadataElement parent) throws SQLException {
         String name = rs.getString("COLUMN_NAME");
 
         int length = 0;
@@ -101,7 +102,7 @@ public class MySQLProcedure extends JDBCProcedure {
         short radix = rs.getShort("RADIX");
         Nullable nullable = JDBCUtils.getProcedureNullable(rs.getShort("NULLABLE"));
 
-        return new JDBCValue(name, type, length, precision, radix, scale, nullable);
+        return new JDBCValue(parent, name, type, length, precision, radix, scale, nullable);
     }
 
 

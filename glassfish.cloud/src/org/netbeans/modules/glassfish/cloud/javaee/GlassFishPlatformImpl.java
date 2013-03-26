@@ -52,8 +52,9 @@ import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.data.GlassFishLibrary;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishVersion;
-import org.glassfish.tools.ide.server.config.LibraryBuilder;
-import org.glassfish.tools.ide.server.config.LibraryConfig;
+import org.glassfish.tools.ide.server.config.ConfigBuilder;
+import org.glassfish.tools.ide.server.config.Config;
+import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
@@ -82,13 +83,13 @@ public abstract class GlassFishPlatformImpl
             = GlassFishPlatformImpl.class.getResource("gfLibsDefault.xml");
 
     /** Library builder configuration since GlassFish 3. */
-    private static final LibraryConfig.Next LIBRARY_BUILDER_CONFIG_3
-            = new LibraryConfig.Next(GlassFishVersion.GF_3,
+    private static final Config.Next LIBRARY_BUILDER_CONFIG_3
+            = new Config.Next(GlassFishVersion.GF_3,
             GlassFishPlatformImpl.class.getResource("gfLibs3.xml"));
 
     /** Library builder configuration since GlassFish 4. */
-    private static final LibraryConfig.Next LIBRARY_BUILDER_CONFIG_4
-            = new LibraryConfig.Next(GlassFishVersion.GF_4,
+    private static final Config.Next LIBRARY_BUILDER_CONFIG_4
+            = new Config.Next(GlassFishVersion.GF_4,
             GlassFishPlatformImpl.class.getResource("gfLibs4.xml"));
 
     // Now there is only GlassFish 4 so we have single option to return.
@@ -116,7 +117,7 @@ public abstract class GlassFishPlatformImpl
     }
 
     /** Library builder configuration for GlassFish cloud. */
-    private static final LibraryConfig libraryConfig = new LibraryConfig(
+    private static final Config libraryConfig = new Config(
             LIBRARY_BUILDER_CONFIG_DEFAULT, LIBRARY_BUILDER_CONFIG_3,
             LIBRARY_BUILDER_CONFIG_4);
 
@@ -133,7 +134,7 @@ public abstract class GlassFishPlatformImpl
     /** Library builder associated with current platform.
       * This attribute should be accessed only using {@see #getBuilder()} even
       * internally. */
-    private volatile LibraryBuilder builder;
+    private volatile ConfigBuilder builder;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -231,7 +232,7 @@ public abstract class GlassFishPlatformImpl
     @Override
     public LibraryImplementation[] getLibraries() {
         GlassFishServer server = instance.getLocalServer();
-        LibraryBuilder lb = getBuilder();
+        ConfigBuilder lb = ConfigBuilderProvider.getBuilder(server);
         List<GlassFishLibrary> libs = lb.getLibraries(server.getVersion());
         LibraryImplementation[] lis = new LibraryImplementation[libs.size()];
         int i = 0;
@@ -392,23 +393,6 @@ public abstract class GlassFishPlatformImpl
                 builder = null;
                 break;
         }
-    }
-    
-// TODO: Change listeners to reflect server instance changes.
-    /**
-     * Initialize library builder on demand.
-     */
-    LibraryBuilder getBuilder() {
-        if (builder != null) {
-            return builder;
-        }
-        synchronized(this) {
-            if (builder == null) {
-                builder = new LibraryBuilder(libraryConfig,
-                        instance.getLocalServer().getServerHome(), "B", "C");
-            }
-        }
-        return builder;
     }
     
 }

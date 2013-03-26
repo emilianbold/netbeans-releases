@@ -97,7 +97,7 @@ public abstract class ConfigurationDescriptor {
 
     public abstract String getBaseDir();
     
-    public abstract Configuration defaultConf(String name, int type);
+    public abstract Configuration defaultConf(String name, int type, String cutomizerId);
 
     public abstract void copyFromProjectDescriptor(ConfigurationDescriptor projectDescriptor);
 

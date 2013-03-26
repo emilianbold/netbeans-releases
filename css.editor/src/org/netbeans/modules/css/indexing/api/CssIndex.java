@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
+import org.netbeans.modules.css.indexing.CssIndexModelSupport;
 import org.netbeans.modules.css.indexing.CssIndexer;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
@@ -159,6 +160,61 @@ public class CssIndex {
         changeSupport.fireChange();
     }
 
+    /**
+     * Creates an instance of {@link CssIndexModel} for the given file and factory type.
+     * 
+     * @param <T> the type of requested {@link CssIndexModel}
+     * @param factoryClass class of the {@link CssIndexModelFactory}
+     * @param file the file you want to get the model for
+     * @return instance of the model or null if the model cann't be build upon the requested file index data.
+     * @throws IOException 
+     */
+    public <T extends CssIndexModel> T getIndexModel(Class factoryClass, FileObject file) throws IOException {
+        if(file == null) {
+            throw new NullPointerException("The file argument cannot be null!");
+        }
+        CssIndexModelFactory<T> factory = CssIndexModelSupport.getFactory(factoryClass);
+        if(factory == null) {
+            throw new IllegalArgumentException(String.format("No %s class registered as a system service!", factoryClass.getName()));
+        }
+        
+        Collection<? extends IndexResult> results =
+                    querySupport.query(CssIndexer.CSS_CONTENT_KEY, "", QuerySupport.Kind.PREFIX, factory.getIndexKeys().toArray(new String[0]));
+            
+        for(IndexResult result : results) {
+            if(result.getFile().equals(file)) {
+                return factory.loadFromIndex(result);
+            }
+        }
+        return null;
+    }
+    
+      /**
+     * Creates a map of file to {@link CssIndexModel}.
+     * 
+     * @see #getIndexModel(java.lang.Class, org.openide.filesystems.FileObject) 
+     * 
+     * @param <T> the type of requested {@link CssIndexModel}
+     * @param factoryClass class of the {@link CssIndexModelFactory}
+     * @return instance of the model or null if the model cann't be build upon the requested file index data.
+     * @throws IOException 
+     */
+    public <T extends CssIndexModel> Map<FileObject, T> getIndexModels(Class<CssIndexModelFactory<T>> factoryClass) throws IOException {
+        CssIndexModelFactory<T> factory = CssIndexModelSupport.getFactory(factoryClass);
+        if(factory == null) {
+            throw new IllegalArgumentException(String.format("No %s class registered as a system service!", factoryClass.getName()));
+        }
+        
+        Collection<? extends IndexResult> results =
+                    querySupport.query(CssIndexer.CSS_CONTENT_KEY, "", QuerySupport.Kind.PREFIX, factory.getIndexKeys().toArray(new String[0]));
+            
+        Map<FileObject, T> file2model = new HashMap<FileObject, T>();
+        for(IndexResult result : results) {
+            file2model.put(result.getFile(), factory.loadFromIndex(result));
+        }
+        return file2model;
+    }
+    
     /**
      *
      * @param id
@@ -497,8 +553,7 @@ public class CssIndex {
             Collection<FileReference> imported = new HashSet<FileReference>();
             for (String importedFileName : imports) {
                 //resolve the file
-                FileReference resolvedReference = WebUtils.resolveToReference(file, importedFileName);
-//                FileObject resolvedFileObject = ref.target();
+                FileReference resolvedReference = resolveImport(file, importedFileName);
                 if (resolvedReference != null) {
                     imported.add(resolvedReference);
                     //add reverse dependency
@@ -515,6 +570,72 @@ public class CssIndex {
 
         return new AllDependenciesMaps(source2dests, dest2sources);
 
+    }
+    
+    //some hardcoded SASS logic here, may be refactored to some nice resolver SPI though :-)
+    private FileReference resolveImport(FileObject source, String importedFileName) {
+        //possibly remove the query part of the link
+        int qmIndex = importedFileName.indexOf("?"); //NOI18N
+        if(qmIndex >= 0) {
+            importedFileName = importedFileName.substring(0, qmIndex);
+        }
+        
+        //first try the original file reference
+        FileReference resolvedReference = WebUtils.resolveToReference(source, importedFileName);
+        if(resolvedReference != null) {
+            return resolvedReference; 
+        }
+        
+        //The SASS import spec: http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html#import
+        //
+        //check if the importedFileName already contains an extension
+        int dotIndex = importedFileName.indexOf('.');
+        String extension = dotIndex == -1 ? null : importedFileName.substring(dotIndex + 1);
+        
+        if(extension == null) {
+            //no extension
+            
+            //if the original reference is not resolved to an existing file
+            //so first try to append the .scss extension
+            String impliedScssExt = importedFileName + ".scss"; //NOI18N
+            resolvedReference = WebUtils.resolveToReference(source, impliedScssExt);
+            if(resolvedReference != null) {
+                return resolvedReference; 
+            }
+
+            //lets try to imply the leading underscore for sass partials
+            String impliedUnderscoreAndScssExt = new StringBuilder().append("_").append(importedFileName).append(".scss").toString(); //NOI18N
+            resolvedReference = WebUtils.resolveToReference(source, impliedUnderscoreAndScssExt);
+            if(resolvedReference != null) {
+                return resolvedReference; 
+            }
+
+            //if still nothing then try .sass extension as a last resort
+            String impliedSassExt = importedFileName + ".sass"; //NOI18N
+            resolvedReference = WebUtils.resolveToReference(source, impliedSassExt);
+            if(resolvedReference != null) {
+                return resolvedReference;
+            }
+
+             //lets try to imply the leading underscore for sass partials
+            String impliedUnderscoreAndSassExt = new StringBuilder().append("_").append(importedFileName).append(".sass").toString(); //NOI18N
+            resolvedReference = WebUtils.resolveToReference(source, impliedUnderscoreAndSassExt);
+            if(resolvedReference != null) {
+                return resolvedReference; 
+            }
+            
+        } else if("sass".equalsIgnoreCase(extension) | "scss".equalsIgnoreCase(extension)) {
+            //lets try to imply the leading underscore for sass partials
+            String impliedUnderscoreAndSassExt = new StringBuilder().append("_").append(importedFileName).toString(); //NOI18N
+            resolvedReference = WebUtils.resolveToReference(source, impliedUnderscoreAndSassExt);
+            if(resolvedReference != null) {
+                return resolvedReference; 
+            }
+            
+        }
+        
+        return null; //give up
+        
     }
     
 

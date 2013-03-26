@@ -731,7 +731,7 @@ public final class ParseProjectXml extends Task {
             }
         }
 
-        private boolean matches(Attributes attr) {
+        private boolean matches(Attributes attr, String[] version) {
             boolean[] osgi = new boolean[1];
             String givenCodeName = JarWithModuleAttributes.extractCodeName(attr, osgi);
             int slash = givenCodeName.indexOf('/');
@@ -765,6 +765,7 @@ public final class ParseProjectXml extends Task {
                 if (givenSpec == null) {
                     return false;
                 }
+                version[0] = " found " + givenSpec;
                 // XXX cannot use org.openide.modules.SpecificationVersion from here
                 int[] specVals = digitize(spec, osgi[0]);
                 int[] givenSpecVals = digitize(givenSpec, osgi[0]);
@@ -1004,8 +1005,11 @@ public final class ParseProjectXml extends Task {
                     throw new BuildException("Could not open " + depJar + ": " + x, x, getLocation());
                 }
 
-                if (!dep.matches(attr)) { // #68631
-                    throw new BuildException("Cannot compile against a module: " + depJar + " because of dependency: " + dep, getLocation());
+                String[] version = { "" };
+                if (!dep.matches(attr, version)) { // #68631
+                    throw new BuildException("Cannot compile against a module: " + depJar + " because of dependency: " + dep
+                        + version[0], getLocation()
+                    );
                 }
 
                 if (!runtime && Boolean.parseBoolean(attr.getValue("OpenIDE-Module-Deprecated"))) {

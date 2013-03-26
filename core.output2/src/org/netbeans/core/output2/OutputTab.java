@@ -326,16 +326,8 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             }
             if (line >= 0) {
                 getOutputPane().sendCaretToLine(line, false);
-                if (isSDI()) {
-                    requestActive();
-                }
             }
         }
-    }
-
-    private boolean isSDI() {
-        Container c = getTopLevelAncestor();
-        return (c != WindowManager.getDefault().getMainWindow());
     }
 
      void hasOutputListenersChanged(boolean hasOutputListeners) {

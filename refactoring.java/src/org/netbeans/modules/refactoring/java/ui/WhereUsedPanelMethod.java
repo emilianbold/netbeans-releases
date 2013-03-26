@@ -101,6 +101,7 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
         btn_usages = new javax.swing.JRadioButton();
         btn_overriders = new javax.swing.JRadioButton();
         btn_usages_overriders = new javax.swing.JRadioButton();
+        searchOverloaded = new javax.swing.JCheckBox();
 
         label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/refactoring/java/resources/warning_16.png"))); // NOI18N
         label.setText("<<Element>>"); // NOI18N
@@ -129,6 +130,14 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
         buttonGroup1.add(btn_usages_overriders);
         org.openide.awt.Mnemonics.setLocalizedText(btn_usages_overriders, org.openide.util.NbBundle.getMessage(WhereUsedPanelMethod.class, "LBL_FindUsagesOverridingMethods")); // NOI18N
 
+        searchOverloaded.setSelected(((Boolean) RefactoringModule.getOption("searchOverloaded.whereUsed", Boolean.FALSE)).booleanValue());
+        org.openide.awt.Mnemonics.setLocalizedText(searchOverloaded, org.openide.util.NbBundle.getMessage(WhereUsedPanelMethod.class, "WhereUsedPanelMethod.searchOverloaded.text")); // NOI18N
+        searchOverloaded.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                searchOverloadedItemStateChanged(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -144,11 +153,12 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
                     .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(searchOverloaded)
                             .addComponent(btn_usages_overriders)
                             .addComponent(btn_usages)
                             .addComponent(searchInComments)
                             .addComponent(btn_overriders))
-                        .addGap(0, 33, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -170,7 +180,9 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
                 .addComponent(btn_overriders)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_usages_overriders)
-                .addGap(8, 8, 8))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(searchOverloaded)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -180,6 +192,14 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
         Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
         RefactoringModule.setOption("searchInComments.whereUsed", b); // NOI18N
     }//GEN-LAST:event_searchInCommentsItemStateChanged
+
+    private void searchOverloadedItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchOverloadedItemStateChanged
+        // used for change default value for searchOverloaded check-box.
+        // The value is persisted and then used as default in next IDE run.
+        Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
+        RefactoringModule.setOption("searchOverloaded.whereUsed", b); // NOI18N
+    }//GEN-LAST:event_searchOverloadedItemStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton btn_overriders;
     private javax.swing.JRadioButton btn_usages;
@@ -190,6 +210,7 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
     private javax.swing.JLabel label;
     private javax.swing.JLabel lbl_usagesof;
     private javax.swing.JCheckBox searchInComments;
+    private javax.swing.JCheckBox searchOverloaded;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -241,6 +262,10 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
     @Override
     public boolean isSearchInComments() {
         return searchInComments.isSelected();
+    }
+    
+    public boolean isSearchOverloaded() {
+        return searchOverloaded.isSelected();
     }
 
     @SuppressWarnings("serial")

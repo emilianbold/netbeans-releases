@@ -48,6 +48,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.ArithmeticUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -73,7 +74,11 @@ import org.openide.util.NbBundle.Messages;
            "DN_assertEqualsMismatchedConstantVSReal=Incorrect order of parameters of Assert.assertEquals",
            "DESC_assertEqualsMismatchedConstantVSReal=Incorrect order of parameters of Assert.assertEquals",
            "ERR_assertEqualsMismatchedConstantVSReal=Order of parameters of Assert.assertEquals incorrect",
-           "FIX_assertEqualsMismatchedConstantVSReal=Flip parameters of Assert.assertEquals"})
+           "FIX_assertEqualsMismatchedConstantVSReal=Flip parameters of Assert.assertEquals",
+           "DN_assertEqualsIncovertibleTypes=Incovertible parameters of Assert.assertEquals",
+           "DESC_assertEqualsIncovertibleTypes=Incovertible parameters of Assert.assertEquals",
+           "ERR_assertEqualsIncovertibleTypes=The parameters of Assert.assertEquals are of inconvertible types"
+})
 public class Tiny {
 
     @Hint(displayName="#DN_assertEqualsForArrays",
@@ -328,5 +333,37 @@ public class Tiny {
         TreePath variablePath = ctx.getVariables().get(variable);
         
         return Utilities.isConstantString(ctx.getInfo(), variablePath, true) || ArithmeticUtilities.compute(ctx.getInfo(), variablePath, true) != null;
+    }
+
+    @Hint(displayName="#DN_assertEqualsIncovertibleTypes",
+          description="#DESC_assertEqualsIncovertibleTypes",
+          category="testing",
+          suppressWarnings="AssertEqualsBetweenInconvertibleTypes")
+    @TriggerPatterns({
+        @TriggerPattern(value="junit.framework.Assert.assertEquals($expected, $actual)"),
+        @TriggerPattern(value="junit.framework.Assert.assertEquals($message, $expected, $actual)",
+                        constraints=@ConstraintVariableType(variable="$message", type="java.lang.String")
+                       ),
+        @TriggerPattern(value="org.junit.Assert.assertEquals($expected, $actual)"),
+        @TriggerPattern(value="org.junit.Assert.assertEquals($message, $expected, $actual)",
+                        constraints=@ConstraintVariableType(variable="$message", type="java.lang.String")
+                       )
+    })
+    public static ErrorDescription incovertibleTypes(HintContext ctx) {
+        TypeMirror expected = ctx.getInfo().getTrees().getTypeMirror(ctx.getVariables().get("$expected"));
+        TypeMirror actual = ctx.getInfo().getTrees().getTypeMirror(ctx.getVariables().get("$actual"));
+        
+        if (!isAcceptable(ctx.getInfo(), expected) || !isAcceptable(ctx.getInfo(), actual)) return null;
+        
+        if (ctx.getInfo().getTypes().isSubtype(expected, actual)) return null;
+        if (ctx.getInfo().getTypes().isSubtype(actual, expected)) return null;
+        
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_assertEqualsIncovertibleTypes());
+    }
+    
+    private static boolean isAcceptable(CompilationInfo info, TypeMirror type) {
+        if (type == null) return false;
+        TypeKind typeKind = type.getKind();
+        return typeKind != TypeKind.EXECUTABLE && typeKind != TypeKind.PACKAGE;
     }
 }

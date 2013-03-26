@@ -80,7 +80,13 @@ public class AndroidDebugTransport extends MobileDebugTransport {
     @Override
     public boolean attach() {
         try {
-            String s = ProcessUtils.callProcess(((AndroidPlatform) PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE)).getAdbCommand(), true, "forward", "tcp:9222", "localabstract:chrome_devtools_remote"); //NOI18N
+            String s = ProcessUtils.callProcess(
+                    ((AndroidPlatform) PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE)).getAdbCommand(), 
+                    true, 
+                    5000, 
+                    "forward", 
+                    "tcp:9222", 
+                    "localabstract:chrome_devtools_remote"); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

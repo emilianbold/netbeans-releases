@@ -168,7 +168,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.threading.Tiny.threadSuspend", description = "#DESC_org.netbeans.modules.java.hints.threading.Tiny.threadSuspend", category="thread", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.threading.Tiny.threadSuspend", description = "#DESC_org.netbeans.modules.java.hints.threading.Tiny.threadSuspend", category="thread", suppressWarnings="CallToThreadStopSuspendOrResumeManager", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="$thread.stop()",
                         constraints=@ConstraintVariableType(variable="$thread", type="java.lang.Thread")),
@@ -314,7 +314,7 @@ public class Tiny {
         return unsyncHint(ctx, "ERR_UnsyncedWait");
     }
     
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.threading.Tiny.unsyncNotify", description = "#DESC_org.netbeans.modules.java.hints.threading.Tiny.unsyncNotify", category="thread", suppressWarnings="NotifyWhileNotSynced", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.threading.Tiny.unsyncNotify", description = "#DESC_org.netbeans.modules.java.hints.threading.Tiny.unsyncNotify", category="thread", suppressWarnings={"NotifyNotInSynchronizedContext", "", "NotifyWhileNotSynced"}, options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="$site.notify()",
                         constraints=@ConstraintVariableType(variable="$site", type="java.lang.Object")),
@@ -421,7 +421,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.threading.Tiny.sleepInLoop", description = "#DESC_org.netbeans.modules.java.hints.threading.Tiny.sleepInLoop", category="thread", suppressWarnings="SleepWhileInLoop", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.threading.Tiny.sleepInLoop", description = "#DESC_org.netbeans.modules.java.hints.threading.Tiny.sleepInLoop", category="thread", suppressWarnings={"SleepWhileInLoop", "", "BusyWait"}, options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="java.lang.Thread.sleep($to)",
                         constraints=@ConstraintVariableType(variable="$to", type="long")),

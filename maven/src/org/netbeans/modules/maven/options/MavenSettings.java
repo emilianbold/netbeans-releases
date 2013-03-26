@@ -75,6 +75,7 @@ public final class MavenSettings  {
     private static final String PROP_JAVADOC_DOWNLOAD = "javadocDownload"; //NOI18N
     private static final String PROP_BINARY_DOWNLOAD = "binaryDownload"; //NOI18N
     private static final String PROP_LAST_ARCHETYPE_GROUPID = "lastArchetypeGroupId"; //NOI18N
+    private static final String PROP_LAST_ARCHETYPE_VERSION = "lastArchetypeVersion"; //NOI18N
     private static final String PROP_SKIP_TESTS = "skipTests"; //NOI18N
     private static final String PROP_MAVEN_RUNTIMES = "mavenRuntimes"; //NOI18N
 
@@ -248,6 +249,15 @@ public final class MavenSettings  {
 
     public void setSkipTests(boolean skipped) {
         getPreferences().putBoolean(PROP_SKIP_TESTS, skipped);
+    }
+
+    
+    public String getLastArchetypeVersion() {
+        return getPreferences().get(PROP_LAST_ARCHETYPE_VERSION, "1.0-SNAPSHOT"); //NOI18N
+    }
+    
+    public void setLastArchetypeVersion(String version) {
+        putProperty(PROP_LAST_ARCHETYPE_VERSION, version); //NOI18N
     }
 
     public static enum DownloadStrategy {

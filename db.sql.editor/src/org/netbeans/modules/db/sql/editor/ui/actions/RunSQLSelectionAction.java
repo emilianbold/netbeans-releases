@@ -63,10 +63,17 @@ public class RunSQLSelectionAction extends SQLExecutionBaseAction {
 
     private static final Logger LOGGER = Logger.getLogger(RunSQLSelectionAction.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
+    private static final String ICON_PATH =
+            "org/netbeans/modules/db/sql/editor/resources/runsql-partial.png"; // NOI18N
 
     protected void initialize() {
         putValue(Action.NAME, NbBundle.getMessage(RunSQLSelectionAction.class, "LBL_RunSQLSelectionAction"));
         putValue("noIconInMenu", Boolean.TRUE);
+    }
+
+    @Override
+    protected String getIconBase() {
+        return ICON_PATH;
     }
 
     public String getDisplayName(SQLExecution sqlExecution) {

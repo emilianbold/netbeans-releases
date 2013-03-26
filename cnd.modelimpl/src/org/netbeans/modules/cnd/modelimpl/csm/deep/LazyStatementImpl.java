@@ -55,6 +55,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -131,11 +134,25 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
                     new Object[] {file.getAbsolutePath(), lineColumn[0], lineColumn[1]});
             return false;
         } else {
-            CsmParserProvider.CsmParserResult result = resolveLazyStatement(stream);
-            if (result != null) {
-                result.render(list);
-            }
-            return true;
+            FileContent tmpFileContent = null;
+            try {
+                if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                    FileImpl fileImpl = (FileImpl)getContainingFile();
+                    if (fileImpl.getParsingFileContent() == null) {
+                        tmpFileContent = CsmCorePackageAccessor.get().prepareLazyStatementParsingContent(fileImpl);
+                    }
+                }
+                CsmParserProvider.CsmParserResult result = resolveLazyStatement(stream);
+                if (result != null) {
+                    result.render(list);
+                }
+                return true;
+            } finally {
+                if (tmpFileContent != null) {
+                    FileImpl fileImpl = (FileImpl) getContainingFile();
+                    CsmCorePackageAccessor.get().releaseLazyStatementParsingContent(fileImpl, tmpFileContent);
+                }
+            }            
         }
     }
 

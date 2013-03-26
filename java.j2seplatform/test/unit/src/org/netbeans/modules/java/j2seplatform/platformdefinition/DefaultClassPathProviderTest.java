@@ -85,6 +85,7 @@ import org.netbeans.junit.MockServices;
 
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.MasterURLMapper;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 
@@ -188,6 +189,7 @@ public class DefaultClassPathProviderTest extends NbTestCase {
     
     
     
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9882/testReport/
     public void testFindClassPath () throws IOException {
         FileObject artefact = getSourceFile (FILE_IN_PACKAGE);
         ClassPathProvider cpp = new DefaultClassPathProvider ();

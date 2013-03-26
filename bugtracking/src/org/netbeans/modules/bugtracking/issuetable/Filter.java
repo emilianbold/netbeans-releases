@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.bugtracking.issuetable;
 
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +51,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.QueryImpl;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,7 +60,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class Filter {
 
-    private static Map<QueryImpl, Map<Class, Filter>> queryToFilter = new WeakHashMap<QueryImpl, Map<Class, Filter>>();
+    private static final Map<QueryImpl, Map<Class, Filter>> queryToFilter = new WeakHashMap<QueryImpl, Map<Class, Filter>>();
 
     public abstract String getDisplayName();
     public abstract boolean accept(IssueNode issue);
@@ -132,7 +131,7 @@ public abstract class Filter {
         }
         @Override
         public boolean accept(IssueNode node) {
-            return !IssueCacheUtils.wasSeen(node.getIssue()) && contains(query, node.getIssue().getID());
+            return node.getIssue().getStatus() != IssueStatusProvider.Status.SEEN && contains(query, node.getIssue().getID());
         }
     }
     private static class NewFilter extends Filter {
@@ -146,7 +145,7 @@ public abstract class Filter {
         }
         @Override
         public boolean accept(IssueNode node) {
-            return IssueCacheUtils.getStatus(node.getIssue()) == IssueCache.ISSUE_STATUS_NEW;
+            return node.getIssue().getStatus() == IssueStatusProvider.Status.NEW;
         }
     }
     private static class ObsoleteDateFilter extends Filter {

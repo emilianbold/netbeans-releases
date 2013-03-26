@@ -45,7 +45,7 @@ package org.netbeans.modules.glassfish.common.actions;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.GlassFishStatus;
-import org.netbeans.modules.glassfish.common.Util;
+import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.openide.nodes.Node;

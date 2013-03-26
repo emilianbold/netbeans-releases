@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.editor.nav;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -97,7 +98,7 @@ public class PHPTypeSearcher implements IndexSearcher {
         }
         final Collection<FileObject> findRoots = QuerySupport.findRoots(project,
                 Collections.singleton(PhpSourcePath.SOURCE_CP),
-                Collections.singleton(PhpSourcePath.BOOT_CP),
+                Arrays.asList(PhpSourcePath.BOOT_CP, PhpSourcePath.PROJECT_BOOT_CP),
                 Collections.<String>emptySet());
         final Index index = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(findRoots));
 
@@ -158,7 +159,7 @@ public class PHPTypeSearcher implements IndexSearcher {
 
         final Collection<FileObject> findRoots = QuerySupport.findRoots(project,
                 Collections.singleton(PhpSourcePath.SOURCE_CP),
-                Collections.singleton(PhpSourcePath.BOOT_CP),
+                Arrays.asList(PhpSourcePath.BOOT_CP, PhpSourcePath.PROJECT_BOOT_CP),
                 Collections.<String>emptySet());
         final Index index = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(findRoots));
 

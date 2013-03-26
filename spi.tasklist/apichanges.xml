@@ -75,6 +75,21 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="callback_api" >
+        <api name="TaskListSPI"/>
+        <summary>PushTaskScanner.Callback provides additional information.</summary>
+        <version major="1" minor="24"/>
+        <date day="6" month="3" year="2013"/>
+        <author login="jpeska"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                PushTaskScanner.Callback provides information whether the framework is observed and whether the current editor scope is set.
+                Both these methods are needed for performance improvements of NB PushTaskScanners.
+            </p>
+        </description>
+        <issue number="227107"/>
+    </change>
     <change id="issue_support" >
         <api name="TaskListSPI"/>
         <summary>Task List implementation uses Indexing API to cache scanned tasks.</summary>

@@ -44,6 +44,7 @@
 @NbBundle.Messages({
     "StpMonitorTooltip=If selected, threads running in profiled virtual machine are monitored.",
     "StpSamplingTooltip=If selected, threads states are updated by periodically polling the profiled application.",
+    "StpLockContentionTooltip=If selected, lock contention in profiled virtual machine is monitored.",
     "StpOverrideTooltip=If selected, you can override settings used for running the application.",
     "StpWorkDirTooltip=Runtime working directory of profiled application.",
     "StpJPlatformTooltip=Java platform used for running the profiled application.",

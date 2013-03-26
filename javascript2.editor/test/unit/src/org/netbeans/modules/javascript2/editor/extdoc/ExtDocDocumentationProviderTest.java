@@ -52,7 +52,7 @@ import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -156,7 +156,7 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
     public void testGetReturnTypeForReturn() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
         final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone = function()^{");
-        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Shape", 2321)));
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeUsageImpl("Shape", 2321)));
     }
 
     public void testGetNullReturnTypeAtNoReturnTypeComment() throws Exception {
@@ -174,26 +174,26 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
     public void testGetReturnTypeAtFunction() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
         final int caretOffset = getCaretOffset(testSource, "function martion () ^{");
-        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 8569)));
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeUsageImpl("Number", 8569)));
     }
 
     public void testGetReturnTypeAtObjectFunction() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
         final int caretOffset = getCaretOffset(testSource, "getVersion: function() ^{");
-        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 8863)));
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeUsageImpl("Number", 8863)));
     }
 
     public void testGetReturnTypeAtType() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
         final int caretOffset = getCaretOffset(testSource, "Shape.prototype.getColor = function()^{");
-        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Color", 1721)));
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeUsageImpl("Color", 1721)));
     }
 
     public void testGetParametersForNameAndTypeParam() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line1(userName)^{}");
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 23), null, "", false,
-                Arrays.<Type>asList(new TypeImpl("String", 15)));
+                Arrays.<Type>asList(new TypeUsageImpl("String", 15)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
@@ -201,7 +201,7 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line2(product)^{}");
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("product", 101), null, "", false,
-                Arrays.<Type>asList(new TypeImpl("String", 79), new TypeImpl("Number", 86), new TypeImpl("Object", 93)));
+                Arrays.<Type>asList(new TypeUsageImpl("String", 79), new TypeUsageImpl("Number", 86), new TypeUsageImpl("Object", 93)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
@@ -209,7 +209,7 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line3(accessLevel)^{}");
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 164), null, "accessLevel is optional", true,
-                Arrays.<Type>asList(new TypeImpl("String", 155)));
+                Arrays.<Type>asList(new TypeUsageImpl("String", 155)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
@@ -217,7 +217,7 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line6(accessLevel)^{}");
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 439), "low", "accessLevel is optional with default value", true,
-                Arrays.<Type>asList(new TypeImpl("String", 430)));
+                Arrays.<Type>asList(new TypeUsageImpl("String", 430)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
@@ -225,7 +225,7 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line5(accessLevel)^{}");
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 340), null, "accessLevel is not optional", false,
-                Arrays.<Type>asList(new TypeImpl("String", 332)));
+                Arrays.<Type>asList(new TypeUsageImpl("String", 332)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 

@@ -55,10 +55,11 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
@@ -76,6 +77,7 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Mutex;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -100,6 +102,10 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         });
     }
 
+    private static final String COMPACT1 = "compact1";  //NOI18N
+    private static final String COMPACT2 = "compact2";  //NOI18N
+    private static final String JDK_8 = "8";    //NOI18N
+    private static final String JDK_8_ALIAS = "1.8";    //NOI18N
     private static final String JAVAC_SOURCE = "1.2";
     private static final String DEFAULT_JAVAC_SOURCE = "17.2";
 
@@ -136,7 +142,14 @@ public class SourceLevelQueryImplTest extends NbTestCase {
     }
 
 
-    private void prepareProject(String platformName) throws IOException {
+    private void prepareProject(
+            @NonNull final String platformName) throws IOException {
+        prepareProject(platformName, null, null);
+    }
+    private void prepareProject(
+            @NonNull final String platformName,
+            @NullAllowed final String sourceLevel,
+            @NullAllowed final String profile) throws IOException {
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         helper = ProjectGenerator.createProject(projdir, "test");
@@ -146,7 +159,13 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.setProperty("javac.source", "${def}");
         props.setProperty("platform.active", platformName);
-        props.setProperty("def", JAVAC_SOURCE);
+        props.setProperty("def",
+                sourceLevel != null ?
+                sourceLevel :
+                JAVAC_SOURCE);
+        if (profile != null) {
+            props.setProperty("javac.profile", profile);    //NOI18N
+        }
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
         props = PropertyUtils.getGlobalProperties();
         props.put("default.javac.source", DEFAULT_JAVAC_SOURCE);
@@ -205,6 +224,95 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
         assertEquals(1, tl.ec.intValue());
         assertEquals("1.7", result.getSourceLevel().toString());
+    }
+
+    public void testProfilesJDK8ProfileGiven() throws IOException {
+        this.prepareProject(TEST_PLATFORM, JDK_8, COMPACT2);
+        final FileObject dummy = projdir.createData("Dummy.java");  //NOI18N
+        final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
+        final SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);
+        assertTrue(result instanceof SourceLevelQueryImplementation2.Result2);
+        assertEquals(COMPACT2, ((SourceLevelQueryImplementation2.Result2)result).getProfile());
+    }
+
+    public void testProfilesJDK8AliasProfileGiven() throws IOException {
+        this.prepareProject(TEST_PLATFORM, JDK_8_ALIAS, COMPACT2);
+        final FileObject dummy = projdir.createData("Dummy.java");  //NOI18N
+        final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
+        final SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);
+        assertTrue(result instanceof SourceLevelQueryImplementation2.Result2);
+        assertEquals(COMPACT2, ((SourceLevelQueryImplementation2.Result2)result).getProfile());
+    }
+
+    public void testProfilesJDK8AliasProfileNotGiven() throws IOException {
+        this.prepareProject(TEST_PLATFORM, JDK_8, null);
+        final FileObject dummy = projdir.createData("Dummy.java");  //NOI18N
+        final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
+        final SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);
+        assertTrue(result instanceof SourceLevelQueryImplementation2.Result2);
+        assertEquals(null, ((SourceLevelQueryImplementation2.Result2)result).getProfile());
+    }
+
+    public void testProfilesOldJDKAliasProfileGiven() throws IOException {
+        this.prepareProject(TEST_PLATFORM, JAVAC_SOURCE, COMPACT2);
+        final FileObject dummy = projdir.createData("Dummy.java");  //NOI18N
+        final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
+        final SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);
+        assertTrue(result instanceof SourceLevelQueryImplementation2.Result2);
+        assertEquals(null, ((SourceLevelQueryImplementation2.Result2)result).getProfile());
+    }
+
+    public void testProfileChanges() throws Exception {
+        prepareProject(TEST_PLATFORM, JDK_8, COMPACT1);
+        final FileObject dummy = projdir.createData("Dummy.java");  //NOI18N
+        final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
+        SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);
+        assertTrue(result instanceof SourceLevelQueryImplementation2.Result2);
+        assertEquals(COMPACT1, ((SourceLevelQueryImplementation2.Result2)result).getProfile());
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            @Override
+            public Void run() throws Exception {
+                final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                props.setProperty("javac.profile", COMPACT2);   //NOI18N
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                ProjectManager.getDefault().saveProject(prj);
+                return null;
+            }
+        });
+        result = sourceLevelQuery.getSourceLevel(dummy);
+        assertTrue(result instanceof SourceLevelQueryImplementation2.Result2);
+        assertEquals(COMPACT2, ((SourceLevelQueryImplementation2.Result2)result).getProfile());
+
+    }
+
+    public void testProfileListening() throws Exception {
+        prepareProject(TEST_PLATFORM, JDK_8, COMPACT1);
+        final FileObject dummy = projdir.createData("Dummy.java");  //NOI18N
+        final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
+        final SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);
+        assertTrue(result instanceof SourceLevelQueryImplementation2.Result2);
+        assertEquals(COMPACT1, ((SourceLevelQueryImplementation2.Result2)result).getProfile());
+        final AtomicInteger eventCount = new AtomicInteger();
+        final ChangeListener listener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                eventCount.getAndIncrement();
+            }
+        };
+        result.addChangeListener(listener);
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            @Override
+            public Void run() throws Exception {
+                final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                props.setProperty("javac.profile", COMPACT2);   //NOI18N
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                ProjectManager.getDefault().saveProject(prj);
+                return null;
+            }
+        });
+        assertEquals(1, eventCount.get());
+        assertEquals(COMPACT2, ((SourceLevelQueryImplementation2.Result2)result).getProfile());
+
     }
 
     private static class TestPlatformProvider implements JavaPlatformProvider {

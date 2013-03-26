@@ -76,6 +76,8 @@ import org.netbeans.spi.options.OptionsPanelController;
     "ProfilerOptionsPanel_TelemetryOverviewLabelText=Open Telemetry &Overview:",
     "ProfilerOptionsPanel_ThreadsViewLabelText=Open Thre&ads View:",
     "ProfilerOptionsPanel_ThreadsViewHintText=Threads View is opened only when Threads Monitoring is enabled",
+    "ProfilerOptionsPanel_LocksViewLabelText=Open &Lock Contention View:",
+    "ProfilerOptionsPanel_LocksViewHintText=Lock Contention View is opened only when Lock Contention monitoring is enabled",
     "ProfilerOptionsPanel_LiveResultsLabelText=Open Live Results For:",
     "ProfilerOptionsPanel_CpuChckBoxText=&CPU",
     "ProfilerOptionsPanel_MemoryChckBoxText=M&emory",
@@ -90,6 +92,7 @@ import org.netbeans.spi.options.OptionsPanelController;
     "ProfilerOptionsPanel_MemoryLiveResultsCheckboxAccessDescr=Memory live results window will be opened automatically.",
     "ProfilerOptionsPanel_TelemetryOverviewComboAccessDescr=Policy for opening Telemetry window when profiling session starts.",
     "ProfilerOptionsPanel_ThreadsViewComboAccessDescr=Policy for opening Threads view window when profiling session starts.",
+    "ProfilerOptionsPanel_LocksViewComboAccessDescr=Policy for opening Lock Contention view window when profiling session starts.",
     "ProfilerOptionsPanel_OomeBorderText=On O&utOfMemoryError:",
     "ProfilerOptionsPanel_OomeNothingText=Do nothing",
     "ProfilerOptionsPanel_OomeProjectText=Save heap dump to profiled project",
@@ -106,6 +109,7 @@ import org.netbeans.spi.options.OptionsPanelController;
     "ProfilerOptionsPanel_HeapWalkerLabelText=HeapWalker:",
     "ProfilerOptionsPanel_JavaPlatformComboAccessDescr=Java platform used for running the profiled application",
     "ProfilerOptionsPanel_IfThreadsMonitoringEnabledHint=if threads monitoring is enabled",
+    "ProfilerOptionsPanel_IfLockContentionMonitoringEnabledHint=if lock contention monitoring is enabled",
     "ProfilerOptionsPanel_KW_profiler=profiler",
     "ProfilerOptionsPanel_KW_profile=profile",
     "ProfilerOptionsPanel_KW_profiling=profiling",
@@ -192,6 +196,8 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
     private JComboBox oomeCombo;
     private JComboBox openThreadsViewCombo;
     private JLabel onlyThreadsEnabledLabel;
+    private JComboBox openLocksViewCombo;
+    private JLabel onlyContentionEnabledLabel;
     private JComboBox takingSnapshotCombo;
     private JComboBox telemetryOverviewCombo;
     private JExtendedSpinner portNoSpinner;
@@ -282,6 +288,14 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
             pis.setThreadsViewBehavior(ProfilerIDESettings.OPEN_MONITORING);
         } else {
             pis.setThreadsViewBehavior(ProfilerIDESettings.OPEN_NEVER);
+        }
+        
+        if (Bundle.ProfilerOptionsPanel_KeyOpenAlways().equals(openLocksViewCombo.getSelectedItem())) {
+            pis.setLockContentionViewBehavior(ProfilerIDESettings.OPEN_ALWAYS);
+        } else if (Bundle.ProfilerOptionsPanel_KeyOpenMonitoring().equals(openLocksViewCombo.getSelectedItem())) {
+            pis.setLockContentionViewBehavior(ProfilerIDESettings.OPEN_MONITORING);
+        } else {
+            pis.setLockContentionViewBehavior(ProfilerIDESettings.OPEN_NEVER);
         }
     }
 
@@ -633,12 +647,6 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(openThreadsViewCombo, gridBagConstraints);
 
-        int maxWidth = Math.max(telemetryOverviewCombo.getPreferredSize().width, openThreadsViewCombo.getPreferredSize().width)
-                       + 15;
-        int maxHeight = Math.max(telemetryOverviewCombo.getPreferredSize().height, openThreadsViewCombo.getPreferredSize().height);
-        telemetryOverviewCombo.setPreferredSize(new Dimension(maxWidth, maxHeight));
-        openThreadsViewCombo.setPreferredSize(new Dimension(maxWidth, maxHeight));
-        
         onlyThreadsEnabledLabel = new JLabel(Bundle.ProfilerOptionsPanel_IfThreadsMonitoringEnabledHint());
         onlyThreadsEnabledLabel.setEnabled(false);
         gridBagConstraints = new GridBagConstraints();
@@ -648,12 +656,66 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         gridBagConstraints.insets = new Insets(5, 0, 0, 6);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(onlyThreadsEnabledLabel, gridBagConstraints);
+        
+        // openLocksViewLabel
+        JLabel openLocksViewLabel = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(openLocksViewLabel, Bundle.ProfilerOptionsPanel_LocksViewLabelText());
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.insets = new Insets(5, 10, 0, 5);
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        add(openLocksViewLabel, gridBagConstraints);
+        
+        // openLocksViewCombo
+        openLocksViewCombo = new JComboBox() {
+                public Dimension getMinimumSize() {
+                    return getPreferredSize();
+                }
+                protected void fireActionEvent() {
+                    onlyContentionEnabledLabel.setVisible(
+                            !Bundle.ProfilerOptionsPanel_KeyOpenNever().equals(getSelectedItem()));
+                }
+            };
+        openLocksViewLabel.setLabelFor(openLocksViewCombo);
+        openLocksViewCombo.getAccessibleContext()
+                            .setAccessibleDescription(Bundle.ProfilerOptionsPanel_LocksViewComboAccessDescr() + Bundle.ProfilerOptionsPanel_LocksViewHintText());
+        openLocksViewCombo.setModel(new DefaultComboBoxModel(new String[] { 
+            Bundle.ProfilerOptionsPanel_KeyOpenAlways(), 
+            Bundle.ProfilerOptionsPanel_KeyOpenMonitoring(), 
+            Bundle.ProfilerOptionsPanel_KeyOpenNever()
+        }));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new Insets(5, 10, 0, 6);
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        add(openLocksViewCombo, gridBagConstraints);
+
+        onlyContentionEnabledLabel = new JLabel(Bundle.ProfilerOptionsPanel_IfLockContentionMonitoringEnabledHint());
+        onlyContentionEnabledLabel.setEnabled(false);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.insets = new Insets(5, 0, 0, 6);
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        add(onlyContentionEnabledLabel, gridBagConstraints);
+        
+        int maxWidth = Math.max(telemetryOverviewCombo.getPreferredSize().width, openThreadsViewCombo.getPreferredSize().width);
+        maxWidth = Math.max(maxWidth, openLocksViewCombo.getPreferredSize().width) + 15;
+        int maxHeight = Math.max(telemetryOverviewCombo.getPreferredSize().height, openThreadsViewCombo.getPreferredSize().height);
+        maxHeight = Math.max(maxHeight, openLocksViewCombo.getPreferredSize().height);
+        telemetryOverviewCombo.setPreferredSize(new Dimension(maxWidth, maxHeight));
+        openThreadsViewCombo.setPreferredSize(new Dimension(maxWidth, maxHeight));
+        openLocksViewCombo.setPreferredSize(new Dimension(maxWidth, maxHeight));
 
         // liveResultsLabel
         JLabel liveResultsLabel = new JLabel(Bundle.ProfilerOptionsPanel_LiveResultsLabelText());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.insets = new Insets(5, 10, 0, 5);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(liveResultsLabel, gridBagConstraints);
@@ -677,7 +739,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         // liveResultsLabel placing
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new Insets(5, 10, 0, 6);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -689,7 +751,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         CategorySeparator miscellaneousSeparator = new CategorySeparator(Bundle.ProfilerOptionsPanel_SnapshotsSettingsBorderText(), true);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
@@ -701,7 +763,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         org.openide.awt.Mnemonics.setLocalizedText(takingSnapshotLabel, Bundle.ProfilerOptionsPanel_TakingSnapshotLabelText());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.insets = new Insets(5, 10, 0, 5);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(takingSnapshotLabel, gridBagConstraints);
@@ -721,7 +783,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
                                                               }));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.insets = new Insets(5, 10, 0, 6);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -732,7 +794,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         org.openide.awt.Mnemonics.setLocalizedText(oomeDetectionLabel, Bundle.ProfilerOptionsPanel_OomeBorderText());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.insets = new Insets(5, 10, 0, 5);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(oomeDetectionLabel, gridBagConstraints);
@@ -758,7 +820,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
                                                     }));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.insets = new Insets(5, 10, 0, 6);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -811,7 +873,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         // oomeDetectionPanel
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new Insets(5, 0, 0, 6);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -822,7 +884,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         JLabel heapWalkerLabel = new JLabel(Bundle.ProfilerOptionsPanel_HeapWalkerLabelText());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.insets = new Insets(5, 10, 0, 5);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.fill = GridBagConstraints.NONE;
@@ -834,7 +896,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         enableHeapWalkerAnalysisCheckbox.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_EnableAnalysisCheckbox());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new Insets(5, 10, 0, 6);
         gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -883,7 +945,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.weightx = 1;
         gridBagConstraints.weighty = 1;

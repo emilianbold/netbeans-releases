@@ -135,12 +135,6 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
 
     
     public static class DestructorDDBuilder extends MethodDDBuilder implements StatementBuilderContainer {
-
-        @Override
-        public void setName(CharSequence name) {
-            super.setName("~" + name); // NOI18N
-        }        
-        
         @Override
         public DestructorDDImpl create() {
             CsmClass cls = (CsmClass) getScope();

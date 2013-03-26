@@ -461,6 +461,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         long time = System.currentTimeMillis();
         try {
             return getDirectoryStorageImpl(false, null, childName, false);
+        } catch (StackOverflowError soe) { // workaround for #130929
+            String text = "StackOverflowError when accessing " + getPath(); //NOI18N
+            Exceptions.printStackTrace(new Exception(text, soe));
+            throw new IOException(text, soe);
         } finally {
             if (trace) {
                 trace("getDirectoryStorage for {1} took {0} ms", this, System.currentTimeMillis() - time); // NOI18N
@@ -480,8 +484,21 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
         
-    private static final Collection<String> AUTO_MOUNTS = Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade"); //NOI18N
-    
+    private static final Collection<String> AUTO_MOUNTS;
+    static {
+        List<String> list = new ArrayList<String>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/workspace")); //NOI18N
+        String t = System.getProperty("remote.autofs.list"); //NOI18N
+        if (t != null) {
+            String[] paths = t.split(","); //NOI18N
+            for (String p : paths) {
+                if (p.startsWith("/")) { //NOI18N
+                    list.add(p);
+                }
+            }
+        }
+        AUTO_MOUNTS = Collections.unmodifiableList(list);
+    }
+
     private boolean isProhibited() {
         return getPath().equals("/proc");//NOI18N
     }

@@ -46,6 +46,7 @@ package org.netbeans.modules.hudson.ui.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.ui.wizard.InstanceDialog;
 import org.openide.util.NbBundle;
 
@@ -59,6 +60,7 @@ public class AddInstanceAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
+        ConnectionBuilder.clearRejectedAuthentication();
        new InstanceDialog().show();
     }
     

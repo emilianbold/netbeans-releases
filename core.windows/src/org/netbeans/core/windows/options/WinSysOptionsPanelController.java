@@ -60,7 +60,7 @@ import org.openide.util.Lookup;
     keywordsCategory="Advanced/Windows"
 //    toolTip="#AdvancedOption_Tooltip_WinSys"
 )
-public final class WinSysOptionsPanelController extends OptionsPanelController {
+public class WinSysOptionsPanelController extends OptionsPanelController {
 
     private WinSysPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -118,7 +118,7 @@ public final class WinSysOptionsPanelController extends OptionsPanelController {
         pcs.removePropertyChangeListener(l);
     }
 
-    private WinSysPanel getPanel() {
+    protected WinSysPanel getPanel() {
         if (panel == null) {
             panel = new WinSysPanel(this);
         }
@@ -137,7 +137,7 @@ public final class WinSysOptionsPanelController extends OptionsPanelController {
         }
     }
 
-    void changed() {
+    protected void changed() {
         if (!changed) {
             changed = true;
             pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import org.netbeans.modules.glassfish.common.utils.Util;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -50,8 +51,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +59,9 @@ import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.GlassFishIdeException;
 import org.glassfish.tools.ide.admin.*;
 import org.glassfish.tools.ide.utils.Utils;
+import org.glassfish.tools.ide.admin.TaskEvent;
+import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.*;
@@ -409,7 +412,6 @@ public class CommonServerSupport
         VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH).lookup(VMIntrospector.class);
         FutureTask<TaskState> task = new FutureTask<TaskState>(
                 new StartTask(this, getRecognizers(), vmi,
-                (FileObject) null,
                 (String[]) (endState == ServerState.STOPPED_JVM_PROFILER
                 ? new String[]{""} : null),
                 startServerListener, stateListener));
@@ -629,26 +631,6 @@ public class CommonServerSupport
                 name,  Util.computeTarget(instance.getProperties())), null,
                 new TaskStateListener[] {stateListener});
     }
-
-//    @Override
-//    public Future<TaskState> execute(ServerCommand command) {
-//        CommandRunner mgr = new CommandRunner(
-//                GlassFishStatus.isReady(instance, false),
-//                getCommandFactory(), instance);
-//        return mgr.execute(command);
-//    }
-//
-//    private Future<TaskState> execute(boolean irr, ServerCommand command) {
-//        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
-//                instance);
-//        return mgr.execute(command);
-//    }
-//    private Future<TaskState> execute(boolean irr, ServerCommand command,
-//            TaskStateListener... osl) {
-//        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
-//                instance, osl);
-//        return mgr.execute(command);
-//    }
 
     @Override
     public AppDesc [] getModuleList(String container) {

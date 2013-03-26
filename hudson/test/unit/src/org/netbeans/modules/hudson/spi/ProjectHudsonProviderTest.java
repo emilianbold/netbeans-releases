@@ -76,4 +76,17 @@ public class ProjectHudsonProviderTest extends NbTestCase {
         assertEquals("Some Job", Association.fromString("http://nowhere.net/hudson/view/someview/job/Some%20Job/").getJobName());
     }
 
+    public void testAssociationOfHudsonJobsInFolderHierarchy() {
+        Association a = Association.fromString(
+                "http://localhost:8080/app/hudson/job/folder%201/job/folder%201a/job/TestJob/");
+        assertEquals("http://localhost:8080/app/hudson/", a.getServerUrl());
+        assertEquals("folder 1/folder 1a/TestJob", a.getJobName());
+        String[] expectedPath = {"http://localhost:8080/app/hudson/",
+            "folder 1", "folder 1a", "TestJob"};
+        assertEquals("Job path length is wrong",
+                expectedPath.length, a.getJobPath().length);
+        for (int i = 0; i < expectedPath.length; i++) {
+            assertEquals(expectedPath[i], a.getJobPath()[i]);
+        }
+    }
 }

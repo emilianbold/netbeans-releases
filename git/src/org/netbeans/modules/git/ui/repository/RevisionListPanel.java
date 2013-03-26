@@ -55,6 +55,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,6 +65,8 @@ import javax.swing.JList;
 import javax.swing.JTextPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
@@ -87,10 +90,11 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
-public class RevisionListPanel extends javax.swing.JPanel implements ActionListener {
+public class RevisionListPanel extends javax.swing.JPanel implements ActionListener, DocumentListener {
 
     private ProgressMonitor.DefaultProgressMonitor listHistoryMonitor;
-    private final DefaultListModel revisionListModel;
+    private final List<GitRevisionInfoDelegate> revisionModel;
+    private final DefaultListModel revisionDisplayModel;
     private GitProgressSupport supp;
     private final Object LOCK = new Object();
     private String lastHWRevision;
@@ -104,7 +108,8 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
     
     /** Creates new form RevisionsPanel */
     public RevisionListPanel() {
-        lstRevisions.setModel(revisionListModel = new DefaultListModel());
+        revisionModel = new ArrayList<GitRevisionInfoDelegate>();
+        lstRevisions.setModel(revisionDisplayModel = new DefaultListModel());
         lstRevisions.setFixedCellHeight(-1);
         lstRevisions.setCellRenderer(new RevisionRenderer());
         initComponents();
@@ -121,6 +126,21 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
         btnAll.addActionListener(this);
         btnNext10.addActionListener(this);
         btnRefresh.addActionListener(this);
+        txtFilter.getDocument().addDocumentListener(this);
+    }
+
+    @Override
+    public void insertUpdate (DocumentEvent e) {
+        updateFilter();
+    }
+
+    @Override
+    public void removeUpdate (DocumentEvent e) {
+        updateFilter();
+    }
+
+    @Override
+    public void changedUpdate (DocumentEvent e) {
     }
 
     @Override
@@ -152,7 +172,30 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
         return delegate == null ? null : delegate.info;
     }
 
-    private static class RevisionRenderer extends JTextPane implements ListCellRenderer {
+    private void updateFilter () {
+        revisionDisplayModel.clear();
+        for (GitRevisionInfoDelegate info : revisionModel) {
+            if (applyToFilter(info)) {
+                revisionDisplayModel.addElement(info);
+            }
+        }
+    }
+
+    private void addToDisplayModel (GitRevisionInfoDelegate info) {
+        if (applyToFilter(info)) {
+            revisionDisplayModel.addElement(info);
+        }
+    }
+
+    private boolean applyToFilter (GitRevisionInfoDelegate info) {
+        boolean apply;
+        String filter = txtFilter.getText().toLowerCase();
+        apply = info.getMessage().toLowerCase().contains(filter)
+                || info.getRevision().toLowerCase().contains(filter);
+        return apply;
+    }
+
+    private class RevisionRenderer extends JTextPane implements ListCellRenderer {
 
         private Style selectedStyle;
         private Style normalStyle;
@@ -178,6 +221,7 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
             GitRevisionInfoDelegate revision = (GitRevisionInfoDelegate) value;
             StyledDocument sd = getStyledDocument();
 
+            String tooltip = null;
             Style style;
             Color backgroundColor;
 
@@ -192,15 +236,26 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
 
             try {
                 // clear document
-                sd.remove(0, sd.getLength());
+                StringBuilder sb = new StringBuilder();
                 String revStr = revision.getRevision();
-                if (revStr.length() > 20) {
-                    revStr = revStr.substring(0, 17) + "..."; //NOI18N
+                sb.append(revStr.length() > 7 ? revStr.substring(0, 7) : revStr).append(" - "); //NOI18N
+                sb.append(revision.getMessage());
+                tooltip = sb.toString();
+                sd.remove(0, sd.getLength());
+                String text = sb.toString();
+                sd.insertString(0, text, style);
+                String filter = txtFilter.getText().toLowerCase();
+                if (!isSelected && !filter.isEmpty()) {
+                    text = text.toLowerCase();
+                    int pos = -filter.length();
+                    while ((pos = text.indexOf(filter, pos + filter.length())) > -1) {
+                        sd.setCharacterAttributes(pos, filter.length(), selectedStyle, false);
+                    }
                 }
-                sd.insertString(0, revStr, style);
             } catch (BadLocationException e) {
                 //
             }
+            setToolTipText(tooltip);
 
             return this;
         }
@@ -291,11 +346,12 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
                             selectedRevision = (GitRevisionInfoDelegate) lstRevisions.getSelectedValue();
                             displayedRevisions.clear();
                             if (add) {
-                                for (Object o : revisionListModel.toArray()) {
-                                    displayedRevisions.add(((GitRevisionInfoDelegate) o).getRevision());
+                                for (GitRevisionInfoDelegate info : revisionModel) {
+                                    displayedRevisions.add(info.getRevision());
                                 }
                             } else {
-                                revisionListModel.clear();
+                                revisionModel.clear();
+                                updateFilter();
                             }
                             reselected = false;
                             enableButtons(false);
@@ -359,8 +415,9 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
                     synchronized (revisions) {
                         while (!revisions.isEmpty()) {
                             GitRevisionInfoDelegate info = new GitRevisionInfoDelegate(revisions.remove(0));// override toString, so one can Ctrl+C the revision string
-                            if ((limit < 0 || limit > revisionListModel.getSize()) && !displayedRevisions.contains(info.getRevision())) {
-                                revisionListModel.addElement(info);
+                            if ((limit < 0 || limit > revisionModel.size()) && !displayedRevisions.contains(info.getRevision())) {
+                                revisionModel.add(info);
+                                addToDisplayModel(info);
                                 if (!reselected && selectedRevision != null && info.getRevision().equals(selectedRevision.getRevision())) {
                                     // has not yet been reselected or manually selected by user
                                     lstRevisions.setSelectedValue(info, false);
@@ -394,6 +451,10 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
             return info.getRevision();
         }
 
+        public String getMessage () {
+            return info.getShortMessage();
+        }
+
         @Override
         public String toString () {
             return getRevision();
@@ -416,6 +477,8 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
         btnAll = new org.netbeans.modules.versioning.history.LinkButton();
         jLabel3 = new javax.swing.JLabel();
         btnRefresh = new org.netbeans.modules.versioning.history.LinkButton();
+        jLabel4 = new javax.swing.JLabel();
+        txtFilter = new javax.swing.JTextField();
 
         lstRevisions.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(lstRevisions);
@@ -437,6 +500,10 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
         org.openide.awt.Mnemonics.setLocalizedText(btnRefresh, org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.btnRefresh.text")); // NOI18N
         btnRefresh.setToolTipText(org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.btnRefresh.toolTipText")); // NOI18N
 
+        jLabel4.setLabelFor(txtFilter);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.jLabel4.text")); // NOI18N
+        jLabel4.setToolTipText(org.openide.util.NbBundle.getMessage(RevisionListPanel.class, "RevisionListPanel.jLabel4.TTtext")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -444,7 +511,7 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -456,7 +523,11 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
                         .addGap(5, 5, 5)
                         .addComponent(jLabel3)
                         .addGap(5, 5, 5)
-                        .addComponent(btnRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtFilter)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -471,7 +542,9 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
                     .addComponent(btnAll, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2)
                     .addComponent(jLabel3)
-                    .addComponent(btnRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(btnRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
+                    .addComponent(txtFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -483,8 +556,10 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     final javax.swing.JList lstRevisions = new javax.swing.JList();
+    private javax.swing.JTextField txtFilter;
     // End of variables declaration//GEN-END:variables
 
 }

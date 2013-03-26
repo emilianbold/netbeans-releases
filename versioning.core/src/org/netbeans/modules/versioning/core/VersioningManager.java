@@ -71,6 +71,7 @@ import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor
 import org.netbeans.modules.versioning.core.spi.*;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation2;
+import org.openide.modules.Places;
 import org.openide.util.*;
 import org.openide.util.Lookup.Result;
 
@@ -490,8 +491,9 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         VersioningSystem lh = localHistory;
         if (lh == null) return null;
 
-        String nbUserdir = System.getProperty("netbeans.user", ""); //NOI18N
-        if (!nbUserdir.isEmpty() && !Utils.isVersionUserdir() && Utils.isAncestorOrEqual(VCSFileProxy.createFileProxy(new File(nbUserdir)), file)) { 
+        File nbUserdir = Places.getUserDirectory();
+        if (nbUserdir != null && !Utils.isVersionUserdir() 
+                && Utils.isAncestorOrEqual(VCSFileProxy.createFileProxy(nbUserdir), file)) { 
             return null;
         }
         

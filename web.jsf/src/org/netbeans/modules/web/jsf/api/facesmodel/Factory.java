@@ -114,6 +114,16 @@ public interface Factory extends FacesConfigElement, IdentifiableElement {
      */
     String FACTORY_EXTENSION = JSFConfigQNames.FACTORY_EXTENSION.getLocalName();
 
+    /**
+     * Property name of &lt;flash-factory&gt; element.
+     */
+    String FLASH_FACTORY = JSFConfigQNames.FLASH_FACTORY.getLocalName();
+
+    /**
+     * Property name of &lt;flow-handler-factory&gt; element.
+     */
+    String FLOW_HANDLER_FACTORY = JSFConfigQNames.FLOW_HANDLER_FACTORY.getLocalName();
+
     List<FactoryElement> getElements();
     void addElement( int index , FactoryElement element );
 
@@ -164,4 +174,12 @@ public interface Factory extends FacesConfigElement, IdentifiableElement {
     List<FactoryExtension> getFactoryExtensions();
     void addFactoryExtension(FactoryExtension extension);
     void removeFactoryExtension( FactoryExtension extension );
+
+    List<FlashFactory> getFlashFactory();
+    void addFlashFactory(FlashFactory flashFactory);
+    void removeFlashFactory(FlashFactory flashFactory);
+
+    List<FlowHandlerFactory> getFlowHandlerFactory();
+    void addFlowHandlerFactory(FlowHandlerFactory flowHandlerFactory);
+    void removeFlowHandlerFactory(FlowHandlerFactory flowHandlerFactory);
 }

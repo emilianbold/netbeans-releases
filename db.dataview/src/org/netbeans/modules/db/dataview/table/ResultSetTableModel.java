@@ -43,6 +43,8 @@ Other names may be trademarks of their respective owners.
  */
 package org.netbeans.modules.db.dataview.table;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -50,7 +52,11 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
-import javax.swing.table.DefaultTableModel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import javax.swing.SwingUtilities;
+import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
@@ -60,12 +66,14 @@ import org.openide.NotifyDescriptor;
 /**
  * @author Ahimanikya Satapathy
  */
-public class ResultSetTableModel extends DefaultTableModel {
+public class ResultSetTableModel extends AbstractTableModel {
 
-    private Class[] collumnClasses;
-    protected ResultSetJXTable table;
+    private boolean editable = false;
+    private DBColumn[] columns;
+    private final List<Object[]> data = new ArrayList<Object[]>();
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
-    public static Class<? extends Object> getTypeClass(DBColumn col) {
+    protected static Class<? extends Object> getTypeClass(DBColumn col) {
         int colType = col.getJdbcType();
 
         if (colType == Types.BIT && col.getPrecision() <= 1) {
@@ -122,59 +130,177 @@ public class ResultSetTableModel extends DefaultTableModel {
     }
 
     @SuppressWarnings("rawtypes")
-    public ResultSetTableModel(ResultSetJXTable table) {
+    public ResultSetTableModel(DBColumn[] columns) {
         super();
-        this.table = table;
-        collumnClasses = new Class[table.getRSColumnCount()];
-        for (int i = 0, I = table.getRSColumnCount(); i < I; i++) {
-            collumnClasses[i] = getTypeClass(table.getDBColumn(i));
-        }
+        this.columns = columns;
+    }
+
+    public void setColumns(DBColumn[] columns) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        this.data.clear();
+        this.columns = columns;
+        fireTableStructureChanged();
+    }
+
+    public DBColumn[] getColumns() {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        return Arrays.copyOf(columns, columns.length);
+    }
+
+    public void setEditable(boolean editable) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        boolean old = this.editable;
+        this.editable = editable;
+        pcs.firePropertyChange("editable", old, editable);
+    }
+
+    public boolean isEditable() {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        return editable;
     }
 
     @Override
     public boolean isCellEditable(int row, int column) {
-        return true;
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        if (!editable) {
+            return false;
+        }
+        DBColumn col = this.columns[column];
+        return (!col.isGenerated()) && col.isEditable();
     }
 
     @Override
     public void setValueAt(Object value, int row, int col) {
-        if (table.dView.getDataViewDBTable() == null) {
-            return;
-        }
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         Object oldVal = getValueAt(row, col);
         if (noUpdateRequired(oldVal, value)) {
             return;
         }
         try {
-            if (!DataViewUtils.isSQLConstantString(value, table.getDBColumn(col))) {
-                value = DBReadWriteHelper.validate(value, table.getDBColumn(col));
+            if (!DataViewUtils.isSQLConstantString(value, columns[col])) {
+                value = DBReadWriteHelper.validate(value, columns[col]);
             }
-            super.setValueAt(value, row, col);
-            handleColumnUpdated(row, col, value);
-            fireTableDataChanged();
+            data.get(row)[col] = value;
+            fireTableCellUpdated(row, col);
         } catch (Exception dbe) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(dbe.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+            NotifyDescriptor nd = new NotifyDescriptor.Message(dbe.getMessage(),
+                    NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
         }
-        table.revalidate();
-        table.repaint();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Object> getColumnClass(int columnIndex) {
-        if (collumnClasses[columnIndex] == null) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        if (columns[columnIndex] == null) {
             return super.getColumnClass(columnIndex);
         } else {
-            return collumnClasses[columnIndex];
+            return getTypeClass(columns[columnIndex]);
         }
     }
 
-    protected boolean noUpdateRequired(Object oldVal, Object value) {
-        return oldVal != null && oldVal.toString().equals(value == null ? "" : value.toString()) || (oldVal == null && value == null);
+    public DBColumn getColumn(int columnIndex) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        return columns[columnIndex];
     }
 
-    protected void handleColumnUpdated(int row, int col, Object value) {
+    @Override
+    public int getColumnCount() {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        return columns.length;
+    }
+
+    public String getColumnTooltip(int columnIndex) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        return DataViewUtils.getColumnToolTip(columns[columnIndex]);
+    }
+
+    @Override
+    public String getColumnName(int columnIndex) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        String displayName = columns[columnIndex].getDisplayName();
+        return displayName != null ? displayName : "COL_" + columnIndex;
+    }
+
+    protected boolean noUpdateRequired(Object oldVal, Object value) {
+        if (oldVal == null && value == null) {
+            return true;
+        } else if (oldVal != null) {
+            return oldVal.equals(value);
+        }
+        return false;
+    }
+
+    @Override
+    public int getRowCount() {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        return data.size();
+    }
         
+    @Override
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        Object[] dataRow = data.get(rowIndex);
+        return dataRow[columnIndex];
+    }
+
+    public Object[] getRowData(int rowIndex) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        Object[] dataRow = data.get(rowIndex);
+        return Arrays.copyOf(dataRow, dataRow.length);
+    }
+
+    public void setData(List<Object[]> data) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        this.data.clear();
+        for (Object[] dataRow : data) {
+            this.data.add(Arrays.copyOf(dataRow, dataRow.length));
+        }
+        fireTableDataChanged();
+    }
+
+    public List<Object[]> getData() {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        ArrayList<Object[]> result = new ArrayList<Object[]>();
+        for (Object[] dataRow : this.data) {
+            result.add(Arrays.copyOf(dataRow, dataRow.length));
+        }
+        return result;
+    }
+
+    public void addRow(Object[] dataRow) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        int addedRowIndex = this.data.size();
+        this.data.add(Arrays.copyOf(dataRow, dataRow.length));
+        fireTableRowsInserted(addedRowIndex, addedRowIndex);
+    }
+
+    public void removeRow(int row) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        this.data.remove(row);
+        fireTableRowsDeleted(row, row);
+    }
+
+    public void clear() {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
+        this.data.clear();
+        fireTableDataChanged();
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
+
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(propertyName, listener);
+    }
+
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(propertyName, listener);
     }
 }

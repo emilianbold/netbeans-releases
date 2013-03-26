@@ -462,7 +462,12 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                         
                         setParserResult((HtmlParserResult) it.getParserResult());
                         //inspectedFileObject = getInspectedFileFromPageModel();
-                        refreshDOM();
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                refreshDOM();
+                            }
+                        });
                     }
                 });
             } catch (ParseException ex) {
@@ -847,7 +852,17 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 }
             }
         }
-        view.repaint();
+        if (SwingUtilities.isEventDispatchThread()) {
+            view.repaint();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    view.repaint();
+                }
+            });
+        }
     }
     
     private HtmlElementNode getHtmlNode(Node node) {

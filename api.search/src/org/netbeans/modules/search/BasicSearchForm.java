@@ -292,11 +292,13 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
         formPanel.addSeparator();
         formPanel.addRow(lblScope, cboxScope.getComponent());
+        initScopeOptionsRow(searchAndReplace);
         formPanel.addSeparator();
         formPanel.addRow(lblFileNamePattern,
                 cboxFileNamePattern.getComponent());
         formPanel.addRow(new JLabel(), lblFileNameHint);
-        initScopeOptionsRow(searchAndReplace);
+        formPanel.addRow(new JLabel(),
+                scopeSettingsPanel.getFileNameComponent());
         formPanel.addEmptyLine();
     }
 
@@ -335,8 +337,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     }
 
     private void initScopeOptionsRow(boolean searchAndReplace) {
-        this.scopeSettingsPanel = ComponentUtils.adjustPanelForOptions(
-                new JPanel(), searchAndReplace, cboxFileNamePattern);
+        this.scopeSettingsPanel = ComponentUtils.adjustPanelsForOptions(
+                new JPanel(), new JPanel(), searchAndReplace,
+                cboxFileNamePattern);
         formPanel.addRow(new JLabel(), scopeSettingsPanel.getComponent());
     }
 
@@ -530,7 +533,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             cboxFileNamePattern.getComponent().setSelectedIndex(0);
         }
         cboxFileNamePattern.setRegularExpression(memory.isFilePathRegex());
-        if (cboxReplacement != null && cboxReplacement.getItemCount() != 0) {
+        if (cboxReplacement != null && cboxReplacement.getItemCount() != 0
+                && FindDialogMemory.getDefault().isReplacePatternSpecified()) {
             cboxReplacement.setSelectedIndex(0);
         }
 
@@ -701,9 +705,11 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             memory.setFileNamePatternSpecified(false);
         }
         if (replacementPatternEditor != null) {
-            SearchHistory.getDefault().addReplace(
-                    ReplacePattern.create(replacementPatternEditor.getText(),
-                    chkPreserveCase.isSelected()));
+            String replaceText = replacementPatternEditor.getText();
+            SearchHistory.getDefault().addReplace(ReplacePattern.create(
+                    replaceText, chkPreserveCase.isSelected()));
+            FindDialogMemory.getDefault().setReplacePatternSpecified(
+                    replaceText != null && !replaceText.isEmpty());
         }
         memory.setWholeWords(chkWholeWords.isSelected());
         memory.setCaseSensitive(chkCaseSensitive.isSelected());

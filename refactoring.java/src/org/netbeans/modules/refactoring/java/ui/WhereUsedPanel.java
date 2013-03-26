@@ -278,6 +278,14 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         }
         return false;
     }
+    
+    public boolean isMethodSearchOverloaded() {
+        if(panel instanceof WhereUsedPanelMethod) {
+            WhereUsedPanelMethod methodPanel = (WhereUsedPanelMethod) panel;
+            return methodPanel.isSearchOverloaded();
+        }
+        return false;
+    }
 
     public boolean isClassSubTypes() {
         if(panel instanceof WhereUsedPanelClass) {

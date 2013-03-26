@@ -46,7 +46,13 @@ import jdk.nashorn.internal.ir.FunctionNode;
 import jdk.nashorn.internal.ir.Node;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -64,6 +70,14 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 public final class Model {
 
     private static final Logger LOGGER = Logger.getLogger(OccurrencesSupport.class.getName());
+
+    private static final Comparator<Map.Entry<String, ? extends JsObject>> PROPERTIES_COMPARATOR = new Comparator<Map.Entry<String, ? extends JsObject>>() {
+
+        @Override
+        public int compare(Entry<String, ? extends JsObject> o1, Entry<String, ? extends JsObject> o2) {
+            return o1.getKey().compareTo(o2.getKey());
+        }
+    };
 
     private final JsParserResult parserResult;
 
@@ -141,4 +155,54 @@ public final class Model {
         return ModelVisitor.getNodeName(node, parserResult);
     }
 
+    public void dumpModel(Printer printer) {
+        dumpModel(printer, getGlobalObject(), new StringBuilder(),
+                "", new HashSet<JsObject>()); // NOI18N
+    }
+
+    private static void dumpModel(Printer printer, JsObject jsObject,
+            StringBuilder sb, String ident, Set<JsObject> path) {
+
+        sb.append(jsObject.getName());
+        sb.append(" [").append(jsObject.getJSKind()).append("]");
+
+        path.add(jsObject);
+        int length = 0;
+        for (String str : jsObject.getProperties().keySet()) {
+            if (str.length() > length) {
+                length = str.length();
+            }
+        }
+
+        StringBuilder identBuilder = new StringBuilder(ident);
+        identBuilder.append("       "); // NOI18N
+        for (int i = 0; i < length; i++) {
+            identBuilder.append(' '); // NOI18N
+        }
+        List<Map.Entry<String, ? extends JsObject>> entries =
+                new ArrayList<Entry<String, ? extends JsObject>>(jsObject.getProperties().entrySet());
+        Collections.sort(entries, PROPERTIES_COMPARATOR);
+        for (Map.Entry<String, ? extends JsObject> entry : entries) {
+            printer.println(sb.toString());
+
+            sb.setLength(0);
+            sb.append(ident);
+            sb.append(entry.getKey());
+            for (int i = entry.getKey().length(); i < length; i++) {
+                sb.append(' '); // NOI18N
+            }
+            sb.append(" : "); // NOI18N
+            if (path.contains(entry.getValue())) {
+                sb.append("Cycle to ").append(ModelUtils.createFQN(entry.getValue())); // NOI18N
+            } else {
+                dumpModel(printer, entry.getValue(), sb, identBuilder.toString(), path);
+            }
+        }
+        path.remove(jsObject);
+    }
+
+    public static interface Printer {
+
+        void println(String str);
+    }
 }

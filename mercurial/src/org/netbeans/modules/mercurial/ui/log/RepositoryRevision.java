@@ -53,6 +53,7 @@ import java.util.*;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.HistoryRegistry;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -430,7 +431,14 @@ public class RepositoryRevision {
                         ? new HistoryRegistry.ChangePathCollector() {
                             @Override
                             public HgLogMessageChangedPath[] getChangePaths () {
-                                HgLogMessage[] messages = HgCommand.getIncomingMessages(repositoryRoot, getLog().getCSetShortID(), true, true, false, 1, getLogger());
+                                HgLogMessage[] messages = null;
+                                try {
+                                    messages = HgCommand.getIncomingMessages(repositoryRoot, getLog().getCSetShortID(), null, true, true, false, 1, getLogger());
+                                } catch (HgException.HgCommandCanceledException ex) {
+                                    // do not take any action
+                                } catch (HgException ex) {
+                                    HgUtils.notifyException(ex);
+                                }
                                 return messages == null || messages.length == 0 ? new HgLogMessageChangedPath[0] : messages[0].getChangedPaths();
                             }
                         }

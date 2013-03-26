@@ -99,7 +99,9 @@ public class QuickSearchPopup extends javax.swing.JPanel
 
     private int catWidth;
     private int resultWidth;
+    private int defaultResultWidth = -1;
     private int customWidth = -1;
+    private int longestText = -1;
     private boolean canResize = false;
     private Task evalTask;
     private Task saveTask;
@@ -159,6 +161,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
 
     public void clearModel () {
         rModel.setContent(null);
+        longestText = -1;
     }
 
     public void maybeEvaluate (String text) {
@@ -356,6 +359,22 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
     }
 
     public void contentsChanged(ListDataEvent e) {
+        if (customWidth < 0) {
+            if (rModel.getContent() == null) {
+                longestText = -1;
+                resultWidth = -1;
+            } else {
+                for (CategoryResult r : rModel.getContent()) {
+                    for (ItemResult i : r.getItems()) {
+                        int l = i.getDisplayName().length();
+                        if (l > longestText) {
+                            longestText = l;
+                            resultWidth = -1;
+                        }
+                    }
+                }
+            }
+        }
         updatePopup(evalTask != null);
     }
 
@@ -443,14 +462,27 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
     }
 
     public int getResultWidth () {
-        if (resultWidth <= 0) {
-            resultWidth = computeWidth(jList1, 42, 50);
-        }
         if (customWidth > 0) {
-            return Math.max(resultWidth, customWidth);
+            return Math.max(customWidth, getDefaultResultWidth());
         } else {
+            if (resultWidth <= 0) {
+                resultWidth = computeWidth(
+                        jList1, limit(longestText, 42, 128), 50);
+            }
             return resultWidth;
         }
+    }
+
+    private int getDefaultResultWidth() {
+        if (defaultResultWidth <= 0) {
+            defaultResultWidth = computeWidth(jList1, 42, 50);
+        }
+        return defaultResultWidth;
+    }
+
+    private int limit(int value, int min, int max) {
+        assert min <= max;
+        return Math.min(max, Math.max(min, value));
     }
 
     public int getPopupWidth() {
@@ -568,7 +600,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (canResize) {
-                    customWidth = getResultWidth() - e.getX();
+                    customWidth = Math.max(1, getResultWidth() - e.getX());
                     run();
                     saveSettings();
                 }

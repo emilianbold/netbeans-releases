@@ -475,9 +475,8 @@ public final class ProjectSupport {
 		if (seed.conf != null) {
 		    seed.conf.setBaseDir(baseDir);
 		} else {
-		    seed.conf = new MakeConfiguration(baseDir,
-					      "Default",	// NOI18N
-					      MakeConfiguration.TYPE_MAKEFILE);
+		    seed.conf = MakeConfiguration.createDefaultHostMakefileConfiguration(baseDir,
+					      "Default");	// NOI18N
 		}
 
 		populateConfiguration(seed);
@@ -499,9 +498,8 @@ public final class ProjectSupport {
 		if (seed.conf != null) {
 		    seed.conf.setBaseDir(baseDir);
 		} else {
-		    seed.conf = new MakeConfiguration(baseDir,
-					      "Default",	// NOI18N
-					      MakeConfiguration.TYPE_MAKEFILE);
+		    seed.conf = MakeConfiguration.createDefaultHostMakefileConfiguration(baseDir,
+					      "Default");	// NOI18N
 		}
 
 		// IZ 114302

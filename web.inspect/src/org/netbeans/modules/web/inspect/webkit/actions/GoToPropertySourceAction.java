@@ -165,25 +165,27 @@ public class GoToPropertySourceAction extends NodeAction {
                         Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
                         if (modelRule != null) {
                             found[0] = true;
-                            String propertyName = property.getName().trim();
-                            org.netbeans.modules.css.model.api.Property modelProperty =
-                                    findProperty(modelRule, propertyName);
-                            if (modelProperty == null) {
-                                String shorthandName = property.getShorthandName();
-                                if (shorthandName != null) {
-                                    modelProperty = findProperty(modelRule, shorthandName);
+                            if (!Utilities.goToMetaSource(modelRule)) {
+                                String propertyName = property.getName().trim();
+                                org.netbeans.modules.css.model.api.Property modelProperty =
+                                        findProperty(modelRule, propertyName);
+                                if (modelProperty == null) {
+                                    String shorthandName = property.getShorthandName();
+                                    if (shorthandName != null) {
+                                        modelProperty = findProperty(modelRule, shorthandName);
+                                    }
                                 }
-                            }
 
-                            int snapshotOffset = (modelProperty == null) ?
-                                    modelRule.getStartOffset() : modelProperty.getStartOffset();
-                            final int offset = result.getSnapshot().getOriginalOffset(snapshotOffset);
-                            EventQueue.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    CSSUtils.open(fob, offset);
-                                }
-                            });
+                                int snapshotOffset = (modelProperty == null) ?
+                                        modelRule.getStartOffset() : modelProperty.getStartOffset();
+                                final int offset = result.getSnapshot().getOriginalOffset(snapshotOffset);
+                                EventQueue.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        CSSUtils.openAtOffset(fob, offset);
+                                    }
+                                });
+                            }
                         }
                     }
 

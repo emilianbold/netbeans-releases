@@ -334,6 +334,10 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     void end_block_declaration(Token token);
     void id_expression(Token token);
     void end_id_expression(Token token);
+    
+    void tilde_class_name(Token token);
+    void end_tilde_class_name(Token token);
+    
     void alias_declaration(Token usingToken, Token identToken, Token assignequalToken);    
     void end_alias_declaration(Token token);
     void function_specifier(int kind, Token token);

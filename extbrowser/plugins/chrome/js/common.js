@@ -199,6 +199,21 @@ NetBeans.sendPendingMessages = function() {
     this.pendingMessages = [];
 };
 
+chrome.extension.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    if (request.event == "onResourceContentCommitted") {
+      NetBeans.sendResourceChangedInCDT(request.resource, request.content);
+    }
+  });
+
+NetBeans.sendResourceChangedInCDT = function(url, content) {
+    this.sendMessage({
+        message: 'resource_changed',
+        resource: url,
+        content: content
+    });
+};
+
 NetBeans.processMessage = function(message) {
     var type = message.message;
     if (type === 'init') {

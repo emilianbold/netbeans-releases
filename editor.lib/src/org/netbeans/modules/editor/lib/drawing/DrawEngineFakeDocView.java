@@ -45,7 +45,6 @@
 package org.netbeans.modules.editor.lib.drawing;
 
 import javax.swing.text.Element;
-import org.netbeans.api.editor.fold.Fold;
 
 /**
  *  Fake view of the whole document supporting the code folding, operating from given startOffset
@@ -80,11 +79,6 @@ import org.netbeans.api.editor.fold.Fold;
         @Override
         public int getEndOffset(){
             return fakeEndOffset;
-        }
-        
-        @Override
-        protected Fold nextCollapsedFold() {
-            return null; // simulate no collapsed folds
         }
         
         @Override

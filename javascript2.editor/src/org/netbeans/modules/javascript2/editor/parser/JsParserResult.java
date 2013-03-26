@@ -40,6 +40,8 @@ package org.netbeans.modules.javascript2.editor.parser;
 import jdk.nashorn.internal.ir.FunctionNode;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
@@ -53,6 +55,8 @@ import org.netbeans.modules.parsing.api.Snapshot;
  * @author Petr Pisl
  */
 public class JsParserResult extends ParserResult {
+
+    private static final Logger LOGGER = Logger.getLogger(JsParserResult.class.getName());
 
     private final FunctionNode root;
     private List<? extends Error> errors;
@@ -86,9 +90,18 @@ public class JsParserResult extends ParserResult {
     }
     
     public Model getModel() {
-        synchronized(this) {
+        synchronized (this) {
             if (model == null) {
                 model = ModelFactory.getModel(this);
+
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    model.dumpModel(new Model.Printer() {
+                        @Override
+                        public void println(String str) {
+                            LOGGER.log(Level.FINEST, str);
+                        }
+                    });
+                }
             }
             return model;
         }

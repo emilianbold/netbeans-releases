@@ -808,7 +808,8 @@ public class RuleEditorNode extends AbstractNode {
 
             PropertyValue value = declaration.getPropertyValue();
             if (value != null) {
-                CharSequence content = value.getExpression().getContent();
+                Expression expression = value.getExpression();
+                CharSequence content = expression != null ? expression.getContent() : "";
                 ResolvedProperty rp = new ResolvedProperty(getFileObject(), model, content);
                 if (!rp.isResolved()) {
                     List<Token> unresolvedTokens = rp.getUnresolvedTokens();

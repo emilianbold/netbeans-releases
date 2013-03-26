@@ -81,6 +81,7 @@ import org.jdom.filter.Filter;
 import org.jdom.input.SAXBuilder;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
@@ -118,22 +119,6 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         "system" //NOI18N
     };
 
-    private Set<String> groupCache;
-    private boolean groupCachePartial = false;
-    private RequestProcessor.Task groupTask;
-    private Map<String, RequestProcessor.Task> artifactTasks = new HashMap<String, RequestProcessor.Task>();
-    private Map<String, Set<String>> artifactCache = new HashMap<String, Set<String>>();
-    private Set<String> artifactsPartialCache = new HashSet<String>();
-    private Map<String, RequestProcessor.Task> versionTasks = new HashMap<String, RequestProcessor.Task>();
-    private Map<String, Set<String>> versionCache = new HashMap<String, Set<String>>();
-    private Set<String> versionPartialCache = new HashSet<String>();
-    private final Map<String,RequestProcessor.Task> classifierTasks = new HashMap<String,RequestProcessor.Task>();
-    private final Map<String,Set<String>> classifierCache = new HashMap<String,Set<String>>();
-    private Set<String> classifierPartialCache = new HashSet<String>();
-    private final Object GROUP_LOCK = new Object();
-    private final Object ARTIFACT_LOCK = new Object();
-    private final Object VERSION_LOCK = new Object();
-    private final Object CLASSIFIER_LOCK = new Object();
     private static RequestProcessor RP = new RequestProcessor(MavenProjectGrammar.class.getName(), 3);
     private final Project owner;
 
@@ -141,7 +126,6 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     MavenProjectGrammar(GrammarEnvironment env, Project owner) {
         super(env);
         this.owner = owner;
-        groupTask = RP.create(new GroupTask());
     }
     
     @Override
@@ -149,9 +133,18 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         return getClass().getResourceAsStream("/org/netbeans/modules/maven/grammar/maven-4.0.0.xsd"); //NOI18N
     }
     
+    private List<GrammarResult> hardwiredProperty(HintContext hintCtx, String name, String htmlDesc) {
+        if (name.startsWith(hintCtx.getCurrentPrefix())) {
+            MyElement el = new MyElement(name);
+            el.setDescription(htmlDesc);
+            return Collections.singletonList((GrammarResult)el);
+        }        
+        return Collections.emptyList();
+    }
+    
     @Override
     protected List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, org.jdom.Element parent) {
-        List<GrammarResult> result = null;
+        List<GrammarResult> result = new ArrayList<GrammarResult>();
         if (path.endsWith("plugins/plugin/configuration") || //NOI18N
             path.endsWith("plugins/plugin/executions/execution/configuration")) { //NOI18N
             // assuming we have the configuration node as parent..
@@ -161,24 +154,31 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                 : hintCtx.getParentNode().getPreviousSibling();
             MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
             ArtifactInfoHolder info = findPluginInfo(previous, embedder, true);
-            result = collectPluginParams(info, hintCtx);
-            if (result == null) { //let the local processing geta changce
+            List<GrammarResult> res = collectPluginParams(info, hintCtx);
+            if (res == null) { //let the local processing geta changce
                                //once the index failed.
                 Document pluginDoc = loadDocument(info, embedder);
                 if (pluginDoc != null) {
-                    result = collectPluginParams(pluginDoc, hintCtx);
+                    res = collectPluginParams(pluginDoc, hintCtx);
                 }
+            } 
+            if (res != null) {
+                result.addAll(res);
             }
+        }
+        
+        if (path.endsWith("project/properties") || path.endsWith("profile/properties")) {
+            result.addAll(hardwiredProperty(hintCtx, Constants.HINT_DISPLAY_NAME, "<html><h4>netbeans.hint.displayName</h4><p>A NetBeans specific property, only applicable within the IDE.</p><br/>Used by NetBeans to customize the display of the project in question.</html>"));
+            result.addAll(hardwiredProperty(hintCtx, Constants.HINT_LICENSE, "<html><h4>netbeans.hint.license</h4><p>A NetBeans specific property, only applicable within the IDE.</p><br/>Used by NetBeans to select a license header template from the IDE's default set.</html>"));
+            result.addAll(hardwiredProperty(hintCtx, Constants.HINT_LICENSE_PATH, "<html><h4>netbeans.hint.licensePath</h4><p>A NetBeans specific property, only applicable within the IDE.</p><br/>Used by NetBeans to find license header template from project's space in the filesystem. <br/>Value is an absolute or relative path to the template file.</html>"));
+            result.addAll(hardwiredProperty(hintCtx, Constants.HINT_JDK_PLATFORM, "<html><h4>netbeans.hint.jdkPlatform</h4><p>A NetBeans specific property, only applicable within the IDE.</p><br/>Used by NetBeans to determine which JDK platform defined in Tools/Java Platforms should be used to run the Maven builds.</html>"));
+            result.addAll(hardwiredProperty(hintCtx, Constants.HINT_COMPILE_ON_SAVE, "<html><h4>netbeans.compile.on.save</h4><p>A NetBeans specific property, only applicable within the IDE.</p><br/>Used by NetBeans to determine if Compile on Save feature should be enabled for the project or not.<br/>Allowed values are: true/false</html>"));
+            result.addAll(hardwiredProperty(hintCtx, "netbeans.checkstyle.format", "<html><h4>netbeans.checkstyle.format</h4><p>A NetBeans specific property, only applicable within the IDE.</p><br/>Allowed values are: true/false</html>"));
         }
 
         GrammarExtensionProvider extProvider = Lookup.getDefault().lookup(GrammarExtensionProvider.class);
         if (extProvider != null) {
-            List<GrammarResult> extResult = extProvider.getDynamicCompletion(path, hintCtx, parent);
-            if (result == null) {
-                result = extResult;
-            } else {
-                result.addAll(extResult);
-            }
+            result.addAll(extProvider.getDynamicCompletion(path, hintCtx, parent));
         }
 
         return result;
@@ -394,10 +394,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             }
         }
         if (path.endsWith("executions/execution/phase")) { //NOI18N
-            MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
-            @SuppressWarnings("unchecked")
-            List<String> phases = embedder.getLifecyclePhases();
-            return super.createTextValueList(phases.toArray(new String[phases.size()]), virtualTextCtx);
+            return super.createTextValueList(Constants.DEFAULT_PHASES.toArray(new String[Constants.DEFAULT_PHASES.size()]), virtualTextCtx);
         }
         if (path.endsWith("dependencies/dependency/version") || //NOI18N
             path.endsWith("plugins/plugin/version") || //NOI18N
@@ -412,35 +409,33 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             }
             ArtifactInfoHolder hold = findPluginInfo(previous, null, false);
             if (hold.getGroupId() != null && hold.getArtifactId() != null) {
-                Set<String> verStrings = getVersions(hold.getGroupId(), hold.getArtifactId());
+                Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult(hold.getGroupId(), hold.getGroupId(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                List<NBVersionInfo> verStrings = result.getResults();
                 Collection<GrammarResult> elems = new ArrayList<GrammarResult>();
-                for (String vers : verStrings) {
-                    if (vers.startsWith(virtualTextCtx.getCurrentPrefix())) {
-                        elems.add(new MyTextElement(vers, virtualTextCtx.getCurrentPrefix()));
+                for (NBVersionInfo vers : verStrings) {
+                    if (vers.getVersion().startsWith(virtualTextCtx.getCurrentPrefix())) {
+                        elems.add(new MyTextElement(vers.getVersion(), virtualTextCtx.getCurrentPrefix()));
                     }
                 }
-                synchronized (VERSION_LOCK) {
-                    if (versionPartialCache.contains(hold.getGroupId() + ":" + hold.getArtifactId())) {
+                if (result.isPartial()) {
                         elems.add(new PartialTextElement());
                     }
-                }
                 return Collections.enumeration(elems);
             }
         }
         if (path.endsWith("dependencies/dependency/groupId") || //NOI18N
             path.endsWith("extensions/extension/groupId")) {    //NOI18N
-                Set<String> elems = getGroupIds();
+                Result<String> result = RepositoryQueries.getGroupsResult(RepositoryPreferences.getInstance().getRepositoryInfos());
+                List<String> elems = result.getResults();
                 ArrayList<GrammarResult> texts = new ArrayList<GrammarResult>();
                 for (String elem : elems) {
                     if (elem.startsWith(virtualTextCtx.getCurrentPrefix())) {
                         texts.add(new MyTextElement(elem, virtualTextCtx.getCurrentPrefix()));
                     }
                 }
-                synchronized (GROUP_LOCK) {
-                    if (groupCachePartial) {
+                if (result.isPartial()) {
                         texts.add(new PartialTextElement());
                     }
-                }
                 return Collections.enumeration(texts);
             
         }
@@ -467,7 +462,8 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             }
             ArtifactInfoHolder hold = findArtifactInfo(previous);
             if (hold.getGroupId() != null) {
-                    Set<String> elems = getArtifactIds(hold.getGroupId());
+                    Result<String> result = RepositoryQueries.getArtifactsResult(hold.getGroupId(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                    List<String> elems = result.getResults();
                     ArrayList<GrammarResult> texts = new ArrayList<GrammarResult>();
                     String currprefix = virtualTextCtx.getCurrentPrefix();
                     for (String elem : elems) {
@@ -475,11 +471,9 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                             texts.add(new MyTextElement(elem, currprefix));
                         }
                     }
-                    synchronized (ARTIFACT_LOCK) {
-                        if (artifactsPartialCache.contains(hold.getGroupId())) {
+                    if (result.isPartial()) {
                             texts.add(new PartialTextElement());
                         }
-                    }
                     return Collections.enumeration(texts);
                
             }
@@ -493,20 +487,19 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             }
             ArtifactInfoHolder hold = findArtifactInfo(previous);
             if (hold.getGroupId() != null && hold.getArtifactId() != null && hold.getVersion() != null) {
-                Set<String> elems = getClassifiers(hold.getGroupId(), hold.getArtifactId(), hold.getVersion());
+                Result<NBVersionInfo> result = RepositoryQueries.getRecordsResult(hold.getGroupId(), hold.getArtifactId(), hold.getVersion(), RepositoryPreferences.getInstance().getRepositoryInfos());
+
+                List<NBVersionInfo> elems = result.getResults();
                 List<GrammarResult> texts = new ArrayList<GrammarResult>();
                 String currprefix = virtualTextCtx.getCurrentPrefix();
-                for (String elem : elems) {
-                    if (elem.startsWith(currprefix)) {
-                        texts.add(new MyTextElement(elem, currprefix));
+                for (NBVersionInfo elem : elems) {
+                    if (elem.getClassifier() != null && elem.getClassifier().startsWith(currprefix)) {
+                        texts.add(new MyTextElement(elem.getClassifier(), currprefix));
                     }
                 }
-                synchronized (CLASSIFIER_LOCK) {
-                    String id = hold.getGroupId() + ':' + hold.getArtifactId() + ':' + hold.getVersion();
-                    if (classifierPartialCache.contains(id)) {
+                if (result.isPartial()) {
                         texts.add(new PartialTextElement());
                     }
-                }
                 return Collections.enumeration(texts);
             }
         }
@@ -602,138 +595,6 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         return null;
     }
 
-    //XXX: mkleint I think this whole caching logic can go..
-    private Set<String> getGroupIds() {
-        Set<String> elems = null;
-        synchronized (GROUP_LOCK) {
-            if (groupCache != null) {
-                elems = groupCache;
-                //for partial results attempt re-query, do not wait for results
-                if (groupCachePartial) {
-                    groupTask.schedule(500);
-                }
-            } else {
-                if (!groupTask.isFinished()) {
-                    groupTask.run();
-                }
-            }
-        }
-        if (elems == null) {
-            groupTask.waitFinished();
-        }
-        synchronized (GROUP_LOCK) {
-            if (groupCache != null) {
-                elems = groupCache;
-            } else {
-                //can it happen?
-                elems = Collections.<String>emptySet();
-            }
-        }
-        return elems;
-    }
-    
-    //XXX: mkleint I think this whole caching logic can go..
-    private Set<String> getArtifactIds(String groupId) {
-        Set<String> elems = null;
-        RequestProcessor.Task tsk;
-        synchronized (ARTIFACT_LOCK) {
-            tsk = artifactTasks.get(groupId);
-            if (tsk == null) {
-                tsk = RP.create(new ArtifactTask(groupId));
-                artifactTasks.put(groupId, tsk);
-            }
-            Set<String> c = artifactCache.get(groupId);
-            if (c != null) {
-                elems = c;
-                //for partial results attempt re-query, do not wait for results
-                if (artifactsPartialCache.contains(groupId)) {
-                    tsk.schedule(200);
-                }
-            } else {
-                if (!tsk.isFinished()) {
-                    tsk.run();
-                }
-            }
-        }
-        if (elems == null) {
-            tsk.waitFinished();
-        }
-        synchronized (ARTIFACT_LOCK) {
-            Set<String> c = artifactCache.get(groupId);
-            elems = c != null ? c : Collections.<String>emptySet();
-        }
-        return elems;
-    }
-    
-    //XXX: mkleint I think this whole caching logic can go..
-    private Set<String> getVersions(String groupId, String artifactId) {
-        Set<String> elems = null;
-        RequestProcessor.Task tsk;
-        String id = groupId + ":" + artifactId; //NOI18N
-        synchronized (VERSION_LOCK) {
-            tsk = versionTasks.get(id);
-            if (tsk == null) {
-                tsk = RP.create(new VersionTask(groupId, artifactId));
-                versionTasks.put(id, tsk);
-            }
-            Set<String> c = versionCache.get(id);
-            if (c != null) {
-                elems = c;
-                //for partial results attempt re-query, do not wait for results
-                if (versionPartialCache.contains(groupId)) {
-                    tsk.schedule(200);
-                }
-                
-            } else {
-                if (!tsk.isFinished()) {
-                    tsk.run();
-                }
-            }
-        }
-        if (elems == null) {
-            tsk.waitFinished();
-        }
-        synchronized (VERSION_LOCK) {
-            Set<String> c = versionCache.get(id);
-            elems = c != null ? c : Collections.<String>emptySet();
-        }
-        return elems;
-    }
-
-    //XXX: mkleint I think this whole caching logic can go..
-    private Set<String> getClassifiers(String groupId, String artifactId, String version) {
-        Set<String> elems = null;
-        RequestProcessor.Task tsk;
-        String id = groupId + ':' + artifactId + ':' + version;
-        synchronized (CLASSIFIER_LOCK) {
-            tsk = classifierTasks.get(id);
-            if (tsk == null) {
-                tsk = RP.create(new ClassifierTask(groupId, artifactId, version));
-                classifierTasks.put(id, tsk);
-            }
-            Set<String> c = classifierCache.get(id);
-            if (c != null) {
-                elems = c;
-                //for partial results attempt re-query, do not wait for results
-                if (classifierPartialCache.contains(groupId)) {
-                    tsk.schedule(200);
-                }
-            } else {
-                if (!tsk.isFinished()) {
-                    tsk.run();
-                }
-            }
-        }
-        if (elems == null) {
-            tsk.waitFinished();
-        }
-        synchronized (CLASSIFIER_LOCK) {
-            Set<String> c = classifierCache.get(id);
-            elems = c != null ? c : Collections.<String>emptySet();
-        }
-        return elems;
-    }
-    
   /*Return repo url's*/
     private List<String> getRepoUrls() {
         List<String> repos = new ArrayList<String>();
@@ -858,99 +719,4 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         }
         
     }
-    
-    private class GroupTask implements Runnable {
-
-        @Override
-        public void run() {
-            Result<String> result = RepositoryQueries.getGroupsResult(RepositoryPreferences.getInstance().getRepositoryInfos());
-            Set<String> set = new TreeSet<String>(result.getResults());
-            synchronized (GROUP_LOCK) {
-                MavenProjectGrammar.this.groupCache = set;
-                MavenProjectGrammar.this.groupCachePartial = result.isPartial();
             }
-        }
-    }
-            
-    private class ArtifactTask implements Runnable {
-        private String groupId;
-
-        ArtifactTask(String groupId) {
-            this.groupId = groupId;
-        }
-        
-        @Override
-        public void run() {
-            Result<String> result = RepositoryQueries.getArtifactsResult(groupId, RepositoryPreferences.getInstance().getRepositoryInfos());
-            Set<String> elems = new TreeSet<String>(result.getResults());
-            synchronized (ARTIFACT_LOCK) {
-                MavenProjectGrammar.this.artifactCache.put(groupId, elems);
-                if (result.isPartial()) {
-                    MavenProjectGrammar.this.artifactsPartialCache.add(groupId);
-                } else {
-                    MavenProjectGrammar.this.artifactsPartialCache.remove(groupId);
-                }
-            }
-        }
-    }
-
-    private class VersionTask implements Runnable {
-        private String groupId;
-        private String artifactId;
-
-        VersionTask(String groupId, String art) {
-            this.groupId = groupId;
-            artifactId = art;
-        }
-        
-        @Override
-        public void run() {
-            Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult(groupId, artifactId, RepositoryPreferences.getInstance().getRepositoryInfos());
-            Set<String> elems = new LinkedHashSet<String>();
-            for (NBVersionInfo inf : result.getResults()) {
-                elems.add(inf.getVersion());
-            }
-            synchronized (VERSION_LOCK) {
-                final String key = groupId + ":" + artifactId;
-                MavenProjectGrammar.this.versionCache.put(key, elems); //NOI18N
-                if (result.isPartial()) {
-                    MavenProjectGrammar.this.versionPartialCache.add(key);
-                } else {
-                    MavenProjectGrammar.this.versionPartialCache.remove(key);
-                }
-            }
-        }
-        
-    }
-    
-    private class ClassifierTask implements Runnable {
-        private final String groupId;
-        private final String artifactId;
-        private final String version;
-        ClassifierTask(String groupId, String artifactId, String version) {
-            this.groupId = groupId;
-            this.artifactId = artifactId;
-            this.version = version;
-        }
-        @Override public void run() {
-            Result<NBVersionInfo> result = RepositoryQueries.getRecordsResult(groupId, artifactId, version, RepositoryPreferences.getInstance().getRepositoryInfos());
-            Set<String> elems = new LinkedHashSet<String>();
-            for (NBVersionInfo inf : result.getResults()) {
-                if (inf.getClassifier() != null) {
-                    elems.add(inf.getClassifier());
-                }
-            }
-            synchronized (CLASSIFIER_LOCK) {
-                final String key = groupId + ':' + artifactId + ':' + version;
-                classifierCache.put(key, elems);
-                if (result.isPartial()) {
-                    MavenProjectGrammar.this.classifierPartialCache.add(key);
-                } else {
-                    MavenProjectGrammar.this.classifierPartialCache.remove(key);
-                }
-                
-            }
-        }
-    }
-
-}

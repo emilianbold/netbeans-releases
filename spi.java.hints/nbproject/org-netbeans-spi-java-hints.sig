@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.4.1
+#Version 1.10.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -85,11 +85,12 @@ meth public abstract javax.swing.JComponent getCustomizer(java.util.prefs.Prefer
 CLSS public org.netbeans.spi.java.hints.ErrorDescriptionFactory
 meth public !varargs static org.netbeans.spi.editor.hints.ErrorDescription forName(org.netbeans.spi.java.hints.HintContext,com.sun.source.tree.Tree,java.lang.String,org.netbeans.spi.editor.hints.Fix[])
 meth public !varargs static org.netbeans.spi.editor.hints.ErrorDescription forName(org.netbeans.spi.java.hints.HintContext,com.sun.source.util.TreePath,java.lang.String,org.netbeans.spi.editor.hints.Fix[])
+meth public !varargs static org.netbeans.spi.editor.hints.ErrorDescription forSpan(org.netbeans.spi.java.hints.HintContext,int,int,java.lang.String,org.netbeans.spi.editor.hints.Fix[])
 meth public !varargs static org.netbeans.spi.editor.hints.ErrorDescription forTree(org.netbeans.spi.java.hints.HintContext,com.sun.source.tree.Tree,java.lang.String,org.netbeans.spi.editor.hints.Fix[])
 meth public !varargs static org.netbeans.spi.editor.hints.ErrorDescription forTree(org.netbeans.spi.java.hints.HintContext,com.sun.source.util.TreePath,java.lang.String,org.netbeans.spi.editor.hints.Fix[])
 supr java.lang.Object
 hfds DECLARATION
-hcls DisableConfigure,FixImpl,TopLevelConfigureFix
+hcls DisableConfigure,FixImpl,InspectFix,TopLevelConfigureFix
 
 CLSS public abstract interface !annotation org.netbeans.spi.java.hints.Hint
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)

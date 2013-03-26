@@ -118,9 +118,4 @@ public class EnterpriseSetup extends PerformanceTestCase2 {
             Exceptions.printStackTrace(ex);
         }
     }
-    
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
-    }
-
 }

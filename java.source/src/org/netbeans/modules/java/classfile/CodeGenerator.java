@@ -45,10 +45,13 @@ import com.sun.tools.classfile.Attribute;
 import com.sun.tools.classfile.ClassFile;
 import com.sun.tools.classfile.Code_attribute;
 import com.sun.tools.classfile.ConstantPoolException;
+import com.sun.tools.classfile.Instruction;
 import com.sun.tools.classfile.Method;
+import com.sun.tools.classfile.Opcode;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javap.ClassWriter;
 import com.sun.tools.javap.CodeWriter;
+import com.sun.tools.javap.ConstantWriter;
 import com.sun.tools.javap.Context;
 import com.sun.tools.javap.Messages;
 import java.io.ByteArrayInputStream;
@@ -518,6 +521,7 @@ public class CodeGenerator {
                                 setClassFile(cf);
                             }
                         });
+                        ctx.put(CodeWriter.class, new ConvenientCodeWriter(ctx));
 
                         CodeWriter codeWriter = CodeWriter.instance(ctx);
                         
@@ -651,7 +655,41 @@ public class CodeGenerator {
         }
 
     }
+    
+    private static final class ConvenientCodeWriter extends CodeWriter {
 
+        private final ConstantWriter constantWriter;
+        
+        public ConvenientCodeWriter(Context context) {
+            super(context);
+            constantWriter = ConstantWriter.instance(context);
+        }
+
+        private static final Set<Opcode> INSTRUCTION_WITH_REFERENCE = 
+                EnumSet.of(Opcode.LDC, Opcode.LDC_W, Opcode.LDC2_W,
+                           Opcode.GETSTATIC, Opcode.PUTSTATIC, Opcode.GETFIELD,
+                           Opcode.PUTFIELD, Opcode.INVOKEVIRTUAL, Opcode.INVOKESPECIAL,
+                           Opcode.INVOKESTATIC, Opcode.INVOKEINTERFACE, Opcode.NEW,
+                           Opcode.ANEWARRAY, Opcode.CHECKCAST, Opcode.INSTANCEOF);
+        
+        @Override
+        public void writeInstr(Instruction instr) {
+            if (INSTRUCTION_WITH_REFERENCE.contains(instr.getOpcode())) {
+                print(String.format("%4d: %-13s ", instr.getPC(), instr.getMnemonic()));
+                int constantPoolEntry;
+                if (instr.getOpcode() == Opcode.LDC) {
+                    constantPoolEntry = instr.getUnsignedByte(1);
+                } else {
+                    constantPoolEntry = instr.getUnsignedShort(1);
+                }
+                print(constantWriter.stringValue(constantPoolEntry));
+                println();
+            } else {
+                super.writeInstr(instr);
+            }
+        }
+    }
+    
     private static final Map<List<ElementKind>, Set<Modifier>> IMPLICIT_MODIFIERS;
 
     static {

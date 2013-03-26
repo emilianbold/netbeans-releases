@@ -73,6 +73,7 @@ import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.commit.GitCommitPanel.GitCommitPanelMerged;
+import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.hooks.GitHook;
@@ -99,10 +100,15 @@ import org.openide.util.RequestProcessor;
 public class CommitAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(CommitAction.class.getName());
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/commit.png"; //NOI18N
+    
+    public CommitAction () {
+        super(ICON_RESOURCE);
+    }
 
     @Override
     protected String iconResource () {
-        return "org/netbeans/modules/git/resources/icons/commit.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 
     @Override
@@ -122,11 +128,11 @@ public class CommitAction extends SingleRepositoryAction {
                 GitCommitPanel panel = state == GitRepositoryState.MERGING_RESOLVED
                         ? GitCommitPanelMerged.create(roots, repository, user, mergeCommitMessage)
                         : GitCommitPanel.create(roots, repository, user, isFromGitView(context));
-                VCSCommitTable<GitFileNode> table = panel.getCommitTable();
-                boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
+                VCSCommitTable<GitLocalFileNode> table = panel.getCommitTable();
+                boolean ok = panel.open(context, new HelpCtx("org.netbeans.modules.git.ui.commit.CommitAction")); //NOI18N
 
                 if (ok) {
-                    final List<GitFileNode> commitFiles = table.getCommitFiles();
+                    final List<GitLocalFileNode> commitFiles = table.getCommitFiles();
 
                     GitModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N            
                     panel.getParameters().storeCommitMessage();
@@ -173,11 +179,11 @@ public class CommitAction extends SingleRepositoryAction {
 
     private static class CommitProgressSupport extends GitProgressSupport {
         private final GitCommitPanel panel;
-        private final List<GitFileNode> commitFiles;
+        private final List<GitLocalFileNode> commitFiles;
         private final VCSCommitFilter selectedFilter;
         private final GitRepositoryState state;
 
-        private CommitProgressSupport (GitCommitPanel panel, List<GitFileNode> commitFiles, VCSCommitFilter selectedFilter, GitRepositoryState state) {
+        private CommitProgressSupport (GitCommitPanel panel, List<GitLocalFileNode> commitFiles, VCSCommitFilter selectedFilter, GitRepositoryState state) {
             this.panel = panel;
             this.commitFiles = commitFiles;
             this.selectedFilter = selectedFilter;
@@ -248,12 +254,12 @@ public class CommitAction extends SingleRepositoryAction {
             List<String> excPaths = new ArrayList<String>();
             List<String> incPaths = new ArrayList<String>();
 
-            Iterator<GitFileNode> it = commitFiles.iterator();
+            Iterator<GitLocalFileNode> it = commitFiles.iterator();
             while (it.hasNext()) {
                 if (isCanceled()) {
                     return;
                 }
-                GitFileNode node = (GitFileNode) it.next();
+                GitLocalFileNode node = (GitLocalFileNode) it.next();
                 FileInformation info = node.getInformation();
 
                 VCSCommitOptions option = node.getCommitOptions();
@@ -308,7 +314,7 @@ public class CommitAction extends SingleRepositoryAction {
             }
             File[] hookFiles = commitCandidates.toArray(new File[commitCandidates.size()]);
             LogEntry logEntry = new LogEntry(info.getFullMessage(),
-                    info.getAuthor().getName(),
+                    info.getAuthor().toString(),
                     info.getRevision(),
                     new Date(info.getCommitTime()));
 
@@ -384,7 +390,8 @@ public class CommitAction extends SingleRepositoryAction {
             if (retval == NotifyDescriptor.YES_OPTION) {
                 GitUtils.openInVersioningView(conflicts.keySet(), repository, GitUtils.NULL_PROGRESS_MONITOR);
             }
-        } else if (GitBranch.NO_BRANCH == info.getActiveBranch().getName()) {
+        } else if (GitBranch.NO_BRANCH_INSTANCE != info.getActiveBranch() 
+                && GitBranch.NO_BRANCH == info.getActiveBranch().getName()) {
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(Bundle.MSG_CommitAction_detachedHeadState_warning(repository.getName()),
                     Bundle.LBL_CommitAction_detachedHeadState_title(),
                     NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);

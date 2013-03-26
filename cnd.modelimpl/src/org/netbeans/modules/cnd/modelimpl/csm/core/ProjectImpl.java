@@ -128,7 +128,7 @@ public final class ProjectImpl extends ProjectBase {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------------------------- onFileEditSTART " + buf.getUrl()); //NOI18N
         }
-        final FileImpl impl = createOrFindFileImpl(buf, nativeFile);
+        final FileImpl impl = getFile(buf.getAbsolutePath(), false);
         if (impl != null) {
             APTDriver.invalidateAPT(buf);
             APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());

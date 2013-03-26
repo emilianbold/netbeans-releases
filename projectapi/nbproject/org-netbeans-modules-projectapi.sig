@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.46.1
+#Version 1.50.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -312,6 +312,7 @@ CLSS public final org.netbeans.spi.project.support.LookupProviderSupport
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.api.project.Sources> createSourcesMerger()
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.project.ActionProvider> createActionProviderMerger()
 meth public static org.openide.util.Lookup createCompositeLookup(org.openide.util.Lookup,java.lang.String)
+meth public static org.openide.util.Lookup createCompositeLookup(org.openide.util.Lookup,org.openide.util.Lookup)
 supr java.lang.Object
 hcls ActionProviderMerger,MergedActionProvider,SourcesImpl,SourcesMerger
 
@@ -343,7 +344,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds defaultLookup
+hfds LOG,defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider

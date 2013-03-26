@@ -359,20 +359,32 @@ final class JUnitOutputReader {
                             assert false : ex; // #175298
                         }
                     } else {
-                        assert false :
-                            "See bug #185544 \n" +
-                            "Please, provide details about your test run: \n" +
-                            "JUnit version, a way how tests are launched, \n" +
-                            "kind of the project and so on. \n" +
-                            "Description of your test environment, a sample \n" +
-                            "project and steps to reproduce this bug will be \n" +
-                            "highly appreciated.\n" +
-                            "Cause of this error is the JUnit message about \n" +
-                            "execution of the tests doesn't match for usual " +
-                            "regexp pattern: \n" +
-                            "message: \"" + msg +"\"\n" +
-                            "pattern: \"" + regexp.getSuiteStatsPattern();
-                    }
+			matcher = regexp.getSuiteStats190Pattern().matcher(msg);
+			if (matcher.matches()) {
+			    try {
+				suiteFinished(Integer.parseInt(matcher.group(1)),
+					Integer.parseInt(matcher.group(2)),
+					Integer.parseInt(matcher.group(3)),
+					parseTime(matcher.group(6)));
+			    } catch (NumberFormatException ex) {
+				assert false : ex; // #175298
+			    }
+			} else {
+			    assert false :
+				    "See bug #185544 \n"
+				    + "Please, provide details about your test run: \n"
+				    + "JUnit version, a way how tests are launched, \n"
+				    + "kind of the project and so on. \n"
+				    + "Description of your test environment, a sample \n"
+				    + "project and steps to reproduce this bug will be \n"
+				    + "highly appreciated.\n"
+				    + "Cause of this error is the JUnit message about \n"
+				    + "execution of the tests doesn't match for usual "
+				    + "regexp pattern: \n"
+				    + "message: \"" + msg + "\"\n"
+				    + "pattern: \"" + regexp.getSuiteStats190Pattern();
+			}
+		    }
                     break;
                 }
             }

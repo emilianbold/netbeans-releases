@@ -70,6 +70,7 @@ public class FindDialogMemoryTest extends NbTestCase {
     
     public void testFileNamePatternStorage() throws Exception {
         assertNotNull(memory.getFileNamePatterns());
+        memory.getFileNamePatterns().clear(); // clear default values
         assertTrue(memory.getFileNamePatterns().isEmpty());
 
         final String elem0 = "abc";
@@ -157,6 +158,13 @@ public class FindDialogMemoryTest extends NbTestCase {
                          memory.getFileNamePatterns().get(j));
         }
 
+    }
+
+    public void testReplacePatternSpecified() {
+        memory.setReplacePatternSpecified(true);
+        assertTrue(memory.isReplacePatternSpecified());
+        memory.setReplacePatternSpecified(false);
+        assertFalse(memory.isReplacePatternSpecified());
     }
 
     private static int getMaxFileNameCount() throws Exception {

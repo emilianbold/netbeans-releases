@@ -404,6 +404,42 @@ public final class Fold {
     public int getFoldIndex(Fold child) {
         return (children != null) ? children.getFoldIndex(child) : -1;
     }
+
+    /**
+     * Start of the fold content past the guarded area.
+     * For root fold, returns 0. For other folds, returns the offset
+     * following the guarded start of the fold (typically a delimiter).
+     * 
+     * @return offset in document
+     * @since 1.35
+     */
+    public int getGuardedStart() {
+        if (isRootFold()) {
+            return 0;
+        } else if (isZeroStartGuardedLength()) {
+            return getStartOffset();
+        } else {
+            return getStartOffset() + startGuardedLength;
+        }
+    }
+    
+    /**
+     * End of the fold content before the guarded area.
+     * For root fold, returns 0. For other folds, returns the last offset
+     * preceding the guarded start of the fold (typically a delimiter).
+     * 
+     * @return offset in document
+     * @since 1.35
+     */
+    public int getGuardedEnd() {
+        if (isRootFold()) {
+            return getEndOffset();
+        } else if (isZeroStartGuardedLength()) {
+            return getEndOffset();
+        } else {
+            return getEndOffset() - endGuardedLength;
+        }
+    }
     
     private void updateGuardedStartPos(Document doc, int startOffset) throws BadLocationException {
         if (!isRootFold()) {
@@ -530,7 +566,6 @@ public final class Fold {
         this.rawIndex += rawIndexDelta;
     }
     
-
     public String toString() {
         return FoldUtilitiesImpl.foldToString(this) + ", [" + getInnerStartOffset() // NOI18N
             + ", " + getInnerEndOffset() + "] {" // NOI18N

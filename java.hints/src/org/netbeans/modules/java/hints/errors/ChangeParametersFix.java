@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.Tree;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import javax.swing.Action;
@@ -62,11 +63,14 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import static org.netbeans.modules.java.hints.errors.Bundle.*;
 
 /**
  *
  * @author Ralph Ruijs
  */
+@NbBundle.Messages({"LBL_FIX_ChangeMethodParameters=Change Method Signature from {0} to {1}",
+                    "LBL_FIX_ChangeConstructorParameters=Change constructor from {0} to {1}"})
 public final class ChangeParametersFix implements Fix {
     private final boolean doFullRefactoring;
     private final TreePathHandle tph;
@@ -74,19 +78,21 @@ public final class ChangeParametersFix implements Fix {
     private final String newDeclaration;
     private final ChangeParametersRefactoring.ParameterInfo[] newParameterInfo;
     private final Set<Modifier> modifiers;
+    private final boolean isConstr;
 
-    public ChangeParametersFix(boolean doFullRefactoring, TreePathHandle tph, Set<Modifier> modifiers, String declaration, String newDeclaration, ParameterInfo[] newParameterInfo) {
+    public ChangeParametersFix(boolean doFullRefactoring, TreePathHandle tph, Set<Modifier> modifiers, String declaration, String newDeclaration, ParameterInfo[] newParameterInfo, boolean isConstr) {
         this.doFullRefactoring = doFullRefactoring;
         this.tph = tph;
 	this.modifiers = modifiers;
         this.declaration = declaration;
         this.newDeclaration = newDeclaration;
         this.newParameterInfo = newParameterInfo;
+        this.isConstr = isConstr;
     }
 
     @Override
     public String getText() {
-        return NbBundle.getMessage(CreateElement.class, "LBL_FIX_ChangeMethodParameters", declaration, newDeclaration); // NOI18N
+        return isConstr? LBL_FIX_ChangeConstructorParameters(declaration, newDeclaration) : LBL_FIX_ChangeMethodParameters(declaration, newDeclaration); // NOI18N
     }
 
     @Override
