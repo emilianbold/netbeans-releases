@@ -573,13 +573,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
         Collection<? extends IndexResult> indexResults = jsIndex.query(JsIndex.FIELD_FQ_NAME, fqn.toString(), QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
         for (IndexResult indexResult : indexResults) {
             IndexedElement indexedElement = IndexedElement.create(indexResult);
-            JsElement element = addedProperties.get(indexedElement.getName());
-            if (startsWith(indexedElement.getName(), request.prefix)
-                    && !indexedElement.isAnonymous()
+            if (!indexedElement.isAnonymous()
                     && indexedElement.getFQN().indexOf('.', fqn.length()) == -1
-                    && indexedElement.getModifiers().contains(Modifier.PUBLIC)
-                    && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
-                addedProperties.put(indexedElement.getName(), indexedElement);
+                    && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
+                addPropertyToMap(request, addedProperties, indexedElement);
             }
         }
         return addedProperties;
@@ -720,7 +717,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     }
     
     private boolean startsWith(String theString, String prefix) {
-        if (prefix.length() == 0) {
+        if (prefix == null || prefix.length() == 0) {
             return true;
         }
 
@@ -776,10 +773,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
     }
     
     private void addObjectPropertiesToCC(JsObject jsObject, CompletionRequest request, Map<String, JsElement> addedProperties) {
-        boolean filter = true;
-        if (request.prefix == null || request.prefix.isEmpty()) {
-            filter = false;
-        }
         JsObject prototype = jsObject.getProperty("prototype"); // NOI18N
         if (prototype != null) {
             // at first add all prototype properties
@@ -787,15 +780,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
             addObjectPropertiesToCC(prototype, request, addedProperties);
         }
         for (JsObject property : jsObject.getProperties().values()) {
-            String propertyName = property.getName();
             if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
                     && !property.getModifiers().contains(Modifier.PRIVATE)
-                    && (!filter || startsWith(propertyName, request.prefix))
                     && !property.getJSKind().isPropertyGetterSetter()) {
-                JsElement element = addedProperties.get(propertyName);
-                if (element == null || (!element.isDeclared() && (jsObject.isDeclared() || "prototype".equals(jsObject.getName())))) {
-                    addedProperties.put(propertyName, property);
-                }
+                addPropertyToMap(request, addedProperties, property);
             }
         }
     }
@@ -804,11 +792,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
         String prototypeFQN = null;
         for (IndexedElement indexedElement : properties) {
-            JsElement element = addedProperties.get(indexedElement.getName());
-            if (startsWith(indexedElement.getName(), request.prefix)
-                    && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
-                addedProperties.put(indexedElement.getName(), indexedElement);
-            }
+            addPropertyToMap(request, addedProperties, indexedElement);
             if ("prototype".equals(indexedElement.getName())) {
                 prototypeFQN = indexedElement.getFQN();
             }
@@ -816,15 +800,26 @@ class JsCodeCompletion implements CodeCompletionHandler {
         if (prototypeFQN != null) {
             properties = jsIndex.getProperties(prototypeFQN);
             for (IndexedElement indexedElement : properties) {
-                JsElement element = addedProperties.get(indexedElement.getName());
-                if (startsWith(indexedElement.getName(), request.prefix)
-                        && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
-                    addedProperties.put(indexedElement.getName(), indexedElement);
-                }
+                addPropertyToMap(request, addedProperties, indexedElement);
             }
         }
     }
-                 
+    
+    private void addPropertyToMap(CompletionRequest request, Map<String, JsElement> addedProperties, JsElement property) {    
+        String name = property.getName();
+        if (startsWith(name, request.prefix)) {
+            if (!"prototype".equals(name)) {
+                JsElement element = addedProperties.get(name);
+                if (element == null || (!element.isDeclared() && property.isDeclared())) {
+                    addedProperties.put(property.getName(), property);
+                }
+            } else {
+                //just add the prototype property
+                addedProperties.put(name, property);
+            }
+        }
+    }
+    
     private Collection<JsObject> getLibrariesGlobalObjects() {
         Collection<JsObject> result = new ArrayList<JsObject>();
         JsObject libGlobal = JQueryModel.getGlobalObject();

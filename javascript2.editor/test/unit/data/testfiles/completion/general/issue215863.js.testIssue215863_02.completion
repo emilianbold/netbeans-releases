@@ -2,7 +2,6 @@ Code completion result for source line:
 window.|location.toString();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     Image(width: Number, height: N  [PUBLIC]   JS Platform
 METHOD     Option(text: String, value: St  [PUBLIC]   JS Platform
 METHOD     Worker(uri: String): Worker     [PUBLIC]   JS Platform
@@ -132,6 +131,7 @@ FIELD      pageYOffset: Number             [PUBLIC]   JS Platform
 FIELD      parent: Window                  [PUBLIC]   JS Platform
 FIELD      performance: Object             [PUBLIC]   JS Platform
 FIELD      personalbar: Object             [PUBLIC]   JS Platform
+FIELD      prototype                       [PUBLIC]   JS Platform
 FIELD      screen: Screen                  [PUBLIC]   JS Platform
 FIELD      scrollMaxX: Number              [PUBLIC]   JS Platform
 FIELD      scrollMaxY: Number              [PUBLIC]   JS Platform
