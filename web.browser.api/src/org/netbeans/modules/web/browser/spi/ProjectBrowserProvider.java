@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.browser.spi;
 
-package org.netbeans.modules.cordova.project;
-
-import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
-import org.openide.filesystems.FileObject;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.util.Collection;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.web.browser.api.WebBrowser;
 
 /**
- *
+ * Heavily inspired by ProjectConfigurationProvider.
  */
-public class RefreshOnSaveListenerImpl implements RefreshOnSaveListener {
+public interface ProjectBrowserProvider {
 
-    public RefreshOnSaveListenerImpl() {
-    }
-    
-    @Override
-    public void fileChanged(FileObject fo) {
-    }
+    /**
+     * Property name for the active browser.
+     * Use it when firing a change of project's active browser.
+     */
+    String PROP_BROWSER_ACTIVE = "activeConfiguration"; // NOI18N
 
-    @Override
-    public void fileDeleted(FileObject fo) {
-    }
+    /**
+     * Property name of the set of browsers.
+     * Use it when firing a change in the set of project's browsers.
+     */
+    String PROP_BROWSERS = "configurations"; // NOI18N
+
+    Collection<WebBrowser> getBrowsers();
+
+    @CheckForNull WebBrowser getActiveBrowser();
+
+    void setActiveBrowser(WebBrowser browser) throws IllegalArgumentException, IOException;
+
+    boolean hasCustomizer();
+
+    void customize();
+
+    void addPropertyChangeListener(PropertyChangeListener lst);
+
+    void removePropertyChangeListener(PropertyChangeListener lst);
 
 }
