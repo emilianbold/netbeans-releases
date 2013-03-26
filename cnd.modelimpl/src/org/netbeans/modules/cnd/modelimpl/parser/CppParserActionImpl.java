@@ -721,80 +721,39 @@ public class CppParserActionImpl implements CppParserActionEx {
                 simple_member_declaration(SIMPLE_MEMBER_DECLARATION__SEMICOLON, token);
             } else {
                 SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
+                SimpleDeclarationBuilder builder;
 
                 if(declBuilder.hasTypedefSpecifier()) {
-                    TypedefBuilder builder = new TypedefBuilder();
-
-                    CsmObjectBuilder parent = builderContext.top(1);
-                    builder.setParent(parent);
-                    builder.setFile(currentContext.file);
-
-                    builder.setStartOffset(declBuilder.getStartOffset());
-                    builder.setEndOffset(((APTToken)token).getOffset());
-
-                    builder.setName(declBuilder.getDeclaratorBuilder().getName());
-                    builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                    if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                        builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                        builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                    }        
-
-                    if(parent instanceof DeclarationStatementBuilder) {
-                        ((DeclarationStatementBuilder)parent).addDeclarationBuilder(builder);
-                    } else {
-                        builder.create();                
-                    }
+                    builder = new TypedefBuilder(declBuilder);
                 } else if(declBuilder.isFunction()) {
-                    FunctionBuilder builder = new FunctionBuilder();
-
-                    CsmObjectBuilder parent = builderContext.top(1);
-                    builder.setParent(parent);
-                    builder.setFile(currentContext.file);
-
-                    builder.setStartOffset(declBuilder.getStartOffset());
-                    builder.setEndOffset(((APTToken)token).getOffset());
-
-                    builder.setName(declBuilder.getDeclaratorBuilder().getName());
-                    builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                    if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                        builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                        builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                    }        
-                    builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
-
-                    builder.create();                
+                    builder = new FunctionBuilder(declBuilder);
                 } else {
                     CharSequence name = declBuilder.getDeclaratorBuilder().getName();
-                    VariableBuilder builder;
                     if(name != null && !name.toString().contains("::")) { //NOI18N
-                        builder = new VariableBuilder();
+                        builder = new VariableBuilder(declBuilder);
                     } else {
-                        builder = new VariableDefinitionImpl.VariableDefinitionBuilder();
+                        builder = new VariableDefinitionImpl.VariableDefinitionBuilder(declBuilder);
                     }
-
-                    CsmObjectBuilder parent = builderContext.top(1);
-                    builder.setParent(parent);
-                    builder.setFile(currentContext.file);
-
-                    builder.setStartOffset(declBuilder.getStartOffset());
-                    builder.setEndOffset(((APTToken)token).getOffset());
-
-                    builder.setName(name);
-                    builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                    builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());
-
-                    if(parent instanceof DeclarationStatementBuilder) {
-                        ((DeclarationStatementBuilder)parent).addDeclarationBuilder(builder);
-                    } else if(parent instanceof ForStatementBuilder) {
-                        DeclarationStatementBuilder dsBuilder = new DeclarationStatementBuilder();
-                        dsBuilder.setFile(currentContext.file);
-                        dsBuilder.setStartOffset(builder.getStartOffset());
-                        dsBuilder.setEndOffset(builder.getEndOffset());
-                        dsBuilder.addDeclarationBuilder(builder);
-                        ((ForStatementBuilder)parent).addStatementBuilder(dsBuilder);
-                    } else {
-                        builder.create();
-                    }
+                }
+                CsmObjectBuilder parent = builderContext.top(1);
+                builder.setParent(parent);
+                builder.setFile(currentContext.file);
+                builder.setEndOffset(((APTToken)token).getOffset());
+                builder.setName(declBuilder.getDeclaratorBuilder().getName());
+                if(declBuilder.getTemplateDescriptorBuilder() != null) {
+                    builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
+                }        
+                if(parent instanceof DeclarationStatementBuilder) {
+                    ((DeclarationStatementBuilder)parent).addDeclarationBuilder(builder);
+                } else if(parent instanceof ForStatementBuilder) {
+                    DeclarationStatementBuilder dsBuilder = new DeclarationStatementBuilder();
+                    dsBuilder.setFile(currentContext.file);
+                    dsBuilder.setStartOffset(builder.getStartOffset());
+                    dsBuilder.setEndOffset(builder.getEndOffset());
+                    dsBuilder.addDeclarationBuilder(builder);
+                    ((ForStatementBuilder)parent).addStatementBuilder(dsBuilder);
+                } else {
+                    builder.create();
                 }
             }
         }
@@ -1810,7 +1769,17 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void ptr_operator(Token token) {}
     @Override public void ptr_operator(int kind, Token token) {}
     @Override public void end_ptr_operator(Token token) {}
-    @Override public void cv_qualifier(int kind, Token token) {}
+    
+    @Override public void cv_qualifier(int kind, Token token) {
+        if (kind == CV_QUALIFIER__CONST) {
+            CsmObjectBuilder builder = builderContext.top(1);
+            if (builder instanceof SimpleDeclarationBuilder) {
+                SimpleDeclarationBuilder sdb = (SimpleDeclarationBuilder)builder;
+                sdb.setConst();
+            }
+        }
+    }
+    
     @Override public void ref_qualifier(int kind, Token token) {}
     @Override public void declarator_id(Token token) {
     }
@@ -2131,76 +2100,30 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void simple_member_declaration(int kind, Token token){
         if(kind == SIMPLE_MEMBER_DECLARATION__SEMICOLON) {
             SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
+            SimpleDeclarationBuilder builder;
             if(declBuilder.hasTypedefSpecifier()) {
-                MemberTypedefBuilder builder = new MemberTypedefBuilder();
-
-                CsmObjectBuilder parent = builderContext.top(1);
-                
-                builder.setParent(parent);
-                builder.setFile(currentContext.file);
-
-                builder.setStartOffset(declBuilder.getStartOffset());
-                builder.setEndOffset(((APTToken)token).getOffset());
-
-                builder.setName(declBuilder.getDeclaratorBuilder().getName());
-                builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                    builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                    builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                }        
-
-                ((ClassBuilder)parent).addMemberBuilder(builder);
+                builder = new MemberTypedefBuilder(declBuilder);
             } else if(declBuilder.isFunction()) {
-                FunctionBuilder builder;
-
-                CharSequence name = declBuilder.getDeclaratorBuilder().getName();
-                
                 if(declBuilder.isConstructor()) {
-                    builder = new ConstructorBuilder();
+                    builder = new ConstructorBuilder(declBuilder);
                 } else if(declBuilder.isDestructor()) {
-                    builder = new DestructorBuilder();
+                    builder = new DestructorBuilder(declBuilder);
                 } else {
-                    builder = new MethodBuilder();
+                    builder = new MethodBuilder(declBuilder);
                 }
-                
-                CsmObjectBuilder parent = builderContext.top(1);
-                
-                builder.setParent(parent);
-                builder.setFile(currentContext.file);
-
-                builder.setStartOffset(declBuilder.getStartOffset());
-                builder.setEndOffset(((APTToken)token).getOffset());
-
-                builder.setName(name);
-                builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                    builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                    builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                }        
-                builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
-
-                ((ClassBuilder)parent).addMemberBuilder((MemberBuilder)builder);
             } else {            
-                FieldBuilder builder = new FieldBuilder(currentContext.file.getParsingFileContent());
-
-                CsmObjectBuilder parent = builderContext.top(1);
-                
-                builder.setParent(parent);
-                builder.setFile(currentContext.file);
-
-                builder.setStartOffset(declBuilder.getStartOffset());
-                builder.setEndOffset(((APTToken)token).getOffset());
-
-                builder.setName(declBuilder.getDeclaratorBuilder().getName());
-                builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                builder.setInitializerBuilder(declBuilder.getInitializerBuilder());
-                if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                    builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                    builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                }        
-
-                ((ClassBuilder)parent).addMemberBuilder(builder);
+                builder = new FieldBuilder(declBuilder, currentContext.file.getParsingFileContent());
             }
+            
+            ClassBuilder parent = (ClassBuilder)builderContext.top(1);
+            builder.setParent(parent);
+            builder.setFile(currentContext.file);
+            builder.setEndOffset(((APTToken)token).getOffset());
+            builder.setName(declBuilder.getDeclaratorBuilder().getName());
+            if(declBuilder.getTemplateDescriptorBuilder() != null) {
+                builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
+            }  
+            parent.addMemberBuilder((MemberBuilder)builder);
         }    
     }
     

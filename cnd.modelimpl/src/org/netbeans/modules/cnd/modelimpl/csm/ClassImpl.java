@@ -1195,6 +1195,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
 
         public static class MemberTypedefBuilder extends TypedefBuilder implements CsmObjectBuilder, MemberBuilder {
+
+            public MemberTypedefBuilder(SimpleDeclarationBuilder builder) {
+                super(builder);
+            }
         
             @Override
             public MemberTypedef create() {

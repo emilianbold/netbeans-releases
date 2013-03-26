@@ -470,6 +470,10 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 
     
     public static class VariableBuilder extends SimpleDeclarationBuilder implements CsmObjectBuilder {
+
+        public VariableBuilder(SimpleDeclarationBuilder builder) {
+            super(builder);
+        }
         
         @Override
         public VariableImpl create() {
