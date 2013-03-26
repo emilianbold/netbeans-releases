@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -35,34 +35,29 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Sebastian Hörl
+ * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.twig.editor;
+package org.netbeans.modules.php.twig.editor.actions;
 
-import javax.swing.Action;
-import javax.swing.text.Document;
-import javax.swing.text.TextAction;
-import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.php.twig.editor.actions.ToggleBlockCommentAction;
-import org.netbeans.modules.php.twig.editor.gsf.TwigLanguage;
+import java.awt.event.ActionEvent;
+import javax.swing.text.JTextComponent;
+import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.ext.ExtKit;
 
-public class TwigEditorKit extends NbEditorKit {
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class ToggleBlockCommentAction extends BaseAction {
 
-    @Override
-    public Document createDefaultDocument() {
-        return super.createDefaultDocument();
+    public ToggleBlockCommentAction() {
+        super(ExtKit.toggleCommentAction);
     }
 
     @Override
-    public String getContentType() {
-        return TwigLanguage.TWIG_MIME_TYPE;
-    }
-
-    @Override
-    protected Action[] createActions() {
-        return TextAction.augmentList(super.createActions(), new Action[] {new ToggleBlockCommentAction()});
+    public void actionPerformed(ActionEvent evt, JTextComponent target) {
     }
 
 }
