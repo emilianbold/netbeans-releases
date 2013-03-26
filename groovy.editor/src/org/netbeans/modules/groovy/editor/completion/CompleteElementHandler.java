@@ -188,27 +188,24 @@ public final class CompleteElementHandler {
 
         // FIXME not sure about order of the meta methods, perhaps interface
         // methods take precedence
-        fillSuggestions(MetaElementHandler.forCompilationInfo(info)
-                .getMethods(typeName, prefix, anchor, nameOnly), result);
+        fillSuggestions(MetaElementHandler.forCompilationInfo(info).getMethods(typeName, prefix, anchor, nameOnly), result);
 
         if (source != null) {
-            fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
-                    .getMethods(source.getName(), typeName, prefix, anchor, nameOnly, leaf, definition.getFileObject()), result);
+            fillSuggestions(DynamicElementHandler.forCompilationInfo(info).getMethods(source.getName(), typeName, prefix, anchor, nameOnly, leaf, definition.getFileObject()), result);
         }
 
         if (typeNode.getSuperClass() != null) {
-            fillSuggestions(getMethodsInner(source, typeNode.getSuperClass(),
-                    prefix, anchor, level + 1, modifiedAccess, nameOnly), result);
+            fillSuggestions(getMethodsInner(source, typeNode.getSuperClass(), prefix, anchor, level + 1, modifiedAccess, nameOnly), result);
         } else if (leaf) {
-            fillSuggestions(JavaElementHandler.forCompilationInfo(info)
-                    .getMethods("java.lang.Object", prefix, anchor, new String[]{}, false, modifiedAccess, nameOnly), result); // NOI18N
+            fillSuggestions(JavaElementHandler.forCompilationInfo(info).getMethods("java.lang.Object", prefix, anchor, new String[]{}, false, modifiedAccess, nameOnly), result); // NOI18N
         }
 
         for (ClassNode inter : typeNode.getInterfaces()) {
-            fillSuggestions(getMethodsInner(source, inter,
-                    prefix, anchor, level + 1, modifiedAccess, nameOnly), result);
+            fillSuggestions(getMethodsInner(source, inter, prefix, anchor, level + 1, modifiedAccess, nameOnly), result);
         }
-
+        
+        fillSuggestions(TransformationHandler.getMethods(index, typeNode, prefix, anchor), result);
+        
         return result;
     }
 
@@ -247,6 +244,8 @@ public final class CompleteElementHandler {
         for (ClassNode inter : typeNode.getInterfaces()) {
             fillSuggestions(getFieldsInner(source, inter, prefix, anchor, level + 1), result);
         }
+        
+        fillSuggestions(TransformationHandler.getFields(index, typeNode, prefix, anchor), result);
 
         return result;
     }
