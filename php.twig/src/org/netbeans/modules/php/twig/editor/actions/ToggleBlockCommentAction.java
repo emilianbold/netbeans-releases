@@ -152,6 +152,7 @@ public class ToggleBlockCommentAction extends BaseAction {
                 }
                 ts.move(caretOffset);
                 ts.moveNext();
+                ts.movePrevious();
                 Token<? extends TwigTokenId> token = ts.token();
                 if (token != null && isInComment(token.id())) {
                     uncommentToken(ts, baseDocument);
