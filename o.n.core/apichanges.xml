@@ -49,28 +49,66 @@ made subject to such option by the copyright holder.
 <apichanges>
 
   <apidefs>
-    <apidef name="core-network-proxy">Bridge Core with Core Network Friend API</apidef>
+    <apidef name="friend">Bridge Core with Core Network Friend API</apidef>
   </apidefs>
 
   <changes>
-     <change id="system-proxy-reload">
-        <api name="core-network-proxy"/>
-        <summary>NbProxySelector and ProxyAutoConfig moved to new Core Network module.</summary>
-        <version major="3" minor="39"/>
-        <date day="2" month="4" year="2013"/>
-        <author login="lfischme"/>
-        <compatibility addition="no" binary="compatible" semantic="compatible" />
-        <description>
-        <p>
-            Classes <code>NbProxySelector</code> and <code>ProxyAutoConfig</code> have been
-            moved to Core Network module. Now the <code>NbProxySelector</code> can be accessed
-            via lookup - in <code>CoreBridgeImpl</code>.
-        </p>
-        </description>
-        <class package="org.netbeans.core" name="NbProxySelector"/>
-        <class package="org.netbeans.core" name="ProxyAutoConfig"/>
-        <issue number="201731"/>
-    </change>
+      <change id="proxy-selector-brigde">
+          <api name="friend"/>
+          <summary>Core Network provides ProxySelector</summary>
+          <version major="3" minor="40"/>
+          <date day="2" month="4" year="2013"/>
+          <author login="lfischme"/>
+          <compatibility addition="yes" binary="compatible" semantic="compatible" />
+          <description>
+              <p>
+                  The <code>o.n.core</code> module finds a instance of java.net.ProxySelector
+                  in the default <code>org.openide.util.Lookup</code>. If some found
+                  then will be registred as default <code>ProxySelector.setDedault()</code>.
+              </p>
+          </description>
+          <class package="org.netbeans.core" name="ProxySettings"/>
+          <issue number="201731"/>
+      </change>
+
+      <change id="system-proxy-reload-brigde">
+          <api name="friend"/>
+          <summary>ProxySettings.Reload allows reload the Network Proxy Settings</summary>
+          <version major="3" minor="40"/>
+          <date day="2" month="4" year="2013"/>
+          <author login="lfischme"/>
+          <compatibility addition="yes" binary="compatible" semantic="compatible" />
+          <description>
+              <p>
+                  An implementation of this class brings a facility to reload Network 
+                  Proxy Settings from underlying OS.
+                  The module <code>core.network</code> provides a implementation
+                  which may be accessible via <code>Lookup.getDefault()</code>. It's not guaranteed
+                  any implementation is found on all distribution.
+              </p>
+          </description>
+          <class package="org.netbeans.core" name="ProxySettings"/>
+          <issue number="201731"/>
+      </change>
+
+      <change id="system-proxy-reload">
+          <api name="friend"/>
+          <summary>NbProxySelector and ProxyAutoConfig moved to new Core Network module.</summary>
+          <version major="3" minor="40"/>
+          <date day="2" month="4" year="2013"/>
+          <author login="lfischme"/>
+          <compatibility addition="no" binary="compatible" semantic="compatible" />
+          <description>
+              <p>
+                  Classes <code>NbProxySelector</code> and <code>ProxyAutoConfig</code> have been
+                  moved to Core Network module. Now the <code>NbProxySelector</code> can be accessed
+                  via lookup - in <code>CoreBridgeImpl</code>.
+              </p>
+          </description>
+          <class package="org.netbeans.core" name="NbProxySelector"/>
+          <class package="org.netbeans.core" name="ProxyAutoConfig"/>
+          <issue number="201731"/>
+      </change>
   </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->

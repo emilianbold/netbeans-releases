@@ -435,7 +435,19 @@ public class ProxySettings {
 
     }
     
+    /** A bridge between <code>o.n.core</code> and <code>core.network</code>.
+     * An implementation of this class brings a facility to reload Network Proxy Settings
+     * from underlying OS.
+     * The module <code>core.network</code> provides a implementation which may be accessible
+     * via <code>Lookup.getDefault()</code>. It's not guaranteed any implementation is found on all distribution. 
+     * 
+     * @since 3.40
+     */
     public abstract static class Reloader {
+        
+        /** Reloads Network Proxy Settings from underlying system.
+         *
+         */
         public abstract void reload();
     }
 }

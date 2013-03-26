@@ -56,10 +56,10 @@ made subject to such option by the copyright holder.
      <change id="system-proxy-reload">
         <api name="launcher-proxy-property"/>
         <summary>Launcher does not provide proxy setting properties.</summary>
-        <version major="2" minor="59"/>
+        <version major="2" minor="60"/>
         <date day="2" month="4" year="2013"/>
         <author login="lfischme"/>
-        <compatibility addition="no" binary="compatible" semantic="compatible" />
+        <compatibility addition="no" binary="compatible" semantic="incompatible" />
         <description>
         <p>
             Launcher does not provide <code>netbeans.system_http_proxy</code> and
