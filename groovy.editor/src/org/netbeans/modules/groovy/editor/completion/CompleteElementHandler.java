@@ -203,7 +203,9 @@ public final class CompleteElementHandler {
         for (ClassNode inter : typeNode.getInterfaces()) {
             fillSuggestions(getMethodsInner(source, inter, prefix, anchor, level + 1, modifiedAccess, nameOnly), result);
         }
-
+        
+        fillSuggestions(TransformationHandler.getMethods(index, typeNode, prefix, anchor), result);
+        
         return result;
     }
 
@@ -242,6 +244,8 @@ public final class CompleteElementHandler {
         for (ClassNode inter : typeNode.getInterfaces()) {
             fillSuggestions(getFieldsInner(source, inter, prefix, anchor, level + 1), result);
         }
+        
+        fillSuggestions(TransformationHandler.getFields(index, typeNode, prefix, anchor), result);
 
         return result;
     }

@@ -1,10 +1,10 @@
 Code completion result for source line:
-Transformations2.get|
+Singleton2.get|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     getAt(String)                              Object
 METHOD     getClass()                      [PUBLIC]   Class<?>
-METHOD     getInstance()                   [STATIC,   Transformations2
+METHOD     getInstance()                   [STATIC]   Singleton2
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
 METHOD     getProperties()                            Map
