@@ -1039,6 +1039,22 @@ public class HgCommand {
         return RebaseResult.build(repository, list);
     }
 
+    private static final ThreadLocal<Boolean> disabledUI = new ThreadLocal<Boolean>();
+    
+    public static <T> T runWithoutUI (Callable<T> callable) throws HgException {
+        try {
+            disabledUI.set(true);
+            return callable.call();
+        } catch (HgException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            Mercurial.LOG.log(Level.INFO, null, ex);
+            throw new HgException(ex.getMessage());
+        } finally {
+            disabledUI.remove();
+        }
+    }
+
     private static String getGlobalProxyIfNeeded(String defaultPath, boolean bOutputDetails, OutputLogger logger){
         String proxy = null;
         if( defaultPath != null &&
@@ -1304,16 +1320,12 @@ public class HgCommand {
 
     public static HgLogMessage[] getIncomingMessages(final File root, String toRevision, String branchName,
             boolean bShowMerges, boolean bGetFileInfo, boolean getParents,
-            int limitRevisions, OutputLogger logger) {
+            int limitRevisions, OutputLogger logger) throws HgException {
         List<HgLogMessage> messages = Collections.<HgLogMessage>emptyList();
 
         try {
             List<String> list = HgCommand.doIncomingForSearch(root, toRevision, branchName, bShowMerges, bGetFileInfo, getParents, limitRevisions, logger);
             messages = processLogMessages(root, null, list, true);
-        } catch (HgException.HgCommandCanceledException ex) {
-            // do not take any action
-        } catch (HgException ex) {
-            HgUtils.notifyException(ex);
         } finally {
             logger.closeLog();
         }
@@ -1322,16 +1334,12 @@ public class HgCommand {
     }
 
     public static HgLogMessage[] getOutMessages(final File root, String toRevision, String branchName,
-            boolean bShowMerges, boolean getParents, int limitRevisions, OutputLogger logger) {
+            boolean bShowMerges, boolean getParents, int limitRevisions, OutputLogger logger) throws HgException {
         List<HgLogMessage> messages = Collections.<HgLogMessage>emptyList();
 
         try {
             List<String> list = HgCommand.doOutForSearch(root, toRevision, branchName, bShowMerges, getParents, limitRevisions, logger);
             messages = processLogMessages(root, null, list, true);
-        } catch (HgException.HgCommandCanceledException ex) {
-            // do not take any action
-        } catch (HgException ex) {
-            HgUtils.notifyException(ex);
         } finally {
             logger.closeLog();
         }
@@ -4331,12 +4339,12 @@ public class HgCommand {
         return handleAuthenticationError(cmdOutput, repository, url, userName, credentialsSupport, hgCommand, true);
     }
 
-    private static PasswordAuthentication handleAuthenticationError(List<String> cmdOutput, File repository, String url, String userName, UserCredentialsSupport credentialsSupport, String hgCommand, boolean showKenaiLoginDialog) throws HgException {
+    private static PasswordAuthentication handleAuthenticationError(List<String> cmdOutput, File repository, String url, String userName, UserCredentialsSupport credentialsSupport, String hgCommand, boolean showLoginDialog) throws HgException {
         PasswordAuthentication credentials = null;
         String msg = cmdOutput.get(cmdOutput.size() - 1).toLowerCase();
-        if (isAuthMsg(msg)) {
+        if (isAuthMsg(msg) && showLoginDialog) {
             HgKenaiAccessor support = HgKenaiAccessor.getInstance();
-            if(support.isKenai(url) && showKenaiLoginDialog) {
+            if(support.isKenai(url)) {
                 checkKenaiPermissions(hgCommand, url, support);
                 // try to login
                 credentials = handleKenaiAuthorisation(support, url);
@@ -4973,7 +4981,7 @@ public class HgCommand {
         public List<String> invoke() throws HgException {
             List<String> list = null;
             boolean retry = true;
-            boolean showLoginWindow = true;
+            boolean showLoginWindow = !Boolean.TRUE.equals(disabledUI.get());
             credentials = null;
             HgKenaiAccessor supp = HgKenaiAccessor.getInstance();
             String rawUrl = remoteUrl.toUrlStringWithoutUserInfo();
