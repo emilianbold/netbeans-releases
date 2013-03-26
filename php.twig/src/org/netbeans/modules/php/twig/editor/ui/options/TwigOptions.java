@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -35,34 +35,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Sebastian Hörl
+ * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.twig.editor;
+package org.netbeans.modules.php.twig.editor.ui.options;
 
-import javax.swing.Action;
-import javax.swing.text.Document;
-import javax.swing.text.TextAction;
-import org.netbeans.modules.editor.NbEditorKit;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.php.twig.editor.actions.ToggleBlockCommentAction;
-import org.netbeans.modules.php.twig.editor.gsf.TwigLanguage;
+import org.openide.util.NbPreferences;
 
-public class TwigEditorKit extends NbEditorKit {
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public final class TwigOptions {
+    private static final TwigOptions INSTANCE = new TwigOptions();
+    private static final String TOGGLE_COMMENT = "twig-toggle-comment"; //NOI18N
+    private static final String TWIG_OPTIONS = "twig-options"; //NOI18N
 
-    @Override
-    public Document createDefaultDocument() {
-        return super.createDefaultDocument();
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(TwigOptions.class).node(TWIG_OPTIONS);
     }
 
-    @Override
-    public String getContentType() {
-        return TwigLanguage.TWIG_MIME_TYPE;
+    private TwigOptions() {
     }
 
-    @Override
-    protected Action[] createActions() {
-        return TextAction.augmentList(super.createActions(), new Action[] {new ToggleBlockCommentAction()});
+    public static TwigOptions getInstance() {
+        return INSTANCE;
+    }
+
+    public void setToggleCommentType(ToggleBlockCommentAction.ToggleCommentType toggleComment) {
+        getPreferences().put(TOGGLE_COMMENT, toggleComment.name());
+    }
+
+    public ToggleBlockCommentAction.ToggleCommentType getToggleCommentType() {
+        String toggleCommentName = getPreferences().get(TOGGLE_COMMENT, ToggleBlockCommentAction.ToggleCommentType.LINE_BY_TWIG.name());
+        return ToggleBlockCommentAction.ToggleCommentType.valueOf(toggleCommentName);
     }
 
 }
