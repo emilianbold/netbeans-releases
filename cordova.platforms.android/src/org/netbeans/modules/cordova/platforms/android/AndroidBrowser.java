@@ -43,16 +43,66 @@ package org.netbeans.modules.cordova.platforms.android;
 
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.Device;
+import org.netbeans.modules.cordova.platforms.PlatformManager;
+import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
+import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
+import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN_SINGLE;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Jan Becicka
  */
-public class AndroidBrowser extends HtmlBrowser.Impl {
+public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
     private final Kind kind;
+    
+    private static final Logger LOGGER = Logger.getLogger(EnhancedBrowserImpl.class.getName());
+    
+    private Lookup context;
+
+    @Override
+    public boolean hasEnhancedMode() {
+        return false;
+    }
+
+    @Override
+    public void setEnhancedMode(boolean mode) {
+    }
+
+    @Override
+    public void disablePageInspector() {
+    }
+
+    @Override
+    public void enableLiveHTML() {
+    }
+
+    @Override
+    public void close(boolean closeTab) {
+    }
+
+    @Override
+    public void setProjectContext(Lookup projectContext) {
+        context = projectContext;
+    }
     
     public static enum Kind {
         ANDROID_DEVICE_DEFAULT,
@@ -83,26 +133,111 @@ public class AndroidBrowser extends HtmlBrowser.Impl {
     @Override
     public void setURL(URL url) {
         this.url = url;
-        Browser b;
-        boolean emulator;
-        switch (kind) {
-            case ANDROID_DEVICE_CHROME:
-                b = Browser.CHROME;
-                emulator = false;
-                break;
-            case ANDROID_DEVICE_DEFAULT:
-                b = Browser.DEFAULT;
-                emulator = false;
-                break;
-            case ANDROID_EMULATOR_DEFAULT:
-                b = Browser.DEFAULT;
-                emulator = false;
-                break;
-            default:
-                throw new IllegalStateException();
+        Project project = context.lookup(Project.class);
+        openBrowser(COMMAND_RUN_SINGLE, Lookups.singleton(url), kind, project);
+    }
+    
+     public static void openBrowser(String command, final Lookup context, final AndroidBrowser.Kind kind, final Project project) throws IllegalArgumentException {
+        final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
+        String checkAndroid = AndroidActionProvider.checkAndroid();
+        if (checkAndroid != null) {
+            NotifyDescriptor not = new NotifyDescriptor(
+                    checkAndroid,
+                    Bundle.ERR_Title(),
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    null,
+                    null);
+            Object value = DialogDisplayer.getDefault().notify(not);
+            if (NotifyDescriptor.CANCEL_OPTION != value) {
+                OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+            }
+            return;
         }
-        Device d = new AndroidDevice("android", b, emulator);
-        d.openUrl(url.toExternalForm());
+
+        if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                @Override
+                public void run() {
+                    String checkDevices = checkDevices();
+                    while (checkDevices != null) {
+                        NotifyDescriptor not = new NotifyDescriptor(
+                                checkDevices,
+                                Bundle.ERR_Title(),
+                                NotifyDescriptor.DEFAULT_OPTION,
+                                NotifyDescriptor.ERROR_MESSAGE,
+                                null,
+                                null);
+                        Object value = DialogDisplayer.getDefault().notify(not);
+                        if (NotifyDescriptor.CANCEL_OPTION == value) {
+                            return;
+                        } else {
+                            checkDevices = checkDevices();
+                        }
+                    }
+                    Browser b;
+                    boolean emulator;
+                    if (kind.equals(AndroidBrowser.Kind.ANDROID_DEVICE_DEFAULT)) {
+                        b = Browser.DEFAULT;
+                        emulator = false;
+                    } else if (kind.equals(AndroidBrowser.Kind.ANDROID_DEVICE_CHROME)) {
+                        b = Browser.CHROME;
+                        emulator = false;
+                    } else {
+                        b = Browser.DEFAULT;
+                        emulator = true;
+                    }
+                    Device device = new AndroidDevice("android", b, emulator);
+
+                    device.openUrl(build.getUrl(project, context));
+                    
+                    if (Browser.CHROME.getName().equals(b.getName())) {
+                        try {
+                            Thread.sleep(5000);
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        try {
+                            build.startDebugging(device, project, context);
+                        } catch (IllegalStateException ex) {
+                            LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    JOptionPane.showMessageDialog(
+                                            WindowManager.getDefault().getMainWindow(),
+                                            Bundle.ERR_WebDebug());
+                                }
+                            });
+                        }
+                    }
+
+                }
+
+                private String checkDevices() {
+                    try {
+                        if (kind.equals(AndroidBrowser.Kind.ANDROID_EMULATOR_DEFAULT)) { //NOI18N
+                            for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
+                                if (dev.isEmulator()) {
+                                    return null;
+                                }
+                            }
+                            return Bundle.ERR_RunAndroidEmulator();
+                        } else {
+                            for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
+                                if (!dev.isEmulator()) {
+                                    return null;
+                                }
+                            }
+                            return Bundle.ERR_ConnectAndroidDevice();
+                        }
+                    } catch (IOException iOException) {
+                        Exceptions.printStackTrace(iOException);
+                    }
+                    return Bundle.ERR_Unknown();
+                }
+            }, Bundle.LBL_CheckingDevice(), new AtomicBoolean(), false);
+        }
     }
 
     @Override

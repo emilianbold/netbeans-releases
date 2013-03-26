@@ -42,18 +42,8 @@
 
 package org.netbeans.modules.cordova.platforms.android;
 
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.Device;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
@@ -62,11 +52,7 @@ import org.netbeans.spi.project.ActionProvider;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN_SINGLE;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.windows.WindowManager;
 
 /**
  * @author Jan Becicka
@@ -131,106 +117,8 @@ public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplemen
 
         @Override
         public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
-            final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
-            String checkAndroid = AndroidActionProvider.checkAndroid();
-            if (checkAndroid != null) {
-                NotifyDescriptor not = new NotifyDescriptor(
-                        checkAndroid,
-                        Bundle.ERR_Title(),
-                        NotifyDescriptor.OK_CANCEL_OPTION,
-                        NotifyDescriptor.ERROR_MESSAGE,
-                        null,
-                        null);
-                Object value = DialogDisplayer.getDefault().notify(not);
-                if (NotifyDescriptor.CANCEL_OPTION != value) {
-                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
-                }
-                return;
-            }
-
-            if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
-                ProgressUtils.runOffEventDispatchThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        String checkDevices = checkDevices();
-                        while (checkDevices != null) {
-                            NotifyDescriptor not = new NotifyDescriptor(
-                                    checkDevices,
-                                    Bundle.ERR_Title(),
-                                    NotifyDescriptor.DEFAULT_OPTION,
-                                    NotifyDescriptor.ERROR_MESSAGE,
-                                    null,
-                                    null);
-                            Object value = DialogDisplayer.getDefault().notify(not);
-                            if (NotifyDescriptor.CANCEL_OPTION == value) {
-                                return;
-                            } else {
-                                checkDevices = checkDevices();
-                            }
-                        }
-                        Browser b;
-                        boolean emulator;
-                        if (browser.getId().equals(AndroidBrowser.Kind.ANDROID_DEVICE_DEFAULT.toString())) {
-                            b=Browser.DEFAULT;
-                            emulator = false;
-                        } else if (browser.getId().equals(AndroidBrowser.Kind.ANDROID_DEVICE_CHROME.toString())) {
-                            b=Browser.CHROME;
-                            emulator = false;
-                        } else {
-                            b=Browser.DEFAULT;
-                            emulator = true;
-                        }
-                        Device device = new AndroidDevice("android", b, emulator);
-                        
-                        device.openUrl(build.getUrl(project, context));
-                        if (Browser.CHROME.getName().equals(b.getName())) {
-                            try {
-                                Thread.sleep(5000);
-                            } catch (InterruptedException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                            try {
-                                build.startDebugging(device, project);
-                            } catch (IllegalStateException ex) {
-                                LOGGER.log(Level.INFO, ex.getMessage(), ex);
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        JOptionPane.showMessageDialog(
-                                                WindowManager.getDefault().getMainWindow(),
-                                                Bundle.ERR_WebDebug());
-                                    }
-                                });
-                            }
-                        }
-
-                    }
-
-                    private String checkDevices() {
-                        try {
-                            if (browser.getId().equals(AndroidBrowser.Kind.ANDROID_EMULATOR_DEFAULT.toString())) { //NOI18N
-                                for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
-                                    if (dev.isEmulator()) {
-                                        return null;
-                                    }
-                                }
-                                return Bundle.ERR_RunAndroidEmulator();
-                            } else {
-                                for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
-                                    if (!dev.isEmulator()) {
-                                        return null;
-                                    }
-                                }
-                                return Bundle.ERR_ConnectAndroidDevice();
-                            }
-                        } catch (IOException iOException) {
-                            Exceptions.printStackTrace(iOException);
-                        }
-                        return Bundle.ERR_Unknown();
-                    }
-                }, Bundle.LBL_CheckingDevice(), new AtomicBoolean(), false);
-            }
-        }
+            AndroidBrowser.openBrowser(command, context, AndroidBrowser.Kind.valueOf(browser.getId()), project);
+         }
 
         @Override
         public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {

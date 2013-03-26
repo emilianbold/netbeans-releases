@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.Properties;
 import java.util.prefs.Preferences;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -232,6 +233,11 @@ public class CordovaPerformer implements BuildPerformer {
 
     @Override
     public String getUrl(Project p, Lookup context) {
+        URL url = context.lookup(URL.class);
+        if (url!=null) {
+            //TODO: hack to workaround #221791
+            return url.toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
+        }
         if (org.netbeans.modules.cordova.project.ClientProjectUtilities.isUsingEmbeddedServer(p)) {
             WebServer.getWebserver().start(p, ClientProjectUtilities.getSiteRoot(p), ClientProjectUtilities.getWebContextRoot(p));
         } else {
@@ -256,9 +262,9 @@ public class CordovaPerformer implements BuildPerformer {
     }
 
     @Override
-    public void startDebugging(Device device, Project p) {
+    public void startDebugging(Device device, Project p, Lookup context) {
         transport = device.getPlatform().getDebugTransport();
-        transport.setBaseUrl(getUrl(p));
+        transport.setBaseUrl(getUrl(p, context));
         transport.attach();
         try {
             Thread.sleep(1000);

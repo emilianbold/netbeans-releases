@@ -44,14 +44,52 @@ package org.netbeans.modules.cordova.platforms.ios;
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cordova.platforms.BuildPerformer;
+import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Jan Becicka
  */
-public class IOSBrowser extends HtmlBrowser.Impl {
+public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
     private final Kind kind;
+    private Lookup projectContext;
+
+    @Override
+    public boolean hasEnhancedMode() {
+        return false;
+    }
+
+    @Override
+    public void setEnhancedMode(boolean mode) {
+    }
+
+    @Override
+    public void disablePageInspector() {
+    }
+
+    @Override
+    public void enableLiveHTML() {
+    }
+
+    @Override
+    public void close(boolean closeTab) {
+    }
+
+    @Override
+    public void setProjectContext(Lookup projectContext) {
+        this.projectContext = projectContext;
+    }
     
     public static enum Kind {
         IOS_DEVICE_DEFAULT,
@@ -81,8 +119,32 @@ public class IOSBrowser extends HtmlBrowser.Impl {
     @Override
     public void setURL(URL url) {
         this.url = url;
-        IOSDevice.IPHONE.openUrl(url.toExternalForm());
+        Project project = projectContext.lookup(Project.class);
+        openBrowser(ActionProvider.COMMAND_RUN, Lookups.fixed(url), project);
     }
+
+    public static void openBrowser(String command, final Lookup context, final Project project) throws IllegalArgumentException {
+        if (!Utilities.isMac()) {
+            NotifyDescriptor not = new NotifyDescriptor(
+                    Bundle.LBL_NoMac(),
+                    Bundle.ERR_Title(),
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    null,
+                    null);
+            DialogDisplayer.getDefault().notify(not);
+            return;
+        }
+        final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
+        assert build != null;
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            @Override
+            public void run() {
+                    IOSDevice.IPHONE.openUrl(build.getUrl(project, context));
+            }
+        }, Bundle.LBL_Opening(), new AtomicBoolean(), false);
+    }
+    
 
     @Override
     public URL getURL() {

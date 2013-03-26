@@ -123,25 +123,7 @@ public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplemen
 
         @Override
         public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
-            if (!Utilities.isMac()) {
-                NotifyDescriptor not = new NotifyDescriptor(
-                        Bundle.LBL_NoMac(),
-                        Bundle.ERR_Title(),
-                        NotifyDescriptor.DEFAULT_OPTION,
-                        NotifyDescriptor.ERROR_MESSAGE,
-                        null,
-                        null);
-                DialogDisplayer.getDefault().notify(not);
-                return;
-            }
-            final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
-            assert build != null;
-            ProgressUtils.runOffEventDispatchThread(new Runnable() {
-                @Override
-                public void run() {
-                    IOSDevice.IPHONE.openUrl(build.getUrl(project, context));
-                }
-            }, Bundle.LBL_Opening(), new AtomicBoolean(), false);
+            IOSBrowser.openBrowser(command, context, project);
         }
 
         @Override
