@@ -69,7 +69,7 @@ public final class Pair<P, K> {
     @Override
     public boolean equals(final Object other) {
         if (other instanceof Pair) {
-            Pair otherPair = (Pair) other;
+            Pair<?, ?> otherPair = (Pair) other;
             return (this.first == null ? otherPair.first == null : this.first.equals(otherPair.first))
                     && (this.second == null ? otherPair.second == null : this.second.equals(otherPair.second));
         }
