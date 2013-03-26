@@ -292,7 +292,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
     
     protected final void checkLayer(Project project, String fqname, RefactoringElementsBag refactoringElements) {
         LayerHandle handle = LayerHandle.forProject(project);
-        FileSystem fs = handle.layer(false);
+        FileSystem fs = handle.explicitLayer(false);
         if (fs != null) {
             checkFileObject(fs.getRoot(), fqname, refactoringElements, handle);
         }
