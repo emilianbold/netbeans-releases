@@ -116,6 +116,12 @@ public class TypesCompletion extends BaseCompletion {
         this.request = request;
         this.anchor = anchor;
 
+        if (request.dotContext != null) {
+            if (request.dotContext.isFieldsOnly() || request.dotContext.isMethodsOnly()) {
+                return false;
+            }
+        }
+        
         final PackageCompletionRequest packageRequest = getPackageRequest(request);
 
         // todo: we don't handle single dots in the source. In that case we should

@@ -41,15 +41,19 @@
  */
 package org.netbeans.modules.java.hints.analysis;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
@@ -122,17 +126,33 @@ public class AnalyzerImpl implements Analyzer {
 
         BatchResult candidates = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(Folder.convert(todo)), w);
         List<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
-
-        BatchSearch.getVerifiedSpans(candidates, w, new BatchSearch.VerifiedSpansCallBack() {
-            public void groupStarted() {}
-            public boolean spansVerified(CompilationController wc, Resource r, Collection<? extends ErrorDescription> inHints) throws Exception {
-                result.addAll(inHints);
-                return true;
+        Map<String, Preferences> origOverride = HintsSettings.getPreferencesOverride();
+        
+        try {
+            final Preferences settings = ctx.getSettings();
+            if (settings != null) {
+                HintsSettings.setPreferencesOverride(new AbstractMap<String, Preferences>() {
+                    @Override public Preferences get(Object key) {
+                        return settings.node((String) key);
+                    }
+                    @Override public Set<Entry<String, Preferences>> entrySet() {
+                        throw new UnsupportedOperationException("Should not be called.");
+                    }
+                });
             }
-            public void groupFinished() {}
-            public void cannotVerifySpan(Resource r) {
-            }
-        }, problems, cancel);
+            BatchSearch.getVerifiedSpans(candidates, w, new BatchSearch.VerifiedSpansCallBack() {
+                public void groupStarted() {}
+                public boolean spansVerified(CompilationController wc, Resource r, Collection<? extends ErrorDescription> inHints) throws Exception {
+                    result.addAll(inHints);
+                    return true;
+                }
+                public void groupFinished() {}
+                public void cannotVerifySpan(Resource r) {
+                }
+            }, problems, cancel);
+        } finally {
+            HintsSettings.setPreferencesOverride(origOverride);
+        }
 
         w.finish();
 

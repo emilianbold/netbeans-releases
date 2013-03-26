@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.progress.ui.ProgressListAction", category = "Window")
 @ActionRegistration(displayName = "#CTL_ProcessListAction", lazy=false)
-@ActionReference(position = 1900, name = "ProgressListAction", path = "Menu/Window")
+@ActionReference(position = 1000, name = "ProgressListAction", path = "Menu/Window/Tools")
 public class ProgressListAction extends AbstractAction implements ListDataListener, Runnable {
 
     /** Creates a new instance of ProcessListAction */

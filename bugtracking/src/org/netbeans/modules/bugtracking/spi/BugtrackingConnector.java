@@ -83,6 +83,10 @@ public abstract class BugtrackingConnector {
         return null;
     }
 
+    /**
+     * @deprecated issue won't be added to the tasklist anymore. 
+     * @return 
+     */
     public TaskListIssueProvider getTasklistProvider() {
         return null;
     }

@@ -107,6 +107,41 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="project.licensePath">
+            <api name="general"/>
+            <summary>Project system related file templates can include shared license header file</summary>
+            <version major="1" minor="69"/>
+            <date day="27" month="2" year="2013"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    When including license headers into templates, the only license templates from IDE's configuration were accessible. 
+                    Now templates can include new expression to set a path to a license template within the project's own space.
+                    The new way to include license headers is <code>&lt;#include "${project.licensePath}"&gt;</code>. 
+                    Project types need to provide their own way of defining the license template location and mapping it to project.licensePath item in
+                    their <code>CreateFromTemplateAttributesProvider</code> implementation.
+                    
+                </p>
+            </description>
+            <issue number="193981"/>
+        </change>
+        
+        <change id="BuildExecutionSupport.ActionItem">
+            <api name="general"/>
+            <summary>Added BuildExecutionSupport.ActionItem extension to BuildExecutionSupport.Item</summary>
+            <version major="1" minor="69"/>
+            <date day="22" month="2" year="2013"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Implementing <code>BuildExecutionSupport.ActionItem</code> allows creating execution history lists at various places, currently the toolbar for Run action.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="BuildExecutionSupport"/>
+            <issue number="193873"/>
+        </change>        
         <change id="CommonProjectActions.PROJECT_PARENT_FOLDER">
             <api name="general"/>
             <summary>Added CommonProjectActions.PROJECT_PARENT_FOLDER constant</summary>

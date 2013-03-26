@@ -155,8 +155,10 @@ public class Zend2EditorExtender extends EditorExtender {
                     // add them to global variables...
                     allVariables.addAll(newVariables);
                     // ...and also as fields to $this variable
+                    PhpClass type = viewVariable.getType();
+                    assert type != null;
                     for (PhpVariable variable : newVariables) {
-                        viewVariable.getType().addField(variable.getName().substring(1), variable.getType(), variable.getFile(), variable.getOffset());
+                        type.addField(variable.getName().substring(1), variable.getType(), variable.getFile(), variable.getOffset());
                     }
                 }
 
@@ -436,7 +438,7 @@ public class Zend2EditorExtender extends EditorExtender {
             PhpClass phpClass = null;
             Collection<? extends TypeScope> types = null;
             if (value instanceof VariableBase) {
-                types = resolveType(model, (VariableBase) value);
+                types = ModelUtils.resolveType(model, (VariableBase) value, false);
             } else if (value instanceof Assignment) {
                 types = ModelUtils.resolveType(model, (Assignment) value);
             } else if (value instanceof StaticDispatch) {
@@ -466,20 +468,6 @@ public class Zend2EditorExtender extends EditorExtender {
                 Expression value = arrayElement.getValue();
                 addPhpVariable(varName, value, scalar.getStartOffset());
             }
-        }
-
-        // XXX copied from ModelUtils (changed boolean justDispatcher)
-        @NonNull
-        private static Collection<? extends TypeScope> resolveType(Model model, VariableBase varBase) {
-            Collection<? extends TypeScope> retval = Collections.emptyList();
-            VariableScope scp = model.getVariableScope(varBase.getStartOffset());
-            if (scp != null) {
-                String vartype = VariousUtils.extractTypeFroVariableBase(varBase);
-                if (vartype != null) {
-                    retval = VariousUtils.getType(scp, vartype, varBase.getStartOffset(), false);
-                }
-            }
-            return retval;
         }
 
         public Set<PhpVariable> getVariables() {

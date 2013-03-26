@@ -71,12 +71,20 @@ public class JFXProjectConfigurations {
     private static final Logger LOG = Logger.getLogger(JFXProjectConfigurations.class.getName());
 
     public static final String APPLICATION_ARGS = ProjectProperties.APPLICATION_ARGS;
-    public static final String DEFAULT_CONFIG_NAME = "default";
+    public static final String DEFAULT_CONFIG_NAME = "default"; //NOI18N
     
     public static final String APP_PARAM_PREFIX = "javafx.param."; // NOI18N
-    public static final String APP_PARAM_SUFFIXES[] = new String[] { "name", "value" }; // NOI18N
+    public static final String APP_PARAM_SUFFIXES[] = new String[] { "name", "value", "hidden" }; // NOI18N
     public static final String APP_PARAM_CONNECT_SIGN = "="; // NOI18N
 
+    public static final String APP_MANIFEST_PREFIX = "javafx.manifest.entry."; // NOI18N
+    public static final String APP_MANIFEST_SUFFIXES[] = new String[] { "name", "value", "hidden" }; // NOI18N
+    public static final String APP_MANIFEST_CONNECT_SIGN = ": "; // NOI18N
+
+    private static final String MULTI_PROPERTY_STRING = "MultiProperty"; //NOI18N
+    private static final String MULTI_PROPERTY_EMPTY = "empty"; // NOI18N
+    public static final String APP_MULTIPROP_HIDDEN_TRUE = "true"; // NOI18N
+    
     // folders and files
     public static final String PROJECT_CONFIGS_DIR = "nbproject/configs"; // NOI18N
     public static final String PROJECT_PRIVATE_CONFIGS_DIR = "nbproject/private/configs"; // NOI18N
@@ -96,6 +104,7 @@ public class JFXProjectConfigurations {
 
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
     private MultiProperty appParams;
+    private MultiProperty appManifestEntries;
             
     private Set<String> ERASED_CONFIGS;
     private BoundedPropertyGroups groups = new BoundedPropertyGroups();
@@ -181,10 +190,11 @@ public class JFXProjectConfigurations {
         CLEAN_EMPTY_PRIVATE_PROPERTIES.clear();
     }
 
-    private void reset() {
+    public void reset() {
         RUN_CONFIGS = new TreeMap<String,Map<String,String>>(getComparator());
         ERASED_CONFIGS = null;
         appParams = new MultiProperty(APP_PARAM_PREFIX, APP_PARAM_SUFFIXES, APP_PARAM_CONNECT_SIGN);
+        appManifestEntries = new MultiProperty(APP_MANIFEST_PREFIX, APP_MANIFEST_SUFFIXES, APP_MANIFEST_CONNECT_SIGN);
     }
 
     private boolean configNameWrong(String config) {
@@ -446,7 +456,7 @@ public class JFXProjectConfigurations {
         solidifyBoundedGroups(config, prop);
         if(config == null) {
             for(String c: getConfigNames()) {
-                if(c != null && JFXProjectProperties.isEqual(getProperty(c, prop), value) && !STATIC_PROPERTIES.contains(prop) && isBoundedPropertiesEraseable(c, prop)) {
+                if(c != null && JFXProjectProperties.isEqualText(getProperty(c, prop), value) && !STATIC_PROPERTIES.contains(prop) && isBoundedPropertiesEraseable(c, prop)) {
                     eraseProperty(c, prop);
                 }
             }
@@ -469,7 +479,7 @@ public class JFXProjectConfigurations {
 
     public void setPropertyTransparent(String config, @NonNull String prop, String value) {
         assert !configNameWrong(config);
-        if(config != null && JFXProjectProperties.isEqual(getDefaultProperty(prop), value) && (!STATIC_PROPERTIES.contains(prop) || !isPropertySet(config, prop)) && isBoundedPropertiesEraseable(config, prop)) {
+        if(config != null && JFXProjectProperties.isEqualText(getDefaultProperty(prop), value) && (!STATIC_PROPERTIES.contains(prop) || !isPropertySet(config, prop)) && isBoundedPropertiesEraseable(config, prop)) {
             eraseProperty(config, prop);
         } else {
             setProperty(config, prop, value);
@@ -556,7 +566,7 @@ public class JFXProjectConfigurations {
         }
         boolean canErase = true;
         for(String name : groups.getBoundedProperties(prop)) {
-            if((isPropertySet(config, name) && !JFXProjectProperties.isEqual(getDefaultProperty(name), getProperty(config, name))) || STATIC_PROPERTIES.contains(name)) {
+            if((isPropertySet(config, name) && !JFXProjectProperties.isEqualText(getDefaultProperty(name), getProperty(config, name))) || STATIC_PROPERTIES.contains(name)) {
                 canErase = false;
                 break;
             }
@@ -574,18 +584,8 @@ public class JFXProjectConfigurations {
      * @param name
      * @return 
      */
-    public boolean hasParam(String config, @NonNull String name) {
-        return appParams.hasEntry(config, name);
-    }
-    
-    /**
-     * Proxy
-     * @param name
-     * @param value
-     * @return 
-     */
-    public boolean hasDefaultParam(@NonNull String name, @NonNull String value) {
-        return appParams.hasDefaultEntry(name, value);
+    public boolean hasParamTransparent(String config, @NonNull String name) {
+        return appParams.hasEntryTransparent(config, name);
     }
     
     /**
@@ -593,26 +593,8 @@ public class JFXProjectConfigurations {
      * @param name
      * @return 
      */
-    public boolean hasDefaultParam(@NonNull String name) {
-        return appParams.hasDefaultEntry(name);
-    }
-    
-    /**
-     * Proxy
-     * @param name
-     * @return 
-     */
-    public boolean hasDefaultParamValue(@NonNull String name) {
-        return appParams.hasDefaultEntryValue(name);
-    }
-    
-    /**
-     * Proxy
-     * @param name
-     * @return 
-     */
-    public boolean hasActiveParam(@NonNull String name) {
-        return appParams.hasActiveEntry(name);
+    public boolean hasDefaultParamTransparent(@NonNull String name) {
+        return appParams.hasDefaultEntryTransparent(name);
     }
     
     /**
@@ -626,30 +608,142 @@ public class JFXProjectConfigurations {
     
     /**
      * Proxy
+     * @param config
+     * @param name
+     * @param value
+     * @return 
+     */
+    public boolean hasParamTransparent(String config, @NonNull String name, @NonNull String value) {
+        return appParams.hasEntryTransparent(config, name, value);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @param value
+     * @return 
+     */
+    public boolean hasDefaultParamTransparent(@NonNull String name, @NonNull String value) {
+        return appParams.hasDefaultEntryTransparent(name, value);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @param value
+     * @return 
+     */
+    public boolean hasActiveParamTransparent(@NonNull String name, @NonNull String value) {
+        return appParams.hasActiveEntryTransparent(name, value);
+    }
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @return 
+     */
+    public boolean hasParamValueTransparent(String config, @NonNull String name) {
+        return appParams.hasEntryValueTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public boolean hasDefaultParamValueTransparent(@NonNull String name) {
+        return appParams.hasDefaultEntryValueTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public boolean hasActiveParamValueTransparent(@NonNull String name) {
+        return appParams.hasActiveEntryValueTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @return 
+     */
+    public Map<String, String> getParamTransparent(String config, @NonNull String name) {
+        return appParams.getEntryTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public Map<String, String> getDefaultParamTransparent(@NonNull String name) {
+        return appParams.getDefaultEntryTransparent(name);
+    }
+
+    /**
+     * Proxy
      * @param name
      * @return 
      */
     public Map<String, String> getActiveParamTransparent(@NonNull String name) {
         return appParams.getActiveEntryTransparent(name);
     }
+        
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @return 
+     */
+    public String getParamValueTransparent(String config, @NonNull String name) {
+        return appParams.getEntryValueTransparent(config, name);
+    }
     
     /**
      * Proxy
      * @param name
      * @return 
      */
-    public String getActiveParamValue(@NonNull String name) {
-        return appParams.getActiveEntryValue(name);
+    public String getDefaultParamValueTransparent(@NonNull String name) {
+        return appParams.getDefaultEntryValueTransparent(name);
+    }
+
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public String getActiveParamValueTransparent(@NonNull String name) {
+        return appParams.getActiveEntryValueTransparent(name);
     }
     
     /**
      * Proxy
      * @param config
-     * @param name
-     * @param value 
+     * @return 
      */
-    public void addParam(String config, @NonNull String name, String value) {
-        appParams.addEntry(config, name, value);
+    public List<Map<String,String/*|null*/>> getParamsTransparent(String config) {
+        return appParams.getEntriesTransparent(config);
+    }
+    
+    /**
+     * Proxy
+     * @return 
+     */
+    public List<Map<String,String/*|null*/>> getDefaultParamsTransparent() {
+        return appParams.getDefaultEntriesTransparent();
+    }
+    
+    /**
+     * Proxy
+     * @return 
+     */
+    public List<Map<String,String/*|null*/>> getActiveParamsTransparent() {
+        return appParams.getActiveEntriesTransparent();
     }
     
     /**
@@ -657,42 +751,16 @@ public class JFXProjectConfigurations {
      * @param config
      * @param name 
      */
-    public void addParam(String config, @NonNull String name) {
-        appParams.addEntry(config, name);
-    }
-    
-    /**
-     * Proxy
-     * @param name
-     * @param value 
-     */
-    public void addDefaultParam(@NonNull String name, String value) {
-        appParams.addDefaultEntry(name, value);
+    public void addParamTransparent(String config, @NonNull String name){
+        appParams.addEntryTransparent(config, name);
     }
     
     /**
      * Proxy
      * @param name 
      */
-    public void addDefaultParam(@NonNull String name) {
-        appParams.addDefaultEntry(name);
-    }
-    
-    /**
-     * Proxy
-     * @param name
-     * @param value 
-     */
-    public void addActiveParam(@NonNull String name, String value) {
-        appParams.addActiveEntry(name, value);
-    }
-    
-    /**
-     * Proxy
-     * @param name 
-     */
-    public void addActiveParam(@NonNull String name) {
-        appParams.addActiveEntry(name);
+    public void addDefaultParamTransparent(@NonNull String name) {
+        appParams.addDefaultEntryTransparent(name);
     }
     
     /**
@@ -706,41 +774,46 @@ public class JFXProjectConfigurations {
     /**
      * Proxy
      * @param config
-     * @param name 
+     * @param name
+     * @param value 
      */
-    public void eraseParam(String config, @NonNull String name) {
-        appParams.eraseEntry(config, name);
+    public void addParamTransparent(String config, @NonNull String name, @NonNull String value) {
+        appParams.addEntryTransparent(config, name, value);
     }
     
     /**
      * Proxy
-     * @param name 
+     * @param name
+     * @param value 
      */
-    public void eraseDefaultParam(@NonNull String name) {
-        appParams.eraseDefaultEntry(name);
-    }
-    
-    /**
-     * Proxy
-     * @param config 
-     */
-    public void eraseParams(String config) {
-        appParams.eraseEntry(config);
-    }
-    
-    /**
-     * Proxy
-     */
-    public void eraseDefaultParams() {
-        appParams.eraseDefaultEntries();
+    public void addDefaultParamTransparent(@NonNull String name, @NonNull String value) {
+        appParams.addDefaultEntryTransparent(name, value);
     }
 
     /**
      * Proxy
-     * @return 
+     * @param name
+     * @param value 
      */
-    public List<Map<String,String/*|null*/>> getActiveParamsTransparent() {
-        return appParams.getActiveEntriesTransparent();
+    public void addActiveParamTransparent(@NonNull String name, @NonNull String value) {
+        appParams.addActiveEntryTransparent(name, value);
+    }
+
+    /**
+     * Proxy
+     * @param config
+     * @param params 
+     */
+    public void setParamsTransparent(String config, List<Map<String,String/*|null*/>>/*|null*/ params) {
+        appParams.setEntriesTransparent(config, params);
+    }
+
+    /**
+     * Proxy
+     * @param params 
+     */
+    public void setDefaultParamsTransparent(List<Map<String,String/*|null*/>>/*|null*/ params) {
+        appParams.setDefaultEntriesTransparent(params);
     }
 
     /**
@@ -749,6 +822,53 @@ public class JFXProjectConfigurations {
      */
     public void setActiveParamsTransparent(List<Map<String,String/*|null*/>>/*|null*/ params) {
         appParams.setActiveEntriesTransparent(params);
+    }
+
+    /**
+     * Proxy
+     * @param config
+     * @param name 
+     */
+    public void eraseParamTransparent(String config, @NonNull String name) {
+        appParams.eraseEntryTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name 
+     */
+    public void eraseDefaultParamTransparent(@NonNull String name) {
+        appParams.eraseDefaultEntryTransparent(name);
+    }
+
+    /**
+     * Proxy
+     * @param name 
+     */
+    public void eraseActiveParamTransparent(@NonNull String name) {
+        appParams.eraseActiveEntryTransparent(name);
+    }
+
+    /**
+     * Proxy
+     * @param config 
+     */
+    public void eraseParamsTransparent(String config) {
+        appParams.eraseEntriesTransparent(config);
+    }
+    
+    /**
+     * Proxy
+     */
+    public void eraseDefaultParamsTransparent() {
+        appParams.eraseDefaultEntriesTransparent();
+    }
+
+    /**
+     * Proxy
+     */
+    public void eraseActiveParamsTransparent() {
+        appParams.eraseActiveEntriesTransparent();
     }
 
     /**
@@ -766,10 +886,10 @@ public class JFXProjectConfigurations {
      * @param commandLine
      * @return 
      */
-    public String getActiveParamsAsString(boolean commandLine) {
-        return appParams.getActiveEntriesAsString(commandLine);
+    public String getDefaultParamsTransparentAsString(boolean commandLine) {
+        return appParams.getDefaultEntriesTransparentAsString(commandLine);
     }
-    
+
     /**
      * Proxy
      * @param commandLine
@@ -779,14 +899,375 @@ public class JFXProjectConfigurations {
         return appParams.getActiveEntriesTransparentAsString(commandLine);
     }
 
-    /**
-     * Proxy
-     * @param commandLine
-     * @return 
-     */
+    //----------------------------------------------------------
+    // primarily for testing purposes
+
+    public boolean hasActiveParam(@NonNull String name) {
+        return appParams.hasActiveEntry(name);
+    }
+    
+    public String paramsToString() {
+        return appParams.toString();
+    }
+    
+    public String getParamsAsString(String config, boolean commandLine) {
+        return appParams.getEntriesAsString(config, commandLine);
+    }
+    
     public String getDefaultParamsAsString(boolean commandLine) {
         return appParams.getDefaultEntriesAsString(commandLine);
     }
+    
+    public String getActiveParamsAsString(boolean commandLine) {
+        return appParams.getActiveEntriesAsString(commandLine);
+    }
+
+
+    //==========================================================
+    // public proxies to access custom manifest entries. May not cover
+    // the whole of Multiproperty; add missing if needed
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @return 
+     */
+    public boolean hasManifestEntryTransparent(String config, @NonNull String name) {
+        return appManifestEntries.hasEntryTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public boolean hasDefaultManifestEntryTransparent(@NonNull String name) {
+        return appManifestEntries.hasDefaultEntryTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public boolean hasActiveManifestEntryTransparent(@NonNull String name) {
+        return appManifestEntries.hasActiveEntryTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @param value
+     * @return 
+     */
+    public boolean hasManifestEntryTransparent(String config, @NonNull String name, @NonNull String value) {
+        return appManifestEntries.hasEntryTransparent(config, name, value);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @param value
+     * @return 
+     */
+    public boolean hasDefaultManifestEntryTransparent(@NonNull String name, @NonNull String value) {
+        return appManifestEntries.hasDefaultEntryTransparent(name, value);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @param value
+     * @return 
+     */
+    public boolean hasActiveManifestEntryTransparent(@NonNull String name, @NonNull String value) {
+        return appManifestEntries.hasActiveEntryTransparent(name, value);
+    }
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @return 
+     */
+    public boolean hasManifestEntryValueTransparent(String config, @NonNull String name) {
+        return appManifestEntries.hasEntryValueTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public boolean hasDefaultManifestEntryValueTransparent(@NonNull String name) {
+        return appManifestEntries.hasDefaultEntryValueTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public boolean hasActiveManifestEntryValueTransparent(@NonNull String name) {
+        return appManifestEntries.hasActiveEntryValueTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @return 
+     */
+    public Map<String, String> getManifestEntryTransparent(String config, @NonNull String name) {
+        return appManifestEntries.getEntryTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public Map<String, String> getDefaultManifestEntryTransparent(@NonNull String name) {
+        return appManifestEntries.getDefaultEntryTransparent(name);
+    }
+
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public Map<String, String> getActiveManifestEntryTransparent(@NonNull String name) {
+        return appManifestEntries.getActiveEntryTransparent(name);
+    }
+        
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @return 
+     */
+    public String getManifestEntryValueTransparent(String config, @NonNull String name) {
+        return appManifestEntries.getEntryValueTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public String getDefaultManifestEntryValueTransparent(@NonNull String name) {
+        return appManifestEntries.getDefaultEntryValueTransparent(name);
+    }
+
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public String getActiveManifestEntryValueTransparent(@NonNull String name) {
+        return appManifestEntries.getActiveEntryValueTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param config
+     * @return 
+     */
+    public List<Map<String,String/*|null*/>> getManifestEntriesTransparent(String config) {
+        return appManifestEntries.getEntriesTransparent(config);
+    }
+    
+    /**
+     * Proxy
+     * @return 
+     */
+    public List<Map<String,String/*|null*/>> getDefaultManifestEntriesTransparent() {
+        return appManifestEntries.getDefaultEntriesTransparent();
+    }
+    
+    /**
+     * Proxy
+     * @return 
+     */
+    public List<Map<String,String/*|null*/>> getActiveManifestEntriesTransparent() {
+        return appManifestEntries.getActiveEntriesTransparent();
+    }
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name 
+     */
+    public void addManifestEntryTransparent(String config, @NonNull String name){
+        appManifestEntries.addEntryTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name 
+     */
+    public void addDefaultManifestEntryTransparent(@NonNull String name) {
+        appManifestEntries.addDefaultEntryTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param name 
+     */
+    public void addActiveManifestEntryTransparent(@NonNull String name) {
+        appManifestEntries.addActiveEntryTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @param value 
+     */
+    public void addManifestEntryTransparent(String config, @NonNull String name, @NonNull String value) {
+        appManifestEntries.addEntryTransparent(config, name, value);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @param value 
+     */
+    public void addDefaultManifestEntryTransparent(@NonNull String name, @NonNull String value) {
+        appManifestEntries.addDefaultEntryTransparent(name, value);
+    }
+
+    /**
+     * Proxy
+     * @param name
+     * @param value 
+     */
+    public void addActiveManifestEntryTransparent(@NonNull String name, @NonNull String value) {
+        appManifestEntries.addActiveEntryTransparent(name, value);
+    }
+
+    /**
+     * Proxy
+     * @param config
+     * @param params 
+     */
+    public void setManifestEntriesTransparent(String config, List<Map<String,String/*|null*/>>/*|null*/ params) {
+        appManifestEntries.setEntriesTransparent(config, params);
+    }
+
+    /**
+     * Proxy
+     * @param params 
+     */
+    public void setDefaultManifestEntriesTransparent(List<Map<String,String/*|null*/>>/*|null*/ params) {
+        appManifestEntries.setDefaultEntriesTransparent(params);
+    }
+
+    /**
+     * Proxy
+     * @param params 
+     */
+    public void setActiveManifestEntriesTransparent(List<Map<String,String/*|null*/>>/*|null*/ params) {
+        appManifestEntries.setActiveEntriesTransparent(params);
+    }
+
+    /**
+     * Proxy
+     * @param config
+     * @param name 
+     */
+    public void eraseManifestEntryTransparent(String config, @NonNull String name) {
+        appManifestEntries.eraseEntryTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name 
+     */
+    public void eraseDefaultManifestEntryTransparent(@NonNull String name) {
+        appManifestEntries.eraseDefaultEntryTransparent(name);
+    }
+
+    /**
+     * Proxy
+     * @param name 
+     */
+    public void eraseActiveManifestEntryTransparent(@NonNull String name) {
+        appManifestEntries.eraseActiveEntryTransparent(name);
+    }
+
+    /**
+     * Proxy
+     * @param config 
+     */
+    public void eraseManifestEntriesTransparent(String config) {
+        appManifestEntries.eraseEntriesTransparent(config);
+    }
+    
+    /**
+     * Proxy
+     */
+    public void eraseDefaultManifestEntriesTransparent() {
+        appManifestEntries.eraseDefaultEntriesTransparent();
+    }
+
+    /**
+     * Proxy
+     */
+    public void eraseActiveManifestEntriesTransparent() {
+        appManifestEntries.eraseActiveEntriesTransparent();
+    }
+
+    /**
+     * Proxy
+     * @param config
+     * @return 
+     */
+    public String getManifestEntriesTransparentAsString(String config) {
+        return appManifestEntries.getEntriesTransparentAsString(config, false);
+    }
+    
+    /**
+     * Proxy
+     * @return 
+     */
+    public String getDefaultManifestEntriesTransparentAsString() {
+        return appManifestEntries.getDefaultEntriesTransparentAsString(false);
+    }
+
+    /**
+     * Proxy
+     * @return 
+     */
+    public String getActiveManifestEntriesTransparentAsString() {
+        return appManifestEntries.getActiveEntriesTransparentAsString(false);
+    }
+
+    //----------------------------------------------------------
+    // primarily for testing purposes
+
+    public boolean hasActiveManifestEntry(@NonNull String name) {
+        return appManifestEntries.hasActiveEntry(name);
+    }
+    
+    public String manifestEntriesToString() {
+        return appManifestEntries.toString();
+    }
+    
+    public int getNoOfManifestEntries(String config) {
+        return appManifestEntries.getNoOfEntries(config);
+    }
+    
+    public int getNoOfDefaultManifestEntries() {
+        return appManifestEntries.getNoOfDefaultEntries();
+    }
+    
+    public int getNoOfActiveManifestEntries() {
+        return appManifestEntries.getNoOfActiveEntries();
+    }
+
 
     //==========================================================
 
@@ -825,6 +1306,7 @@ public class JFXProjectConfigurations {
             }
         }
         appParams.extractDefaultEntries(ep);
+        appManifestEntries.extractDefaultEntries(ep);
     }
 
     private void addDefaultsIfMissing() {
@@ -854,6 +1336,7 @@ public class JFXProjectConfigurations {
                 }
                 addToConfig(kid.getName(), cep);
                 appParams.extractEntries(cep, kid.getName());
+                appManifestEntries.extractEntries(cep, kid.getName());
             }
         }
     }
@@ -896,7 +1379,7 @@ public class JFXProjectConfigurations {
         assert !configNameWrong(config);
         String params = appParams.getEntriesTransparentAsString(config, true);
         if(config != null) {
-            if(JFXProjectProperties.isEqual(params, appParams.getDefaultEntriesAsString(true))) {
+            if(JFXProjectProperties.isEqualText(params, appParams.getDefaultEntriesAsString(true))) {
                 params = null;
             }
         }
@@ -928,7 +1411,9 @@ public class JFXProjectConfigurations {
             updateProperty(name, value, projectProperties, privateProperties, isBoundedToNonemptyProperty(null, name));
         }
         List<String> paramNamesUsed = new ArrayList<String>();
+        List<String> manifestEntryNamesUsed = new ArrayList<String>();
         appParams.updateDefaultEntryProperties(projectProperties, privateProperties, paramNamesUsed);
+        appManifestEntries.updateDefaultEntryProperties(projectProperties, privateProperties, manifestEntryNamesUsed);
         storeDefaultParamsAsCommandLine(privateProperties);
 
         for (Map.Entry<String,Map<String,String>> entry : RUN_CONFIGS.entrySet()) {
@@ -968,7 +1453,8 @@ public class JFXProjectConfigurations {
                     config, sharedCfgProps);
             privatePropsChanged |= cleanPropertiesIfEmpty(CLEAN_EMPTY_PRIVATE_PROPERTIES.toArray(new String[0]), 
                     config, privateCfgProps);
-            privatePropsChanged |= appParams.updateEntryProperties(config, sharedCfgProps, privateCfgProps, paramNamesUsed);  
+            privatePropsChanged |= appParams.updateEntryProperties(config, sharedCfgProps, privateCfgProps, paramNamesUsed);
+            privatePropsChanged |= appManifestEntries.updateEntryProperties(config, sharedCfgProps, privateCfgProps, manifestEntryNamesUsed);
             privatePropsChanged |= storeParamsAsCommandLine(config, privateCfgProps);
 
             JFXProjectUtils.saveToFile(projectDir, sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
@@ -1132,7 +1618,7 @@ public class JFXProjectConfigurations {
      * Project properties maintenance class. Handles properties that may have multiple
      * instances, like FX Application parameters, or custom manifest entries
      */
-    private class MultiProperty {
+    private final class MultiProperty {
     
         private Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> APP_MULTIPROPS;
         private String prefix;
@@ -1140,7 +1626,7 @@ public class JFXProjectConfigurations {
         private String connectSign;
 
         public MultiProperty(@NonNull String prefix, @NonNull String suffixes[], @NonNull String connectSign) {
-            assert suffixes.length == 2; // need "name" and "value"
+            assert suffixes.length == 3; // need "name" and "value" and "hidden"
             this.prefix = prefix;
             this.suffixes = suffixes;
             this.connectSign = connectSign;
@@ -1151,6 +1637,97 @@ public class JFXProjectConfigurations {
             APP_MULTIPROPS = new TreeMap<String,List<Map<String,String>>>(getComparator());
         }
 
+
+        //==========================================================
+        
+        /**
+         * Returns true if the key "hidden" is set to "true" in this entry.
+         * Hiding is used to record entry deletion (e.g., entry or custom manifest entry)
+         * in non-default configuration while keeping the entry in default config
+         * 
+         * @param entry
+         * @return 
+         */
+        private boolean isEntryHidden(Map<String,String> entry) {
+            if(entry != null && JFXProjectProperties.isTrue(entry.get(suffixes[2]))) {
+                return true;
+            }
+            return false;
+        }
+        
+        private boolean isEntryHidden(String config, @NonNull String name) {
+            Map<String, String> entry = getEntry(config, name);
+            if(entry != null) {
+                return isEntryHidden(entry);
+            }
+            return false;
+        }
+        
+        private void hideEntry(@NonNull Map<String,String> entry) {
+            assert entry != null;
+            entry.put(suffixes[2], APP_MULTIPROP_HIDDEN_TRUE); // NOI18N
+        }
+        
+        private void unhideEntry(@NonNull Map<String,String> entry) {
+            assert entry != null;
+            entry.remove(suffixes[2]);
+        }
+
+        private void hideEntry(String config, String name) {
+            Map<String, String> map = getEntry(config, name);
+            if(map != null) {
+                hideEntry(map);
+            }
+        }
+        
+        private void unhideEntry(String config, String name) {
+            Map<String, String> map = getEntry(config, name);
+            if(map != null) {
+                unhideEntry(map);
+            }
+        }
+
+        /**
+         * Removes those entries from list that are marked as hidden
+         * 
+         * @param entries
+         * @return filtered list
+         */
+        private List<Map<String,String/*|null*/>> removeHiddenEntries(@NonNull List<Map<String,String/*|null*/>> entries) {
+            List<Map<String,String/*|null*/>> filtered = new ArrayList<Map<String,String>>();
+            if(entries != null) {
+                for(Map<String,String> map : entries) {
+                    if(!isEntryHidden(map)) {
+                        filtered.add(map);
+                    }
+                }
+            }
+            return filtered;
+        }
+        
+        
+        //==========================================================
+
+        private String getEntryName(Map<String,String> entry) {
+            return entry != null ? entry.get(suffixes[0]) : null;
+        }
+
+        private String getEntryValue(Map<String,String> entry) {
+            return entry != null ? entry.get(suffixes[1]) : null;
+        }
+        
+        private void setEntryName(Map<String,String> entry, String name) {
+            if(entry != null) {
+                entry.put(suffixes[0], name);
+            }
+        }
+
+        private void setEntryValue(Map<String,String> entry, String value) {
+            if(entry != null) {
+                entry.put(suffixes[1], value);
+            }
+        }
+        
         //==========================================================
 
         /**
@@ -1160,22 +1737,26 @@ public class JFXProjectConfigurations {
          * @param name
          * @return 
          */
-        public boolean hasEntry(String config, @NonNull String name) {
+        private boolean hasEntry(String config, @NonNull String name) {
             assert !configNameWrong(config);
             return getEntry(config, name) != null;
         }
 
-        public boolean hasDefaultEntry(@NonNull String name) {
+        private boolean hasDefaultEntry(@NonNull String name) {
             return hasEntry(null, name);
         }
 
-        public boolean hasActiveEntry(@NonNull String name) {
+        private boolean hasActiveEntry(@NonNull String name) {
             return hasEntry(getActive(), name);
         }
 
         public boolean hasEntryTransparent(String config, @NonNull String name) {
             assert !configNameWrong(config);
             return getEntryTransparent(config, name) != null;
+        }
+
+        public boolean hasDefaultEntryTransparent(@NonNull String name) {
+            return hasEntryTransparent((String)null, name);
         }
 
         public boolean hasActiveEntryTransparent(@NonNull String name) {
@@ -1193,24 +1774,32 @@ public class JFXProjectConfigurations {
          * @param value
          * @return 
          */
-        public boolean hasEntry(String config, @NonNull String name, @NonNull String value) {
+        private boolean hasEntry(String config, @NonNull String name, @NonNull String value) {
             assert !configNameWrong(config);
             String v = getEntryValue(config, name);
-            return JFXProjectProperties.isEqual(v, value);
+            return JFXProjectProperties.isEqualText(v, value);
         }
 
-        public boolean hasDefaultEntry(@NonNull String name, @NonNull String value) {
+        private boolean hasDefaultEntry(@NonNull String name, @NonNull String value) {
             return hasEntry(null, name, value);
         }
 
-        public boolean hasActiveEntry(@NonNull String name, @NonNull String value) {
+        private boolean hasActiveEntry(@NonNull String name, @NonNull String value) {
             return hasEntry(getActive(), name, value);
         }
 
         public boolean hasEntryTransparent(String config, @NonNull String name, @NonNull String value) {
             assert !configNameWrong(config);
             String v = getEntryValueTransparent(config, name);
-            return JFXProjectProperties.isEqual(v, value);
+            return JFXProjectProperties.isEqualText(v, value);
+        }
+        
+        public boolean hasDefaultEntryTransparent(@NonNull String name, @NonNull String value) {
+            return hasEntryTransparent((String)null, name, value);
+        }
+
+        public boolean hasActiveEntryTransparent(@NonNull String name, @NonNull String value) {
+            return hasEntryTransparent(getActive(), name, value);
         }
 
         //----------------------------------------------------------
@@ -1218,28 +1807,35 @@ public class JFXProjectConfigurations {
         // search for entry named name and ask whether such
         // entry has any value
         
-        public boolean hasEntryValue(String config, @NonNull String name) {
+        private boolean hasEntryValue(Map<String,String> entry) {
+            return entry != null && entry.containsKey(suffixes[1]);
+        }
+        
+        private boolean hasEntryValue(String config, @NonNull String name) {
             assert !configNameWrong(config);
-            Map<String, String> param = getEntry(config, name);
-            if(param != null) {
-                if(param.containsKey(suffixes[1])) {
-                    return true;
-                }
-            }
-            return false;
+            Map<String, String> entry = getEntry(config, name);
+            return hasEntryValue(entry);
         }
 
-        public boolean hasDefaultEntryValue(@NonNull String name) {
+        private boolean hasDefaultEntryValue(@NonNull String name) {
             return hasEntryValue(null, name);
         }
 
-        public boolean hasActiveEntryValue(@NonNull String name) {
+        private boolean hasActiveEntryValue(@NonNull String name) {
             return hasEntryValue(getActive(), name);
         }
 
         public boolean hasEntryValueTransparent(String config, @NonNull String name) {
             assert !configNameWrong(config);
-            return (config != null && hasEntryValue(config, name)) || hasDefaultEntryValue(name);
+            Map<String, String> entry = getEntry(config, name);
+            if(config != null && entry == null) {
+                return hasEntryValueTransparent((String)null, name);
+            }
+            return isEntryHidden(entry) ? false : hasEntryValue(entry);
+        }
+
+        public boolean hasDefaultEntryValueTransparent(@NonNull String name) {
+            return hasEntryValueTransparent((String)null, name);
         }
 
         public boolean hasActiveEntryValueTransparent(@NonNull String name) {
@@ -1255,26 +1851,30 @@ public class JFXProjectConfigurations {
          * @param name
          * @return 
          */
-        public Map<String, String> getEntry(String config, @NonNull String name) {
+        private Map<String, String> getEntry(String config, @NonNull String name) {
             assert !configNameWrong(config);
             return getEntry(getEntries(config), name);
         }
 
-        public Map<String, String> getDefaultEntry(@NonNull String name) {
+        private Map<String, String> getDefaultEntry(@NonNull String name) {
             return getEntry((String)null, name);
         }
 
-        public Map<String, String> getActiveEntry(@NonNull String name) {
+        private Map<String, String> getActiveEntry(@NonNull String name) {
             return getEntry(getActive(), name);
         }
 
         public Map<String, String> getEntryTransparent(String config, @NonNull String name) {
             assert !configNameWrong(config);
-            Map<String, String> param = getEntry(config, name);
-            if(param == null) {
-                param = getDefaultEntry(name);
+            Map<String, String> entry = getEntry(config, name);
+            if(config != null && entry == null) {
+                return getEntryTransparent((String)null, name);
             }
-            return param;
+            return isEntryHidden(entry) ? null : entry;
+        }
+
+        public Map<String, String> getDefaultEntryTransparent(@NonNull String name) {
+            return getEntryTransparent((String)null, name);
         }
 
         public Map<String, String> getActiveEntryTransparent(@NonNull String name) {
@@ -1292,11 +1892,11 @@ public class JFXProjectConfigurations {
          * @param name
          * @return 
          */
-        public String getEntryValue(String config, @NonNull String name) {
+        private String getEntryValue(String config, @NonNull String name) {
             assert !configNameWrong(config);
-            Map<String,String/*|null*/> param = getEntry(config, name);
-            if(param != null) {
-                return param.get(suffixes[1]);
+            Map<String,String/*|null*/> entry = getEntry(config, name);
+            if(entry != null) {
+                return getEntryValue(entry);
             }
             return null;
         }
@@ -1309,8 +1909,8 @@ public class JFXProjectConfigurations {
          * @param name
          * @return 
          */
-        public String getDefaultEntryValue(@NonNull String name) {
-            return getEntryValue(null, name);
+        private String getDefaultEntryValue(@NonNull String name) {
+            return getEntryValue((String)null, name);
         }
 
         /**
@@ -1321,7 +1921,7 @@ public class JFXProjectConfigurations {
          * @param name
          * @return 
          */
-        public String getActiveEntryValue(@NonNull String name) {
+        private String getActiveEntryValue(@NonNull String name) {
             return getEntryValue(getActive(), name);
         }
 
@@ -1336,11 +1936,23 @@ public class JFXProjectConfigurations {
          */
         public String getEntryValueTransparent(String config, @NonNull String name) {
             assert !configNameWrong(config);
-            Map<String, String> param = getEntry(config, name);
-            if(param != null) {
-                return param.get(suffixes[1]);
+            Map<String, String> entry = getEntry(config, name);
+            if(config != null && entry == null) {
+                return getEntryValueTransparent((String)null, name);
             }
-            return getDefaultEntryValue(name);
+            return isEntryHidden(entry) ? null : getEntryValue(entry);
+        }
+
+        /**
+         * Note that returned null is ambiguous - may mean that there
+         * was no value defined or that it was defined and its value was null.
+         * To check this ask has*EntryValue*()
+         * 
+         * @param name
+         * @return 
+         */
+        public String getDefaultEntryValueTransparent(@NonNull String name) {
+            return getEntryValueTransparent((String)null, name);
         }
 
         /**
@@ -1357,7 +1969,7 @@ public class JFXProjectConfigurations {
 
         //----------------------------------------------------------
 
-        private List<Map<String,String/*|null*/>> getEntries(String config) {
+        private @NonNull List<Map<String,String/*|null*/>> getEntries(String config) {
             assert !configNameWrong(config);
             return APP_MULTIPROPS.get(config);
         }
@@ -1373,30 +1985,61 @@ public class JFXProjectConfigurations {
         /**
         * Returns (copy of) list of default entries if config==default or
         * union of default config and current config entries otherwise
+        * (excludes hidden entries)
         * 
         * @param config current config
         * @return union of default and current entries
         */
-        private List<Map<String,String/*|null*/>> getEntriesTransparent(String config) {
+        public List<Map<String,String/*|null*/>> getEntriesTransparent(String config) {
             assert !configNameWrong(config);
-            List<Map<String,String/*|null*/>> union = JFXProjectUtils.copyList(getDefaultEntries());
-            if(config != null && getEntries(config) != null) {
-                for(Map<String,String> map : getEntries(config)) {
-                    String name = map.get(suffixes[0]);
-                    String value = map.get(suffixes[1]);
-                    if(name != null && !name.isEmpty()) {
-                        Map<String, String> old = getEntry(union, name);
-                        if(old != null) {
-                            old.put(suffixes[0], name);
-                            old.put(suffixes[1], value);
-                        } else {
-                            union.add(map);
-                        }
+            if(config == null) {
+                return removeHiddenEntries(getDefaultEntries());
+            }
+            List<Map<String,String/*|null*/>> union = new ArrayList<Map<String,String>>();
+            // create marker set - identify entries to be added from default and current configs
+            Set<String> markerDefault = new HashSet<String>();
+            Set<String> markerConfig = new HashSet<String>();
+            List<Map<String,String/*|null*/>> defaultEntries = getDefaultEntries();
+            if(defaultEntries != null) {
+                for(Map<String,String> map : defaultEntries) {
+                    if(!isEntryHidden(map)) {
+                        markerDefault.add(getEntryName(map));
+                    }
+                }
+            }
+            List<Map<String,String/*|null*/>> configEntries = getEntries(config);
+            if(configEntries != null) {
+                for(Map<String,String> map : configEntries) {
+                    if(!isEntryHidden(map)) {
+                        markerConfig.add(getEntryName(map));
+                    } else {
+                        markerDefault.remove(getEntryName(map));
+                    }
+                }
+            }
+            // copy entries from default and current config based on marker
+            if(defaultEntries != null) {
+                for(Map<String,String> map : defaultEntries) {
+                    String name = getEntryName(map);
+                    if(markerDefault.contains(name) && !markerConfig.contains(name)) {
+                        union.add(createEntry(name, getEntryValue(map)));
+                    }
+                }
+            }
+            if(configEntries != null) {
+                for(Map<String,String> map : configEntries) {
+                    String name = getEntryName(map);
+                    if(markerConfig.contains(name)) {
+                        union.add(createEntry(name, getEntryValue(map)));
                     }
                 }
             }
             return union;
-        }   
+        }
+        
+        public List<Map<String,String/*|null*/>> getDefaultEntriesTransparent() {
+            return getEntriesTransparent((String)null);
+        }
 
         public List<Map<String,String/*|null*/>> getActiveEntriesTransparent() {
             return getEntriesTransparent(getActive());
@@ -1410,25 +2053,29 @@ public class JFXProjectConfigurations {
         * @param commandLine if true, formats output as if to be passed on command line, otherwise prouces comma separated list
         * @return a String containing all entries as if passed as command line parameters
         */
+        private String getEntriesAsString(String config, boolean commandLine) {
+            return getEntriesAsString(getEntries(config), commandLine);
+        }
+
+        private String getDefaultEntriesAsString(boolean commandLine) {
+            return getEntriesAsString(getDefaultEntries(), commandLine);
+        }
+
+        private String getActiveEntriesAsString(boolean commandLine) {
+            return getEntriesAsString(getActiveEntries(), commandLine);
+        }
+
         public String getEntriesTransparentAsString(String config, boolean commandLine) {
             assert !configNameWrong(config);
             return getEntriesAsString(getEntriesTransparent(config), commandLine);
         }
 
+        public String getDefaultEntriesTransparentAsString(boolean commandLine) {
+            return getEntriesAsString(getDefaultEntriesTransparent(), commandLine);
+        }
+
         public String getActiveEntriesTransparentAsString(boolean commandLine) {
             return getEntriesAsString(getActiveEntriesTransparent(), commandLine);
-        }
-
-        public String getEntriesAsString(String config, boolean commandLine) {
-            return getEntriesAsString(getEntries(config), commandLine);
-        }
-
-        public String getActiveEntriesAsString(boolean commandLine) {
-            return getEntriesAsString(getActiveEntries(), commandLine);
-        }
-
-        public String getDefaultEntriesAsString(boolean commandLine) {
-            return getEntriesAsString(getDefaultEntries(), commandLine);
         }
 
         private String getEntriesAsString(List<Map<String,String/*|null*/>> props, boolean commandLine)
@@ -1437,9 +2084,9 @@ public class JFXProjectConfigurations {
             if(props != null) {
                 int index = 0;
                 for(Map<String,String> m : props) {
-                    String name = m.get(suffixes[0]);
-                    String value = m.get(suffixes[1]);
-                    if(name != null && name.length() > 0) {
+                    String name = getEntryName(m);
+                    String value = getEntryValue(m);
+                    if(name != null && name.length() > 0 && !isEntryHidden(m)) {
                         if(sb.length() > 0) {
                             if(!commandLine) {
                                 sb.append(","); // NOI18N
@@ -1467,19 +2114,83 @@ public class JFXProjectConfigurations {
             return sb.toString();
         }
 
+        public int getNoOfEntries(String config) {
+            assert !configNameWrong(config);
+            return getNoOfEntries(getEntriesTransparent(config));
+        }
+
+        public int getNoOfDefaultEntries() {
+            return getNoOfEntries(getDefaultEntriesTransparent());
+        }
+
+        public int getNoOfActiveEntries() {
+            return getNoOfEntries(getActiveEntriesTransparent());
+        }
+
+        private int getNoOfEntries(List<Map<String,String/*|null*/>> props)
+        {
+            int sum = 0;
+            if(props != null) {
+                for(Map<String,String> m : props) {
+                    String name = getEntryName(m);
+                    if(name != null && name.length() > 0 && !isEntryHidden(m)) {
+                        sum++;
+                    }
+                }
+            }
+            return sum;
+        }
+        
         //----------------------------------------------------------
 
         private Map<String, String> createEntry(@NonNull String name) {
             Map<String, String> prop = new TreeMap<String,String>(getComparator());
-            prop.put(suffixes[0], name);
+            setEntryName(prop, name);
             return prop;
         }
 
         private Map<String, String> createEntry(@NonNull String name, String value) {
             Map<String, String> prop = new TreeMap<String,String>(getComparator());
-            prop.put(suffixes[0], name);
-            prop.put(suffixes[1], value);
+            setEntryName(prop, name);
+            setEntryValue(prop, value);
             return prop;
+        }
+        
+        private Map<String, String> copyEntry(@NonNull Map<String, String> entry) {
+            Map<String, String> newEntry = new HashMap<String, String>();
+            for(String name : suffixes) {
+                String value = entry.get(name);
+                if(value != null && !value.isEmpty()) {
+                    newEntry.put(name, value);
+                }
+            }
+            return newEntry;
+        }
+
+        //----------------------------------------------------------
+
+        /**
+         * Add (or replace if present) entry 
+         * to configuration config
+         */
+        private void addEntry(String config, @NonNull Map<String,String> entry) {
+            assert !configNameWrong(config);
+            List<Map<String,String/*|null*/>> props = getEntries(config);
+            if(props == null) {
+                props = new ArrayList<Map<String,String/*|null*/>>();
+                APP_MULTIPROPS.put(config, props);
+            } else {
+                eraseEntry(props, entry);
+            }
+            props.add(entry);
+        }
+        
+        private void addDefaultEntry(@NonNull Map<String,String> entry) {
+            addEntry((String)null, entry);
+        }
+        
+        private void addActiveEntry(@NonNull Map<String,String> entry) {
+            addEntry(getActive(), entry);
         }
 
         //----------------------------------------------------------
@@ -1488,7 +2199,7 @@ public class JFXProjectConfigurations {
          * Add (or replace if present) valueless entry (e.g., run argument)
          * to configuration config
          */
-        public void addEntry(String config, @NonNull String name) {
+        private Map<String, String> addEntry(String config, @NonNull String name) {
             assert !configNameWrong(config);
             List<Map<String,String/*|null*/>> props = getEntries(config);
             if(props == null) {
@@ -1497,32 +2208,45 @@ public class JFXProjectConfigurations {
             } else {
                 eraseEntry(props, name);
             }
-            props.add(createEntry(name));
+            Map<String, String> newEntry = createEntry(name);
+            props.add(newEntry);
+            return newEntry;
         }
 
-        public void addDefaultEntry(@NonNull String name) {
-            addEntry(null, name);
+        private Map<String, String> addDefaultEntry(@NonNull String name) {
+            return addEntry((String)null, name);
         }
 
-        public void addActiveEntry(@NonNull String name) {
-            addEntry(getActive(), name);
+        private Map<String, String> addActiveEntry(@NonNull String name) {
+            return addEntry(getActive(), name);
         }
 
-        public void addEntryTransparent(String config, @NonNull String name) {
+        public Map<String, String> addEntryTransparent(String config, @NonNull String name) {
             assert !configNameWrong(config);
-            if(config == null) {
-                addDefaultEntry(name);
+            if(config == null) {                
+                for(String c: getConfigNames()) {
+                    final Map<String,String> entry = getEntry(c, name);
+                    if(c != null &&  entry != null && getEntryValue(entry) == null && !isEntryHidden(entry)) {
+                        eraseEntry(c, name);
+                    }
+                }
+                return addDefaultEntry(name);
             } else {
-                if(hasDefaultEntry(name) && !hasDefaultEntryValue(name)) {
+                if(hasDefaultEntryTransparent(name) && !hasDefaultEntryValueTransparent(name)) {
                     eraseEntry(config, name);
+                    return null;
                 } else {
-                    addEntry(config, name);
+                    return addEntry(config, name);
                 }
             }
         }
 
-        public void addActiveEntryTransparent(@NonNull String name) {
-            addEntryTransparent(getActive(), name);
+        public Map<String, String> addDefaultEntryTransparent(@NonNull String name) {
+            return addEntryTransparent((String)null, name);
+        }
+
+        public Map<String, String> addActiveEntryTransparent(@NonNull String name) {
+            return addEntryTransparent(getActive(), name);
         }
 
         //----------------------------------------------------------
@@ -1531,7 +2255,7 @@ public class JFXProjectConfigurations {
          * Add (or replace if present) named entry (i.e., having a value)
          * to configuration config
          */
-        public void addEntry(String config, @NonNull String name, String value) {
+        private Map<String, String> addEntry(String config, @NonNull String name, String value) {
             assert !configNameWrong(config);
             List<Map<String,String/*|null*/>> props = getEntries(config);
             if(props == null) {
@@ -1540,32 +2264,45 @@ public class JFXProjectConfigurations {
             } else {
                 eraseEntry(props, name);
             }
-            props.add(createEntry(name, value));
+            Map<String, String> newEntry = createEntry(name, value);
+            props.add(newEntry);
+            return newEntry;
         }
 
-        public void addDefaultEntry(@NonNull String name, String value) {
-            addEntry(null, name, value);
+        private Map<String, String> addDefaultEntry(@NonNull String name, String value) {
+            return addEntry(null, name, value);
         }
 
-        public void addActiveEntry(@NonNull String name, String value) {
-            addEntry(getActive(), name, value);
+        private Map<String, String> addActiveEntry(@NonNull String name, String value) {
+            return addEntry(getActive(), name, value);
         }
 
-        public void addEntryTransparent(String config, @NonNull String name, String value) {
+        public Map<String, String> addEntryTransparent(String config, @NonNull String name, String value) {
             assert !configNameWrong(config);
-            if(config == null) {
-                addDefaultEntry(name, value);
+            if(config == null) {                
+                for(String c: getConfigNames()) {
+                    final Map<String, String> entry = getEntry(c, name);
+                    if(c != null && entry != null && JFXProjectProperties.isEqualText(getEntryValue(entry), value) && !isEntryHidden(entry) ) {
+                        eraseEntry(c, name);
+                    }
+                }
+                return addDefaultEntry(name, value);
             } else {
-                if(hasDefaultEntry(name, value)) {
+                if(hasDefaultEntryTransparent(name, value)) {
                     eraseEntry(config, name);
+                    return null;
                 } else {
-                    addEntry(config, name, value);
+                    return addEntry(config, name, value);
                 }
             }
         }
 
-        public void addActiveEntryTransparent(@NonNull String name, String value) {
-            addEntryTransparent(getActive(), name, value);
+        public Map<String, String> addDefaultEntryTransparent(@NonNull String name, String value) {
+            return addEntryTransparent((String)null, name, value);
+        }
+
+        public Map<String, String> addActiveEntryTransparent(@NonNull String name, String value) {
+            return addEntryTransparent(getActive(), name, value);
         }
 
         //----------------------------------------------------------
@@ -1581,32 +2318,68 @@ public class JFXProjectConfigurations {
         public void setEntriesTransparent(String config, List<Map<String,String/*|null*/>>/*|null*/ entries) {
             assert !configNameWrong(config);
             if(config == null) {
-                APP_MULTIPROPS.put(null, entries);
-            } else {
-                List<Map<String,String/*|null*/>> reduct = new ArrayList<Map<String,String/*|null*/>>();
-                List<Map<String,String/*|null*/>> def = JFXProjectUtils.copyList(getDefaultEntries());
-                if(entries != null) {
-                    for(Map<String,String> map : entries) {
-                        String name = map.get(suffixes[0]);
-                        String value = map.get(suffixes[1]);
-                        Map<String, String> old = getDefaultEntry(name);
-                        if(old != null) {
-                            String oldValue = old.get(suffixes[1]);
-                            if( !JFXProjectProperties.isEqual(value, oldValue) ) {
-                                reduct.add(JFXProjectUtils.copyMap(old));
-                            }
-                            def.remove(old);
+                List<Map<String,String>> newDefault = new ArrayList<Map<String, String>>();
+                Set<String> toClean = new HashSet<String>();
+                if(APP_MULTIPROPS.get(null) != null) {
+                    for(Map<String,String> entry : APP_MULTIPROPS.get(null)) {
+                        if(isEntryHidden(entry)) {
+                            newDefault.add(entry);
                         } else {
-                            reduct.add(JFXProjectUtils.copyMap(map));
+                            toClean.add(getEntryName(entry));
                         }
                     }
-                    for(Map<String,String> map : def) {
-                        map.put(suffixes[1], ""); // NOI18N
-                        reduct.add(JFXProjectUtils.copyMap(map));
+                }
+                APP_MULTIPROPS.put(null, newDefault);
+                if(entries != null) {
+                    for(Map<String, String> entry : entries) {
+                        String name = getEntryName(entry);
+                        toClean.remove(name);
+                        Map<String, String> added;
+                        if(hasEntryValue(entry)) {
+                            added = addDefaultEntryTransparent(name, getEntryValue(entry));
+                        } else {
+                            added = addDefaultEntryTransparent(name);
+                        }
+                        if(isEntryHidden(entry)) {
+                            hideEntry(added);
+                        }
+                    }
+                }
+                for(String name : toClean) {
+                    eraseNonDefaultEntries(name, true);
+                }
+            } else {
+                List<Map<String,String/*|null*/>> reduct = new ArrayList<Map<String,String/*|null*/>>();
+                if(entries != null) {
+                    List<Map<String,String/*|null*/>> def = JFXProjectUtils.copyList(getDefaultEntriesTransparent());
+                    for(Map<String,String> map : entries) {
+                        String name = getEntryName(map);
+                        String value = getEntryValue(map);
+                        Map<String, String> defEntry = getDefaultEntryTransparent(name);
+                        if(defEntry != null) {
+                            String defValue = getEntryValue(defEntry);
+                            if( !JFXProjectProperties.isEqualText(value, defValue) ) {
+                                reduct.add(JFXProjectUtils.copyMap(map));
+                            }
+                            def.remove(defEntry);
+                        } else {
+                            if(!isEntryHidden(map)) {
+                                reduct.add(JFXProjectUtils.copyMap(map));
+                            }
+                        }
+                    }
+                    for(Map<String,String> map : def) { //def cannot be null
+                        Map<String,String> defCopy = JFXProjectUtils.copyMap(map);
+                        hideEntry(defCopy);
+                        reduct.add(defCopy);
                     }
                 }
                 APP_MULTIPROPS.put(config, reduct);
             }
+        }
+
+        public void setDefaultEntriesTransparent(List<Map<String,String/*|null*/>>/*|null*/ entries) {
+            setEntriesTransparent((String)null, entries);
         }
 
         public void setActiveEntriesTransparent(List<Map<String,String/*|null*/>>/*|null*/ entries) {
@@ -1615,30 +2388,109 @@ public class JFXProjectConfigurations {
 
         //----------------------------------------------------------
 
-        public void eraseEntry(String config, @NonNull String name) {
+        private void eraseEntry(String config, @NonNull String name) {
             assert !configNameWrong(config);
             eraseEntry(getEntries(config), name);
         }
 
-        public void eraseDefaultEntry(@NonNull String name) {
+        private void eraseDefaultEntry(@NonNull String name) {
             eraseEntry((String)null, name);
         }
 
-        public void eraseActiveEntry(@NonNull String name) {
+        private void eraseActiveEntry(@NonNull String name) {
             eraseEntry(getActive(), name);
         }
+        
+        private void eraseNonDefaultEntries(@NonNull String name, boolean hidden) {
+            for(String c: getConfigNames()) {
+                final Map<String, String> entry = getEntry(c, name);
+                if(c != null && entry != null && isEntryHidden(entry)==hidden ) {
+                    eraseEntry(c, name);
+                }
+            }
+        }
 
-        public void eraseEntry(String config) {
+        public void eraseEntryTransparent(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            if(config == null) {                
+                eraseNonDefaultEntries(name, true);
+                eraseDefaultEntry(name); // do not hide (though that should work too)
+            } else {
+                if(hasDefaultEntryTransparent(name)) {
+                    if(hasEntry(config, name)) {
+                        hideEntry(config, name);
+                    } else {
+                        Map<String, String> toHide = addEntry(config, name);
+                        hideEntry(toHide);
+                    }
+                } else {
+                    eraseEntry(config, name);
+                }
+            }
+        }
+
+        public void eraseDefaultEntryTransparent(@NonNull String name) {
+            eraseEntryTransparent((String)null, name);
+        }
+
+        public void eraseActiveEntryTransparent(@NonNull String name) {
+            eraseEntryTransparent(getActive(), name);
+        }
+
+        private void eraseEntries(String config) {
             assert !configNameWrong(config);
             APP_MULTIPROPS.remove(config);
         }
 
-        public void eraseDefaultEntries() {
-            eraseEntry(null);
+        private void eraseDefaultEntries() {
+            eraseEntries(null);
         }
 
-        public void eraseActiveEntries() {
-            eraseEntry(getActive());
+        private void eraseActiveEntries() {
+            eraseEntries(getActive());
+        }
+
+        public void eraseEntriesTransparent(String config) {
+            assert !configNameWrong(config);
+            if(config == null) {               
+                // erase all equal hidden entries in nondefault configs
+                if(APP_MULTIPROPS.get(null) != null) {
+                    for(Map<String, String> defEntry : APP_MULTIPROPS.get(null)) {
+                        if(!isEntryHidden(defEntry)) {
+                            String name = getEntryName(defEntry);
+                            for(String c: getConfigNames()) {
+                                final Map<String, String> entry = getEntry(c, name);
+                                if(c != null && entry != null && isEntryHidden(entry) ) {
+                                    eraseEntry(c, name);
+                                }
+                            }
+                        }
+                    }
+                }
+                eraseDefaultEntries(); // do not hide (though that should work too)
+            } else {
+                List<Map<String,String>> hidden = new ArrayList<Map<String, String>>();
+                List<Map<String,String>> configEntries = getEntries(config);
+                if(configEntries != null) {
+                    for(Map<String, String> map : configEntries) {
+                        String name = getEntryName(map);
+                        if(hasDefaultEntryTransparent(name)) {
+                            Map<String, String> h = JFXProjectUtils.copyMap(map);
+                            hideEntry(h);
+                            hidden.add(h);
+                        }
+                    }
+                }
+                APP_MULTIPROPS.put(config, hidden);
+            }
+        }
+
+        public void eraseDefaultEntriesTransparent() {
+            eraseEntriesTransparent((String)null);
+        }
+
+        public void eraseActiveEntriesTransparent() {
+            eraseEntriesTransparent(getActive());
         }
 
         //==========================================================
@@ -1652,9 +2504,9 @@ public class JFXProjectConfigurations {
         * @return entry if found, null otherwise
         */
         private Map<String, String> getEntry(List<Map<String, String>> entries, String entryName) {
-            if(entries != null) {
+            if(entries != null && entryName != null) {
                 for(Map<String, String> map : entries) {
-                    String name = map.get(suffixes[0]);
+                    String name = getEntryName(map);
                     if(name != null && name.equals(entryName)) {
                         return map;
                     }
@@ -1664,10 +2516,10 @@ public class JFXProjectConfigurations {
         }
 
         private void eraseEntry(List<Map<String, String>> entries, String entryName) {
-            if(entries != null) {
+            if(entries != null && entryName != null) {
                 Map<String, String> toErase = null;
                 for(Map<String, String> map : entries) {
-                    String name = map.get(suffixes[0]);
+                    String name = getEntryName(map);
                     if(name != null && name.equals(entryName)) {
                         toErase = map;
                         break;
@@ -1676,6 +2528,18 @@ public class JFXProjectConfigurations {
                 if(toErase != null) {
                     entries.remove(toErase);
                 }
+            }
+        }
+        
+        /**
+         * Erases entry from entries that has name equal to that in 'entry'
+         * @param entries
+         * @param entry 
+         */
+        private void eraseEntry(List<Map<String, String>> entries, Map<String,String> entry) {
+            if(entries != null && entry != null) {
+                String name = getEntryName(entry);
+                eraseEntry(entries, name);
             }
         }
 
@@ -1689,9 +2553,20 @@ public class JFXProjectConfigurations {
             return prop != null && prop.startsWith(prefix) && prop.endsWith(suffixes[1]);
         }
 
+        private boolean isEntryHiddenProperty(@NonNull String prop) {
+            return prop != null && prop.startsWith(prefix) && prop.endsWith(suffixes[2]);
+        }
+
         private String getEntryValueProperty(String entryNameProperty) {
             if(entryNameProperty != null && isEntryNameProperty(entryNameProperty)) {
                 return entryNameProperty.replace(suffixes[0], suffixes[1]);
+            }
+            return null;
+        }
+
+        private String getEntryHiddenProperty(String entryNameProperty) {
+            if(entryNameProperty != null && isEntryNameProperty(entryNameProperty)) {
+                return entryNameProperty.replace(suffixes[0], suffixes[2]);
             }
             return null;
         }
@@ -1702,6 +2577,10 @@ public class JFXProjectConfigurations {
 
         private String getEntryValueProperty(int index) {
             return prefix + index + "." + suffixes[1]; // NOI18N
+        }
+
+        private String getEntryHiddenProperty(int index) {
+            return prefix + index + "." + suffixes[2]; // NOI18N
         }
 
         private boolean isFreeEntryPropertyIndex(int index, @NonNull EditableProperties ep) {
@@ -1723,9 +2602,10 @@ public class JFXProjectConfigurations {
          * Adds/updates properties representing entries in editable properties
          * 
          * @param config
-         * @param projectProperties
-         * @param privateProperties
-         * @return 
+         * @param projectProperties project.properties to update
+         * @param privateProperties private.properties to update
+         * @param propNamesUsed possibly nonempty list of property names to be avoided (to prevent duplication across various configurations etc)
+         * @return true if private properties have been updated
          */
         private boolean updateEntryProperties(String config, @NonNull EditableProperties projectProperties, @NonNull EditableProperties privateProperties, @NonNull List<String> propNamesUsed) {
             assert !configNameWrong(config);
@@ -1736,12 +2616,15 @@ public class JFXProjectConfigurations {
                 if(prop != null && prop.length() > 0) {
                     projectProperties.remove(prop);
                     projectProperties.remove(getEntryValueProperty(prop));
+                    projectProperties.remove(getEntryHiddenProperty(prop));
                     privateProperties.remove(prop);
                     privateProperties.remove(getEntryValueProperty(prop));
+                    privateProperties.remove(getEntryHiddenProperty(prop));
                 }
             }
-            // delete those private prop properties not present in config and log usage of the remaining
+            // delete those private entry properties not present in config
             cleanEntryPropertiesIfEmpty(config, privateProperties);
+            // and log usage of the remaining private entry properties
             for(String prop : privateProperties.keySet()) {
                 if(isEntryNameProperty(prop)) {
                     propNamesUsed.add(prop);
@@ -1749,10 +2632,8 @@ public class JFXProjectConfigurations {
             }
             // update private properties
             List<Map<String, String>> toEraseList = new LinkedList<Map<String, String>>();
-            for(Map<String, String> map : reduce) {
-                String name = map.get(suffixes[0]);
-                String value = map.get(suffixes[1]);
-                if(updateEntryPropertyIfExists(name, value, privateProperties, true)) {
+            for(Map<String, String> map : reduce) { // reduce cannot be null
+                if(updateEntryPropertyIfExists(map, privateProperties, true)) {
                     toEraseList.add(map);
                     privateUpdated = true;
                 }
@@ -1760,8 +2641,9 @@ public class JFXProjectConfigurations {
             for(Map<String, String> toErase : toEraseList) {
                 reduce.remove(toErase);
             }
-            // delete those nonprivate prop properties not present in reduce and log usage of the remaining
+            // delete those nonprivate prop properties not present in reduce
             cleanEntryPropertiesNotListed(reduce, projectProperties);
+            // and log usage of the remaining private entry properties
             for(String prop : projectProperties.keySet()) {
                 if(isEntryNameProperty(prop)) {
                     propNamesUsed.add(prop);
@@ -1770,11 +2652,10 @@ public class JFXProjectConfigurations {
             // now create new nonprivate prop properties
             int index = 0;
             for(Map<String, String> map : reduce) {
-                String name = map.get(suffixes[0]);
-                String value = map.get(suffixes[1]);
-                if(name != null && name.length() > 0 && !updateEntryPropertyIfExists(name, value, projectProperties, false)) {
+                String name = getEntryName(map);
+                if(name != null && name.length() > 0 && !updateEntryPropertyIfExists(map, projectProperties, false)) {
                     index = getFreeEntryPropertyIndex(index, projectProperties, privateProperties, propNamesUsed);
-                    exportEntryProperty(map, getEntryNameProperty(index), getEntryValueProperty(index), projectProperties);
+                    exportEntryProperty(map, getEntryNameProperty(index), getEntryValueProperty(index), getEntryHiddenProperty(index), projectProperties);
                     propNamesUsed.add(getEntryNameProperty(index));
                 }
             }
@@ -1787,7 +2668,7 @@ public class JFXProjectConfigurations {
 
         /**
         * Searches in properties for entry named 'name'. If found, updates
-        * both existing entry properties (for 'name' and 'value') and returns
+        * all existing entry properties (for 'name' and 'value' and possibly 'hidden') and returns
         * true, otherwise returns false.
         * 
         * @param name entry name
@@ -1796,18 +2677,28 @@ public class JFXProjectConfigurations {
         * @param storeEmpty true==keep empty properties in editable properties, false==remove empty properties
         * @return true if updated existing property, false otherwise
         */
-        private boolean updateEntryPropertyIfExists(@NonNull String name, String value, EditableProperties ep, boolean storeEmpty) {
-            if(name != null && !name.isEmpty()) {
-                for(String prop : ep.keySet()) {
-                    if(isEntryNameProperty(prop)) {
-                        if(JFXProjectProperties.isEqual(name, ep.get(prop))) {
-                            String propVal = getEntryValueProperty(prop);
-                            if (value != null && (value.length() > 0 || storeEmpty)) {
-                                ep.setProperty(propVal, value);
-                            } else {
-                                ep.remove(propVal);
+        private boolean updateEntryPropertyIfExists(Map<String, String> entry, EditableProperties ep, boolean storeEmpty) {
+            if(entry != null) {
+                String name = getEntryName(entry);
+                if(name != null && !name.isEmpty()) {
+                    for(String prop : ep.keySet()) {
+                        if(isEntryNameProperty(prop)) {
+                            if(JFXProjectProperties.isEqualText(name, ep.get(prop))) {
+                                String propVal = getEntryValueProperty(prop);
+                                String value = getEntryValue(entry);
+                                if (value != null && (value.length() > 0 || storeEmpty)) {
+                                    ep.setProperty(propVal, value);
+                                } else {
+                                    ep.remove(propVal);
+                                }
+                                String propHid = getEntryHiddenProperty(prop);
+                                if(isEntryHidden(entry)) {
+                                    ep.setProperty(propHid, APP_MULTIPROP_HIDDEN_TRUE);
+                                } else {
+                                    ep.remove(propHid);
+                                }
+                                return true;
                             }
-                            return true;
                         }
                     }
                 }
@@ -1835,6 +2726,7 @@ public class JFXProjectConfigurations {
             for(String prop : toRemove) {
                 ep.remove(prop);
                 ep.remove(getEntryValueProperty(prop));
+                ep.remove(getEntryHiddenProperty(prop));
             }
         }
 
@@ -1849,11 +2741,13 @@ public class JFXProjectConfigurations {
             for(String name : ep.keySet()) {
                 if(isEntryNameProperty(name)) {
                     boolean inProps = false;
-                    for(Map<String,String> map : entries) {
-                        String prop = map.get(suffixes[0]);
-                        if(JFXProjectProperties.isEqual(name, prop)) {
-                            inProps = true;
-                            break;
+                    if(entries != null) {
+                        for(Map<String,String> map : entries) {
+                            String prop = getEntryName(map);
+                            if(JFXProjectProperties.isEqualText(name, prop)) {
+                                inProps = true;
+                                break;
+                            }
                         }
                     }
                     if(!inProps) {
@@ -1864,12 +2758,13 @@ public class JFXProjectConfigurations {
             for(String prop : toRemove) {
                 ep.remove(prop);
                 ep.remove(getEntryValueProperty(prop));
+                ep.remove(getEntryHiddenProperty(prop));
             }
         }
 
         /**
-        * Store one entry to editable properties (effectively as two properties,
-        * one for name, second for value), index is used to distinguish among
+        * Store one entry to editable properties (effectively as two or three properties,
+        * one for name, second for value, third to mark hidden properties), index is used to distinguish among
         * entry-property instances
         * 
         * @param entry property to be stored in editable properties
@@ -1877,13 +2772,16 @@ public class JFXProjectConfigurations {
         * @param newPropValue name of property to store entry value
         * @param ep editable properties to which prop is to be stored
         */
-        private void exportEntryProperty(@NonNull Map<String, String> entry, String newPropName, String newPropValue, @NonNull EditableProperties ep) {
-            String name = entry.get(suffixes[0]);
-            String value = entry.get(suffixes[1]);
+        private void exportEntryProperty(@NonNull Map<String, String> entry, String newPropName, String newPropValue, String newPropHidden, @NonNull EditableProperties ep) {
+            String name = getEntryName(entry);
+            String value = getEntryValue(entry);
             if(name != null) {
                 ep.put(newPropName, name);
                 if(value != null && value.length() > 0) {
                     ep.put(newPropValue, value);
+                }
+                if(isEntryHidden(entry)) {
+                    ep.put(newPropHidden, APP_MULTIPROP_HIDDEN_TRUE);
                 }
             }
         }
@@ -1891,7 +2789,7 @@ public class JFXProjectConfigurations {
         // -------------------------------------------------------------------
         
         /**
-        * Extract from editable properties all properties depicting application entries
+        * Extract from editable properties all properties depicting entries
         * and store them as such in 'entries'. If such exist in 'entries', then override their values.
         * 
         * @param ep editable properties to extract from
@@ -1900,16 +2798,19 @@ public class JFXProjectConfigurations {
         private void extractEntries(@NonNull EditableProperties ep, String config) {
             if(ep != null) {
                 for(String prop : ep.keySet()) {
-                    if(prop.startsWith(prefix) && prop.endsWith(suffixes[0])) {
+                    if(isEntryNameProperty(prop)) {
                         String name = ep.getProperty(prop);
                         if(name != null) {
-                            String propV = prop.replace(suffixes[0], suffixes[1]);
-                            String value = ep.getProperty(propV);
+                            String value = ep.getProperty(getEntryValueProperty(prop));
+                            String hidden = ep.getProperty(getEntryHiddenProperty(prop));
+                            Map<String,String> map = createEntry(name);
                             if(value != null) {
-                                addEntry(config, name, value);
-                            } else {
-                                addEntry(config, name);
+                                setEntryValue(map, value);
                             }
+                            if(hidden != null && JFXProjectProperties.isTrue(hidden)) {
+                                hideEntry(map);
+                            }
+                            addEntry(config, map);
                         }
                     }
                 }
@@ -1922,6 +2823,80 @@ public class JFXProjectConfigurations {
 
         private void extractActiveEntries(@NonNull EditableProperties ep) {
             extractEntries(ep, getActive());
+        }
+        
+        /**
+         * Returns dump of APP_MULTIPROPS. Useful for testing.
+         * @return string representation of complete class contents
+         */
+        public String toString() {
+            StringBuilder sb = new StringBuilder(MULTI_PROPERTY_STRING); // getClass().getName()); // NOI18N
+            sb.append(":"); // NOI18N
+            List<String> keys = new ArrayList<String>();
+            keys.addAll(APP_MULTIPROPS.keySet());
+            Collections.sort(keys, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    if(o1 == null) {
+                        if(o2 == null) {
+                            return 0;
+                        }
+                        return -1;
+                    }
+                    if(o2 == null) {
+                        return 1;
+                    }
+                    return o1.compareTo(o2);
+                }
+            });
+            if(keys == null || keys.isEmpty()) {
+                sb.append(" "); //NOI18N 
+                sb.append(MULTI_PROPERTY_EMPTY);
+            } else {
+                for(String configName : keys) {
+                    sb.append(" {"); // NOI18N
+                    sb.append(configName);
+                    sb.append("}"); // NOI18N
+                    List<Map<String,String>> configList = new ArrayList<Map<String,String>>(APP_MULTIPROPS.get(configName));
+                    Collections.sort(configList, new Comparator<Map<String,String>>() {
+                        @Override
+                        public int compare(Map<String, String> o1, Map<String, String> o2) {
+                            String n1 = getEntryName(o1);
+                            String n2 = getEntryName(o2);
+                            if(n1 == null && n2 != null) {
+                                return -1;
+                            } else if (n1 != null && n2 == null) {
+                                return 1;
+                            }
+                            if((n1 == null && n2 == null) || n1.compareTo(n2) == 0) {
+                                String v1 = getEntryValue(o1);
+                                String v2 = getEntryValue(o2);
+                                if(v1 == null && v2 != null) {
+                                    return -1;
+                                } else if (v1 != null && v2 == null) {
+                                    return 1;
+                                } else if (v1 == null && v2 == null) {
+                                    return 0;
+                                }
+                                return v1.compareTo(v2);
+                            }
+                            return n1.compareTo(n2);
+                        }
+                    });
+                    for(Map<String,String> map : configList) {
+                        for(int i=0; i<suffixes.length; i++) {
+                            String s = map.get(suffixes[i]);
+                            if(s != null) {
+                                sb.append(" "); // NOI18N
+                                sb.append(suffixes[i]);
+                                sb.append("="); // NOI18N
+                                sb.append(s);
+                            }
+                        }
+                    }
+                }
+            }
+            return sb.toString();
         }
 
     }

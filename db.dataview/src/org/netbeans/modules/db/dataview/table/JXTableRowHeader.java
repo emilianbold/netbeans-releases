@@ -149,7 +149,7 @@ public final class JXTableRowHeader extends JComponent {
         }
     }
 
-    private PropertyChangeListener tableSorterListener = new PropertyChangeListener() {
+    private final PropertyChangeListener backingTableListener = new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent pce) {
             JTable t = (JTable) pce.getSource();
@@ -161,16 +161,38 @@ public final class JXTableRowHeader extends JComponent {
                     backingSorter = (RowSorter) pce.getNewValue();
                     backingSorter.addRowSorterListener(rowSorterListener);
                 }
+                updateRowCount();
             } else if (pce.getPropertyName().equals("rowHeight")) {
                 headerTable.setRowHeight((Integer) pce.getNewValue());
+            } else if ("model".equals(pce.getPropertyName())) {
+                if (backingTableModel != null) {
+                    backingTableModel.removeTableModelListener(
+                            tableModelListener);
+                }
+                backingTableModel = (TableModel) pce.getNewValue();
+                if (backingTableModel != null) {
+                    backingTableModel.addTableModelListener(tableModelListener);
+                }
+                updateRowCount();
             }
+        }
+    };
+
+    private void updateRowCount() {
+        ctm.setCount(backingTable.getRowCount());
+    }
+
+    private TableModelListener tableModelListener = new TableModelListener() {
+        @Override
+        public void tableChanged(TableModelEvent e) {
+            updateRowCount();
         }
     };
     
     private RowSorterListener rowSorterListener = new RowSorterListener() {
         @Override
         public void sorterChanged(RowSorterEvent rse) {
-            ctm.setCount(rse.getSource().getViewRowCount());
+            updateRowCount();
         }
     };
     
@@ -181,22 +203,6 @@ public final class JXTableRowHeader extends JComponent {
         return header;
     }
 
-    private class HeaderResizeListener implements TableModelListener {
-
-        @Override
-        public void tableChanged(TableModelEvent e) {
-            // pack before setting preferred width.
-            headerTable.packAll();
-
-            TableColumn column = headerTable.getColumnModel().getColumn(0);
-            column.setPreferredWidth(column.getPreferredWidth() + 20);
-
-            if (column.getPreferredWidth() != getWidth()) {
-                headerTable.setPreferredScrollableViewportSize(new Dimension(
-                        column.getPreferredWidth(), 0));
-            }
-        }
-    }
     private static Icon rightArrow = new Icon() {
 
         @Override
@@ -243,6 +249,7 @@ public final class JXTableRowHeader extends JComponent {
     private final CountingTableModel ctm = new CountingTableModel();
     private final JXTable headerTable;
     private JXTable backingTable;
+    private TableModel backingTableModel;
     private RowSorter<?> backingSorter;
 
     /**
@@ -254,14 +261,22 @@ public final class JXTableRowHeader extends JComponent {
      *            the table for which to produce a row header.
      */
     public JXTableRowHeader(JXTable table) {
+        assert table != null : "JXTableRowHeader needs to be instanciated with a JXTable";
 
-        headerTable = new JXTableDecorator(ctm, new JXTableRowHeader.InternalTableColumnModel());
+        this.backingTable = table;
+        this.backingTableModel = table.getModel();
+        this.backingTableModel.addTableModelListener(tableModelListener);
 
-        setTable(table);
+        headerTable = new JXTableDecorator(ctm,
+                new JXTableRowHeader.InternalTableColumnModel());
+
+        ctm.setCount(backingTable.getRowCount());
+        backingTable.addPropertyChangeListener(backingTableListener);
+        headerTable.setRowHeight(backingTable.getRowHeight());
+        headerTable.setSelectionModel(backingTable.getSelectionModel());
 
         setLayout(new GridLayout(1, 1));
 
-        this.headerTable.getModel().addTableModelListener(new JXTableRowHeader.HeaderResizeListener());
         this.headerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         this.headerTable.getTableHeader().setReorderingAllowed(false);
         this.headerTable.getTableHeader().setResizingAllowed(false);
@@ -272,7 +287,12 @@ public final class JXTableRowHeader extends JComponent {
         // pack before setting preferred width.
         this.headerTable.packAll();
 
-        column.setPreferredWidth(column.getPreferredWidth() + 20);
+        TableCellRenderer defaultRenderer = createDefaultRenderer();
+
+        Component c = defaultRenderer.getTableCellRendererComponent(
+                headerTable, "00000", false, false, 0, 0);              //NOI18N
+
+        column.setPreferredWidth((int) c.getMinimumSize().getWidth() + 10);
         column.setCellRenderer(createDefaultRenderer());
         this.headerTable.setPreferredScrollableViewportSize(new Dimension(
                 column.getPreferredWidth(), 0));
@@ -280,8 +300,10 @@ public final class JXTableRowHeader extends JComponent {
         this.headerTable.setInheritsPopupMenu(true);
         this.headerTable.setShowGrid(true, true);
         this.headerTable.setGridColor(ResultSetJXTable.GRID_COLOR);
-        this.headerTable.setHighlighters(HighlighterFactory.createAlternateStriping(ResultSetJXTable.ROW_COLOR, ResultSetJXTable.ALTERNATE_ROW_COLOR));
-            }
+        this.headerTable.setHighlighters(
+                HighlighterFactory.createAlternateStriping(
+                ResultSetJXTable.ROW_COLOR, ResultSetJXTable.ALTERNATE_ROW_COLOR));
+    }
 
     /**
      * Returns a default renderer to be used when no row header renderer is
@@ -295,21 +317,8 @@ public final class JXTableRowHeader extends JComponent {
         return new JXTableRowHeader.RowHeaderColumnRenderer();
     }
 
-    public void setTable(JXTable table) {
-        if(backingTable != null) {
-            backingTable.removePropertyChangeListener(tableSorterListener);
-    }
-        backingTable = table;
-        if(backingTable != null) {
-            ctm.setCount(backingTable.getRowCount());
-            backingTable.addPropertyChangeListener(tableSorterListener);
-            headerTable.setRowHeight(backingTable.getRowHeight());
-            headerTable.setSelectionModel(backingTable.getSelectionModel());
-    }
-    }
-
     @Override
     public String getToolTipText(MouseEvent event) {
         return headerTable.getToolTipText(event);
     }
-    }
+}

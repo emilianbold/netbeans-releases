@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
@@ -82,8 +81,8 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         if(support != null) {
             // this is a jira project
             if(!BugtrackingUtil.isJiraInstalled()) {
-                if(JiraUpdater.notifyJiraDownload(support.getIssueUrl(issueID))) {
-                    JiraUpdater.getInstance().downloadAndInstall();
+                if(KenaiUtil.notifyJiraDownload(support.getIssueUrl(issueID))) {
+                    KenaiUtil.downloadAndInstallJira();
                 }
                 return;
             }

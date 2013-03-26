@@ -91,7 +91,7 @@ class ConfigActionScript extends ConfigAction {
 
     @Override
     public boolean isDebugFileEnabled(Lookup context) {
-        if (XDebugStarterFactory.getInstance() == null) {
+        if (DebugStarterFactory.getInstance() == null) {
             return false;
         }
         return isRunFileEnabled(context);

@@ -51,7 +51,9 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.client.GitClient;
@@ -280,6 +282,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         workdirFO.removeRecursiveListener(fca);
     }
     
+    @RandomlyFails
     public void testLogExtCmdChanges () throws Exception {
         waitForInitialScan();
         FileChangeAdapter fca = new FileChangeAdapter();
@@ -296,6 +299,14 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         ConsoleHandler ch = new ConsoleHandler();
         ch.setLevel(Level.ALL);
         Logger.getLogger(FilesystemInterceptor.class.getName()).addHandler(ch);
+        
+        assertTrue(lockFile.createNewFile());
+        FileUtil.refreshFor(repositoryLocation);
+        pause();
+        Thread.sleep(1100);
+        assertTrue(lockFile.delete());
+        FileUtil.refreshFor(repositoryLocation);
+        Thread.sleep(1100);
         
         Logger GESTURES_LOG = Logger.getLogger("org.netbeans.ui.vcs");
         ExternalCommandUsageHandler h = new ExternalCommandUsageHandler();

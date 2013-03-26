@@ -42,12 +42,14 @@
 package org.netbeans.modules.hudson.spi;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.hudson.api.HudsonFolder;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
@@ -74,6 +76,15 @@ public abstract class BuilderConnector {
      */
     public abstract @NonNull InstanceData getInstanceData(
             boolean authentication);
+
+    /**
+     * Like {@link #getInstanceData(boolean)} but gets the contents of a folder rather than top level.
+     * Consider abstract; the default implementation produces an empty result.
+     * @since hudson/1.31
+     */
+    public /*abstract*/ @NonNull InstanceData getInstanceData(@NonNull HudsonFolder parentFolder, boolean authentication) {
+        return new InstanceData(Collections.<JobData>emptyList(), Collections.<ViewData>emptyList(), Collections.<FolderData>emptyList());
+    }
 
     /**
      * Get builds for the specified job.
@@ -336,6 +347,30 @@ public abstract class BuilderConnector {
         }
     }
 
+    /** @since hudson/1.31 */
+    public static final class FolderData {
+
+        private String name;
+        private String url;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+
+    }
+
     /**
      * Type for storing build module data
      */
@@ -428,10 +463,18 @@ public abstract class BuilderConnector {
 
         private Collection<JobData> jobsData;
         private Collection<ViewData> viewsData;
+        private final Collection<FolderData> foldersData;
 
+        @Deprecated
         public InstanceData(Collection<JobData> jobsData, Collection<ViewData> viewsData) {
+            this(jobsData, viewsData, Collections.<FolderData>emptySet());
+        }
+
+        /** @since hudson/1.31 */
+        public InstanceData(Collection<JobData> jobsData, Collection<ViewData> viewsData, Collection<FolderData> foldersData) {
             this.jobsData = jobsData;
             this.viewsData = viewsData;
+            this.foldersData = foldersData;
         }
 
         public Collection<JobData> getJobsData() {
@@ -441,5 +484,11 @@ public abstract class BuilderConnector {
         public Collection<ViewData> getViewsData() {
             return viewsData;
         }
+
+        /** @since hudson/1.31 */
+        public Collection<FolderData> getFoldersData() {
+            return foldersData;
+        }
+
     }
 }

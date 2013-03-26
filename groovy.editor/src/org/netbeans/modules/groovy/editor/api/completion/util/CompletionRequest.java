@@ -125,12 +125,58 @@ public class CompletionRequest {
         // a couple of completions.
         dotContext = getDotCompletionContext();
 
-        declaringClass = getBeforeDotDeclaringClass();
+        // This basically means we are not interested in classic type interference (because there will
+        // be list, map or something like that) and we rather want to know what type is collected there
+        if (isAfterSpreadOperator() || isAfterSpreadJavaFieldOperator()) {
+            
+            if (dotContext.getAstPath().leaf() instanceof Expression) {
+                Expression expression = (Expression) dotContext.getAstPath().leaf();
+
+                if (expression instanceof ListExpression) {
+                    ListExpression listExpression = (ListExpression) expression;
+                    for (Expression expr : listExpression.getExpressions()) {
+                        declaringClass = expr.getType();
+                        break;
+                    }
+                }
+            }
+        } else {
+            declaringClass = getBeforeDotDeclaringClass();
+        }
 
         // are we're right behind an import statement?
         behindImport = checkForRequestBehindImportStatement();
 
         return true;
+    }
+    
+    /**
+     * Returns true if the code completion were invoked right after the Spread Java
+     * Field operator *.@
+     * 
+     * @return true if invoked after *.@ operator, false otherwise
+     */
+    private boolean isAfterSpreadJavaFieldOperator() {
+        if (ctx.before1 != null &&
+            ctx.before2 != null &&
+            ctx.before1.id().equals(GroovyTokenId.AT) &&
+            ctx.before2.id().equals(GroovyTokenId.SPREAD_DOT)) {
+            
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Returns true if the code completion were invoked right after the Spread operator *.
+     * 
+     * @return true if invoked after *. operator, false otherwise
+     */
+    private boolean isAfterSpreadOperator() {
+        if (ctx.before1 != null && ctx.before1.id().equals(GroovyTokenId.SPREAD_DOT)) {
+            return true;
+        }
+        return false;
     }
 
     public boolean isBehindDot() {
@@ -243,8 +289,7 @@ public class CompletionRequest {
             if (node instanceof ModuleNode) {
                 ModuleNode module = (ModuleNode) node;
                 String name = null;
-                for (Iterator it = module.getClasses().iterator(); it.hasNext();) {
-                    ClassNode clazz = (ClassNode) it.next();
+                for (ClassNode clazz : module.getClasses()) {
                     if (clazz.isScript()) {
                         name = clazz.getName();
                         scriptMode = true;
@@ -256,8 +301,7 @@ public class CompletionRequest {
                 // non-script class with same name that would mean we are just
                 // broken class, not a script
                 if (name != null) {
-                    for (Iterator it = module.getClasses().iterator(); it.hasNext();) {
-                        ClassNode clazz = (ClassNode) it.next();
+                    for (ClassNode clazz : module.getClasses()) {
                         if (!clazz.isScript() && name.equals(clazz.getName())) {
                             scriptMode = false;
                             break;
@@ -376,16 +420,17 @@ public class CompletionRequest {
 
 
         if (active != null) {
-            if ((active.id() == GroovyTokenId.WHITESPACE && difference == 0)
-                    /*|| active.id().primaryCategory().equals("separator")*/) {
-                LOG.log(Level.FINEST, "ts.movePrevious() - 1");
+            if ((active.id() == GroovyTokenId.WHITESPACE && difference == 0)) {
                 ts.movePrevious();
             } else if (active.id() == GroovyTokenId.NLS ) {
                 ts.movePrevious();
-                if(((Token<GroovyTokenId>) ts.token()).id() == GroovyTokenId.DOT) {
+                if (ts.token().id() == GroovyTokenId.AT ||
+                    ts.token().id() == GroovyTokenId.DOT ||
+                    ts.token().id() == GroovyTokenId.SPREAD_DOT ||
+                    ts.token().id() == GroovyTokenId.OPTIONAL_DOT ||
+                    ts.token().id() == GroovyTokenId.MEMBER_POINTER ||
+                    ts.token().id() == GroovyTokenId.ELVIS_OPERATOR) {
                     ts.moveNext();
-                } else {
-                    LOG.log(Level.FINEST, "ts.movePrevious() - 2");
                 }
             }
         }
@@ -465,41 +510,6 @@ public class CompletionRequest {
             }
         }
 
-        if (false) {
-            // Display the line where completion was invoked to ease debugging
-
-            String line = "";
-            String marker = "";
-
-            try {
-                int lineStart = org.netbeans.editor.Utilities.getRowStart(doc, lexOffset);
-                int lineStop = org.netbeans.editor.Utilities.getRowEnd(doc, lexOffset);
-                int lineLength = lexOffset - lineStart;
-
-                line = doc.getText(lineStart, lineStop - lineStart);
-
-                StringBuilder sb = new StringBuilder();
-
-                while (lineLength > 0) {
-                    sb.append(" ");
-                    lineLength--;
-                }
-
-                sb.append("|");
-
-                marker = sb.toString();
-
-
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            LOG.log(Level.FINEST, "---------------------------------------------------------------");
-            LOG.log(Level.FINEST, "Prefix : {0}", prefix);
-            LOG.log(Level.FINEST, "Line   : {0}", marker);
-            LOG.log(Level.FINEST, "Line   : {0}", line);
-        }
-
         LOG.log(Level.FINEST, "---------------------------------------------------------------");
         LOG.log(Level.FINEST, "move() diff   : {0}", difference);
         LOG.log(Level.FINEST, "beforeLiteral : {0}", beforeLiteral);
@@ -518,11 +528,8 @@ public class CompletionRequest {
             return dotContext;
         }
 
-        int position = lexOffset;
-
-        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, position);
-
-        int difference = ts.move(position);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, lexOffset);
+        ts.move(lexOffset);
 
         // get the active token:
         Token<GroovyTokenId> active = null;
@@ -538,16 +545,20 @@ public class CompletionRequest {
 
         // this should move us to dot or whitespace or NLS or prefix
         if (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
-
-            if (ts.token().id() != GroovyTokenId.DOT &&
-                ts.token().id() != GroovyTokenId.NLS &&
-                ts.token().id() != GroovyTokenId.WHITESPACE &&
-                ts.token().id() != GroovyTokenId.OPTIONAL_DOT &&
-                ts.token().id() != GroovyTokenId.MEMBER_POINTER) {
+            GroovyTokenId tokenID = ts.token().id();
+            
+            if (tokenID != GroovyTokenId.AT &&
+                tokenID != GroovyTokenId.DOT &&
+                tokenID != GroovyTokenId.NLS &&
+                tokenID != GroovyTokenId.WHITESPACE &&
+                tokenID != GroovyTokenId.SPREAD_DOT &&
+                tokenID != GroovyTokenId.OPTIONAL_DOT &&
+                tokenID != GroovyTokenId.MEMBER_POINTER &&
+                tokenID != GroovyTokenId.ELVIS_OPERATOR) {
 
                 // is it prefix
                 // keyword check is here because of issue #150862
-                if (ts.token().id() != GroovyTokenId.IDENTIFIER && !ts.token().id().primaryCategory().equals("keyword")) {
+                if (tokenID != GroovyTokenId.IDENTIFIER && !tokenID.primaryCategory().equals("keyword")) {
                     return null;
                 } else {
                     ts.movePrevious();
@@ -555,11 +566,21 @@ public class CompletionRequest {
             }
         }
 
+        boolean fieldsOnly = false;
+        if (ts.token().id() == GroovyTokenId.AT) {
+            // We are either on Java Field Override operator *. or Spread Java Field operator *.@
+            // Just move to previous and handle in the same way as DOT/SPREAD_DOT
+            ts.movePrevious();
+            fieldsOnly = true;
+        }
+        
         // now we should be on dot or in whitespace or NLS after the dot
         boolean remainingTokens = true;
         if (ts.token().id() != GroovyTokenId.DOT &&
+            ts.token().id() != GroovyTokenId.SPREAD_DOT &&
             ts.token().id() != GroovyTokenId.OPTIONAL_DOT &&
-            ts.token().id() != GroovyTokenId.MEMBER_POINTER) {
+            ts.token().id() != GroovyTokenId.MEMBER_POINTER &&
+            ts.token().id() != GroovyTokenId.ELVIS_OPERATOR) {
 
             // travel back on the token string till the token is neither a
             // WHITESPACE nor NLS
@@ -572,8 +593,10 @@ public class CompletionRequest {
         }
 
         if ((ts.token().id() != GroovyTokenId.DOT &&
+             ts.token().id() != GroovyTokenId.SPREAD_DOT &&
              ts.token().id() != GroovyTokenId.OPTIONAL_DOT &&
-             ts.token().id() != GroovyTokenId.MEMBER_POINTER)
+             ts.token().id() != GroovyTokenId.MEMBER_POINTER &&
+             ts.token().id() != GroovyTokenId.ELVIS_OPERATOR)
             || !remainingTokens) {
 
             return null; // no astpath
@@ -597,7 +620,7 @@ public class CompletionRequest {
         int astOffset = ASTUtils.getAstOffset(info, lexOffset);
         AstPath realPath = getPath(info, doc, astOffset);
 
-        return new DotCompletionContext(lexOffset, astOffset, realPath, methodsOnly);
+        return new DotCompletionContext(lexOffset, astOffset, realPath, fieldsOnly, methodsOnly);
     }
 
     private AstPath getPath(ParserResult info, BaseDocument doc, int astOffset) {

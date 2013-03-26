@@ -71,7 +71,8 @@ public class Message {
         DEBUGGER_DETACHED,
         LOAD_RESIZE_OPTIONS,
         SAVE_RESIZE_OPTIONS,
-        READY
+        READY,
+        RESOURCE_CHANGED,
         ;
         
         @Override

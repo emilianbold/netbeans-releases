@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.20.1
+#Version 1.23.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -1344,6 +1344,7 @@ CLSS public org.netbeans.swing.outline.Outline
 cons public init()
 cons public init(org.netbeans.swing.outline.OutlineModel)
 innr protected OutlineColumn
+meth protected boolean processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
 meth protected javax.swing.table.TableColumn createColumn(int)
 meth protected void configureTreeCellEditor(java.awt.Component,int,int)
 meth protected void processMouseEvent(java.awt.event.MouseEvent)
@@ -1371,7 +1372,7 @@ meth public void setRowHeight(int)
 meth public void setRowHeight(int,int)
 meth public void tableChanged(javax.swing.event.TableModelEvent)
 supr org.netbeans.swing.etable.ETable
-hfds cachedRootVisible,componentListener,initialized,lastEditPosition,renderDataProvider,rowHeightIsSet,selectedRow,selectionDisabled,tempSortMap,tempSortMapLock,toolTip
+hfds cachedRootVisible,componentListener,initialized,lastEditPosition,lastProcessedKeyStroke,renderDataProvider,rowHeightIsSet,selectedRow,selectionDisabled,tempSortMap,tempSortMapLock,toolTip
 hcls ExpandAction,ND,SizeManager,TreeCellEditorBorder
 
 CLSS protected org.netbeans.swing.outline.Outline$OutlineColumn

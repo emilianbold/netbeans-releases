@@ -293,29 +293,10 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         final String ext
     ) throws IOException {
         final FileObject fo = folder.getPrimaryFile ();
-        final DataShadow[] arr = new DataShadow[1];
+        final CreateShadow cs = new CreateShadow(name, ext, fo, original);
+        DataObjectPool.getPOOL().runAtomicAction(fo, cs);
 
-        DataObjectPool.getPOOL().runAtomicAction(fo, new FileSystem.AtomicAction() {
-            @Override
-            public void run() throws IOException {
-                FileObject file = writeOriginal(name, ext, fo, original);
-                final DataObject obj = DataObject.find(file);
-                if (obj instanceof DataShadow) {
-                    arr[0] = (DataShadow)obj;
-                } else {
-                    // wrong instance => shadow was not found
-                    throw new DataObjectNotFoundException(obj.getPrimaryFile()) {
-                        @Override
-                        public String getMessage() {
-                            return super.getMessage() + ": " + obj.getClass().getName(); // NOI18N
-                        }
-                    };
-                }
-                FolderList.changedDataSystem(fo);
-            }
-        });
-
-        return arr[0];
+        return cs.getShadow();
     }
     
     /** Writes the original DataObject into file of given name and extension.
@@ -680,7 +661,9 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     @Override
     void notifyFileChanged(FileEvent fe) {
         super.notifyFileChanged(fe);
-        refresh(false);
+        if (!CreateShadow.isOurs(fe)) {
+            refresh(false);
+        }
     }
     
     
@@ -1276,4 +1259,55 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             return new Lookup[] { Lookups.singleton(ds), original.getLookup() };
         }
     }
+
+    private static class CreateShadow implements FileSystem.AtomicAction {
+        private final String name;
+        private final String ext;
+        private final FileObject fo;
+        private final DataObject original;
+        private DataShadow res;
+
+        CreateShadow(String name, String ext, FileObject fo, DataObject original) {
+            this.name = name;
+            this.ext = ext;
+            this.fo = fo;
+            this.original = original;
+        }
+        
+        static boolean isOurs(FileEvent ev) {
+            return ev.firedFrom(new CreateShadow(null, null, null, null));
+        }
+        
+        DataShadow getShadow() {
+            return res;
+        }
+
+        @Override
+        public void run() throws IOException {
+            FileObject file = writeOriginal(name, ext, fo, original);
+            final DataObject obj = DataObject.find(file);
+            if (obj instanceof DataShadow) {
+                res = (DataShadow)obj;
+            } else {
+                // wrong instance => shadow was not found
+                throw new DataObjectNotFoundException(obj.getPrimaryFile()) {
+                    @Override
+                    public String getMessage() {
+                        return super.getMessage() + ": " + obj.getClass().getName(); // NOI18N
+                    }
+                };
+            }
+            FolderList.changedDataSystem(fo);
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            return obj != null && getClass().equals(obj.getClass());
+        }
+
+        @Override
+        public int hashCode() {
+            return getClass().hashCode();
+        }
+    } // end of CreateShadow
 }

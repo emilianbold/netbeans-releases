@@ -56,19 +56,6 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         
-        <folder name="Window">
-            <folder name="Output">
-                <file name="FindUsagesOpenAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-spi-impl-FindUsagesOpenAction.instance"/>
-                    <attr name="position" intvalue="300"/>
-                </file>
-
-                <file name="RefactoringPreviewOpenAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-spi-impl-RefactoringPreviewOpenAction.instance"/>
-                    <attr name="position" intvalue="500"/>
-                </file>
-            </folder>
-        </folder> <!-- Window -->
     </folder>
 
   <folder name="Actions">

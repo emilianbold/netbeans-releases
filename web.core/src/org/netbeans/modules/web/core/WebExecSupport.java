@@ -108,7 +108,7 @@ public class WebExecSupport implements RequestParametersQueryImplementation {
                 }
             }
         }
-        if (url == null) {
+        if (url == null & wm != null) {
             FileObject docBase = wm.getDocumentBase();
             if (docBase != null)
                 url = JspCompileUtil.findRelativeContextPath(docBase, f);

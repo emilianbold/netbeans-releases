@@ -52,16 +52,21 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.JavaProjectConstants;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -149,6 +154,34 @@ public class CdiUtil {
             }
         }
         return false;
+    }
+
+    /**
+     * Enables CDI in the project and returns reference to the created beans.xml file if any.
+     * @return reference to beans.xml if was created, {@code null} otherwise
+     * @since 2.3
+     */
+    @CheckForNull
+    public FileObject enableCdi() {
+        Collection<FileObject> infs = getBeansTargetFolder(true);
+        for (FileObject inf : infs) {
+            if (inf != null) {
+                FileObject beansXml = inf.getFileObject(CdiUtil.BEANS_XML);
+                if (beansXml != null) {
+                    return null;
+                }
+                try {
+                    EjbJar ejbJar = EjbJar.getEjbJar(myProject.get().getProjectDirectory());
+                    Profile profile = ejbJar != null ? ejbJar.getJ2eeProfile() : Profile.JAVA_EE_6_WEB;
+                    LOG.log(Level.INFO, "Creating beans.xml file for project: {0}", myProject.get().getProjectDirectory());
+                    return DDHelper.createBeansXml(profile, inf, CdiUtil.BEANS);
+                } catch (IOException exception) {
+                    Exceptions.printStackTrace(exception);
+                }
+                return null;
+            }
+        }
+        return null;
     }
     
     public static Collection<FileObject> getBeansTargetFolder(Project project, 

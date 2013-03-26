@@ -35,10 +35,13 @@ import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
@@ -53,6 +56,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *  Velocity templates resource loader rewritten for Freemarker to
@@ -92,6 +96,13 @@ implements TemplateLoader, TemplateExceptionHandler {
 
     private FileObject getFile(String name) {
        FileObject tmp = (getFolder() == null) ? null : getFolder().getFileObject(name);
+       if (tmp == null) {
+           try {
+               tmp = FileUtil.toFileObject(FileUtil.normalizeFile(Utilities.toFile(new URI(name))));
+           } catch (URISyntaxException ex) {
+           } catch (IllegalArgumentException iae) {
+           }
+       }
        return tmp;
     } 
 

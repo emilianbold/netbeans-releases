@@ -1771,6 +1771,8 @@ public class SvnUtils {
             }
         } catch (SVNClientException ex) {
             throw ex;
+        } catch (RuntimeException ex) {
+            throw ex;
         } catch (Exception ex) {
             throw new SVNClientException("Cannot run without indexing due to: " + ex.getMessage(), ex); //NOI18N
         }

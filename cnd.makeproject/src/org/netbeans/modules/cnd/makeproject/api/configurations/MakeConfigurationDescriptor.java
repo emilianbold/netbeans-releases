@@ -50,7 +50,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -95,6 +94,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefile
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -142,8 +142,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private Project project = null;
     
-    private static final RequestProcessor RP = new RequestProcessor("MakeConfigurationDescriptor", 1); // NOI18N
-        
+    private final RequestProcessor RP;
+    private final RequestProcessor RP_LISTENER;
     
     /*
      * For full remote, configuration base and project base might be different -
@@ -169,9 +169,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
-    private volatile Task initFoldersTask = null;
     private CndVisibilityQuery folderVisibilityQuery = null;
-    private boolean defaultConfigurationsRestored = false;
     
     private static ConcurrentHashMap<String, Object> projectWriteLocks = new ConcurrentHashMap<String, Object>();
 
@@ -189,20 +187,28 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             throw new IllegalStateException("Exception when getting file system for project folder object", ex); //NOI18N
         }
         this.projectDirFO = projectDirFO;
+        RP = new RequestProcessor("MakeConfigurationDescriptor " + projectDirFO.getPath(), 1); // NOI18N
+        RP_LISTENER =  new RequestProcessor("Add listeners " + projectDirFO.getPath(), 1); // NOI18N
         rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N
         projectItems = new ConcurrentHashMap<String, Item>();
         setModified();
     }
 
-    void opened() {
-        ToolsPanelSupport.addCompilerSetModifiedListener(this);
-        for (Item item : getProjectItems()) {
-            item.onOpen();
-        }        
-        Task foldersTask = this.initFoldersTask;
-        if (foldersTask != null) {
-            foldersTask.schedule(0);
+    void opened(Interrupter interrupter) {
+        if (interrupter != null && interrupter.cancelled()) {
+            return;
         }
+        ToolsPanelSupport.addCompilerSetModifiedListener(this);
+        //for (Item item : getProjectItems()) {
+        //    if (interrupter != null && interrupter.cancelled()) {
+        //        return;
+        //    }
+        //    item.onOpen();
+        //}        
+        //Task foldersTask = this.initFoldersTask;
+        //if (foldersTask != null) {
+        //    foldersTask.schedule(0);
+        //}
     }
 
     /*
@@ -221,8 +227,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (folder != null) {
             for (Folder f : folder.getAllFolders(false)) {
                 f.detachListener();
+                f.onClose();
             }
             folder.detachListener();
+            folder.onClose();
         }
     }
 
@@ -236,7 +244,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
         }
         projectItems.clear();
-        rootFolder = null;
+        sourceRoots.clear();
+        testRoots.clear();
+        rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N;
+        sourceFileItems = null;
+        headerFileItems = null;
+        resourceFileItems = null;
+        testItems = null;
+        externalFileItems = null;
     }
 
     public static MakeConfigurationDescriptor getMakeConfigurationDescriptor(Project project) {
@@ -387,7 +402,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (sourceFileFolders != null) {
             while (sourceFileFolders.hasNext()) {
                 SourceFolderInfo sourceFolderInfo = sourceFileFolders.next();
-                addFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFileObject(), false, Folder.Kind.SOURCE_DISK_FOLDER, null);
+                addFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFileObject(), null, null, false, Folder.Kind.SOURCE_DISK_FOLDER, null);
             }
         }
         setModified();
@@ -513,7 +528,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     @Override
-    public Configuration defaultConf(String name, int type) {
+    public Configuration defaultConf(String name, int type, String customizerId) {
         String defaultHost = CppUtils.getDefaultDevelopmentHost();
         Project proj = getProject();
         if (proj != null) {
@@ -523,7 +538,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
         }
         
-        MakeConfiguration c = new MakeConfiguration(FSPath.toFSPath(baseDirFO), name, type, defaultHost);
+        MakeConfiguration c = MakeConfiguration.createConfiguration(FSPath.toFSPath(baseDirFO), name, type, customizerId, defaultHost);
         Item[] items = getProjectItems();
         for (int i = 0; i < items.length; i++) {
             c.addAuxObject(new ItemConfiguration(c, items[i]));
@@ -1084,14 +1099,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return (oldLock == null) ? lock : oldLock;
     }
 
-    public void setFoldersTask(Task task) {
-        RequestProcessor.Task prevTask = this.initFoldersTask;
-        if (prevTask != null) {
-            prevTask.cancel();
-        }
-        this.initFoldersTask = task;
-    }
-
     private class SaveRunnable implements Runnable {
 
         private boolean ret = false;
@@ -1636,7 +1643,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (toBeAdded.size() > 0) {
                 for (String root : toBeAdded) {
                     FileObject fo = RemoteFileUtil.getFileObject(baseDirFO, root);
-                    addFilesFromRoot(getLogicalFolders(), fo, true, Folder.Kind.SOURCE_DISK_FOLDER, null);
+                    addFilesFromRoot(getLogicalFolders(), fo, null, null, true, Folder.Kind.SOURCE_DISK_FOLDER, null);
                 }
                 setModified();
             }
@@ -1792,15 +1799,15 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
     }
 
-    public void addFilesFromRoot(Folder folder, FileObject dir, boolean attachListeners, Folder.Kind folderKind, @NullAllowed FileObjectFilter fileFilter) {
+    public void addFilesFromRoot(Folder folder, FileObject dir, ProgressHandle handle, final Interrupter interrupter,
+                boolean attachListeners, Folder.Kind folderKind, @NullAllowed FileObjectFilter fileFilter) {
         CndUtils.assertTrueInConsole(folder != null, "null folder"); //NOI18N
         CndUtils.assertTrueInConsole(dir != null, "null directory"); //NOI18N
         if (folder == null || dir == null || !dir.isValid()) {
             return;
         }
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-        Folder srcRoot;
-        srcRoot = folder.findFolderByAbsolutePath(dir.getPath());
+        Folder srcRoot = folder.findFolderByAbsolutePath(dir.getPath());
         String rootPath = null;
         if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
             rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
@@ -1814,132 +1821,155 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             srcRoot = folder.addFolder(srcRoot, true);
         }
         assert srcRoot.getKind() == folderKind;
-        addFilesImpl(new LinkedList<String>(), srcRoot, dir, null, filesAdded, true, true, fileFilter, true/*all found are included by default*/);
+        addFilesImpl(srcRoot, dir, handle, interrupter, filesAdded, true, true, fileFilter, true/*all found are included by default*/);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
         if (attachListeners) {
-            srcRoot.attachListeners();
+            final Folder aSrcRoot = srcRoot;
+            RP_LISTENER.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    aSrcRoot.attachListeners(interrupter);
+                }
+            });
         }
 
         addSourceRoot(dir.getPath());
     }
 
     public Folder addFilesFromRefreshedDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
-        return addFilesFromDirImpl(folder, dir, attachListeners, setModified, fileFilter, useOldSchemeBehavior);
+        return addFilesFromDirImpl(folder, dir, null, null, attachListeners, setModified, fileFilter, useOldSchemeBehavior);
     }
 
     public Folder addFilesFromDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter) {
-        return addFilesFromDirImpl(folder, dir, attachListeners, setModified, fileFilter, false);
+        return addFilesFromDirImpl(folder, dir, null, null, attachListeners, setModified, fileFilter, false);
     }
     
-    private Folder addFilesFromDirImpl(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
+    private Folder addFilesFromDirImpl(Folder folder, FileObject dir, ProgressHandle handle, Interrupter interrupter,
+            boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
         Folder subFolder = folder.findFolderByName(dir.getNameExt());
         if (subFolder == null) {
             subFolder = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, null);
         }
         subFolder = folder.addFolder(subFolder, setModified);
-        addFilesImpl(new LinkedList<String>(), subFolder, dir, null, filesAdded, true, setModified, fileFilter, useOldSchemeBehavior);
+        addFilesImpl(subFolder, dir, handle, interrupter, filesAdded, true, setModified, fileFilter, useOldSchemeBehavior);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
         if (attachListeners) {
-            subFolder.attachListeners();
+            subFolder.attachListeners(interrupter);
         }
         return subFolder;
     }
 
-    private void addFilesImpl(LinkedList<String> antiLoop, Folder folder, FileObject dir, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded, boolean notify, boolean setModified, @NullAllowed
-        final FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
+    private void addFilesImpl(final Folder aFolder, final FileObject aDir, final ProgressHandle handle, Interrupter interrupter,
+            final ArrayList<NativeFileItem> filesAdded, final boolean notify, final boolean setModified,
+            @NullAllowed final FileObjectFilter fileFilter, final boolean useOldSchemeBehavior) {
         List<String> absTestRootsList = getAbsoluteTestRoots();
+        List<AntiLoop> down = new ArrayList<AntiLoop>();
+        String canPath;
         try {
-            String canPath = RemoteFileUtil.getCanonicalPath(dir);
-            if (antiLoop.contains(canPath)) {
-                // It seems we have recursive link
-                LOGGER.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{canPath, folder.getPath()});
-                return;
-            }
-            antiLoop.addLast(canPath);
+            canPath = RemoteFileUtil.getCanonicalPath(aDir);
         } catch (IOException ex) {
-            LOGGER.log(Level.INFO, ex.getMessage(), ex);
             return;
         }
-
-        PerformanceLogger.PerformaceAction lsPerformanceEvent = PerformanceLogger.getLogger().start(Folder.LS_FOLDER_PERFORMANCE_EVENT, dir);
-        FileObject[] files = null;
-        try {
-            lsPerformanceEvent.setTimeOut(Folder.FS_TIME_OUT);
-            files = dir.getChildren();
-            if (files == null) {
-                antiLoop.removeLast();
-                return;
-            }
-        } finally {
-            lsPerformanceEvent.log(files== null ? 0 : files.length);
-        }
-
-        final boolean hideBinaryFiles = !MakeOptions.getInstance().getViewBinaryFiles();
-        for (FileObject file : files) {
-            if (!VisibilityQuery.getDefault().isVisible(file)) {
-                continue;
-            }
-            if (fileFilter != null && !fileFilter.accept(file)) {
-                continue;
-            }
-            if (hideBinaryFiles && CndFileVisibilityQuery.getDefault().isIgnored(file.getNameExt())) {
-                continue;
-            }
-            if (file.isData() && folder.isDiskFolder() && !CndFileVisibilityQuery.getDefault().isVisible(file)) {
-                // be consistent in checks to prevent adding item here followed
-                // by remove in Folder.refreshDiskFolder due to !CndFileVisibilityQuery.getDefault().isIgnored(file)
-                continue;
-            }
-            if (file.isFolder() && getFolderVisibilityQuery().isIgnored(file)) {
-                continue;
-            }
-            if (file.isFolder()) {
+        AntiLoop antiLoop = new AntiLoop(aFolder, aDir, null);
+        antiLoop.push(canPath);
+        down.add(antiLoop);
+        while (!down.isEmpty()) {
+            List<AntiLoop> next = new ArrayList<AntiLoop>();
+            for (AntiLoop loop : down) {
+                FileObject dir = loop.getFile();
+                Folder folder = loop.getFolder();
+                if (handle != null) {
+                    handle.progress("("+filesAdded.size()+") "+dir.getPath()); //NOI18N
+                }
+                if (interrupter != null && interrupter.cancelled()) {
+                    return;
+                }
+                PerformanceLogger.PerformaceAction lsPerformanceEvent = PerformanceLogger.getLogger().start(Folder.LS_FOLDER_PERFORMANCE_EVENT, dir);
+                FileObject[] files = null;
                 try {
-                    String canPath = RemoteFileUtil.getCanonicalPath(file);
-                    if (antiLoop.contains(canPath)) {
-                        // It seems we have recursive link
-                        LOGGER.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{canPath, folder.getPath()});
+                    lsPerformanceEvent.setTimeOut(Folder.FS_TIME_OUT);
+                    files = dir.getChildren();
+                    if (files == null) {
                         continue;
                     }
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, ex.getMessage(), ex);
-                    continue;
-                }
-                Folder dirfolder = folder.findFolderByName(file.getNameExt());
-                if (dirfolder == null) {
-                    // child folder inherits kind of parent folder
-                    if (inList(absTestRootsList, RemoteFileUtil.getAbsolutePath(file)) || folder.isTestLogicalFolder()) {
-                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.TEST_LOGICAL_FOLDER);
-                    } else {
-                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, (Folder.Kind)null);
-                    }
-                }
-                dirfolder.markRemoved(false);
-                addFilesImpl(antiLoop, dirfolder, file, handle, filesAdded, notify, setModified, fileFilter, useOldSchemeBehavior);
-            } else {
-                PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Folder.CREATE_ITEM_PERFORMANCE_EVENT, file);
-                Item item = null;
-                try {
-                    performanceEvent.setTimeOut(Folder.FS_TIME_OUT);
-                    String path = ProjectSupport.toProperPath(baseDirFO, file, project);
-                    item = Item.createInBaseDir(baseDirFO, path);
-                    if (folder.addItemFromRefreshDir(item, notify, setModified, useOldSchemeBehavior) == item) {
-                        filesAdded.add(item);
-                    }
                 } finally {
-                    performanceEvent.log(item);
+                    lsPerformanceEvent.log(files == null ? 0 : files.length);
                 }
-                if (handle != null) {
-                    handle.progress(item.getPath());
+
+                final boolean hideBinaryFiles = !MakeOptions.getInstance().getViewBinaryFiles();
+                for (FileObject file : files) {
+                    if (interrupter != null && interrupter.cancelled()) {
+                        return;
+                    }
+                    if (!VisibilityQuery.getDefault().isVisible(file)) {
+                        continue;
+                    }
+                    if (fileFilter != null && !fileFilter.accept(file)) {
+                        continue;
+                    }
+                    if (hideBinaryFiles && CndFileVisibilityQuery.getDefault().isIgnored(file.getNameExt())) {
+                        continue;
+                    }
+                    if (file.isData() && folder.isDiskFolder() && !CndFileVisibilityQuery.getDefault().isVisible(file)) {
+                        // be consistent in checks to prevent adding item here followed
+                        // by remove in Folder.refreshDiskFolder due to !CndFileVisibilityQuery.getDefault().isIgnored(file)
+                        continue;
+                    }
+                    if (file.isFolder() && getFolderVisibilityQuery().isIgnored(file)) {
+                        continue;
+                    }
+                    if (handle != null) {
+                        handle.progress("("+filesAdded.size()+") "+file.getPath()); //NOI18N
+                    }
+                    if (file.isFolder()) {
+                        try {
+                            canPath = RemoteFileUtil.getCanonicalPath(file);
+                            if (loop.contains(canPath)) {
+                                // It seems we have recursive link
+                                LOGGER.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{canPath, folder.getPath()});
+                                continue;
+                            }
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                            continue;
+                        }
+                        Folder dirfolder = folder.findFolderByName(file.getNameExt());
+                        if (dirfolder == null) {
+                            // child folder inherits kind of parent folder
+                            if (inList(absTestRootsList, RemoteFileUtil.getAbsolutePath(file)) || folder.isTestLogicalFolder()) {
+                                dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.TEST_LOGICAL_FOLDER);
+                            } else {
+                                dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, (Folder.Kind) null);
+                            }
+                        }
+                        dirfolder.markRemoved(false);
+                        antiLoop = new AntiLoop(dirfolder, file, loop);
+                        antiLoop.push(canPath);
+                        next.add(antiLoop);
+                    } else {
+                        PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Folder.CREATE_ITEM_PERFORMANCE_EVENT, file);
+                        Item item = null;
+                        try {
+                            performanceEvent.setTimeOut(Folder.FS_TIME_OUT);
+                            String path = ProjectSupport.toProperPath(baseDirFO, file, project);
+                            item = Item.createInBaseDir(baseDirFO, path);
+                            if (folder.addItemFromRefreshDir(item, notify, setModified, useOldSchemeBehavior) == item) {
+                                filesAdded.add(item);
+                            }
+                        } finally {
+                            performanceEvent.log(item);
+                        }
+                    }
                 }
             }
+            down = next;
         }
-        antiLoop.removeLast();
     }
 
     public boolean okToChange() {
@@ -1981,5 +2011,30 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     private static String getString(String s, String a1) {
         return NbBundle.getMessage(MakeConfigurationDescriptor.class, s, a1);
+    }
+    
+    static class AntiLoop {
+        private final Folder currentFolder;
+        private final FileObject currentFile;
+        private final List<String> antiLoop = new ArrayList<String>();
+        AntiLoop(Folder folder, FileObject file, AntiLoop prev){
+            if (prev != null) {
+                antiLoop.addAll(prev.antiLoop);
+            }
+            this.currentFolder = folder;
+            this.currentFile = file;
+        }
+        boolean contains(String canonicalPath) {
+            return antiLoop.contains(canonicalPath);
+        }
+        void push(String canonicalPath) {
+            antiLoop.add(canonicalPath);
+        }
+        Folder getFolder() {
+            return currentFolder;
+        }
+        FileObject getFile() {
+            return currentFile;
+        }
     }
 }

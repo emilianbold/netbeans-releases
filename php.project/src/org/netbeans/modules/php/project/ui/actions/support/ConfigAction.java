@@ -127,7 +127,7 @@ public abstract class ConfigAction {
     }
 
     public boolean isDebugProjectEnabled() {
-        return XDebugStarterFactory.getInstance() != null;
+        return DebugStarterFactory.getInstance() != null;
     }
 
     public abstract boolean isProjectValid();
@@ -136,11 +136,27 @@ public abstract class ConfigAction {
     public abstract boolean isRunFileEnabled(Lookup context);
     public abstract boolean isDebugFileEnabled(Lookup context);
 
+    public boolean isRunMethodEnabled(Lookup context) {
+        // disabled by default
+        return false;
+    }
+    public boolean isDebugMethodEnabled(Lookup context) {
+        // disabled by default
+        return false;
+    }
+
     public abstract void runProject();
     public abstract void debugProject();
 
     public abstract void runFile(Lookup context);
     public abstract void debugFile(Lookup context);
+
+    public void runMethod(Lookup context) {
+        throw new UnsupportedOperationException();
+    }
+    public void debugMethod(Lookup context) {
+        throw new UnsupportedOperationException();
+    }
 
     protected void showCustomizer() {
         PhpProjectUtils.openCustomizerRun(project);

@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.editor.indent;
 
 import java.io.IOException;
@@ -91,7 +90,7 @@ public class CssIndenterTest extends TestBase {
         suite.addTest(new CssIndenterTest("testNativeEmbeddingFormattingCase2"));
         return suite;
     }
-    
+
     @Override
     protected boolean runInEQ() {
         return true;
@@ -103,15 +102,14 @@ public class CssIndenterTest extends TestBase {
         // which means that for example Java formatter which does call EditorCookie to retrieve
         // document will get difference instance of BaseDocument for indentation
         try {
-             DataObject dobj = DataObject.find(fo);
-             assertNotNull(dobj);
+            DataObject dobj = DataObject.find(fo);
+            assertNotNull(dobj);
 
-             EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
-             assertNotNull(ec);
+            EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+            assertNotNull(ec);
 
-             return (BaseDocument)ec.openDocument();
-        }
-        catch (Exception ex){
+            return (BaseDocument) ec.openDocument();
+        } catch (Exception ex) {
             fail(ex.toString());
             return null;
         }
@@ -122,71 +120,86 @@ public class CssIndenterTest extends TestBase {
         // override it because I've already done in setUp()
     }
 
+    public void testScssFormatting() throws Exception {
+        format(".a {\n"
+                + ".b:p {\n"
+                + "p:v;\n"
+                + "}\n"
+                + "}",
+                
+                ".a {\n"
+                + "    .b:p {\n"
+                + "        p:v;\n"
+                + "    }\n"
+                + "}", null);
+
+    }
+
     public void testFormatting() throws Exception {
         format("a{\nbackground: red,\nblue;\n  }\n",
-               "a{\n    background: red,\n        blue;\n}\n", null);
+                "a{\n    background: red,\n        blue;\n}\n", null);
         format("a{     background: green,\nyellow;\n      }\n",
-               "a{     background: green,\n           yellow;\n}\n", null);
+                "a{     background: green,\n           yellow;\n}\n", null);
 
         // comments formatting:
         format("a{\n/*comme\n  *dddsd\n nt*/\nbackground: red;\n}",
-               "a{\n    /*comme\n      *dddsd\n     nt*/\n    background: red;\n}", null);
+                "a{\n    /*comme\n      *dddsd\n     nt*/\n    background: red;\n}", null);
 
         // even though lines are preserved they will be indented according to indent of previous line;
         // I'm not sure it is OK but leaving like that for now:
         format("a{\ncolor: red; /* start\n   comment\n end*/ background: blue;\n}",
-               "a{\n    color: red; /* start\n       comment\n     end*/ background: blue;\n}", null);
+                "a{\n    color: red; /* start\n       comment\n     end*/ background: blue;\n}", null);
 
         // formatting of last line:
         format("a{\nbackground: red,",
-               "a{\n    background: red,", null);
+                "a{\n    background: red,", null);
         format("a{\nbackground: red,\n",
-               "a{\n    background: red,\n", null);
+                "a{\n    background: red,\n", null);
 
         // #160105:
         format("/* unfinished comment\n* /\n\n/* another comment\n*/",
-               "/* unfinished comment\n* /\n\n/* another comment\n*/", null);
+                "/* unfinished comment\n* /\n\n/* another comment\n*/", null);
         format("a{\n    /*\n    comment\n    */\n    color: green;\n}",
-               "a{\n    /*\n    comment\n    */\n    color: green;\n}", null);
-        
+                "a{\n    /*\n    comment\n    */\n    color: green;\n}", null);
+
         // #218884
         format("/**\n    *\n  */",
-               "/**\n    *\n  */", null);
+                "/**\n    *\n  */", null);
     }
 
     public void testNativeEmbeddingFormattingCase1() throws Exception {
-        reformatFileContents("testfiles/format1.html", new IndentPrefs(4,4));
+        reformatFileContents("testfiles/format1.html", new IndentPrefs(4, 4));
     }
 
     public void testNativeEmbeddingFormattingCase2() throws Exception {
-        reformatFileContents("testfiles/format2.html", new IndentPrefs(4,4));
+        reformatFileContents("testfiles/format2.html", new IndentPrefs(4, 4));
     }
 
     public void testTabCharacterHandling() throws Exception {
-        reformatFileContents("testfiles/format3.html", new IndentPrefs(4,4));
+        reformatFileContents("testfiles/format3.html", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase1() throws Exception {
         //#160344
-        reformatFileContents("testfiles/case001.css", new IndentPrefs(4,4));
+        reformatFileContents("testfiles/case001.css", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase2() throws Exception {
-        reformatFileContents("testfiles/case002.css", new IndentPrefs(4,4));
+        reformatFileContents("testfiles/case002.css", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase3() throws Exception {
         // #160089
-        reformatFileContents("testfiles/case003.css", new IndentPrefs(4,4));
+        reformatFileContents("testfiles/case003.css", new IndentPrefs(4, 4));
     }
 
     public void testFormattingCase4() throws Exception {
         // #161874
-        reformatFileContents("testfiles/case004.css", new IndentPrefs(4,4));
+        reformatFileContents("testfiles/case004.css", new IndentPrefs(4, 4));
     }
 
     public void testFormattingNetBeansCSS() throws Exception {
-        reformatFileContents("testfiles/netbeans.css",new IndentPrefs(4,4));
+        reformatFileContents("testfiles/netbeans.css", new IndentPrefs(4, 4));
     }
 
     public void testIndentation() throws Exception {
@@ -247,15 +260,16 @@ public class CssIndenterTest extends TestBase {
     }
 
     @Override
-    /** really ugly override of the default impl.
-     * Since the KeystrokeHandlers may invoke reformat which is in some cases
-     * done in a separate EDT task, we need to wait for such modification before
-     * we try to compare the document content with the golden file.
+    /**
+     * really ugly override of the default impl. Since the KeystrokeHandlers may
+     * invoke reformat which is in some cases done in a separate EDT task, we
+     * need to wait for such modification before we try to compare the document
+     * content with the golden file.
      */
     public void insertNewline(final String source, final String reformatted, final IndentPrefs preferences) throws Exception {
         final int sourcePos = source.indexOf('^');
         assertNotNull(sourcePos);
-        final String source2 = source.substring(0, sourcePos) + source.substring(sourcePos+1);
+        final String source2 = source.substring(0, sourcePos) + source.substring(sourcePos + 1);
 
 
         final AtomicReference<Document> doc = new AtomicReference<Document>();
@@ -292,7 +306,6 @@ public class CssIndenterTest extends TestBase {
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
-    }
 
+    }
 }

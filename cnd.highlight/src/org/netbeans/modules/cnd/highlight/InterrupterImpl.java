@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cnd.highlight;
 
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.util.Cancellable;
 
 /**

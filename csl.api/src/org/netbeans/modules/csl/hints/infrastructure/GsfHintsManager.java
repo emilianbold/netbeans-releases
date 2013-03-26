@@ -44,7 +44,6 @@ package org.netbeans.modules.csl.hints.infrastructure;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -146,18 +145,22 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     private String id;
 
 
+    @Override
     public Map<?,List<? extends ErrorRule>> getErrors() {
         return errors;
     }
 
+    @Override
     public Map<?,List<? extends AstRule>> getHints() {
         return hints;
     }
 
+    @Override
     public List<? extends SelectionRule> getSelectionHints() {
         return selectionHints;
     }
 
+    @Override
     public Map<?,List<? extends AstRule>> getHints(boolean onLine, RuleContext context) {
         Map<Object, List<? extends AstRule>> result = new HashMap<Object, List<? extends AstRule>>();
         
@@ -202,6 +205,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         return result;
     }
     
+    @Override
     public Map<?,List<? extends AstRule>> getSuggestions() {
         return suggestions;
     }
@@ -322,6 +326,12 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
                 }
             }
         }
+        Collections.sort(rules, new Comparator<Pair<Rule,FileObject>>() {
+            @Override
+            public int compare(Pair<Rule,FileObject> p1, Pair<Rule,FileObject> p2) {
+                return p1.getA().getDisplayName().compareTo(p2.getA().getDisplayName());
+            }
+        });
         return rules;
     }
     
@@ -338,16 +348,6 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     
     private static void addChildren(List<FileObject> items, FileObject folder) {
         FileObject[] children = folder.getChildren();
-        Arrays.sort(children, 0, children.length, new Comparator<FileObject>() {
-            @Override
-            public int compare(FileObject t1, FileObject t2) {
-                Integer t1pos = (Integer)t1.getAttribute(POSITION_ATTR_NAME);
-                Integer t2pos = (Integer)t2.getAttribute(POSITION_ATTR_NAME);
-                int t1posp = t1pos == null ? 0 : t1pos;
-                int t2posp = t2pos == null ? 0 : t2pos;
-                return t1posp - t2posp;
-            }
-        });
         for(FileObject fo : children) {
             if(fo.isFolder()) {
                 addChildren(items, fo);
@@ -356,8 +356,6 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
             }
         }
     }
-    
-    private static final String POSITION_ATTR_NAME = "position"; //NOI18N
 
     private static void categorizeErrorRules(List<Pair<Rule,FileObject>> rules,
                                              Map<?,List<? extends ErrorRule>> dest,
@@ -553,6 +551,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
                 desc.getDescription(), fixList, desc.getFile(), range.getStart(), range.getEnd());
     }
     
+    @Override
     public final void refreshHints(RuleContext context) {
         List<ErrorDescription>[] result = new List[3];
         getHints(this, context, result, context.parserResult.getSnapshot());
@@ -703,6 +702,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     boolean isTest = false;
     
     private OptionsPanelController panelController;
+    @Override
     public synchronized OptionsPanelController getOptionsController() {
         if ( panelController == null ) {
             panelController = new HintsOptionsPanelController(this);

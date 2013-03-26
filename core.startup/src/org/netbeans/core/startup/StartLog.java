@@ -52,7 +52,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import java.util.logging.XMLFormatter;
 
 /** Logger that will enable the logging of important events during the startup
@@ -83,6 +82,9 @@ public class StartLog {
             else if("tests".equals(logProp))
                 impl = new PerformanceTestsImpl();
             else if("xml".equals(logProp)) {
+                if (logFileProp == null) {
+                    throw new NullPointerException("Specify also 'org.netbeans.log.startup.logfile' property!"); // NOI18N
+                }
                 FileHandler h = new FileHandler(logFileProp);
                 h.setFormatter(new SimplerFormatter());
                 impl = h;

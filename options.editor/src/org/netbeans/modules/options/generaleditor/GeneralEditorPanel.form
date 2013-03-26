@@ -29,24 +29,11 @@
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="lCollapseByDefault" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="163" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="cbUseCodeFolding" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbFoldMethods" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="cbFoldInnerClasses" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="cbFoldImports" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbFoldJavadocComments" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="cbFoldInitialComments" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="cbFoldTags" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="cbBraceTooltip" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                              <EmptySpace min="-2" pref="175" max="-2" attributes="0"/>
+                              <Component id="cbBraceTooltip" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="cbCamelCaseBehavior" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" attributes="0">
@@ -54,10 +41,7 @@
                               <Component id="lCamelCaseBehaviorExample" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
-                      <Component id="lUseCodeFolding" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
@@ -70,11 +54,6 @@
                   </Group>
               </Group>
               <EmptySpace min="0" pref="12" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" attributes="0">
-              <Component id="lCodeFolding" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="jSeparator1" max="32767" attributes="0"/>
           </Group>
           <Group type="102" attributes="0">
               <Component id="lBracesMatching" min="-2" max="-2" attributes="0"/>
@@ -97,33 +76,6 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="lCodeFolding" min="-2" max="-2" attributes="1"/>
-                  <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="cbUseCodeFolding" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="lUseCodeFolding" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="lCollapseByDefault" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbFoldMethods" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbFoldJavadocComments" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="cbFoldInnerClasses" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbFoldInitialComments" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="cbFoldImports" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbFoldTags" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="lBracesMatching" min="-2" max="-2" attributes="0"/>
                   <Component id="jSeparator6" min="-2" pref="10" max="-2" attributes="0"/>
@@ -154,64 +106,12 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="lSearchtypeTooltip" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="0" pref="12" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="lCodeFolding">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Code Folding"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="lUseCodeFolding">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="cbUseCodeFolding"/>
-        </Property>
-        <Property name="text" type="java.lang.String" value="Use Code Folding:"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="lCollapseByDefault">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Collapse by Default:"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="cbUseCodeFolding">
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="cbFoldMethods">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Methods"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="cbFoldInnerClasses">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Inner Classes"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="cbFoldImports">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Imports"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="cbFoldJavadocComments">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Javadoc Comments"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="cbFoldInitialComments">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Initial Comments"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="cbFoldTags">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Tags and Other Code Blocks"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JSeparator" name="jSeparator1">
-    </Component>
     <Component class="javax.swing.JLabel" name="lBracesMatching">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">

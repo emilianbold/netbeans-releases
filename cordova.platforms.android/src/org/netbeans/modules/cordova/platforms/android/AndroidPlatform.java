@@ -119,7 +119,7 @@ public class AndroidPlatform implements MobilePlatform {
     @Override
     public Collection<Device> getVirtualDevices() throws IOException {
         assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getAndroidCommand(), true, "list", "avd"); //NOI18N
+        String avdString = ProcessUtils.callProcess(getAndroidCommand(), true, 5000, "list", "avd"); //NOI18N
         return AVD.parse(avdString);
     }
     
@@ -144,7 +144,7 @@ public class AndroidPlatform implements MobilePlatform {
     @Override
     public Collection<SDK> getSDKs() throws IOException {
         //assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getAndroidCommand(), true, "list", "targets");//NOI18N
+        String avdString = ProcessUtils.callProcess(getAndroidCommand(), true, 5000, "list", "targets");//NOI18N
         return Target.parse(avdString);
     }
     
@@ -181,14 +181,14 @@ public class AndroidPlatform implements MobilePlatform {
     @Override
     public Collection<org.netbeans.modules.cordova.platforms.Device> getConnectedDevices() throws IOException {
         //assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getAdbCommand(), true, "devices"); //NOI18N
+        String avdString = ProcessUtils.callProcess(getAdbCommand(), true, 5000, "devices"); //NOI18N
         Collection<org.netbeans.modules.cordova.platforms.Device> devices = AndroidDevice.parse(avdString);
         if (devices.isEmpty()) {
             //maybe adb is just down. try to restart adb
-            ProcessUtils.callProcess(getAdbCommand(), true, "kill-server"); //NOI18N
-            ProcessUtils.callProcess(getAdbCommand(), true, "start-server"); //NOI18N
+            ProcessUtils.callProcess(getAdbCommand(), true, 5000, "kill-server"); //NOI18N
+            ProcessUtils.callProcess(getAdbCommand(), true, 5000, "start-server"); //NOI18N
         }
-        avdString = ProcessUtils.callProcess(getAdbCommand(), true, "devices"); //NOI18N
+        avdString = ProcessUtils.callProcess(getAdbCommand(), true, 5000, "devices"); //NOI18N
         devices = AndroidDevice.parse(avdString);
         return devices;
     }
@@ -242,7 +242,15 @@ public class AndroidPlatform implements MobilePlatform {
         try {
             String value;
             for(;;) {
-                value = ProcessUtils.callProcess(getAdbCommand(), true, "-e", "wait-for-device", "shell", "getprop", "init.svc.bootanim"); //NOI18N
+                value = ProcessUtils.callProcess(
+                        getAdbCommand(), 
+                        true, 
+                        -1, 
+                        "-e", 
+                        "wait-for-device", 
+                        "shell", 
+                        "getprop", 
+                        "init.svc.bootanim"); //NOI18N
                 if ("stopped".equals(value.trim())) { //NOI18N
                     return true;
                 }
@@ -264,7 +272,7 @@ public class AndroidPlatform implements MobilePlatform {
     public void manageDevices() {
         assert !SwingUtilities.isEventDispatchThread();
         try {
-            ProcessUtils.callProcess(getAndroidCommand(), true, "avd"); //NOI18N
+            ProcessUtils.callProcess(getAndroidCommand(), true, -1, "avd"); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

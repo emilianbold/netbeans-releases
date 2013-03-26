@@ -53,7 +53,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
-import org.netbeans.modules.cnd.makeproject.actions.BatchBuildAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -76,12 +75,22 @@ import org.openide.util.actions.NodeAction;
 public class AddExistingItemAction extends NodeAction {
     
     private static final RequestProcessor RP = new RequestProcessor("AddExistingItemAction", 1); // NOI18N
+    
+    public AddExistingItemAction(){
+        //TODO: uncomment when problem iwth MakeProjectLogicalViewRootNode folder will be fixed, now "Folder" can be null when it should not be null
+        //putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+    }
 
     @Override
     protected boolean enable(Node[] activatedNodes)  {
         if (activatedNodes.length != 1) {
             return false;
         }
+        Object project = activatedNodes[0].getValue("Project"); // NOI18N
+        if (project == null || (!(project instanceof Project))) {
+            return false;
+        }
+        
         Object o = activatedNodes[0].getValue("Folder"); // NOI18N
         if (!(o instanceof Folder)) {
             return false;

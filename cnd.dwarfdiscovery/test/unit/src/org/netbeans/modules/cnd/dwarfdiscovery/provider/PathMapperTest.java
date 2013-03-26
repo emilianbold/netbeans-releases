@@ -41,20 +41,19 @@
  */
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.Project;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.ResolvedPath;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapperImpl.MapperEntry;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 /**
  *
@@ -270,72 +269,73 @@ public class PathMapperTest extends NbTestCase {
         assertFalse(mapper.discover(fs, root, unknown));
     }
     
-    public void testReadMapper() throws IOException {
-        File storage = File.createTempFile("mapper", ".txt");
-        storage.deleteOnExit();
-        System.setProperty("makeproject.pathMapper.file", storage.getPath()); // NOI18N
-        BufferedWriter wr = new BufferedWriter(new FileWriter(storage));
-        wr.append("/net/host1/vol/ifarm_ports/ifarm_views/aime_rdbms_273649=/scratch/user1/view_storage/user1_my_rdbms\n");
-        wr.append("/ade/user1_my_rdbms=/scratch/user1/view_storage/user1_my_rdbms\n");
-        wr.append("/ade/b/1226108341=/scratch/user1/view_storage/user1_my_rdbms\n");
-        wr.close();
-
-        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(new ProjectProxy() {
-
-            @Override
-            public boolean createSubProjects() {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public Project getProject() {
-                return null;
-            }
-
-            @Override
-            public String getMakefile() {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public String getSourceRoot() {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public String getExecutable() {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public String getWorkingFolder() {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public boolean mergeProjectProperties() {
-                throw new UnsupportedOperationException();
-            }
-        });
-        assertEquals(3, mapper.dump().size());
-        ResolvedPath path;
-        
-        path = mapper.getPath("/net/host1/vol/ifarm_ports/ifarm_views/aime_rdbms_273649/rdbms/src/server/ram/data1");
-        assertNotNull(path);
-        assertEquals("/scratch/user1/view_storage/user1_my_rdbms", path.getRoot());
-
-        path = mapper.getPath("/ade/user1_my_rdbms/oracle/oracore/port/include1");
-        assertNotNull(path);
-        assertEquals("/scratch/user1/view_storage/user1_my_rdbms", path.getRoot());
-
-        path = mapper.getPath("/ade/b/1226108341/oracle/oracore/port/include1");
-        assertNotNull(path);
-        assertEquals("/scratch/user1/view_storage/user1_my_rdbms", path.getRoot());
-    }
+//    public void testReadMapper() throws IOException {
+//        File storage = File.createTempFile("mapper", ".txt");
+//        storage.deleteOnExit();
+//        System.setProperty("makeproject.pathMapper.file", storage.getPath()); // NOI18N
+//        BufferedWriter wr = new BufferedWriter(new FileWriter(storage));
+//        wr.append("/net/host1/vol/ifarm_ports/ifarm_views/aime_rdbms_273649=/scratch/user1/view_storage/user1_my_rdbms\n");
+//        wr.append("/ade/user1_my_rdbms=/scratch/user1/view_storage/user1_my_rdbms\n");
+//        wr.append("/ade/b/1226108341=/scratch/user1/view_storage/user1_my_rdbms\n");
+//        wr.close();
+//
+//        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(new ProjectProxy() {
+//
+//            @Override
+//            public boolean createSubProjects() {
+//                throw new UnsupportedOperationException();
+//            }
+//
+//            @Override
+//            public Project getProject() {
+//                return null;
+//            }
+//
+//            @Override
+//            public String getMakefile() {
+//                throw new UnsupportedOperationException();
+//            }
+//
+//            @Override
+//            public String getSourceRoot() {
+//                throw new UnsupportedOperationException();
+//            }
+//
+//            @Override
+//            public String getExecutable() {
+//                throw new UnsupportedOperationException();
+//            }
+//
+//            @Override
+//            public String getWorkingFolder() {
+//                throw new UnsupportedOperationException();
+//            }
+//
+//            @Override
+//            public boolean mergeProjectProperties() {
+//                throw new UnsupportedOperationException();
+//            }
+//        });
+//        assertEquals(3, mapper.dump().size());
+//        ResolvedPath path;
+//        
+//        path = mapper.getPath("/net/host1/vol/ifarm_ports/ifarm_views/aime_rdbms_273649/rdbms/src/server/ram/data1");
+//        assertNotNull(path);
+//        assertEquals("/scratch/user1/view_storage/user1_my_rdbms", path.getRoot());
+//
+//        path = mapper.getPath("/ade/user1_my_rdbms/oracle/oracore/port/include1");
+//        assertNotNull(path);
+//        assertEquals("/scratch/user1/view_storage/user1_my_rdbms", path.getRoot());
+//
+//        path = mapper.getPath("/ade/b/1226108341/oracle/oracore/port/include1");
+//        assertNotNull(path);
+//        assertEquals("/scratch/user1/view_storage/user1_my_rdbms", path.getRoot());
+//    }
     
     private static final class FS implements RelocatablePathMapperImpl.FS {
         Set<String> set = new HashSet<String>();
         private FS(String prefix) {
+            set.add(prefix);
             set.add(prefix+"/rdbms");
             set.add(prefix+"/rdbms/src");
             set.add(prefix+"/rdbms/src/server");
@@ -354,56 +354,97 @@ public class PathMapperTest extends NbTestCase {
             set.add(prefix+"/oracore");
             set.add(prefix+"/oracore/port");
             set.add(prefix+"/oracore/public");
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
         }
         
         @Override
         public boolean exists(String path) {
             return set.contains(path);
+        }
+
+        @Override
+        public List<String> list(String path) {
+            throw new UnsupportedOperationException(); 
         }
     }
 
     private static final class FS2 implements RelocatablePathMapperImpl.FS {
         Set<String> set = new HashSet<String>();
         private FS2(String prefix) {
+            set.add(prefix);
             set.add(prefix+"/glib-1.2.10");
             set.add(prefix+"/glib-1.2.10/gcache.c");
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
         }
         
         @Override
         public boolean exists(String path) {
             return set.contains(path);
+        }
+
+        @Override
+        public List<String> list(String path) {
+            throw new UnsupportedOperationException(); 
         }
     }
 
     private static final class FS3 implements RelocatablePathMapperImpl.FS {
         Set<String> set = new HashSet<String>();
         private FS3(String prefix) {
+            set.add(prefix);
+            set.add(prefix+"/ctx_src_4");
             set.add(prefix+"/ctx_src_4/src");
             set.add(prefix+"/oracle/ctx/src/gx/include");
+            set.add(prefix+"/oracle/ctx/src/gx");
+            set.add(prefix+"/oracle/ctx/src");
+            set.add(prefix+"/oracle/ctx");
+            set.add(prefix+"/oracle");
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
         }
         
         @Override
         public boolean exists(String path) {
             return set.contains(path);
+        }
+
+        @Override
+        public List<String> list(String path) {
+            throw new UnsupportedOperationException(); 
         }
     }
 
     private static final class FS4 implements RelocatablePathMapperImpl.FS {
         Set<String> set = new HashSet<String>();
         private FS4(String prefix) {
+            set.add(prefix);
             set.add(prefix+"/rdbms");
             set.add(prefix+"/odbc");
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
         }
         
         @Override
         public boolean exists(String path) {
             return set.contains(path);
         }
+
+        @Override
+        public List<String> list(String path) {
+            throw new UnsupportedOperationException(); 
+        }
     }
 
     private static final class FS5 implements RelocatablePathMapperImpl.FS {
         Set<String> set = new HashSet<String>();
         private FS5(String prefix) {
+            set.add(prefix);
             set.add(prefix+"/ctx");
             set.add(prefix+"/ctx/src");
             set.add(prefix+"/ctx/src/dr");
@@ -418,11 +459,86 @@ public class PathMapperTest extends NbTestCase {
             set.add(prefix+"/ctx_src_4/src/ext");
             set.add(prefix+"/ctx_src_4/src/ext/zfm");
             set.add(prefix+"/ctx_src_4/src/ext/zfm/zfma.c");
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
         }
         
         @Override
         public boolean exists(String path) {
             return set.contains(path);
+        }
+
+        @Override
+        public List<String> list(String path) {
+            throw new UnsupportedOperationException(); 
+        }
+    }
+    
+    public void testIncludeDetector() {
+        FS6 fs = new FS6("/home/user1");
+        String root = "/home/user1/my_project";
+        String unknown = "/soft/1.1/ssl/include";
+        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(null);
+        assertTrue(mapper.discover(fs, root, unknown));
+        final ResolvedPath path = mapper.getPath(unknown);
+        assertEquals("/soft/1.1/ssl/include", path.getRoot());
+        assertEquals("/soft/1.1/ssl/include", path.getPath());
+    }
+
+    public void testIncludeDetector2() {
+        FS6 fs = new FS6("/home/user1");
+        String root = "/home/user1/my_project";
+        String unknown = "/soft/1.2/ssl/include";
+        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(null);
+        assertTrue(mapper.discover(fs, root, unknown));
+        final ResolvedPath path = mapper.getPath(unknown);
+        assertEquals("/home/user1", path.getRoot());
+        assertEquals("/home/user1/include", path.getPath());
+    }
+
+    private static final class FS6 implements RelocatablePathMapperImpl.FS {
+        Set<String> set = new HashSet<String>();
+        private final String prefix;
+        private FS6(String prefix) {
+            set.add(prefix);
+            set.add(prefix+"/my_project");
+            set.add(prefix+"/my_project/src");
+            set.add(prefix+"/my_project/include");
+            set.add(prefix+"/include");
+            set.add("/soft/1.1/ssl/include");
+            set.add("/soft/1.2/ssl/include");
+            this.prefix = prefix;
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
+            prefix = "/soft/1.1/ssl/include";
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
+            prefix = "/soft/1.2/ssl/include";
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
+        }
+        
+        @Override
+        public boolean exists(String path) {
+            return set.contains(path);
+        }
+        
+        @Override
+        public List<String> list(String path) {
+            List<String> res = new ArrayList<String>();
+            if (path.equals("/soft/1.1/ssl/include")) {
+                res.add("/soft/1.1/ssl/include/gtk.h");
+            } else if (path.equals("/soft/1.2/ssl/include")) {
+                res.add("/soft/1.1/ssl/include/trash.h");
+            } else if (path.equals(prefix+"/include")) {
+                res.add(prefix+"/my_project/include/trash.h");
+                res.add(prefix+"/my_project/include/config.h");
+            }
+            return res;
         }
     }
 }

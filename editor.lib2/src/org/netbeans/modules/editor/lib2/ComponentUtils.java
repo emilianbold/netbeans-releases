@@ -61,6 +61,7 @@ import org.netbeans.api.editor.EditorRegistry;
 public final class ComponentUtils {
 
     private static final Logger LOG = Logger.getLogger(Logger.class.getName());
+    private static final String STATUS_BAR_TEXT_PROPERTY = "statusBarText";
     
     public static boolean isGuardedException(BadLocationException exc) {
         return exc.getClass().getName().equals("org.netbeans.editor.GuardedException");
@@ -90,6 +91,7 @@ public final class ComponentUtils {
         try {
             Object editorUI = getEditorUI(c);
             if (editorUI == null) {
+                c.putClientProperty(STATUS_BAR_TEXT_PROPERTY, text);
                 return;
             }
             Method getSbMethod = editorUI.getClass().getMethod("getStatusBar");
@@ -110,6 +112,7 @@ public final class ComponentUtils {
         try {
             Object editorUI = getEditorUI(c);
             if (editorUI == null) {
+                c.putClientProperty(STATUS_BAR_TEXT_PROPERTY, text);
                 return;
             }
             Method getSbMethod = editorUI.getClass().getMethod("getStatusBar");
@@ -146,6 +149,7 @@ public final class ComponentUtils {
         try {
             Object editorUI = getEditorUI(c);
             if (editorUI == null) {
+                c.putClientProperty(STATUS_BAR_TEXT_PROPERTY, text);
                 return;
             }
             Method getSbMethod = editorUI.getClass().getMethod("getStatusBar"); //NOI18N

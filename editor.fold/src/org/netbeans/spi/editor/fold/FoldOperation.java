@@ -44,14 +44,19 @@
 
 package org.netbeans.spi.editor.fold;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.fold.FoldTemplate;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.modules.editor.fold.ApiPackageAccessor;
 import org.netbeans.modules.editor.fold.FoldHierarchyTransactionImpl;
 import org.netbeans.modules.editor.fold.FoldOperationImpl;
 import org.netbeans.modules.editor.fold.SpiPackageAccessor;
+import org.openide.util.Parameters;
 
 
 /**
@@ -128,6 +133,8 @@ public final class FoldOperation {
      *  {@link #getExtraInfo(org.netbeans.api.editor.fold.Fold)}.
      *
      * @return new fold instance that was added to the hierarchy.
+     * @deprecated please use {@link #addToHierarchy(org.netbeans.api.editor.fold.FoldType, int, int, java.lang.Boolean, org.netbeans.api.editor.fold.FoldTemplate, java.lang.String, java.lang.Object, org.netbeans.spi.editor.fold.FoldHierarchyTransaction)}.
+     * This form of call does not support automatic state assignment and fold templates.
      */
     public Fold addToHierarchy(FoldType type, String description, boolean collapsed,
     int startOffset, int endOffset, int startGuardedLength, int endGuardedLength,
@@ -137,6 +144,66 @@ public final class FoldOperation {
             startOffset, endOffset, startGuardedLength, endGuardedLength,
             extraInfo
         );
+        impl.addToHierarchy(fold, transaction.getImpl());
+        return fold;
+    }
+    
+    /**
+     * Adds a fold to the hierarchy.
+     * The description and the guarded start/end is taken from the 'template' FoldTemplate. As the fold template display
+     * is the most common override, the override string can be passed in 'displayOverride' (and will be used instead
+     * of template and instead of type's template).
+     * <p/>
+     * The collapsed state can be prescribed, but can {@code null} can be passed to indicate the infrastructure should
+     * assign collapsed state based on e.g. user preferences. The exact assignment algorithm is left unspecified. Callers
+     * are recommended not to assign collapsed/expanded state explicitly.
+     * <p/>
+     * Usually, it's OK to pass null for collapsed, template and possibly extraInfo.
+     * <p/>
+     * Events produced by this add- call will be fired when the 'transaction' is committed. However fold hierarch will
+     * be changed immediately.
+     * 
+     * @param type type of the fold, cannot be {@code null}
+     * @param startOffset starting offset
+     * @param endOffset end offset
+     * @param collapsed the initial collapsed state; if {@code null}, the state will be assigned automatically.
+     * @param template the FoldTemplate to use instead of default template of the type. {@code null}, if the type's template should be used.
+     * @param extraInfo arbitrary extra information specific for the fold being created.
+     *  It's not touched or used by the folding infrastructure in any way.
+     *  <code>null<code> can be passed if there is no extra information.
+     *  <br>
+     *  The extra info of the existing fold can be obtained by
+     *  {@link #getExtraInfo(org.netbeans.api.editor.fold.Fold)}.
+     * @param transaction the transaction that manages events, cannot be null.
+     * @return the created Fold instance
+     * @throws BadLocationException 
+     * @since 1.35
+     */
+    public Fold addToHierarchy(
+            FoldType type, 
+            int startOffset, int endOffset,
+            Boolean collapsed,
+            FoldTemplate template, String displayOverride, 
+            Object extraInfo, FoldHierarchyTransaction transaction) 
+            throws BadLocationException {
+        Parameters.notNull("type", type);
+        Parameters.notNull("transaction", transaction);
+
+        boolean c;
+        if (collapsed == null) {
+            c = impl.getInitialState(type);
+        } else {
+            c = collapsed;
+        }
+        if (template == null) {
+            template = type.getTemplate();
+        }
+        if (displayOverride == null) {
+            displayOverride = template.getDescription();
+        }
+        Fold fold = impl.createFold(type, displayOverride, 
+                c, startOffset, endOffset, template.getGuardedStart(),
+                template.getGuardedEnd(), extraInfo);
         impl.addToHierarchy(fold, transaction.getImpl());
         return fold;
     }
@@ -270,22 +337,89 @@ public final class FoldOperation {
         return impl.getHierarchy();
     }
 
+    /**
+     * Informs that the manager was released.
+     * Use the method to check whether the {@link FoldManager} should be still operational.
+     * Once released, the FoldManager (and its Operation) will not be used again by the infrastructure.
+     * 
+     * @return true, if release() was called on the manager
+     * @since 1.35
+     */
     public boolean isReleased() {
         return impl.isReleased();
     }
     
+    /**
+     * Enumerates all Folds defined by this Operation, in the document-range order.
+     * Outer folds precede the inner ones. Folds, which overlap are enumerated strictly
+     * in the order of their starting positions. 
+     * <p/>
+     * The method may be only called under {@link FoldHierarchy#lock}. The Iterator may
+     * be only used until that lock is released. After releasing the lock, the Iterator
+     * may fail.
+     * 
+     * @return readonly iterator for all folds defined through this FoldOperation
+     * @since 1.35
+     */
+    public Iterator<Fold>  foldIterator() {
+        return impl.foldIterator();
+    }
+    
+    /**
+     * Performs refresh of folding information. The method will:
+     * <ul>
+     * <li>remove Folds, which do not appear among the supplied FoldInfos
+     * <li>add Folds, which do not exist, but are described by some FoldInfo
+     * <li>attempt to update Folds, which match the FoldInfos
+     * </ul>
+     * For each of the supplied FoldInfos, there should be at most 1 Fold either created or found existing, and no
+     * Folds without a corresponding input FoldInfo should remain in the hierarchy after the call. The mapping from the
+     * input FoldInfo to the corresponding Fold (created or found existing) is returned.
+     * <p/>
+     * Note that Folds, which are blocked (e.g. by a higher-priority manager) will be added/removed/updated and
+     * returned as well. In order to find whether a specific Fold is blocked, please call {@link #isBlocked}.
+     * <p/>
+     * If the {@code removed} or {@code created} parameters are not null, the removed Fold instances, or the FoldInfos
+     * that created new Folds will be put into those collection as a supplemental return value. The caller may then
+     * update its own data with respect to the changes and the current Fold set.
+     * <p/>
+     * <b>Note:</b> The method may be only called under {@link FoldHierarchy#lock}. This implies the document is also read-locked.
+     * The caller <b>must check</b> whether a modification happen in between the FoldInfos were produced at the 
+     * document + hierarchy lock. The method creates and commits its own {@link FoldTransaction} - they are not reentrant,
+     * so do not call the method under a transaction.
+     * 
+     * @param infos current state of folds that should be updated to the hierarchy
+     * @param removed Collection that will receive Folds, which have been removed from the hierarchy, or {@code null}, if the caller
+     * does not want to receive the information
+     * @param created Collection that will receive FoldInfos that created new Folds in the hierarchy, {@code null} means
+     * the caller is not interested in the creation information.
+     * 
+     * @return the mapping from FoldInfos supplied as an input to current Folds. {@code null}, if the manager has been
+     * released.
+     * @since 1.35
+     */
+    public Map<FoldInfo, Fold> update(
+            Collection<FoldInfo> infos, 
+            Collection<Fold> removed, 
+            Collection<FoldInfo> created) throws BadLocationException {
+        Parameters.notNull("infos", infos);
+        return impl.update(infos, removed, created);
+    }
     
     private static final class SpiPackageAccessorImpl extends SpiPackageAccessor {
 
+        @Override
         public FoldHierarchyTransaction createFoldHierarchyTransaction(
         FoldHierarchyTransactionImpl impl) {
             return new FoldHierarchyTransaction(impl);
         }
         
+        @Override
         public FoldHierarchyTransactionImpl getImpl(FoldHierarchyTransaction transaction) {
             return transaction.getImpl();
         }
         
+        @Override
         public FoldOperation createFoldOperation(FoldOperationImpl impl) {
             return new FoldOperation(impl);
         }

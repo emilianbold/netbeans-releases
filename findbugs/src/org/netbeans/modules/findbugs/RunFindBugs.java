@@ -182,6 +182,8 @@ public class RunFindBugs {
             for (FileObject compileRoot : compile.getRoots()) {
                 addCompileRoot(p, compileRoot);
             }
+            
+            DetectorCollectionProvider.initializeDetectorFactoryCollection();
 
             BugCollectionBugReporter r = new BugCollectionBugReporter(p) {
                 @Override protected void emitLine(String line) {
@@ -463,6 +465,8 @@ public class RunFindBugs {
 
                     enable |= settings.getBoolean(bp.getType(), !defaultsToDisabled && prefs.isDetectorEnabled(df));
                 }
+                
+                enable |= df.getReportedBugPatterns().isEmpty();
             }
 
             atLeastOneEnabled |= enable;
@@ -485,6 +489,8 @@ public class RunFindBugs {
                     break;
                 }
             }
+            
+            enable |= df.getReportedBugPatterns().isEmpty();
 
             atLeastOneEnabled |= enable;
             prefs.enableDetector(df, enable);

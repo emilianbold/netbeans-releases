@@ -67,6 +67,7 @@ import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.spi.CssStylesListener;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.netbeans.modules.web.browser.api.Page;
+import org.netbeans.modules.web.common.api.DependentFileQuery;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -204,7 +205,9 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     private void update() {
         if (EventQueue.isDispatchThread()) {
             PageModel pageModel = PageInspectorImpl.getDefault().getPage();
-            if (pageModel != null && lastRelatedFileObject != null && lastRelatedFileObject.equals(inspectedFileObject)) {
+            if (pageModel != null && lastRelatedFileObject != null
+                    && inspectedFileObject != null
+                    && DependentFileQuery.isDependent(inspectedFileObject, lastRelatedFileObject)) {
                 removeAll();
                 PageModel.CSSStylesView stylesView = pageModel.getCSSStylesView();
                 add(stylesView.getView(), BorderLayout.CENTER);
@@ -384,7 +387,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     public static class SelectionView extends CssStylesPanelProviderImpl {
 
         private static final String SELECTION_PANEL_ID = "selection"; //NOI18N
-        private static final Collection<String> MIME_TYPES = new HashSet(Arrays.asList(new String[]{"text/html", "text/xhtml"})); // NOI18N
+        private static final Collection<String> MIME_TYPES = new HashSet(Arrays.asList(new String[]{"text/html", "text/xhtml", "text/x-jsp", "text/x-php5"})); // NOI18N
 
         @Override
         public String getPanelID() {

@@ -107,6 +107,7 @@ import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.options.FullFileIndexer;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -142,6 +143,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.modules.Places;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -149,6 +151,7 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -158,7 +161,7 @@ import org.w3c.dom.Text;
 /**
  * Represents one plain Make project.
  */
-public final class MakeProject implements Project, MakeProjectListener, Runnable {
+public final class MakeProject implements Project, MakeProjectListener {
 
     public static final String REMOTE_MODE = "remote-sources-mode"; // NOI18N
     public static final String REMOTE_FILESYSTEM_HOST = "remote-filesystem-host"; // NOI18N
@@ -168,7 +171,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
     private static final String C_EXTENSIONS = "c-extensions"; // NOI18N
     private static final String CPP_EXTENSIONS = "cpp-extensions"; // NOI18N
-    private static final RequestProcessor RP = new RequestProcessor("Open project", 4); // NOI18N
+    private final RequestProcessor RP;
     private static MakeTemplateListener templateListener = null;
     private final MakeProjectTypeImpl kind;
     private final MakeProjectHelper helper;
@@ -192,11 +195,13 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     private final String remoteBaseDir;
     private ExecutionEnvironment fileSystemHost;
     private String configurationXMLComment;
+    private final Set<MyInterrupter> interrupters = new WeakSet<MyInterrupter>();
 
     public MakeProject(MakeProjectHelper helper) throws IOException {
         LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
         this.kind = MakeBasedProjectFactorySingleton.TYPE_INSTANCE;
         this.helper = helper;
+        RP = new RequestProcessor("Open/Close project " + helper.getProjectDirectory(), 1); // NOI18N
         //eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         //refHelper = new ReferenceHelper(helper, aux, eval);
@@ -279,14 +284,6 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
     public ExecutionEnvironment getRemoteFileSystemHost() {
         return fileSystemHost;
-    }
-
-    private FileSystem getSourceFileSystem() {
-        if (fileSystemHost == null || fileSystemHost.isLocal()) {
-            return CndFileUtils.getLocalFileSystem();
-        } else {
-            return FileSystemProvider.getFileSystem(fileSystemHost);
-        }
     }
 
     /*package*/ void setRemoteFileSystemHost(ExecutionEnvironment remoteFileSystemHost) {
@@ -752,7 +749,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         @Override
         public String[] getPrivilegedTemplates() {
             if (configurationProvider.gotDescriptor()) {
-                MakeConfigurationDescriptor configurationDescriptor = configurationProvider.getConfigurationDescriptor(false);
+                MakeConfigurationDescriptor configurationDescriptor = configurationProvider.getConfigurationDescriptor();
                 if (configurationDescriptor != null) {
                     MakeConfiguration conf = configurationDescriptor.getActiveConfiguration();
                     if (conf != null && conf.isQmakeConfiguration()) {
@@ -1273,34 +1270,34 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                             } else if (outputValue.endsWith(".a")) { // NOI18N
                                 icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged-static.png", false); // NOI18N
                             } else {
-                                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged.png", false); // NOI18N
+                                icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_MAKEFILE_ICON, false);
                             }
                         } else {
-                            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged.png", false); // NOI18N
+                            icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_MAKEFILE_ICON, false); // NOI18N
                         }
                     }
                     break;
                 }
                 case MakeConfiguration.TYPE_APPLICATION:
-                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed.png", false); // NOI18N
+                    icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_APPLICATION_ICON, false);
                     break;
                 case MakeConfiguration.TYPE_DB_APPLICATION:
-                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-database.png", false); // NOI18N
+                    icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_DB_APPLICATION_ICON, false);
                     break;
                 case MakeConfiguration.TYPE_DYNAMIC_LIB:
-                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-dynamic.png", false); // NOI18N
+                    icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_DYNAMIC_LIB_ICON, false);
                     break;
                 case MakeConfiguration.TYPE_STATIC_LIB:
-                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-static.png", false); // NOI18N
+                    icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_STATIC_LIB_ICON, false);
                     break;
                 case MakeConfiguration.TYPE_QT_APPLICATION:
-                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt.png", false); // NOI18N
+                    icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_QT_APPLICATION_ICON, false);
                     break;
                 case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
-                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-dynamic.png", false); // NOI18N
+                    icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_QT_DYNAMIC_LIB_ICON, false);
                     break;
                 case MakeConfiguration.TYPE_QT_STATIC_LIB:
-                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-static.png", false); // NOI18N
+                    icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_QT_STATIC_LIB_ICON, false);
                     break;
                 case MakeConfiguration.TYPE_CUSTOM:
                     MakeProjectCustomizer makeProjectCustomizer = project.getProjectCustomizer(project.getProjectCustomizerId());
@@ -1344,29 +1341,14 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
     }
 
-    private List<Runnable> openedTasks;
-
-    public void addOpenedTask(Runnable task) {
-        if (openedTasks == null) {
-            openedTasks = new ArrayList<Runnable>();
-        }
-        openedTasks.add(task);
-    }
-
-    @Override
-    public void run() {
-        // This is ugly solution introduced for waiting finished opened tasks in discovery module.
-        // see method org.netbeans.modules.cnd.discovery.projectimport.ImportProject.doWork().
-        // TODO: refactor this solution
-        onProjectOpened();
-    }
-
     private void onProjectOpened() {
-        notifyProjectStartActivity();
         synchronized (openStateAndLock) {
             if (openStateAndLock.get()) {
                 return;
             }
+            notifyProjectStartActivity();
+            final MyInterrupter interrupter = new MyInterrupter();
+            interrupters.add(interrupter);
             FileObject dir = getProjectDirectory();
             if (dir != null) { // high resistance mode paranoia
                 final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
@@ -1375,13 +1357,6 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             helper.removeMakeProjectListener(MakeProject.this);
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
-            if (openedTasks != null) {
-                for (Runnable runnable : openedTasks) {
-                    runnable.run();
-                }
-                openedTasks.clear();
-                openedTasks = null;
-            }
             MakeOptions.getInstance().addPropertyChangeListener(indexerListener);
             registerClassPath(true);
             MakeProjectClassPathProvider.addProjectSources(sources);
@@ -1396,7 +1371,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                             return;
                         }
                     }
-                    projectDescriptorProvider.opened();
+                    projectDescriptorProvider.opened(interrupter);
                     synchronized (openStateAndLock) {
                         if (openStateAndLock.get()) {
                             if (nativeProject instanceof NativeProjectProvider) {
@@ -1431,21 +1406,39 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 LOGGER.log(Level.WARNING, "on project close for not opened MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
                 return;
             }
+            Iterator<MyInterrupter> iterator = interrupters.iterator();
+            while(iterator.hasNext()) {
+                iterator.next().cancel();
+            }
             LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
             helper.removeMakeProjectListener(this);
-            save();
-            projectDescriptorProvider.closed();
+            save();            
             MakeOptions.getInstance().removePropertyChangeListener(indexerListener);
             registerClassPath(false);
             MakeProjectFileProviderFactory.removeSearchBase(this);
-            if(nativeProject instanceof NativeProjectProvider) {
-                NativeProjectRegistry.getDefault().unregister(nativeProject);
-            }
             MakeProjectClassPathProvider.removeProjectSources(sources);
             // project is in closed state
             openStateAndLock.set(false);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (openStateAndLock) {
+                        if (openStateAndLock.get()) {
+                            return;
+                        }
+                    }
+                    synchronized (openStateAndLock) {
+                        if (!openStateAndLock.get()) {
+                            if (nativeProject instanceof NativeProjectProvider) {
+                                NativeProjectRegistry.getDefault().unregister(nativeProject);
+                            }
+                            projectDescriptorProvider.closed();
+                            notifyProjectStopActivity();
+                        }
+                    }
+                }
+            });
         }
-        notifyProjectStopActivity();
     }
 
     private void notifyProjectStopActivity() {
@@ -1879,6 +1872,21 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             if (FullFileIndexer.FULL_FILE_INDEXER.equals(evt.getPropertyName())) {
                 project.registerClassPath(Boolean.TRUE.equals(evt.getNewValue()));
             }
+        }
+    }
+    
+    private static final class MyInterrupter implements Interrupter, Cancellable {
+        private final AtomicBoolean cancelled = new AtomicBoolean(false);
+
+        @Override
+        public boolean cancelled() {
+            return cancelled.get();
+        }
+
+        @Override
+        public boolean cancel() {
+            cancelled.set(true);
+            return true;
         }
     }
 }

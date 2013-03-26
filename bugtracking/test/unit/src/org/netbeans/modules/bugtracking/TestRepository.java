@@ -58,7 +58,7 @@ public abstract class TestRepository {
     
     public abstract Image getIcon();
 
-    public abstract TestIssue[] getIssues(String[] id);
+    public abstract <I extends TestIssue> I[] getIssues(String[] id);
 
     public abstract void remove();
 
@@ -68,11 +68,11 @@ public abstract class TestRepository {
 
     public abstract TestIssue createIssue();
 
-    public abstract Collection<TestQuery> getQueries();
+    public abstract Collection<? extends TestQuery> getQueries();
 
     public abstract Lookup getLookup();
 
-    public abstract Collection<TestIssue> simpleSearch(String criteria);
+    public abstract Collection<? extends TestIssue> simpleSearch(String criteria);
 
     public abstract void removePropertyChangeListener(PropertyChangeListener listener);
 

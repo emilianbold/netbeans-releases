@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.api;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -59,10 +60,14 @@ public final class QuerySupportFactory {
     private QuerySupportFactory() {
     }
 
+    public static QuerySupport getDependent(FileObject source) {
+        return get(QuerySupport.findDependentRoots(source, false));
+    }
+
     public static QuerySupport get(final FileObject source) {
         return get(QuerySupport.findRoots(source,
                 Collections.singleton(PhpSourcePath.SOURCE_CP),
-                Collections.singleton(PhpSourcePath.BOOT_CP),
+                Arrays.asList(PhpSourcePath.BOOT_CP, PhpSourcePath.PROJECT_BOOT_CP),
                 Collections.<String>emptySet()));
     }
 

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.23.1
+#Version 1.27.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -90,6 +90,10 @@ CLSS public abstract interface static !annotation org.netbeans.spi.navigator.Nav
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
 intf java.lang.annotation.Annotation
 meth public abstract org.netbeans.spi.navigator.NavigatorPanel$Registration[] value()
+
+CLSS public abstract interface org.netbeans.spi.navigator.NavigatorPanelWithToolbar
+intf org.netbeans.spi.navigator.NavigatorPanel
+meth public abstract javax.swing.JComponent getToolbarComponent()
 
 CLSS public abstract interface org.netbeans.spi.navigator.NavigatorPanelWithUndo
 intf org.netbeans.spi.navigator.NavigatorPanel

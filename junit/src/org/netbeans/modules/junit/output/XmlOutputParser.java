@@ -53,6 +53,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.gsf.testrunner.api.Status;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
@@ -86,6 +87,8 @@ final class XmlOutputParser extends DefaultHandler {
     private static final int STATE_FAILURE = 12;
     /** */
     private static final int STATE_ERROR = 13;
+    /** */
+    private static final int STATE_SKIPPED = 14;
     /** */
     private static final int STATE_OUTPUT_STD = 16;
     /** */
@@ -189,10 +192,12 @@ final class XmlOutputParser extends DefaultHandler {
                     state = STATE_FAILURE;
                 } else if (qName.equals("error")) {
                     state = STATE_ERROR;
+                }  else if (qName.equals("skipped")) {
+                    state = STATE_SKIPPED;
                 } else {
                     startUnknownElem();
                 }
-                if (state >= 0) {     //i.e. the element is "failure" or "error"
+                if (state >= 0 && state != 14) {     //i.e. the element is "failure" or "error"
                     assert testcase != null;
                     trouble = new Trouble(state == STATE_ERROR);
 
@@ -290,27 +295,18 @@ final class XmlOutputParser extends DefaultHandler {
                 assert qName.equals("property");
                 state = STATE_PROPERTIES;
                 break;                                          //</editor-fold>
-            //<editor-fold defaultstate="collapsed" desc="STATE_FAILURE or STATE_ERROR">
+            //<editor-fold defaultstate="collapsed" desc="STATE_FAILURE or STATE_ERROR or STATE_SKIPPED">
             case STATE_FAILURE:
+		assert state == STATE_FAILURE && qName.equals("failure");
+                handleFailureError();
+                break;
             case STATE_ERROR:
-                assert (state == STATE_FAILURE && qName.equals("failure"))
-                       || (state == STATE_ERROR && qName.equals("error"));
-                
-                assert testcase != null;
-                assert trouble != null;
-                if (charactersBuf != null) {
-                    LineNumberReader lnr = new LineNumberReader(new StringReader(charactersBuf.toString()));
-                    try{
-                        String line = lnr.readLine();
-                        while(line != null){
-                            addStackTraceLine(trouble, line, true);
-                            line = lnr.readLine();
-                        }
-                    }catch(IOException e){}
-                    charactersBuf = null;
-                }
-                testcase.setTrouble(trouble);
-                trouble = null;
+                assert state == STATE_ERROR && qName.equals("error");                
+                handleFailureError();
+                break;
+            case STATE_SKIPPED:
+		assert testcase != null;
+		testcase.setStatus(Status.SKIPPED);
                 state = STATE_TESTCASE;
                 break;                                          //</editor-fold>
             //<editor-fold defaultstate="collapsed" desc="STATE_OUTPUT_STD or STATE_OUTPUT_ERR">
@@ -337,6 +333,26 @@ final class XmlOutputParser extends DefaultHandler {
                 }
                 break;                                          //</editor-fold>
         }
+    }
+
+    private void handleFailureError() {
+	assert testcase != null;
+	assert trouble != null;
+	if (charactersBuf != null) {
+	    LineNumberReader lnr = new LineNumberReader(new StringReader(charactersBuf.toString()));
+	    try {
+		String line = lnr.readLine();
+		while (line != null) {
+		    addStackTraceLine(trouble, line, true);
+		    line = lnr.readLine();
+		}
+	    } catch (IOException e) {
+	    }
+	    charactersBuf = null;
+	}
+	testcase.setTrouble(trouble);
+	trouble = null;
+	state = STATE_TESTCASE;
     }
     
     /**

@@ -58,6 +58,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
@@ -65,7 +66,7 @@ import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -78,11 +79,11 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     public static final String PROPERTY_FORMAT = "format";                      // NOI18N
     public static final String PROPERTY_HIGHLIGHT_PATTERN = "highlightPattern"; // NOI18N
 
-    private QueryImpl query;
-    private IssueTable issueTable;
+    private final QueryImpl query;
+    private final IssueTable issueTable;
 
     private static final int VISIBLE_START_CHARS = 0;
-    private static Icon seenValueIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-value.png")); // NOI18N
+    private static final Icon seenValueIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-value.png")); // NOI18N
 
     private static final MessageFormat issueNewFormat       = getFormat("issueNewFormat");      // NOI18N
     private static final MessageFormat issueObsoleteFormat  = getFormat("issueObsoleteFormat"); // NOI18N
@@ -96,10 +97,21 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     private static final String msgModified = NbBundle.getMessage(QueryTableCellRenderer.class, "MSG_IssueStatusModified");   // NOI18N
     private static final String msgObsolete = NbBundle.getMessage(QueryTableCellRenderer.class, "MSG_IssueStatusObsolete");   // NOI18N
 
-    private static final Color unevenLineColor              = new Color(0xf3f6fd);
+    private static Color evenLineColor                      = null;
+    private static Color unevenLineColor                    = null;
     private static final Color newHighlightColor            = new Color(0x00b400);
     private static final Color modifiedHighlightColor       = new Color(0x0000ff);
     private static final Color obsoleteHighlightColor       = new Color(0x999999);
+
+    static {
+        evenLineColor = UIManager.getColor( "nb.bugtracking.table.background" ); //NOI18N
+        if( null == evenLineColor )
+            evenLineColor = Color.white;
+
+        unevenLineColor = UIManager.getColor( "nb.bugtracking.table.background.alternate" ); //NOI18N
+        if( null == unevenLineColor )
+            unevenLineColor = new Color(0xf3f6fd);
+    }
 
     public QueryTableCellRenderer(Query query, IssueTable issueTable) {
         this.query = APIAccessor.IMPL.getImpl(query);
@@ -299,21 +311,21 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         TableCellStyle style = getDefaultCellStyle(table, issueTable, p, isSelected, row);
         try {
             // set text format and background depending on selection and issue status
-            int status = -2;
+            IssueStatusProvider.Status status = null;
             IssueImpl issue = APIAccessor.IMPL.getImpl(p.getIssue());
             if(!queryImpl.contains(issue.getID())) {
                 // archived issues
                 style.format     = isSelected ? style.format           : issueObsoleteFormat;
                 style.background = isSelected ? obsoleteHighlightColor : style.background;
             } else {
-                status = IssueCacheUtils.getStatus(issue);
-                if(!IssueCacheUtils.wasSeen(issue)) {
+                status = issue.getStatus();
+                if(status != IssueStatusProvider.Status.SEEN) {
                     switch(status) {
-                        case IssueCache.ISSUE_STATUS_NEW :
+                        case NEW :
                             style.format     = isSelected ? style.format      : issueNewFormat;
                             style.background = isSelected ? newHighlightColor : style.background;
                             break;
-                        case IssueCache.ISSUE_STATUS_MODIFIED :
+                        case MODIFIED :
                             style.format     = isSelected ? style.format           : issueModifiedFormat;
                             style.background = isSelected ? modifiedHighlightColor : style.background;
                             break;
@@ -333,15 +345,15 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                     sb.append("<br>").append(issueObsoleteFormat.format(new Object[] { labelObsolete }, new StringBuffer(), null)); // NOI18N
                     sb.append(msgObsolete);
                 } else {
-                    if(status == -2) {
-                        status = IssueCacheUtils.getStatus(issue);
+                    if(status == null) {
+                        status = issue.getStatus();
                     }
                     switch(status) {
-                        case IssueCache.ISSUE_STATUS_NEW :
+                        case NEW :
                             sb.append("<br>").append(issueNewFormat.format(new Object[] { labelNew }, new StringBuffer(), null)); // NOI18N
                             sb.append(msgNew);
                             break;
-                        case IssueCache.ISSUE_STATUS_MODIFIED :
+                        case MODIFIED :
                             sb.append("<br>").append(issueModifiedFormat.format(new Object[] { labelModified }, new StringBuffer(), null)); // NOI18N
                             sb.append(msgModified);
                             sb.append(IssueCacheUtils.getRecentChanges(issue));
@@ -378,7 +390,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     }
 
     private static Color getUnselectedBackground(int row) {
-        return row % 2 != 0 ? unevenLineColor : Color.WHITE;
+        return row % 2 != 0 ? unevenLineColor : evenLineColor;
     }
 
     public static void setRowColors(TableCellStyle style, JComponent l) {

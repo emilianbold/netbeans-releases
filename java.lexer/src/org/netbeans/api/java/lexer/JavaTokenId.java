@@ -144,8 +144,6 @@ public enum JavaTokenId implements TokenId {
     DOT(".", "separator"),
     /**@since 1.23*/
     COLONCOLON("::", "separator"),
-    /**@since 1.23*/
-    ARROW("->", "separator"),
 
     EQ("=", "operator"),
     GT(">", "operator"),
@@ -184,6 +182,8 @@ public enum JavaTokenId implements TokenId {
     LTLTEQ("<<=", "operator"),
     GTGTEQ(">>=", "operator"),
     GTGTGTEQ(">>>=", "operator"),
+    /**@since 1.23*/
+    ARROW("->", "operator"),
     
     ELLIPSIS("...", "special"),
     AT("@", "special"),

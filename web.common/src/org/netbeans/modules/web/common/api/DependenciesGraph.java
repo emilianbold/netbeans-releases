@@ -45,7 +45,7 @@ package org.netbeans.modules.web.common.api;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
@@ -82,24 +82,44 @@ public class DependenciesGraph {
     }
 
     /**
+     * Returns a collection of files where the relation type from the base file is defined by the argument.
+     * 
+     * @since 1.35
+     * @param type defines the relation type.
+     * @return 
+     */
+    public Collection<FileObject> getFiles(DependencyType type) {
+        switch(type) {
+            case REFERRING:
+                return getAllReferingFiles();
+            case REFERRED:
+                return getAllReferedFiles();
+            case REFERRING_AND_REFERRED:
+                return getAllRelatedFiles();
+            default:
+                throw new IllegalStateException();
+        }
+    }
+    
+    /**
      * 
      * @return a collection a files which are either imported or importing the 
      * base source file for this dependencies graph
      */
     public Collection<FileObject> getAllRelatedFiles() {
-        Collection<FileObject> files = new HashSet<FileObject>();
+        Collection<FileObject> files = new LinkedHashSet<FileObject>();
         walk(files, getSourceNode(), true, true);
         return files;
     }
 
     public Collection<FileObject> getAllReferedFiles() {
-        Collection<FileObject> files = new HashSet<FileObject>();
+        Collection<FileObject> files = new LinkedHashSet<FileObject>();
         walk(files, getSourceNode(), true, false);
         return files;
     }
 
     public Collection<FileObject> getAllReferingFiles() {
-        Collection<FileObject> files = new HashSet<FileObject>();
+        Collection<FileObject> files = new LinkedHashSet<FileObject>();
         walk(files, getSourceNode(), false, true);
         return files;
     }
@@ -122,8 +142,8 @@ public class DependenciesGraph {
     public class Node {
 
         private FileObject source;
-        private Collection<Node> refering = new HashSet<Node>();
-        private Collection<Node> refered = new HashSet<Node>();
+        private Collection<Node> refering = new LinkedHashSet<Node>();
+        private Collection<Node> refered = new LinkedHashSet<Node>();
 
         private Node(FileObject source) {
             this.source = source;

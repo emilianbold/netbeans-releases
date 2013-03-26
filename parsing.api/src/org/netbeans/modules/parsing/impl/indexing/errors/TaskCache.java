@@ -246,12 +246,12 @@ public class TaskCache {
 
                     if (FileUtil.isParentOf(projectDirectory, rootFO)) {
                         while (currentFO != null && currentFO != projectDirectory) {
-                            c.toRefresh.add(currentFO.getURL());
+                            c.toRefresh.add(currentFO.toURL());
                             currentFO = currentFO.getParent();
                         }
                     }
 
-                    c.toRefresh.add(projectDirectory.getURL());
+                    c.toRefresh.add(projectDirectory.toURL());
                 }
             }
         }
@@ -376,8 +376,8 @@ public class TaskCache {
                     return false;
                 }
                 
-                String resourceName = cp.getResourceName(file, File.separatorChar, false);
-                File cacheRoot = getCacheRoot(root.getURL(), true);
+                String resourceName = cp.getResourceName(file, File.separatorChar, true);
+                File cacheRoot = getCacheRoot(root.toURL(), true);
                 
                 if (cacheRoot == null) {
                     //index does not exist:

@@ -123,7 +123,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                 if (property.isDeclared() 
                         && (property.getModifiers().contains(Modifier.PROTECTED)
                         || (property.getModifiers().contains(Modifier.PUBLIC) &&  !property.getModifiers().contains(Modifier.STATIC)))
-                        && !isAnonymous()) {
+                        && !isAnonymous() && !property.isAnonymous()) {
                     if(!getParent().getName().equals("prototype")) {
                         return JsElement.Kind.CONSTRUCTOR;
                     }
@@ -165,7 +165,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         HashSet<String> nameReturnTypes = new HashSet<String>();
         areReturnTypesResolved = true;
         for(TypeUsage type : returnTypes) {
-             if (((TypeUsageImpl)type).isResolved()) {
+             if (type.isResolved()) {
                  if (!nameReturnTypes.contains(type.getType())){
                     returns.add(type);
                     nameReturnTypes.add(type.getType());
@@ -229,7 +229,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         Collection<TypeUsage> resolved = new ArrayList();
         for (TypeUsage type : returnTypes) {
             if (!(type.getType().equals(Type.UNRESOLVED) && returnTypes.size() > 1)) {
-                if (!((TypeUsageImpl) type).isResolved()) {
+                if (!type.isResolved()) {
                     for(TypeUsage rType : ModelUtils.resolveTypeFromSemiType(this, type)) {
                         if(!nameReturnTypes.contains(type.getType())) {
                             resolved.add(rType);

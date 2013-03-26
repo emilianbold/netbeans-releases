@@ -390,7 +390,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
                                 ArrayList<ErrorInfo> errors = new ArrayList<ErrorInfo>(locResult.getErrors().length);
                                 for (int i = 0; i < locResult.getErrors().length; i ++){
                                     JspParserAPI.ErrorDescriptor err = locResult.getErrors()[i];
-                                    if(checkError(err)) {
+                                    if (err != null && checkError(err)) {
                                         errors.add(new ErrorInfo(translate(err.getErrorMessage()),
                                                 err.getLine(),
                                                 err.getColumn(),
@@ -400,7 +400,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
                                 annotations.annotate(errors.toArray(new ErrorInfo[]{}));
                                 
                                 // set icon with error.
-                                if (!hasError){
+                                if (!hasError && !errors.isEmpty()){
                                     hasError = true;
                                 }
                                 

@@ -306,6 +306,9 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
             Collection<String> patterns = Settings.getDefault().getPatterns();
             boolean needSeparator = false;
             for( String s : patterns ) {
+                if (s.isEmpty()) {
+                    continue;
+                }
                 if( needSeparator ) {
                     sb.append('|');
                 }
@@ -318,14 +321,12 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                 // However, for non-token tags, such as "<<<<" don't
                 // insert word boundary markers since it won't work - there's
                 // no word on the right...
-                if (n > 0) {
-                    if (Character.isJavaIdentifierPart(s.charAt(0))) {
-                        // isJavaIdentifierPart - roughly matches what regex
-                        // considers a word ([a-zA-Z_0-9])
+                if (Character.isJavaIdentifierPart(s.charAt(0))) {
+                    // isJavaIdentifierPart - roughly matches what regex
+                    // considers a word ([a-zA-Z_0-9])
 
-                        // \W instead of \b: Workarond for issue 30250
-                        sb.append("\\W"); // NOI18N
-                    }
+                    // \W instead of \b: Workarond for issue 30250
+                    sb.append("\\W"); // NOI18N
                 }
                 // "escape" the string here such that regexp meta
                 // characters are handled literally
@@ -347,7 +348,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                 }
             }
             try {
-                regexp = Pattern.compile(sb.toString());
+                regexp = Pattern.compile(sb.toString(), Pattern.CASE_INSENSITIVE);
             } catch (PatternSyntaxException e) {
                 // Internal error: the regexp should have been validated when
                 // the user edited it
@@ -422,7 +423,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
     private String trim(String comment, Collection<String> patterns) {
         int index = Integer.MAX_VALUE;
         for( String p : patterns ) {
-            int i = comment.indexOf( p );
+            int i = comment.toLowerCase().indexOf(p.toLowerCase());
             if( i > 0 && i < index ) {
                 index = i;
             }

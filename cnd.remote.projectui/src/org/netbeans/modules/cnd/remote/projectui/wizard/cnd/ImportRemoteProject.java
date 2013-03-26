@@ -52,6 +52,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -62,7 +63,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -99,11 +102,13 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -185,6 +190,9 @@ public class ImportRemoteProject implements PropertyChangeListener {
     private static final String CND_TOOLS_VALUE = System.getProperty("cnd.buildtrace.tools", "gcc:c++:g++:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95"); //NOI18N
     private static final String CND_BUILD_LOG = "__CND_BUILD_LOG__"; //NOI18N
     private boolean useBuildTrace = true;
+    private final CountDownLatch waitSources = new CountDownLatch(1);
+    private final AtomicInteger openState = new AtomicInteger(0);
+    private Interrupter interrupter;
 
 
     public ImportRemoteProject(WizardDescriptor wizard) {
@@ -287,7 +295,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
     public Set<FileObject> create() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         String aHostUID = ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal());
-        MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, aHostUID, toolchain, defaultToolchain); // NOI18N
+        MakeConfiguration extConf = MakeConfiguration.createMakefileConfiguration(projectFolder, "Default", aHostUID, toolchain, defaultToolchain); // NOI18N
         int platform = CompilerSetManager.get(executionEnvironment).getPlatform();
         extConf.getDevelopmentHost().setBuildPlatform(platform);
         String workingDirRel = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(workingDir), pathMode);
@@ -349,7 +357,8 @@ public class ImportRemoteProject implements PropertyChangeListener {
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectFolder);
         prjParams
                 .setConfiguration(extConf)
-                .setSourceFolders(sources)
+                .setSourceFolders(Collections.<SourceFolderInfo>emptyList().iterator())
+                //.setSourceFolders(sources)
                 .setSourceFoldersFilter(sourceFoldersFilter)
                 .setTestFolders(tests)
                 .setImportantFiles(importantItemsIterator)
@@ -371,48 +380,73 @@ public class ImportRemoteProject implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
-            if (evt.getNewValue() instanceof Project[]) {
-                Project[] projects = (Project[])evt.getNewValue();
-                if (projects.length == 0) {
-                    return;
-                }
-                OpenProjects.getDefault().removePropertyChangeListener(this);
-                //if (setAsMain) {
-                //    OpenProjects.getDefault().setMainProject(makeProject);
-                //}
-                RP.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        doWork();
+        if (openState.get() == 0) {
+            if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
+                if (evt.getNewValue() instanceof Project[]) {
+                    Project[] projects = (Project[])evt.getNewValue();
+                    if (projects.length == 0) {
+                        return;
                     }
-                });
+                    interrupter = new Interrupter() {
+
+                        @Override
+                        public boolean cancelled() {
+                            return !isProjectOpened();
+                        }
+                    };
+                    openState.incrementAndGet();
+                    RP.post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            doWork();
+                        }
+                    });
+                }
+            }
+        } else if (openState.get() == 1) {
+            if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
+                if (evt.getNewValue() instanceof Project[]) {
+                    Project[] projects = (Project[])evt.getNewValue();
+                    for(Project p : projects) {
+                        if (p == makeProject) {
+                            return;
+                        }
+                    }
+                    openState.incrementAndGet();
+                    OpenProjects.getDefault().removePropertyChangeListener(this);
+                }
             }
         }
     }
 
     boolean isProjectOpened() {
-        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-            if (p == makeProject) {
-                return true;
-            }
-        }
-        return false;
+        return openState.get() == 1;
     }
 
     private void doWork() {
         try {
-            //OpenProjects.getDefault().open(new Project[]{makeProject}, false);
-            //if (setAsMain) {
-            //    OpenProjects.getDefault().setMainProject(makeProject);
-            //}
-            if (makeProject instanceof Runnable) {
-                ((Runnable)makeProject).run();
-            }
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.getConfigurationDescriptor();
             if (pdp.gotDescriptor()) {
+                final MakeConfigurationDescriptor configurationDescriptor = pdp.getConfigurationDescriptor();
+                if (sources != null) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ImportRemoteProject.class, "ImportProject.Progress.AnalyzeRoot"));
+                            handle.start();
+                            while(sources.hasNext()) {
+                                SourceFolderInfo next = sources.next();
+                                configurationDescriptor.addFilesFromRoot(configurationDescriptor.getLogicalFolders(), next.getFileObject(), handle, interrupter, true, Folder.Kind.SOURCE_DISK_FOLDER, null);
+                            }
+                            handle.finish();
+                            waitSources.countDown();
+                        }
+                    });
+                } else {
+                    waitSources.countDown();
+                }
                 if (pdp.getConfigurationDescriptor().getActiveConfiguration() != null) {
                     if (runConfigure && configurePath != null && configurePath.length() > 0 &&
                             configureFileObject != null && configureFileObject.isValid()) {
@@ -871,7 +905,11 @@ public class ImportRemoteProject implements PropertyChangeListener {
         // Discovery require a fully completed project
         // Make sure that descriptor was stored and readed
         ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        provider.getConfigurationDescriptor(true);
+        provider.getConfigurationDescriptor();
+        try {
+            waitSources.await();
+        } catch (InterruptedException ex) {
+        }
     }
 
     private void discovery(int rc, String makeLog, File execLog) {
@@ -895,14 +933,14 @@ public class ImportRemoteProject implements PropertyChangeListener {
                             map.put(ROOT_FOLDER, nativeProjectPath);
                             map.put(EXEC_LOG_FILE, execLog.getAbsolutePath());
                             map.put(CONSOLIDATION_STRATEGY, ConsolidationStrategy.FILE_LEVEL);
-                            if (extension.canApply(map, makeProject)) {
+                            if (extension.canApply(map, makeProject, interrupter)) {
                                 if (TRACE) {
                                     logger.log(Level.INFO, "#start discovery by exec log file {0}", execLog.getAbsolutePath()); // NOI18N
                                 }
                                 try {
                                     done = true;
                                     exeLogDone = true;
-                                    extension.apply(map, makeProject);
+                                    extension.apply(map, makeProject, interrupter);
                                     importResult.put(Step.DiscoveryLog, State.Successful);
                                 } catch (IOException ex) {
                                     ex.printStackTrace(System.err);

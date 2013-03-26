@@ -95,7 +95,6 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -200,7 +199,6 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
 
     private DescType selectedDescType = null;
 
-    boolean jnlpImplOldOrModified = false;
 
     // signing
     String signing;
@@ -361,31 +359,13 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             extResProperties = readProperties(evaluator, JNLP_EXT_RES_PREFIX, extResSuffixes);
             appletParamsProperties = readProperties(evaluator, JNLP_APPLET_PARAMS_PREFIX, appletParamsSuffixes);
             
-            initResources(evaluator, project);            
-            // check if the jnlp-impl.xml script is of previous version -> should be upgraded
-            FileObject jnlpImlpFO = project.getProjectDirectory().getFileObject("nbproject/jnlp-impl.xml");
-            if (jnlpImlpFO != null) {
-                try {
-                    final InputStream in = jnlpImlpFO.getInputStream();
-                    if(in != null) {
-                        try {
-                            String crc = JWSProjectPropertiesUtils.computeCrc32( in );
-                            jnlpImplOldOrModified = !JWSProjectPropertiesUtils.isJnlpImplCurrentVer(crc);
-                        } finally {
-                            in.close();
-                        }
-                    }
-                } catch (IOException ex) {
-                    // nothing to do really
-                }
-            }
-
+            initResources(evaluator, project);                        
         } 
         
     }
     
     boolean isJWSEnabled() {
-        return !jnlpImplOldOrModified && enabledModel.isSelected();
+        return enabledModel.isSelected();
     }
 
     /**
@@ -577,17 +557,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             props.remove(name);
         }
     }
-    
-    public void updateJnlpImpl() {
-        if (project != null) {
-            try {
-                JWSProjectPropertiesUtils.copyTemplate(project);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
-    }
-    
+            
     public void store() throws IOException {
         
         final EditableProperties ep = new EditableProperties(true);

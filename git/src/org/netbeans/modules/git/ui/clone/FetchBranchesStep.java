@@ -44,6 +44,7 @@ package org.netbeans.modules.git.ui.clone;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -77,10 +78,16 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
     }
     
     @Override
+    @NbBundle.Messages({
+        "MSG_FetchRefsPanel.errorNoBranchSelected=No branch selected",
+        "MSG_FetchRefsPanel.warningNoBranchInRepository=No branch in the repository yet"
+    })
     protected final void validateBeforeNext () {
         setValid(true, null);
-        if(branches.getSelectedBranches().isEmpty()) {
-            setValid(false, new Message(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchRefsPanel.errorNoBranchSelected"), true)); //NOI18N
+        if (branches.isEmpty()) {
+            setValid(true, new Message(Bundle.MSG_FetchRefsPanel_warningNoBranchInRepository(), true));
+        } else if(branches.getSelectedBranches().isEmpty()) {
+            setValid(false, new Message(Bundle.MSG_FetchRefsPanel_errorNoBranchSelected(), true));
         } else {
             setValid(true, null);
         }
@@ -108,6 +115,20 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
             l.add(b.branch);
         }
         return l;
+    }
+    
+    public List<String> getSelectedBranchNames () {
+        List<String>  selectedBranchNames;
+        if (branches.isEmpty()) {
+            selectedBranchNames = Collections.singletonList("*"); //NOI18N
+        } else {
+            List<Branch> selectedBranches = branches.getSelectedBranches();
+            selectedBranchNames = new ArrayList<String>(selectedBranches.size());
+            for (Branch b : selectedBranches) {
+                selectedBranchNames.add(b.branch.getName());
+            }
+        }
+        return selectedBranchNames;
     }
 
     @Override

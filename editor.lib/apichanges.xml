@@ -107,6 +107,57 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="caret-fold-cleanup">
+            <summary>Removed dependencies on Folding</summary>
+            <version major="3" minor="38"/>
+            <date day="11" month="3" year="2013"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" source="compatible" semantic="incompatible" deprecation="yes"/>
+            <description>
+                <p>
+                    BaseCaret handling of folding was factored out. BaseCaret still implements the FoldHierarchyListener, but should
+                    not be used as a listener on a hierarchy, and will not attach itself. BaseCaret's listener method does nothing.
+                </p>
+                <p>
+                    Folding actions from ActionFactory were deprecated, they moved to editor.fold.nbui module. Public classes in
+                    <code>org.netbeans.editor.ActionFactory</code> were changed to delegators to the actual actions registered
+                    with the component's EditorKit. 
+                </p>
+            </description>
+            <class name="BaseCaret" package="org.netbeans.editor"/>
+            <class name="ActionFactory" package="org.netbeans.editor"/>
+            <issue number="226368"/>
+        </change>
+        <change id="caret-refresh">
+            <summary>Allow to refresh editor view so that caret is visible</summary>
+            <version major="3" minor="37"/>
+            <date day="11" month="3" year="2013"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    The method helps to ensure that the caret, if it was originally visible on the screen,
+                    will remain visible after some view hierarchy change (i.e. define a new fold).
+                </p>
+            </description>
+            <class name="BaseCaret" package="org.netbeans.editor"/>
+            <issue number="226368"/>
+        </change>
+        <change id="EditorLibDeprecation.SidebarFactory">
+            <summary>SidebarFactory interface deprecated</summary>
+            <version major="3" minor="37"/>
+            <date day="8" month="3" year="2013"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" deprecation="yes"/>
+            <description>
+                <p>The interface <code>org.netbeans.editor.SideBarFactory</code> was
+                adopted to <code>editor.lib2</code>. The original interface was
+                deprecated. Clients should start using the relocated interface.
+                </p>
+            </description>
+            <class name="SideBarFactory" package="org.netbeans.editor"/>
+            <issue number="226877"/>
+        </change>
         <change id="moving-find">
             <summary>Moving find implementations to module editor.search</summary>
             <version major="3" minor="36"/>

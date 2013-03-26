@@ -96,6 +96,10 @@ public class CreateBranch implements DocumentListener {
         return panel.branchNameField.getText();
     }
 
+    boolean isCheckoutSelected () {
+        return panel.cbCheckoutBranch.isSelected();
+    }
+
     boolean show() {
         okButton = new JButton(NbBundle.getMessage(CreateBranch.class, "LBL_CreateBranch.OKButton.text")); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(okButton, okButton.getText());

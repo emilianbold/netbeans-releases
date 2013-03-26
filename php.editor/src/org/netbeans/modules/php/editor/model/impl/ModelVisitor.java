@@ -78,6 +78,7 @@ import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.VariableScopeFinder;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
@@ -280,7 +281,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         final ScopeImpl currentScope = modelBuilder.getCurrentScope();
         markerBuilder.prepare(node, currentScope);
         String typeName = null;
-
         if (currentScope instanceof FunctionScope) {
             FunctionScopeImpl functionScope = (FunctionScopeImpl) currentScope;
             Expression expression = node.getExpression();
@@ -487,7 +487,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
             }
         }
-
         super.visit(node);
     }
 
@@ -593,7 +592,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(SingleFieldDeclaration node) {
-        //super.visit(node);
         scan(node.getValue());
     }
 
@@ -609,7 +607,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         } else {
             occurencesBuilder.prepare(node, scope);
         }
-
         if (scope instanceof VariableNameFactory) {
             ASTNodeInfo<Variable> varInfo = ASTNodeInfo.create(node);
             if (scope instanceof MethodScope && "$this".equals(varInfo.getName())) { //NOI18N
@@ -664,7 +661,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         } else {
             occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
         }
-        //super.visit(node);
         if (field instanceof ArrayAccess) {
             ArrayAccess access = (ArrayAccess) field;
             scan(access.getDimension());
@@ -703,7 +699,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void visit(Assignment node) {
-        //Scope scope = currentScope.peek();
         Scope scope = modelBuilder.getCurrentScope();
         final VariableBase leftHandSide = node.getLeftHandSide();
         Expression rightHandSide = node.getRightHandSide();
@@ -842,7 +837,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     }
                 }
             }
-
             if (parameterName instanceof Variable) {
                 if (parameterType instanceof NamespaceName) {
                     Kind[] kinds = {Kind.CLASS, Kind.IFACE};
@@ -877,8 +871,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             occurencesBuilder.prepare(Kind.CLASS, className, scope);
         }
         occurencesBuilder.prepare(variable, scope);
-
-
         scan(node.getBody());
     }
 
@@ -924,7 +916,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(FunctionInvocation node) {
-        //Scope scope = currentScope.peek();
         Scope scope = modelBuilder.getCurrentScope();
         Expression functionName = node.getFunctionName().getName();
         if (functionName instanceof Variable) {
@@ -950,7 +941,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     occurencesBuilder.prepare(scalarInfo, constantImpl);
                 }
             }
-        } else if ("constant".equals(name) && node.getParameters().size() == 1) {
+        } else if ("constant".equals(name) && node.getParameters().size() == 1) { //NOI18N
             Expression d = node.getParameters().get(0);
             if (d instanceof Scalar) {
                 Scalar scalar = (Scalar) d;
@@ -967,7 +958,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(StaticFieldAccess node) {
-        //Scope scope = currentScope.peek();
         Scope scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
         Expression className = node.getClassName();
@@ -987,8 +977,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 name = access1.getName();
             }
         }
-
-        //super.visit(node);
     }
 
     @Override
@@ -1220,37 +1208,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     public VariableScope getNearestVariableScope(int offset) {
-        return findNearestVarScope((FileScopeImpl) getFileScope(), offset, null);
+        return VariableScopeFinder.create().findNearestVarScope((FileScopeImpl) getFileScope(), offset, null);
     }
 
     public VariableScope getVariableScope(int offset) {
-        return getVariableScope(getFileScope().getElements(), offset);
+        return getVariableScope(offset, VariableScopeFinder.ScopeRangeAcceptor.BLOCK);
     }
 
-    private VariableScope getVariableScope(List<? extends ModelElement> elements, int offset) {
-        VariableScope retval = null;
-        List<ModelElement> subElements = new LinkedList<ModelElement>();
-        for (ModelElement modelElement : elements) {
-            if (modelElement instanceof VariableScope) {
-                VariableScope varScope = (VariableScope) modelElement;
-                final OffsetRange blockRange = varScope.getBlockRange();
-                if (blockRange != null) {
-                    boolean possibleScope = true;
-                    if (modelElement instanceof FunctionScope || modelElement instanceof ClassScope) {
-                        if (blockRange.getEnd() == offset) {
-                            possibleScope = false;
-                        }
-                    }
-                    if (possibleScope && blockRange.containsInclusive(offset)
-                            && (retval == null || retval.getBlockRange().overlaps(varScope.getBlockRange()))) {
-                        retval = varScope;
-                        subElements.addAll(varScope.getElements());
-                    }
-                }
-            }
-        }
-        VariableScope subResult = subElements.isEmpty() ? null : getVariableScope(subElements, offset);
-        return subResult == null ? retval : subResult;
+    public VariableScope getVariableScope(int offset, VariableScopeFinder.ScopeRangeAcceptor scopeRangeAcceptor) {
+        return VariableScopeFinder.create().find(getFileScope(), offset, scopeRangeAcceptor);
     }
 
     private void buildCodeMarks(final int offset) {
@@ -1260,41 +1226,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
     }
 
-    private VariableScope findNearestVarScope(Scope scope, int offset, VariableScope atOffset) {
-        Collection<? extends ModelElement> elements = scope.getElements();
-        for (ModelElement varScope : elements) {
-            if (varScope instanceof ClassScope || varScope instanceof NamespaceScope) {
-                atOffset = findNearestVarScope((Scope) varScope, offset, atOffset);
-            }
-            if (varScope instanceof VariableScope) {
-                if (varScope.getNameRange().getStart() <= offset) {
-                    if (atOffset == null || atOffset.getOffset() < varScope.getOffset()) {
-                        FileObject fileObject = varScope.getFileObject();
-                        if (fileObject == scope.getFileObject()) {
-                            VariableScope variableScope = (VariableScope) varScope;
-                            OffsetRange blockRange = variableScope.getBlockRange();
-                            if (blockRange == null || blockRange.containsInclusive(offset)) {
-                                atOffset = variableScope;
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
-        if (atOffset == null) {
-            while (scope != null && !(scope instanceof VariableScope)) {
-                scope = scope.getInScope();
-            }
-            if (scope != null) {
-                OffsetRange blockRange = scope.getBlockRange();
-                if (blockRange == null || blockRange.containsInclusive(offset)) {
-                    atOffset = (VariableScope) scope;
-                }
-            }
-        }
-        return atOffset;
-    }
     private OffsetRange getBlockRange(Scope currentScope) {
         ASTNode conditionalNode = findConditionalStatement(getPath());
         return getBlockRange(conditionalNode, currentScope);
@@ -1324,22 +1255,18 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     private void handleVarAssignment(final String name, final VariableScope varScope, final PhpDocTypeTagInfo phpDocTypeTagInfo) {
-        VariableNameImpl varInstance;
-        varInstance = (VariableNameImpl) ModelUtils.getFirst(ModelUtils.filter(varScope.getDeclaredVariables(), name));
+        VariableNameImpl varInstance = (VariableNameImpl) ModelUtils.getFirst(ModelUtils.filter(varScope.getDeclaredVariables(), name));
         if (varInstance == null) {
             varInstance = new VariableNameImpl(varScope, name, varScope.getFile(), phpDocTypeTagInfo.getRange(), varScope instanceof NamespaceScopeImpl);
         }
-        if (varInstance != null) {
-            ASTNode conditionalNode = findConditionalStatement(getPath());
-            VarAssignmentImpl varAssignment = varInstance.createAssignment(
-                    (Scope) varScope,
-                    conditionalNode != null,
-                    getBlockRange(varScope),
-                    phpDocTypeTagInfo.getRange(),
-                    phpDocTypeTagInfo.getTypeName());
-            varInstance.addElement(varAssignment);
-        }
-        //scan(phpDocTypeTagInfo.getTypeTag());
+        ASTNode conditionalNode = findConditionalStatement(getPath());
+        VarAssignmentImpl varAssignment = varInstance.createAssignment(
+                (Scope) varScope,
+                conditionalNode != null,
+                getBlockRange(varScope),
+                phpDocTypeTagInfo.getRange(),
+                phpDocTypeTagInfo.getTypeName());
+        varInstance.addElement(varAssignment);
         occurencesBuilder.prepare(phpDocTypeTagInfo.getTypeTag(), varScope);
     }
 

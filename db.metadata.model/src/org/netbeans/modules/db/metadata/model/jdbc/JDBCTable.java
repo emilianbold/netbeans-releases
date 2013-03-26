@@ -142,10 +142,10 @@ public class JDBCTable extends TableImplementation {
         int position = 0;
         JDBCValue jdbcValue;
         if (isOdbc(rs)) {
-            jdbcValue = JDBCValue.createTableColumnValueODBC(rs);
+            jdbcValue = JDBCValue.createTableColumnValueODBC(rs, this.getTable());
         } else {
             position = rs.getInt("ORDINAL_POSITION");
-            jdbcValue = JDBCValue.createTableColumnValue(rs);
+            jdbcValue = JDBCValue.createTableColumnValue(rs, this.getTable());
         }
         return new JDBCColumn(this.getTable(), position, jdbcValue);
     }

@@ -203,7 +203,8 @@ public final class BrowserSupport {
             } catch( DataObjectNotFoundException ex ) {
                 //ignore
             }
-            lkp = null == dob ? Lookups.fixed( project, context ) : Lookups.fixed( project, context, dob );
+            lkp = null == dob ? Lookups.fixed( project, context, browser.getBrowserFamily() ) :
+                    Lookups.fixed( project, context, dob, browser.getBrowserFamily() );
         }
         wbp.setProjectContext(lkp);
         wbp.showURL(url);

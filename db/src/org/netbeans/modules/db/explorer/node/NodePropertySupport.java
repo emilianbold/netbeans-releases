@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.openide.nodes.PropertySupport;
@@ -51,6 +52,8 @@ import org.openide.nodes.PropertySupport;
  * @author Rob Englander
  */
 public class NodePropertySupport extends PropertySupport {
+    public static final String CUSTOM_EDITOR = "NodePropertySupport.customEditor"; //NOI18N
+    public static final String NODE = "NodePropertySupport.Node";       //NOI18N
 
     private BaseNode node;
     private String key;
@@ -59,6 +62,7 @@ public class NodePropertySupport extends PropertySupport {
         super(name, type, displayName, shortDescription, true, writable);
         key = name;
         this.node = node;
+        setValue(NODE, node);
     }
 
     @Override
@@ -76,4 +80,37 @@ public class NodePropertySupport extends PropertySupport {
         node.setPropertyValue(this, val);
     }
 
+    /**
+     * PropertyEditor can be set via setValue - it can be either instanciated or
+     * a Class, that has a Default-Constructor and results in an object, that
+     * implements PropertyEditor
+     *
+     * @return
+     */
+    @Override
+    public PropertyEditor getPropertyEditor() {
+        PropertyEditor result = null;
+        Object potentialEditor = getValue(CUSTOM_EDITOR);
+
+        if (potentialEditor instanceof PropertyEditor) {
+            result = (PropertyEditor) potentialEditor;
+        } else if (potentialEditor instanceof Class) {
+            try {
+                potentialEditor = ((Class) potentialEditor).newInstance();
+                if (!(potentialEditor instanceof PropertyEditor)) {
+                    throw new IllegalArgumentException(
+                            "Editor class does not derive from property editor"); //NOI18N
+}
+                return (PropertyEditor) potentialEditor;
+            } catch (InstantiationException ex) {
+                throw new RuntimeException(ex);
+            } catch (IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        if (result == null) {
+            result = super.getPropertyEditor();
+        }
+        return result;
+    }
 }

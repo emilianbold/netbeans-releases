@@ -42,8 +42,10 @@ import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import static org.junit.Assert.*;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -80,6 +82,10 @@ public class ClipboardHandlerTest extends NbTestCase {
         copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |@SuppressWarnings(\"deprecated\") List l1, l2;| }\n", "package test;\npublic Target {\n^\n}", "package test;\n\nimport java.util.List;\n\npublic Target {\n@SuppressWarnings(\"deprecated\") List l1, l2;\n}");
     }
 
+    public void testCopyIntoComment() throws Exception {
+        copyAndPaste("package test;\nimport java.util.List;\npublic class Test { |List l;| }\n", "package test;\npublic Target {\n/*^*/\n}", "package test;\npublic Target {\n/*List l;*/\n}");
+    }
+    
     private void copyAndPaste(String from, final String to, String golden) throws Exception {
         final int pastePos = to.indexOf('^');
 
@@ -148,6 +154,8 @@ public class ClipboardHandlerTest extends NbTestCase {
         EditorCookie ec = od.getCookie(EditorCookie.class);
 
         ec.open();
+        
+        ec.getDocument().putProperty(Language.class, JavaTokenId.language());
 
         return ec.getOpenedPanes()[0];
     }

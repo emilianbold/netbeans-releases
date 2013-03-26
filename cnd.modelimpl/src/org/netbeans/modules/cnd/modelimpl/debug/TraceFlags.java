@@ -69,6 +69,7 @@ public class TraceFlags {
     public static final boolean TIMING_PARSE_PER_FILE_DEEP = Boolean.getBoolean("cnd.modelimpl.timing.per.file.deep"); // NOI18N
     public static final boolean TIMING_PARSE_PER_FILE_FLAT = Boolean.getBoolean("cnd.modelimpl.timing.per.file.flat"); // NOI18N
     public static final boolean TIMING = Boolean.getBoolean("cnd.modelimpl.timing"); // NOI18N
+    public static final boolean CHECK_CONSISTENCY = DebugUtils.getBoolean("cnd.modelimpl.checkConsistency", false); // NOI18N
     public static final int     SUSPEND_PARSE_TIME = Integer.getInteger("cnd.modelimpl.sleep", 0); // NOI18N
     public static final int     SUSPEND_PARSE_FILE_TIME = Integer.getInteger("cnd.modelimpl.parse.sleep", 0); // NOI18N
     public static final boolean REPORT_PARSING_ERRORS = Boolean.getBoolean("parser.report.errors"); // NOI18N
@@ -167,6 +168,7 @@ public class TraceFlags {
     public static final boolean EXPRESSION_EVALUATOR_EXTRA_SPEC_PARAMS_MATCHING = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.extra.spec.params.matching", false); // NOI18N
 
     public static final boolean CPP_PARSER_ACTION = DebugUtils.getBoolean("cnd.modelimpl.cpp.parser.action", false); // NOI18N
+    public static final boolean TRACE_CPP_PARSER_ACTION = DebugUtils.getBoolean("cnd.modelimpl.cpp.parser.action.trace", false); // NOI18N
     public static final boolean CPP_PARSER_NEW_GRAMMAR = DebugUtils.getBoolean("cnd.modelimpl.cpp.parser.new.grammar", false); // NOI18N
     public static final boolean PARSE_HEADERS_WITH_SOURCES = DebugUtils.getBoolean("cnd.modelimpl.parse.headers.with.sources", false); // NOI18N
 

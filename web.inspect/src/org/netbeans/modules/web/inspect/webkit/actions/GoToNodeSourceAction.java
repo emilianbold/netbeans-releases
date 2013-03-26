@@ -158,7 +158,7 @@ public class GoToNodeSourceAction extends NodeAction  {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    CSSUtils.open(fob, nodeToShow.from());
+                    CSSUtils.openAtOffset(fob, nodeToShow.from());
                 }
             });
         }

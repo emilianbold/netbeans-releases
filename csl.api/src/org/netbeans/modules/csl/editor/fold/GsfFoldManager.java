@@ -51,11 +51,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -65,9 +65,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Position;
 import org.netbeans.api.editor.fold.Fold;
+import org.netbeans.spi.editor.fold.FoldInfo;
+import org.netbeans.api.editor.fold.FoldTemplate;
 import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Severity;
@@ -92,7 +94,9 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.*;
-import org.openide.text.NbDocument;
+import org.openide.util.NbBundle;
+
+import static org.netbeans.modules.csl.editor.fold.Bundle.*;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -100,7 +104,23 @@ import org.openide.text.NbDocument;
  * as possible to make merging Retouche fixes back as simple as
  * possible. 
  * 
- * Copied from both JavaFoldManager and JavaElementFoldManager
+ * Copied from both JavaFoldManager and JavaElementFoldManager.
+ * <p/>
+ * 
+ * From introduction of {@link FoldType}, this Manager accepts these Strings
+ * from {@link StructureScanner#folds}:<ul>
+ * <li>codes of FoldTypes registered for the language, or
+ * <li>legacy FoldType codes.
+ * </ul>
+ * The registered FoldTypes take precedence; that is if the SPI returns
+ * "code-block" and a FoldType is registered with that code, that FoldType (and its FoldTemplate)
+ * will be used to create the Fold. If no such FoldType exists, the GsfFoldManager will still
+ * create the fold in a bw compatible mode with an <b>unregistered</b> fold type. But because
+ * of implementation peculiarities, the FoldType will eventually default to one of the generic
+ * settings.
+ * <p/>
+ * If a code other than registered FoldTypes and bw compatible constants is used, 
+ * a warning will be printed - to detect programmer errors.
  * 
  *
  * @author Jan Lahoda
@@ -110,129 +130,60 @@ public class GsfFoldManager implements FoldManager {
 
     private static final Logger LOG = Logger.getLogger(GsfFoldManager.class.getName());
     
-    public static final FoldType CODE_BLOCK_FOLD_TYPE = new FoldType("code-block"); // NOI18N
-    public static final FoldType INITIAL_COMMENT_FOLD_TYPE = new FoldType("initial-comment"); // NOI18N
-    public static final FoldType IMPORTS_FOLD_TYPE = new FoldType("imports"); // NOI18N
-    public static final FoldType JAVADOC_FOLD_TYPE = new FoldType("javadoc"); // NOI18N
-    public static final FoldType TAG_FOLD_TYPE = new FoldType("tag"); // NOI18N
-    public static final FoldType INNER_CLASS_FOLD_TYPE = new FoldType("inner-class"); // NOI18N
-
-    
-    private static final String IMPORTS_FOLD_DESCRIPTION = "..."; // NOI18N
-
-    private static final String COMMENT_FOLD_DESCRIPTION = "..."; // NOI18N
-
-    private static final String JAVADOC_FOLD_DESCRIPTION = "..."; // NOI18N
-    
-    private static final String CODE_BLOCK_FOLD_DESCRIPTION = "{...}"; // NOI18N
-
-    private static final String TAG_FOLD_DESCRIPTION = "<.../>"; // NOI18N
-
-
-    public static final FoldTemplate CODE_BLOCK_FOLD_TEMPLATE
-        = new FoldTemplate(CODE_BLOCK_FOLD_TYPE, CODE_BLOCK_FOLD_DESCRIPTION, 1, 1);
-    
-    public static final FoldTemplate INITIAL_COMMENT_FOLD_TEMPLATE
-        = new FoldTemplate(INITIAL_COMMENT_FOLD_TYPE, COMMENT_FOLD_DESCRIPTION, 2, 2);
-
-    public static final FoldTemplate IMPORTS_FOLD_TEMPLATE
-        = new FoldTemplate(IMPORTS_FOLD_TYPE, IMPORTS_FOLD_DESCRIPTION, 0, 0);
-
-    public static final FoldTemplate JAVADOC_FOLD_TEMPLATE
-        = new FoldTemplate(JAVADOC_FOLD_TYPE, JAVADOC_FOLD_DESCRIPTION, 3, 2);
-
-    public static final FoldTemplate TAG_FOLD_TEMPLATE
-        = new FoldTemplate(TAG_FOLD_TYPE, TAG_FOLD_DESCRIPTION, 0, 0);
-
-    public static final FoldTemplate INNER_CLASS_FOLD_TEMPLATE
-        = new FoldTemplate(INNER_CLASS_FOLD_TYPE, CODE_BLOCK_FOLD_DESCRIPTION, 0, 0);
-
-    
-    public static final String CODE_FOLDING_ENABLE = "code-folding-enable"; //NOI18N
-    
-    /** Collapse methods by default
-     * NOTE: This must be kept in sync with string literal in editor/options
+    private static final FoldTemplate TEMPLATE_CODEBLOCK = new org.netbeans.api.editor.fold.FoldTemplate(1, 1, "{...}"); // NOI18N
+   
+    /**
+     * This definition and all Fold types defined in CSL are deprecated and for backward
+     * compatibility only. 
      */
-    public static final String CODE_FOLDING_COLLAPSE_METHOD = "code-folding-collapse-method"; //NOI18N
+    @Deprecated
+    public static final FoldType CODE_BLOCK_FOLD_TYPE = FoldType.CODE_BLOCK;
+    
+    @Deprecated
+    public static final FoldType INITIAL_COMMENT_FOLD_TYPE = FoldType.INITIAL_COMMENT;
     
     /**
-     * Collapse inner classes by default 
-     * NOTE: This must be kept in sync with string literal in editor/options
+     * Note: this FoldType's code was changed from 'imports' to 'import' to match the used preference key.
      */
-    public static final String CODE_FOLDING_COLLAPSE_INNERCLASS = "code-folding-collapse-innerclass"; //NOI18N
+    @NbBundle.Messages("FT_label_imports=Imports or Includes")
+    @Deprecated
+    public static final FoldType IMPORTS_FOLD_TYPE = FoldType.IMPORT;
+
+    @Deprecated
+    public static final FoldType JAVADOC_FOLD_TYPE = FoldType.DOCUMENTATION;
+    
+    @Deprecated
+    public static final FoldType TAG_FOLD_TYPE = FoldType.TAG;
     
     /**
-     * Collapse import section default
-     * NOTE: This must be kept in sync with string literal in editor/options
+     * This type's code was renamed from inner-class to innerclass to match the preference value
      */
-    public static final String CODE_FOLDING_COLLAPSE_IMPORT = "code-folding-collapse-import"; //NOI18N
+    @NbBundle.Messages("FT_label_innerclass=Inner Classes")
+    @Deprecated
+    public static final FoldType INNER_CLASS_FOLD_TYPE = FoldType.create("innerclass", FT_label_innerclass(), TEMPLATE_CODEBLOCK);
     
-    /**
-     * Collapse javadoc comment by default
-     * NOTE: This must be kept in sync with string literal in editor/options
-     */
-    public static final String CODE_FOLDING_COLLAPSE_JAVADOC = "code-folding-collapse-javadoc"; //NOI18N
-
-    /**
-     * Collapse initial comment by default
-     * NOTE: This must be kept in sync with string literal in editor/options
-     */
-    public static final String CODE_FOLDING_COLLAPSE_INITIAL_COMMENT = "code-folding-collapse-initial-comment"; //NOI18N
+    @NbBundle.Messages("FT_label_othercodeblocks=Other code blocks")
+    @Deprecated
+    public static final FoldType OTHER_CODEBLOCKS_FOLD_TYPE = FoldType.TAG.derive("othercodeblocks", FT_label_othercodeblocks(), 
+            TEMPLATE_CODEBLOCK);
     
-     /**
-     * Collapse tags by default
-     * NOTE: This must be kept in sync with string literal in editor/options
-     */
-    public static final String CODE_FOLDING_COLLAPSE_TAGS = "code-folding-collapse-tags"; //NOI18N
-
+    private static final Set<String> LEGACY_FOLD_TAGS = new HashSet<String>(11);
     
-    protected static final class FoldTemplate {
-
-        private FoldType type;
-
-        private String description;
-
-        private int startGuardedLength;
-
-        private int endGuardedLength;
-
-        protected FoldTemplate(FoldType type, String description,
-        int startGuardedLength, int endGuardedLength) {
-            this.type = type;
-            this.description = description;
-            this.startGuardedLength = startGuardedLength;
-            this.endGuardedLength = endGuardedLength;
-        }
-
-        public FoldType getType() {
-            return type;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public int getStartGuardedLength() {
-            return startGuardedLength;
-        }
-
-        public int getEndGuardedLength() {
-            return endGuardedLength;
-        }
-
+    static {
+        LEGACY_FOLD_TAGS.add(OTHER_CODEBLOCKS_FOLD_TYPE.code());
+        LEGACY_FOLD_TAGS.add(INNER_CLASS_FOLD_TYPE.code());
+        LEGACY_FOLD_TAGS.add(TAG_FOLD_TYPE.code());
+        LEGACY_FOLD_TAGS.add(JAVADOC_FOLD_TYPE.code());
+        LEGACY_FOLD_TAGS.add(IMPORTS_FOLD_TYPE.code());
+        LEGACY_FOLD_TAGS.add(INITIAL_COMMENT_FOLD_TYPE.code());
+        LEGACY_FOLD_TAGS.add(CODE_BLOCK_FOLD_TYPE.code());
     }
     
     private FoldOperation operation;
     private FileObject    file;
     private JavaElementFoldTask task;
     
-//    // Folding presets
-//    private boolean foldImportsPreset;
-//    private boolean foldInnerClassesPreset;
-//    private boolean foldJavadocsPreset;
-//    private boolean foldCodeBlocksPreset;
-//    private boolean foldInitialCommentsPreset;
-    private static volatile Preferences prefs;
+    private volatile Preferences prefs;
     
     /** Creates a new instance of GsfFoldManager */
     public GsfFoldManager() {
@@ -253,7 +204,6 @@ public class GsfFoldManager implements FoldManager {
         file = DataLoadersBridge.getDefault().getFileObject(doc);
         
         if (file != null) {
-            currentFolds = new HashMap<FoldInfo, Fold>();
             task = JavaElementFoldTask.getTask(file);
             task.setGsfFoldManager(GsfFoldManager.this, file);
         }
@@ -278,7 +228,6 @@ public class GsfFoldManager implements FoldManager {
 
     @Override
     public void removeDamagedNotify(Fold damagedFold) {
-        currentFolds.remove(operation.getExtraInfo(damagedFold));
         if (importsFold == damagedFold) {
             importsFold = null;//not sure if this is correct...
         }
@@ -297,27 +246,17 @@ public class GsfFoldManager implements FoldManager {
         
         task         = null;
         file         = null;
-        currentFolds = null;
         importsFold  = null;
         initialCommentFold = null;
-    }
-    
-//    public void settingsChange(SettingsChangeEvent evt) {
-//        // Get folding presets
-//        foldInitialCommentsPreset = getSetting(GsfOptions.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT);
-//        foldImportsPreset = getSetting(GsfOptions.CODE_FOLDING_COLLAPSE_IMPORT);
-//        foldCodeBlocksPreset = getSetting(GsfOptions.CODE_FOLDING_COLLAPSE_METHOD);
-//        foldInnerClassesPreset = getSetting(GsfOptions.CODE_FOLDING_COLLAPSE_INNERCLASS);
-//        foldJavadocsPreset = getSetting(GsfOptions.CODE_FOLDING_COLLAPSE_JAVADOC);
-//    }
-    
-    private static boolean getSetting(String settingName) {
-        return prefs.getBoolean(settingName, false);
     }
     
     static final class JavaElementFoldTask extends IndexingAwareParserResultTask<ParserResult> {
 
         private final AtomicBoolean cancelled = new AtomicBoolean(false);
+        
+        private FoldInfo initComment;
+        
+        private FoldInfo imports;
         
         public JavaElementFoldTask() {
             super(TaskIndexingMode.ALLOWED_DURING_SCAN);
@@ -397,7 +336,7 @@ public class GsfFoldManager implements FoldManager {
                 return;
             }
 
-            final TreeSet<FoldInfo> folds = new TreeSet<FoldInfo>();
+            final Collection<FoldInfo> folds = new HashSet<FoldInfo>();
             final Document doc = info.getSnapshot().getSource().getDocument(false);
             if (doc == null) {
                 return;
@@ -408,13 +347,16 @@ public class GsfFoldManager implements FoldManager {
             }
             
             if (mgrs instanceof GsfFoldManager) {
-                SwingUtilities.invokeLater(((GsfFoldManager)mgrs).new CommitFolds(folds, doc, info.getSnapshot().getSource()));
+                SwingUtilities.invokeLater(((GsfFoldManager)mgrs).createCommit(
+                        folds, 
+                        initComment, imports, doc, info.getSnapshot().getSource()));
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
                     Collection<GsfFoldManager> jefms = (Collection<GsfFoldManager>)mgrs;
                     public void run() {
                         for (GsfFoldManager jefm : jefms) {
-                            jefm.new CommitFolds(folds, doc, info.getSnapshot().getSource()).run();
+                            jefm.createCommit(folds, initComment, imports, 
+                                    doc, info.getSnapshot().getSource()).run();
                         }
                 }});
             }
@@ -430,7 +372,7 @@ public class GsfFoldManager implements FoldManager {
          * 
          * @return true If folds were found, false if cancelled
          */
-        private boolean gsfFoldScan(final Document doc, ParserResult info, final TreeSet<FoldInfo> folds) {
+        private boolean gsfFoldScan(final Document doc, ParserResult info, final Collection<FoldInfo> folds) {
             final boolean [] success = new boolean [] { false };
             Source source = info.getSnapshot().getSource();
 
@@ -482,7 +424,7 @@ public class GsfFoldManager implements FoldManager {
             return success[0];
         }
 
-        private boolean checkInitialFold(final Document doc, final TreeSet<FoldInfo> folds) {
+        private boolean checkInitialFold(final Document doc, final Collection<FoldInfo> folds) {
             final boolean[] ret = new boolean[1];
             ret[0] = true;
             final TokenHierarchy<?> th = TokenHierarchy.get(doc);
@@ -492,52 +434,44 @@ public class GsfFoldManager implements FoldManager {
             doc.render(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        TokenSequence<?> ts = th.tokenSequence();
-                        if (ts == null) {
+                    TokenSequence<?> ts = th.tokenSequence();
+                    if (ts == null) {
+                        return;
+                    }
+                    while (ts.moveNext()) {
+                        Token<?> token = ts.token();
+                        String category = token.id().primaryCategory();
+                        if ("comment".equals(category)) { // NOI18N
+                            int startOffset = ts.offset();
+                            int endOffset = startOffset + token.length();
+
+                            // Find end - could be a block of single-line statements
+                            while (ts.moveNext()) {
+                                token = ts.token();
+                                category = token.id().primaryCategory();
+                                if ("comment".equals(category)) { // NOI18N
+                                    endOffset = ts.offset() + token.length();
+                                } else if (!"whitespace".equals(category)) { // NOI18N
+                                    break;
+                                }
+                            }
+
+                            try {
+                                // Start the fold at the END of the line
+                                startOffset = org.netbeans.editor.Utilities.getRowEnd((BaseDocument) doc, startOffset);
+                                if (startOffset >= endOffset) {
+                                    return;
+                                }
+                            } catch (BadLocationException ex) {
+                                LOG.log(Level.WARNING, null, ex);
+                            }
+
+                            folds.add(initComment = FoldInfo.range(startOffset, endOffset, INITIAL_COMMENT_FOLD_TYPE));
                             return;
                         }
-                        while (ts.moveNext()) {
-                            Token<?> token = ts.token();
-                            String category = token.id().primaryCategory();
-                            if ("comment".equals(category)) { // NOI18N
-                                int startOffset = ts.offset();
-                                int endOffset = startOffset + token.length();
-                                boolean collapsed = getSetting(CODE_FOLDING_COLLAPSE_INITIAL_COMMENT); //foldInitialCommentsPreset;
-
-
-                                // Find end - could be a block of single-line statements
-
-                                while (ts.moveNext()) {
-                                    token = ts.token();
-                                    category = token.id().primaryCategory();
-                                    if ("comment".equals(category)) { // NOI18N
-                                        endOffset = ts.offset() + token.length();
-                                    } else if (!"whitespace".equals(category)) { // NOI18N
-                                        break;
-                                    }
-                                }
-
-                                try {
-                                    // Start the fold at the END of the line
-                                    startOffset = org.netbeans.editor.Utilities.getRowEnd((BaseDocument) doc, startOffset);
-                                    if (startOffset >= endOffset) {
-                                        return;
-                                    }
-                                } catch (BadLocationException ex) {
-                                    LOG.log(Level.WARNING, null, ex);
-                                }
-
-                                folds.add(new FoldInfo(doc, startOffset, endOffset, INITIAL_COMMENT_FOLD_TEMPLATE, collapsed));
-                                return;
-                            }
-                            if (!"whitespace".equals(category)) { // NOI18N
-                                break;
-                            }
-                            
+                        if (!"whitespace".equals(category)) { // NOI18N
+                            break;
                         }
-                    } catch (BadLocationException e) {
-                        ret[0] = false;
                     }
                 }
             });
@@ -545,7 +479,7 @@ public class GsfFoldManager implements FoldManager {
         }
         
         private void scan(final ParserResult info,
-            final TreeSet<FoldInfo> folds, final Document doc, final
+            final Collection<FoldInfo> folds, final Document doc, final
             StructureScanner scanner) {
             
             doc.render(new Runnable() {
@@ -556,68 +490,84 @@ public class GsfFoldManager implements FoldManager {
             });
         }
         
-        private void addFoldsOfType(
-                    StructureScanner scanner,
+        private boolean addFoldsOfType(
                     String type, Map<String,List<OffsetRange>> folds,
-                    TreeSet<FoldInfo> result,
+                    Collection<FoldInfo> result,
                     Document doc, 
-                    String collapsedOptionName,
-                    FoldTemplate template) {
+                    FoldType foldType) {
             
             List<OffsetRange> ranges = folds.get(type); //NOI18N
             if (ranges != null) {
-                boolean collapseByDefault = getSetting(collapsedOptionName);
                 if (LOG.isLoggable(Level.FINEST)) {
-                    LOG.log(Level.FINEST, "Creating folds {0}, collapsed: {1}", new Object[] {
-                        type, collapseByDefault
+                    LOG.log(Level.FINEST, "Creating folds {0}", new Object[] {
+                        type
                     });
                 }
                 for (OffsetRange range : ranges) {
-                    try {
-                        if (LOG.isLoggable(Level.FINEST)) {
-                            LOG.log(Level.FINEST, "Fold: {0}", range);
-                        }
-                        addFold(range, result, doc, collapseByDefault, template);
-                    } catch (BadLocationException ble) {
-                        LOG.log(Level.WARNING, "StructureScanner " + scanner + " supplied invalid fold " + range, ble); //NOI18N
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.log(Level.FINEST, "Fold: {0}", range);
                     }
+                    addFold(range, result, doc, foldType);
                 }
+                folds.remove(type);
+                return true;
             } else {
                 LOG.log(Level.FINEST, "No folds of type {0}", type);
+                return false;
             }
         }
         
-        private void addTree(TreeSet<FoldInfo> result, ParserResult info, Document doc, StructureScanner scanner) {
+        private void addTree(Collection<FoldInfo> result, ParserResult info, Document doc, StructureScanner scanner) {
             // #217322, disabled folding -> no folds will be created
-            if (!getSetting(CODE_FOLDING_ENABLE)) {
+            String mime = info.getSnapshot().getMimeType();
+            
+            if (!FoldUtilities.isFoldingEnabled(mime)) {
                 return;
             }
             Map<String,List<OffsetRange>> folds = scanner.folds(info);
             if (cancelled.get()) {
                 return;
             }
-            addFoldsOfType(scanner, "codeblocks", folds, result, doc, 
-                    CODE_FOLDING_COLLAPSE_METHOD, CODE_BLOCK_FOLD_TEMPLATE);
-            addFoldsOfType(scanner, "comments", folds, result, doc, 
-                    CODE_FOLDING_COLLAPSE_JAVADOC, JAVADOC_FOLD_TEMPLATE);
-            addFoldsOfType(scanner, "initial-comment", folds, result, doc, 
-                    CODE_FOLDING_COLLAPSE_INITIAL_COMMENT, INITIAL_COMMENT_FOLD_TEMPLATE);
-            addFoldsOfType(scanner, "imports", folds, result, doc, 
-                    CODE_FOLDING_COLLAPSE_IMPORT, IMPORTS_FOLD_TEMPLATE);
-            addFoldsOfType(scanner, "tags", folds, result, doc, 
-                    CODE_FOLDING_COLLAPSE_TAGS, TAG_FOLD_TEMPLATE);
-            addFoldsOfType(scanner, "othercodeblocks", folds, result, doc, 
-                    CODE_FOLDING_COLLAPSE_TAGS, CODE_BLOCK_FOLD_TEMPLATE);
-            addFoldsOfType(scanner, "inner-classes", folds, result, doc, 
-                    CODE_FOLDING_COLLAPSE_INNERCLASS, INNER_CLASS_FOLD_TEMPLATE);
+            Collection<? extends FoldType> ftypes = FoldUtilities.getFoldTypes(mime).values();
+            // make a copy, since addFoldsOfType will remove pieces:
+            folds = new HashMap<String, List<OffsetRange>>(folds);
+            for (FoldType ft : ftypes) {
+                addFoldsOfType(ft.code(), folds, result, doc, ft);
+            }
+            // fallback: transform the legacy keys into FoldInfos
+            addFoldsOfType("codeblocks", folds, result, doc, 
+                    CODE_BLOCK_FOLD_TYPE);
+            addFoldsOfType("comments", folds, result, doc, 
+                    JAVADOC_FOLD_TYPE);
+            addFoldsOfType("initial-comment", folds, result, doc, 
+                    INITIAL_COMMENT_FOLD_TYPE);
+            addFoldsOfType("imports", folds, result, doc, 
+                    IMPORTS_FOLD_TYPE);
+            addFoldsOfType("tags", folds, result, doc, 
+                    TAG_FOLD_TYPE);
+            addFoldsOfType("othercodeblocks", folds, result, doc, 
+                    CODE_BLOCK_FOLD_TYPE);
+            addFoldsOfType("inner-classes", folds, result, doc, 
+                    INNER_CLASS_FOLD_TYPE);
+            
+            if (folds.size() > 0) {
+                LOG.log(Level.WARNING, "Undefined fold types used in {0}: {1}", new Object[] {
+                    info, folds.keySet()
+                });
+            }
         }
         
-        private void addFold(OffsetRange range, TreeSet<FoldInfo> folds, Document doc, boolean collapseByDefault, FoldTemplate template) throws BadLocationException {
+        private void addFold(OffsetRange range, Collection<FoldInfo> folds, Document doc, FoldType type) {
             if (range != OffsetRange.NONE) {
                 int start = range.getStart();
                 int end = range.getEnd();
                 if (start != (-1) && end != (-1) && end <= doc.getLength()) {
-                    folds.add(new FoldInfo(doc, start, end, template, collapseByDefault));
+                    FoldInfo fi = FoldInfo.range(start, end, type);
+                    // hack for singular imports fold
+                    if (fi.getType() == IMPORTS_FOLD_TYPE && imports == null) {
+                        imports = fi;
+                    }
+                    folds.add(fi);
                 }
             }
         }
@@ -639,17 +589,25 @@ public class GsfFoldManager implements FoldManager {
 
     }
     
+    private Runnable createCommit(Collection<FoldInfo> folds, FoldInfo initComment, FoldInfo imports, Document d, Source s) {
+        return new CommitFolds(folds, initComment, imports, d, s);
+    }
+    
     private class CommitFolds implements Runnable {
-        private Document scannedDocument;
-        private Source scanSource;
+        private final Document scannedDocument;
+        private Source  scanSource;
         
         private boolean insideRender;
-        private TreeSet<FoldInfo> infos;
+        private Collection<FoldInfo> infos;
         private long startTime;
+        private FoldInfo    initComment;
+        private FoldInfo    imports;
         
-        public CommitFolds(TreeSet<FoldInfo> infos, Document scanedDocument, Source s) {
+        public CommitFolds(Collection<FoldInfo> infos, FoldInfo initComment, FoldInfo imports, Document scannedDocument, Source s) {
             this.infos = infos;
-            this.scannedDocument = scanedDocument;
+            this.initComment = initComment;
+            this.imports = imports;
+            this.scannedDocument = scannedDocument;
             this.scanSource = s;
         }
         
@@ -658,17 +616,10 @@ public class GsfFoldManager implements FoldManager {
          * ignores the default state, and takes it from the actual state of
          * existing fold.
          */
-        private boolean mergeSpecialFoldState(FoldInfo fi) {
-            if (fi.template == IMPORTS_FOLD_TEMPLATE) {
-                if (importsFold != null) {
-                    return importsFold.isCollapsed();
-                }
-            } else if (fi.template == INITIAL_COMMENT_FOLD_TEMPLATE) {
-                if (initialCommentFold != null) {
-                    return initialCommentFold.isCollapsed();
-                }
+        private void mergeSpecialFoldState(FoldInfo fi, Fold f) {
+            if (fi != null && f != null) {
+                fi.collapsed(f.isCollapsed());
             }
-            return fi.collapseByDefault;
         }
 
         public void run() {
@@ -682,6 +633,9 @@ public class GsfFoldManager implements FoldManager {
             }
             
             operation.getHierarchy().lock();
+            if (task == null) {
+                return;
+            }
             if (operation.getHierarchy().getComponent().getDocument() != this.scannedDocument) {
                 Throwable t = (Throwable)scannedDocument.getProperty("Issue-222763-debug");
                 StringWriter sw = new StringWriter();
@@ -704,71 +658,19 @@ public class GsfFoldManager implements FoldManager {
                 return;
             }
             try {
-                FoldHierarchyTransaction tr = operation.openTransaction();
-                
                 try {
-                    if (currentFolds == null) {
-                        return;
+                    mergeSpecialFoldState(imports, importsFold);
+                    mergeSpecialFoldState(initComment, initialCommentFold);
+                    
+                    Map<FoldInfo, Fold> newState = operation.update(infos, null, null);
+                    if (imports != null) {
+                        importsFold = newState.get(imports);
                     }
-                    
-                    Map<FoldInfo, Fold> added   = new TreeMap<FoldInfo, Fold>();
-                    // TODO - use map duplication here instead?
-                    TreeSet<FoldInfo> removed = new TreeSet<FoldInfo>(currentFolds.keySet());
-                    int documentLength = document.getLength();
-                    
-                    for (FoldInfo i : infos) {
-                        if (removed.remove(i)) {
-                            continue ;
-                        }
-                        
-                        int start = i.start.getOffset();
-                        int end   = i.end.getOffset();
-                        
-                        if (end > documentLength) {
-                            continue;
-                        }
-                        
-                        if (end > start && (end - start) > (i.template.getStartGuardedLength() + i.template.getEndGuardedLength())) {
-                            Fold f    = operation.addToHierarchy(i.template.getType(),
-                                                                 i.template.getDescription(),
-                                                                 mergeSpecialFoldState(i),
-                                                                 start,
-                                                                 end,
-                                                                 i.template.getStartGuardedLength(),
-                                                                 i.template.getEndGuardedLength(),
-                                                                 i,
-                                                                 tr);
-                            
-                            added.put(i, f);
-                            
-                            if (i.template == IMPORTS_FOLD_TEMPLATE) {
-                                importsFold = f;
-                            }
-                            if (i.template == INITIAL_COMMENT_FOLD_TEMPLATE) {
-                                initialCommentFold = f;
-                            }
-                        }
+                    if (initComment != null) {
+                        initialCommentFold = newState.get(initComment);
                     }
-                    
-                    for (FoldInfo i : removed) {
-                        Fold f = currentFolds.remove(i);
-                        
-                        operation.removeFromHierarchy(f, tr);
-                        
-                        if (importsFold == f ) {
-                            importsFold = null;
-                        }
-                        
-                        if (initialCommentFold == f) {
-                            initialCommentFold = f;
-                        }
-                    }
-                    
-                    currentFolds.putAll(added);
                 } catch (BadLocationException e) {
                     LOG.log(Level.WARNING, null, e);
-                } finally {
-                    tr.commit();
                 }
             } finally {
                 operation.getHierarchy().unlock();
@@ -781,63 +683,8 @@ public class GsfFoldManager implements FoldManager {
         }
     }
     
-    private Map<FoldInfo, Fold> currentFolds;
     private Fold initialCommentFold;
     private Fold importsFold;
-    
-    protected static final class FoldInfo implements Comparable {
-        
-        private Position start;
-        private Position end;
-        private FoldTemplate template;
-        private boolean collapseByDefault;
-        
-        public FoldInfo(Document doc, int start, int end, FoldTemplate template, boolean collapseByDefault) throws BadLocationException {
-            this.start = doc.createPosition(start);
-            // see issue #216378; while Fold.end Position is manually updated by FoldHierarchyTransactionImpl, the
-            // FoldInfos are left alone, and end marker must stick with the content, so characters typed after it does
-            // not extend the FoldInfo
-            this.end   = NbDocument.createPosition(doc, end, Position.Bias.Backward);
-            this.template = template;
-            this.collapseByDefault = collapseByDefault;
-        }
-        
-        @Override
-        public int hashCode() {
-            return 1;
-        }
-        
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof FoldInfo)) {
-                return false;
-            }
-            
-            return compareTo(o) == 0;
-        }
-        
-        public int compareTo(Object o) {
-            FoldInfo remote = (FoldInfo) o;
-            
-            if (start.getOffset() < remote.start.getOffset()) {
-                return -1;
-            }
-            
-            if (start.getOffset() > remote.start.getOffset()) {
-                return 1;
-            }
-            
-            if (end.getOffset() < remote.end.getOffset()) {
-                return -1;
-            }
-            
-            if (end.getOffset() > remote.end.getOffset()) {
-                return 1;
-            }
-            
-            return 0;
-        }
-    }
 
     private static boolean hasErrors(ParserResult r) {
         for(org.netbeans.modules.csl.api.Error e : r.getDiagnostics()) {

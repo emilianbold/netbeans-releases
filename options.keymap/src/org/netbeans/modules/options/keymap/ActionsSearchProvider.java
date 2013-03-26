@@ -96,11 +96,19 @@ public class ActionsSearchProvider implements SearchProvider {
         currentRequest = request;
         final Map<Object, String> duplicateCheck = new HashMap<Object, String>();
         final List<ActionInfo> possibleResults = new ArrayList<ActionInfo>(7);
-        Map<ShortcutAction, Set<String>> curKeymap;
         // iterate over all found KeymapManagers
-        for (KeymapManager m : Lookup.getDefault().lookupAll(KeymapManager.class)) {
-            curKeymap = m.getKeymap(m.getCurrentProfile());
-            for (Entry<String, Set<ShortcutAction>> entry : m.getActions().entrySet()) {
+        
+        for (final KeymapManager m : Lookup.getDefault().lookupAll(KeymapManager.class)) {
+            final Object[] ret = new Object[2];
+            KeymapModel.waitFinished(new Runnable() {
+                public void run() {
+                    ret[0] = m.getKeymap(m.getCurrentProfile());
+                    ret[1] = m.getActions().entrySet();
+                }
+            });
+            Map<ShortcutAction, Set<String>> curKeymap = (Map<ShortcutAction, Set<String>>)ret[0];
+            Set<Entry<String, Set<ShortcutAction>>> entrySet = (Set<Entry<String, Set<ShortcutAction>>>)ret[1];
+            for (Entry<String, Set<ShortcutAction>> entry : entrySet) {
                 for (ShortcutAction sa : entry.getValue()) {
                     if (currentRequest!=request) {
                         return;

@@ -46,6 +46,7 @@ package org.netbeans.modules.hudson.impl;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -191,19 +192,28 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
     }
 
     public static List<String> split(String prop) {
-        return prop != null && prop.trim().length() > 0 ?
-            Arrays.asList(prop.split("/")) : // NOI18N
-            Collections.<String>emptyList();
+        if (prop != null && prop.trim().length() > 0) {
+            String[] escaped = prop.split("(?<!/)/(?!/)");              //NOI18N
+            List<String> list = new ArrayList<String>(escaped.length);
+            for (String e : escaped) {
+                list.add(e.replace("//", "/"));                         //NOI18N
+            }
+            return list;
+        } else {
+            return Collections.<String>emptyList();
+        }
     }
 
     public static String join(List<String> pieces) {
         StringBuilder b = new StringBuilder();
         for (String piece : pieces) {
-            assert !piece.contains("/") : piece;
+            assert !piece.startsWith("/") //NOI18N
+                    && !piece.endsWith("/") : piece;                    //NOI18N
+            String escaped = piece.replace("/", "//");                  //NOI18N
             if (b.length() > 0) {
                 b.append('/');
             }
-            b.append(piece);
+            b.append(escaped);
         }
         return b.toString();
     }

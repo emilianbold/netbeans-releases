@@ -54,6 +54,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.spi.editor.fold.FoldHierarchyMonitor;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
 
 /**

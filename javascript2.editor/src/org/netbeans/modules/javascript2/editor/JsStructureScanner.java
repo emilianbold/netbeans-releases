@@ -45,12 +45,14 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -97,7 +99,8 @@ public class JsStructureScanner implements StructureScanner {
         
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();
-            if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+            if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
+                    && !child.getName().equals("prototype")) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
                 // don't count children for functions and methods and anonyms
                 continue;
             }
@@ -107,8 +110,8 @@ public class JsStructureScanner implements StructureScanner {
                 if (function.isAnonymous()) {
                     collectedItems.addAll(children);
                 } else {
-                    if (function.isDeclared() && !(jsObject.isAnonymous() && function.getModifiers().contains(Modifier.PRIVATE))) {
-                        collectedItems.add(new JsFunctionStructureItem(function, children, result));
+                    if (function.isDeclared() && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && ModelUtils.createFQN(jsObject).indexOf('.') == -1))) {
+                        collectedItems.add(new JsFunctionStructureItem(function, children, result));                          
                     }
                 }
             } else if (((child.getJSKind() == JsElement.Kind.OBJECT && children.size() > 0) || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) 
@@ -119,21 +122,61 @@ public class JsStructureScanner implements StructureScanner {
                         || !(jsObject.getParent() instanceof JsFunction)))
                 collectedItems.add(new JsSimpleStructureItem(child, "prop-", result)); //NOI18N
             } else if (child.getJSKind() == JsElement.Kind.VARIABLE && child.isDeclared()
-                    && !jsObject.isAnonymous()
-                    /*&& (jsObject.getJSKind() == JsElement.Kind.FILE || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR)*/) {
-                collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N
+                && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && ModelUtils.createFQN(jsObject).indexOf('.') == -1))) {
+                    collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N
             }
          }
+        
+        if (jsObject instanceof JsFunction) {
+            for (JsObject param: ((JsFunction)jsObject).getParameters()) {
+                if (hasDeclaredProperty(param)) { 
+                    final List<StructureItem> items = new ArrayList<StructureItem>();
+                    getEmbededItems(result, param, items);
+                    collectedItems.add(new JsObjectStructureItem(param, items, result));
+                }
+            }
+        }
         return collectedItems;
     }
 
     private boolean containsFunction(JsObject jsObject) {
         for (JsObject property: jsObject.getProperties().values()) {
-            if (property.getJSKind().isFunction() && property.isDeclared()) {
+            if (property.getJSKind().isFunction() && property.isDeclared() && !property.isAnonymous()) {
                 return true;
             }
         }
         return false;
+    }
+
+    private boolean isNotAnonymousFunction(TokenSequence ts, int functionKeywordPosition) {
+        // expect that the ts in on "{"
+        int position = ts.offset();
+        boolean value = false;
+        TokenId tokenId = ts.token().id();
+        // find the function keyword
+        ts.move(functionKeywordPosition);
+        ts.movePrevious();
+        Token<? extends JsTokenId> token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));
+        if ((token.id() == JsTokenId.OPERATOR_ASSIGNMENT || token.id() == JsTokenId.OPERATOR_COLON) && ts.movePrevious()) {
+            token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));
+            if (token.id() == JsTokenId.IDENTIFIER) {
+                // it's:
+                // name : function() ...
+                // name = function() ...
+                value = true;
+            }
+        }
+        if (!value) {
+            ts.move(functionKeywordPosition);
+            ts.moveNext(); ts.moveNext();
+            token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE));
+            if (token.id() == JsTokenId.IDENTIFIER) {
+                value = true;
+            }
+        }
+        ts.move(position);
+        ts.moveNext();
+        return value;
     }
 
     private static class FoldingItem {
@@ -162,6 +205,7 @@ public class JsStructureScanner implements StructureScanner {
 
             TokenId tokenId;
             JsTokenId lastContextId = null;
+            int functionKeywordPosition = 0;
             while (ts.moveNext()) {
                 tokenId = ts.token().id();
                 if (tokenId == JsTokenId.DOC_COMMENT) {
@@ -177,9 +221,12 @@ public class JsStructureScanner implements StructureScanner {
                             info.getSnapshot().getOriginalOffset(endOffset));
                 } else if (((JsTokenId) tokenId).isKeyword()) {
                     lastContextId = (JsTokenId) tokenId;
+                    if(lastContextId == JsTokenId.KEYWORD_FUNCTION) {
+                        functionKeywordPosition = ts.offset();
+                    }
                 } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
                     String kind;
-                    if (lastContextId == JsTokenId.KEYWORD_FUNCTION) {
+                    if (lastContextId == JsTokenId.KEYWORD_FUNCTION && isNotAnonymousFunction(ts, functionKeywordPosition)) {
                         kind = FOLD_FUNCTION;
                     } else {
                         kind = FOLD_OTHER_CODE_BLOCKS;
@@ -323,17 +370,18 @@ public class JsStructureScanner implements StructureScanner {
         }
         
         protected void appendTypeInfo(HtmlFormatter formatter, Collection<? extends Type> types) {
-            if (!types.isEmpty()) {
+            Collection<String> displayNames = Utils.getDisplayNames(types);
+            if (!displayNames.isEmpty()) {
                 formatter.appendHtml(FONT_GRAY_COLOR);
                 formatter.appendText(" : ");
                 boolean addDelimiter = false;
-                for (Type type : types) {
+                for (String displayName : displayNames) {
                     if (addDelimiter) {
                         formatter.appendText("|");
                     } else {
                         addDelimiter = true;
                     }
-                    formatter.appendHtml(type.getType());
+                    formatter.appendHtml(displayName);
                 }
                 formatter.appendHtml(CLOSE_FONT);
             }

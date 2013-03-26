@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.1.2
+#Version 1.5.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -128,6 +128,7 @@ meth public void deleteTag(java.lang.String,org.netbeans.libs.git.progress.Progr
 meth public void exportCommit(java.lang.String,java.io.OutputStream,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public void exportDiff(java.io.File[],org.netbeans.libs.git.GitClient$DiffMode,java.io.OutputStream,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public void init(org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public void release()
 meth public void remove(java.io.File[],boolean,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public void removeNotificationListener(org.netbeans.libs.git.progress.NotificationListener)
 meth public void removeRemote(java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException

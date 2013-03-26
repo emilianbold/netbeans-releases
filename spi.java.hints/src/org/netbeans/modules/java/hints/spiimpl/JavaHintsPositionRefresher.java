@@ -56,6 +56,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.spi.editor.hints.Context;
@@ -132,7 +133,9 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
         }
 
         public void run(CompilationController controller) throws Exception {
-            controller.toPhase(JavaSource.Phase.RESOLVED);
+            if (controller.toPhase(JavaSource.Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                return ;
+            }
 
             Document doc = controller.getDocument();
 

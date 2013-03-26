@@ -51,8 +51,11 @@ import javax.swing.text.Position;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MemoryFilter;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.editor.fold.FoldHierarchyMonitor;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
@@ -113,6 +116,48 @@ public class SimpleFoldManagerTest extends NbTestCase {
         } finally {
             doc.readUnlock();
         }
+    }
+    
+    /**
+     * Checks that FoldHierarchyMonitor is pinged during hierarchy creation.
+     * No provider is registered, so the hierarchy should report active == false.
+     */
+    public void testFoldHierarchyMonitorNoProviders() throws Exception {
+        MockMimeLookup.setInstances(MimePath.parse(""), new FHM());
+
+        FoldHierarchyTestEnv env = new FoldHierarchyTestEnv(new FoldManagerFactory[0]);
+        
+        env.getHierarchy();
+        
+        assertTrue("Folds not attached", attached);
+        assertFalse("Unexpected provider", active);
+    }
+    
+    private boolean attached;
+    private boolean active;
+    
+    private class FHM implements FoldHierarchyMonitor {
+
+        @Override
+        public void foldsAttached(FoldHierarchy h) {
+            attached = true;
+            active = h.isActive();
+        }
+    }
+    
+    /**
+     * A provider is registered for the hierarchy. 
+     * Active == true should be reported to FoldHierarchyMonitor.
+     */
+    public void testFoldHierararchyMonitorWithProvider() throws Exception {
+        MockMimeLookup.setInstances(MimePath.parse(""), new FHM());
+
+        FoldHierarchyTestEnv env = new FoldHierarchyTestEnv(new SimpleFoldManagerFactory());
+        
+        env.getHierarchy();
+        
+        assertTrue("Folds not attached", attached);
+        assertTrue("Hierarchy must be active", active);
     }
     
     

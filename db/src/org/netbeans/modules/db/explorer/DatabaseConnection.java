@@ -160,6 +160,10 @@ public final class DatabaseConnection implements DBConnection {
      */
     private MetadataModel metadataModel = null;
 
+    /** Properties for connection
+     */
+    private Properties connectionProperties = new Properties();
+
     /**
      * The API DatabaseConnection (delegates to this instance)
      */
@@ -177,6 +181,7 @@ public final class DatabaseConnection implements DBConnection {
     public static final String PROP_DRIVERNAME = "drivername"; //NOI18N
     public static final String PROP_NAME = "name"; //NOI18N
     public static final String PROP_DISPLAY_NAME = "displayName"; //NOI18N
+    public static final String PROP_CONNECTIONPROPERTIES = "connectionProperties";
     public static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
     public static final int DERBY_UNICODE_ERROR_CODE = 20000;
     private OpenConnectionInterface openConnection = null;
@@ -214,22 +219,34 @@ public final class DatabaseConnection implements DBConnection {
      * @param password User password
      */
     public DatabaseConnection(String driver, String database, String user, String password) {
-        this(driver, null, database, null, user, password, null);
+        this(driver, null, database, null, user, password, null, null);
     }
 
     public DatabaseConnection(String driver, String driverName, String database,
             String theschema, String user, String password) {
-        this(driver, driverName, database, theschema, user, password, null);
+        this(driver, driverName, database, theschema, user, password, null, null);
     }
 
     public DatabaseConnection(String driver, String driverName, String database, 
             String theschema, String user) {
-        this(driver, driverName, database, theschema, user, null, null);
+        this(driver, driverName, database, theschema, user, null, null, null);
+    }
+
+    public DatabaseConnection(String driver, String driverName, String database,
+            String theschema, String user, Properties connectionProperties) {
+        this(driver, driverName, database, theschema, user, null, null, connectionProperties);
     }
 
     public DatabaseConnection(String driver, String driverName, String database,
             String theschema, String user, String password,
             Boolean rememberPassword) {
+        this(driver, driverName, database, theschema, user, password,
+                rememberPassword, null);
+    }
+
+    public DatabaseConnection(String driver, String driverName, String database,
+            String theschema, String user, String password,
+            Boolean rememberPassword, Properties connectionProperties) {
         this();
         drv = driver;
         drvname = driverName;
@@ -239,6 +256,7 @@ public final class DatabaseConnection implements DBConnection {
         rpwd = rememberPassword == null ? null : Boolean.valueOf(rememberPassword);
         schema = theschema;
         name = getName();
+        setConnectionProperties(connectionProperties);
     }
 
     public JDBCDriver findJDBCDriver() {
@@ -552,6 +570,22 @@ public final class DatabaseConnection implements DBConnection {
         }
     }
 
+    @Override
+    public Properties getConnectionProperties() {
+        return (Properties) connectionProperties.clone();
+    }
+
+    @Override
+    public void setConnectionProperties(Properties connectionProperties) {
+        Properties old = this.connectionProperties;
+        if (connectionProperties == null) {
+            this.connectionProperties = new Properties();
+        } else {
+            this.connectionProperties = (Properties) connectionProperties.clone();
+        }
+        propertySupport.firePropertyChange(PROP_CONNECTIONPROPERTIES, old, connectionProperties);
+    }
+
     /** Returns user schema name */
     @Override
     public String getSchema() {
@@ -736,9 +770,16 @@ public final class DatabaseConnection implements DBConnection {
             throw new DDLException(NbBundle.getMessage(DatabaseConnection.class, "EXC_InsufficientConnInfo")); // NOI18N
         }
 
-        Properties dbprops = new Properties();
+        Properties dbprops;
+        if (connectionProperties != null) {
+            dbprops = getConnectionProperties();
+        } else {
+            dbprops = new Properties();
+        }
         if ((usr != null) && (usr.length() > 0)) {
             dbprops.put("user", usr); //NOI18N
+        }
+        if ((pwd != null) && (pwd.length() > 0)) {
             dbprops.put("password", pwd); //NOI18N
         }
 
@@ -816,11 +857,16 @@ public final class DatabaseConnection implements DBConnection {
             sendException(new DDLException(NbBundle.getMessage(DatabaseConnection.class, "EXC_InsufficientConnInfo")));
         }
 
-        Properties dbprops = new Properties();
-        if ( usr.length() > 0 ) {
+        Properties dbprops;
+        if (connectionProperties != null) {
+            dbprops = getConnectionProperties();
+        } else {
+            dbprops = new Properties();
+        }
+        if ((usr != null) && (usr.length() > 0)) {
             dbprops.put("user", usr); //NOI18N
         }
-        if ((pwd != null && pwd.length() > 0)) {
+        if ((pwd != null) && (pwd.length() > 0)) {
             dbprops.put("password", pwd); //NOI18N
         }
 
@@ -1009,9 +1055,17 @@ public final class DatabaseConnection implements DBConnection {
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof DBConnection) {
-            DBConnection conn = (DBConnection) obj;
-            return toString().equals(conn.toString());
+        if (obj instanceof DatabaseConnection) {
+            DatabaseConnection conn = (DatabaseConnection) obj;
+            if (toString().equals(conn.toString())) {
+                if ((connectionProperties == null
+                        && conn.getConnectionProperties() == null)) {
+                    return true;
+                } else if (connectionProperties != null) {
+                    return connectionProperties.equals(
+                            conn.getConnectionProperties());
+        }
+            }
         }
 
         return false;
@@ -1032,6 +1086,11 @@ public final class DatabaseConnection implements DBConnection {
         } catch (Exception exc) {
             //IGNORE - drvname not stored in 3.6 and earlier
             //IGNORE - displayName not stored in 6.7 and earlier
+        }
+        try {
+            connectionProperties = (Properties) in.readObject();
+        } catch (Exception ex) {
+            //IGNORE - connectionProperties not stored in 7.3 and earlier
         }
 
         // boston setting/pilsen setting?
@@ -1056,6 +1115,7 @@ public final class DatabaseConnection implements DBConnection {
         out.writeObject(DatabaseConnection.SUPPORT);
         out.writeObject(drvname);
         out.writeObject(displayName);
+        out.writeObject(connectionProperties);
     }
 
     @Override

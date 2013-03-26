@@ -44,6 +44,7 @@
 
 package org.netbeans.upgrade;
 import java.awt.BorderLayout;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.net.URL;
@@ -195,8 +196,12 @@ public final class AutoUpgrade {
 	panel.add(progressBar, BorderLayout.SOUTH);
 	progressBar.setVisible(false);
 	
-	JButton[] options = new JButton[] {new JButton("Yes"), new JButton("No")};
-        JOptionPane p = new JOptionPane (panel, JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_OPTION, null, options);
+	JButton bYES = new JButton("Yes");
+	bYES.setMnemonic(KeyEvent.VK_Y);
+	JButton bNO = new JButton("No");
+	bNO.setMnemonic(KeyEvent.VK_N);
+	JButton[] options = new JButton[] {bYES, bNO};
+        JOptionPane p = new JOptionPane (panel, JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_OPTION, null, options, bYES);
         JDialog d = Util.createJOptionProgressDialog(p, NbBundle.getMessage (AutoUpgrade.class, "MSG_Confirmation_Title"), source, progressBar);
         d.setVisible (true);
 

@@ -22,8 +22,8 @@
 |                 - JButton: {name: deleteButton, text: button.delete, actionCommand: delete}
 |                 - JButton: {name: editButton, text: button.edit, onAction: edit}
 |                 - JButton: {name: advancedButton, text: button.advanced, actionCommand: advanced}
--                 - JButton: {name: okButton, text: button.ok, onAction: save}
-|                 - JButton: {name: cancelButton, text: button.cancel, onAction: cancel}
+|                 - JButton: {name: okButton, text: button.ok, onAction: save}
+-                 - JButton: {name: cancelButton, text: button.cancel, onAction: cancel}
 +             layout: |
 |                 [pref]       [grow,100px]              [grow]               [pref]             
 |                 sepName+*              

@@ -81,7 +81,6 @@ import org.openide.util.NbBundle;
  * @author Jan Stola
  */
 public class AttachmentsPanel extends JPanel {
-    private static final Color BG_COLOR = new Color(220, 220, 220);
     private boolean hadNoAttachments = true;
     private List<AttachmentPanel> newAttachments;
     private JLabel noneLabel;
@@ -157,6 +156,7 @@ public class AttachmentsPanel extends JPanel {
         dummyAttachLabel.setVisible(false);
         noneLabel.setVisible(noAttachments);
         updateButtonText(noAttachments);
+        int groupWidth = 0;
         if (noAttachments) {
             // noneLabel + createNewButton
             verticalGroup.addGroup(newVerticalGroup);
@@ -269,7 +269,7 @@ public class AttachmentsPanel extends JPanel {
                         .addGroup(pGroup));
             }
             verticalGroup.addGroup(newVerticalGroup);
-            int groupWidth = 0;
+            groupWidth = 0;
             if (maxMethod != null) {
                 try {
                     groupWidth = (Integer)maxMethod.invoke(horizontalGroup, 0);
@@ -309,9 +309,9 @@ public class AttachmentsPanel extends JPanel {
         layout.setHorizontalGroup(horizontalGroup);
         layout.setVerticalGroup(verticalGroup);
         
-        ((CreateNewAction)createNewButton.getAction()).setLayoutGroups(horizontalGroup, newVerticalGroup);
+        ((CreateNewAction)createNewButton.getAction()).setLayoutGroups(horizontalGroup, newVerticalGroup, groupWidth);
         if(attachLogFileButton != null) {
-            ((CreateNewAction)attachLogFileButton.getAction()).setLayoutGroups(horizontalGroup, newVerticalGroup);
+            ((CreateNewAction)attachLogFileButton.getAction()).setLayoutGroups(horizontalGroup, newVerticalGroup, groupWidth);
         }
         
         setLayout(layout);
@@ -356,7 +356,7 @@ public class AttachmentsPanel extends JPanel {
     private JPanel createHighlightPanel() {
         JPanel panel = new JPanel();
         // PENDING what color (e.g. what key from UIDefaults) should I use?
-        panel.setBackground(BG_COLOR);
+        panel.setBackground(UIUtils.getSectionPanelBackground());
         add(panel);
         return panel;
     }
@@ -423,6 +423,7 @@ public class AttachmentsPanel extends JPanel {
     class CreateNewAction extends AbstractAction {
 
         private final boolean attachLogFile;
+        private int groupWidth;
         public CreateNewAction() {
             attachLogFile = false;
         }
@@ -430,21 +431,26 @@ public class AttachmentsPanel extends JPanel {
         public CreateNewAction(boolean attachLogFile) {
             this.attachLogFile = attachLogFile;
         }
-        
+
         private GroupLayout.ParallelGroup horizontalGroup;
         private GroupLayout.SequentialGroup verticalGroup;
 
         void setLayoutGroups(GroupLayout.ParallelGroup horizontalGroup,
-                GroupLayout.SequentialGroup verticalGroup) {
+                GroupLayout.SequentialGroup verticalGroup, int groupWidth) {
             this.horizontalGroup = horizontalGroup;
             this.verticalGroup = verticalGroup;
+            this.groupWidth = groupWidth;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             AttachmentPanel attachment = new AttachmentPanel();
-            attachment.setBackground(BG_COLOR);
-            horizontalGroup.addComponent(attachment, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+            attachment.setBackground(UIUtils.getSectionPanelBackground());
+            if(groupWidth > 0) {
+                horizontalGroup.addComponent(attachment, 0, 0, groupWidth);
+            } else {
+                horizontalGroup.addComponent(attachment, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+            }
             verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
             verticalGroup.addComponent(attachment, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
             if (noneLabel.isVisible()) {
@@ -461,6 +467,12 @@ public class AttachmentsPanel extends JPanel {
                 if(f.exists()) {
                     attachment.setAttachment(f, NbBundle.getMessage(IssuePanel.class, "MSG_LOG_FILE_DESC"), NbBugzillaConstants.NB_LOG_FILE_ATT_CONT_TYPE); // NOI18N
                 }
+                attachment.browseButton.setEnabled(false);
+                attachment.fileField.setEnabled(false);
+                attachment.fileTypeCombo.setEnabled(false);
+                attachment.patchChoice.setEnabled(false);
+            } else {
+                attachment.viewButton.setVisible(false);
             }
             
             newAttachments.add(attachment);

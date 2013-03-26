@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 
 /**
@@ -77,17 +78,19 @@ public abstract class AbstractCsmNode extends AbstractNode {
     public Image getIcon(int param) {
         try {
             CsmObject csmObj = getCsmObject();
-            return (csmObj == null) ? super.getIcon(param) : CsmImageLoader.getImage(csmObj);
+            if (csmObj != null) {
+                return CsmImageLoader.getImage(csmObj);
+            }
         } catch (AssertionError ex){
             ex.printStackTrace(System.err);
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
         }
-        return super.getIcon(param);
+        return ImageUtilities.loadImage(CsmImageLoader.DEFAULT);
     }
 
     protected Image superGetIcon(int param) {
-        return super.getIcon(param);
+        return ImageUtilities.loadImage(CsmImageLoader.DEFAULT);
     }
     
     @Override

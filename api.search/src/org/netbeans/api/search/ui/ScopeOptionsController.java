@@ -49,6 +49,7 @@ import java.awt.event.ItemListener;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.modules.search.BasicSearchProvider;
@@ -57,7 +58,6 @@ import org.netbeans.modules.search.PatternSandbox;
 import org.netbeans.modules.search.ui.CheckBoxWithButtonPanel;
 import org.netbeans.modules.search.ui.FormLayoutHelper;
 import org.netbeans.modules.search.ui.UiUtils;
-import org.openide.util.NbBundle;
 
 /**
  * Component controller for setting search scope options.
@@ -78,6 +78,7 @@ public final class ScopeOptionsController extends ComponentController<JPanel> {
     private JCheckBox chkArchives;
     private JCheckBox chkGenerated;
     private ItemListener checkBoxListener;
+    private JPanel fileNameComponent;
 
     /**
      * Create settings panel that can be used in search dialog.
@@ -89,8 +90,26 @@ public final class ScopeOptionsController extends ComponentController<JPanel> {
      */
     ScopeOptionsController(JPanel component,
             FileNameController fileNameComboBox, boolean replacing) {
-        super(component);
-        this.fileNameComboBox = fileNameComboBox;
+        this(component, null, fileNameComboBox, replacing);
+    }
+
+    /**
+     * Create two settings panels that can be used in search dialog. The first
+     * panel will contain controls for setting search scope options, the second
+     * panel controls for setting file name pattern options.
+     *
+     * @param scopeComponent Component to adjust for search scope setting.
+     * @param fileNameComponent Component to adjust for file name settings.
+     * @param fileNameController File name controller tath will be bound to the
+     * regular-expression check box in the file name settings panel.
+     * @param replacing Replace mode flag.
+     * @since api.search/1.12
+     */
+    ScopeOptionsController(JPanel scopeComponent, JPanel fileNameComponent,
+            FileNameController fileNameController, boolean replacing) {
+        super(scopeComponent);
+        this.fileNameComponent = fileNameComponent;
+        this.fileNameComboBox = fileNameController;
         this.replacing = replacing;
         init();
     }
@@ -149,24 +168,36 @@ public final class ScopeOptionsController extends ComponentController<JPanel> {
      */
     private void initScopeOptionsRow(boolean searchAndReplace) {
 
-        JPanel jp = new JPanel();
-        if (searchAndReplace) {
-            jp.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
-            jp.add(ignoreListOptionPanel);
-            jp.add(new CheckBoxWithButtonPanel(
-                    chkFileNameRegex, btnTestFileNamePattern));
-            jp.setMaximumSize(jp.getMinimumSize());
+        JPanel regexpPanel = new CheckBoxWithButtonPanel(
+                chkFileNameRegex, btnTestFileNamePattern);
+        if (fileNameComponent != null) {
+            fileNameComponent.setLayout(
+                    new FlowLayout(FlowLayout.LEADING, 0, 0));
+            fileNameComponent.add(ignoreListOptionPanel);
+            fileNameComponent.add(regexpPanel);
+            if (!searchAndReplace) {
+                component.add(chkArchives);
+                component.add(chkGenerated);
+            }
         } else {
-            FormLayoutHelper flh = new FormLayoutHelper(jp,
-                    FormLayoutHelper.DEFAULT_COLUMN,
-                    FormLayoutHelper.DEFAULT_COLUMN);
-            flh.addRow(chkArchives, chkGenerated);
-            flh.addRow(ignoreListOptionPanel,
-                    new CheckBoxWithButtonPanel(
-                    chkFileNameRegex, btnTestFileNamePattern));
-            jp.setMaximumSize(jp.getMinimumSize());
+            JPanel jp = new JPanel();
+            if (searchAndReplace) {
+                jp.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
+                jp.add(ignoreListOptionPanel);
+                jp.add(regexpPanel);
+                jp.setMaximumSize(jp.getMinimumSize());
+            } else {
+                FormLayoutHelper flh = new FormLayoutHelper(jp,
+                        FormLayoutHelper.DEFAULT_COLUMN,
+                        FormLayoutHelper.DEFAULT_COLUMN);
+                flh.addRow(chkArchives, chkGenerated);
+                flh.addRow(ignoreListOptionPanel,
+                        new CheckBoxWithButtonPanel(
+                        chkFileNameRegex, btnTestFileNamePattern));
+                jp.setMaximumSize(jp.getMinimumSize());
+            }
+            component.add(jp);
         }
-        component.add(jp);
     }
 
     private void initInteraction() {
@@ -337,6 +368,19 @@ public final class ScopeOptionsController extends ComponentController<JPanel> {
      */
     public void setFileNameRegexp(boolean fileNameRegexp) {
         chkFileNameRegex.setSelected(fileNameRegexp);
+    }
+
+    /**
+     * Get the panel containing controls related to file name pattern settings.
+     * This is only applicable if the controller was created using
+     * {@link ComponentUtils#adjustPanelsForOptions(JPanel, JPanel, boolean, FileNameController)}.
+     *
+     * @return Panel containing controls related to file name pattern settings,
+     * or null if there is a single panel for all settings.
+     * @since api.search/1.12
+     */
+    public @NullUnknown JPanel getFileNameComponent() {
+        return fileNameComponent;
     }
 
     /**

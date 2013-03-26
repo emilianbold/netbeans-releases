@@ -180,6 +180,24 @@ public abstract class AbstractEditorAction extends TextAction implements
      * Key of {@link String} property containing a string path to icon.
      */
     public static final String ICON_RESOURCE_KEY = "iconBase"; // (named in sync with AlwaysEnabledAction) NOI18N
+    
+    /**
+     * Key of {@link Boolean} property which determines whether icon of this action should be
+     * displayed in menu (false or unset) or not (true).
+     * <br/>
+     * It may be passed to {@link #getValue(java.lang.String) } to obtain the property value.
+     * @since 1.74
+     */
+    public static final String NO_ICON_IN_MENU = "noIconInMenu"; // (named in sync with system actions) NOI18N
+    
+    /**
+     * Key of {@link Boolean} property which determines if this action should be
+     * displayed in key binding customizer (false or unset) or not (true).
+     * <br/>
+     * It may be passed to {@link #getValue(java.lang.String) } to obtain the property value.
+     * @since 1.74
+     */
+    public static final String NO_KEY_BINDING = "no-keybinding"; // (named in sync with BaseAction.NO_KEY_BINDING) NOI18N
 
     /**
      * Key of property containing a <code>List &lt; List &lt; {@link KeyStroke} &gt; &gt;</code>

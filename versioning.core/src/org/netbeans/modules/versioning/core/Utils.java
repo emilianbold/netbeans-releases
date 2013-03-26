@@ -63,6 +63,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileSystem;
+import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -206,6 +207,8 @@ public class Utils {
         JMenuItem item;
         if (action instanceof Presenter.Menu) {
             item = ((Presenter.Menu) action).getMenuPresenter();
+        } else if (action instanceof Presenter.Popup) {
+            item = ((Presenter.Popup) action).getPopupPresenter();
         } else {
             item = new JMenuItem();
             Actions.connect(item, action, false);
@@ -289,12 +292,12 @@ public class Utils {
                 String uf = VersioningSupport.getPreferences().get("unversionedFolders", ""); //NOI18N
                 String ufProp = System.getProperty("versioning.unversionedFolders", ""); //NOI18N
                 StringBuilder sb = new StringBuilder(uf);
-                String nbUserdir = System.getProperty("netbeans.user", ""); //NOI18N
-                if (!nbUserdir.isEmpty() && !isVersionUserdir()) { 
+                File nbUserdir = Places.getUserDirectory();
+                if (nbUserdir != null && !isVersionUserdir()) { 
                     if (sb.length() > 0) {
                         sb.append(';');
                     }
-                    sb.append(nbUserdir);
+                    sb.append(nbUserdir.getAbsolutePath());
                 }
                 if (!ufProp.isEmpty()) {
                     if (sb.length() > 0) {

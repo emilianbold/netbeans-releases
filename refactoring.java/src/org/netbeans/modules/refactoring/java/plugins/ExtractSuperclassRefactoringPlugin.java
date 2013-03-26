@@ -45,6 +45,8 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
@@ -61,8 +63,8 @@ import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
-import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -260,171 +262,225 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         
     }
 
+    private Set<FileObject> getRelevantFiles() {
+        final Set<FileObject> set = new HashSet<FileObject>();
+        set.add(refactoring.getSourceType().getFileObject());
+        return set;
+    }
+    
+    private ClasspathInfo getClasspathInfo(Set<FileObject> a) {
+        ClasspathInfo cpInfo;
+        cpInfo = JavaRefactoringUtils.getClasspathInfoFor(a.toArray(new FileObject[a.size()]));
+        return cpInfo;
+    }
+    
     @Override
     public Problem prepare(RefactoringElementsBag bag) {
-        FileObject primFile = refactoring.getSourceType().getFileObject();
-        try {
-            UpdateClassTask.create(bag, primFile, refactoring, classHandle);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-        return null;
+        RefactoringVisitor visitor = new ExtractSuperclassTransformer(refactoring, classHandle);
+        Set<FileObject> a = getRelevantFiles();
+        fireProgressListenerStart(AbstractRefactoring.PREPARE, a.size());
+        TransformTask transform = new TransformTask(visitor, refactoring.getSourceType());
+        Problem problem = createAndAddElements(a, transform, bag, refactoring, getClasspathInfo(a));
+        fireProgressListenerStop();
+        return problem;
     }
     
-    private static List<TypeMirror> findUsedGenericTypes(CompilationInfo javac, TypeElement javaClass,ExtractSuperclassRefactoring refactoring) {
-        List<TypeMirror> typeArgs = JavaRefactoringUtils.elementsToTypes(javaClass.getTypeParameters());
-        if (typeArgs.isEmpty()) {
-            return typeArgs;
-        }
-        
-        Types typeUtils = javac.getTypes();
-        Set<TypeMirror> used = Collections.newSetFromMap(new IdentityHashMap<TypeMirror, Boolean>());
-        
-        // check super class
-        TypeMirror superClass = javaClass.getSuperclass();
-        RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, superClass);
-        
-        MemberInfo[] members = refactoring.getMembers();
-        for (int i = 0; i < members.length && !typeArgs.isEmpty(); i++) {
-            if (members[i].getGroup() == MemberInfo.Group.METHOD) {
-            // check methods
-                @SuppressWarnings("unchecked")
-                ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) members[i].getElementHandle();
-                ExecutableElement elm = handle.resolve(javac);
-            
-                RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, elm.getReturnType());
-
-                for (Iterator<? extends VariableElement> paramIter = elm.getParameters().iterator(); paramIter.hasNext() && !typeArgs.isEmpty();) {
-                    VariableElement param = paramIter.next();
-                    RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, param.asType());
-                }
-            } else if (members[i].getGroup() == MemberInfo.Group.FIELD) {
-                if (members[i].getModifiers().contains(Modifier.STATIC)) {
-                    // do not check since static fields cannot use type parameter of the enclosing class
-                    continue;
-                }
-                @SuppressWarnings("unchecked")
-                ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) members[i].getElementHandle();
-                VariableElement elm = handle.resolve(javac);
-                TypeMirror asType = elm.asType();
-                RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, asType);
-            } else if (members[i].getGroup() == MemberInfo.Group.IMPLEMENTS) {
-                // check implements
-                TypeMirrorHandle handle = (TypeMirrorHandle) members[i].getElementHandle();
-                TypeMirror implemetz = handle.resolve(javac);
-                RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, implemetz);
-            }
-            // do not check fields since static fields cannot use type parameter of the enclosing class
-        }
-        
-        return RefactoringUtils.filterTypes(typeArgs, used);
-    }
-    
-    private final static class UpdateClassTask implements CancellableTask<WorkingCopy> {
+    private final static class ExtractSuperclassTransformer extends RefactoringVisitor {
         private final ExtractSuperclassRefactoring refactoring;
         private final ElementHandle<TypeElement> sourceType;
+        private List<Tree> members;
+        private boolean makeAbstract;
+        private List<Tree> members2Remove;
         
-        private UpdateClassTask(ExtractSuperclassRefactoring refactoring, ElementHandle<TypeElement> sourceType) {
+        private ExtractSuperclassTransformer(ExtractSuperclassRefactoring refactoring, ElementHandle<TypeElement> sourceType) {
             this.sourceType = sourceType;
             this.refactoring = refactoring;
         }
         
-        public static void create(RefactoringElementsBag bag, FileObject fo,ExtractSuperclassRefactoring refactoring, ElementHandle<TypeElement> sourceType) throws IOException {
-            JavaSource js = JavaSource.forFileObject(fo);
-            ModificationResult modification = js.runModificationTask(new UpdateClassTask(refactoring, sourceType));
-            List<? extends ModificationResult.Difference> diffs = modification.getDifferences(fo);
-            for (ModificationResult.Difference diff : diffs) {
-                bag.add(refactoring, DiffElement.create(diff, fo, modification));
-            }
-            bag.registerTransaction(createTransaction(Collections.singletonList(modification)));
-        }
-        
         @Override
-        public void cancel() {
-        }
-
-        @Override
-        public void run(WorkingCopy wc) throws Exception {
-            wc.toPhase(JavaSource.Phase.RESOLVED);
-            createCU(wc);
-            TypeElement clazz = this.sourceType.resolve(wc);
+        public Tree visitClass(ClassTree classTree, Element p) {
+            TypeElement clazz = this.sourceType.resolve(workingCopy);
             assert clazz != null;
-            ClassTree classTree = wc.getTrees().getTree(clazz);
-            TreeMaker make = wc.getTreeMaker();
-            // fake interface since interface file does not exist yet
-            Tree superClassTree;
-            List<TypeMirror> typeParams = findUsedGenericTypes(wc, clazz, refactoring);
-            if (typeParams.isEmpty()) {
-                superClassTree = make.Identifier(refactoring.getSuperClassName());
-            } else {
-                List<ExpressionTree> typeParamTrees = new ArrayList<ExpressionTree>(typeParams.size());
-                for (TypeMirror typeParam : typeParams) {
-                    Tree t = make.Type(typeParam);
-                    typeParamTrees.add((ExpressionTree) t);
-                }
-                superClassTree = make.ParameterizedType(
-                        make.Identifier(refactoring.getSuperClassName()),
-                        typeParamTrees
-                        );
-            }
-            
-            Set<Tree> members2Remove = new HashSet<Tree>();
-            Set<Tree> interfaces2Remove = new HashSet<Tree>();
-            
-            members2Remove.addAll(getMembers2Remove(wc, refactoring.getMembers()));
-            interfaces2Remove.addAll(getImplements2Remove(wc, refactoring.getMembers(), clazz));
-            
-            // filter out obsolete members
-            List<Tree> members2Add = new ArrayList<Tree>();
-            for (Tree tree : classTree.getMembers()) {
-                if (!members2Remove.contains(tree)) {
-                    members2Add.add(tree);
-                }
-            }
-            // filter out obsolete implements trees
-            List<Tree> impls2Add = resolveImplements(classTree.getImplementsClause(), interfaces2Remove);
+            Element current = workingCopy.getTrees().getElement(getCurrentPath());
+            if(current == clazz) {
+                GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+                makeAbstract = false;
+                members = new LinkedList<Tree>();
+                members2Remove = new LinkedList<Tree>();
+                addConstructors(clazz);
+                super.visitClass(classTree, p);
 
-            ClassTree nc;
-            nc = make.Class(
-                    classTree.getModifiers(),
-                    classTree.getSimpleName(),
-                    classTree.getTypeParameters(),
-                    superClassTree,
-                    impls2Add,
-                    members2Add);
-            
-            wc.rewrite(classTree, nc);
-        }
-        
-        private List<Tree> getMembers2Remove(CompilationInfo javac,MemberInfo[] members) {
-            if (members == null || members.length == 0) {
-                return Collections.<Tree>emptyList();
-            }
-            List<Tree> result = new ArrayList<Tree>(members.length);
-            for (MemberInfo member : members) {
-                if (member.getGroup() == MemberInfo.Group.FIELD) {
-                    @SuppressWarnings("unchecked")
-                    ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.getElementHandle();
-                    VariableElement elm = handle.resolve(javac);
-                    assert elm != null;
-                    Tree t = javac.getTrees().getTree(elm);
-                    assert t != null;
-                    result.add(t);
-                } else if (member.getGroup() == MemberInfo.Group.METHOD && !member.isMakeAbstract()) {
-                    @SuppressWarnings("unchecked")
-                    ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) member.getElementHandle();
-                    ExecutableElement elm = handle.resolve(javac);
-                    assert elm != null;
-                    Tree t = javac.getTrees().getTree(elm);
-                    assert t != null;
-                    result.add(t);
+                List<Tree> implementsList = new ArrayList<Tree>();
+                for (MemberInfo/*<ElementHandle<? extends Element>>*/ member : refactoring.getMembers()) {
+                    if (member.getGroup() == MemberInfo.Group.IMPLEMENTS) {
+                        TypeMirrorHandle handle = (TypeMirrorHandle) member.getElementHandle();
+                        // XXX check if interface is not aready there; the templates might be changed by user :-(
+                        TypeMirror implMirror = handle.resolve(workingCopy);
+                        implementsList.add(make.Type(implMirror));
+                        // XXX needs more granular check
+                        makeAbstract |= true;
+                    }
                 }
+                DeclaredType supType = (DeclaredType) clazz.getSuperclass();
+                TypeElement supEl = (TypeElement) supType.asElement();
+                Tree superClass = supEl.getSuperclass().getKind() == TypeKind.NONE
+                        ? null
+                        : make.Type(supType);
+                makeAbstract |= supEl.getModifiers().contains(Modifier.ABSTRACT);
+                ModifiersTree classModifiersTree = make.Modifiers(makeAbstract ? EnumSet.of(Modifier.PUBLIC, Modifier.ABSTRACT) : EnumSet.of(Modifier.PUBLIC));
+                final List<? extends TypeMirror> typeParams = findUsedGenericTypes(clazz);
+                List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParams.size());
+                for (TypeParameterElement typeParam : clazz.getTypeParameters()) {
+                    TypeMirror origParam = typeParam.asType();
+                    for (TypeMirror newParam : typeParams) {
+                        if (workingCopy.getTypes().isSameType(origParam, newParam)) {
+                            Tree t = workingCopy.getTrees().getTree(typeParam);
+                            if (t.getKind() == Tree.Kind.TYPE_PARAMETER) {
+                                TypeParameterTree typeParamTree = (TypeParameterTree) t;
+                                if (!typeParamTree.getBounds().isEmpty()) {
+                                    typeParamTree = (TypeParameterTree) genUtils.importFQNs(t);
+                                }
+                                newTypeParams.add(typeParamTree);
+                            }
+                        }
+                    }
+                }
+                ClassTree newClassTree = make.Class(
+                        classModifiersTree,
+                        refactoring.getSuperClassName(),
+                        newTypeParams,
+                        superClass,
+                        implementsList,
+                        Collections.<Tree>emptyList());
+                newClassTree = GeneratorUtilities.get(workingCopy).insertClassMembers(newClassTree, members);
+
+                FileObject fileObject = refactoring.getSourceType().getFileObject();
+                FileObject sourceRoot = ClassPath.getClassPath(fileObject, ClassPath.SOURCE).findOwnerRoot(fileObject);
+                String relativePath = FileUtil.getRelativePath(sourceRoot, fileObject.getParent()) + "/" + refactoring.getSuperClassName() + ".java";
+                CompilationUnitTree cu = JavaPluginUtils.createCompilationUnit(sourceRoot, relativePath, newClassTree, workingCopy, make);
+                rewrite(null, cu);
                 
-            }
+                // fake interface since interface file does not exist yet
+                Tree superClassTree;
+                if (typeParams.isEmpty()) {
+                    superClassTree = make.Identifier(refactoring.getSuperClassName());
+                } else {
+                    List<ExpressionTree> typeParamTrees = new ArrayList<ExpressionTree>(typeParams.size());
+                    for (TypeMirror typeParam : typeParams) {
+                        Tree t = make.Type(typeParam);
+                        typeParamTrees.add((ExpressionTree) t);
+                    }
+                    superClassTree = make.ParameterizedType(
+                            make.Identifier(refactoring.getSuperClassName()),
+                            typeParamTrees
+                            );
+                }
+                Set<Tree> interfaces2Remove = new HashSet<Tree>();
 
-            return result;
+                interfaces2Remove.addAll(getImplements2Remove(workingCopy, refactoring.getMembers(), clazz));
+
+                // filter out obsolete members
+                List<Tree> newMembers = new ArrayList<Tree>();
+                for (Tree tree : classTree.getMembers()) {
+                    if (!members2Remove.contains(tree)) {
+                        newMembers.add(tree);
+                    }
+                }
+                // filter out obsolete implements trees
+                List<Tree> newImpls = resolveImplements(classTree.getImplementsClause(), interfaces2Remove);
+
+                ClassTree nc;
+                nc = make.Class(
+                        classTree.getModifiers(),
+                        classTree.getSimpleName(),
+                        classTree.getTypeParameters(),
+                        superClassTree,
+                        newImpls,
+                        newMembers);
+
+                rewrite(classTree, nc);
+            }
+            return classTree;
         }
-        
+
+        @Override
+        public Tree visitVariable(VariableTree variableTree, Element p) {
+            Element current = workingCopy.getTrees().getElement(getCurrentPath());
+            for (MemberInfo<ElementHandle<? extends Element>> memberInfo : refactoring.getMembers()) {
+                if (memberInfo.getGroup() == MemberInfo.Group.FIELD
+                        && memberInfo.getElementHandle().resolve(workingCopy) == current) {
+                    GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+                    members2Remove.add(variableTree);
+                    VariableTree copy = genUtils.importComments(variableTree, workingCopy.getCompilationUnit());
+                    copy = genUtils.importFQNs(copy);
+                    ModifiersTree modifiers = copy.getModifiers();
+                    if (modifiers.getFlags().contains(Modifier.PRIVATE)) {
+                        modifiers = make.removeModifiersModifier(modifiers, Modifier.PRIVATE);
+                        modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
+                        copy = make.Variable(modifiers, copy.getName(), copy.getType(), copy.getInitializer());
+                        genUtils.copyComments(variableTree, copy, false);
+                        genUtils.copyComments(variableTree, copy, true);
+                    }
+                    members.add(copy);
+                    break;
+                }
+            }
+            return variableTree;
+        }
+
+        @Override
+        public Tree visitMethod(final MethodTree methodTree, Element p) {
+            final Trees trees = workingCopy.getTrees();
+            Element current = trees.getElement(getCurrentPath());
+            for (MemberInfo<ElementHandle<? extends Element>> memberInfo : refactoring.getMembers()) {
+                if (memberInfo.getGroup() == MemberInfo.Group.METHOD
+                        && memberInfo.getElementHandle().resolve(workingCopy) == current) {
+                    if(!memberInfo.isMakeAbstract()) {
+                        members2Remove.add(methodTree);
+                    }
+                    GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+                    MethodTree newMethod = genUtils.importComments(methodTree, workingCopy.getCompilationUnit());
+                    ModifiersTree modifiers = methodTree.getModifiers();
+                    if (modifiers.getFlags().contains(Modifier.PRIVATE)) {
+                        modifiers = make.removeModifiersModifier(modifiers, Modifier.PRIVATE);
+                        modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
+                    }
+                    newMethod = genUtils.importFQNs(newMethod);
+                    final List<? extends TypeMirror> thrownTypes = ((ExecutableElement)current).getThrownTypes();
+                    List<ExpressionTree> newThrownTypes = new ArrayList<ExpressionTree>(thrownTypes.size());
+                    for (TypeMirror typeMirror : thrownTypes) {
+                        newThrownTypes.add((ExpressionTree) make.Type(typeMirror)); // Necessary as this is not covered by importFQNs
+                    }
+                    if (memberInfo.isMakeAbstract() && !current.getModifiers().contains(Modifier.ABSTRACT)) {
+                        newMethod = make.Method(
+                                RefactoringUtils.makeAbstract(make, modifiers),
+                                newMethod.getName(),
+                                newMethod.getReturnType(),
+                                newMethod.getTypeParameters(),
+                                newMethod.getParameters(),
+                                newThrownTypes,
+                                (BlockTree) null,
+                                null);
+                    } else {
+                        newMethod = make.Method(modifiers,
+                                newMethod.getName(),
+                                newMethod.getReturnType(),
+                                newMethod.getTypeParameters(),
+                                newMethod.getParameters(),
+                                newThrownTypes,
+                                newMethod.getBody(),
+                                (ExpressionTree) newMethod.getDefaultValue());
+                    }
+                    genUtils.copyComments(methodTree, newMethod, false);
+                    genUtils.copyComments(methodTree, newMethod, true);
+                    makeAbstract |= newMethod.getModifiers().getFlags().contains(Modifier.ABSTRACT);
+                    members.add(newMethod);
+                    break;
+                }
+            }
+            return methodTree;
+        }
+
         private List<Tree> getImplements2Remove(CompilationInfo javac,MemberInfo[] members, TypeElement clazz) {
             if (members == null || members.length == 0) {
                 return Collections.<Tree>emptyList();
@@ -439,7 +495,6 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                     memberTypes.add(tm);
                 }
             }
-
             
             ClassTree classTree = javac.getTrees().getTree(clazz);
             List<Tree> result = new ArrayList<Tree>();
@@ -457,10 +512,9 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                     }
                 }
             }
-
+            
             return result;
         }
-        
         private static List<Tree> resolveImplements(List<? extends Tree> allImpls, Set<Tree> impls2Remove) {
             List<Tree> ret;
             if (allImpls == null) {
@@ -476,163 +530,79 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             return ret;
         }
         
-        
-        private void createCU(WorkingCopy wc) throws Exception {
-            wc.toPhase(JavaSource.Phase.RESOLVED);
-            boolean makeAbstract = false;
-            TreeMaker make = wc.getTreeMaker();
-            GeneratorUtilities genUtils = GeneratorUtilities.get(wc);
-            
-            // add type parameters
-            List<TypeMirror> typeParams = findUsedGenericTypes(wc, sourceType.resolve(wc), refactoring);
-            List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParams.size());
-            // lets retrieve param type trees from origin class since it is
-            // almost impossible to create them via TreeMaker
-            TypeElement sourceTypeElm = sourceType.resolve(wc);
-            for (TypeParameterElement typeParam : sourceTypeElm.getTypeParameters()) {
-                TypeMirror origParam = typeParam.asType();
-                for (TypeMirror newParam : typeParams) {
-                    if (wc.getTypes().isSameType(origParam, newParam)) {
-                        Tree t = wc.getTrees().getTree(typeParam);
-                        if (t.getKind() == Tree.Kind.TYPE_PARAMETER) {
-                            TypeParameterTree typeParamTree = (TypeParameterTree) t;
-                            if (!typeParamTree.getBounds().isEmpty()) {
-                                typeParamTree = (TypeParameterTree) genUtils.importFQNs(t);
-                            }
-                            newTypeParams.add(typeParamTree);
-                        }
-                    }
-                }
+        private List<TypeMirror> findUsedGenericTypes(TypeElement javaClass) {
+            List<TypeMirror> typeArgs = JavaRefactoringUtils.elementsToTypes(javaClass.getTypeParameters());
+            if (typeArgs.isEmpty()) {
+                return typeArgs;
             }
 
-            // add fields, methods and implements
-            List<Tree> members = new ArrayList<Tree>();
-            List <Tree> implementsList = new ArrayList<Tree>();
-            
-            addConstructors(wc, sourceTypeElm, members);
-            
-            for (MemberInfo member : refactoring.getMembers()) {
-                if (member.getGroup() == MemberInfo.Group.FIELD) {
+            Types typeUtils = workingCopy.getTypes();
+            Set<TypeMirror> used = Collections.newSetFromMap(new IdentityHashMap<TypeMirror, Boolean>());
+
+            // check super class
+            TypeMirror superClass = javaClass.getSuperclass();
+            RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, superClass);
+
+            MemberInfo[] members = refactoring.getMembers();
+            for (int i = 0; i < members.length && !typeArgs.isEmpty(); i++) {
+                if (members[i].getGroup() == MemberInfo.Group.METHOD) {
+                // check methods
                     @SuppressWarnings("unchecked")
-                    ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.getElementHandle();
-                    VariableElement elm = handle.resolve(wc);
-                    VariableTree tree = (VariableTree) wc.getTrees().getTree(elm);
-                    VariableTree copy = genUtils.importComments(tree, wc.getTrees().getPath(elm).getCompilationUnit());
-                    copy = genUtils.importFQNs(copy);
-                    ModifiersTree modifiers = copy.getModifiers();
-                    if(modifiers.getFlags().contains(Modifier.PRIVATE)) {
-                        modifiers = make.removeModifiersModifier(modifiers, Modifier.PRIVATE);
-                        modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
-                        copy = make.Variable(modifiers, copy.getName(), copy.getType(), copy.getInitializer());
-                        genUtils.copyComments(tree, copy, false);
-                        genUtils.copyComments(tree, copy, true);
+                    ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) members[i].getElementHandle();
+                    ExecutableElement elm = handle.resolve(workingCopy);
+
+                    RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, elm.getReturnType());
+
+                    for (Iterator<? extends VariableElement> paramIter = elm.getParameters().iterator(); paramIter.hasNext() && !typeArgs.isEmpty();) {
+                        VariableElement param = paramIter.next();
+                        RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, param.asType());
                     }
-                    members.add(copy);
-                } else if (member.getGroup() == MemberInfo.Group.METHOD) {
+                } else if (members[i].getGroup() == MemberInfo.Group.FIELD) {
+                    if (members[i].getModifiers().contains(Modifier.STATIC)) {
+                        // do not check since static fields cannot use type parameter of the enclosing class
+                        continue;
+                    }
                     @SuppressWarnings("unchecked")
-                    ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) member.getElementHandle();
-                    ExecutableElement elm = handle.resolve(wc);
-                    final MethodTree methodTree = genUtils.importComments(wc.getTrees().getTree(elm), wc.getTrees().getPath(elm).getCompilationUnit());
-                    ModifiersTree modifiers = methodTree.getModifiers();
-                    if(modifiers.getFlags().contains(Modifier.PRIVATE)) {
-                        modifiers = make.removeModifiersModifier(modifiers, Modifier.PRIVATE);
-                        modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
-                    }
-                    MethodTree newMethod;
-                    if (member.isMakeAbstract() && !elm.getModifiers().contains(Modifier.ABSTRACT)) {
-                        newMethod = make.Method(
-                                RefactoringUtils.makeAbstract(make, modifiers),
-                                methodTree.getName(),
-                                methodTree.getReturnType(),
-                                methodTree.getTypeParameters(),
-                                methodTree.getParameters(),
-                                methodTree.getThrows(),
-                                (BlockTree) null,
-                                null);
-                    } else {
-                        newMethod = make.Method(modifiers,
-                                methodTree.getName(),
-                                methodTree.getReturnType(),
-                                methodTree.getTypeParameters(),
-                                methodTree.getParameters(),
-                                methodTree.getThrows(),
-                                methodTree.getBody(),
-                                (ExpressionTree) methodTree.getDefaultValue());
-                    }
-                    newMethod = genUtils.importFQNs(newMethod);
-                    genUtils.copyComments(methodTree, newMethod, false);
-                    genUtils.copyComments(methodTree, newMethod, true);
-                    makeAbstract |= newMethod.getModifiers().getFlags().contains(Modifier.ABSTRACT);
-                    members.add(newMethod);
-                } else if (member.getGroup() == MemberInfo.Group.IMPLEMENTS) {
-                    TypeMirrorHandle handle = (TypeMirrorHandle) member.getElementHandle();
-                    // XXX check if interface is not aready there; the templates might be changed by user :-(
-                    TypeMirror implMirror = handle.resolve(wc);
-                    implementsList.add(make.Type(implMirror));
-                    // XXX needs more granular check
-                    makeAbstract |= true;
+                    ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) members[i].getElementHandle();
+                    VariableElement elm = handle.resolve(workingCopy);
+                    TypeMirror asType = elm.asType();
+                    RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, asType);
+                } else if (members[i].getGroup() == MemberInfo.Group.IMPLEMENTS) {
+                    // check implements
+                    TypeMirrorHandle handle = (TypeMirrorHandle) members[i].getElementHandle();
+                    TypeMirror implemetz = handle.resolve(workingCopy);
+                    RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, implemetz);
                 }
+                // do not check fields since static fields cannot use type parameter of the enclosing class
             }
 
-            // create superclass
-            Tree superClass = makeSuperclass(make, sourceTypeElm);
-
-            makeAbstract |= ((DeclaredType) sourceTypeElm.getSuperclass()).asElement().getModifiers().contains(Modifier.ABSTRACT);
-            
-            ModifiersTree classModifiersTree = make.Modifiers(makeAbstract?EnumSet.of(Modifier.PUBLIC, Modifier.ABSTRACT):EnumSet.of(Modifier.PUBLIC));
-            
-            // create new class
-            ClassTree newClassTree = make.Class(
-                    classModifiersTree,
-                    refactoring.getSuperClassName(),
-                    newTypeParams,
-                    superClass,
-                    implementsList,
-                    Collections.<Tree>emptyList());
-            
-            newClassTree = GeneratorUtilities.get(wc).insertClassMembers(newClassTree, members);
-            
-            FileObject fileObject = refactoring.getSourceType().getFileObject();
-            FileObject sourceRoot = ClassPath.getClassPath(fileObject, ClassPath.SOURCE).findOwnerRoot(fileObject);
-            String relativePath = FileUtil.getRelativePath(sourceRoot, fileObject.getParent()) + "/" + refactoring.getSuperClassName() + ".java";
-            CompilationUnitTree cu = JavaPluginUtils.createCompilationUnit(sourceRoot, relativePath, newClassTree, wc, make);
-            wc.rewrite(null, cu);
-            
+            return RefactoringUtils.filterTypes(typeArgs, used);
         }
         
         // --- helper methods ----------------------------------
         
-        private static Tree makeSuperclass(TreeMaker make, TypeElement clazz) {
-            DeclaredType supType = (DeclaredType) clazz.getSuperclass();
-            TypeElement supEl = (TypeElement) supType.asElement();
-            return supEl.getSuperclass().getKind() == TypeKind.NONE
-                    ? null
-                    : make.Type(supType);
-        }
-        
         /* in case there are constructors delegating to old superclass it is necessery to create delegates in new superclass */
-        private static void addConstructors(final WorkingCopy javac, final TypeElement origClass, final List<Tree> members) {
-            final TreeMaker make = javac.getTreeMaker();
-            final GeneratorUtilities genUtils = GeneratorUtilities.get(javac);
+        private void addConstructors(final TypeElement origClass) {
+            final GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
             
             // cache of already resolved constructors
             final Set<Element> added = new HashSet<Element>();
             for (ExecutableElement constr : ElementFilter.constructorsIn(origClass.getEnclosedElements())) {
-                if (javac.getElementUtilities().isSynthetic(constr)) {
+                if (workingCopy.getElementUtilities().isSynthetic(constr)) {
                     continue;
                 }
                 
-                TreePath path = javac.getTrees().getPath(constr);
+                TreePath path = workingCopy.getTrees().getPath(constr);
                 MethodTree mc = (MethodTree) (path != null? path.getLeaf(): null);
                 if (mc != null) {
                     for (StatementTree stmt : mc.getBody().getStatements()) {
                         // search super(...); statement
                         if (stmt.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
                             ExpressionStatementTree estmt = (ExpressionStatementTree) stmt;
-                            boolean isSyntheticSuper = javac.getTreeUtilities().isSynthetic(javac.getTrees().getPath(path.getCompilationUnit(), estmt));
+                            boolean isSyntheticSuper = workingCopy.getTreeUtilities().isSynthetic(workingCopy.getTrees().getPath(path.getCompilationUnit(), estmt));
                             ExpressionTree expr = estmt.getExpression();
-                            TreePath expath = javac.getTrees().getPath(path.getCompilationUnit(), expr);
-                            Element el = javac.getTrees().getElement(expath);
+                            TreePath expath = workingCopy.getTrees().getPath(path.getCompilationUnit(), expr);
+                            Element el = workingCopy.getTrees().getElement(expath);
                             if (el != null && el.getKind() == ElementKind.CONSTRUCTOR && added.add(el)) {
                                 ExecutableElement superclassConstr = (ExecutableElement) el;
                                 MethodInvocationTree invk = (MethodInvocationTree) expr;
@@ -649,7 +619,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                                 // create constructor
                                 MethodTree newConstr = make.Method(superclassConstr, block);
 
-                                newConstr = removeRuntimeExceptions(javac, superclassConstr, make, newConstr);
+                                newConstr = removeRuntimeExceptions(workingCopy, superclassConstr, make, newConstr);
 
                                 newConstr = genUtils.importFQNs(newConstr);
                                 members.add(newConstr);

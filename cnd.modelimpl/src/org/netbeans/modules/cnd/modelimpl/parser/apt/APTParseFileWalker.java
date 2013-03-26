@@ -59,19 +59,24 @@ import org.netbeans.modules.cnd.apt.structure.APTError;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
+import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
+import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.SimpleOffsetableImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -204,16 +209,24 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             APTPreprocHandler preprocHandler = getPreprocHandler();
             FileImpl includedFile = inclFileOwner.prepareIncludedFile(inclFileOwner, inclPath, preprocHandler);
             if (includedFile != null) {
-                if (isTokenProducer() && TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-                    APTFile aptFile = includedFile.getFileAPT(true);
-                    APTParseFileWalker walker = createIncludedHeaderWalker(aptFile, includedFile);
-                    if (walker != null) {
-                        FileContent inclFileContent = includedFile.prepareIncludedFileParsingContent();
-                        walker.setFileContent(inclFileContent);
-                        includeStream(aptFile, walker);
+                ProjectBase startProject = getStartProject();
+                if (inclFileOwner.isDisposing() || startProject.isDisposing()) {
+                    if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
+                        System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project\n", inclPath, inclFileOwner.getName());
                     }
                 } else {
-                    inclFileOwner.onFileIncluded(getStartProject(), includedFile, inclPath, preprocHandler, postIncludeState, mode, isTriggerParsingActivity());
+                    FileIncludeInParams params = new FileIncludeInParams(inclFileOwner, startProject, includedFile, inclPath, preprocHandler, postIncludeState, mode, isTriggerParsingActivity());
+                    if (isTokenProducer() && TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                        FileIncludeOutParams inclInfo = includeFileWithTokens(params);
+                        if (inclInfo != null) {
+                            super.putNodeProperty(apt, FileIncludeOutParams.class, inclInfo);
+                        }
+                    } else {
+                        FileIncludeOutParams inclInfo = includeFileWithoutTokens(params);
+                        if (isTriggerParsingActivity() && inclInfo != null) {
+                            inclFileOwner.postIncludeFile(startProject, includedFile, inclPath, inclInfo.getStatePair(), inclInfo.aptCacheEntry);
+                        }
+                    }
                 }
             }
             return includedFile;
@@ -224,18 +237,166 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         return null;
     }
 
+    @Override
+    protected void popInclude(APTInclude aptInclude, ResolvedPath resolvedPath, IncludeState pushState) {
+        if (pushState == IncludeState.Success) {
+            super.popInclude(aptInclude, resolvedPath, pushState);
+            if (isTokenProducer() && TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                FileIncludeOutParams inclInfo = (FileIncludeOutParams) super.getNodeProperty(aptInclude, FileIncludeOutParams.class);
+                if (inclInfo != null) {
+                    inclInfo.inParams.inclFileOwner.postIncludeFile(inclInfo.inParams.startProject, inclInfo.inParams.includedFile, inclInfo.inParams.includedPath, inclInfo.getStatePair(), inclInfo.aptCacheEntry);
+                }
+            }
+        }
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
-    private APTParseFileWalker createIncludedHeaderWalker(APTFile aptFile, FileImpl includedFile) {
+    
+    private static final class FileIncludeInParams {
+        private final ProjectBase inclFileOwner;
+        private final ProjectBase startProject;
+        private final FileImpl includedFile;
+        private final CharSequence includedPath;
+        private final APTPreprocHandler preprocHandler;
+        private final PostIncludeData postIncludeState;
+        private final int mode;
+        private final boolean triggerParsingActivity;
+
+        public FileIncludeInParams(ProjectBase inclFileOwner, ProjectBase startProject, FileImpl includedFile, CharSequence includedFileName, APTPreprocHandler preprocHandler, PostIncludeData postIncludeState, int mode, boolean triggerParsingActivity) {
+            this.inclFileOwner = inclFileOwner;
+            this.startProject = startProject;
+            this.includedFile = includedFile;
+            this.includedPath = includedFileName;
+            this.preprocHandler = preprocHandler;
+            this.postIncludeState = postIncludeState;
+            this.mode = mode;
+            this.triggerParsingActivity = triggerParsingActivity;
+        }
+    }
+    
+    private static final class FileIncludeOutParams {
+        private final FileIncludeInParams inParams;
+        private final APTPreprocHandler.State ppState;
+        private final FilePreprocessorConditionState pcState;
+        private final FilePreprocessorConditionState.Builder pcBuilder;
+        private final APTFileCacheEntry aptCacheEntry;        
+
+        public FileIncludeOutParams(FileIncludeInParams inParams, APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState, APTFileCacheEntry aptCacheEntry) {
+            this(inParams, ppState, pcState, null, aptCacheEntry);
+            assert pcState != null;
+        }
+
+        public FileIncludeOutParams(FileIncludeInParams inParams, APTPreprocHandler.State ppState, FilePreprocessorConditionState.Builder pcBuilder, APTFileCacheEntry aptCacheEntry) {
+            this(inParams, ppState, null, pcBuilder, aptCacheEntry);
+            assert pcBuilder != null;
+        }        
+
+        private FileIncludeOutParams(FileIncludeInParams inParams, APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState, FilePreprocessorConditionState.Builder pcBuilder, APTFileCacheEntry aptCacheEntry) {
+            this.inParams = inParams;
+            this.ppState = ppState;
+            this.pcState = pcState;
+            this.pcBuilder = pcBuilder;
+            this.aptCacheEntry = aptCacheEntry;
+        }
+        
+        private PreprocessorStatePair getStatePair() {
+            if (pcState != null) {
+                return new PreprocessorStatePair(ppState, pcState);
+            } else {
+                assert pcBuilder != null;
+                return new PreprocessorStatePair(ppState, pcBuilder.build());
+            }
+        }
+    }
+    
+    private FileIncludeOutParams includeFileWithTokens(FileIncludeInParams params) throws IOException {
+        APTFile aptFile = CsmCorePackageAccessor.get().getFileAPT(params.includedFile, true);
         if (aptFile != null) {
-            return new APTParseFileWalker(this.getStartProject(), aptFile, includedFile, getPreprocHandler(), this.triggerParsingActivity, null, null);
+            APTPreprocHandler.State ppIncludeState = params.preprocHandler.getState();
+            // ask for exclusive entry if absent
+            APTFileCacheEntry aptCacheEntry = params.includedFile.getAPTCacheEntry(ppIncludeState, Boolean.TRUE);   
+            // gather macro map from all includes and fill preprocessor conditions state
+            FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(params.includedFile.getAbsolutePath());
+            APTParseFileWalker walker = new APTParseFileWalker(params.startProject, aptFile, params.includedFile, params.preprocHandler, params.triggerParsingActivity, pcBuilder, aptCacheEntry);
+            FileContent inclFileContent = params.includedFile.prepareIncludedFileParsingContent();
+            walker.setFileContent(inclFileContent);
+            includeStream(aptFile, walker);
+            return new FileIncludeOutParams(params, ppIncludeState, pcBuilder, aptCacheEntry);
         } else {
             // in the case file was just removed
-            Utils.LOG.log(Level.INFO, "Can not find or build APT for file {0}", includedFile); //NOI18N
+            Utils.LOG.log(Level.INFO, "Can not find or build APT for file {0}", params.includedFile); //NOI18N
         }
         return null;
     }
-    
+    /**
+     * called to inform that file was #included from another file with specific
+     * preprocHandler
+     *
+     * @param file included file path
+     * @param preprocHandler preprocHandler with which the file is including
+     * @param mode of walker forced onFileIncluded for #include directive
+     * @return true if it's first time of file including false if file was
+     * included before
+     */
+    private FileIncludeOutParams includeFileWithoutTokens(FileIncludeInParams params) throws IOException {
+        assert params.preprocHandler != null : "null preprocHandler for " + params.includedPath;
+        assert params.includedFile != null : "null FileImpl for " + params.includedPath;
+
+        APTPreprocHandler.State newState = params.preprocHandler.getState();
+        PreprocessorStatePair cachedOut = null;
+        APTFileCacheEntry aptCacheEntry = null;
+        FilePreprocessorConditionState pcState = null;
+        boolean foundInCache = false;
+        // check post include cache
+        if (params.postIncludeState != null && params.postIncludeState.hasDeadBlocks()) {
+            assert params.postIncludeState.hasPostIncludeMacroState() : "how could it be? " + params.includedPath;
+            pcState = CsmCorePackageAccessor.get().createPCState(params.includedPath, params.postIncludeState.getDeadBlocks());
+            params.preprocHandler.getMacroMap().setState(params.postIncludeState.getPostIncludeMacroState());
+            foundInCache = true;
+        }
+        // check visited file cache
+        boolean isFileCacheApplicable = (params.mode == ProjectBase.GATHERING_TOKENS) && (APTHandlersSupport.getIncludeStackDepth(newState) != 0);
+        if (!foundInCache && isFileCacheApplicable) {
+            
+            cachedOut = CsmCorePackageAccessor.get().getCachedVisitedState(params.includedFile, newState);
+            if (cachedOut != null) {
+                params.preprocHandler.getMacroMap().setState(APTHandlersSupport.extractMacroMapState(cachedOut.state));
+                pcState = cachedOut.pcState;
+                foundInCache = true;
+            }
+        }
+        // if not found in caches => visit include file
+        if (!foundInCache) {
+            APTFile aptLight = CsmCorePackageAccessor.get().getFileAPT(params.includedFile, false);
+            if (aptLight == null) {
+                // in the case file was just removed
+                Utils.LOG.log(Level.INFO, "Can not find or build APT for file {0}", params.includedPath); //NOI18N
+                return null;
+            }
+
+            // gather macro map from all includes and fill preprocessor conditions state
+            FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(params.includedFile.getAbsolutePath());
+            // ask for exclusive entry if absent
+            aptCacheEntry = params.includedFile.getAPTCacheEntry(newState, Boolean.TRUE);
+            APTParseFileWalker walker = new APTParseFileWalker(params.startProject, aptLight, params.includedFile, params.preprocHandler, params.triggerParsingActivity, pcBuilder, aptCacheEntry);
+            walker.visit();
+            pcState = pcBuilder.build();
+        }
+        // updated caches
+        // update post include cache
+        if (params.postIncludeState != null && !params.postIncludeState.hasDeadBlocks()) {
+            int[] deadBlocks = CsmCorePackageAccessor.get().getPCStateDeadBlocks(pcState);
+            // cache info
+            params.postIncludeState.setDeadBlocks(deadBlocks);
+        }
+        // updated visited file cache
+        if (cachedOut == null && isFileCacheApplicable) {            
+            CsmCorePackageAccessor.get().cacheVisitedState(params.includedFile, newState, params.preprocHandler, pcState);
+        }
+        return new FileIncludeOutParams(params, newState, pcState, aptCacheEntry);
+    }
+
     private ErrorDirectiveImpl createError(APTError error) {
         APTToken token = error.getToken();
         SimpleOffsetableImpl pos = getOffsetable(token);

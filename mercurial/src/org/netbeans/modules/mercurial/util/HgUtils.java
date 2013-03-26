@@ -106,6 +106,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgException.HgCommandCanceledException;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
@@ -115,10 +116,13 @@ import org.netbeans.modules.versioning.util.FileSelector;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.text.Line;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -340,6 +344,43 @@ public class HgUtils {
      */
     public static boolean isNullOrEmpty(String str) {
         return (str == null) || (str.trim().length() == 0);
+    }
+
+    public static boolean isRebasing (File repositoryRoot) {
+        WorkingCopyInfo info = WorkingCopyInfo.getInstance(repositoryRoot);
+        info.refresh();
+        HgLogMessage[] parents = info.getWorkingCopyParents();
+        if (parents.length > 1) {
+            // two parents, possible abort, rebase or simply inside a merge
+            return new File(getHgFolderForRoot(repositoryRoot), "rebasestate").exists(); //NOI18N
+        }
+        return false;
+    }
+
+    public static boolean onlyProjects (Node[] nodes) {
+        if (nodes == null) {
+            return false;
+        }
+        for (Node node : nodes) {
+            if (node.getLookup().lookup(Project.class) == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean onlyFolders (Set<File> files) {
+        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+        for (File file : files) {
+            if (file.isFile()) {
+                return false;
+            }
+            FileInformation status = cache.getCachedStatus(file);
+            if (status == null || (!file.exists() && !status.isDirectory())) {
+                return false;
+            }
+        }
+        return true;
     }
     
     private static void resetIgnorePatterns(File file) {
@@ -1408,35 +1449,6 @@ itor tabs #66700).
     }
 
     /**
-     * Flattens the given collection of files and removes those that do not respect the flat folder logic, i.e. those that lie deeper under a flat folder.
-     * @param roots selected files with flat folders
-     */
-    public static Set<File> flattenFiles (File[] roots, Collection<File> files) {
-        File[][] split = Utils.splitFlatOthers(roots);
-        Set<File> filteredFiles = new HashSet<File>(files);
-        if (split[0].length > 0) {
-            outer:
-            for (Iterator<File> it = filteredFiles.iterator(); it.hasNext(); ) {
-                File f = it.next();
-                // file is directly under a flat folder
-                for (File flat : split[0]) {
-                    if (f.getParentFile().equals(flat)) {
-                        continue outer;
-                    }
-                }
-                // file lies under a recursive folder
-                for (File folder : split[1]) {
-                    if (Utils.isAncestorOrEqual(folder, f)) {
-                        continue outer;
-                    }
-                }
-                it.remove();
-            }
-        }
-        return filteredFiles;
-    }
-
-    /**
      * Returns set of opened files belonging to a given repository
      * @param repository 
      */
@@ -1825,6 +1837,14 @@ itor tabs #66700).
         }
         return branchHeadsMap;
     }
+    
+    public static VCSContext buildVCSContext (File[] roots) {
+        List<Node> nodes = new ArrayList<Node>(roots.length);
+        for (File root : roots) {
+            nodes.add(new AbstractNode(Children.LEAF, Lookups.fixed(root)));
+        }
+        return VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
+    }
 
     public static <T> T runWithoutIndexing (Callable<T> callable, List<File> files) throws HgException {
         return runWithoutIndexing(callable, files.toArray(new File[files.size()]));
@@ -1851,6 +1871,8 @@ itor tabs #66700).
                 }
             }
         } catch (HgException ex) {
+            throw ex;
+        } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
             Mercurial.LOG.log(Level.INFO, "Cannot run block without indexing", ex); //NOI18N

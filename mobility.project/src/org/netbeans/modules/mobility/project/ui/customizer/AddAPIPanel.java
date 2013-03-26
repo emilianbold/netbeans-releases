@@ -124,13 +124,28 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
         "javax.microedition.sensor.PrivateSensor", // NOI18N
         "javax.microedition.sensor.ProtectedSensor",  // NOI18N
         "javax.microedition.io.Connector.sensor", // NOI18N
-        // Fix for IZ#216134 - Add new IMP-NG Permissions to Application Descriptor>API Permissions tab
+        // Fix for IZ#216134 - Add new IMP-NG Permissions to Application Descriptor>API Permissions tab (overridden by the fix below)
+        // Fix for IZ#226702 -  Support new Device Access API permissions in ME SDK 3.3
+        "com.oracle.deviceaccess.adc", // NOI18N
+        "com.oracle.deviceaccess.atcmd", // NOI18N
+        "com.oracle.deviceaccess.atcmd.ATDevice.openDataConnection", // NOI18N
+        "com.oracle.deviceaccess.counter", // NOI18N
+        "com.oracle.deviceaccess.dac", // NOI18N
+        "com.oracle.deviceaccess.generic", // NOI18N
         "com.oracle.deviceaccess.gpio", // NOI18N
-        "com.oracle.deviceaccess.gpio.read", // NOI18N
-        "com.oracle.deviceaccess.gpio.write", // NOI18N
+        "com.oracle.deviceaccess.gpio.GPIOPin.setDirection", // NOI18N
+        "com.oracle.deviceaccess.gpio.GPIOPort.setDirection", // NOI18N
         "com.oracle.deviceaccess.i2c", // NOI18N
-        "com.oracle.deviceaccess.spi", // NOI18N
         "com.oracle.deviceaccess.mmio", // NOI18N
+        "com.oracle.deviceaccess.modem", // NOI18N
+        "com.oracle.deviceaccess.power", // NOI18N
+        "com.oracle.deviceaccess.spi", // NOI18N
+        "com.oracle.deviceaccess.uart", // NOI18N
+        "com.oracle.deviceaccess.watchdog", // NOI18N
+        "com.oracle.deviceaccess.PeripheralManager.register", // NOI18N
+        "com.oracle.deviceaccess.PeripheralManager.unregister", // NOI18N
+        "com.oracle.deviceaccess.PeripheralManager.configure", // NOI18N
+        "com.oracle.deviceaccess.PeripheralManager.list", // NOI18N
     };
     
     private DialogDescriptor dd;

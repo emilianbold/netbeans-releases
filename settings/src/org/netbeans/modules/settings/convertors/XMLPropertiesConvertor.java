@@ -225,7 +225,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
         
         Class c = getInstanceClass();
         try {
-            return c.newInstance();
+            return XMLSettingsSupport.newInstance(c);
         } catch (Exception ex) { // IllegalAccessException, InstantiationException
             IOException ioe = new IOException("Cannot create instance of " + c.getName()); // NOI18N
             ioe.initCause(ex);

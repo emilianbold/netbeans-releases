@@ -72,15 +72,13 @@ import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.FS;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.ResolvedPath;
-import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
-import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
@@ -98,17 +96,37 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     
     public static final String RESTRICT_SOURCE_ROOT = "restrict_source_root"; // NOI18N
     public static final String RESTRICT_COMPILE_ROOT = "restrict_compile_root"; // NOI18N
-    protected AtomicBoolean isStoped = new AtomicBoolean(false);
+    private final AtomicBoolean isStoped = new AtomicBoolean(false);
+    private final Interrupter stopIterrupter;
+    private Interrupter projectInterrupter;
     private RelocatablePathMapperImpl mapper;
     private CompilerSettings myCommpilerSettings;
     private Map<String,GrepEntry> grepBase = new ConcurrentHashMap<String, GrepEntry>();
 
     public BaseDwarfProvider() {
+        stopIterrupter = new Interrupter() {
+
+            @Override
+            public boolean cancelled() {
+                if (isStoped.get()) {
+                    return true;
+                }
+                Interrupter aProjectInterrupter = projectInterrupter;
+                if (aProjectInterrupter != null && aProjectInterrupter.cancelled()) {
+                    return true;
+                }
+                return false;
+            }
+        };
     }
     
     public final void init(ProjectProxy project) {
         myCommpilerSettings = new CompilerSettings(project);
         mapper = new RelocatablePathMapperImpl(project);
+    }
+
+    public final void store(ProjectProxy project) {
+        mapper.save();
     }
 
     @Override
@@ -117,10 +135,20 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     }
     
     @Override
-    public void stop() {
+    public boolean cancel() {
         isStoped.set(true);
+        return true;
     }
 
+    protected void resetStopInterrupter(Interrupter projectInterrupter) {
+        this.projectInterrupter = projectInterrupter;
+        isStoped.set(false);
+    }
+
+    protected Interrupter getStopInterrupter() {
+        return stopIterrupter;
+    }
+    
     protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress, ProjectProxy project,
             Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage){
         CountDownLatch countDownLatch = new CountDownLatch(objFileName.length);
@@ -174,6 +202,18 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     return true;
                 }
                 return false;
+            }
+
+            @Override
+            public List<String> list(String path) {
+                List<String> res = new ArrayList<String>();
+                FileObject fo = fileSystem.findResource(path);
+                if (fo != null && fo.isValid() && fo.isFolder()) {
+                    for (FileObject f : fo.getChildren()) {
+                        res.add(f.getPath());
+                    }
+                }
+                return res;
             }
         };
         String sourceRoot = null;

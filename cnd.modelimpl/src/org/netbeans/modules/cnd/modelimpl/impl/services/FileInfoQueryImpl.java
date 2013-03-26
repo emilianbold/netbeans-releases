@@ -76,7 +76,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
-import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -296,22 +295,24 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                                 return Collections.<CsmReference>emptyList();
                             } else if (handlers.size() == 1) {
                                 APTPreprocHandler handler = handlers.iterator().next();
+                                State state = handler.getState();
                                 // ask for concurrent entry if absent
-                                APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, Boolean.FALSE);
+                                APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(state, Boolean.FALSE);
                                 APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry);
                                 out = walker.collectMacros();
                                 // remember walk info
-                                fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
+                                fileImpl.setAPTCacheEntry(state, cacheEntry, false);
                             } else {
                                 Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
                                 TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
                                 for (APTPreprocHandler handler : handlers) {
                                     // ask for concurrent entry if absent
-                                    APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler, Boolean.FALSE);
+                                    State state = handler.getState();
+                                    APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(state, Boolean.FALSE);
                                     APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry);
                                     result.addAll(walker.collectMacros());
                                     // remember walk info
-                                    fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
+                                    fileImpl.setAPTCacheEntry(state, cacheEntry, false);
                                 }
                                 out = new ArrayList<CsmReference>(result);
                             }

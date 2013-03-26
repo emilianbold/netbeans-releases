@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.32.1
+#Version 2.36.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -1599,6 +1599,7 @@ CLSS public org.netbeans.api.visual.widget.Widget
 cons public init(org.netbeans.api.visual.widget.Scene)
 innr public abstract interface static Dependency
 intf javax.accessibility.Accessible
+intf org.openide.util.Lookup$Provider
 meth protected boolean isRepaintRequiredForRevalidating()
 meth protected final void updateResources(org.netbeans.api.visual.widget.Widget,boolean)
 meth protected java.awt.Cursor getCursorAt(java.awt.Point)
@@ -1741,4 +1742,25 @@ meth public final void setLabel(java.lang.String)
 meth public void notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
 supr org.netbeans.api.visual.widget.Widget
 hfds header,imageWidget,labelWidget
+
+CLSS public abstract org.openide.util.Lookup
+cons public init()
+fld public final static org.openide.util.Lookup EMPTY
+innr public abstract interface static Provider
+innr public abstract static Item
+innr public abstract static Result
+innr public final static Template
+meth public <%0 extends java.lang.Object> java.util.Collection<? extends {%%0}> lookupAll(java.lang.Class<{%%0}>)
+meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Item<{%%0}> lookupItem(org.openide.util.Lookup$Template<{%%0}>)
+meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookupResult(java.lang.Class<{%%0}>)
+meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookup(org.openide.util.Lookup$Template<{%%0}>)
+meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
+meth public static org.openide.util.Lookup getDefault()
+supr java.lang.Object
+hfds LOG,defaultLookup
+hcls DefLookup,Empty
+
+CLSS public abstract interface static org.openide.util.Lookup$Provider
+ outer org.openide.util.Lookup
+meth public abstract org.openide.util.Lookup getLookup()
 

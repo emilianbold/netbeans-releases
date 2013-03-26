@@ -42,11 +42,18 @@
 package org.netbeans.modules.javawebstart;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javawebstart.ui.customizer.JWSProjectProperties;
+import org.netbeans.modules.javawebstart.ui.customizer.JWSProjectPropertiesUtils;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -58,6 +65,8 @@ import org.openide.util.Parameters;
  */
 @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-java-j2seproject")
 public class JWSProjectOpenHook extends ProjectOpenedHook {
+
+    private static final Logger LOG = Logger.getLogger(JWSProjectOpenHook.class.getName());
 
     private final Project prj;
     private final J2SEPropertyEvaluator eval;
@@ -72,6 +81,57 @@ public class JWSProjectOpenHook extends ProjectOpenedHook {
 
     @Override
     protected void projectOpened() {
+        ProjectManager.mutex().writeAccess(
+            new Runnable() {
+                @Override
+                public void run() {
+                    updateBuildScript();
+                    updateLibraries();
+                }
+        });
+    }
+
+    private void updateBuildScript() {
+        final AntBuildExtender extender = prj.getLookup().lookup(AntBuildExtender.class);
+        if (extender == null) {
+            LOG.log(
+                Level.WARNING,
+                "The project {0} ({1}) does not support AntBuildExtender.",     //NOI18N
+                new Object[] {
+                    ProjectUtils.getInformation(prj).getDisplayName(),
+                    FileUtil.getFileDisplayName(prj.getProjectDirectory())
+                });
+            return;
+        }
+        if (extender.getExtension(JWSProjectPropertiesUtils.getCurrentExtensionName()) == null) {
+            LOG.log(
+                Level.FINE,
+                "The project {0} ({1}) does not have a current version ({2}) of JWS extension.", //NOI18N
+                new Object[] {
+                    ProjectUtils.getInformation(prj).getDisplayName(),
+                    FileUtil.getFileDisplayName(prj.getProjectDirectory()),
+                    JWSProjectPropertiesUtils.getCurrentExtensionName()
+                });
+            return;
+        }
+        if (JWSProjectPropertiesUtils.isJnlpImplUpToDate(prj)) {
+            LOG.log(
+                Level.FINE,
+                "The project {0} ({1}) have an up to date JWS extension.", //NOI18N
+                new Object[] {
+                    ProjectUtils.getInformation(prj).getDisplayName(),
+                    FileUtil.getFileDisplayName(prj.getProjectDirectory())
+                });
+            return;
+        }
+        try {
+            JWSProjectPropertiesUtils.copyJnlpImplTemplate(prj);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void updateLibraries() {
         try {
             if (isTrue(eval.evaluator().getProperty(JWSProjectProperties.JNLP_ENABLED))) {  //JNLP_ENABLED - inlined by compiler
                 JWSProjectProperties.updateOnOpen(prj, eval.evaluator());

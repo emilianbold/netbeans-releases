@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.mercurial.ui.annotate;
 
-import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,6 +73,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -86,6 +86,11 @@ import org.openide.windows.WindowManager;
  * @author John Rice
  */
 public class AnnotateAction extends ContextAction {
+    public static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/annotate.png"; //NOI18N
+    
+    public AnnotateAction () {
+        super(ICON_RESOURCE);
+    }
     
     @Override
     protected boolean enable(Node[] nodes) {
@@ -123,7 +128,7 @@ public class AnnotateAction extends ContextAction {
 
     @Override
     protected String iconResource () {
-        return "org/netbeans/modules/mercurial/resources/icons/annotate.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 
     @Override
@@ -216,18 +221,22 @@ public class AnnotateAction extends ContextAction {
             ab.setAnnotationMessage(NbBundle.getMessage(AnnotateAction.class, "CTL_AnnotationFailed")); // NOI18N;
             return;
         }
-        if (list == null) return;
+        if (list == null) {
+            ab.setAnnotationMessage(NbBundle.getMessage(AnnotateAction.class, "CTL_AnnotationFailed")); // NOI18N;
+            return;
+        }
         AnnotateLine [] lines = toAnnotateLines(list);
         List<String> revisions = getRevisionNumbers(lines);
         HgLogMessage initialRevision = null;
+        HgLogMessage [] logs = new HgLogMessage[0];
         if (!revisions.isEmpty()) {
-            HgLogMessage [] logs = HgCommand.getLogMessages(repository, Collections.singleton(file), 
+            logs = HgCommand.getLogMessages(repository, Collections.singleton(file), 
                     revisions.get(0), "0", false, false, false, 1, Collections.<String>emptyList(), OutputLogger.getLogger(null), true);
             if (logs.length == 1) {
                 initialRevision = logs[0];
             }
+            logs = HgCommand.getRevisionInfo(repository, revisions, progress.getLogger());
         }
-        HgLogMessage [] logs = HgCommand.getRevisionInfo(repository, revisions, progress.getLogger());
         if (progress.isCanceled()) {
             return;
         }
@@ -337,9 +346,14 @@ public class AnnotateAction extends ContextAction {
      * does not have any or more nodes selected.
      */
     private JEditorPane activatedEditorPane(Node[] nodes) {
-        EditorCookie ec = activatedEditorCookie(nodes);
-        if (ec != null && EventQueue.isDispatchThread()) {
-            return NbDocument.findRecentEditorPane(ec);
+        final EditorCookie ec = activatedEditorCookie(nodes);
+        if (ec != null) {
+            return Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
+                @Override
+                public JEditorPane run () {
+                    return NbDocument.findRecentEditorPane(ec);
+                }
+            });
         }
         return null;
     }

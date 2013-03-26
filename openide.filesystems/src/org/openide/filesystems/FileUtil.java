@@ -536,7 +536,7 @@ public final class FileUtil extends Object {
     */
     public static void copy(InputStream is, OutputStream os)
     throws IOException {
-        final byte[] BUFFER = new byte[4096];
+        final byte[] BUFFER = new byte[65536];
         int len;
 
         for (;;) {

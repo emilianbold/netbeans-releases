@@ -377,11 +377,13 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     if(newModifiers != null) {
                         checkNewModifier(getCurrentPath(), method);
                     }
-                    TreePath enclosingMethod = JavaPluginUtils.findMethod(getCurrentPath());
-                    Element enclosingElement = workingCopy.getTrees().getElement(enclosingMethod);
                     boolean passThrough = false;
-                    if(isMethodMatch(enclosingElement, method)) {
-                        passThrough = true;
+                    TreePath enclosingMethod = JavaPluginUtils.findMethod(getCurrentPath());
+                    if(enclosingMethod != null) {
+                        Element enclosingElement = workingCopy.getTrees().getElement(enclosingMethod);
+                        if(isMethodMatch(enclosingElement, method)) {
+                            passThrough = true;
+                        }
                     }
                     List<ExpressionTree> arguments = getNewArguments(tree.getArguments(), passThrough, method);
                     

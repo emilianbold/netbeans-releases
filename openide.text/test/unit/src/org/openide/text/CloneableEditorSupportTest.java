@@ -64,6 +64,7 @@ import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Task;
@@ -149,6 +150,7 @@ implements CloneableEditorSupport.Env {
 
     }
     
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
     public void testDocumentIsNotGCedIfOpenedInEditor () throws Exception {
         content = "Ahoj\nMyDoc";
         javax.swing.text.Document doc = support.openDocument ();

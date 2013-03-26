@@ -60,7 +60,7 @@ public class CssCompletionTest extends CssModuleTestBase {
     public void testAtRules() throws ParseException {
         checkCC("|", AT_RULES, Match.CONTAINS);
         checkCC("@|", AT_RULES, Match.CONTAINS);
-        checkCC("@pa|", new String[]{"@page"}, Match.CONTAINS);
+        checkCC("@pa|", new String[]{"@page"}, Match.EXACT);
 
         checkCC("|  h1 { }", AT_RULES, Match.CONTAINS);
         checkCC("@| h1 { }", AT_RULES, Match.CONTAINS);
@@ -110,7 +110,7 @@ public class CssCompletionTest extends CssModuleTestBase {
         //at least it is not consistent with the property names completion
         //checkCC("h1 { color: red| }", arr("red"), Match.CONTAINS);
 
-        checkCC("h1 { color: red | }", arr(), Match.EMPTY);
+//        checkCC("h1 { color: red | }", arr(), Match.EMPTY);
         checkCC("h1 { border: dotted | }", arr("blue"), Match.CONTAINS);
     }
 
@@ -132,12 +132,14 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("html tit| { }", arr("title"), Match.CONTAINS);
     }
 
-    public void testHtmlSelectorsCompletionAfterClassOrIdSelector() throws ParseException, BadLocationException {
+    public void testHtmlSelectorsCompletionAfterIdSelector() throws ParseException, BadLocationException {
         checkCC("#myid |", arr("html"), Match.CONTAINS);
         checkCC("#myid h|", arr("html"), Match.CONTAINS);
         assertComplete("#myid b| { }", "#myid body| { }", "body");
         assertComplete("#myid | { }", "#myid body| { }", "body");
-
+    }
+    
+    public void testHtmlSelectorsCompletionAfterClassSelector() throws ParseException, BadLocationException {
         checkCC(".aclass |", arr("html"), Match.CONTAINS);
         checkCC(".aclass h|", arr("html"), Match.CONTAINS);
         assertComplete(".aclass b| { }", ".aclass body| { }", "body");
@@ -178,7 +180,7 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("h1 { -| }", arr("-moz-animation"), Match.CONTAINS);
         checkCC("h1 { -moz-an| }", arr("-moz-animation"), Match.CONTAINS);
         checkCC("h1 { -moz-an| }", arr("-moz-appearabce"), Match.DOES_NOT_CONTAIN);
-//        
+
         checkCC("h1 { %| }", arr("-moz-animation"), Match.EMPTY);
         checkCC("h1 { %moz| }", arr("-moz-animation"), Match.EMPTY);
 
@@ -209,7 +211,7 @@ public class CssCompletionTest extends CssModuleTestBase {
                 + "\n"
                 + "   }\n";
 
-        checkCC(code, arr("#aabbcc"), Match.CONTAINS);
+        checkCC(code, arr("#aabbcc"), Match.CONTAINS);        
     }
 
     //Bug 204129 - CC doesn't work after *|
@@ -251,8 +253,8 @@ public class CssCompletionTest extends CssModuleTestBase {
     public void testPropertyValueFontFamilyProblem2() throws ParseException {
         //completion doesn't offer items that can immediatelly follow
         //a valid token
-        checkCC("div { font-family: fantasy |}", arr(",", "!identifier"), Match.EXACT);
         checkCC("div { font-family: fantasy|}", arr(",", "!identifier"), Match.EXACT);
+//        checkCC("div { font-family: fantasy |}", arr(",", "!identifier"), Match.EXACT);
     }
     
     public void testPropertyValueJustAfterRGB() throws ParseException {

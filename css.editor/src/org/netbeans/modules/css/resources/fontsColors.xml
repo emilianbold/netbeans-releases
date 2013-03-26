@@ -73,12 +73,15 @@ made subject to such option by the copyright holder.
     <fontcolor name="operators" default="operator"/>
     <fontcolor name="strings" default="string"/>
     <fontcolor name="uris" default="string"/>
-    <fontcolor name="keywords" default="keyword"/>
     <fontcolor name="numbers" default="number"/>
     <fontcolor name="identifiers" default="identifier"/>
     <fontcolor  name="whitespaces" default="default"/>
     <fontcolor  name="comments" default="comment"/>
 
+    <fontcolor name="at_rule_symbol" foreColor="black">
+        <font style="bold" />
+    </fontcolor>
+    
     <!-- GSF colors - taken from ruby editor -->
     <!--"semantic" highlighting:-->
     <fontcolor name="mod-custom1" foreColor="blue"/> 
@@ -88,7 +91,7 @@ made subject to such option by the copyright holder.
     
     <!-- element, class, id selectors -->
     <fontcolor name="mod-method" foreColor="007c00" >
-        <font style="bold" />
+        <!--<font style="bold" />-->
     </fontcolor>
     
     <!-- namespace prefix -->
@@ -100,6 +103,17 @@ made subject to such option by the copyright holder.
     <fontcolor name="mod-class" >
         <font style="italic" />
     </fontcolor>
+    
+    <!-- less/sass variable -->
+    <fontcolor name="mod-local-variable" foreColor="006666" >
+        <!--<font style="bold" />-->
+    </fontcolor>
+    
+    <!-- less/sass keywords -->
+    <fontcolor name="mod-private" foreColor="006666"> <!-- 00007C -->
+        <font style="bold" />
+    </fontcolor>
+    
     
 <!--    
     <fontcolor name="mod-interface" />

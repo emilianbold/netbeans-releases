@@ -65,7 +65,7 @@ public class CachingFolderArchiveTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
-        archiveProvider = new CachingArchiveProvider();
+        archiveProvider = CachingArchiveProvider.newInstance();
         workDir = getWorkDir();
         TestUtil.copyFiles( TestUtil.getJdkDir(), workDir, TestUtil.RT_JAR );
         rtFile = new File( workDir, TestUtil.RT_JAR );
@@ -74,7 +74,7 @@ public class CachingFolderArchiveTest extends NbTestCase {
         rtFolder = new File( workDir, "rtFolder" );
         TestUtil.unzip( rtJar, rtFolder );
 
-        archiveProvider = new CachingArchiveProvider();
+        archiveProvider = CachingArchiveProvider.newInstance();
     }
 
     protected Archive createArchive() {

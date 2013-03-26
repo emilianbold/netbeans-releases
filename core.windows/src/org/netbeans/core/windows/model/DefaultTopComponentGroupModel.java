@@ -70,12 +70,12 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
     private final Set<String> topComponents = new HashSet<String>(3);
     // XXX Helper
     /** All TopComponent IDs which were opened by this group (at the moment
-     * when group was opening). When group is closed this set should be emtpy. */
+     * when group was opening). When group is closed this set should be empty. */
     private final Set<String> openedTopComponents = new HashSet<String>(3);
     
     /** All TopComponent IDs which were already opened before this group was 
      * opened (at the moment when group was opening). When group is closed this 
-     * set should be emtpy. */
+     * set should be empty. */
     private final Set<String> openedBeforeTopComponents = new HashSet<String>(3);
     
     /** TopComponent IDs with opening flag. */

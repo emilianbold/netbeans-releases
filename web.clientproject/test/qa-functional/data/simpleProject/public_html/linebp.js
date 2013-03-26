@@ -1,7 +1,7 @@
 function Tester() {
     this.perform = function(action, step) {
         step = 2;
-        console.log("start"); 
+        console.log("start");
         if (action === "build") {
             step = 3; // step into
             doBuild(step); // step into here
@@ -23,4 +23,13 @@ function minorTask(step) {
 
 function finishBuild(step) {
     step += 1;
+}
+
+function test2(url) {
+    var request = new XMLHttpRequest();
+    request.open("GET", url, true);
+    request.onreadystatechange = function() {
+        
+    };
+    request.send();
 }

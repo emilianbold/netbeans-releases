@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -115,7 +116,7 @@ public class RepositoryInfo {
     private RepositoryInfo (File root) {
         this.rootRef = new WeakReference<File>(root);
         this.name = root.getName();
-        this.branches = new HashMap<String, GitBranch>();
+        this.branches = new LinkedHashMap<String, GitBranch>();
         this.tags = new HashMap<String, GitTag>();
         this.remotes = new HashMap<String, GitRemoteConfig>();
         this.activeBranch = GitBranch.NO_BRANCH_INSTANCE;
@@ -243,7 +244,7 @@ public class RepositoryInfo {
         Map<String, GitBranch> oldBranches;
         boolean changed = false;
         synchronized (branches) {
-            oldBranches = new HashMap<String, GitBranch>(branches);
+            oldBranches = new LinkedHashMap<String, GitBranch>(branches);
             branches.clear();
             branches.putAll(newBranches);
             changed = !equalsBranches(oldBranches, newBranches);
@@ -311,7 +312,7 @@ public class RepositoryInfo {
     
     public Map<String, GitBranch> getBranches () {
         synchronized (branches) {
-            return new HashMap<String, GitBranch>(branches);
+            return new LinkedHashMap<String, GitBranch>(branches);
         }
     }
 

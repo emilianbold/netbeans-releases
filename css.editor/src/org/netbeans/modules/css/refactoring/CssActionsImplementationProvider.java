@@ -53,7 +53,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.CssTokenId;
+import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -64,7 +64,6 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
-import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -104,7 +103,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
         //check if the file is a file with .css extension or represents
         //an opened file which code embeds a css content on the caret position
         Node node = nodes.iterator().next();
-        if (isCssFile(node) || isCssContext(node)) {
+        if (isCssFile(node) || isRefactorableEditorElement(node)) {
             return true;
         }
 
@@ -148,7 +147,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
         //check if the file is a file with .css extension or represents
         //an opened file which code embeds a css content on the caret position
         Node node = nodes.iterator().next();
-        if (isCssFile(node) || isCssContext(node)) {
+        if (isCssFile(node) || isRefactorableEditorElement(node)) {
             return true;
         }
         return false;
@@ -188,30 +187,62 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
         return CssLanguage.CSS_MIME_TYPE.equals(fo.getMIMEType());
     }
 
-    //check if the node represents a top level or embedded css element in the editor
-    private static boolean isCssContext(final Node node) {
-        //Bug 223123 - AssertionError: CloneableEditorSupport.getOpenedPanes() must be called from AWT thread only
-        //Apparently we are not called from EDT in each situation...
-        return Mutex.EVENT.readAccess(new Action<Boolean>() {
+    private static boolean isRefactorableEditorElement(final Node node) {
+        class Context {
+            public int caret;
+            public Document document;
+            
+        }
+        final Context context = Mutex.EVENT.readAccess(new Action<Context>() {
             @Override
-            public Boolean run() {
+            public Context run() {
                 EditorCookie ec = getEditorCookie(node);
                 if (isFromEditor(ec)) {
-                    final Document doc = ec.getDocument();
+                    Context context = new Context();
+                    context.document = ec.getDocument();
                     JEditorPane pane = ec.getOpenedPanes()[0];
-                    final int offset = pane.getCaretPosition();
-                    final AtomicBoolean ref = new AtomicBoolean(false);
-                    doc.render(new Runnable() {
-                        @Override
-                        public void run() {
-                            ref.set(null != LexerUtils.getJoinedTokenSequence(doc, offset, CssTokenId.language()));
-                        }
-                    });
-                    return ref.get();
+                    context.caret = pane.getCaretPosition();
+                    return context;
+                } else {
+                    return null;
                 }
-                return false;
             }
         });
+        if(context == null) {
+            return false;
+        }
+        Source source = Source.create(context.document);
+        final AtomicBoolean res = new AtomicBoolean(false);
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, "text/css");
+                    if(cssRi != null) {
+                        CssParserResult result = (CssParserResult)cssRi.getParserResult();
+                        org.netbeans.modules.css.lib.api.Node leaf = NodeUtil.findNonTokenNodeAtOffset(result.getParseTree(), context.caret);
+                        if(leaf != null) {
+                            switch(leaf.type()) {
+                                case elementName:
+                                case cssClass:
+                                case cssId:
+                                case hexColor:
+                                    res.set(true);
+                                    break;
+                                default:
+                                    res.set(false);
+                            }
+                        }
+                    }
+                    
+                }
+            });
+            return res.get();
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return false;
     }
 
     private static FileObject getFileObjectFromNode(Node node) {

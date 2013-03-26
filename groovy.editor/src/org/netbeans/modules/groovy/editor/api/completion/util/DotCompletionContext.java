@@ -53,12 +53,20 @@ public class DotCompletionContext {
     private final int lexOffset;
     private final int astOffset;
     private final AstPath astPath;
+    private final boolean fieldsOnly;
     private final boolean methodsOnly;
 
-    public DotCompletionContext(int lexOffset, int astOffset, AstPath astPath, boolean methodsOnly) {
+    public DotCompletionContext(
+            int lexOffset,
+            int astOffset,
+            AstPath astPath,
+            boolean fieldsOnly,
+            boolean methodsOnly) {
+        
         this.lexOffset = lexOffset;
         this.astOffset = astOffset;
         this.astPath = astPath;
+        this.fieldsOnly = fieldsOnly;
         this.methodsOnly = methodsOnly;
     }
 
@@ -76,5 +84,9 @@ public class DotCompletionContext {
 
     public boolean isMethodsOnly() {
         return methodsOnly;
+    }
+
+    public boolean isFieldsOnly() {
+        return fieldsOnly;
     }
 }

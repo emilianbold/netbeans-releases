@@ -216,7 +216,7 @@ public class ImportDiffAction extends ContextAction {
                                     updatedFilesList.addAll(mergeResult);
                                 }
                             } else {
-                                HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(repository, true, OutputLogger.getLogger(null));
+                                HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(repository, false, OutputLogger.getLogger(null));
                                 Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
                                 if (!branchHeads.isEmpty()) {
                                     MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads);

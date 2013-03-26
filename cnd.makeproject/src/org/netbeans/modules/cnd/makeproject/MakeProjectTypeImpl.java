@@ -47,9 +47,15 @@ import java.io.IOException;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
 import org.openide.util.ImageUtilities;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Factory for simple Make projects.
@@ -59,6 +65,7 @@ import org.openide.util.ImageUtilities;
 public final class MakeProjectTypeImpl implements NativeProjectType {
 
     public static final String TYPE = "org.netbeans.modules.cnd.makeproject"; // NOI18N
+    public static final String PROJECT_TYPE = "org-netbeans-modules-cnd-makeproject";//NOI18N
     public static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project/1"; // NOI18N
     public static final String PROJECT_CONFIGURATION__NAME_NAME = "name"; // NOI18N
@@ -77,6 +84,15 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
     public final static String ACTIVE_CONFIGURATION_TYPE_ELEMENT = "activeConfTypeElem"; // NOI18N
     public final static String ACTIVE_CONFIGURATION_INDEX_ELEMENT = "activeConfIndexElem"; // NOI18N
     public final static String ACTIVE_CONFIGURATION_CUSTOMIZERID = "activeConfCustomizerid"; // NOI18N
+    
+    public static final String TYPE_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed.png"; // NOI18N
+    public static final String TYPE_DB_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-database.png"; // NOI18N
+    public static final String TYPE_DYNAMIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-dynamic.png"; // NOI18N
+    public static final String TYPE_STATIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-static.png"; // NOI18N
+    public static final String TYPE_QT_APPLICATION_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt.png"; // NOI18N
+    public static final String TYPE_QT_DYNAMIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-dynamic.png"; // NOI18N
+    public static final String TYPE_QT_STATIC_LIB_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-static.png"; // NOI18N
+    public static final String TYPE_MAKEFILE_ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged.png"; // NOI18N
 
     /**
      * Do nothing, just a service.
@@ -90,10 +106,40 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
         return TYPE;
     }
 
-    public Icon getIcon() {
+    public Icon getIcon(Element element) {
+        Element conf = XMLUtil.findElement(element, "configuration", MakeBasedProjectFactorySingleton.PROJECT_NS); // NOI18N
+        if (conf != null) {
+            NodeList type = conf.getElementsByTagName(CONFIGURATION_TYPE_ELEMENT);
+            if (type != null && type.getLength() > 0) {
+                Node item = type.item(0);
+                if (item != null) {
+                    try {
+                        switch (Integer.valueOf(item.getTextContent())) {
+                            case MakeConfiguration.TYPE_MAKEFILE:
+                                return ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_MAKEFILE_ICON, false);
+                            case MakeConfiguration.TYPE_APPLICATION:
+                                return ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_APPLICATION_ICON, false);
+                            case MakeConfiguration.TYPE_DB_APPLICATION:
+                                return ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_DB_APPLICATION_ICON, false);
+                            case MakeConfiguration.TYPE_DYNAMIC_LIB:
+                                return ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_DYNAMIC_LIB_ICON, false);
+                            case MakeConfiguration.TYPE_STATIC_LIB:
+                                return ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_STATIC_LIB_ICON, false);
+                            case MakeConfiguration.TYPE_QT_APPLICATION:
+                                return ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_QT_APPLICATION_ICON, false);
+                            case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+                                return ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_QT_DYNAMIC_LIB_ICON, false);
+                            case MakeConfiguration.TYPE_QT_STATIC_LIB:
+                                return ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_QT_STATIC_LIB_ICON, false);
+                        }
+                    } catch (NumberFormatException nfe) {
+                    }
+                }
+            }
+        }
         return ImageUtilities.loadImageIcon(MakeConfigurationDescriptor.ICON, true);
     }
-
+    
     public Project createProject(MakeProjectHelper helper) throws IOException {
         return new MakeProject(helper);
     }
@@ -167,6 +213,11 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
     }
 
     private String projectLayerPath() {
-        return "Projects/org-netbeans-modules-cnd-makeproject"; //NOI18N
+        return "Projects/" + PROJECT_TYPE; //NOI18N
     }
+    
+
+    public static String projectMetadataFactoryPath(String customizerId) {
+        return "Projects/" + (customizerId == null ?  PROJECT_TYPE : customizerId) + "/" + ProjectMetadataFactory.LAYER_PATH; //NOI18N
+    }    
 }

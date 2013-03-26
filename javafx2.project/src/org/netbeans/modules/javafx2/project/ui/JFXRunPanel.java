@@ -1075,8 +1075,10 @@ private void buttonWebPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
 private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonParamsActionPerformed
     List<Map<String, String>> props = configs.getActiveParamsTransparent();
-    JFXProjectProperties.PropertiesTableModel appParametersTableModel = new JFXProjectProperties.PropertiesTableModel(props, JFXProjectConfigurations.APP_PARAM_SUFFIXES, appParamsColumnNames);
-    JFXApplicationParametersPanel panel = new JFXApplicationParametersPanel(appParametersTableModel);
+    List<Map<String, String>> defProps = configs.getDefaultParamsTransparent();
+    JFXProjectProperties.PropertiesTableModel appParametersTableModel = 
+            new JFXProjectProperties.PropertiesTableModel(props, configs.getActive() == null ? null : defProps, JFXProjectConfigurations.APP_PARAM_SUFFIXES, appParamsColumnNames);
+    JFXApplicationMultiPropertyPanel panel = new JFXApplicationMultiPropertyPanel(appParametersTableModel);
     DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JFXRunPanel.class, "TITLE_ApplicationParameters"), true, null);
     panel.registerListeners();
     panel.setDialogDescriptor(dialogDesc);
@@ -1088,7 +1090,7 @@ private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         configs.setActiveParamsTransparent(props);
         String paramString = configs.getActiveParamsTransparentAsString(false);
         textFieldParams.setText(paramString);
-        setEmphasizedFont(labelParams, !JFXProjectProperties.isEqualText(paramString, configs.getDefaultParamsAsString(false)));
+        setEmphasizedFont(labelParams, !JFXProjectProperties.isEqualText(paramString, configs.getDefaultParamsTransparentAsString(false)));
     }
     panel.unregisterListeners();
     dialog.dispose();
@@ -1292,7 +1294,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                 }
                 String paramString = configs.getParamsTransparentAsString(activeConfig, false);
                 textFieldParams.setText(paramString);
-                setEmphasizedFont(labelParams, !JFXProjectProperties.isEqualText(paramString, configs.getDefaultParamsAsString(false)));
+                setEmphasizedFont(labelParams, !JFXProjectProperties.isEqualText(paramString, configs.getDefaultParamsTransparentAsString(false)));
 
 //                setEmphasizedFont(checkBoxPreloader, preloaderConfigDiffersFromDefault(activeConfig));
 //                setEmphasizedFont(labelPreloaderClass, !JFXProjectProperties.isEqualText(

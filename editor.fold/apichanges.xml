@@ -112,6 +112,66 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="fold-api-enhancements">
+          <api name="api"/>
+          <summary>Extensible FoldTypes, enhanced support for fold updates</summary>
+          <version major="1" minor="35"/>
+          <date day="12" month="3" year="2013"/>
+          <author login="sdedic"/>
+          <compatibility source="compatible" binary="compatible" semantic="compatible" addition="yes"/>
+          <description>
+              <p>
+                  <code>FoldTypes</code> can be defined for a <i>mime type</i> by <code>FoldTypeProviders</code>. They
+                  can form a type hierarchy. <code>FoldUtilities</code> provide methods to check fold enablement and
+                  available FoldTypes. Working directly with Preferences is not advised.
+              </p>
+              <p>
+                  Fold can provide offsets to start and end of its content excluding <i>guard areas</i>. <code>FoldingSupport</code>
+                  provides factories for comment-driven <code>FoldManager</code> and for fold <code>ContentReader</code> capable
+                  of reading javadoc-style comments or similar.
+              </p>
+              <p>
+                  <code>FoldOperation</code> allows to <code>update</code> folds with <code>FoldInfos</code>, removing, adding
+                  or updating Folds as necessary. Existing FoldManagers can be simplified. Folds can be defined wihtout 
+                  initial state - the state will be determined form the options by the infrastructure. All folds defined
+                  by a FoldManager can be retrieved from <code>FoldOperation.foldIterator()</code>, even though they are
+                  blocked.
+              </p>
+          </description>
+          <class name="FoldTypeProvider" package="org.netbeans.spi.editor.fold"/>
+          <class name="FoldInfo" package="org.netbeans.spi.editor.fold"/>
+          <class name="FoldType" package="org.netbeans.api.editor.fold"/>
+          <class name="Fold" package="org.netbeans.api.editor.fold"/>
+          <class name="FoldUtilities" package="org.netbeans.api.editor.fold"/>
+          <class name="FoldingSupport" package="org.netbeans.api.editor.fold"/>
+          <issue number="226413"/>
+      </change>
+    <change id="fold-editorlib-separation">
+        <api name="api"/>
+        <summary>Fold UI separation from Editor Library</summary>
+        <version major="1" minor="34"/>
+        <date day="8" month="3" year="2013"/>
+        <author login="sdedic"/>
+        <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes"/>
+        <description>
+            <p>
+                <code>FoldHierarchyMonitor</code> was introduced to allow hooking into UI when
+                a FoldHierarchy is produced for a JTextComponent. The 'active' flag is provided on 
+                the <code>FoldHierarchy</code> to determine whether the hierarchy be popuplated with folds 
+                at all.
+            </p>
+            <p>
+                Using <code>FoldingSupport</code> utility class, clients can create instance of
+                <code>FoldManager</code> that creates folds based on comments, previously <code>CustomFoldManager</code>
+                in editor.lib module.
+            </p>
+        </description>
+        <class name="FoldHierarchy" package="org.netbeans.api.editor.fold"/>
+        <class name="FoldingSupport" package="org.netbeans.api.editor.fold"/>
+        <class name="FoldHierarchyMonitor" package="org.netbeans.spi.editor.fold"/>
+        <issue number="226368"/>
+        <issue number="226413"/>
+    </change>
   <change id="FoldOperation-owns-added">
       <api name="api"/>
       <summary>FoldOperation.owns(Fold) added</summary>

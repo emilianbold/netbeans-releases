@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.55.2
+#Version 6.60.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -662,7 +662,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds defaultLookup
+hfds LOG,defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider
@@ -844,6 +844,7 @@ meth public final void makeBusy(boolean)
 meth public final void openAtTabPosition(int)
 meth public final void requestAttention(boolean)
 meth public final void setActivatedNodes(org.openide.nodes.Node[])
+meth public final void setAttentionHighlight(boolean)
 meth public final void setCloseOperation(int)
  anno 0 java.lang.Deprecated()
 meth public int getPersistenceType()
@@ -983,6 +984,7 @@ meth protected void componentCloseNotify(org.openide.windows.TopComponent)
 meth protected void componentHidden(org.openide.windows.TopComponent)
 meth protected void componentOpenNotify(org.openide.windows.TopComponent)
 meth protected void componentShowing(org.openide.windows.TopComponent)
+meth protected void topComponentAttentionHighlight(org.openide.windows.TopComponent,boolean)
 meth protected void topComponentCancelRequestAttention(org.openide.windows.TopComponent)
 meth protected void topComponentMakeBusy(org.openide.windows.TopComponent,boolean)
 meth protected void topComponentOpenAtTabPosition(org.openide.windows.TopComponent,int)
@@ -1010,6 +1012,8 @@ meth public abstract void updateUI()
 meth public boolean isEditorMode(org.openide.windows.Mode)
 meth public boolean isEditorTopComponent(org.openide.windows.TopComponent)
 meth public boolean isOpenedEditorTopComponent(org.openide.windows.TopComponent)
+meth public boolean isTopComponentFloating(org.openide.windows.TopComponent)
+meth public boolean isTopComponentMinimized(org.openide.windows.TopComponent)
 meth public final org.openide.windows.Workspace createWorkspace(java.lang.String)
  anno 0 java.lang.Deprecated()
 meth public final static org.openide.windows.WindowManager getDefault()
@@ -1021,6 +1025,8 @@ meth public void addWindowSystemListener(org.openide.windows.WindowSystemListene
 meth public void invokeWhenUIReady(java.lang.Runnable)
 meth public void removeWindowSystemListener(org.openide.windows.WindowSystemListener)
 meth public void setRole(java.lang.String)
+meth public void setTopComponentFloating(org.openide.windows.TopComponent,boolean)
+meth public void setTopComponentMinimized(org.openide.windows.TopComponent,boolean)
 supr java.lang.Object
 hfds activeComponent,dummyInstance,onShowing,registry,serialVersionUID
 

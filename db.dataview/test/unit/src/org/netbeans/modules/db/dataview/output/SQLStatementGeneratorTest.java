@@ -42,7 +42,26 @@
 
 package org.netbeans.modules.db.dataview.output;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import static junit.framework.Assert.assertEquals;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.db.dataview.meta.DBColumn;
+import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
+import org.netbeans.modules.db.dataview.meta.DBTable;
+import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
+import org.netbeans.modules.db.dataview.util.DBTestUtil;
+import org.netbeans.modules.db.dataview.util.DbUtil;
+import org.netbeans.modules.db.dataview.util.TestCaseContext;
 
 /**
  *
@@ -50,10 +69,10 @@ import org.netbeans.junit.NbTestCase;
  */
 public class SQLStatementGeneratorTest extends NbTestCase {
     
-//    TestCaseContext context;
-//    DatabaseConnection dbconn;
-//    Connection conn;
-//    DBTable table;
+    TestCaseContext context;
+    DatabaseConnection dbconn;
+    Connection conn;
+
     public SQLStatementGeneratorTest(String testName) {
         super(testName);
     }
@@ -66,16 +85,168 @@ public class SQLStatementGeneratorTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-//        context = DbUtil.getContext();
-//        dbconn = DbUtil.getDBConnection();
-//        conn = DbUtil.getjdbcConnection();
-//        DbUtil.createTable();
+        DBTestUtil.suppressSuperfluousLogging();
+        context = DbUtil.getContext();
+        dbconn = DbUtil.getDBConnection();
+        conn = DbUtil.getjdbcConnection();
+        DbUtil.createTable();
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-//        DbUtil.dropTable();
+        DbUtil.dropTable();
+    }
+
+    @Override
+    protected boolean runInEQ() {
+        return true;
+    }
+
+    public void testGenerateWhereConditionWithPK() throws SQLException {
+        DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
+        Statement s = conn.createStatement();
+        String sql = "SELECT tinyintc, smallintc,varcharc FROM simpletable";
+
+        ResultSet rs = s.executeQuery(sql);
+        Collection<DBTable> tables = dbMeta.generateDBTables(rs, sql, true);
+
+        DBTable table = tables.iterator().next();
+        assertEquals(2, table.getPrimaryKey().getColumnCount());
+
+        SQLStatementGenerator ssg = new SQLStatementGenerator();
+
+        List<DBColumn> columns = table.getColumnList();
+
+        DataViewTableUIModel model = new DataViewTableUIModel(
+                columns.toArray(new DBColumn[0]));
+
+        ResultSetMetaData rsmd = rs.getMetaData();
+
+        while (rs.next()) {
+            Object[] row = new Object[rsmd.getColumnCount()];
+            for (int i = 0; i < rsmd.getColumnCount(); i++) {
+                row[i] = DBReadWriteHelper.readResultSet(rs, columns.get(i),
+                        i + 1);
+            }
+            model.addRow(row);
+        }
+
+        StringBuilder result = new StringBuilder();
+        ssg.generateWhereCondition(table, result, 0, model);
+
+        assertEquals("TINYINTC = -80 AND SMALLINTC = -32766", result.toString());
+    }
+
+    public void testGenerateWhereConditionWithoutPK() throws SQLException {
+        DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
+        Statement s = conn.createStatement();
+        String sql = "SELECT smallintc, varcharc FROM simpletable";
+
+        ResultSet rs = s.executeQuery(sql);
+        Collection<DBTable> tables = dbMeta.generateDBTables(rs, sql, true);
+
+        DBTable table = tables.iterator().next();
+        assertEquals(2, table.getPrimaryKey().getColumnCount());
+
+        SQLStatementGenerator ssg = new SQLStatementGenerator();
+
+        List<DBColumn> columns = table.getColumnList();
+
+        DataViewTableUIModel model = new DataViewTableUIModel(
+                columns.toArray(new DBColumn[0]));
+
+        ResultSetMetaData rsmd = rs.getMetaData();
+
+        while (rs.next()) {
+            Object[] row = new Object[rsmd.getColumnCount()];
+            for (int i = 0; i < rsmd.getColumnCount(); i++) {
+                row[i] = DBReadWriteHelper.readResultSet(rs, columns.get(i), i + 1);
+            }
+            model.addRow(row);
+        }
+
+        StringBuilder result = new StringBuilder();
+        ssg.generateWhereCondition(table, result, 0, model);
+
+        assertEquals("SMALLINTC = -32766 AND VARCHARC = 'ala'", result.toString());
+    }
+
+    public void testGenerateWhereConditionWithPK2() throws SQLException {
+        DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
+        Statement s = conn.createStatement();
+        String sql = "SELECT tinyintc, smallintc,varcharc FROM simpletable";
+
+        ResultSet rs = s.executeQuery(sql);
+        Collection<DBTable> tables = dbMeta.generateDBTables(rs, sql, true);
+
+        DBTable table = tables.iterator().next();
+        assertEquals(2, table.getPrimaryKey().getColumnCount());
+
+        SQLStatementGenerator ssg = new SQLStatementGenerator();
+
+        List<DBColumn> columns = table.getColumnList();
+
+        DataViewTableUIModel model = new DataViewTableUIModel(
+                columns.toArray(new DBColumn[0]));
+
+        ResultSetMetaData rsmd = rs.getMetaData();
+
+        while (rs.next()) {
+            Object[] row = new Object[rsmd.getColumnCount()];
+            for (int i = 0; i < rsmd.getColumnCount(); i++) {
+                row[i] = DBReadWriteHelper.readResultSet(rs, columns.get(i),
+                        i + 1);
+            }
+            model.addRow(row);
+        }
+
+        StringBuilder resultSQL = new StringBuilder();
+        List<Integer> resultTypes = new ArrayList<Integer>();
+        List<Object> resultObject = new ArrayList<Object>();
+        ssg.generateWhereCondition(table, resultSQL, resultTypes, resultObject, 0, model);
+
+        assertEquals("\"TINYINTC\" = ?  AND \"SMALLINTC\" = ? ", resultSQL.toString());
+        assertEquals(Arrays.asList(new Integer[]{Types.INTEGER, Types.INTEGER}), resultTypes);
+        assertEquals(Arrays.asList(new Object[]{-80, -32766}), resultObject);
+    }
+
+    public void testGenerateWhereConditionWidthoutPK2() throws SQLException {
+        DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
+        Statement s = conn.createStatement();
+        String sql = "SELECT smallintc, varcharc FROM simpletable";
+
+        ResultSet rs = s.executeQuery(sql);
+        Collection<DBTable> tables = dbMeta.generateDBTables(rs, sql, true);
+
+        DBTable table = tables.iterator().next();
+        assertEquals(2, table.getPrimaryKey().getColumnCount());
+
+        SQLStatementGenerator ssg = new SQLStatementGenerator();
+
+        List<DBColumn> columns = table.getColumnList();
+
+        DataViewTableUIModel model = new DataViewTableUIModel(
+                columns.toArray(new DBColumn[0]));
+
+        ResultSetMetaData rsmd = rs.getMetaData();
+
+        while (rs.next()) {
+            Object[] row = new Object[rsmd.getColumnCount()];
+            for (int i = 0; i < rsmd.getColumnCount(); i++) {
+                row[i] = DBReadWriteHelper.readResultSet(rs, columns.get(i), i + 1);
+            }
+            model.addRow(row);
+        }
+
+        StringBuilder resultSQL = new StringBuilder();
+        List<Integer> resultTypes = new ArrayList<Integer>();
+        List<Object> resultObject = new ArrayList<Object>();
+        ssg.generateWhereCondition(table, resultSQL, resultTypes, resultObject, 0, model);
+
+        assertEquals("\"SMALLINTC\" = ?  AND \"VARCHARC\" = ? ", resultSQL.toString());
+        assertEquals(Arrays.asList(new Integer[]{Types.INTEGER, Types.VARCHAR}), resultTypes);
+        assertEquals(Arrays.asList(new Object[]{-32766, "ala"}), resultObject);
     }
 
 //        protected void createTable(){
@@ -185,7 +356,4 @@ public class SQLStatementGeneratorTest extends NbTestCase {
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
 //    }
-    public void testToDo(){
-        assertTrue("To Do", true);
-    }
 }

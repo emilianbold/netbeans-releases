@@ -43,9 +43,11 @@
 package org.netbeans.modules.php.api.util;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.Parameters;
 
 /**
@@ -82,13 +84,14 @@ public final class StringUtils {
     }
 
     /**
-     * Implode list of strings to one string using delimiter.
-     * @param items list of strings to be imploded, can be empty (but not <code>null</code>)
+     * Implode collection of strings to one string using delimiter.
+     * @param items collection of strings to be imploded, can be empty (but not <code>null</code>)
      * @param delimiter delimiter to be used
      * @return one string of imploded strings using delimiter, never <code>null</code>
      * @see #explode(String, String)
+     * @since 2.14
      */
-    public static String implode(List<String> items, String delimiter) {
+    public static String implode(Collection<String> items, String delimiter) {
         Parameters.notNull("items", items);
         Parameters.notNull("delimiter", delimiter);
 
@@ -111,16 +114,17 @@ public final class StringUtils {
     /**
      * Explode the string using the delimiter.
      * @param string string to be exploded, can be <code>null</code>
-     * @param delimiter delimiter to be used
+     * @param delimiter delimiter to be used, cannot be empty string
      * @return list of exploded strings using delimiter
      * @see #implode(List, String)
      */
-    public static List<String> explode(String string, String delimiter) {
-        Parameters.notNull("delimiter", delimiter); // NOI18N
+    public static List<String> explode(@NullAllowed String string, String delimiter) {
+        Parameters.notEmpty("delimiter", delimiter); // NOI18N
 
         if (!hasText(string)) {
             return Collections.<String>emptyList();
         }
+        assert string != null;
         return Arrays.asList(string.split(Pattern.quote(delimiter)));
     }
 

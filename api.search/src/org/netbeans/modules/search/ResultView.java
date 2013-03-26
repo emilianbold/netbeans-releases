@@ -95,8 +95,7 @@ import org.openide.windows.WindowManager;
 @ActionID(id = "org.netbeans.modules.search.ResultViewOpenAction", category = "Window")
 @TopComponent.OpenActionRegistration(displayName="#TEXT_ACTION_SEARCH_RESULTS", preferredID=ResultView.ID)
 @ActionReferences({
-    @ActionReference(path = "Shortcuts", name = "DS-0"),
-    @ActionReference(path = "Menu/Window/Output", name = "ResultViewOpenAction", position = 200)
+    @ActionReference(path = "Shortcuts", name = "DS-0")
 })
 public final class ResultView extends TopComponent {
 
@@ -175,7 +174,7 @@ public final class ResultView extends TopComponent {
             setOpaque(true);
         } else {
             emptyPanel.setBackground(
-                    UIManager.getColor("Tree.textBackground"));         //NOI18N
+                    UIManager.getColor("Tree.background"));         //NOI18N
         }
         contentCards.show(this, CARD_NAME_EMPTY);
         associateLookup(Lookups.proxy(lookupProvider));

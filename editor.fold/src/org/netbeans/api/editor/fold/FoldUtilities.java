@@ -48,6 +48,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.modules.editor.fold.FoldRegistry;
 import org.netbeans.modules.editor.fold.FoldUtilitiesImpl;
 
 /**
@@ -440,4 +442,41 @@ public final class FoldUtilities {
         return FoldUtilitiesImpl.collapsedFoldIterator(hierarchy, startOffset, endOffset);
     }
     
+    /**
+     * Obtains available FoldType values for the specified MIME type.
+     * 
+     * @param mimeType mime type of the content
+     * @return available FoldTypes
+     * @since 1.35
+     */
+    public static FoldType.Domain  getFoldTypes(String mimeType) {
+        return FoldRegistry.get().getDomain(MimePath.parse(mimeType));
+    }
+    
+    /**
+     * Determines whether folds of that type are should be initially collapsed.
+     * The FoldType is evaluated in the context of a specific FoldHierarchy, that is a Component
+     * with a content of a certain MIME type.
+     * 
+     * @param ft FoldType to inspect
+     * @param hierarchy context for evaluation
+     * @return true, if folds of FoldType should be initially collapsed.
+     * @since 1.35
+     */
+    public static boolean isAutoCollapsed(FoldType ft, FoldHierarchy hierarchy) {
+        return FoldUtilitiesImpl.isAutoCollapsed(ft, hierarchy);
+    }
+    
+    /**
+     * Determines whether folding is enabled for a given MIME type.
+     * Use {@link MimePath#EMPTY}.getMimeType() to query for the default (all languages)
+     * setting.
+     * 
+     * @param mimeType the MIME type of the content. 
+     * @return true, if folding is enabled, false otherwise.
+     * @since 1.35
+     */
+    public static boolean isFoldingEnabled(String mimeType) {
+        return FoldUtilitiesImpl.isFoldingEnabled(mimeType);
+    }
 }
