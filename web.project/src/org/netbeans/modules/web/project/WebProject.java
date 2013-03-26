@@ -2394,14 +2394,6 @@ public final class WebProject implements Project {
             return evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
         }
 
-        @Override
-        public void reload(FileObject fo) {
-            if (!RefreshOnSaveSupport.canRefreshOnSaveFileFilter(fo)) {
-                return;
-            }
-            super.reload(fo);
-        }
-
     }
 
 }

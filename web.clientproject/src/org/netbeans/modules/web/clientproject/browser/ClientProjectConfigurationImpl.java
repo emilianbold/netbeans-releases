@@ -127,8 +127,9 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         if (val != null) {
             return Boolean.parseBoolean(val) && getBrowserIntegration() == BrowserIntegration.ENABLED;
         } else {
-            // if browserIntegration is available then default is true for AutoRefresh
-            return getBrowserIntegration() == BrowserIntegration.ENABLED;
+            // return true for all browsers so that plain Chrome can do Refresh
+            // on Save if plugin is intalled:
+            return true;
         }
     }
 

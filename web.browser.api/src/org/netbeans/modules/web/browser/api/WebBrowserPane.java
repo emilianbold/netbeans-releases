@@ -167,6 +167,20 @@ public final class WebBrowserPane {
         return descriptor.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW;  // NOI18N
     }
 
+    boolean canReloadPage() {
+        if ( impl instanceof EnhancedBrowser ){
+            return ((EnhancedBrowser) impl).canReloadPage();
+        }
+        return false;
+    }
+
+    boolean hasNetBeansIntegration() {
+        if ( impl instanceof EnhancedBrowser ){
+            return ((EnhancedBrowser) impl).hasEnhancedMode();
+        }
+        return false;
+    }
+
     /**
      * Returns bare browser component. This method returns valid value only
      * when browser is embedded one and only if this pane was created via

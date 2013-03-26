@@ -65,9 +65,11 @@ public class RefreshOnSaveListenerImpl implements RefreshOnSaveListener {
         if (!cfg.isAutoRefresh()) {
             return;
         }
+        if (!support.canRefreshOnSaveThisFileType(fo)) {
+            return;
+        }
         URL u = support.getBrowserURL(fo, true);
-        if (u != null) {
-            assert support.canReload(u) : u;
+        if (u != null && support.canReload(u)) {
             support.reload(u);
         }
     }
