@@ -42,15 +42,27 @@
 package org.netbeans.modules.php.twig.editor.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.csl.api.CslActions;
+import org.netbeans.modules.php.twig.editor.lexer.TwigLexerUtils;
+import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class ToggleBlockCommentAction extends BaseAction {
+    static final long serialVersionUID = -1L;
+    private static final String FORCE_COMMENT = "force-comment"; //NOI18N
+    private static final String FORCE_UNCOMMENT = "force-uncomment"; //NOI18N
 
     public ToggleBlockCommentAction() {
         super(ExtKit.toggleCommentAction);
@@ -58,6 +70,79 @@ public class ToggleBlockCommentAction extends BaseAction {
 
     @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        final AtomicBoolean processedHere = new AtomicBoolean(false);
+        if (target != null) {
+            if (!target.isEditable() || !target.isEnabled() || !(target.getDocument() instanceof BaseDocument)) {
+                target.getToolkit().beep();
+                return;
+            }
+            final int caretOffset = Utilities.isSelectionShowing(target) ? target.getSelectionStart() : target.getCaretPosition();
+            final BaseDocument doc = (BaseDocument) target.getDocument();
+            doc.runAtomic(new Runnable() {
+
+                @Override
+                public void run() {
+                    performCustomAction(doc, caretOffset, processedHere);
+                }
+            });
+            if (!processedHere.get()) {
+                performDefaultAction(evt, target);
+            }
+        }
+    }
+
+    private void performCustomAction(BaseDocument baseDocument, int caretOffset, AtomicBoolean processedHere) {
+        TokenSequence<? extends TwigTokenId> ts = TwigLexerUtils.getTwigMarkupTokenSequence(baseDocument, caretOffset);
+        if (ts == null) {
+            return;
+        }
+        processedHere.set(true);
+        ts.move(caretOffset);
+        ts.moveNext();
+        if (isCommentLineByTwig()) {
+            commentLineByTwig(ts, baseDocument, caretOffset);
+        } else {
+            commentPartInContext(ts);
+        }
+    }
+
+    private boolean isCommentLineByTwig() {
+        return true;
+    }
+
+    private void commentLineByTwig(TokenSequence<? extends TwigTokenId> ts, BaseDocument baseDocument, int caretOffset) {
+        boolean comment = true;
+        if (ts.token().id() == TwigTokenId.T_TWIG_COMMENT) {
+            comment = false;
+        }
+        try {
+            if (comment) {
+                baseDocument.insertString(Utilities.getRowStart(baseDocument, caretOffset), "{#", null);
+                baseDocument.insertString(Utilities.getRowEnd(baseDocument, caretOffset), "#}", null);
+            } else {
+                int start = ts.offset();
+                int end = ts.offset() + ts.token().text().length() - "{##}".length();
+                baseDocument.remove(start, "{#".length());
+                baseDocument.remove(end, "#}".length());
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void commentPartInContext(TokenSequence<? extends TwigTokenId> ts) {
+
+    }
+
+    private void performDefaultAction(ActionEvent evt, JTextComponent target) {
+        BaseAction action = (BaseAction) CslActions.createToggleBlockCommentAction();
+        if (getValue(FORCE_COMMENT) != null) {
+            action.putValue(FORCE_COMMENT, getValue(FORCE_COMMENT));
+        }
+        if (getValue(FORCE_UNCOMMENT) != null) {
+            action.putValue(FORCE_UNCOMMENT, getValue(FORCE_UNCOMMENT));
+        }
+        action.actionPerformed(evt, target);
     }
 
 }
