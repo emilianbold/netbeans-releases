@@ -152,6 +152,9 @@ public class JsfLibrariesSupport {
     /** @return the library default prefix in the case it hasn't been declared yet or the declared prefix */
     public String getLibraryPrefix(DefaultLibraryInfo li) {
         LibraryImport limport = map.get(li);
+        if (limport == null) {
+            return li.getDefaultPrefix();
+        }
         return limport.declaredPrefix != null ? limport.declaredPrefix : limport.lib.getDefaultPrefix();
     }
 

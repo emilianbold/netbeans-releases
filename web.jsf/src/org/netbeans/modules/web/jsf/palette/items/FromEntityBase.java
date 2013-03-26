@@ -101,7 +101,10 @@ public abstract class FromEntityBase {
     public boolean handleTransfer(JTextComponent targetComponent) {
         Project p = null;
         FileObject fo = JSFPaletteUtilities.getFileObject(targetComponent);
-        jsfLibrariesSupport = JsfLibrariesSupport.get(targetComponent);
+        jsfLibrariesSupport = PaletteUtils.getJsfLibrariesSupport(targetComponent);
+        if (jsfLibrariesSupport == null) {
+            return false;
+        }
         if (fo != null) {
             p = FileOwnerQuery.getOwner(fo);
         }
@@ -127,16 +130,16 @@ public abstract class FromEntityBase {
         readOnly = mbc.isReadOnly();
         if (accept) {
             try {
-                boolean containsFView = isInViewTag(targetComponent);
+                boolean containsFView = isInViewTag(jsfLibrariesSupport, targetComponent);
                 String managedBean = mbc.getManagedBeanProperty();
                 if (managedBean != null && managedBean.lastIndexOf(".") != -1) {
                     managedBean = managedBean.substring(0, managedBean.lastIndexOf("."));
                 }
-                String body = expandTemplate(targetComponent, !containsFView, FileEncodingQuery.getEncoding(fo),
+                Charset encoding = FileEncodingQuery.getEncoding(fo);
+                String body = expandTemplate(targetComponent, !containsFView, encoding,
                         mbc.getBeanClass(), managedBean, mbc.getManagedBeanProperty());
                 JSFPaletteUtilities.insert(body, targetComponent);
-                jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.HTML);
-                jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.JSF_CORE);
+                jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.HTML, DefaultLibraryInfo.JSF_CORE);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
                 accept = false;
@@ -148,14 +151,14 @@ public abstract class FromEntityBase {
         return accept;
     }
 
-    public static boolean isInViewTag(JTextComponent targetComponent) {
+    public static boolean isInViewTag(JsfLibrariesSupport jls, JTextComponent targetComponent) {
         try {
             Caret caret = targetComponent.getCaret();
             int position0 = Math.min(caret.getDot(), caret.getMark());
             int position1 = Math.max(caret.getDot(), caret.getMark());
             int len = targetComponent.getDocument().getLength() - position1;
-            return targetComponent.getText(0, position0).contains(PaletteUtils.createViewTag(targetComponent, false))
-                    && targetComponent.getText(position1, len).contains(PaletteUtils.createViewTag(targetComponent, true));
+            return targetComponent.getText(0, position0).contains(PaletteUtils.createViewTag(jls, targetComponent, false))
+                    && targetComponent.getText(position1, len).contains(PaletteUtils.createViewTag(jls, targetComponent, true));
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
             // we don't know; let's assume we are:
@@ -172,7 +175,7 @@ public abstract class FromEntityBase {
             final String managedBeanProperty) throws IOException {
         final StringBuffer stringBuffer = new StringBuffer();
         if (surroundWithFView) {
-            stringBuffer.append(PaletteUtils.createViewTag(target, false)).append("\n"); // NOI18N
+            stringBuffer.append(PaletteUtils.createViewTag(jsfLibrariesSupport, target, false)).append("\n"); //NOI18N
         }
         FileObject targetJspFO = EntityClass.getFO(target);
         final Map<String, Object> params = createFieldParameters(targetJspFO, entityClass, 
@@ -184,7 +187,7 @@ public abstract class FromEntityBase {
         stringBuffer.append(w.toString());
 
         if (surroundWithFView) {
-            stringBuffer.append(PaletteUtils.createViewTag(target, true)).append("\n"); // NOI18N
+            stringBuffer.append(PaletteUtils.createViewTag(jsfLibrariesSupport, target, true)).append("\n"); //NOI18N
         }
         return stringBuffer.toString();
     }
