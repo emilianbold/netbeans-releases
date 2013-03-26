@@ -59,6 +59,7 @@ import org.netbeans.modules.csl.api.CslActions;
 import org.netbeans.modules.php.twig.editor.lexer.TwigLexerUtils;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopLexer;
+import org.netbeans.modules.php.twig.editor.ui.options.TwigOptions;
 
 /**
  *
@@ -106,50 +107,10 @@ public class ToggleBlockCommentAction extends BaseAction {
         ts.move(caretOffset);
         ts.moveNext();
         try {
-            if (isCommentLineByTwig()) {
-                commentLineByTwig(ts, baseDocument, caretOffset);
-            } else {
-                commentPartInContext(ts, baseDocument);
-            }
+            ToggleCommentType toggleCommentType = TwigOptions.getToggleCommentType();
+            toggleCommentType.comment(ts, baseDocument, caretOffset);
         } catch (BadLocationException ex) {
             LOGGER.log(Level.WARNING, null, ex);
-        }
-    }
-
-    private boolean isCommentLineByTwig() {
-        return true;
-    }
-
-    private void commentLineByTwig(TokenSequence<? extends TwigTokenId> ts, BaseDocument baseDocument, int caretOffset) throws BadLocationException {
-        Token<? extends TwigTokenId> token = ts.token();
-        if (token != null && isInComment(token.id())) {
-            uncommentToken(ts, baseDocument);
-        } else {
-            baseDocument.insertString(Utilities.getRowStart(baseDocument, caretOffset), TwigTopLexer.OPEN_COMMENT, null);
-            baseDocument.insertString(Utilities.getRowEnd(baseDocument, caretOffset), TwigTopLexer.CLOSE_COMMENT, null);
-        }
-    }
-
-    private void uncommentToken(TokenSequence<? extends TwigTokenId> ts, BaseDocument baseDocument) throws BadLocationException {
-        int start = ts.offset();
-        int end = ts.offset() + ts.token().text().length() - TwigTopLexer.OPEN_COMMENT.length() - TwigTopLexer.CLOSE_COMMENT.length();
-        baseDocument.remove(start, TwigTopLexer.OPEN_COMMENT.length());
-        baseDocument.remove(end, TwigTopLexer.CLOSE_COMMENT.length());
-    }
-
-    private static boolean isInComment(TwigTokenId tokenId) {
-        return tokenId == TwigTokenId.T_TWIG_COMMENT;
-    }
-
-    private void commentPartInContext(TokenSequence<? extends TwigTokenId> ts, BaseDocument baseDocument) throws BadLocationException {
-        Token<? extends TwigTokenId> token = ts.token();
-        if (token != null && isInComment(token.id())) {
-            uncommentToken(ts, baseDocument);
-        } else {
-            TokenInsertWrapper startTokenWraper = findBackward(ts, Arrays.asList(TwigTokenId.T_TWIG_BLOCK_START, TwigTokenId.T_TWIG_VAR_START));
-            TokenInsertWrapper endTokenWrapper = findForward(ts, Arrays.asList(TwigTokenId.T_TWIG_BLOCK_END, TwigTokenId.T_TWIG_VAR_END));
-            endTokenWrapper.insertAfter(baseDocument);
-            startTokenWraper.insertBefore(baseDocument);
         }
     }
 
@@ -164,38 +125,83 @@ public class ToggleBlockCommentAction extends BaseAction {
         action.actionPerformed(evt, target);
     }
 
-    private static TokenInsertWrapper findBackward(TokenSequence<? extends TwigTokenId> ts, List<TwigTokenId> tokenIds) {
-        assert ts != null;
-        assert tokenIds != null;
-        TokenInsertWrapper result = TokenInsertWrapper.NONE;
-        ts.moveNext();
-        int originalOffset = ts.offset();
-        while (ts.movePrevious()) {
-            Token<? extends TwigTokenId> token = ts.token();
-            if (token != null && tokenIds.contains(token.id())) {
-                result = new TokenRemoveWrapperImpl(token, ts.offset());
-                break;
-            }
-        }
-        ts.move(originalOffset);
-        return result;
-    }
+    public static enum ToggleCommentType {
+        LINE_BY_TWIG {
 
-    private static TokenInsertWrapper findForward(TokenSequence<? extends TwigTokenId> ts, List<TwigTokenId> tokenIds) {
-        assert ts != null;
-        assert tokenIds != null;
-        TokenInsertWrapper result = TokenInsertWrapper.NONE;
-        ts.moveNext();
-        int originalOffset = ts.offset();
-        while (ts.moveNext()) {
-            Token<? extends TwigTokenId> token = ts.token();
-            if (token != null && tokenIds.contains(token.id())) {
-                result = new TokenRemoveWrapperImpl(token, ts.offset());
-                break;
+            @Override
+            void comment(TokenSequence<? extends TwigTokenId> ts, BaseDocument baseDocument, int caretOffset) throws BadLocationException {
+                Token<? extends TwigTokenId> token = ts.token();
+                if (token != null && isInComment(token.id())) {
+                    uncommentToken(ts, baseDocument);
+                } else {
+                    baseDocument.insertString(Utilities.getRowStart(baseDocument, caretOffset), TwigTopLexer.OPEN_COMMENT, null);
+                    baseDocument.insertString(Utilities.getRowEnd(baseDocument, caretOffset), TwigTopLexer.CLOSE_COMMENT, null);
+                }
             }
+        },
+
+        FOCUSED_TWIG_PART {
+
+            @Override
+            void comment(TokenSequence<? extends TwigTokenId> ts, BaseDocument baseDocument, int caretOffset) throws BadLocationException {
+                Token<? extends TwigTokenId> token = ts.token();
+                if (token != null && isInComment(token.id())) {
+                    uncommentToken(ts, baseDocument);
+                } else {
+                    TokenInsertWrapper startTokenWraper = findBackward(ts, Arrays.asList(TwigTokenId.T_TWIG_BLOCK_START, TwigTokenId.T_TWIG_VAR_START));
+                    TokenInsertWrapper endTokenWrapper = findForward(ts, Arrays.asList(TwigTokenId.T_TWIG_BLOCK_END, TwigTokenId.T_TWIG_VAR_END));
+                    endTokenWrapper.insertAfter(baseDocument);
+                    startTokenWraper.insertBefore(baseDocument);
+                }
+            }
+        };
+
+        abstract void comment(TokenSequence<? extends TwigTokenId> ts, BaseDocument baseDocument, int caretOffset) throws BadLocationException;
+
+        protected void uncommentToken(TokenSequence<? extends TwigTokenId> ts, BaseDocument baseDocument) throws BadLocationException {
+            int start = ts.offset();
+            int end = ts.offset() + ts.token().text().length() - TwigTopLexer.OPEN_COMMENT.length() - TwigTopLexer.CLOSE_COMMENT.length();
+            baseDocument.remove(start, TwigTopLexer.OPEN_COMMENT.length());
+            baseDocument.remove(end, TwigTopLexer.CLOSE_COMMENT.length());
         }
-        ts.move(originalOffset);
-        return result;
+
+        private static boolean isInComment(TwigTokenId tokenId) {
+            return tokenId == TwigTokenId.T_TWIG_COMMENT;
+        }
+
+        private static TokenInsertWrapper findBackward(TokenSequence<? extends TwigTokenId> ts, List<TwigTokenId> tokenIds) {
+            assert ts != null;
+            assert tokenIds != null;
+            TokenInsertWrapper result = TokenInsertWrapper.NONE;
+            ts.moveNext();
+            int originalOffset = ts.offset();
+            while (ts.movePrevious()) {
+                Token<? extends TwigTokenId> token = ts.token();
+                if (token != null && tokenIds.contains(token.id())) {
+                    result = new TokenRemoveWrapperImpl(token, ts.offset());
+                    break;
+                }
+            }
+            ts.move(originalOffset);
+            return result;
+        }
+
+        private static TokenInsertWrapper findForward(TokenSequence<? extends TwigTokenId> ts, List<TwigTokenId> tokenIds) {
+            assert ts != null;
+            assert tokenIds != null;
+            TokenInsertWrapper result = TokenInsertWrapper.NONE;
+            ts.moveNext();
+            int originalOffset = ts.offset();
+            while (ts.moveNext()) {
+                Token<? extends TwigTokenId> token = ts.token();
+                if (token != null && tokenIds.contains(token.id())) {
+                    result = new TokenRemoveWrapperImpl(token, ts.offset());
+                    break;
+                }
+            }
+            ts.move(originalOffset);
+            return result;
+        }
     }
 
     private interface TokenInsertWrapper {
