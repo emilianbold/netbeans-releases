@@ -532,7 +532,7 @@ public class BreakpointAnnotationProvider extends DebuggerManagerAdapter
             return ;
         }
         String condition = getCondition(b);
-        boolean isConditional = condition.trim().length() > 0;
+        boolean isConditional = condition.trim().length() > 0 || b.getHitCountFilteringStyle() != null;
         String annotationType = getAnnotationType(b, isConditional, breakpointsActive);
         DataObject dataObject;
         try {
