@@ -46,6 +46,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -383,6 +384,13 @@ public class VariablesNodeModel implements ExtendedNodeModel {
                                            new Class[] { Integer.TYPE });
             toStringMethod.setAccessible(true);
             toString = (String) toStringMethod.invoke(v, TO_STRING_LENGTH_LIMIT);
+        } catch (InvocationTargetException itex) {
+            Throwable te = itex.getTargetException();
+            if (te instanceof InvalidExpressionException) {
+                throw (InvalidExpressionException) te;
+            } else {
+                Exceptions.printStackTrace(itex);
+            }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
