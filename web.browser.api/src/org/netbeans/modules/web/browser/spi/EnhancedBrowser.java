@@ -62,6 +62,12 @@ public interface EnhancedBrowser {
     void close(boolean closeTab);
 
     /**
+     * Is this browser capable of reloading rendered page? For example embedded
+     * Webkit browser or Chrome with NB plugin is.
+     */
+    boolean canReloadPage();
+
+    /**
      * A way to associate a project context with a URL which is going to be 
      * opened in the browser. This method should be called before HtmlBrowser.Impl.setURL
      * 

@@ -71,6 +71,8 @@ import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
@@ -569,9 +571,7 @@ public class ClientSideProject implements Project {
         public void fileChanged(FileEvent fe) {
             RefreshOnSaveListener r = p.getRefreshOnSaveListener();
             if (r != null) {
-                if (RefreshOnSaveSupport.canRefreshOnSaveFileFilter(fe.getFile())) {
-                    r.fileChanged(fe.getFile());
-                }
+                r.fileChanged(fe.getFile());
             }
         }
 
@@ -579,9 +579,7 @@ public class ClientSideProject implements Project {
         public void fileDeleted(FileEvent fe) {
             RefreshOnSaveListener r = p.getRefreshOnSaveListener();
             if (r != null) {
-                if (RefreshOnSaveSupport.canRefreshOnSaveFileFilter(fe.getFile())) {
-                    r.fileDeleted(fe.getFile());
-                }
+                r.fileDeleted(fe.getFile());
             }
         }
 
