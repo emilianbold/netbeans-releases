@@ -339,5 +339,17 @@ public final class ShellScriptRunner {
         public List<String> getBuffer() {
             return Collections.unmodifiableList(buffer);
         }
+        
+        public String getAsString() {
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < buffer.size(); i++) {
+                builder.append(buffer.get(i));
+                //do not append /n at the last line
+                if (i < buffer.size() - 1) {
+                    builder.append('\n');
+                }
+            }
+            return builder.toString();
+        }
     }
 }
