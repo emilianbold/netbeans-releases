@@ -665,6 +665,18 @@ public class CppParserActionTracer extends CppParserActionImpl implements CppPar
         super.end_id_expression(token);
         printOut("id_expression", token); //NOI18N
     }
+    
+    @Override
+    public void tilde_class_name(Token token) {
+        printIn("tilde_class_name", token); //NOI18N
+        super.tilde_class_name(token);
+    }
+    
+    @Override
+    public void end_tilde_class_name(Token token) {
+        super.end_tilde_class_name(token);
+        printOut("tilde_class_name", token); //NOI18N
+    }
 
     @Override
     public void alias_declaration(Token usingToken, Token identToken, Token assignequalToken) {
