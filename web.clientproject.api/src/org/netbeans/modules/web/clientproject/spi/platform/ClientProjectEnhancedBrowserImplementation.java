@@ -41,63 +41,48 @@
  */
 package org.netbeans.modules.web.clientproject.spi.platform;
 
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 
 /**
- * Implementation of project configuration and associated actions, customizer, etc.
+ * Hook into client side project type for different browsers to provider their
+ * own customizer, actions, configurations, etc.
  */
-public interface ClientProjectConfigurationImplementation extends ProjectConfiguration {
+public interface ClientProjectEnhancedBrowserImplementation {
 
     /**
-     * Configuration's unique ID used to persist selected configuration etc.
-     */
-    @NonNull String getId();
-    
-    /**
-     * Non localizable ID of the browser used; can be null; only used for usage statistic.
-     */
-    String getBrowserId();
-
-    /**
-     * Configuration's customizer.
+     * Browser's customizer.
      * @return can return null if none
      */
     ProjectConfigurationCustomizer getProjectConfigurationCustomizer();
 
     /**
-     * Persist changes done in configuration's customizer.
+     * Persist changes done in browser's customizer.
      */
     void save();
     
     /**
-     * Configuration's action provider.
+     * Browser's action provider.
      * @return can return null
      */
     ActionProvider getActionProvider();
 
     /**
-     * Can this platform be deleted?
-     */
-    boolean canBeDeleted();
-
-    /**
-     * Delete this configuration.
-     */
-    void delete();
-
-
-    /**
-     * Configuration's handler changes in project sources.
+     * Browser's handler for changes in project sources.
      * @return can return null
      */
     RefreshOnSaveListener getRefreshOnSaveListener();
 
     /**
-     * Notification that configuration is not active anymore.
+     * Notification to browser that is not active anymore.
      */
     void deactivate();
 
     boolean isHighlightSelectionEnabled();
+
+    /**
+     * Configurations provider associated with this browser.
+     * @return
+     */
+    ProjectConfigurationProvider getProjectConfigurationProvider();
 }

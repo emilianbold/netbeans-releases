@@ -208,8 +208,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
                         Exceptions.printStackTrace(ex);
                     }
 
-                    Lookup.getDefault().lookup(CordovaPerformer.class).perform("create-android", project);
-                    Lookup.getDefault().lookup(CordovaPerformer.class).perform("create-ios", project);
+                    CordovaPerformer.getDefault().createPlatforms(project);
                     panel = null;
                 }
             } catch (IOException ex) {

@@ -40,34 +40,25 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.browser;
+package org.netbeans.modules.cordova.project;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformProvider;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
+import org.openide.filesystems.FileObject;
 
-// btw. ServiceProvider is used here instead of ProjectsServiceProvider so that position can be specified
-// and this provider is before one from Cordova
-@ServiceProvider(
-        service=ClientProjectPlatformProvider.class,
-        position=1000)
-public class ClientProjectPlatformProviderImpl implements ClientProjectPlatformProvider {
+/**
+ *
+ */
+public class RefreshListener implements RefreshOnSaveListener {
 
-    private Map<Project, ClientProjectPlatformImplementation> cache = new WeakHashMap<Project, ClientProjectPlatformImplementation>();
+    public RefreshListener() {
+    }
     
     @Override
-    public Collection<ClientProjectPlatformImplementation> getPlatforms(Project p) {
-        ClientProjectPlatformImplementation res = cache.get(p);
-        if (res == null) {
-            res = new ClientProjectPlatformImpl(p);
-            cache.put(p, res);
-        }
-        return Collections.singletonList(res);
+    public void fileChanged(FileObject fo) {
+    }
+
+    @Override
+    public void fileDeleted(FileObject fo) {
     }
 
 }

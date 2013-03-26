@@ -39,41 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cordova.project;
 
-package org.netbeans.modules.web.clientproject.spi.platform;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
-import java.beans.PropertyChangeListener;
-import java.util.List;
-import org.netbeans.spi.project.ActionProvider;
-
+@ProjectServiceProvider(
+        projectType = "org-netbeans-modules-web-clientproject",
+        service = ClientProjectEnhancedBrowserProvider.class)
 /**
- * Platform here means for example Browser platform which represents all browsers
- * for which project can be developed. Or Cordova platform which represents
- * all different mobile devices supported by Cordova.
+ * PhoneGap pseudo browser
+ *
+ * @author Jan Becicka
  */
-public interface ClientProjectPlatformImplementation {
-    
-    String PROP_CONFIGURATIONS = "configurations"; // NOI18N
+public class EnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowserProvider {
 
-    /**
-     * List of configuration this platform provides.
-     */
-    List<? extends ClientProjectConfigurationImplementation> getConfigurations();
-    
-    /**
-     * Returns list of types of configurations user can choose from to create a new one.
-     */
-    List<String> getNewConfigurationTypes();
+    private Project p;
 
-    /**
-     * Create new configuration of given type and given name and return new
-     * configuration's ID.
-     * @return returns null if configuration type cannot be handled by this platform
-     */
-    String createConfiguration(String configurationType, String configurationName);
-    
-    void addPropertyChangeListener(PropertyChangeListener lst);
+    public EnhancedBrowserProviderImpl(Project p) {
+        this.p = p;
+    }
 
-    void removePropertyChangeListener(PropertyChangeListener lst);
-    
+    @Override
+    public ClientProjectEnhancedBrowserImplementation getEnhancedBrowser(WebBrowser webBrowser) {
+        if (webBrowser == null) {
+            return null;
+        }
+        if (BrowserFamilyId.PHONEGAP == webBrowser.getBrowserFamily()) {
+            return new EnhancedBrowserImpl(p, webBrowser);
+        }
+        return null;
+    }
 }

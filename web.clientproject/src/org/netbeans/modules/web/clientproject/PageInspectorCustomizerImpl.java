@@ -46,7 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 
 /**
  *
@@ -70,7 +70,7 @@ public class PageInspectorCustomizerImpl implements PageInspectorCustomizer {
     
     @Override
     public boolean isHighlightSelectionEnabled() {
-        ClientProjectConfigurationImplementation cfg = project.getProjectConfigurations().getActiveConfiguration();
+        ClientProjectEnhancedBrowserImplementation cfg = project.getEnhancedBrowserImpl();
         return cfg == null ? true : cfg.isHighlightSelectionEnabled();
     }
 

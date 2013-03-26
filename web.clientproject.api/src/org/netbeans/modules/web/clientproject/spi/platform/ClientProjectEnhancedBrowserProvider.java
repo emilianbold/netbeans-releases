@@ -40,32 +40,18 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cordova.project;
+package org.netbeans.modules.web.clientproject.spi.platform;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformProvider;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.web.browser.api.WebBrowser;
 
-@ServiceProvider(
-        service=ClientProjectPlatformProvider.class,
-        position=2000)
-public class ClientProjectPlatformProviderImpl implements ClientProjectPlatformProvider {
-
-    private Map<Project, ClientProjectPlatformImplementation> cache = new WeakHashMap<Project, ClientProjectPlatformImplementation>();
+/**
+ * Provider of ClientProjectEnhancedBrowserImplementation to be registered in
+ * project type lookup via
+ * @ProjectServiceProvider(projectType = "org-netbeans-modules-web-clientproject", ...).
+ * Provider decides based on browser family type whether they handle browser or not.
+ */
+public interface ClientProjectEnhancedBrowserProvider {
     
-    @Override
-    public Collection<ClientProjectPlatformImplementation> getPlatforms(Project p) {
-        ClientProjectPlatformImplementation res = cache.get(p);
-        if (res == null) {
-            res = new ClientProjectPlatformImpl(p);
-            cache.put(p, res);
-        }
-        return Collections.singletonList(res);
-    }
-
+    ClientProjectEnhancedBrowserImplementation getEnhancedBrowser(WebBrowser webBrowser);
+    
 }

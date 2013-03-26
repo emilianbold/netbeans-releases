@@ -67,7 +67,7 @@ public final class CustomizerBrowser extends JPanel {
         assert uiProps != null;
 
         this.uiProps = uiProps;
-        browserModel = WebBrowserSupport.createBrowserModel(uiProps.getBrowserId());
+        browserModel = WebBrowserSupport.createBrowserModel(uiProps.getBrowserId(), true);
 
         initComponents();
         init();
