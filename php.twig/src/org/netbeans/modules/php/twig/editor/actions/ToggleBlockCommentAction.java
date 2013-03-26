@@ -128,6 +128,7 @@ public class ToggleBlockCommentAction extends BaseAction {
                 if (ts != null) {
                     ts.move(caretOffset);
                     ts.moveNext();
+                    ts.movePrevious();
                     token = ts.token();
                 }
                 if (token != null && isInComment(token.id())) {
@@ -181,16 +182,17 @@ public class ToggleBlockCommentAction extends BaseAction {
             assert ts != null;
             assert tokenIds != null;
             TokenInsertWrapper result = TokenInsertWrapper.NONE;
-            ts.moveNext();
-            int originalOffset = ts.offset();
-            while (ts.movePrevious()) {
-                Token<? extends TwigTokenId> token = ts.token();
-                if (token != null && tokenIds.contains(token.id())) {
-                    result = new TokenInsertWrapperImpl(token, ts.offset());
-                    break;
+            if (ts.moveNext() || ts.movePrevious()) {
+                int originalOffset = ts.offset();
+                while (ts.movePrevious()) {
+                    Token<? extends TwigTokenId> token = ts.token();
+                    if (token != null && tokenIds.contains(token.id())) {
+                        result = new TokenInsertWrapperImpl(token, ts.offset());
+                        break;
+                    }
                 }
+                ts.move(originalOffset);
             }
-            ts.move(originalOffset);
             return result;
         }
 
@@ -198,16 +200,17 @@ public class ToggleBlockCommentAction extends BaseAction {
             assert ts != null;
             assert tokenIds != null;
             TokenInsertWrapper result = TokenInsertWrapper.NONE;
-            ts.moveNext();
-            int originalOffset = ts.offset();
-            while (ts.moveNext()) {
-                Token<? extends TwigTokenId> token = ts.token();
-                if (token != null && tokenIds.contains(token.id())) {
-                    result = new TokenInsertWrapperImpl(token, ts.offset());
-                    break;
+            if (ts.moveNext() || ts.movePrevious()) {
+                int originalOffset = ts.offset();
+                while (ts.moveNext()) {
+                    Token<? extends TwigTokenId> token = ts.token();
+                    if (token != null && tokenIds.contains(token.id())) {
+                        result = new TokenInsertWrapperImpl(token, ts.offset());
+                        break;
+                    }
                 }
+                ts.move(originalOffset);
             }
-            ts.move(originalOffset);
             return result;
         }
     }
