@@ -1344,6 +1344,11 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    }\n"
                 + "}");
     }
-    
-    
+
+    public void testCommaInCPExpression() throws ParseException, BadLocationException {
+        assertParses(".highlighted {\n"
+                + "    @include linear-gradient((#3875d7 20%, #2a62bc 90%));\n"
+                + "    color: #fff;\n"
+                + "}");
+    }
 }
