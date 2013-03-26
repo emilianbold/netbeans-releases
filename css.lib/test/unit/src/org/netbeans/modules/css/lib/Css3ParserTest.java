@@ -609,20 +609,18 @@ public class Css3ParserTest extends CssTestBase {
 
     }
 
-    //due to the syntactic predicate (function)=>function in term rule the parser
-    //won't even enter the function rule hence the error is lower in the parse tree
-    public void testErrorCase10_fails() throws ParseException, BadLocationException {
+    public void testErrorCase10() throws ParseException, BadLocationException {
         String content = "p { color: hsl(10, }";
 
         CssParserResult result = TestUtil.parse(content);
 //        TestUtil.dumpTokens(result);
-        TestUtil.dumpResult(result);
+//        TestUtil.dumpResult(result);
         Node error = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
-                + "rule/declarations/declaration/propertyValue/expression/term/function/expression/error");
+                + "rule/declarations/declaration/propertyValue/expression/term/function/error");
         assertNotNull(error);
 
-        assertResult(result, 2);
+        assertResult(result, 1);
 
     }
 
@@ -1226,13 +1224,29 @@ public class Css3ParserTest extends CssTestBase {
         assertEquals(0, result.getDiagnostics().size());
 
     }
-    
+
     public void testCommaSeparatedPropertyValues() throws ParseException, BadLocationException {
         assertParses(".x { font-family: \"Myriad Pro\",\"Myriad Web\",\"Tahoma\",\"Helvetica\",\"Arial\",sans-serif; }");
     }
-    
+
     public void testImportantSymbolJustAfterPropertyValue() throws ParseException, BadLocationException {
         assertParses(".x { z-index: 1000000!important; }");
     }
-    
+
+    //http://netbeans.org/bugzilla/show_bug.cgi?id=227880
+    public void testFunctionArgumentWithMultipleTermsSeparatedByWS() throws ParseException, BadLocationException {
+        assertParses(".test { background: -moz-linear-gradient(center top);\n }", true);
+        assertParses(".test { background: -moz-linear-gradient(center, top);\n }");
+        assertParses(".test { background: -moz-linear-gradient(center top, #f3f3f3, #dddddd);\n }");
+    }
+
+    public void testFunctionArgumentWithMultipleTermsSeparatedByWS2() throws ParseException, BadLocationException {
+        assertParses(".test { background: -moz-linear-gradient(top,  #b02000 0%, #dc4a00 100%);\n"
+                + "background: -webkit-gradient(linear, left top, left bottom,\n"
+                + "color-stop(0%,#b02000), color-stop(100%,#dc4a00));\n"
+                + "background: -webkit-linear-gradient(top,  #b02000 0%,#dc4a00 100%);\n"
+                + "background: -o-linear-gradient(top,  #b02000 0%,#dc4a00 100%);\n"
+                + "background: -ms-linear-gradient(top,  #b02000 0%,#dc4a00 100%);\n"
+                + "background: linear-gradient(to bottom,  #b02000 0%,#dc4a00 100%); }", true);
+    }
 }
