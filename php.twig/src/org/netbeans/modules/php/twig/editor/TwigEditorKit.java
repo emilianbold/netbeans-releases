@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.php.twig.editor;
 
+import javax.swing.Action;
 import javax.swing.text.Document;
+import javax.swing.text.TextAction;
 import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.modules.php.twig.editor.actions.ToggleBlockCommentAction;
 import org.netbeans.modules.php.twig.editor.gsf.TwigLanguage;
 
 public class TwigEditorKit extends NbEditorKit {
@@ -56,4 +59,10 @@ public class TwigEditorKit extends NbEditorKit {
     public String getContentType() {
         return TwigLanguage.TWIG_MIME_TYPE;
     }
+
+    @Override
+    protected Action[] createActions() {
+        return TextAction.augmentList(super.createActions(), new Action[] {new ToggleBlockCommentAction()});
+    }
+
 }

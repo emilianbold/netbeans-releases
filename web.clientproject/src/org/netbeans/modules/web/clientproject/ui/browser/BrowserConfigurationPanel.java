@@ -41,11 +41,9 @@
  */
 package org.netbeans.modules.web.clientproject.ui.browser;
 
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
-import org.netbeans.modules.web.clientproject.browser.ClientProjectConfigurationImpl;
+import org.netbeans.modules.web.clientproject.browser.ClientProjectEnhancedBrowserImpl;
 
 /**
  *
@@ -53,21 +51,17 @@ import org.netbeans.modules.web.clientproject.browser.ClientProjectConfiguration
  */
 public class BrowserConfigurationPanel extends javax.swing.JPanel {
 
-    private ClientProjectConfigurationImpl.BrowserIntegration integration;
-    
     /**
      * Creates new form BrowserConfigurationPanel
      */
-    public BrowserConfigurationPanel(ClientSideProject project, ClientProjectConfigurationImpl cfg, WebBrowser browser) {
+    public BrowserConfigurationPanel(ClientSideProject project, ClientProjectEnhancedBrowserImpl cfg, WebBrowser browser) {
         initComponents();
-        integration = cfg.getBrowserIntegration();
-        if (integration != ClientProjectConfigurationImpl.BrowserIntegration.ENABLED) {
+        if (!browser.hasNetBeansIntegration()) {
             jAutoRefreshCheckBox.setVisible(false);
             jHighlightSelectionCheckBox.setVisible(false);
         }
         jAutoRefreshCheckBox.setSelected(cfg.isAutoRefresh());
         jHighlightSelectionCheckBox.setSelected(cfg.isHighlightSelectionEnabled());
-        updateEnablement();
     }
 
     public boolean isAutoRefresh() {
@@ -120,8 +114,4 @@ public class BrowserConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox jHighlightSelectionCheckBox;
     // End of variables declaration//GEN-END:variables
 
-    private void updateEnablement() {
-        jAutoRefreshCheckBox.setEnabled(integration == ClientProjectConfigurationImpl.BrowserIntegration.ENABLED);
-        jHighlightSelectionCheckBox.setEnabled(integration == ClientProjectConfigurationImpl.BrowserIntegration.ENABLED);
-    }
 }
