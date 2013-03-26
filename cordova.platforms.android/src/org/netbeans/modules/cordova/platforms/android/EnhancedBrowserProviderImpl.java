@@ -40,22 +40,42 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.spi.platform;
+package org.netbeans.modules.cordova.platforms.android;
 
-import java.util.Collection;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
+import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
- * Provider of all platforms to be registered in global lookup. Order of 
- * registrations is important.
+ * @author Jan Becicka
  */
-public interface ClientProjectPlatformProvider {
-    
-    
-    Collection<ClientProjectPlatformImplementation> getPlatforms(Project p);
+@ProjectServiceProvider(
+       projectTypes = {
+           @LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-web-clientproject"),
+           @LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-php-phpproject"),
+           @LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-web-project")
+       },
+       service = ClientProjectEnhancedBrowserProvider.class)
+public class EnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowserProvider {
+    private Project p;
 
-// TODO: do we need listeners?     
-//    String PROP_PLATFORMS = "platforms"; // NOI18N
-//    void addPropertyChangeListener(PropertyChangeListener lst);
-//    void removePropertyChangeListener(PropertyChangeListener lst);
+    public EnhancedBrowserProviderImpl(Project p) {
+        this.p = p;
+    }
+    
+    @Override
+    public ClientProjectEnhancedBrowserImplementation getEnhancedBrowser(WebBrowser webBrowser) {
+        if (webBrowser == null) {
+            return null;
+        }
+        if (BrowserFamilyId.ANDROID == webBrowser.getBrowserFamily()) {
+            return new EnhancedBrowserImpl(p, webBrowser);
+        }
+        return null;
+    }
+
 }
