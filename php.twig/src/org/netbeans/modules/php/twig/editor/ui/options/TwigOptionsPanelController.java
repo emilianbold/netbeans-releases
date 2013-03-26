@@ -47,20 +47,13 @@ import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 @OptionsPanelController.SubRegistration(
-    keywords="#TwigKeywords",
-    keywordsCategory = TwigOptionsPanelController.OPTIONS_PATH,
     location=TwigOptionsPanelController.OPTIONS_PATH,
     id=TwigOptionsPanelController.OPTIONS_SUB_PATH,
     displayName="#LBL_TwigOptionsName",
     position=1000
 )
-@NbBundle.Messages({
-    "LBL_TwigOptionsName=Twig",
-    "TwigKeywords=php, twig, template"
-})
 public final class TwigOptionsPanelController extends OptionsPanelController {
     /**
      * @see org.netbeans.modules.php.api.util.UiUtils#OPTIONS_PATH
