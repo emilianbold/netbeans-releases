@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
@@ -367,6 +368,8 @@ class SQLStatementGenerator {
     }
 
     void generateWhereCondition(DBTable table, StringBuilder result, List<Integer> types, List<Object> values, int rowNum, DataViewTableUIModel model) {
+        assert SwingUtilities.isEventDispatchThread() : "Needs to be called on the EDT";
+
         DBPrimaryKey key = table.getPrimaryKey();
         Set<String> columnsSelected = new HashSet<String>();
         boolean and = false;
@@ -411,6 +414,8 @@ class SQLStatementGenerator {
     }
 
     void generateWhereCondition(DBTable table, StringBuilder sql, int rowNum, DataViewTableUIModel model) {
+        assert SwingUtilities.isEventDispatchThread() : "Needs to be called on the EDT";
+
         DBPrimaryKey key = table.getPrimaryKey();
         Set<String> columnsSelected = new HashSet<String>();
         boolean and = false;

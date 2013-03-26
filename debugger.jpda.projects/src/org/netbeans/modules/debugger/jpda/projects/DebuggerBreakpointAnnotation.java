@@ -44,7 +44,11 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
+import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
 
@@ -60,12 +64,12 @@ import org.openide.util.NbBundle;
  */
 public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
 
-    private final Line        line;
-    private final String      type;
-    private final Breakpoint  breakpoint;
+    private final Line           line;
+    private final String         type;
+    private final JPDABreakpoint breakpoint;
 
 
-    DebuggerBreakpointAnnotation (String type, Line line, Breakpoint breakpoint) {
+    DebuggerBreakpointAnnotation (String type, Line line, JPDABreakpoint breakpoint) {
         this.type = type;
         this.line = line;
         this.breakpoint = breakpoint;
@@ -80,9 +84,58 @@ public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
     Line getLine () {
         return line;
     }
-    
+   
     @Override
     public String getShortDescription () {
+
+        List<String> list = new LinkedList<String>();
+        //add condition if available
+        String condition = BreakpointAnnotationProvider.getCondition(breakpoint);
+        if (!condition.trim().isEmpty()) {
+            list.add(condition);
+        }
+
+        // add hit count if available
+        HIT_COUNT_FILTERING_STYLE hitCountFilteringStyle = breakpoint.getHitCountFilteringStyle();
+        if (null != hitCountFilteringStyle) {
+            int hcf = breakpoint.getHitCountFilter();
+            String tooltip;
+            switch (hitCountFilteringStyle) {
+                case EQUAL:
+                    tooltip = NbBundle.getMessage(DebuggerBreakpointAnnotation.class, "TOOLTIP_HITCOUNT_EQUAL", hcf);
+                    break;
+                case GREATER:
+                    tooltip = NbBundle.getMessage(DebuggerBreakpointAnnotation.class, "TOOLTIP_HITCOUNT_GREATER", hcf);
+                    break;
+                case MULTIPLE:
+                    tooltip = NbBundle.getMessage(DebuggerBreakpointAnnotation.class, "TOOLTIP_HITCOUNT_MULTIPLE", hcf);
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown HitCountFilteringStyle: "+hitCountFilteringStyle);
+            }
+            list.add(tooltip);
+        }
+
+        String shortDesc = getShortDescriptionIntern();
+        if (list.isEmpty()) {
+            return shortDesc;
+        }
+        StringBuilder result = new StringBuilder();
+        if (null != shortDesc) {
+            result.append(shortDesc);
+        }
+        //append more information
+        result.append("\n");
+        result.append(NbBundle.getMessage(DebuggerBreakpointAnnotation.class, "TOOLTIP_CONDITION"));
+        for (String text : list) {
+            result.append("\n");
+            result.append(text);
+        }
+
+        return result.toString();
+    }
+
+    private String getShortDescriptionIntern () {
         if (type.endsWith("_broken")) {
             if (breakpoint.getValidity() == Breakpoint.VALIDITY.INVALID) {
                 String msg = breakpoint.getValidityMessage();

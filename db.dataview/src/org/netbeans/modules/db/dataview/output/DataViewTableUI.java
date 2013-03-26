@@ -146,9 +146,7 @@ final class DataViewTableUI extends ResultSetJXTable {
 
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
-        if (row < getModel().getRowCount()
-                && column < getModel().getColumnCount()
-                && getModel().hasUpdates(
+        if (getModel().hasUpdates(
                 convertRowIndexToModel(row),
                 convertColumnIndexToModel(column))) {
             return new UpdatedResultSetCellRenderer();

@@ -228,7 +228,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
         String prefix = "";
         if (nodes.length > 0) {
             prefix = nodes[0].getLocation();
-            int index = prefix.lastIndexOf("/");
+            int index = prefix.lastIndexOf(File.separator);
             if (index == -1) {
                 prefix = "";
             } else {
@@ -240,7 +240,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
             String location = n.getLocation();
             while (!location.startsWith(prefix)) {
                 slashNeeded = false;
-                int index = prefix.lastIndexOf("/");
+                int index = prefix.lastIndexOf(File.separator);
                 if (index == -1) {
                     prefix = "";
                 } else {
@@ -248,7 +248,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
                 }
             }
         }
-        return slashNeeded ? prefix + "/" : prefix;
+        return slashNeeded ? prefix + File.separator : prefix;
     }
     
     private static class NodeChildren extends DiffTreeViewChildren {
@@ -272,7 +272,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
             for (DiffNode n : nestedNodes) {
                 String location = n.getLocation();
                 if (prefix == null) {
-                    prefix = path + location.substring(path.length()).split("/", 0)[0];
+                    prefix = path + location.substring(path.length()).split(File.separator, 0)[0];
                 }
                 if (location.equals(prefix)) {
                     if (!subNodes.isEmpty()) {
@@ -286,7 +286,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
                 } else {
                     data.add(new NodeData(new File(file, prefix), prefix, subNodes.toArray(new DiffNode[subNodes.size()])));
                     subNodes.clear();
-                    prefix = path + location.substring(path.length()).split("/", 0)[0];
+                    prefix = path + location.substring(path.length()).split(File.separator, 0)[0];
                     subNodes.add(n);
                 }
             }
@@ -310,10 +310,10 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
                     if (top) {
                         name = key.path;
                     } else {
-                        String[] segments = key.path.split("/");
+                        String[] segments = key.path.split(File.separator);
                         name = segments[segments.length - 1];
                     }
-                    NodeChildren ch = new NodeChildren(new NodeData(key.file, key.path + "/", key.nestedNodes), false);
+                    NodeChildren ch = new NodeChildren(new NodeData(key.file, key.path + File.separator, key.nestedNodes), false);
                     node = new AbstractNode(ch, Lookups.fixed(key.file)) {
                         @Override
                         public String getName () {
