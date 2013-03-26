@@ -178,7 +178,7 @@ public class ToggleBlockCommentAction extends BaseAction {
             while (ts.movePrevious()) {
                 Token<? extends TwigTokenId> token = ts.token();
                 if (token != null && tokenIds.contains(token.id())) {
-                    result = new TokenRemoveWrapperImpl(token, ts.offset());
+                    result = new TokenInsertWrapperImpl(token, ts.offset());
                     break;
                 }
             }
@@ -195,7 +195,7 @@ public class ToggleBlockCommentAction extends BaseAction {
             while (ts.moveNext()) {
                 Token<? extends TwigTokenId> token = ts.token();
                 if (token != null && tokenIds.contains(token.id())) {
-                    result = new TokenRemoveWrapperImpl(token, ts.offset());
+                    result = new TokenInsertWrapperImpl(token, ts.offset());
                     break;
                 }
             }
@@ -220,11 +220,11 @@ public class ToggleBlockCommentAction extends BaseAction {
         void insertAfter(BaseDocument baseDocument) throws BadLocationException;
     }
 
-    private static final class TokenRemoveWrapperImpl implements TokenInsertWrapper {
+    private static final class TokenInsertWrapperImpl implements TokenInsertWrapper {
         private final Token<? extends TwigTokenId> token;
         private final int offset;
 
-        private TokenRemoveWrapperImpl(Token<? extends TwigTokenId> token, int offset) {
+        private TokenInsertWrapperImpl(Token<? extends TwigTokenId> token, int offset) {
             this.token = token;
             this.offset = offset;
         }
