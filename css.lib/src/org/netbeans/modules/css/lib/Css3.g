@@ -1264,7 +1264,7 @@ cp_full_expression
     
 cp_full_expression_operator
     :
-    OR | AND | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ
+    OR | AND | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ | COMMA
     ;
 
 cp_full_expression_atom
