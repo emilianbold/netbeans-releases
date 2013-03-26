@@ -41,18 +41,23 @@
  */
 package org.netbeans.modules.web.inspect.webkit;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.Page;
+import org.netbeans.modules.web.common.api.DependentFileQuery;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Page model listener that is responsible for focusing/opening
@@ -87,20 +92,57 @@ public class EditorSynchronizer implements PropertyChangeListener {
             if (project != null) {
                 try {
                     URL url = new URL(documentURL);
-                    FileObject fob = ServerURLMapping.fromServer(project, url);
+                    final FileObject fob = ServerURLMapping.fromServer(project, url);
                     if (fob != null) {
-                        try {
-                            DataObject dob = DataObject.find(fob);
-                            EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
-                            if (editor != null) {
-                                editor.open();
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                FileObject selectedFile = selectedEditorFile();
+                                // Do not touch editor when it is switched to a related file
+                                if ((selectedFile == null) || !DependentFileQuery.isDependent(fob, selectedFile)) {
+                                    try {
+                                        DataObject dob = DataObject.find(fob);
+                                        EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
+                                        if (editor != null) {
+                                            editor.open();
+                                        }
+                                    } catch (DataObjectNotFoundException ex) {
+                                    }
+                                }
                             }
-                        } catch (DataObjectNotFoundException ex) {}
+                        });
                     }
                 } catch (MalformedURLException ex) {
                 }
             }
         }
+    }
+
+    /**
+     * Returns the file selected in the editor.
+     * 
+     * @return file selected in the editor.
+     */
+    private static FileObject selectedEditorFile() {
+        WindowManager manager = WindowManager.getDefault();
+        TopComponent.Registry registry = manager.getRegistry();
+        TopComponent active = registry.getActivated();
+        if ((active == null) || !manager.isOpenedEditorTopComponent(active)) {
+            active = null;
+            for (Mode mode : manager.getModes()) {
+                if (manager.isEditorMode(mode)) {
+                    active = mode.getSelectedTopComponent();
+                    if (active != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        FileObject selectedFile = null;
+        if (active != null) {
+            selectedFile = active.getLookup().lookup(FileObject.class);
+        }
+        return selectedFile;
     }
 
 }
