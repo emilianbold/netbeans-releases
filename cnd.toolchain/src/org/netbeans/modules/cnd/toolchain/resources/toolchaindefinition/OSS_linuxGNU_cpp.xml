@@ -98,6 +98,11 @@ made subject to such option by the copyright holder.
             <default default="true" flags=""/>
             <all flags="-features=extensions,tmplrefstatic,iddollar"/>
         </language_extension>
+        <cpp_standard>
+            <default flags="" default="true"/>
+            <cpp98 flags=""/>
+            <cpp11 flags="-std=c++11"/>
+        </cpp_standard>
         <library>
             <none flags="-library=no%Cstd,no%Crun -filt=no%stdlib"/>
             <runtime flags="-library=no%Cstd -filt=no%stdlib"/>
