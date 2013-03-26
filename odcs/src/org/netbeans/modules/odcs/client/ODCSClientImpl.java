@@ -71,8 +71,7 @@ public class ODCSClientImpl implements ODCSClient {
     private <T> T runDelete(Class<T> t, String service) throws ODCSException {
         return run(new DeleteMethod(url + service), t, service);
     }
-//  http://qa-dev.developer.us.oracle.com/s/qa-dev_netbeans-test/tasks/task/1501
-//  http://qa-dev.developer.us.oracle.com/s/qa-dev_netbeans-test/tasks/task/1501
+
     private <T> T run(HttpMethodBase method, Class<T> t, String service) throws ODCSException {
         method.setDoAuthentication(true);
         try {
