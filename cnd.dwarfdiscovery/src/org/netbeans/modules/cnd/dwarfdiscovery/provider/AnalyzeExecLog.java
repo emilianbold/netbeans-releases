@@ -593,6 +593,10 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     res.compilePath = compilePath;
                     res.compiler = compiler;
                     res.sourceName = sourceName;
+                    //
+                    File file = new File(fullName);
+                    fullName = CndFileUtils.normalizeFile(file).getAbsolutePath();
+                    //
                     res.fullName = fullName;
                     res.language = language;
                     res.userIncludes = userIncludes;
