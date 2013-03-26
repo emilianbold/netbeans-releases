@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.browser.api;
 
+import java.awt.Image;
+import javax.swing.Icon;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
@@ -57,6 +59,7 @@ final class WebBrowserFactoryDescriptor {
     private boolean def;
     private HtmlBrowser.Factory factory;
     private BrowserFamilyId browserFamily;
+    private Image iconImage;
 
     public WebBrowserFactoryDescriptor(String id, DataObject dob, boolean def, Factory factory) {
         this.id = id;
@@ -65,11 +68,19 @@ final class WebBrowserFactoryDescriptor {
         this.factory = factory;
         if (factory instanceof EnhancedBrowserFactory) {
             browserFamily = ((EnhancedBrowserFactory)factory).getBrowserFamilyId();
+            iconImage = ((EnhancedBrowserFactory)factory).getIconImage();
+            name = ((EnhancedBrowserFactory)factory).getDisplayName();
         } else {
             browserFamily = BrowserFamilyId.UNKNOWN;
+            iconImage = null;
         }
     }
     
+    
+    WebBrowserFactoryDescriptor(WebBrowserFactoryDescriptor delegate, String id, String name) {
+        this(id, delegate.dob, delegate.def, delegate.factory);
+        this.name = name;
+    }
     
     /**
     * Unique ID of this browser. Should be suitable for persistence reference to this browser.
@@ -109,6 +120,10 @@ final class WebBrowserFactoryDescriptor {
 
     public BrowserFamilyId getBrowserFamily() {
         return browserFamily;
+    }
+
+    public Image getIconImage() {
+        return iconImage;
     }
 
     @Override
