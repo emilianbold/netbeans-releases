@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.libs.common;
+package org.netbeans.modules.cnd.discovery.performance;
 
 import java.io.IOException;
 import java.io.InputStream;
