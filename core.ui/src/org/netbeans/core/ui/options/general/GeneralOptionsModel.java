@@ -44,11 +44,23 @@
 
 package org.netbeans.core.ui.options.general;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProxySelector;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.core.ProxySettings;
 import org.openide.util.NbPreferences;
 
 class GeneralOptionsModel {
+    
+    private static final Logger LOGGER = Logger.getLogger(GeneralOptionsModel.class.getName());
+    
+    private static final String TESTING_URL = "http://www.netbeans.org"; //NOI18N
     
     private static Preferences getProxyPreferences () {
         return NbPreferences.root ().node ("org/netbeans/core");
@@ -209,6 +221,36 @@ class GeneralOptionsModel {
     static boolean usePAC() {
         String pacUrl = getProxyPreferences().get(ProxySettings.SYSTEM_PAC, ""); // NOI18N
         return pacUrl != null && pacUrl.length() > 0;
+    }
+    
+    static boolean testHttpConnection() {
+        boolean result = false;
+        URL testingUrl = null;
+        
+        try {
+            testingUrl = new URL(TESTING_URL);
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.SEVERE, "Cannot create url from string.", ex);
+        }
+        
+        ProxySelector ps = ProxySelector.getDefault();
+        if (ps != null) {
+            try {
+                HttpURLConnection httpConnection = (HttpURLConnection) testingUrl.openConnection(ps.select(testingUrl.toURI()).get(0));
+                
+                httpConnection.connect();
+                
+                if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    result = true;
+                }
+                
+                httpConnection.disconnect();
+            } catch (IOException | URISyntaxException ex) {
+                LOGGER.log(Level.SEVERE, "Cannot connect via http protocol.", ex);
+            }
+        }
+        
+        return result;
     }
     
     // private helper methods ..................................................
