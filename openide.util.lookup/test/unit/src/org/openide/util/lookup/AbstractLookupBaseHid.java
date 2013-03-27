@@ -201,7 +201,12 @@ public class AbstractLookupBaseHid extends NbTestCase {
         Collection<? extends Integer> atTheEnd = res.allInstances();
         assertEquals("Three: " + atTheEnd, 3, atTheEnd.size());
     }
-    
+
+    public void testResultsAreCached() {
+        Lookup.Result<Runnable> r1 = lookup.lookupResult(Runnable.class);
+        Lookup.Result<Runnable> r2 = lookup.lookupResult(Runnable.class);
+        assertSame("The result is cached", r1, r2);
+    }
     
     public void testAddFirstWithExecutorBeforeLookupAssociationFails() {
         doAddFirstWithExecutorBeforeLookupAssociationFails(false);
@@ -1972,6 +1977,9 @@ public class AbstractLookupBaseHid extends NbTestCase {
         
         
         Reference<Object> ref2 = new WeakReference<Object>(res2);
+        if (res1 == res2) {
+            res1 = null;
+        }
         res2 = null;
         assertGC("Result can disappear", ref2);
     }
