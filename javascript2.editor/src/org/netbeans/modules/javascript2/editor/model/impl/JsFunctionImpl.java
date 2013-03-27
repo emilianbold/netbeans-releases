@@ -124,7 +124,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                         && (property.getModifiers().contains(Modifier.PROTECTED)
                         || (property.getModifiers().contains(Modifier.PUBLIC) &&  !property.getModifiers().contains(Modifier.STATIC)))
                         && !isAnonymous() && !property.isAnonymous()) {
-                    if(!getParent().getName().equals("prototype")) {
+                    if(!ModelUtils.PROTOTYPE.equals(getParent().getName())) {
                         return JsElement.Kind.CONSTRUCTOR;
                     }
                 }

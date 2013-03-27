@@ -609,7 +609,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         
         completeObjectMembers(jsObject, request, properties);
         
-        if (jsObject.getName().equals("prototype")) {  //NOI18N
+        if (ModelUtils.PROTOTYPE.equals(jsObject.getName())) {  //NOI18N
             completeObjectMembers(jsObject.getParent(), request, properties);
         }
         
@@ -714,7 +714,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     }
     
     private void addObjectPropertiesToCC(JsObject jsObject, CompletionRequest request, Map<String, List<JsElement>> addedProperties) {
-        JsObject prototype = jsObject.getProperty("prototype"); // NOI18N
+        JsObject prototype = jsObject.getProperty(ModelUtils.PROTOTYPE); // NOI18N
         if (prototype != null) {
             // at first add all prototype properties
             // if the same property is declared in the project directly, then this is replaced.
@@ -734,7 +734,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         String prototypeFQN = null;
         for (IndexedElement indexedElement : properties) {
             addPropertyToMap(request, addedProperties, indexedElement);
-            if ("prototype".equals(indexedElement.getName())) {
+            if (ModelUtils.PROTOTYPE.equals(indexedElement.getName())) {
                 prototypeFQN = indexedElement.getFQN();
             }
         }
@@ -757,7 +757,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     properties.add(property);
                     addedProperties.put(name, properties);
                 } else {
-                    if (!"prototype".equals(name) && property.isDeclared()) {
+                    if (!ModelUtils.PROTOTYPE.equals(name) && property.isDeclared()) {
                         if (elements.size() == 1) {
                             // check whether the item is declaration
                             JsElement element = elements.get(0);

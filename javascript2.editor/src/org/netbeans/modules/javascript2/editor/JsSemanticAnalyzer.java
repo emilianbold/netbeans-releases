@@ -63,6 +63,7 @@ import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -158,7 +159,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                                     highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                                 }
                             }
-                        } else if (object.isDeclared() && !"prototype".equals(object.getName()) && !object.isAnonymous()) {
+                        } else if (object.isDeclared() && !ModelUtils.PROTOTYPE.equals(object.getName()) && !object.isAnonymous()) {
                             if((object.getOccurrences().isEmpty()
                                     || (object.getOccurrences().size() == 1 && object.getOccurrences().get(0).getOffsetRange().equals(object.getDeclarationName().getOffsetRange())))
                                     && object.getModifiers().contains(Modifier.PRIVATE)) {
