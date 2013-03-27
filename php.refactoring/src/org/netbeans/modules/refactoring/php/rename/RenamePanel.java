@@ -48,8 +48,8 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.refactoring.php.PhpRefactoringOptions;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 
 /**
@@ -106,6 +106,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         if (!phpKind.equals(PhpElementKind.CLASS) && !phpKind.equals(PhpElementKind.IFACE) && !phpKind.equals(PhpElementKind.TRAIT)) {
             renameFileCheckBox.setVisible(false);
         }
+        renameFileCheckBox.setSelected(PhpRefactoringOptions.getInstance().getRenameFile());
         initialized = true;
     }
 
@@ -158,6 +159,11 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         warningLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RenamePanel.class, "LBL_NonAccurateRefactoringWarning")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(renameFileCheckBox, "Rename Also &File With the Declaration.");
+        renameFileCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                renameFileCheckBoxActionPerformed(evt);
+            }
+        });
         jPanel1.add(renameFileCheckBox, java.awt.BorderLayout.PAGE_END);
 
         org.openide.awt.Mnemonics.setLocalizedText(updateReferencesCheckBox, org.openide.util.NbBundle.getBundle(RenamePanel.class).getString("LBL_RenameWithoutRefactoring")); // NOI18N
@@ -235,6 +241,11 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     private void refactorAllCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refactorAllCheckBoxActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_refactorAllCheckBoxActionPerformed
+
+    private void renameFileCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameFileCheckBoxActionPerformed
+        PhpRefactoringOptions.getInstance().setRenameFile(renameFileCheckBox.isSelected());
+    }//GEN-LAST:event_renameFileCheckBoxActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel label;
