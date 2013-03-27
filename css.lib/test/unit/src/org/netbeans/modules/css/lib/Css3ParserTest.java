@@ -45,16 +45,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.css.lib.api.*;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 
@@ -68,12 +67,6 @@ public class Css3ParserTest extends CssTestBase {
         super(testName);
     }
 
-//     public static Test suite() throws IOException, BadLocationException {
-//        System.err.println("Beware, only selected tests runs!!!");
-//        TestSuite suite = new TestSuite();
-//        suite.addTest(new Css3ParserTest("testIssue211103"));
-//        return suite;
-//    }
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -87,15 +80,28 @@ public class Css3ParserTest extends CssTestBase {
             }
         }
     }
+    
+    //checks if there's an existing rule in Css3Parser for each declared NodeType
+    public void testNoUnusedNodeTypes() {
+        Set<String> ruleNames = new HashSet<String>(Arrays.asList(Css3Parser.ruleNames));
+        Set<String> specialRuleNames = new HashSet<String>(Arrays.asList(
+                new String[]{"root", "error", "recovery", "token"}));
+        for (NodeType nodeType : NodeType.values()) {
+            String nodeTypeName = nodeType.name();
+            assertTrue(String.format("Unused NodeType.%s", nodeTypeName), 
+                    ruleNames.contains(nodeTypeName) || specialRuleNames.contains(nodeTypeName));
+        }
+    }
 
     public void testErrorRecoveryInRule() throws ParseException, BadLocationException {
         //resync the parser to the last right curly bracket
         String code = "myns|h1  color: red; } h2 { color: blue; }";
 
         CssParserResult res = TestUtil.parse(code);
-//        dumpResult(res);
+//        TestUtil.dumpResult(res);
 
-        //this case recovers badly so far - the myns|h1 and h2 are joined into a single rule
+        assertNotNull(NodeUtil.query(res.getParseTree(),
+                "styleSheet/body/bodyItem|1/rule/declarations/declaration/property/color"));
     }
 
     //the error recovery is broken due to the syntactic predicate change to the declaration rule
