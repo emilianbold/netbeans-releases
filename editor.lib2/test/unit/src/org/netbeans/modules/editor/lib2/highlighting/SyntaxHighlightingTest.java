@@ -79,7 +79,9 @@ public class SyntaxHighlightingTest extends NbTestCase {
         super(name);
         List<String> includes = new ArrayList<String>();
 //        includes.add("testSimple");
+//        includes.add("testNoPrologEpilogEmbedding");
 //        includes.add("testEmbedded");
+//        includes.add("testRanges");
 //        filterTests(includes);
     }
 
@@ -148,7 +150,6 @@ public class SyntaxHighlightingTest extends NbTestCase {
             text,
             TokenHierarchy.create(text, TestTokenId.language()).tokenSequence(),
             layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE),
-            true,
             ""
         );
 
@@ -173,7 +174,8 @@ public class SyntaxHighlightingTest extends NbTestCase {
         assertFalse("There should only be one highlight", hs.moveNext());
 
         hs = layer.getHighlights(5, 11);
-        checkHighlights("Wrong highlights", hs, new Integer [] { 5, 6, 6, 9, 9, 11 });
+        // Embeddings in "bbb" -> split to single chars by SimpleLanguageProvider.findLanguageEmbedding()
+        checkHighlights("Wrong highlights", hs, new Integer [] { 5, 6, 6, 7, 7, 8, 8, 9, 9, 11 });
     }
 
     public void testEmbeddedRanges() {
@@ -205,7 +207,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
 
         HighlightsSequence hs = layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);
         TokenHierarchy<?> tokens = TokenHierarchy.create(text, lang);
-        assertHighlights(text, tokens.tokenSequence(), hs, true, "");
+        assertHighlights(text, tokens.tokenSequence(), hs, "");
         assertFalse("Unexpected highlights at the end of the sequence", hs.moveNext());
         System.out.println("------------------------\n");
     }
@@ -222,7 +224,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
         }
     }
     
-    private void assertHighlights(String text, TokenSequence<?> ts, HighlightsSequence hs, boolean moveHs, String indent) {
+    private void assertHighlights(String text, TokenSequence<?> ts, HighlightsSequence hs, String indent) {
         int newlineOffset = Integer.MIN_VALUE;
         while (ts.moveNext()) {
             if (newlineOffset == Integer.MIN_VALUE) { // Init
@@ -276,10 +278,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
                         hiEOffset = Math.min(limitOffset, newlineOffset);
                     }
                     if (hiEOffset > hiSOffset) {
-                        if (moveHs) {
-                            assertTrue("Cannot move highlight sequence to next highlight", hs.moveNext());
-                        }
-                        moveHs = true;
+                        assertTrue("Cannot move highlight sequence to next highlight", hs.moveNext());
                         System.out.println(indent + "Highlight: <" + hs.getStartOffset() + ", " + hs.getEndOffset() + ">");
                         assertEquals("Wrong starting offset", hiSOffset, hs.getStartOffset());
                         assertEquals("Wrong ending offset", hiEOffset, hs.getEndOffset());
@@ -320,10 +319,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
                                 hiEOffset = Math.min(limitOffset, newlineOffset);
                             }
                             if (hiEOffset > hiSOffset) {
-                                if (moveHs) {
-                                    assertTrue("Cannot move highlight sequence to next highlight", hs.moveNext());
-                                }
-                                moveHs = true;
+                                assertTrue("Cannot move highlight sequence to next highlight", hs.moveNext());
                                 System.out.println(indent + "Highlight: <" + hs.getStartOffset() + ", " + hs.getEndOffset() + ">");
                                 assertEquals("Wrong starting offset", hiSOffset, hs.getStartOffset());
                                 assertEquals("Wrong ending offset", hiEOffset, hs.getEndOffset());
@@ -332,7 +328,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
                         // XXX: compare attributes as well
                     }
                     
-                    assertHighlights(text, ts.embedded(), hs, prologueLength > 0, indent + "  ");
+                    assertHighlights(text, ts.embedded(), hs, indent + "  ");
                     hiEOffset = tokenEndOffset - epilogLength;
                     if (epilogLength > 0) {
                         int limitOffset = tokenEndOffset;
@@ -363,10 +359,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
                                 hiEOffset = Math.min(limitOffset, newlineOffset);
                             }
                             if (hiEOffset > hiSOffset) {
-                                if (moveHs) {
-                                    assertTrue("Cannot move highlight sequence to next highlight", hs.moveNext());
-                                }
-                                moveHs = true;
+                                assertTrue("Cannot move highlight sequence to next highlight", hs.moveNext());
                                 System.out.println(indent + "Highlight: <" + hs.getStartOffset() + ", " + hs.getEndOffset() + ">");
                                 assertEquals("Wrong starting offset", hiSOffset, hs.getStartOffset());
                                 assertEquals("Wrong ending offset", hiEOffset, hs.getEndOffset());
@@ -403,10 +396,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
                             hiEOffset = Math.min(limitOffset, newlineOffset);
                         }
                         if (hiEOffset > hiSOffset) {
-                            if (moveHs) {
-                                assertTrue("Cannot move highlight sequence to next highlight", hs.moveNext());
-                            }
-                            moveHs = true;
+                            assertTrue("Cannot move highlight sequence to next highlight", hs.moveNext());
                             System.out.println(indent + "Highlight: <" + hs.getStartOffset() + ", " + hs.getEndOffset() + ">");
                             assertEquals("Wrong starting offset", hiSOffset, hs.getStartOffset());
                             assertEquals("Wrong ending offset", hiEOffset, hs.getEndOffset());
