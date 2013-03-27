@@ -208,8 +208,8 @@ public final class Utils {
         return null;
     }
 
-    public static void browseLocalServerAction(final JComboBox localServerComboBox,
-            final MutableComboBoxModel localServerComboBoxModel, String newSubfolderName, String title, String dirKey) {
+    public static void browseLocalServerAction(final JComboBox<LocalServer> localServerComboBox,
+            final MutableComboBoxModel<LocalServer> localServerComboBoxModel, String newSubfolderName, String title, String dirKey) {
         File preselected = null;
         LocalServer ls = (LocalServer) localServerComboBox.getSelectedItem();
         if (ls.getDocumentRoot() != null && ls.getDocumentRoot().length() > 0) {
@@ -232,7 +232,7 @@ public final class Utils {
         }
         String projectLocation = file.getAbsolutePath();
         for (int i = 0; i < localServerComboBoxModel.getSize(); i++) {
-            LocalServer element = (LocalServer) localServerComboBoxModel.getElementAt(i);
+            LocalServer element = localServerComboBoxModel.getElementAt(i);
             if (projectLocation.equals(element.getSrcRoot())) {
                 localServerComboBox.setSelectedIndex(i);
                 break;
@@ -617,8 +617,10 @@ public final class Utils {
         UiUtils.showOptions(PhpOptionsPanelController.ID);
     }
 
-    public static class PhpVersionComboBoxModel extends DefaultComboBoxModel {
-        private static final long serialVersionUID = -203741202171115527L;
+    public static class PhpVersionComboBoxModel extends DefaultComboBoxModel<PhpVersion> {
+
+        private static final long serialVersionUID = -48789765465878745L;
+
 
         public PhpVersionComboBoxModel() {
             this(null);

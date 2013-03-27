@@ -105,7 +105,6 @@ import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowserSupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
-import org.netbeans.modules.web.clientproject.spi.RefreshOnSaveSupport;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -926,12 +925,9 @@ public final class PhpProject implements Project {
 
         // possible browser reload, if nb integration is present
         private void browserReload(FileObject file) {
-            if (!RefreshOnSaveSupport.canRefreshOnSaveFileFilter(file)) {
-                return;
-            }
             ClientSideDevelopmentSupport easelSupport = PhpProject.this.getLookup().lookup(ClientSideDevelopmentSupport.class);
             assert easelSupport != null;
-            if (easelSupport.canReload()) {
+            if (easelSupport.canReload(file)) {
                 easelSupport.reload();
             }
         }
@@ -1204,7 +1200,7 @@ public final class PhpProject implements Project {
             }
         }
 
-        public boolean canReload() {
+        public boolean canReload(FileObject fo) {
             initBrowser();
             // #226389
             DebugStarter debugStarter = DebugStarterFactory.getInstance();
@@ -1212,7 +1208,8 @@ public final class PhpProject implements Project {
                     && debugStarter.isAlreadyRunning()) {
                 return false;
             }
-            if (!WebBrowserSupport.isIntegratedBrowser(browserId)) {
+            BrowserSupport support = getBrowserSupport();
+            if (!support.canRefreshOnSaveThisFileType(fo)) {
                 return false;
             }
             // #226256

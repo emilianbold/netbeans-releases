@@ -55,6 +55,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -101,7 +102,7 @@ public class JsIndexer extends EmbeddingIndexer {
 
     private void storeObject(JsObject object, IndexingSupport support, Indexable indexable) {
         if (!isInvisibleFunction(object)) {
-            if (object.isDeclared() || object.getName().equals("prototype")) {
+            if (object.isDeclared() || ModelUtils.PROTOTYPE.equals(object.getName())) {
                 // if it's delcared, then store in the index as new document.
                 IndexDocument document = IndexedElement.createDocument(object, support, indexable);
                 support.addDocument(document);

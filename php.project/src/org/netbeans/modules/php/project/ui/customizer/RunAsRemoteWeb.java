@@ -284,7 +284,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             // no connections defined
             connections = Arrays.asList(RunConfigRemote.NO_REMOTE_CONFIGURATION);
         }
-        DefaultComboBoxModel model = new DefaultComboBoxModel(new Vector<RemoteConfiguration>(connections));
+        DefaultComboBoxModel<RemoteConfiguration> model = new DefaultComboBoxModel<RemoteConfiguration>(new Vector<RemoteConfiguration>(connections));
         remoteConnectionComboBox.setModel(model);
     }
 
@@ -297,7 +297,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             remoteConnection = getValue(PhpProjectProperties.REMOTE_CONNECTION);
         }
         // #141849 - can be null if one adds remote config for the first time for a project but already has some remote connection
-        DefaultComboBoxModel model = (DefaultComboBoxModel) remoteConnectionComboBox.getModel();
+        DefaultComboBoxModel<RemoteConfiguration> model = (DefaultComboBoxModel<RemoteConfiguration>) remoteConnectionComboBox.getModel();
         if (remoteConnection == null
                 || RunConfigRemote.NO_CONFIG_NAME.equals(remoteConnection)) {
             if (model.getIndexOf(RunConfigRemote.NO_REMOTE_CONFIGURATION) < 0) {
@@ -722,20 +722,22 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
     }
 
-    public static class RemoteConnectionRenderer extends JLabel implements ListCellRenderer, UIResource {
-        private static final long serialVersionUID = 93621381917558630L;
+    public static class RemoteConnectionRenderer extends JLabel implements ListCellRenderer<RemoteConfiguration>, UIResource {
+
+        private static final long serialVersionUID = 14547687982567897L;
+
 
         public RemoteConnectionRenderer() {
             setOpaque(true);
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends RemoteConfiguration> list, RemoteConfiguration value, int index, boolean isSelected, boolean cellHasFocus) {
             setName("ComboBox.listRenderer"); // NOI18N
             // #171722
             String text = null;
             Color foreground = null;
-            if (value instanceof RemoteConfiguration) {
+            if (value != null) {
                 RemoteConfiguration remoteConfig = (RemoteConfiguration) value;
                 text = remoteConfig.getDisplayName();
                 foreground = getForeground(remoteConfig, list, isSelected);
@@ -768,20 +770,21 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
     }
 
-    public static class RemoteUploadRenderer extends JLabel implements ListCellRenderer, UIResource {
-        private static final long serialVersionUID = 86192358777523629L;
+    public static class RemoteUploadRenderer extends JLabel implements ListCellRenderer<UploadFiles>, UIResource {
+
+        private static final long serialVersionUID = 5867432135478679120L;
+
 
         public RemoteUploadRenderer() {
             setOpaque(true);
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends UploadFiles> list, UploadFiles value, int index, boolean isSelected, boolean cellHasFocus) {
             setName("ComboBox.listRenderer"); // NOI18N
             // #175236
             if (value != null) {
-                assert value instanceof UploadFiles;
-                setText(((UploadFiles) value).getLabel());
+                setText(value.getLabel());
             }
             setIcon(null);
             if (isSelected) {

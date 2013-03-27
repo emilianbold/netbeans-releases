@@ -152,6 +152,8 @@
                 <friend>org.netbeans.core.browser.webview</friend>
                 <friend>org.netbeans.modules.ant.browsetask</friend>
                 <friend>org.netbeans.modules.cordova</friend>
+                <friend>org.netbeans.modules.cordova.platforms.android</friend>
+                <friend>org.netbeans.modules.cordova.platforms.ios</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.extbrowser</friend>
                 <friend>org.netbeans.modules.html</friend>

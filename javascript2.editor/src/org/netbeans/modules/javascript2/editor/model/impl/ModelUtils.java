@@ -91,6 +91,8 @@ import org.openide.filesystems.FileObject;
  */
 public class ModelUtils {
       
+    public  static String PROTOTYPE = "prototype";          //NOI18N
+    public  static String ARGUMENTS = "arguments";          //NOI18N
     private static String GENERATED_FUNCTION_PREFIX = "_L"; //NOI18N
     private static String GENERATED_ANONYM_PREFIX = "Anonym$"; //NOI18N
     
@@ -788,7 +790,7 @@ public class ModelUtils {
                     Collection<IndexedElement> properties = IndexedElement.createProperties(indexResult, fqn);
 
                     for (IndexedElement property : properties) {
-                        if (property.isDeclared() || "prototype".equals(property.getName())) {
+                        if (property.isDeclared() || ModelUtils.PROTOTYPE.equals(property.getName())) {
                             isType = true;
                             break;
                         }
@@ -848,7 +850,7 @@ public class ModelUtils {
             alreadyCheck.add(fqn);
             Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
             for (IndexedElement property : properties) {
-                if("prototype".equals(property.getName())) {  //NOI18N
+                if(ModelUtils.PROTOTYPE.equals(property.getName())) {  //NOI18N
                     Collection<? extends IndexResult> indexResults = jsIndex.findFQN(property.getFQN());
                     for (IndexResult indexResult : indexResults) {
                         Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);

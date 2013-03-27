@@ -42,7 +42,6 @@
 package org.netbeans.modules.css.lib.api;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Node of the css source parse tree.

@@ -219,19 +219,12 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     private static List<TableRow> createModel() {
         boolean noSelectedBrowser = true;
         List<TableRow> model = new ArrayList<TableRow>();
-        for (WebBrowser browser : WebBrowsers.getInstance().getAll(false)) {
+        for (WebBrowser browser : WebBrowsers.getInstance().getAll(false, true, false, true)) {
             if (browser.isEmbedded()) {
                 continue;
             }
-            if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM) {
-                boolean selected = NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, true), noSelectedBrowser ? true : false);
-                if (selected) {
-                    noSelectedBrowser = false;
-                }
-                model.add(new TableRow(browser, selected, true));
-            }
             model.add(new TableRow(browser, 
-                NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, false), false), false));
+                NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, false), false), browser.hasNetBeansIntegration()));
         }
         return model;
     }

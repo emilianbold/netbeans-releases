@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import org.netbeans.modules.css.lib.api.CssModule;
 
 /**

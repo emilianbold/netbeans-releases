@@ -47,6 +47,7 @@ import org.antlr.runtime.*;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.netbeans.modules.css.lib.api.ProblemDescription.Type;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.css.lib.Bundle.*;
 
 /**
  * Note: Funny aspect of the ANTLR lexer is that it doesn't create any kind of
@@ -58,7 +59,7 @@ import org.openide.util.NbBundle;
  */
 public class ExtCss3Lexer extends Css3Lexer {
 
-    private List<ProblemDescription> problems = new ArrayList<ProblemDescription>();
+    private List<ProblemDescription> problems = new ArrayList<>();
 
     public ExtCss3Lexer(CharStream input, RecognizerSharedState state) {
         super(input, state);
@@ -147,15 +148,18 @@ public class ExtCss3Lexer extends Css3Lexer {
     }
 
     @Override
+    @NbBundle.Messages({
+            "# {0} - the unexpected character",
+            "MSG_Error_Unexpected_Char=Unexpected character(s) {0} found"
+    })
     public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
         StringBuilder b = new StringBuilder();
         b.append(getErrorHeader(e));
         b.append(' ');
-
         if (e instanceof NoViableAltException) {
             //lexing error - unexpected character in the char stream
             char unexpectedChar = (char) input.LA(1);
-            b.append(NbBundle.getMessage(ExtCss3Lexer.class, "MSG_Error_Unexpected_Char", unexpectedChar));
+            b.append(MSG_Error_Unexpected_Char(unexpectedChar));
             ProblemDescription pp = new ProblemDescription(e.input.index(), e.input.index() + 1, b.toString(), ProblemDescription.Keys.LEXING.name(), Type.ERROR);
             problems.add(pp);
         } else {

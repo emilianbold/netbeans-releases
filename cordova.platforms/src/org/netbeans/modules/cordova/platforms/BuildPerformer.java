@@ -62,7 +62,7 @@ public interface BuildPerformer {
     
     public boolean isPhoneGapBuild(Project p);
     
-    public void startDebugging(Device device, Project p);
+    public void startDebugging(Device device, Project p, Lookup context);
     
     public void stopDebugging();
     

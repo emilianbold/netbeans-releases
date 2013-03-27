@@ -975,7 +975,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
+            return Utilities.modelModifiersToGsf(Utilities.reflectionModifiersToModel(modifiers));
         }
 
         @Override
