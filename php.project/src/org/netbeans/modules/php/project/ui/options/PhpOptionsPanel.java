@@ -65,6 +65,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.classpath.GlobalIncludePathSupport;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
@@ -98,7 +99,7 @@ public final  class PhpOptionsPanel extends JPanel {
     }
 
     private void initPhpGlobalIncludePath() {
-        DefaultListModel listModel = PathUiSupport.createListModel(
+        DefaultListModel<BasePathSupport.Item> listModel = PathUiSupport.createListModel(
                 GlobalIncludePathSupport.getInstance().itemsIterator());
         PathUiSupport.EditMediator.FileChooserDirectoryHandler directoryHandler = new PathUiSupport.EditMediator.FileChooserDirectoryHandler() {
             @Override
@@ -155,7 +156,7 @@ public final  class PhpOptionsPanel extends JPanel {
 
     public String getPhpGlobalIncludePath() {
         String[] paths = GlobalIncludePathSupport.getInstance().encodeToStrings(
-                PathUiSupport.getIterator((DefaultListModel) includePathList.getModel()));
+                PathUiSupport.getIterator((DefaultListModel<BasePathSupport.Item>) includePathList.getModel()));
         StringBuilder path = new StringBuilder(200);
         for (String s : paths) {
             path.append(s);

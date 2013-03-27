@@ -113,12 +113,7 @@ public class MessDetectorCustomizerPanel extends JPanel {
     }
 
     List<String> getSelectedRuleSets() {
-        Object[] selectedValues = ruleSetsList.getSelectedValues();
-        List<String> ruleSets = new ArrayList<String>(selectedValues.length);
-        for (Object selected : selectedValues) {
-            ruleSets.add((String) selected);
-        }
-        return ruleSets;
+        return ruleSetsList.getSelectedValuesList();
     }
 
     void selectRuleSets(List<String> ruleSets) {

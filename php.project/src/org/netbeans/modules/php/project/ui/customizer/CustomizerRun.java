@@ -108,8 +108,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         configDel.setEnabled(!config.isDefault());
     }
 
-    private class ConfigComboBoxModel extends DefaultComboBoxModel {
-        private static final long serialVersionUID = -2086330612256611127L;
+    private class ConfigComboBoxModel extends DefaultComboBoxModel<String> {
+
+        private static final long serialVersionUID = -65849874546546871L;
+
 
         public ConfigComboBoxModel() {
             Set<String> alphaConfigs = new TreeSet<String>(getComparator());
@@ -133,19 +135,21 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         }
     }
 
-    private final class ConfigListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
-        private static final long serialVersionUID = 21963218553211553L;
+    private final class ConfigListCellRenderer extends JLabel implements ListCellRenderer<String>, UIResource {
+
+        private static final long serialVersionUID = 165786424165431675L;
+
 
         public ConfigListCellRenderer() {
             setOpaque(true);
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends String> list, String value, int index, boolean isSelected, boolean cellHasFocus) {
             // #93658: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
 
-            String config = (String) value;
+            String config = value;
             //String label = (config != null) ? configurationFor(config).getDisplayName() : null;
             String label = configurationFor(config).getDisplayName();
             setText(label);

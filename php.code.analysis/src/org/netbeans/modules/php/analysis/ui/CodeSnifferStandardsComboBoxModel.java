@@ -57,9 +57,9 @@ import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel implements ComboBoxModel {
+public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel<String> implements ComboBoxModel<String> {
 
-    private static final long serialVersionUID = -2876813217456578L;
+    private static final long serialVersionUID = -35785646574684544L;
 
     static final Logger LOGGER = Logger.getLogger(CodeSnifferStandardsComboBoxModel.class.getName());
 
@@ -89,7 +89,7 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel i
     }
 
     @Override
-    public Object getElementAt(int index) {
+    public String getElementAt(int index) {
         assert EventQueue.isDispatchThread();
         return standards.get(index);
     }
@@ -135,11 +135,11 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel i
         return selectedStandard;
     }
 
-    public void fetchStandards(final JComboBox component) {
+    public void fetchStandards(final JComboBox<String> component) {
         fetchStandards(component, null);
     }
 
-    public void fetchStandards(final JComboBox component, @NullAllowed final String customCodeSnifferPath) {
+    public void fetchStandards(final JComboBox<String> component, @NullAllowed final String customCodeSnifferPath) {
         assert EventQueue.isDispatchThread();
         assert component != null;
 
