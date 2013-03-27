@@ -208,7 +208,6 @@ class AssignComments extends TreeScanner<Void, Void> {
         Tree.Kind kind = tree.getKind();
         switch (kind) {
             case MODIFIERS:
-            case COMPILATION_UNIT:
             case PRIMITIVE_TYPE:
                 return true;
             default: return false;
