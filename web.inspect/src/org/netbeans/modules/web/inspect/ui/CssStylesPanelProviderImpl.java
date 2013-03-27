@@ -373,15 +373,22 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             return Bundle.CTL_CssStylesProviderImpl_selection_view_title();
         }
 
+        Lookup lookup;
+        Lookup.Result<FileObject> result;
+        LookupListener listener;
+
         @Override
         public JComponent getContent(Lookup lookup) {
             final Lookup.Result<FileObject> result = lookup.lookupResult(FileObject.class);
-            result.addLookupListener(new LookupListener() {
+            this.lookup = lookup;
+            this.result = result;
+            this.listener = new LookupListener() {
                 @Override
                 public void resultChanged(LookupEvent ev) {
                     update(result);
                 }
-            });
+            };
+            result.addLookupListener(listener);
             update(result);
             return this;
         }
