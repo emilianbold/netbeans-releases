@@ -359,6 +359,18 @@ public class TypeFactory {
         public void setTypedef() {
             this.typedef = true;
         }
+
+        public void setConst() {
+            this._const = true;
+        }
+        
+        public void incPointerDepth() {
+            this.pointerDepth++;
+        }
+        
+        public void setReference() {
+            this.reference = true;
+        }
         
         public void setSimpleTypeSpecifier(CharSequence specifier) {
             if(specifierBuilder == null) {

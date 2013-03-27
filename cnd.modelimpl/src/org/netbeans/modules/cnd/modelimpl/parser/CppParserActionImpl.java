@@ -1767,14 +1767,29 @@ public class CppParserActionImpl implements CppParserActionEx {
         end_declarator(token);
     }
     @Override public void ptr_operator(Token token) {}
-    @Override public void ptr_operator(int kind, Token token) {}
+    @Override public void ptr_operator(int kind, Token token) {
+        if (kind == PTR_OPERATOR__STAR) {
+            if (builderContext.top(1) instanceof SimpleDeclarationBuilder) {
+                SimpleDeclarationBuilder sdb = (SimpleDeclarationBuilder)builderContext.top(1);
+                sdb.getTypeBuilder().incPointerDepth();
+            }
+        } else if (kind == PTR_OPERATOR__AMPERSAND) {
+            if (builderContext.top(1) instanceof SimpleDeclarationBuilder) {
+                SimpleDeclarationBuilder sdb = (SimpleDeclarationBuilder)builderContext.top(1);
+                sdb.getTypeBuilder().setReference();
+            }
+        }
+    }
     @Override public void end_ptr_operator(Token token) {}
     
     @Override public void cv_qualifier(int kind, Token token) {
         if (kind == CV_QUALIFIER__CONST) {
-            CsmObjectBuilder builder = builderContext.top(1);
-            if (builder instanceof SimpleDeclarationBuilder) {
-                SimpleDeclarationBuilder sdb = (SimpleDeclarationBuilder)builder;
+            CsmObjectBuilder builder = builderContext.top();
+            if (builder instanceof TypeBuilder) {
+                TypeBuilder tb = (TypeBuilder)builder;
+                tb.setConst();
+            } else if (builderContext.top(1) instanceof SimpleDeclarationBuilder) {
+                SimpleDeclarationBuilder sdb = (SimpleDeclarationBuilder)builderContext.top(1);
                 sdb.setConst();
             }
         }
