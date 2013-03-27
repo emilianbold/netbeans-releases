@@ -50,10 +50,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
 import java.util.Collections;
+import junit.framework.Test;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectBuilder;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -96,6 +98,15 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         "nbproject/project.properties",
 //        "nbproject/private/private.properties",       no private.properties are created when project and source roots are collocated
     };
+    
+    public static Test suite() {
+        //Prevent initialization of ModuleSystem from wrong thread causing deadlock.
+        return NbModuleSuite.
+                emptyConfiguration().
+                gui(false).
+                addTest(J2SEProjectGeneratorTest.class).
+                suite();
+    }
             
     public void testCreateProject() throws Exception {
         MockLookup.setLayersAndInstances();
