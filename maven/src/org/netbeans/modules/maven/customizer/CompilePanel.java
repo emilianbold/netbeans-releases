@@ -44,18 +44,21 @@ package org.netbeans.modules.maven.customizer;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.plaf.UIResource;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
@@ -77,6 +80,8 @@ import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -86,26 +91,9 @@ import org.openide.util.WeakListeners;
  * @author mkleint
  */
 public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider {
-    private static final String[] LABELS = new String[] {
-        NbBundle.getMessage(CompilePanel.class, "COS_ALL"),
-        NbBundle.getMessage(CompilePanel.class, "COS_APP"),
-        NbBundle.getMessage(CompilePanel.class, "COS_TESTS"),
-        NbBundle.getMessage(CompilePanel.class, "COS_NONE")
-    };
-    private static final String[] VALUES = new String[] {
-        "all",//NOI18N
-        "app",//NOI18N
-        "test",//NOI18N
-        "none"//NOI18N
-    };
 
     private static final String PARAM_DEBUG = "debug";//NOI18N
     private static final String PARAM_DEPRECATION = "showDeprecation";
-
-    private static final int COS_ALL = 0;
-    private static final int COS_APP = 1;
-    private static final int COS_TESTS = 2;
-    private static final int COS_NONE = 3;
 
     private final ModelHandle2 handle;
     private final Project project;
@@ -118,44 +106,26 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
         initComponents();
         this.handle = handle;
         project = prj;
-        ComboBoxModel mdl = new DefaultComboBoxModel(LABELS);
-        comCompileOnSave.setModel(mdl);
         comJavaPlatform.setModel(new PlatformsModel());
         comJavaPlatform.setRenderer(new PlatformsRenderer());
 
         origComPlatformFore = comJavaPlatform.getForeground();
-
+        btnLearnMore.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnLearnMore.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://wiki.netbeans.org/FaqCompileOnSave#Using_Compile_on_Save_in_Maven_Projects"));
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
         initValues();
     }
 
-    private String valueToLabel(@NullAllowed String value) {
-        for (int i = 0; i < VALUES.length; i++) {
-            if (VALUES[i].equalsIgnoreCase(value)) {
-                return LABELS[i];
-            }
-        }
-        return LABELS[getDefaultCOSValue()];
-    }
-
-    private String labelToValue(String label) {
-        for (int i = 0; i < LABELS.length; i++) {
-            if (LABELS[i].equalsIgnoreCase(label)) {
-                return VALUES[i];
-            }
-        }
-        return VALUES[getDefaultCOSValue()];
-    }
-    
-    private int getDefaultCOSValue() {
-        String packaging = handle.getProject().getPackaging();
-        if ("war".equals(packaging) || "ejb".equals(packaging) || "ear".equals(packaging)) {
-            return COS_APP;
-        }
-        return COS_NONE;
-    }
-
     private void initValues() {
-        new ComboBoxUpdater<String>(comCompileOnSave, lblCompileOnSave) {
+        new CheckBoxUpdater(cbCompileOnSave) {
             private String modifiedValue;
 
             private ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
@@ -172,12 +142,12 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
             };
 
             @Override
-            public String getDefaultValue() {
-                return LABELS[getDefaultCOSValue()];
+            public boolean getDefaultValue() {
+                return true;
             }
 
             @Override
-            public String getValue() {
+            public Boolean getValue() {
                 String val = modifiedValue;
                 if (val == null) {
                     val = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
@@ -188,19 +158,15 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
                         val = props.getProperty(Constants.HINT_COMPILE_ON_SAVE);
                     }
                 }             
-                return valueToLabel(val);
+                return val != null ? (!"none".equals(val)) : null;
             }
 
             @Override
-            public void setValue(String label) {
+            public void setValue(Boolean v) {
                 handle.removePOMModification(operation);
                 modifiedValue = null;
-                String value = labelToValue(label);
-                if (value != null && value.equals(VALUES[getDefaultCOSValue()])) {
-                    //just reset the value, no need to persist default.
-                    value = null;
-                }
-                if (VALUES[COS_ALL].equals(value) || VALUES[COS_APP].equals(value) || (value == null && getDefaultCOSValue() != COS_NONE)) {
+                String value = v != null ? (v ? "all" : "none") : "all";
+                if ("all".equals(value)) {
                     if (!warningShown && DontShowAgainSettings.getDefault().showWarningAboutApplicationCoS()) {
                         WarnPanel panel = new WarnPanel(NbBundle.getMessage(CompilePanel.class, "HINT_ApplicationCoS"));
                         NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.PLAIN_MESSAGE);
@@ -373,12 +339,12 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
         lblJavaPlatform = new javax.swing.JLabel();
         comJavaPlatform = new javax.swing.JComboBox();
         btnMngPlatform = new javax.swing.JButton();
-        lblCompileOnSave = new javax.swing.JLabel();
-        comCompileOnSave = new javax.swing.JComboBox();
         lblHint1 = new javax.swing.JLabel();
         lblHint2 = new javax.swing.JLabel();
         cbDebug = new javax.swing.JCheckBox();
         cbDeprecate = new javax.swing.JCheckBox();
+        cbCompileOnSave = new javax.swing.JCheckBox();
+        btnLearnMore = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(576, 303));
 
@@ -392,9 +358,6 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
             }
         });
 
-        lblCompileOnSave.setLabelFor(comCompileOnSave);
-        org.openide.awt.Mnemonics.setLocalizedText(lblCompileOnSave, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblCompileOnSave.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(lblHint1, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblHint1.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(lblHint2, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.lblHint2.text")); // NOI18N
@@ -402,6 +365,13 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
         org.openide.awt.Mnemonics.setLocalizedText(cbDebug, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.cbDebug.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cbDeprecate, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.cbDeprecate.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbCompileOnSave, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.cbCompileOnSave.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnLearnMore, org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnLearnMore.text")); // NOI18N
+        btnLearnMore.setBorderPainted(false);
+        btnLearnMore.setContentAreaFilled(false);
+        btnLearnMore.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -411,22 +381,25 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblCompileOnSave)
-                            .addComponent(lblJavaPlatform))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(comJavaPlatform, 0, 261, Short.MAX_VALUE)
-                            .addComponent(comCompileOnSave, 0, 261, Short.MAX_VALUE))
-                        .addGap(16, 16, 16)
-                        .addComponent(btnMngPlatform))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(cbDebug)
                             .addComponent(cbDeprecate)
                             .addComponent(lblHint1)
                             .addComponent(lblHint2))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 24, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(cbCompileOnSave, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(lblJavaPlatform)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(comJavaPlatform, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnMngPlatform)))
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGap(30, 30, 30)
+                .addComponent(btnLearnMore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -436,18 +409,18 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
                     .addComponent(comJavaPlatform, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnMngPlatform))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblCompileOnSave)
-                    .addComponent(comCompileOnSave, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(cbCompileOnSave)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblHint1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblHint2)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnLearnMore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbDebug)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbDeprecate)
-                .addContainerGap(149, Short.MAX_VALUE))
+                .addContainerGap(108, Short.MAX_VALUE))
         );
 
         btnMngPlatform.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnMngPlatform.AccessibleContext.accessibleDescription")); // NOI18N
@@ -460,12 +433,12 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnLearnMore;
     private javax.swing.JButton btnMngPlatform;
+    private javax.swing.JCheckBox cbCompileOnSave;
     private javax.swing.JCheckBox cbDebug;
     private javax.swing.JCheckBox cbDeprecate;
-    private javax.swing.JComboBox comCompileOnSave;
     private javax.swing.JComboBox comJavaPlatform;
-    private javax.swing.JLabel lblCompileOnSave;
     private javax.swing.JLabel lblHint1;
     private javax.swing.JLabel lblHint2;
     private javax.swing.JLabel lblJavaPlatform;

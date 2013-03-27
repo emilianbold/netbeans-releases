@@ -140,9 +140,9 @@ public interface Constants {
      * run/debug/profile/test action invokations to the compile on save infrastructure.
      * Possible values
      * <ul>
-     * <li>all  - both tests and application gets run by netbeans quick run infrastructure</li>
-     * <li>test  - only tests are run by netbeans quick run infrastructure, not application - default value</li>
-     * <li>app  - only application is run by netbeans quick run infrastructure, not tests</li>
+     * <li>all  - both tests and application</li>
+     * <li>test  - only tests, not application - deprecated since 7.4</li>
+     * <li>app  - only application, not tests - deprecated since 7.4</li>
      * <li>none - no compile on save
      * </ul>
      * @since NetBeans 6.7
