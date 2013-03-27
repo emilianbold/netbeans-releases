@@ -47,9 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import junit.framework.*;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.junit.internal.matchers.TypeSafeMatcher;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
@@ -159,12 +156,36 @@ public abstract class AbstractTestCase extends TestCase {
         }
     }
     
-    protected Matcher<List<CompletionResultItem>> containsSuggestions(String... suggestions) {
-        return new SuggestionsContaining(false, suggestions);
+    protected void assertContainSuggestions(List<CompletionResultItem> items, String... suggestions) {
+        assertContainSuggestions(items, true, suggestions);
+    }
+
+    protected void assertDoesNotContainSuggestions(List<CompletionResultItem> items, boolean exact, String... suggestions) {
+        if (items == null) {
+            return;
+        }
+        if (exact && items.size() != suggestions.length) {
+            return;
+        }
+        List<String> actual = new ArrayList<String>(items.size());
+        for (CompletionResultItem item : items) {
+            actual.add(item.getItemText());
+        }
+        List<String> not = new ArrayList<String>(Arrays.asList(suggestions));
+        actual.removeAll(not);
+        assertFalse("Unexpected suggestions", actual.size() != items.size());
     }
     
-    protected Matcher<List<CompletionResultItem>> containsOnlySuggestions(String... suggestions) {
-        return new SuggestionsContaining(true, suggestions);
+    protected void assertContainSuggestions(List<CompletionResultItem> items, boolean exact, String... suggestions) {
+        assertNotNull(items);
+        if (exact) {
+            assertEquals("Number of suggestions does not match", suggestions.length, items.size());
+        }
+        List<String> actual = new ArrayList<String>(items.size());
+        for (CompletionResultItem item : items) {
+            actual.add(item.getItemText());
+        }
+        assertTrue("Expected suggestions not found", Arrays.asList(suggestions).containsAll(actual));
     }
     
     BaseDocument getDocument() {
@@ -185,39 +206,4 @@ public abstract class AbstractTestCase extends TestCase {
         return context;
     }
 
-    private class SuggestionsContaining extends TypeSafeMatcher<List<CompletionResultItem>> {
-
-        private final List<String> expectedSuggestionStrings;
-        private final boolean expectingExactMatch;
-        public SuggestionsContaining(boolean expectingExactMatch, String... suggestions) {
-            this.expectedSuggestionStrings = Arrays.asList(suggestions);
-            this.expectingExactMatch = expectingExactMatch;
-        }
-
-        @Override
-        public boolean matchesSafely(List<CompletionResultItem> actual) {
-            if(actual == null) {
-                return false;
-            }
-            if(expectingExactMatch && actual.size() != expectedSuggestionStrings.size()) {
-                return false;
-            }
-            List<String> actualSuggestionStrings = new ArrayList<String>(actual.size());
-            for (CompletionResultItem result : actual) {
-                actualSuggestionStrings.add(result.getItemText());
-            }
-            return actualSuggestionStrings.containsAll(expectedSuggestionStrings);
-        }
-
-        @Override
-        public void describeTo(Description d) {
-            d.appendText("completion results ");
-            if(expectingExactMatch) {
-                d.appendText("exactly matching ");
-            } else {
-                d.appendText("containing ");
-            }
-            d.appendValue(expectedSuggestionStrings);
-        }
-    }
 }
