@@ -1,7 +1,7 @@
 ComponentOperator.WaitComponentTimeout=30000
 ComponentOperator.WaitComponentEnabledTimeout=10000
 ComponentOperator.WaitFocusTimeout=1000
-ComponentOperator.WaitStateTimeout=10000
+ComponentOperator.WaitStateTimeout=30000
 DialogWaiter.WaitDialogTimeout=30000
 EventDispatcher.WaitComponentUnderMouseTimeout=10000
 FrameWaiter.WaitFrameTimeout=30000
