@@ -125,7 +125,7 @@ public interface Node {
         public static class GroupNodeImpl extends AbstractNode implements GroupNode  {
 
         private GrammarElement element;
-        private Collection<Node> children = new ArrayList<Node>();
+        private Collection<Node> children = new ArrayList<>();
 
         public GroupNodeImpl(GrammarElement group) {
             this.element = group;

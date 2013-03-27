@@ -52,7 +52,6 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.css.lib.Css3Lexer;
 import static org.netbeans.modules.css.lib.api.CssTokenIdCategory.*;
-import org.netbeans.modules.css.lib.api.properties.Token;
 
 /**
  * Token ids of CSS language
@@ -270,7 +269,7 @@ public enum CssTokenId implements TokenId {
     
     ;
     
-    private static final Map<Integer, CssTokenId> codesMap = new HashMap<Integer, CssTokenId>();
+    private static final Map<Integer, CssTokenId> codesMap = new HashMap<>();
     static {
         for(CssTokenId id : values()) {
             codesMap.put(id.code, id);

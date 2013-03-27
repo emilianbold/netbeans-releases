@@ -200,7 +200,7 @@ public enum CssColor {
     yellowgreen("9acd32"); //NOI18N
 
     private String code;
-    private static final Map<String, CssColor> colorsMap = new HashMap<String, CssColor>();
+    private static final Map<String, CssColor> colorsMap = new HashMap<>();
     static {
         initColorsMap();
     }
