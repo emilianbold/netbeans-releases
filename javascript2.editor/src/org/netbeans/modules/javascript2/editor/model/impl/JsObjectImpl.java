@@ -111,7 +111,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             return Kind.OBJECT;
         }
         if (isDeclared()) {
-            if ("arguments".equals(getName())) {
+            if (ModelUtils.ARGUMENTS.equals(getName())) {
                 // special variable object of every function
                 return Kind.VARIABLE;
             }

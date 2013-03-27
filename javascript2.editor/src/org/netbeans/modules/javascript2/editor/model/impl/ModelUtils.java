@@ -92,6 +92,7 @@ import org.openide.filesystems.FileObject;
 public class ModelUtils {
       
     public  static String PROTOTYPE = "prototype";          //NOI18N
+    public  static String ARGUMENTS = "arguments";          //NOI18N
     private static String GENERATED_FUNCTION_PREFIX = "_L"; //NOI18N
     private static String GENERATED_ANONYM_PREFIX = "Anonym$"; //NOI18N
     
