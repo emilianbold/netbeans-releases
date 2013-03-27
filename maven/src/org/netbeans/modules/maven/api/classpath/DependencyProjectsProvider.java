@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,57 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven;
+package org.netbeans.modules.maven.api.classpath;
 
-import java.io.File;
-import java.util.HashSet;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.api.classpath.DependencyProjectsProvider;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.util.Utilities;
 
 /**
- * finds subprojects (projects this one depends on) that are locally available
- * and can be build as one unit. Uses maven multiproject infrastructure. (maven.multiproject.includes)
- * @author  Milos Kleint
+ * list of dependency projects that map to artifacts on classpath(s) without scope considerations.
+ * @author mkleint
+ * @since 2.75
  */
-@ProjectServiceProvider(service=DependencyProjectsProvider.class, projectType="org-netbeans-modules-maven")
-public class DependencyProviderImpl implements DependencyProjectsProvider {
+public interface DependencyProjectsProvider {
+    
+    public Set<Pair> getDependencyProjects();
+    
+    /**
+     * result returned from <code>getDependencyProjects()</code>
+     */
+    public static final class Pair {
 
-    private final Project project;
-
-    public DependencyProviderImpl(Project proj) {
-        project = proj;
-    }
-
-
-    @Override
-    public Set<Pair> getDependencyProjects() {
-        Set<Pair> projects = new HashSet<Pair>();
-        addKnownOwners(projects);
-        return projects;
-    }
-
-    private void addKnownOwners(Set<Pair> resultset) {
-        Set<Artifact> artifacts = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifacts();
-        for (Artifact ar : artifacts) {
-            File f = ar.getFile();
-            if (f != null) {
-                Project p = MavenFileOwnerQueryImpl.getInstance().getOwner(Utilities.toURI(f));
-                if (p == project) {
-                    continue;
-                }
-                if (p != null) {
-                    resultset.add(new Pair(p, ar));
-                }
-            }
+        private final Project project;
+        private final Artifact artifact;
+        
+        public Pair(Project project, Artifact artifact) {
+            this.project = project;
+            this.artifact = artifact;
         }
+        
+        public Project getProject() {
+            return project;
+        }
+
+        public Artifact getArtifact() {
+            return artifact;
+        }
+        
+        public boolean isIncludedAtRuntime() {
+            return Artifact.SCOPE_RUNTIME.equals(artifact.getScope()) || Artifact.SCOPE_COMPILE.equals(artifact.getScope());
+        }
+        public boolean isIncludedAtTests() {
+            return Artifact.SCOPE_TEST.equals(artifact.getScope()) || Artifact.SCOPE_COMPILE.equals(artifact.getScope()) || Artifact.SCOPE_RUNTIME.equals(artifact.getScope());
+        }
+        public boolean isIncludedAtCompile() {
+            return Artifact.SCOPE_PROVIDED.equals(artifact.getScope()) || Artifact.SCOPE_COMPILE.equals(artifact.getScope());
+        }
+        
     }    
 }

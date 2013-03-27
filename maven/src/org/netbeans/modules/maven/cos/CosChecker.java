@@ -64,10 +64,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.maven.DependencyProviderImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.classpath.DependencyProjectsProvider;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.execute.*;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
@@ -603,10 +603,10 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         File jar = InstalledFileLocator.getDefault().locate("maven/nblib/netbeans-cos.jar", "org.netbeans.modules.maven", false);
         assert jar != null;
         
-        DependencyProviderImpl dep = brc.getProject().getLookup().lookup(DependencyProviderImpl.class);
+        DependencyProjectsProvider dep = brc.getProject().getLookup().lookup(DependencyProjectsProvider.class);
         assert dep != null;
         StringBuilder value = new StringBuilder();
-        for (DependencyProviderImpl.Pair pair : dep.getDependencyProjects()) {
+        for (DependencyProjectsProvider.Pair pair : dep.getDependencyProjects()) {
             if (!test && "test".equals(pair.getArtifact().getScope())) {
                 continue;
             }
