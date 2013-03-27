@@ -103,6 +103,11 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
     public void setProjectContext(Lookup projectContext) {
         context = projectContext;
     }
+
+    @Override
+    public boolean canReloadPage() {
+        return false;
+    }
     
     public static enum Kind {
         ANDROID_DEVICE_DEFAULT,
