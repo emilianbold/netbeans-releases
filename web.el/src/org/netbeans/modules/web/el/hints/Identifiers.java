@@ -52,7 +52,6 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.*;
-import org.netbeans.modules.web.el.operators.OperatorDefinitions;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -139,24 +138,24 @@ public final class Identifiers extends ELRule {
         }
 
         // EL3.0 operators
-        if (!node.getImage().isEmpty() && OperatorDefinitions.OPERATORS.contains(node.getImage())) {
-            if (parent == null) {
-                return false;
-            } else {
-                // valid operator for static list, set, map
-                if (parent instanceof AstMapData || parent instanceof AstListData) {
-                    return true;
-                }
-                // valid operator for Iterable or array return type
-                if (parent instanceof AstDotSuffix) {
-                    Element methodElement = ELTypeUtilities.resolveElement(info, element, parent);
-                    if (methodElement == null) {
-                        return true;
-                    }
-                    return ELTypeUtilities.isIterableElement(info, methodElement);
-                }
-            }
-        }
+//        if (!node.getImage().isEmpty() && OperatorDefinitions.OPERATORS.contains(node.getImage())) {
+//            if (parent == null) {
+//                return false;
+//            } else {
+//                // valid operator for static list, set, map
+//                if (parent instanceof AstMapData || parent instanceof AstListData) {
+//                    return true;
+//                }
+//                // valid operator for Iterable or array return type
+//                if (parent instanceof AstDotSuffix) {
+//                    Element methodElement = ELTypeUtilities.resolveElement(info, element, parent);
+//                    if (methodElement == null) {
+//                        return true;
+//                    }
+//                    return ELTypeUtilities.isIterableElement(info, methodElement);
+//                }
+//            }
+//        }
         return false;
     }
 

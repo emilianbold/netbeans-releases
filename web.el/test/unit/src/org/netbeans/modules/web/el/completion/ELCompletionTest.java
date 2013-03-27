@@ -73,6 +73,10 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/completion05.xhtml", "#{[\"one\", 2].^}", false);
     }
 
+//    public void testCompletionForStream() throws Exception {
+//        checkCompletion("projects/testWebProject/web/completion/completion06.xhtml", "#{[\"one\", 2].stream().^}", false);
+//    }
+//
     public void testJavaCompletion01() throws Exception {
         checkCompletion("projects/testWebProject/web/completion/java/java_completion01.xhtml", "#{^}", false);
     }
