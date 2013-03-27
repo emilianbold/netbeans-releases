@@ -259,8 +259,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 }
 
                 // searching in server registered JSF libraries
-                J2eeModuleProvider jmp = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-                Set<ServerLibraryDependency> deps = getServerDependencies(jmp);
+                J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+                Set<ServerLibraryDependency> deps = getServerDependencies(j2eeModuleProvider);
                 for (ServerLibraryDependency serverLibraryDependency : deps) {
                     if (serverLibraryDependency.getName().startsWith("jsf")) { //NOI18N
                         ServerLibraryItem candidate = null;
@@ -300,9 +300,13 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         RP.post(jsfLibararyUiSwitcher);
     }
 
-    private static Set<ServerLibraryDependency> getServerDependencies(J2eeModuleProvider jmp) {
+    private static Set<ServerLibraryDependency> getServerDependencies(J2eeModuleProvider j2eeModuleProvider) {
         try {
-            return jmp.getConfigSupport().getLibraries();
+            // issue #225659 - shouldn't happen
+            if (j2eeModuleProvider == null) {
+                return Collections.emptySet();
+            }
+            return j2eeModuleProvider.getConfigSupport().getLibraries();
         } catch (ConfigurationException e) {
             return Collections.emptySet();
         }
