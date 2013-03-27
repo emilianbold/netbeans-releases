@@ -95,7 +95,7 @@ public class RemoteMenu extends DynamicMenu implements Presenter.Popup {
         "CTL_PopupMenuItem_Pull=Pull All Branches",
         "CTL_PopupMenuItem_PullBranch=Pull Current Branch",
         "CTL_PopupMenuItem_ShowIncoming=Show Incoming",
-        "CTL_PopupMenuItem_ShowOut=Show Out"
+        "CTL_PopupMenuItem_ShowOut=Show Outgoing"
     })
     protected JMenu createMenu() {
         JMenu menu = new JMenu(this);
