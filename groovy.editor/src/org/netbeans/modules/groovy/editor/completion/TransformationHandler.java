@@ -42,7 +42,6 @@
 package org.netbeans.modules.groovy.editor.completion;
 
 import java.lang.reflect.Modifier;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.codehaus.groovy.ast.AnnotationNode;
@@ -51,6 +50,7 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.FieldItem;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.java.Utilities;
@@ -84,29 +84,44 @@ public final class TransformationHandler {
             
             if (SINGLETON_ANNOTATION.equals(annotationName)) {
                 final FieldSignature signature = new FieldSignature(SINGLETON_FIELD_NAME);
-                final CompletionItem proposal = new CompletionItem.FieldItem(SINGLETON_FIELD_NAME, Modifier.STATIC, anchorOffset, null, typeNode.getNameWithoutPackage());
+                final CompletionItem proposal = new FieldItem(SINGLETON_FIELD_NAME, Modifier.STATIC, anchorOffset, null, typeNode.getNameWithoutPackage());
                 
-                if (!"".equals(prefix) && signature.getName().startsWith(prefix)) { // NOI18N
+                if (signature.getName().startsWith(prefix)) { // NOI18N
                     result.put(signature, proposal);
                 }
             }
         }
+        
+        for (FieldNode field : typeNode.getFields()) {
+            for (AnnotationNode fieldAnnotation : field.getAnnotations()) {
+                final String fieldAnnotationName = fieldAnnotation.getClassNode().getNameWithoutPackage();
+
+                // If any field on the current typeNode has @Delegate annotation then iterate
+                // through all fields of that field and put them into the code completion result
+                if (DELEGATE_ANNOTATION.equals(fieldAnnotationName)) {
+                    for (FieldNode annotatedField : field.getType().getFields()) {
+                        final FieldSignature signature = new FieldSignature(annotatedField.getName());
+                        final CompletionItem fieldProposal = new FieldItem(annotatedField.getName(), annotatedField.getModifiers(), anchorOffset, null, annotatedField.getType().getNameWithoutPackage());
+
+                        if (signature.getName().startsWith(prefix)) {
+                            result.put(signature, fieldProposal);
+                        }
+                    }
+                }
+            }
+        }
+        
         return result;
     }
     
     public static Map<MethodSignature, CompletionItem> getMethods(
             final GroovyIndex index,
             final ClassNode typeNode,
-            final String methodPrefix,
+            final String prefix,
             final int anchorOffset) {
         
         final Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
-        final boolean prefixed;
-        if ("".equals(methodPrefix)) { // NOI18N
-            prefixed = false;
-        } else {
-            prefixed = true;
-        }
+        final boolean prefixed = "".equals(prefix) ? false : true; // NOI18N
         
         for (AnnotationNode annotation : typeNode.getAnnotations()) {
             final String annotationName = annotation.getClassNode().getNameWithoutPackage();
@@ -115,7 +130,7 @@ public final class TransformationHandler {
                 final MethodSignature signature = new MethodSignature(SINGLETON_METHOD_NAME, new String[0]);
                 final CompletionItem proposal = CompletionItem.forJavaMethod(typeNode.getNameWithoutPackage(), SINGLETON_METHOD_NAME, "", typeNode.getNameWithoutPackage(), Utilities.reflectionModifiersToModel(Modifier.STATIC), anchorOffset, true, false);
                 
-                if (prefixed && signature.getName().startsWith(methodPrefix)) {
+                if (signature.getName().startsWith(prefix)) {
                     result.put(signature, proposal);
                 }
             }
@@ -127,7 +142,12 @@ public final class TransformationHandler {
 
                 if (DELEGATE_ANNOTATION.equals(fieldAnnotationName)) {
                     for (MethodNode method : field.getType().getMethods()) {
-                        result.put(getSignature(method), createMethodProposal(method, prefixed, anchorOffset));
+                        final MethodSignature signature = getSignature(method);
+                        final CompletionItem proposal = createMethodProposal(method, prefixed, anchorOffset);
+                        
+                        if (signature.getName().startsWith(prefix)) { // NOI18N
+                            result.put(signature, proposal);
+                        }
                     }
                 }
             }
