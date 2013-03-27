@@ -132,7 +132,11 @@ package org.netbeans.modules.css.lib;
     private boolean isCssPreprocessorSource() {
         return isLessSource() || isScssSource();
     }
-    
+
+    private boolean tokenNameEquals(String tokenImage) {
+        return tokenImage.equalsIgnoreCase(input.LT(1).getText());
+    }
+
 /**
      * Use the current stacked followset to work out the valid tokens that
      * can follow on from the current point in the parse, then recover by
@@ -790,7 +794,7 @@ declaration
 //XXX this is a hack for the IMPORT_SYM inside cp_expression
 cp_propertyValue
     : 
-    {isCssPreprocessorSource()}? cp_expression_list
+    {isCssPreprocessorSource()}? cp_expression
     | propertyValue
     ;
 
@@ -878,7 +882,7 @@ function
 		(
                     (expression)=>expression ws?
                     | (cp_args_list)=>cp_args_list
-                    | (cp_expression_list)=>cp_expression_list ws?
+                    | (cp_expression)=>cp_expression ws?
                     | (fnAttributeName ws? OPEQ)=>fnAttribute (COMMA ws? fnAttribute )*
                     | {isCssPreprocessorSource()}? //empty
 		)
@@ -909,7 +913,7 @@ fnAttributeName
 fnAttributeValue
 	: 
             expression
-            | {isCssPreprocessorSource()}? cp_expression
+            | {isCssPreprocessorSource()}? cp_math_expression
 	;
     
 hexColor
@@ -925,9 +929,9 @@ ws
 //ENTRY POINT FROM CSS GRAMMAR
 cp_variable_declaration
     : 
-        {isLessSource()}? cp_variable ws? COLON ws? cp_expression_list ws? SEMI    
+        {isLessSource()}? cp_variable ws? COLON ws? cp_expression ws? SEMI    
         | 
-        {isScssSource()}? cp_variable ws? COLON ws? cp_expression_list ws? (SASS_DEFAULT ws?)? SEMI    
+        {isScssSource()}? cp_variable ws? COLON ws? cp_expression ws? (SASS_DEFAULT ws?)? SEMI    
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR    
@@ -936,72 +940,68 @@ cp_variable
         {isLessSource()}? ( AT_IDENT | MEDIA_SYM )//TODO add all meaningful at-rules here
         |
         {isScssSource()}? ( SASS_VAR )
-//        SASS_VAR
     ;
 
-cp_expression_list
-    :
-    cp_full_expression (ws? COMMA ws? cp_full_expression)*     
-    ;
+//expression:
+//-----------
+//
+//allowed content:
+//- boolean expression binary operators: and, or, <, >, <=, ==, ...
+//- boolean expression unary operator: not
+//- mathematical expression as term: cp_math_expression
+//- comma or whitespace separated list of expression-s
+//
 
-//ENTRY POINT FROM CSS GRAMMAR
 cp_expression
     :    
-    cp_additionExp
-    (ws? cp_additionExp)*
+    cp_expression_atom 
+    ( 
+        (ws? cp_expression_operator)=>(ws? cp_expression_operator ws?) cp_expression_atom 
+        | (ws? cp_expression_atom)=>ws? cp_expression_atom
+    )* 
+    ;
+    
+cp_expression_operator
+    :
+    OR | AND | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ | COMMA
     ;
 
-cp_additionExp
-    :    cp_multiplyExp 
+cp_expression_atom
+    :    
+        (NOT ws?)? 
+        (
+            (cp_math_expression)=>cp_math_expression
+            | LPAREN ws? cp_expression ws? RPAREN
+        )
+    ;
+
+//mathematical expression: 
+//-------------------------
+//allowed content: 
+//- parens: ()
+//- binary oparators: +,-,*
+//- unary operators: +,-
+//- terms
+//- SASS interpolation expression where the term is allowed
+//
+//NOT ALLOWED: 
+//- COMMAS
+//- terms separated just by whitespace - e.g. "one two"
+//
+cp_math_expression
+    :    cp_math_expression_atom 
          (
-            (ws? (PLUS | MINUS))=> ws? ( PLUS ws? cp_multiplyExp | MINUS ws? cp_multiplyExp )
+            (ws? (PLUS|MINUS|STAR|SOLIDUS) )=> ws? (PLUS|MINUS|STAR|SOLIDUS) ws? cp_math_expression_atom
          )* 
     ;
 
-cp_multiplyExp
-    :    cp_atomExp
-         ( 
-            (ws? (STAR | SOLIDUS))=> ws? ( STAR ws? cp_atomExp | SOLIDUS ws? cp_atomExp)
-         )* 
-    ;
-
-cp_atomExp
+cp_math_expression_atom
     :    
     term
     | IMPORTANT_SYM //cp property value may contain any gargabe - TODO - possibly add other garbage tokens
     | ( unaryOperator ws? )? sass_interpolation_expression_var //SASS interpolation expression also in expressions e.g. variable declaration value
-    | ( unaryOperator ws? )? LPAREN ws? cp_additionExp ws? RPAREN 
+    | ( unaryOperator ws? )? LPAREN ws? cp_math_expression ws? RPAREN 
     ;
-
-
-//term w/o unary operators
-cp_term
-    : 
-        (
-        ( 
-              NUMBER
-            | PERCENTAGE
-            | LENGTH
-            | EMS
-            | REM
-            | EXS
-            | ANGLE
-            | TIME
-            | FREQ
-            | RESOLUTION
-            | DIMENSION     //so we can match expression like a:nth-child(3n+1) -- the "3n" is lexed as dimension
-        )
-    | STRING
-    | IDENT
-    | GEN
-    | URI
-    | hexColor
-    | function
-    | cp_variable
-    )
-    ws?
-    ;
-
 
 //parametric mixins: 
 //    .border-radius (@radius) 
@@ -1043,8 +1043,8 @@ cp_mixin_call_args
 cp_mixin_call_arg
     :
     (
-        cp_variable ws? COLON ws? cp_full_expression
-        | cp_full_expression
+        cp_variable ws? COLON ws? cp_expression
+        | cp_expression
     ) ws?
     ;
 
@@ -1061,7 +1061,7 @@ cp_args_list
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
 cp_arg
     :
-    cp_variable ws? ( COLON ws? cp_expression ws?)?
+    cp_variable ws? ( COLON ws? cp_math_expression ws?)?
     ;
 
 //.mixin (@a) "when (lightness(@a) >= 50%)" {
@@ -1080,7 +1080,7 @@ less_condition
         (
             less_function_in_condition ws?
             |
-            ( cp_variable (ws? less_condition_operator ws? cp_expression)?)  
+            ( cp_variable (ws? less_condition_operator ws? cp_math_expression)?)  
         )        
     RPAREN
     ;
@@ -1101,17 +1101,6 @@ less_condition_operator
     :
     GREATER | GREATER_OR_EQ | OPEQ | LESS | LESS_OR_EQ
     ;
-
-//Allowed:
-//#I
-//I#
-//#
-//##
-//#I#
-//
-//Not allowed:
-//II
-
 
 //SCSS interpolation expression, e.g. #{$vert}
 
@@ -1232,7 +1221,7 @@ sass_extend_only_selector
 
 sass_debug
     :
-    ( SASS_DEBUG | SASS_WARN ) ws cp_full_expression SEMI
+    ( SASS_DEBUG | SASS_WARN ) ws cp_expression SEMI
     ;
     
 sass_control
@@ -1249,46 +1238,22 @@ sass_else
     :
     SASS_ELSE ws? sass_control_block 
     |
-    SASS_ELSE ws? {"if".equalsIgnoreCase(input.LT(1).getText())}? IDENT /* if */ ws? sass_control_expression ws? sass_control_block (ws? sass_else)?
+    SASS_ELSE ws? {tokenNameEquals("if")}? IDENT /* if */ ws? sass_control_expression ws? sass_control_block (ws? sass_else)?
     ;
 
 sass_control_expression
     :
-    cp_full_expression
-    ;
-
-cp_full_expression
-    :    cp_full_expression_atom 
-         ( (ws? cp_full_expression_operator)=>ws? cp_full_expression_operator ws? cp_full_expression_atom )* 
-    ;
-    
-cp_full_expression_operator
-    :
-    OR | AND | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ | COMMA
-    ;
-
-cp_full_expression_atom
-    :    
-        (NOT ws?)? 
-        (
-            (cp_expression)=>cp_expression
-            | LPAREN ws? cp_full_expression ws? RPAREN
-        )
+    cp_expression
     ;
     
 sass_for
     :
-    SASS_FOR ws cp_variable ws IDENT /*from*/ ws cp_term IDENT /*to*/ ws cp_term sass_control_block
+    SASS_FOR ws cp_variable ws {tokenNameEquals("from")}? IDENT /*from*/ ws cp_math_expression ws {tokenNameEquals("to")|tokenNameEquals("through")}? IDENT /*to, through*/ ws cp_math_expression ws? sass_control_block
     ;
 
 sass_each
     :
-    SASS_EACH ws cp_variable ws IDENT /*in*/ ws sass_each_list sass_control_block
-    ;
-    
-sass_each_list
-    :
-    cp_term (COMMA ws? cp_term)*
+    SASS_EACH ws cp_variable ws {tokenNameEquals("in")}? IDENT /*in*/ ws cp_expression ws? sass_control_block
     ;
     
 sass_while
@@ -1317,7 +1282,7 @@ sass_function_name
 
 sass_function_return
     :
-    SASS_RETURN ws cp_full_expression SEMI
+    SASS_RETURN ws cp_expression SEMI
     ;
     
 sass_content

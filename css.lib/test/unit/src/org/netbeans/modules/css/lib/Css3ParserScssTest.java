@@ -1257,6 +1257,10 @@ public class Css3ParserScssTest extends CssTestBase {
         assertParses(".clz { padding-left: #{left($fieldset-header-padding) - 2}; }");
     }
 
+    public void testSimplePropertyValue() {
+        assertParses(".clz { prop: t1 t2; }", true);
+    }
+    
     public void testPropertyValue2() {
         assertParses(".clz { padding-left: "
                 + "top($form-error-under-padding) "
