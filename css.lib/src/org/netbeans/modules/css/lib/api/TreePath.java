@@ -81,7 +81,7 @@ public class TreePath {
      
     /** returns a list of nodes from the first node to the last node including the boundaries. */
     public List<Node> path() {
-        List<Node> path = new  ArrayList<Node>();
+        List<Node> path = new  ArrayList<>();
         Node node = last;
         while (node != null) {
             path.add(node);

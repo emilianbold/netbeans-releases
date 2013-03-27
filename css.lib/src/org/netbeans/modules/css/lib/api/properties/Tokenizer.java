@@ -120,7 +120,7 @@ public final class Tokenizer {
     }
 
     private static List<Token> tokenize(CharSequence input) {
-        List<Token> stack = new LinkedList<Token>();
+        List<Token> stack = new LinkedList<>();
         TokenHierarchy<CharSequence> th = TokenHierarchy.create(input, CssTokenId.language());
         TokenSequence<CssTokenId> ts = th.tokenSequence(CssTokenId.language());
         ts.moveStart();
