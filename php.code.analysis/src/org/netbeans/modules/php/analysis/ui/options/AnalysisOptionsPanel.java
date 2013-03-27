@@ -213,12 +213,7 @@ public class AnalysisOptionsPanel extends JPanel {
     }
 
     List<String> getSelectedRuleSets() {
-        Object[] selectedValues = messDetectorRuleSetsList.getSelectedValues();
-        List<String> ruleSets = new ArrayList<String>(selectedValues.length);
-        for (Object selected : selectedValues) {
-            ruleSets.add((String) selected);
-        }
-        return ruleSets;
+        return messDetectorRuleSetsList.getSelectedValuesList();
     }
 
     void selectRuleSets(List<String> ruleSets) {
