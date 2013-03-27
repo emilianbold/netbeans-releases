@@ -52,6 +52,8 @@ public final class PhpRefactoringOptions {
     private static final PhpRefactoringOptions INSTANCE = new PhpRefactoringOptions();
     private static final String RENAME_FILE = "php-refactoring-rename-file"; //NOI18N
     private static final boolean RENAME_FILE_DEFAULT = false;
+    private static final String LOWER_CASE_FILE_NAME = "php-refactoring-lower-case-file-name"; //NOI18N
+    private static final boolean LOWER_CASE_FILE_NAME_DEFAULT = false;
 
     private PhpRefactoringOptions() {
     }
@@ -70,6 +72,14 @@ public final class PhpRefactoringOptions {
 
     public boolean getRenameFile() {
         return getPreferences().getBoolean(RENAME_FILE, RENAME_FILE_DEFAULT);
+    }
+
+    public void setLowerCaseFileName(boolean lowerCaseFileName) {
+        getPreferences().putBoolean(LOWER_CASE_FILE_NAME, lowerCaseFileName);
+    }
+
+    public boolean getLowerCaseFileName() {
+        return getPreferences().getBoolean(LOWER_CASE_FILE_NAME, LOWER_CASE_FILE_NAME_DEFAULT);
     }
 
 }
