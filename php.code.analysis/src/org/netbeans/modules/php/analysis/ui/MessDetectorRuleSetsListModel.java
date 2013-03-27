@@ -47,9 +47,9 @@ import java.util.List;
 import javax.swing.AbstractListModel;
 import org.netbeans.modules.php.analysis.commands.MessDetector;
 
-public final class MessDetectorRuleSetsListModel extends AbstractListModel {
+public final class MessDetectorRuleSetsListModel extends AbstractListModel<String> {
 
-    private static final long serialVersionUID = -5761457612154L;
+    private static final long serialVersionUID = -978897545211100014L;
     // @GuardedBy("EDT")
     private final List<String> ruleSets;
 
@@ -70,7 +70,7 @@ public final class MessDetectorRuleSetsListModel extends AbstractListModel {
     }
 
     @Override
-    public Object getElementAt(int index) {
+    public String getElementAt(int index) {
         assert EventQueue.isDispatchThread();
         return ruleSets.get(index);
     }

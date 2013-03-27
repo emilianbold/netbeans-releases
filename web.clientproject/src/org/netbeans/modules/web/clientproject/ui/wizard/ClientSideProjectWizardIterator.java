@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -90,11 +91,17 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     private WizardDescriptor.Panel<WizardDescriptor>[] extenderPanels;
     private Collection<? extends ClientProjectExtender> extenders;
     private WizardDescriptor wizardDescriptor;
+    private boolean withExtenders;
 
 
     private ClientSideProjectWizardIterator(Wizard wizard) {
+        this(wizard, false);
+    }
+
+    private ClientSideProjectWizardIterator(Wizard wizard, boolean withExtenders) {
         assert wizard != null;
         this.wizard = wizard;
+        this.withExtenders = withExtenders;
     }
 
     @TemplateRegistration(folder="Project/ClientSide",
@@ -115,6 +122,10 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     @NbBundle.Messages("ClientSideProjectWizardIterator.existingProject.displayName=HTML5 Application with Existing Sources")
     public static ClientSideProjectWizardIterator existingProject() {
         return new ClientSideProjectWizardIterator(new ExistingProjectWizard());
+    }
+    
+    public static ClientSideProjectWizardIterator newProjectWithExtender() {
+        return new ClientSideProjectWizardIterator(new NewProjectWizard(true), true);
     }
 
     @NbBundle.Messages({
@@ -180,7 +191,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public void initialize(WizardDescriptor wiz) {
         this.wizardDescriptor = wiz;
         index = 0;
-        extenders = Lookup.getDefault().lookupAll(ClientProjectExtender.class);
+        if (withExtenders) {
+            extenders = Lookup.getDefault().lookupAll(ClientProjectExtender.class);
+        } else {
+            extenders = Collections.EMPTY_LIST;
+        }
         panels = wizard.createPanels();
 
         // Make sure list of steps is accurate.
@@ -340,8 +355,17 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public static final String LIBRARIES_FOLDER = "LIBRARIES_FOLDER"; // NOI18N
         public static final String LIBRARIES_PATH = "LIBRARIES_PATH";
         public static final String LIBRARY_NAMES = "LIBRARY_NAMES"; // NOI18N
+        
+        private boolean withExtenders;
 
-
+        public NewProjectWizard(boolean withExtenders) {
+            this.withExtenders = withExtenders;
+        }
+        
+        public NewProjectWizard() {
+            this(false);
+        }
+        
         @Override
         public Panel<WizardDescriptor>[] createPanels() {
             @SuppressWarnings({"rawtypes", "unchecked"})
@@ -415,8 +439,10 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             }
 
             // apply extenders
-            for (ClientProjectExtender extender : Lookup.getDefault().lookupAll(ClientProjectExtender.class)) {
-                extender.apply(project.getProjectDirectory(), siteRootDir, (String) wizardDescriptor.getProperty(LIBRARIES_PATH));
+            if (withExtenders) {
+                for (ClientProjectExtender extender : Lookup.getDefault().lookupAll(ClientProjectExtender.class)) {
+                    extender.apply(project.getProjectDirectory(), siteRootDir, (String) wizardDescriptor.getProperty(LIBRARIES_PATH));
+                }
             }
 
             return siteRootDir;

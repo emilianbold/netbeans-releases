@@ -64,4 +64,16 @@ public class TransformationsCCTest extends GroovyCCTestBase {
     public void testSingleton2() throws Exception {
         checkCompletion(BASE + "Singleton2.groovy", "        Singleton2.get^", true);
     }
+
+    public void testSingleton3_withoutPrefix() throws Exception {
+        checkCompletion(BASE + "Singleton3.groovy", "        Singleton3.^", true);
+    }
+
+    public void testDelegate1() throws Exception {
+        checkCompletion(BASE + "Delegate1.groovy", "showcase.^", true);
+    }
+
+    public void testDelegate2() throws Exception {
+        checkCompletion(BASE + "Delegate2.groovy", "showcase.f^", true);
+    }
 }

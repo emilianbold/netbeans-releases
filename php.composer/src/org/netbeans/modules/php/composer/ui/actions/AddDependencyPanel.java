@@ -804,9 +804,9 @@ public final class AddDependencyPanel extends JPanel {
 
     //~ Inner classes
 
-    private static final class ResultsListModel extends AbstractListModel {
+    private static final class ResultsListModel extends AbstractListModel<SearchResult> {
 
-        private static final long serialVersionUID = -46871206788954L;
+        private static final long serialVersionUID = -897454654321324564L;
 
         // @GuardedBy("EDT")
         private final List<SearchResult> searchResults;
@@ -824,7 +824,7 @@ public final class AddDependencyPanel extends JPanel {
         }
 
         @Override
-        public Object getElementAt(int index) {
+        public SearchResult getElementAt(int index) {
             assert EventQueue.isDispatchThread();
             try {
                 return searchResults.get(index);
@@ -841,11 +841,11 @@ public final class AddDependencyPanel extends JPanel {
 
     }
 
-    private static final class ResultListCellRenderer implements ListCellRenderer {
+    private static final class ResultListCellRenderer implements ListCellRenderer<SearchResult> {
 
-        private final ListCellRenderer originalRenderer;
+        private final ListCellRenderer<Object> originalRenderer;
 
-        public ResultListCellRenderer(ListCellRenderer originalRenderer) {
+        public ResultListCellRenderer(ListCellRenderer<Object> originalRenderer) {
             assert originalRenderer != null;
             this.originalRenderer = originalRenderer;
         }
@@ -858,9 +858,9 @@ public final class AddDependencyPanel extends JPanel {
             "AddDependencyPanel.results.noResults=<html><i>No results found.</i>"
         })
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends SearchResult> list, SearchResult value, int index, boolean isSelected, boolean cellHasFocus) {
             String label;
-            SearchResult result = (SearchResult) value;
+            SearchResult result = value;
             if (result == SEARCHING_SEARCH_RESULT) {
                 label = Bundle.AddDependencyPanel_results_searching();
             } else if (result == NO_RESULTS_SEARCH_RESULT) {
@@ -873,9 +873,9 @@ public final class AddDependencyPanel extends JPanel {
 
     }
 
-    private static final class VersionComboBoxModel extends AbstractListModel implements ComboBoxModel {
+    private static final class VersionComboBoxModel extends AbstractListModel<String> implements ComboBoxModel<String> {
 
-        private static final long serialVersionUID = -46861432132123L;
+        private static final long serialVersionUID = -7546812657897987L;
 
         @NbBundle.Messages("VersionComboBoxModel.noVersions=<no versions available>")
         static final String NO_VERSIONS_AVAILABLE = Bundle.VersionComboBoxModel_noVersions();
@@ -898,7 +898,7 @@ public final class AddDependencyPanel extends JPanel {
         }
 
         @Override
-        public Object getElementAt(int index) {
+        public String getElementAt(int index) {
             assert EventQueue.isDispatchThread();
             return versions.get(index);
         }

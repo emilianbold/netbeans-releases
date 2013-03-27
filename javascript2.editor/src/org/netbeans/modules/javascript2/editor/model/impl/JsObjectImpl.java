@@ -64,7 +64,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     private boolean deprecated;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
-        super((parent != null ? parent.getFileObject() : null), name.getName(), name.getName().equals("prototype"),  offsetRange, EnumSet.of(Modifier.PUBLIC));
+        super((parent != null ? parent.getFileObject() : null), name.getName(), ModelUtils.PROTOTYPE.equals(name.getName()),  offsetRange, EnumSet.of(Modifier.PUBLIC));
         this.declarationName = name;
         this.parent = parent;
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
@@ -107,8 +107,11 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             // global object
             return Kind.FILE;
         }
+        if (ModelUtils.PROTOTYPE.equals(getName())) {
+            return Kind.OBJECT;
+        }
         if (isDeclared()) {
-            if ("arguments".equals(getName())) {
+            if (ModelUtils.ARGUMENTS.equals(getName())) {
                 // special variable object of every function
                 return Kind.VARIABLE;
             }
@@ -423,7 +426,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                 }
             }
         }
-        JsObject prototype = original.getProperty("prototype");
+        JsObject prototype = original.getProperty(ModelUtils.PROTOTYPE);
         if (prototype != null) {
             moveOccurrenceOfProperties((JsObjectImpl)prototype, created);
         }

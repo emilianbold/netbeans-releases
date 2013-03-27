@@ -62,7 +62,6 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.netbeans.modules.web.common.api.Lines;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
 
@@ -105,7 +104,7 @@ public class CssParser extends Parser {
             parser.styleSheet();
 
             AbstractParseTreeNode tree = builder.getTree();
-            List<ProblemDescription> problems = new ArrayList<ProblemDescription>();
+            List<ProblemDescription> problems = new ArrayList<>();
             //add lexer issues
             problems.addAll(lexer.getProblems());
             //add parser issues
@@ -137,7 +136,7 @@ public class CssParser extends Parser {
             return problems;
         } else {
             //typically text/php/text/html/text/css
-            List<ProblemDescription> filtered = new ArrayList<ProblemDescription>(problems.size());
+            List<ProblemDescription> filtered = new ArrayList<>(problems.size());
             for(ProblemDescription p : problems) {
                 //XXX Idealy the filtering context should be dependent on the enclosing node
                 //sg. like if there's a templating error in an declaration - search the whole
