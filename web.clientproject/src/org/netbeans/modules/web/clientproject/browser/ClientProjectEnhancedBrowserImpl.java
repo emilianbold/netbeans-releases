@@ -84,8 +84,9 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
         if (val != null) {
             return Boolean.parseBoolean(val);
         } else {
-            // if browserIntegration is available then default is true for AutoRefresh
-            return browser.hasNetBeansIntegration();
+            // return true for all browsers so that plain Chrome can do Refresh
+            // on Save if plugin is intalled:
+            return true;
         }
     }
 

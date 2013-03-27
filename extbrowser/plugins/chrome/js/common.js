@@ -271,6 +271,8 @@ NetBeans.processInitMessage = function(message) {
                     delete this.managedTabs[tabId];
                 } else {
                     tabInfo.status = this.STATUS_MANAGED;
+                    this.showPageIcon(tabId);
+                    this.createContextMenu(tabId, tabInfo.url);
                 }
             } else {
                 // Tab shouldn't be managed
@@ -403,7 +405,7 @@ NetBeans.tabUpdated = function(tab) {
         // Send URL to IDE - ask if the tab is managed
         this.sendInitMessage(tab);
         this.sendLoadResizeOptionsMessage();
-    } else if ((tabInfo !== undefined) && (tabInfo.url !== tab.url)) {
+    } else if (tabInfo !== undefined) {
         // URL change should not mean that tab was closed; it may notify
         // IDE that different page is opened in the browser pane if such knowledge
         // of such state is desirable.
@@ -412,7 +414,10 @@ NetBeans.tabUpdated = function(tab) {
             // Confirmation may be delayed; do nothing for now
         } else if (status === this.STATUS_MANAGED) {
             // Navigation in a managed tab => send "urlchange" message
-            this.sendUrlChangeMessage(tab.id, tab.url);
+            if (tabInfo.url !== tab.url) {
+                this.sendUrlChangeMessage(tab.id, tab.url);
+                tabInfo.url = tab.url;
+            }
             this.showPageIcon(tab.id);
             this.createContextMenu(tab.id, tab.url);
             if (this.INFOBAR) {
