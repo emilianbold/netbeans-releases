@@ -86,7 +86,7 @@ public final class TransformationHandler {
                 final FieldSignature signature = new FieldSignature(SINGLETON_FIELD_NAME);
                 final CompletionItem proposal = new FieldItem(SINGLETON_FIELD_NAME, Modifier.STATIC, anchorOffset, null, typeNode.getNameWithoutPackage());
                 
-                if (!"".equals(prefix) && signature.getName().startsWith(prefix)) { // NOI18N
+                if (signature.getName().startsWith(prefix)) { // NOI18N
                     result.put(signature, proposal);
                 }
             }
@@ -121,12 +121,7 @@ public final class TransformationHandler {
             final int anchorOffset) {
         
         final Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
-        final boolean prefixed;
-        if ("".equals(prefix)) { // NOI18N
-            prefixed = false;
-        } else {
-            prefixed = true;
-        }
+        final boolean prefixed = "".equals(prefix) ? false : true; // NOI18N
         
         for (AnnotationNode annotation : typeNode.getAnnotations()) {
             final String annotationName = annotation.getClassNode().getNameWithoutPackage();
@@ -135,7 +130,7 @@ public final class TransformationHandler {
                 final MethodSignature signature = new MethodSignature(SINGLETON_METHOD_NAME, new String[0]);
                 final CompletionItem proposal = CompletionItem.forJavaMethod(typeNode.getNameWithoutPackage(), SINGLETON_METHOD_NAME, "", typeNode.getNameWithoutPackage(), Utilities.reflectionModifiersToModel(Modifier.STATIC), anchorOffset, true, false);
                 
-                if (prefixed && signature.getName().startsWith(prefix)) {
+                if (signature.getName().startsWith(prefix)) {
                     result.put(signature, proposal);
                 }
             }
