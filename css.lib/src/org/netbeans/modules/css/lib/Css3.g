@@ -794,7 +794,7 @@ declaration
 //XXX this is a hack for the IMPORT_SYM inside cp_expression
 cp_propertyValue
     : 
-    {isCssPreprocessorSource()}? cp_expression
+    {isCssPreprocessorSource()}? cp_expression_list
     | propertyValue
     ;
 
@@ -882,7 +882,7 @@ function
 		(
                     (expression)=>expression ws?
                     | (cp_args_list)=>cp_args_list
-                    | (cp_expression)=>cp_expression ws?
+                    | (cp_expression_list)=>cp_expression_list ws?
                     | (fnAttributeName ws? OPEQ)=>fnAttribute (COMMA ws? fnAttribute )*
                     | {isCssPreprocessorSource()}? //empty
 		)
@@ -929,9 +929,9 @@ ws
 //ENTRY POINT FROM CSS GRAMMAR
 cp_variable_declaration
     : 
-        {isLessSource()}? cp_variable ws? COLON ws? cp_expression ws? SEMI    
+        {isLessSource()}? cp_variable ws? COLON ws? cp_expression_list ws? SEMI    
         | 
-        {isScssSource()}? cp_variable ws? COLON ws? cp_expression ws? (SASS_DEFAULT ws?)? SEMI    
+        {isScssSource()}? cp_variable ws? COLON ws? cp_expression_list ws? (SASS_DEFAULT ws?)? SEMI    
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR    
@@ -942,6 +942,13 @@ cp_variable
         {isScssSource()}? ( SASS_VAR )
     ;
 
+//comma separated list of cp_expression-s
+cp_expression_list
+    :
+    cp_expression
+    (ws? COMMA ws? cp_expression)*
+    ;
+
 //expression:
 //-----------
 //
@@ -949,9 +956,9 @@ cp_variable
 //- boolean expression binary operators: and, or, <, >, <=, ==, ...
 //- boolean expression unary operator: not
 //- mathematical expression as term: cp_math_expression
-//- comma or whitespace separated list of expression-s
+//- whitespace separated list of expression-s
+//- comma separted list of expressions-s in parenthesis
 //
-
 cp_expression
     :    
     cp_expression_atom 
@@ -960,10 +967,19 @@ cp_expression
         | (ws? cp_expression_atom)=>ws? cp_expression_atom
     )* 
     ;
+//    
+//cp_expression_in_paren
+//    :    
+//    cp_expression_atom 
+//    ( 
+//        (ws? (cp_expression_operator|COMMA))=>(ws? (cp_expression_operator|COMMA) ws?) cp_expression_atom 
+//        | (ws? cp_expression_atom)=>ws? cp_expression_atom
+//    )* 
+//    ;
     
 cp_expression_operator
     :
-    OR | AND | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ | COMMA
+    OR | AND | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ
     ;
 
 cp_expression_atom
@@ -971,10 +987,16 @@ cp_expression_atom
         (NOT ws?)? 
         (
             (cp_math_expression)=>cp_math_expression
-            | LPAREN ws? cp_expression ws? RPAREN
+            | LPAREN ws? cp_expression_list ws? RPAREN
         )
     ;
 
+//WS separated list of cp_math_expression-s
+cp_math_expressions
+    :
+    cp_math_expression
+    (ws cp_math_expression)*
+    ;
 //mathematical expression: 
 //-------------------------
 //allowed content: 
@@ -1061,7 +1083,7 @@ cp_args_list
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
 cp_arg
     :
-    cp_variable ws? ( COLON ws? cp_math_expression ws?)?
+    cp_variable ws? ( COLON ws? cp_expression ws?)?
     ;
 
 //.mixin (@a) "when (lightness(@a) >= 50%)" {
@@ -1253,7 +1275,7 @@ sass_for
 
 sass_each
     :
-    SASS_EACH ws cp_variable ws {tokenNameEquals("in")}? IDENT /*in*/ ws cp_expression ws? sass_control_block
+    SASS_EACH ws cp_variable ws {tokenNameEquals("in")}? IDENT /*in*/ ws cp_expression_list ws? sass_control_block
     ;
     
 sass_while

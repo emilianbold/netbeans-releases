@@ -331,6 +331,7 @@ public enum NodeType {
      * color: ("@base-color * 3");
      */
     cp_math_expression,
+    cp_math_expressions,
     cp_math_expression_atom,
     
     /**
@@ -389,6 +390,7 @@ public enum NodeType {
     cp_expression_atom,
     cp_expression,
     cp_expression_operator,
+    cp_expression_list,
     
     cp_propertyValue,
             

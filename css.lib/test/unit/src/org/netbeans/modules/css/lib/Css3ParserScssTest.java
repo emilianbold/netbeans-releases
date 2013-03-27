@@ -1260,7 +1260,7 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testSimplePropertyValue() {
         assertParses(".clz { prop: t1 t2; }", true);
     }
-    
+
     public void testPropertyValue2() {
         assertParses(".clz { padding-left: "
                 + "top($form-error-under-padding) "
@@ -1353,6 +1353,24 @@ public class Css3ParserScssTest extends CssTestBase {
         assertParses(".highlighted {\n"
                 + "    @include linear-gradient((#3875d7 20%, #2a62bc 90%));\n"
                 + "    color: #fff;\n"
+                + "}");
+    }
+
+    public void testSassInclude() throws ParseException, BadLocationException {
+        assertParses(".clz { @include extjs-button-ui(\n"
+                + "    $ui: 'default-small',\n"
+                + "\n"
+                + "    $border-radius: $button-small-border-radius,\n"
+                + "    $border-width: $button-small-border-width); }");
+    }
+
+    public void testSassInclude2() throws ParseException, BadLocationException {
+        assertParses(".clz { @include extjs-toolbar-ui(\n"
+                + "    'default',\n"
+                + "    $background-color: $toolbar-background-color,\n"
+                + "    $background-gradient: $toolbar-background-gradient,\n"
+                + "    $border-color: $toolbar-border-color\n"
+                + "); "
                 + "}");
     }
 }
