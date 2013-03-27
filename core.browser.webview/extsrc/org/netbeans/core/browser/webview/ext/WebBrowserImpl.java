@@ -913,4 +913,9 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
                 NotifyDescriptor.PLAIN_MESSAGE );
         DialogDisplayer.getDefault().notifyLater( nd );
     }
+
+    @Override
+    public boolean canReloadPage() {
+        return true;
+    }
 }
