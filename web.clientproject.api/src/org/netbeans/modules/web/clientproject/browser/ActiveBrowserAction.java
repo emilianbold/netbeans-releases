@@ -350,7 +350,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         JButton tb = toolbarButton;
         if (tb != null) {
             if (pbp == null) {
-                tb.setIcon(new ImageIcon(new BufferedImage(30, 24, BufferedImage.TYPE_INT_RGB)));
+                tb.setIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-disabled.png"))));
                 tb.setToolTipText(null);
             } else {
                 WebBrowser wb = pbp.getActiveBrowser();
