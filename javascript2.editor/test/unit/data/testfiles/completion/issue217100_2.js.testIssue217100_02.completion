@@ -3,6 +3,5 @@ v|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform
-VARIABLE   v                               [PUBLIC]   issue217100_2.js
 KEYWORD    var                                        null
 KEYWORD    void                                       null

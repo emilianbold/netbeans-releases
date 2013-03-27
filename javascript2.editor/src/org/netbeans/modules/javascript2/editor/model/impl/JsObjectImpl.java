@@ -107,6 +107,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             // global object
             return Kind.FILE;
         }
+        if ("prototype".equals(getName())) {
+            return Kind.OBJECT;
+        }
         if (isDeclared()) {
             if ("arguments".equals(getName())) {
                 // special variable object of every function
