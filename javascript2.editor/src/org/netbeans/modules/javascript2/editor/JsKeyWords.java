@@ -43,7 +43,7 @@ package org.netbeans.modules.javascript2.editor;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 
 /**
  *

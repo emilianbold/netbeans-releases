@@ -42,7 +42,7 @@ import jdk.nashorn.internal.ir.FunctionNode;
 import jdk.nashorn.internal.parser.Parser;
 import jdk.nashorn.internal.runtime.Source;
 import jdk.nashorn.internal.runtime.options.Options;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
