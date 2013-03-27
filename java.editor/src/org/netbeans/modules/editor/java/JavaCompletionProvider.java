@@ -2635,6 +2635,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     et = t;
                     exPath = new TreePath(exPath, t);
                 }
+            } else if (et.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+                et = ((AnnotatedTypeTree)et).getUnderlyingType();
+                exPath = new TreePath(exPath, et);
             }
             if (et.getKind() == Tree.Kind.IDENTIFIER) {
                 Element e = controller.getTrees().getElement(exPath);
