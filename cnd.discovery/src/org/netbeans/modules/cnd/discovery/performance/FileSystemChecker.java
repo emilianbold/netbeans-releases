@@ -134,7 +134,7 @@ public class FileSystemChecker {
                         host = host.substring(0, host.indexOf(','));
                     }
                     long socketPing = getSocketPing(host);
-                    System.out.println("\tPing " + format(socketPing / 1000) + " mks."); // NOI18N
+                    System.out.println("\tPing " + format(socketPing / 1000) + " mcs."); // NOI18N
 
                 }
             }
@@ -239,17 +239,22 @@ public class FileSystemChecker {
                     stat.startPath = dir;
                 }
             }
-            final String name = dir.getFileName().toString();
-            if (name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals(".svn")) { // NOI18N
-                return FileVisitResult.SKIP_SUBTREE;
+            final Path fileName = dir.getFileName();
+            if (fileName != null) {
+                final String name = fileName.toString();
+                if (name != null) {
+                    if (name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals(".svn") || name.equals(".ade_path")) { // NOI18N
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                }
             }
             return FileVisitResult.CONTINUE;
         }
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            if (Files.isSymbolicLink(file)) {
-                try {
+            try {
+                if (Files.isSymbolicLink(file)) {
                     Path to = Files.readSymbolicLink(file);
                     if (!to.isAbsolute()) {
                         to = file.getParent().resolve(Files.readSymbolicLink(file)).normalize();
@@ -257,61 +262,61 @@ public class FileSystemChecker {
                     if (!to.startsWith(root)) {
                         System.out.println("Linked dir " + file + " -> " + to); // NOI18N
                     }
-                } catch (IOException ex) {
-                }
-            } else if (Files.isRegularFile(file)) {
-                FileStore fileStore = Files.getFileStore(file);
-                Statistic stat = stores.get(fileStore);
-                if (stat == null) {
-                    stat = new Statistic(fileStore);
-                    stores.put(fileStore, stat);
-                }
-                if (stat.startPath == null) {
-                    stat.startPath = file;
-                } else {
-                    if (stat.startPath.toString().length() > file.toString().length()) {
+                } else if (Files.isRegularFile(file)) {
+                    FileStore fileStore = Files.getFileStore(file);
+                    Statistic stat = stores.get(fileStore);
+                    if (stat == null) {
+                        stat = new Statistic(fileStore);
+                        stores.put(fileStore, stat);
+                    }
+                    if (stat.startPath == null) {
                         stat.startPath = file;
-                    }
-                }
-                stat.visitCount++;
-                long beg = System.nanoTime();
-                stat.duration += beg - currStart;
-                try (InputStream read = Files.newInputStream(file)) {
-                    int count = 0;
-                    while (true) {
-                        int i = read.read();
-                        if (i < 0) {
-                            break;
+                    } else {
+                        if (stat.startPath.toString().length() > file.toString().length()) {
+                            stat.startPath = file;
                         }
-                        stat.readCount++;
-                        if (count > 10 * 1024) {
-                            break;
-                        }
-                        count++;
                     }
-                } catch (IOException ex) {
-                } finally {
-                    stat.readTime += System.nanoTime() - beg;
-                }
-                currStart = System.nanoTime();
-            } else if (Files.isDirectory(file)) {
-                FileStore fileStore = Files.getFileStore(file);
-                Statistic stat = stores.get(fileStore);
-                if (stat == null) {
-                    stat = new Statistic(fileStore);
-                    stores.put(fileStore, stat);
-                }
-                if (stat.startPath == null) {
-                    stat.startPath = file;
-                } else {
-                    if (stat.startPath.toString().length() > file.toString().length()) {
+                    stat.visitCount++;
+                    long beg = System.nanoTime();
+                    stat.duration += beg - currStart;
+                    try (InputStream read = Files.newInputStream(file)) {
+                        int count = 0;
+                        while (true) {
+                            int i = read.read();
+                            if (i < 0) {
+                                break;
+                            }
+                            stat.readCount++;
+                            if (count > 10 * 1024) {
+                                break;
+                            }
+                            count++;
+                        }
+                    } catch (IOException ex) {
+                    } finally {
+                        stat.readTime += System.nanoTime() - beg;
+                    }
+                    currStart = System.nanoTime();
+                } else if (Files.isDirectory(file)) {
+                    FileStore fileStore = Files.getFileStore(file);
+                    Statistic stat = stores.get(fileStore);
+                    if (stat == null) {
+                        stat = new Statistic(fileStore);
+                        stores.put(fileStore, stat);
+                    }
+                    if (stat.startPath == null) {
                         stat.startPath = file;
+                    } else {
+                        if (stat.startPath.toString().length() > file.toString().length()) {
+                            stat.startPath = file;
+                        }
                     }
+                    stat.visitCount++;
+                    long beg = System.nanoTime();
+                    stat.duration += beg - currStart;
+                    currStart = beg;
                 }
-                stat.visitCount++;
-                long beg = System.nanoTime();
-                stat.duration += beg - currStart;
-                currStart = beg;
+            } catch (IOException ex) {
             }
             return FileVisitResult.CONTINUE;
         }

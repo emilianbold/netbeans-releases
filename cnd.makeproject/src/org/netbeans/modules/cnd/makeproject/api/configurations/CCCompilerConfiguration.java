@@ -384,20 +384,20 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
             }
         }  
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-            if (compilerSet == null /*|| !compilerSet.getCompilerFlavor().isSunStudioCompiler()*/) {
+            //if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
                 if (STANDARDS_SUPPORT) {
                     set0.put(standardProp);
                 }
-            }
+            //}
         }
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION || 
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB || 
            conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
-            if (compilerSet == null /*|| !compilerSet.getCompilerFlavor().isSunStudioCompiler()*/) {
+            //if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
                 if (STANDARDS_SUPPORT) {
                     set0.put(standardProp);
                 }
-            }
+            //}
         }
         
         return sheet;
