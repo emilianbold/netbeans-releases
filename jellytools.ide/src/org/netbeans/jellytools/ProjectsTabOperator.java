@@ -119,13 +119,25 @@ public class ProjectsTabOperator extends TopComponentOperator {
      * @return ProjectsRootNode
      */
     public ProjectRootNode getProjectRootNode(String projectName) {
+        final String openingProjectsLabel = "Opening Projects";
         Object lblOpening = JLabelOperator.findJLabel(
                 (Container) MainWindowOperator.getDefault().getSource(),
-                "Opening Projects", false, false);
+                openingProjectsLabel, false, false);
         if (lblOpening != null) {
             JLabelOperator lblOper = new JLabelOperator((JLabel) lblOpening);
             lblOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 180000);
-            lblOper.waitComponentVisible(false);
+            lblOper.waitState(new ComponentChooser() {
+                @Override
+                public boolean checkComponent(Component comp) {
+                    String text = ((JLabel) comp).getText();
+                    return text == null || !text.startsWith(openingProjectsLabel) || !comp.isShowing();
+                }
+
+                @Override
+                public String getDescription() {
+                    return openingProjectsLabel + " label disappears";
+                }
+            });
         }
         return new ProjectRootNode(tree(), projectName);
     }
