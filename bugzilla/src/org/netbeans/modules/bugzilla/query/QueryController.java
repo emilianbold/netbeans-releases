@@ -109,7 +109,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, IssueTable.IssueTableProvider {
+public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
 
     protected QueryPanel panel;
 
@@ -1037,11 +1037,6 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                 refreshTask.addProgressUnit(issueDesc);
             }
         }
-    }
-
-    @Override
-    public IssueTable getIssueTable() {
-        return issueTable;
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
