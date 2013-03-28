@@ -103,12 +103,4 @@
           </folder>
        </folder>
     </folder>
-    <folder name="org-netbeans-api-project-libraries">
-        <folder name="Libraries">
-            <file name="groovy-all.xml" url="groovy-all.xml">
-                <attr name="displayName" bundlevalue="org/netbeans/modules/groovy/editor/resources/Bundle#groovy-all"/>
-            </file>
-        </folder>
-    </folder>
-
 </filesystem>
