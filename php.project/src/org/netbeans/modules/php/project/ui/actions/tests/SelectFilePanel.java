@@ -69,7 +69,7 @@ public final class SelectFilePanel extends JPanel {
     private static final long serialVersionUID = 8464321687132132L;
 
     final FileObject sourceRoot;
-    private final DefaultListModel model;
+    private final DefaultListModel<FileObject> model;
 
     private DialogDescriptor dialogDescriptor;
     private NotificationLineSupport notificationLineSupport;
@@ -117,7 +117,7 @@ public final class SelectFilePanel extends JPanel {
     }
 
     private FileObject getSelectedFile() {
-        return (FileObject) selectFileList.getSelectedValue();
+        return selectFileList.getSelectedValue();
     }
 
     void validateSelection() {
@@ -143,11 +143,11 @@ public final class SelectFilePanel extends JPanel {
 
         selectFileLabel = new JLabel();
         selectFileScrollPane = new JScrollPane();
-        selectFileList = new JList();
+        selectFileList = new JList<FileObject>();
 
         selectFileLabel.setLabelFor(selectFileList);
+        Mnemonics.setLocalizedText(selectFileLabel, NbBundle.getMessage(SelectFilePanel.class, "SelectFilePanel.selectFileLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(selectFileLabel, NbBundle.getMessage(SelectFilePanel.class, "SelectFilePanel.selectFileLabel.text"));
         selectFileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         selectFileScrollPane.setViewportView(selectFileList);
 
@@ -175,7 +175,7 @@ public final class SelectFilePanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel selectFileLabel;
-    private JList selectFileList;
+    private JList<FileObject> selectFileList;
     private JScrollPane selectFileScrollPane;
     // End of variables declaration//GEN-END:variables
 

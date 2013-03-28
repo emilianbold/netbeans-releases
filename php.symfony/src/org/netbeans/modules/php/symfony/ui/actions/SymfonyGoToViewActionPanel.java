@@ -94,7 +94,7 @@ public class SymfonyGoToViewActionPanel extends javax.swing.JPanel implements Fo
 
         titleLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        viewsList = new javax.swing.JList();
+        viewsList = new javax.swing.JList<SymfonyViewItem>();
 
         setFocusCycleRoot(true);
         setLayout(new java.awt.GridBagLayout());
@@ -145,11 +145,11 @@ public class SymfonyGoToViewActionPanel extends javax.swing.JPanel implements Fo
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel titleLabel;
-    private javax.swing.JList viewsList;
+    private javax.swing.JList<SymfonyViewItem> viewsList;
     // End of variables declaration//GEN-END:variables
 
     private void openSelected() {
-        SymfonyViewItem view = (SymfonyViewItem) viewsList.getSelectedValue();
+        SymfonyViewItem view = viewsList.getSelectedValue();
 
         if (view != null) {
             FileObject fo = view.getFileObject();

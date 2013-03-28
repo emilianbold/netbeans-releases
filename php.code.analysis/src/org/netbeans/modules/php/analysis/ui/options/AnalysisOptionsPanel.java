@@ -53,7 +53,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -244,7 +243,7 @@ public class AnalysisOptionsPanel extends JPanel {
         codeSnifferSearchButton = new JButton();
         codeSnifferHintLabel = new JLabel();
         codeSnifferStandardLabel = new JLabel();
-        codeSnifferStandardComboBox = new JComboBox();
+        codeSnifferStandardComboBox = new JComboBox<String>();
         messDetectorLabel = new JLabel();
         messDetectorTextField = new JTextField();
         messDetectorBrowseButton = new JButton();
@@ -252,7 +251,7 @@ public class AnalysisOptionsPanel extends JPanel {
         messDetectorHintLabel = new JLabel();
         messDetectorRuleSetsLabel = new JLabel();
         messDetectorRuleSetsScrollPane = new JScrollPane();
-        messDetectorRuleSetsList = new JList();
+        messDetectorRuleSetsList = new JList<String>();
         noteLabel = new JLabel();
         codeSnifferLearnMoreLabel = new JLabel();
         messDetectorLearnMoreLabel = new JLabel();
@@ -548,7 +547,7 @@ public class AnalysisOptionsPanel extends JPanel {
     private JLabel codeSnifferLabel;
     private JLabel codeSnifferLearnMoreLabel;
     private JButton codeSnifferSearchButton;
-    private JComboBox codeSnifferStandardComboBox;
+    private JComboBox<String> codeSnifferStandardComboBox;
     private JLabel codeSnifferStandardLabel;
     private JTextField codeSnifferTextField;
     private JLabel errorLabel;
@@ -557,7 +556,7 @@ public class AnalysisOptionsPanel extends JPanel {
     private JLabel messDetectorLabel;
     private JLabel messDetectorLearnMoreLabel;
     private JLabel messDetectorRuleSetsLabel;
-    private JList messDetectorRuleSetsList;
+    private JList<String> messDetectorRuleSetsList;
     private JScrollPane messDetectorRuleSetsScrollPane;
     private JButton messDetectorSearchButton;
     private JTextField messDetectorTextField;

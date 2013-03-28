@@ -45,6 +45,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.List;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.composer.output.model.SearchResult;
 
@@ -62,8 +64,8 @@ public class CliParserTest extends NbTestCase {
         cliParser = new CliParser();
     }
 
-    public void testParseSearchFile() throws Exception {
-        File searchResults = new File(getDataDir(), "output/search-results.txt");
+    public void testParseSearchFileLegacy() throws Exception {
+        File searchResults = new File(getDataDir(), "output/search-results-legacy.txt");
         assertTrue(searchResults.isFile());
         int count = 0;
         BufferedReader reader = new BufferedReader(new FileReader(searchResults));
@@ -71,7 +73,7 @@ public class CliParserTest extends NbTestCase {
             String line;
             while ((line = reader.readLine()) != null) {
                 count++;
-                List<SearchResult> results = cliParser.parseSearch(line);
+               List<SearchResult> results = cliParser.parseSearch(line);
                 assertNotNull(results);
                 assertEquals(1, results.size());
                 if (count == 1) {
@@ -84,6 +86,28 @@ public class CliParserTest extends NbTestCase {
             reader.close();
         }
         assertEquals(14, count);
+    }
+
+    public void testParseSearchFile() throws Exception {
+        File searchResults = new File(getDataDir(), "output/search-results.txt");
+        assertTrue(searchResults.isFile());
+        StringBuilder content = new StringBuilder(500);
+        BufferedReader reader = new BufferedReader(new FileReader(searchResults));
+        try {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line);
+                content.append("\n");
+            }
+        } finally {
+            reader.close();
+        }
+        List<SearchResult> results = cliParser.parseSearch(content.toString());
+        assertNotNull(results);
+        assertEquals(15, results.size());
+        SearchResult result = results.get(0);
+        assertEquals("monolog/monolog", result.getName());
+        assertEquals("Sends your logs to files, sockets, inboxes, databases and various web services", result.getDescription());
     }
 
     public void testParseSearchMoreLinesAtOnce() {
@@ -122,9 +146,18 @@ public class CliParserTest extends NbTestCase {
     }
 
     public void testParseSearchIncorrectLine() {
-        String chunk = "No workdir set for composer.\n";
+        String chunk = "No composer.json found in the current directory, showing packages from packagist\n";
         List<SearchResult> results = cliParser.parseSearch(chunk);
         assertTrue(results.isEmpty());
+    }
+
+    public void testParseSearchNonLegacyLine() {
+        String chunk = "vendor/package This is package with : in its description\n";
+        List<SearchResult> results = cliParser.parseSearch(chunk);
+        assertEquals(1, results.size());
+        SearchResult result = results.get(0);
+        assertEquals("vendor/package", result.getName());
+        assertEquals("This is package with : in its description", result.getDescription());
     }
 
 }

@@ -481,16 +481,20 @@ public class ASTUtils {
                 TokenSequence<GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, startOffset);
                 if (ts != null) {
                     Token<GroovyTokenId> token = ts.token();
-                    if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), identifier)) {
-                        int offset = ts.offset();
-                        result[0] = new OffsetRange(offset, offset + identifier.length());
+                    if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.endsWith(identifier, token.text())) {
+                        int start = ts.offset() + token.text().length() - identifier.length();
+                        int end = ts.offset() + token.text().length();
+                        
+                        result[0] = new OffsetRange(start, end);
                         return;
                     }
                     while (ts.moveNext()) {
                         token = ts.token();
-                        if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), identifier)) {
-                            int offset = ts.offset();
-                            result[0] = new OffsetRange(offset, offset + identifier.length());
+                        if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.endsWith(identifier, token.text())) {
+                            int start = ts.offset() + token.text().length() - identifier.length();
+                            int end = ts.offset() + token.text().length();
+                            
+                            result[0] = new OffsetRange(start, end);
                             return;
                         }
                     }
