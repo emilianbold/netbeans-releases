@@ -2099,7 +2099,7 @@ public class Reformatter implements ReformatTask {
                 spaces(cs.spaceWithinForParens() ? 1 : 0);
                 int alignIndent = cs.alignMultilineFor() ? col : -1;
                 scan(node.getVariable(), p);
-                wrapOperatorAndTree(cs.wrapFor(), alignIndent, cs.spaceAfterColon() ? 1 : 0, node.getExpression());
+                wrapOperatorAndTree(cs.wrapFor(), alignIndent, cs.spaceBeforeColon() ? 1 : 0, cs.spaceAfterColon() ? 1 : 0, node.getExpression());
                 spaces(cs.spaceWithinForParens() ? 1 : 0);
                 accept(RPAREN);
             } finally {
@@ -3412,6 +3412,10 @@ public class Reformatter implements ReformatTask {
         }
 
         private int wrapOperatorAndTree(CodeStyle.WrapStyle wrapStyle, int alignIndent, int spacesCnt, Tree tree) {
+            return wrapOperatorAndTree(wrapStyle, alignIndent, spacesCnt, spacesCnt, tree);
+        }
+
+        private int wrapOperatorAndTree(CodeStyle.WrapStyle wrapStyle, int alignIndent, int spacesCntBeforeOp, int spacesCntAfterOp, Tree tree) {
             int ret = -1;
             switch (wrapStyle) {
                 case WRAP_ALWAYS:
@@ -3437,7 +3441,7 @@ public class Reformatter implements ReformatTask {
                     oldContinuationIndent = continuationIndent;
                     try {
                         if (tree.getKind() != Tree.Kind.BLOCK) {
-                            spaces(spacesCnt);
+                            spaces(spacesCntAfterOp);
                         } else {
                             continuationIndent = false;
                         }
@@ -3461,7 +3465,7 @@ public class Reformatter implements ReformatTask {
                                 indent = alignIndent;
                                 continuationIndent = false;
                             }
-                            spaces(spacesCnt, true);
+                            spaces(spacesCntBeforeOp, true);
                         } finally {
                             indent = old;
                             continuationIndent = oldContinuationIndent;
@@ -3475,7 +3479,7 @@ public class Reformatter implements ReformatTask {
                         }
                         try {
                             if (tree.getKind() != Tree.Kind.BLOCK) {
-                                spaces(spacesCnt);
+                                spaces(spacesCntAfterOp);
                             } else {
                                 continuationIndent = false;
                             }
@@ -3511,7 +3515,7 @@ public class Reformatter implements ReformatTask {
                         }
                         try {
                             if (tree.getKind() != Tree.Kind.BLOCK) {
-                                spaces(spacesCnt);
+                                spaces(spacesCntAfterOp);
                             } else {
                                 continuationIndent = false;
                             }
@@ -3532,7 +3536,7 @@ public class Reformatter implements ReformatTask {
                             indent = alignIndent;
                             continuationIndent = false;
                         }
-                        spaces(spacesCnt, true);
+                        spaces(spacesCntBeforeOp, true);
                     } finally {
                         indent = old;
                         continuationIndent = oldContinuationIndent;
@@ -3546,7 +3550,7 @@ public class Reformatter implements ReformatTask {
                     }
                     try {
                         if (tree.getKind() != Tree.Kind.BLOCK) {
-                            if (spaces(spacesCnt, false)) {
+                            if (spaces(spacesCntAfterOp, false)) {
                                 rollback(index, c, d);
                                 old = indent;
                                 oldContinuationIndent = continuationIndent;
@@ -3567,7 +3571,7 @@ public class Reformatter implements ReformatTask {
                                     lastBlankLinesTokenIndex = -1;
                                     tokens.moveNext();
                                 }
-                                spaces(spacesCnt);
+                                spaces(spacesCntAfterOp);
                             }
                         } else {
                             continuationIndent = isLastIndentContinuation;
