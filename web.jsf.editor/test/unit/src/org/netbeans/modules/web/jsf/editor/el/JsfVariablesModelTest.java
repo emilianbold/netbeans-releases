@@ -43,6 +43,10 @@ package org.netbeans.modules.web.jsf.editor.el;
 
 import java.util.Iterator;
 import java.util.SortedSet;
+import static junit.framework.Assert.assertNotNull;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.jsf.editor.TestBaseForTestProject;
 
@@ -66,15 +70,27 @@ public class JsfVariablesModelTest extends TestBaseForTestProject {
         return "testWebProject/web/test.xhtml";
     }
 
+    private JsfVariablesModel getModel(final ParseResultInfo result) throws ParseException {
+        final JsfVariablesModel[] model = new JsfVariablesModel[1];
+        ParserManager.parse("text/xhtml", new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                model[0] = JsfVariablesModel.getModel(result.result, result.topLevelSnapshot);
+            }
+        });
+        return model[0];
+    }
+
     public void testCreateModel() throws ParseException {
         ParseResultInfo result = parse(getTestFilePath());
-        JsfVariablesModel model = JsfVariablesModel.getModel(result.result, result.topLevelSnapshot);
+        JsfVariablesModel model = getModel(result);
         assertNotNull(model);
     }
 
     public void testModel() throws ParseException {
         ParseResultInfo result = parse(getTestFilePath());
-        JsfVariablesModel model = JsfVariablesModel.getModel(result.result, result.topLevelSnapshot);
+        JsfVariablesModel model = getModel(result);
         assertNotNull(model);
 
         SortedSet<JsfVariableContext> contextsList = model.getContexts();
@@ -124,13 +140,11 @@ public class JsfVariablesModelTest extends TestBaseForTestProject {
         assertEquals(first, model.getContainingContext(385));
         assertEquals(first, model.getContainingContext(1072));
         assertNull(model.getContainingContext(1384));
-
-
     }
 
     public void testGetAncestors() throws ParseException {
         ParseResultInfo result = parse(getTestFilePath());
-        JsfVariablesModel model = JsfVariablesModel.getModel(result.result, result.topLevelSnapshot);
+        JsfVariablesModel model = getModel(result);
         assertNotNull(model);
 
         SortedSet<JsfVariableContext> contextsList = model.getContexts();
@@ -162,7 +176,7 @@ public class JsfVariablesModelTest extends TestBaseForTestProject {
 
     public void testResolveProperties() throws ParseException {
         ParseResultInfo result = parse(getTestFilePath());
-        JsfVariablesModel model = JsfVariablesModel.getModel(result.result, result.topLevelSnapshot);
+        JsfVariablesModel model = getModel(result);
         assertNotNull(model);
 
         SortedSet<JsfVariableContext> contextsList = model.getContexts();
