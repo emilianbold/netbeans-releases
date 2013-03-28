@@ -48,18 +48,15 @@ import org.netbeans.jellytools.JellyTestCase;
  *
  * @author stezeb
  */
-public class NewJavaFX2ProjectTest extends JellyTestCase {
+public class NewJavaFX2FilesTest extends JellyTestCase {
 
     /* Test project names */
     private final String PLAINAPP_NAME = "FXApp";
-    private final String PRELOADER_NAME = "FXPreloader";
-    private final String FXMLAPP_NAME = "FXMLApp";
-    private final String SWINGAPP_NAME = "FXSwingApp";
 
     /**
      * Constructor required by JUnit
      */
-    public NewJavaFX2ProjectTest(String testName) {
+    public NewJavaFX2FilesTest(String testName) {
         super(testName);
     }
 
@@ -67,15 +64,13 @@ public class NewJavaFX2ProjectTest extends JellyTestCase {
      * Creates suite from particular test cases.
      */
     public static Test suite() {
-        return createModuleTest(NewJavaFX2ProjectTest.class,
+        return createModuleTest(NewJavaFX2FilesTest.class,
                 "createJavaFX2Application",
-                "createJavaFX2Preloader",
-                "createJavaFX2FXMLApp",
-                "createJavaFX2SwingApp",
-                "closeJavaFX2Application",
-                "closeJavaFX2Preloader",
-                "closeJavaFX2FXMLApp",
-                "closeJavaFX2SwingApp");
+                "createFXMLFile",
+                "createFXMainFile",
+                "createPreloaderFile",
+                "createSwingMainFile",
+                "closeJavaFX2Application");
     }
 
     @Override
@@ -91,32 +86,25 @@ public class NewJavaFX2ProjectTest extends JellyTestCase {
     public void closeJavaFX2Application() {
         TestUtils.closeJavaFX2Project(PLAINAPP_NAME);
     }
-
-    public void createJavaFX2Preloader() {
-        TestUtils.createJavaFX2Project(TestUtils.JAVAFX_PROJECT_TYPE_PRELOADER,
-                PRELOADER_NAME, getWorkDirPath());
+    
+    public void createFXMLFile() {
+        TestUtils.createJavaFX2FXMLFile(TestUtils.JAVAFX_FILE_TYPE_FXML,
+                PLAINAPP_NAME, "FXMLPage");
     }
-
-    public void closeJavaFX2Preloader() {
-        TestUtils.closeJavaFX2Project(PRELOADER_NAME);
+    
+    public void createFXMainFile() {
+        TestUtils.createJavaFX2File(TestUtils.JAVAFX_FILE_TYPE_MAIN,
+                PLAINAPP_NAME, "FXAppStart");
     }
-
-    public void createJavaFX2FXMLApp() {
-        TestUtils.createJavaFX2Project(TestUtils.JAVAFX_PROJECT_TYPE_FXMLAPP,
-                FXMLAPP_NAME, getWorkDirPath());
+    
+    public void createPreloaderFile() {
+        TestUtils.createJavaFX2File(TestUtils.JAVAFX_FILE_TYPE_PRELOADER,
+                PLAINAPP_NAME, "FXAppPreload");
     }
-
-    public void closeJavaFX2FXMLApp() {
-        TestUtils.closeJavaFX2Project(FXMLAPP_NAME);
-    }
-
-    public void createJavaFX2SwingApp() {
-        TestUtils.createJavaFX2Project(TestUtils.JAVAFX_PROJECT_TYPE_SWINGAPP,
-                SWINGAPP_NAME, getWorkDirPath());
-    }
-
-    public void closeJavaFX2SwingApp() {
-        TestUtils.closeJavaFX2Project(SWINGAPP_NAME);
+    
+    public void createSwingMainFile() {
+        TestUtils.createJavaFX2File(TestUtils.JAVAFX_FILE_TYPE_SWINGMAIN,
+                PLAINAPP_NAME, "FXSwingAppStart");
     }
     
 }
