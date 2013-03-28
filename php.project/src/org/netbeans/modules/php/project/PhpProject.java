@@ -663,6 +663,7 @@ public final class PhpProject implements Project {
                 UILookupMergerSupport.createProjectProblemsProviderMerger(),
                 new ProjectWebRootProviderImpl(),
                 ClientSideDevelopmentSupport.create(this),
+                ProjectBrowserProviderImpl.create(this),
                 // ?? getRefHelper()
         });
     }
