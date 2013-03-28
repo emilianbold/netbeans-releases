@@ -67,7 +67,7 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.jira.Jira;

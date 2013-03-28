@@ -66,7 +66,7 @@ import javax.swing.UIManager;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraRepository;

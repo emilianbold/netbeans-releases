@@ -67,8 +67,8 @@ import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableC
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache.IssueAccessor;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache.IssueAccessor;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.util.Exceptions;

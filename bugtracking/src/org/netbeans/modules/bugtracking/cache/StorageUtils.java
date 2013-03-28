@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.ui.issue.cache;
+package org.netbeans.modules.bugtracking.cache;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

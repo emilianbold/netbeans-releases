@@ -63,7 +63,7 @@ import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 

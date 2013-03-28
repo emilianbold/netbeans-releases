@@ -40,8 +40,11 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.ui.issue.cache;
+package org.netbeans.modules.bugtracking.cache;
 
+import org.netbeans.modules.bugtracking.cache.IssueStorage;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.StorageUtils;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
@@ -65,7 +68,7 @@ import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.TestKit;
 import org.netbeans.modules.bugtracking.dummies.DummyBugtrackingConnector;
 import org.netbeans.modules.bugtracking.dummies.DummyRepository;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache.IssueEntry;
+import org.netbeans.modules.bugtracking.cache.IssueCache.IssueEntry;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
