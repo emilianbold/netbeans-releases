@@ -49,6 +49,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="browserComboBox">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;WebBrowser&gt;"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JCheckBox" name="reloadOnSaveCheckBox">
       <Properties>

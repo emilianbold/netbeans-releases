@@ -135,7 +135,7 @@ public class MessDetectorCustomizerPanel extends JPanel {
 
         ruleSetsLabel = new JLabel();
         ruleSetsScrollPane = new JScrollPane();
-        ruleSetsList = new JList();
+        ruleSetsList = new JList<String>();
 
         ruleSetsLabel.setLabelFor(ruleSetsList);
         Mnemonics.setLocalizedText(ruleSetsLabel, NbBundle.getMessage(MessDetectorCustomizerPanel.class, "MessDetectorCustomizerPanel.ruleSetsLabel.text")); // NOI18N
@@ -161,7 +161,7 @@ public class MessDetectorCustomizerPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel ruleSetsLabel;
-    private JList ruleSetsList;
+    private JList<String> ruleSetsList;
     private JScrollPane ruleSetsScrollPane;
     // End of variables declaration//GEN-END:variables
 }

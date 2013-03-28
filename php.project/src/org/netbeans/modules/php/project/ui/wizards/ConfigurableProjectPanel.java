@@ -82,8 +82,8 @@ public abstract class ConfigurableProjectPanel extends JPanel implements Project
     public abstract String getSourcesFolder();
     public abstract LocalServer getSourcesLocation();
     public abstract void selectSourcesLocation(LocalServer localServer);
-    public abstract MutableComboBoxModel getLocalServerModel();
-    public abstract void setLocalServerModel(MutableComboBoxModel localServers);
+    public abstract MutableComboBoxModel<LocalServer> getLocalServerModel();
+    public abstract void setLocalServerModel(MutableComboBoxModel<LocalServer> localServers);
     public abstract PhpVersion getPhpVersion();
     public abstract void setPhpVersion(PhpVersion phpVersion);
     public abstract Charset getEncoding();
