@@ -129,7 +129,7 @@ public class QueryTableCellRendererTest {
         
         // issue seen, not selected
         RendererIssue rendererIssue = new RendererIssue(rendererRepository, "");
-        IssueProperty property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
+        IssueProperty property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
         rendererQuery.containsIssue = true;
         boolean selected = false;
         setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_SEEN, true);
@@ -143,7 +143,7 @@ public class QueryTableCellRendererTest {
         // issue seen, selected
         rendererQuery.containsIssue = true;
         rendererIssue = new RendererIssue(rendererRepository, "");
-        property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
+        property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
         selected = true;
         setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_SEEN, true);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
@@ -156,7 +156,7 @@ public class QueryTableCellRendererTest {
         // obsolete issue, not selected
         rendererQuery.containsIssue = false;
         rendererIssue = new RendererIssue(rendererRepository, "");
-        property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
+        property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
         selected = false;
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
@@ -169,7 +169,7 @@ public class QueryTableCellRendererTest {
         rendererQuery.containsIssue = false;
         selected = true;
         rendererIssue = new RendererIssue(rendererRepository, "");
-        property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
+        property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(obsoleteHighlightColor, result.getBackground());
@@ -181,7 +181,7 @@ public class QueryTableCellRendererTest {
         rendererQuery.containsIssue = true;
         selected = false;
         rendererIssue = new RendererIssue(rendererRepository, "changed");
-        property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
+        property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
         setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_MODIFIED, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
@@ -195,7 +195,7 @@ public class QueryTableCellRendererTest {
         rendererQuery.containsIssue = true;
         selected = true;
         rendererIssue = new RendererIssue(rendererRepository, "changed");
-        property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
+        property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
         setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_MODIFIED, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
@@ -208,7 +208,7 @@ public class QueryTableCellRendererTest {
         rendererQuery.containsIssue = true;
         selected = false;
         rendererIssue = new RendererIssue(rendererRepository, "");
-        property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
+        property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
         setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_NEW, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
@@ -222,7 +222,7 @@ public class QueryTableCellRendererTest {
         rendererQuery.containsIssue = true;
         selected = true;
         rendererIssue = new RendererIssue(rendererRepository, "");
-        property = new RendererNode(rendererIssue, "some value", rendererRepository).createProperty();
+        property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
         setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_NEW, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
@@ -243,7 +243,7 @@ public class QueryTableCellRendererTest {
         RendererRepository rendererRepository = new RendererRepository();
         RendererIssue issue = new RendererIssue(rendererRepository, "");
         RendererQuery query = new RendererQuery(rendererRepository);
-        IssueProperty property = new RendererNode(issue, "some value", rendererRepository).createProperty();
+        IssueProperty property = new RendererNode(issue, "some value", rendererRepository, new ChangesProvider()).createProperty();
 
         IssueTable<RendererQuery> issueTable = new IssueTable(
                 TestKit.getRepository(rendererRepository).getRepository(),
@@ -343,11 +343,18 @@ public class QueryTableCellRendererTest {
         }
     }
 
+    private class ChangesProvider implements IssueNode.ChangesProvider<TestIssue>  {
+        @Override
+        public String getRecentChanges(TestIssue issue) {
+            return ((RendererIssue) issue).getRecentChanges();
+        }
+    }
+    
     private class RendererNode<TestIssue> extends IssueNode {
 
         Object propertyValue;
-        public RendererNode(RendererIssue issue, String value, RendererRepository rendererRepository) {
-            super(TestKit.getRepository(rendererRepository).getRepository(), issue);
+        public RendererNode(RendererIssue issue, String value, RendererRepository rendererRepository, ChangesProvider changesProvider) {
+            super(TestKit.getRepository(rendererRepository).getRepository(), issue, changesProvider);
             propertyValue = value;
         }
         RendererIssueProperty createProperty() {

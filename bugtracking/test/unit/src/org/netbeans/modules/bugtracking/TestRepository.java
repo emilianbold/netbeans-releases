@@ -70,8 +70,6 @@ public abstract class TestRepository {
 
     public abstract Collection<? extends TestQuery> getQueries();
 
-    public abstract Lookup getLookup();
-
     public abstract Collection<? extends TestIssue> simpleSearch(String criteria);
 
     public abstract void removePropertyChangeListener(PropertyChangeListener listener);
