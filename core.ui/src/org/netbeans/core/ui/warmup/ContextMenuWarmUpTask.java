@@ -45,6 +45,7 @@
 package org.netbeans.core.ui.warmup;
 
 import java.awt.EventQueue;
+import java.util.logging.LogManager;
 
 import javax.swing.Action;
 import javax.swing.JMenuItem;
@@ -72,7 +73,9 @@ public final class ContextMenuWarmUpTask implements Runnable {
         assert EventQueue.isDispatchThread();
         // For first context menu.
         org.openide.actions.ActionManager.getDefault().getContextActions();
-        JMenuItem mi = new javax.swing.JMenuItem();
+        synchronized (LogManager.getLogManager()) {
+            JMenuItem mi = new javax.swing.JMenuItem();
+        }
         warmUpToolsPopupMenuItem();
     }
 
