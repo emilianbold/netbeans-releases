@@ -4309,7 +4309,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 for (TypeMirror smartType : smartTypes) {
                     if (smartType.getKind() == TypeKind.DECLARED) {
                         ExecutableType descriptorType = tu.getDescriptorType((DeclaredType)smartType);
-                        if (descriptorType != null && types.isSubsignature((ExecutableType)type, descriptorType)) {
+                        if (descriptorType != null && types.isSubsignature((ExecutableType)type, descriptorType)
+                                && types.isSubtype(((ExecutableType)type).getReturnType(), descriptorType.getReturnType())) {
                             return true;
                         }
                     }
