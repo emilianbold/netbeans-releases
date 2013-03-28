@@ -55,6 +55,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Root node of the document section of CSS Styles view.
@@ -66,6 +67,8 @@ import org.openide.util.NbBundle;
 })
 public class DocumentNode extends AbstractNode {
 
+    private static final RequestProcessor RP = new RequestProcessor(DocumentNode.class);
+    
     /**
      * Icon base of the node.
      */
@@ -144,11 +147,18 @@ public class DocumentNode extends AbstractNode {
         }
 
         private void refreshKeysImpl() {
-            Collection<FileObject> keys = model != null
+            final Collection<FileObject> keys = model != null
                     ? model.getFilesToRulesMap().keySet()
                     : Collections.<FileObject>emptyList();
+            
+            RP.post(new Runnable() {
 
-            setKeys(keys);
+                @Override
+                public void run() {
+                    setKeys(keys);
+                }
+                
+            });
         }
 
         @Override
