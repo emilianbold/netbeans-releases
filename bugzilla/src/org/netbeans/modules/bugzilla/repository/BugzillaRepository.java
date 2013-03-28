@@ -121,6 +121,8 @@ public class BugzillaRepository {
     private PropertyChangeSupport support;
     
     private Lookup lookup;
+    
+    private final Object RC_LOCK = new Object();
 
     public BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -411,11 +413,11 @@ public class BugzillaRepository {
         fireQueryListChanged();
     }
 
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
     
@@ -550,29 +552,33 @@ public class BugzillaRepository {
      * 
      * @return
      */
-    public synchronized BugzillaConfiguration getConfiguration() {
-        if(bc == null) {
-            bc = createConfiguration(false);
-        } else if(!bc.isValid()) {
-            // there was already an attempt to get the configuration
-            // yet it happend to be invalid, so try one more time as it 
-            // might have been just a networking glitch  
-            bc = createConfiguration(false);
+    public BugzillaConfiguration getConfiguration() {
+        synchronized(RC_LOCK) {
+            if(bc == null) {
+                bc = createConfiguration(false);
+            } else if(!bc.isValid()) {
+                // there was already an attempt to get the configuration
+                // yet it happend to be invalid, so try one more time as it 
+                // might have been just a networking glitch  
+                bc = createConfiguration(false);
+            }
+            return bc;
         }
-        return bc;
     }
 
     public synchronized void refreshConfiguration() {
-        BugzillaConfiguration conf = createConfiguration(true);
-        if(conf.isValid()) {
-            bc = conf;
-        } else {
-            // Hard to say at this point why the attempt to refresh the 
-            // configuration failed - could be just a temporary networking issue.
-            // This is called only from ensureConfigurationUptodate(), so even if
-            // the metadata might not be uptodate anymore, they still may be 
-            // sufficient for what the user plans to do. So let's cross the 
-            // fingers and keep bc the way it is.
+        synchronized(RC_LOCK) {
+            BugzillaConfiguration conf = createConfiguration(true);
+            if(conf.isValid()) {
+                bc = conf;
+            } else {
+                // Hard to say at this point why the attempt to refresh the 
+                // configuration failed - could be just a temporary networking issue.
+                // This is called only from ensureConfigurationUptodate(), so even if
+                // the metadata might not be uptodate anymore, they still may be 
+                // sufficient for what the user plans to do. So let's cross the 
+                // fingers and keep bc the way it is.
+            }
         }
     }
 
