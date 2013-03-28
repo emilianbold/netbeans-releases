@@ -117,8 +117,8 @@ public class StorageTest extends NbTestCase {
 
         long lm = System.currentTimeMillis();
         IssueCache<DummyIssue, Object> cache = getCache();
-        IssueEntry ie1 = cache.new IssueEntry(i1, i1.id, attr1, -1, -1, false, lm);
-        IssueEntry ie2 = cache.new IssueEntry(i2, i2.id, attr2, -1, -1, false, lm);
+        IssueEntry ie1 = cache.new IssueEntry(i1, i1.id, attr1, IssueCache.Status.ISSUE_STATUS_UNKNOWN, IssueCache.Status.ISSUE_STATUS_UNKNOWN, false, lm);
+        IssueEntry ie2 = cache.new IssueEntry(i2, i2.id, attr2, IssueCache.Status.ISSUE_STATUS_UNKNOWN, IssueCache.Status.ISSUE_STATUS_UNKNOWN, false, lm);
         
         storage.storeIssue(url, ie1);
         storage.storeIssue(url, ie2);
@@ -127,8 +127,8 @@ public class StorageTest extends NbTestCase {
         assertTrue(issues.contains(id1));
         assertTrue(issues.contains(id2));
 
-        ie1 = cache.new IssueEntry(i1, i1.id, null, -1, -1, false, lm);
-        ie2 = cache.new IssueEntry(i2, i2.id, null, -1, -1, false, lm);
+        ie1 = cache.new IssueEntry(i1, i1.id, null, IssueCache.Status.ISSUE_STATUS_UNKNOWN, IssueCache.Status.ISSUE_STATUS_UNKNOWN, false, lm);
+        ie2 = cache.new IssueEntry(i2, i2.id, null, IssueCache.Status.ISSUE_STATUS_UNKNOWN, IssueCache.Status.ISSUE_STATUS_UNKNOWN, false, lm);
         storage.readIssue(url, ie1);
         if(ie1.getSeenAttributes() == null) fail("missing issue id [" + id1 + "]");
         assertAttribute(ie1.getSeenAttributes(), "dummy1", "dummy3");
@@ -203,8 +203,8 @@ public class StorageTest extends NbTestCase {
         
         long lm = System.currentTimeMillis();
         IssueCache<DummyIssue, Object> cache = getCache();
-        IssueEntry ie1 = cache. new IssueEntry(i1, i1.id, attr, -1, -1, false, lm);
-        IssueEntry ie2 = cache. new IssueEntry(i2, i2.id, attr, -1, -1, false, lm);
+        IssueEntry ie1 = cache. new IssueEntry(i1, i1.id, attr, IssueCache.Status.ISSUE_STATUS_UNKNOWN, IssueCache.Status.ISSUE_STATUS_UNKNOWN, false, lm);
+        IssueEntry ie2 = cache. new IssueEntry(i2, i2.id, attr, IssueCache.Status.ISSUE_STATUS_UNKNOWN, IssueCache.Status.ISSUE_STATUS_UNKNOWN, false, lm);
 
         storage.storeIssue(url, ie1);
         storage.storeIssue(url, ie2);

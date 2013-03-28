@@ -132,7 +132,7 @@ public class QueryTableCellRendererTest {
         IssueProperty property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
         rendererQuery.containsIssue = true;
         boolean selected = false;
-        setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_SEEN, true);
+        setEntryValues(rendererRepository, rendererIssue, IssueCache.Status.ISSUE_STATUS_SEEN, true);
         TableCellStyle defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         TableCellStyle result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
@@ -145,7 +145,7 @@ public class QueryTableCellRendererTest {
         rendererIssue = new RendererIssue(rendererRepository, "");
         property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
         selected = true;
-        setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_SEEN, true);
+        setEntryValues(rendererRepository, rendererIssue, IssueCache.Status.ISSUE_STATUS_SEEN, true);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
@@ -182,7 +182,7 @@ public class QueryTableCellRendererTest {
         selected = false;
         rendererIssue = new RendererIssue(rendererRepository, "changed");
         property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
-        setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_MODIFIED, false);
+        setEntryValues(rendererRepository, rendererIssue, IssueCache.Status.ISSUE_STATUS_MODIFIED, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
@@ -196,7 +196,7 @@ public class QueryTableCellRendererTest {
         selected = true;
         rendererIssue = new RendererIssue(rendererRepository, "changed");
         property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
-        setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_MODIFIED, false);
+        setEntryValues(rendererRepository, rendererIssue, IssueCache.Status.ISSUE_STATUS_MODIFIED, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(modifiedHighlightColor, result.getBackground());
@@ -209,7 +209,7 @@ public class QueryTableCellRendererTest {
         selected = false;
         rendererIssue = new RendererIssue(rendererRepository, "");
         property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
-        setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_NEW, false);
+        setEntryValues(rendererRepository, rendererIssue, IssueCache.Status.ISSUE_STATUS_NEW, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
@@ -223,7 +223,7 @@ public class QueryTableCellRendererTest {
         selected = true;
         rendererIssue = new RendererIssue(rendererRepository, "");
         property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
-        setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_NEW, false);
+        setEntryValues(rendererRepository, rendererIssue, IssueCache.Status.ISSUE_STATUS_NEW, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(newHighlightColor, result.getBackground());
@@ -471,13 +471,13 @@ public class QueryTableCellRendererTest {
 
         @Override
         public IssueStatusProvider.Status getStatus() {
-            int s = repo.cache.getStatus(getID());
+            IssueCache.Status s = repo.cache.getStatus(getID());
             switch(s) {
-                case IssueCache.ISSUE_STATUS_NEW:
+                case ISSUE_STATUS_NEW:
                     return IssueStatusProvider.Status.NEW;
-                case IssueCache.ISSUE_STATUS_MODIFIED:
+                case ISSUE_STATUS_MODIFIED:
                     return IssueStatusProvider.Status.MODIFIED;
-                case IssueCache.ISSUE_STATUS_SEEN:
+                case ISSUE_STATUS_SEEN:
                     return IssueStatusProvider.Status.SEEN;
             }
             return null;
@@ -590,7 +590,7 @@ public class QueryTableCellRendererTest {
         }
     };
 
-    private void setEntryValues(RendererRepository repository, RendererIssue rendererIssue, int status, boolean seen) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    private void setEntryValues(RendererRepository repository, RendererIssue rendererIssue, IssueCache.Status status, boolean seen) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         IssueCache cache = repository.getLookup().lookup(IssueCache.class);
         try {
             cache.setIssueData(rendererIssue, rendererIssue); // ensure issue is cached

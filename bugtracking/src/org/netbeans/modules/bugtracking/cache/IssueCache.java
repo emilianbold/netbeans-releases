@@ -44,19 +44,15 @@ package org.netbeans.modules.bugtracking.cache;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 
 /**
  *
@@ -64,35 +60,48 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
  */
 public class IssueCache<I, D> {
 
-    /**
-     * No information available
-     */
-    public static final int ISSUE_STATUS_UNKNOWN = 0;
-    /**
-     * Issue was seen
-     */
-    public static final int ISSUE_STATUS_SEEN = 2;
-    /**
-     * Issue wasn't seen yet
-     */
-    public static final int ISSUE_STATUS_NEW = 4;
-    /**
-     * Issue was remotely modified since the last time it was seen
-     */
-    public static final int ISSUE_STATUS_MODIFIED = 8;
+    public enum Status {
+        /**
+         * No information available
+         */
+        ISSUE_STATUS_UNKNOWN(0),
+        /**
+         * Issue was seen
+         */
+        ISSUE_STATUS_SEEN(2),
+        /**
+         * Issue wasn't seen yet
+         */
+        ISSUE_STATUS_NEW(4),
+        /**
+         * Issue was remotely modified since the last time it was seen
+         */
+        ISSUE_STATUS_MODIFIED(8);
+        
+        /* used by IssueStorage */
+        private final int val;
+
+        private Status(int i) {
+            this.val = i;
+        }
+        int getVal() {
+            return val;
+        }
+    }
+    
     /**
      * Seen, New or Modified
      */
-    public static final int ISSUE_STATUS_ALL =
-            ISSUE_STATUS_NEW |
-            ISSUE_STATUS_MODIFIED |
-            ISSUE_STATUS_SEEN;
+    public static final EnumSet<Status> ISSUE_STATUS_ALL = EnumSet.of(
+            Status.ISSUE_STATUS_NEW,
+            Status.ISSUE_STATUS_MODIFIED,
+            Status.ISSUE_STATUS_SEEN);
     /**
      * New or modified
      */
-    public static final int ISSUE_STATUS_NOT_SEEN =
-            ISSUE_STATUS_NEW |
-            ISSUE_STATUS_MODIFIED;
+    public static final EnumSet<Status> ISSUE_STATUS_NOT_SEEN = EnumSet.of(
+            Status.ISSUE_STATUS_NEW,
+            Status.ISSUE_STATUS_MODIFIED);
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache");
     private Map<String, IssueEntry> cache;
@@ -277,7 +286,7 @@ public class IssueCache<I, D> {
                         }
                         storeIssue(entry);
                         entry.seen = false;
-                        entry.status= ISSUE_STATUS_MODIFIED;
+                        entry.status= Status.ISSUE_STATUS_MODIFIED;
                     } else {
                         LOG.log(Level.FINE, " issue {0} isn't changed", new Object[] {id}); // NOI18N
                         // keep old values
@@ -288,12 +297,12 @@ public class IssueCache<I, D> {
                     {
                         LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
                         entry.seen = false;
-                        entry.status= ISSUE_STATUS_MODIFIED;
+                        entry.status= Status.ISSUE_STATUS_MODIFIED;
                     } else {
                         LOG.log(Level.FINE, " issue {0} isn't changed", new Object[] {id}); // NOI18N
                         entry.seenAttributes = null;
                         entry.seen = false;
-                        entry.status= ISSUE_STATUS_NEW;
+                        entry.status= Status.ISSUE_STATUS_NEW;
                     }
                 }
             }
@@ -314,10 +323,8 @@ public class IssueCache<I, D> {
         }
         LOG.log(Level.FINE, "setting seen {0} for issue {1}", new Object[] {seen, id}); // NOI18N
         assert !SwingUtilities.isEventDispatchThread();
-        boolean oldValue;
         IssueEntry entry;
         synchronized(CACHE_LOCK) {
-            oldValue = wasSeen(id);
             entry = getCache().get(id);
             assert entry != null && entry.issue != null;
             if(seen) {
@@ -327,7 +334,7 @@ public class IssueCache<I, D> {
                 entry.lastUnseenStatus = entry.status;
             } else {
                 entry.seenAttributes = getLastSeenAttributes().get(id);
-                if(entry.lastUnseenStatus != ISSUE_STATUS_UNKNOWN) {
+                if(entry.lastUnseenStatus != Status.ISSUE_STATUS_UNKNOWN) {
                     entry.status = entry.lastUnseenStatus;
                     if(entry.seenAttributes == null) {
                         entry.seenAttributes = issueAccessor.getAttributes(entry.issue);
@@ -340,7 +347,7 @@ public class IssueCache<I, D> {
     }
 
     /**
-     * Determines wheter the {@link Issue} with the given id was seen or unseen.
+     * Determines whether the {@link Issue} with the given id was seen or unseen.
      *
      * @param id issue id
      * @return true if issue was seen, otherwise false
@@ -363,7 +370,7 @@ public class IssueCache<I, D> {
      * Returns the last seen attributes for the issue with the given id.
      *
      * @param id issue id
-     * @return last seen sttributes
+     * @return last seen attributes
      */
     public Map<String, String> getSeenAttributes(String id) {
         IssueEntry entry;
@@ -403,16 +410,16 @@ public class IssueCache<I, D> {
      * @see #ISSUE_STATUS_SEEN
      * @see #ISSUE_STATUS_NOT_SEEN
      */
-    public int getStatus(String id) {
+    public Status getStatus(String id) {
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
             if(entry == null ) {
                 LOG.log(Level.FINE, "returning UKNOWN status for issue {0}", new Object[] {id}); // NOI18N
-                return ISSUE_STATUS_UNKNOWN;
+                return Status.ISSUE_STATUS_UNKNOWN;
             }
             if(entry.seen) {
                 LOG.log(Level.FINE, "returning SEEN status for issue {0}", new Object[] {id}); // NOI18N
-                return ISSUE_STATUS_SEEN;
+                return Status.ISSUE_STATUS_SEEN;
             }
             LOG.log(Level.FINE, "returning status {0} for issue {1}", new Object[] {entry.status, id}); // NOI18N
             return entry.status;
@@ -513,7 +520,7 @@ public class IssueCache<I, D> {
     /**
      * for testing purposes
      */
-    void setEntryValues(String id, int status, boolean seen) {
+    void setEntryValues(String id, Status status, boolean seen) {
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
             assert entry != null;
@@ -525,7 +532,7 @@ public class IssueCache<I, D> {
     private IssueEntry createNewEntry(String id) {
         IssueEntry entry = new IssueEntry();
         entry.id = id;
-        entry.status = ISSUE_STATUS_NEW;
+        entry.status = Status.ISSUE_STATUS_NEW;
         getCache().put(id, entry);
         return entry;
     }
@@ -559,15 +566,15 @@ public class IssueCache<I, D> {
     class IssueEntry {
         private I issue;
         private Map<String, String> seenAttributes;
-        private int status;
+        private Status status;
         private boolean seen = false;
         private String id;
         private long lastSeenModified = -1;
-        private int lastUnseenStatus = ISSUE_STATUS_UNKNOWN;
+        private Status lastUnseenStatus = Status.ISSUE_STATUS_UNKNOWN;
 
         IssueEntry() { }
 
-        IssueEntry(I issue, String id, Map<String, String> seenAttributes, int status, int lastUnseenStatus, boolean seen, long lastKnownModified) {
+        IssueEntry(I issue, String id, Map<String, String> seenAttributes, Status status, Status lastUnseenStatus, boolean seen, long lastKnownModified) {
             this.issue = issue;
             this.id = id;
             this.seenAttributes = seenAttributes;
@@ -583,7 +590,7 @@ public class IssueCache<I, D> {
         public Map<String, String> getSeenAttributes() {
             return seenAttributes;
         }
-        public int getStatus() {
+        public Status getStatus() {
             return status;
         }
         public void setSeen(boolean seen) {
@@ -601,10 +608,10 @@ public class IssueCache<I, D> {
         public void setLastSeenModified(long lastKnownModified) {
             this.lastSeenModified = lastKnownModified;
         }
-        public int getLastUnseenStatus() {
+        public Status getLastUnseenStatus() {
             return lastUnseenStatus;
         }
-        public void setLastUnseenStatus(int lastUnseenStatus) {
+        public void setLastUnseenStatus(Status lastUnseenStatus) {
             this.lastUnseenStatus = lastUnseenStatus;
         }
     }

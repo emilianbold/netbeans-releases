@@ -287,7 +287,7 @@ public class BugzillaQuery {
         return info;
     }
 
-    public int getIssueStatus(String id) {
+    public IssueCache.Status getIssueStatus(String id) {
         return repository.getIssueCache().getStatus(id);
     }
 
@@ -320,10 +320,10 @@ public class BugzillaQuery {
     }
     
     public Collection<BugzillaIssue> getIssues() {
-        return getIssues(~0);
+        return getIssues(IssueCache.ISSUE_STATUS_ALL);
     }
     
-    public Collection<BugzillaIssue> getIssues(int includeStatus) {
+    public Collection<BugzillaIssue> getIssues(EnumSet<IssueCache.Status> includeStatus) {
         if (issues == null) {
             return Collections.emptyList();
         }
@@ -335,8 +335,8 @@ public class BugzillaQuery {
         IssueCache<BugzillaIssue, TaskData> cache = repository.getIssueCache();
         List<BugzillaIssue> ret = new ArrayList<BugzillaIssue>();
         for (String id : ids) {
-            int status = getIssueStatus(id);
-            if((status & includeStatus) != 0) {
+            IssueCache.Status status = getIssueStatus(id);
+            if(includeStatus.contains(status)) {
                 ret.add(cache.getIssue(id));
             }
         }

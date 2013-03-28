@@ -268,7 +268,7 @@ public class JiraQuery {
         return issues.contains(id);
     }
 
-    public int getIssueStatus(String id) {
+    public IssueCache.Status getIssueStatus(String id) {
         return repository.getIssueCache().getStatus(id);
     }
 
@@ -294,10 +294,10 @@ public class JiraQuery {
     }
 
     public Collection<NbJiraIssue> getIssues() {
-        return getIssues(~0);
+        return getIssues(IssueCache.ISSUE_STATUS_ALL);
     }
     
-    public Collection<NbJiraIssue> getIssues(int includeStatus) {
+    public Collection<NbJiraIssue> getIssues(EnumSet<IssueCache.Status> includeStatus) {
         if (issues == null) {
             return Collections.emptyList();
         }
@@ -309,8 +309,8 @@ public class JiraQuery {
         IssueCache<NbJiraIssue, TaskData> cache = repository.getIssueCache();
         List<NbJiraIssue> ret = new ArrayList<NbJiraIssue>();
         for (String id : ids) {
-            int status = getIssueStatus(id);
-            if((status & includeStatus) != 0) {
+            IssueCache.Status status = getIssueStatus(id);
+            if(includeStatus.contains(status)) {
                 ret.add(cache.getIssue(id));
             }
         }

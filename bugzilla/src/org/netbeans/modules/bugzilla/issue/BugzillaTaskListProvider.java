@@ -555,9 +555,9 @@ public final class BugzillaTaskListProvider extends TaskListIssueProvider implem
     private BugzillaIssue getIssue(final BugzillaRepository repository, final String issueId) {
         assert !EventQueue.isDispatchThread();
         // XXX is there a simpler way to obtain an issue?
-        int status = repository.getIssueCache().getStatus(issueId);
+        IssueCache.Status status = repository.getIssueCache().getStatus(issueId);
         final BugzillaIssue[] issue = new BugzillaIssue[1];
-        if (status == IssueCache.ISSUE_STATUS_UNKNOWN) { // not yet cached
+        if (status == IssueCache.Status.ISSUE_STATUS_UNKNOWN) { // not yet cached
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {

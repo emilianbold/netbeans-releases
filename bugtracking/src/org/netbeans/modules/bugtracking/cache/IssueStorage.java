@@ -186,7 +186,7 @@ class IssueStorage {
                 }
                 dos.writeBoolean(entry.wasSeen());
                 dos.writeLong(entry.getLastSeenModified());
-                dos.writeInt(entry.getLastUnseenStatus());
+                dos.writeInt(entry.getLastUnseenStatus().getVal());
                 if(entry.getSeenAttributes() != null) {
                     Map<String, String> sa = entry.getSeenAttributes();
                     for(Entry<String, String> e : sa.entrySet()) {
@@ -224,10 +224,21 @@ class IssueStorage {
                 Map<String, String> m = new HashMap<String, String>();
                 boolean seen = is.readBoolean();
                 long lastModified = -1;
-                int lastStatus = IssueCache.ISSUE_STATUS_UNKNOWN;
+                IssueCache.Status lastStatus = IssueCache.Status.ISSUE_STATUS_UNKNOWN;
                 if(!STORAGE_VERSION.equals(STORAGE_VERSION_1_0)) {
                     lastModified = is.readLong();
-                    lastStatus = is.readInt();
+                    int i = is.readInt();
+                    for(IssueCache.Status s : IssueCache.Status.values()) {
+                        if(s.getVal() == i) {
+                            lastStatus = s;
+                            break;
+                        }
+                    }
+                    if(i != IssueCache.Status.ISSUE_STATUS_UNKNOWN.getVal() && 
+                       lastStatus == IssueCache.Status.ISSUE_STATUS_UNKNOWN) 
+                    {
+                        assert false : "there is no Status value for " + i; // NOI18N
+                    }
                 }
                 while(true) {
                     try {

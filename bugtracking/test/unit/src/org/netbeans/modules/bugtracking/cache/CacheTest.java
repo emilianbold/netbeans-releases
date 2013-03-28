@@ -103,8 +103,8 @@ public class CacheTest extends NbTestCase {
         // => initial status SEEN
         CTestIssue issue = cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsBeforeRepo + "#v11#v21#v31");
         assertNotNull(issue);
-        int status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        IssueCache.Status status = cache.getStatus(issue.getID());
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         Map<String, String> attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -113,7 +113,7 @@ public class CacheTest extends NbTestCase {
         long tsAfterRepo = System.currentTimeMillis();
         cache.setIssueData(issue, "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v12#v22#v32");
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -121,7 +121,7 @@ public class CacheTest extends NbTestCase {
         // set SEEN TRUE => SEEN
         cache.setSeen(issue.getID(), true);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v12", "v22", "v32");
@@ -137,8 +137,8 @@ public class CacheTest extends NbTestCase {
         // => initial status NEW
         CTestIssue issue = cache.setIssueData("1", "1#issue1#" + tsAfterRepo + "#" + tsAfterRepo + "#v11#v21#v31");
         assertNotNull(issue);
-        int status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_NEW, status);
+        IssueCache.Status status = cache.getStatus(issue.getID());
+        assertEquals(IssueCache.Status.ISSUE_STATUS_NEW, status);
         Map<String, String> attr = cache.getSeenAttributes(issue.getID());
         assertNull(attr);
 
@@ -146,14 +146,14 @@ public class CacheTest extends NbTestCase {
         Thread.sleep(10);
         cache.setIssueData(issue, "1#issue1#" + tsAfterRepo + "#" + System.currentTimeMillis()  + "#v12#v22#v32");
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_NEW, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_NEW, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNull(attr);
 
         // set SEEN TRUE => SEEN
         cache.setSeen(issue.getID(), true);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v12", "v22", "v32");
@@ -161,7 +161,7 @@ public class CacheTest extends NbTestCase {
         // set SEEN FALSE => NEW
         cache.setSeen(issue.getID(), false);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_NEW, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_NEW, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v12", "v22", "v32");
@@ -180,8 +180,8 @@ public class CacheTest extends NbTestCase {
         // => initial status MODIFIED
         CTestIssue issue = cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31");
         assertNotNull(issue);
-        int status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        IssueCache.Status status = cache.getStatus(issue.getID());
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         Map<String, String> attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);        
         assertAttributes(attr, "v11", "v21", "v31");
@@ -189,7 +189,7 @@ public class CacheTest extends NbTestCase {
         // set SEEN TRUE => SEEN. attrs from the last setData
         cache.setSeen(issue.getID(), true);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -198,7 +198,7 @@ public class CacheTest extends NbTestCase {
         Thread.sleep(10);
         cache.setSeen(issue.getID(), false);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -206,7 +206,7 @@ public class CacheTest extends NbTestCase {
         // set SEEN TRUE => SEEN, attsr stay the same
         cache.setSeen(issue.getID(), true);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -227,8 +227,8 @@ public class CacheTest extends NbTestCase {
         String data = "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31";
         CTestIssue issue = cache.setIssueData("1", data);
         assertNotNull(issue);
-        int status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        IssueCache.Status status = cache.getStatus(issue.getID());
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         Map<String, String> attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -236,7 +236,7 @@ public class CacheTest extends NbTestCase {
         // set SEEN TRUE => SEEN. attrs from the last setData
         cache.setSeen(issue.getID(), true);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -248,7 +248,7 @@ public class CacheTest extends NbTestCase {
         // status is expected to be SEEN, and data the last set
         cache.setIssueData("1", data);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -257,7 +257,7 @@ public class CacheTest extends NbTestCase {
         Thread.sleep(10);
         cache.setSeen(issue.getID(), false);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -285,8 +285,8 @@ public class CacheTest extends NbTestCase {
         String data = "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31";
         CTestIssue issue = cache.setIssueData("1", data);
         assertNotNull(issue);
-        int status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        IssueCache.Status status = cache.getStatus(issue.getID());
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         Map<String, String> attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -295,7 +295,7 @@ public class CacheTest extends NbTestCase {
         tsAfterRepo = System.currentTimeMillis();
         cache.setIssueData(issue, "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v12#v22#v32");
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -303,7 +303,7 @@ public class CacheTest extends NbTestCase {
         // set SEEN TRUE => SEEN, attrs from the last refresh
         cache.setSeen(issue.getID(), true);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v12", "v22", "v32");
@@ -318,7 +318,7 @@ public class CacheTest extends NbTestCase {
         tsAfterRepo = System.currentTimeMillis();
         cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v13#v23#v33"); // reload
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v12", "v22", "v32");
@@ -335,8 +335,8 @@ public class CacheTest extends NbTestCase {
         // => initial status SEEN
         CTestIssue issue = cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsBeforeRepo + "#v11#v21#v31");
         assertNotNull(issue);
-        int status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        IssueCache.Status status = cache.getStatus(issue.getID());
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         Map<String, String> attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -345,7 +345,7 @@ public class CacheTest extends NbTestCase {
         long tsAfterRepo = System.currentTimeMillis();
         cache.setIssueData(issue, "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31");
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -353,7 +353,7 @@ public class CacheTest extends NbTestCase {
         // set SEEN TRUE => SEEN
         cache.setSeen(issue.getID(), true);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");

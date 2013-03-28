@@ -525,13 +525,13 @@ public class NbJiraIssue {
     }
 
     public IssueStatusProvider.Status getIssueStatus() {
-        int status = getRepository().getIssueCache().getStatus(getID());
+        IssueCache.Status status = getRepository().getIssueCache().getStatus(getID());
         switch(status) {
-            case IssueCache.ISSUE_STATUS_NEW:
+            case ISSUE_STATUS_NEW:
                 return IssueStatusProvider.Status.NEW;
-            case IssueCache.ISSUE_STATUS_MODIFIED:
+            case ISSUE_STATUS_MODIFIED:
                 return IssueStatusProvider.Status.MODIFIED;
-            case IssueCache.ISSUE_STATUS_SEEN:
+            case ISSUE_STATUS_SEEN:
                 return IssueStatusProvider.Status.SEEN;
         }
         return null;
@@ -928,10 +928,10 @@ public class NbJiraIssue {
         if(wasSeen()) {
             return "";                                                          // NOI18N
         }
-        int status = repository.getIssueCache().getStatus(getID());
-        if(status == IssueCache.ISSUE_STATUS_NEW) {
+        IssueCache.Status status = repository.getIssueCache().getStatus(getID());
+        if(status == IssueCache.Status.ISSUE_STATUS_NEW) {
             return NbBundle.getMessage(NbJiraIssue.class, "LBL_NEW_STATUS");
-        } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
+        } else if(status == IssueCache.Status.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             Map<String, String> attr = getSeenAttributes();
             assert attr != null;
