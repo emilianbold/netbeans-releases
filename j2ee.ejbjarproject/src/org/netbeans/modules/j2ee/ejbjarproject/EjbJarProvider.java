@@ -56,6 +56,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
@@ -311,10 +312,12 @@ public final class EjbJarProvider extends J2eeModuleProvider
         // return a version based on the Java EE version
         Profile platformVersion = getJ2eeProfile();
         if (platformVersion == null) {
-            platformVersion = Profile.JAVA_EE_6_FULL;
+            platformVersion = Profile.JAVA_EE_7_FULL;
         }
-        if (Profile.JAVA_EE_6_FULL.equals(platformVersion) || Profile.JAVA_EE_6_WEB.equals(platformVersion) ||
-                Profile.JAVA_EE_7_FULL.equals(platformVersion) || Profile.JAVA_EE_7_WEB.equals(platformVersion)) {
+
+        if (Util.isAtLeastJavaEE7Web(platformVersion)) {
+            return EjbJar.VERSION_3_2;
+        } else if (Util.isAtLeastJavaEE6Web(platformVersion)) {
             return EjbJar.VERSION_3_1;
         } else if (Profile.JAVA_EE_5.equals(platformVersion)) {
             return EjbJar.VERSION_3_0;

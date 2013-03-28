@@ -46,6 +46,7 @@ public class DDWeb30DataLoader extends DDDataLoader {
     private static final long serialVersionUID = 1L;
 
     public static final String REQUIRED_MIME = "text/x-dd-servlet3.0"; // NOI18N
+    public static final String REQUIRED_MIME_31 = "text/x-dd-servlet3.1"; // NOI18N
 
     public DDWeb30DataLoader() {
         super("org.netbeans.modules.j2ee.ddloaders.web.DDDataObject");  // NOI18N
@@ -58,7 +59,7 @@ public class DDWeb30DataLoader extends DDDataLoader {
 
     @Override
     protected String[] getSupportedMimeTypes() {
-        return new String[]{REQUIRED_MIME};
+        return new String[]{REQUIRED_MIME, REQUIRED_MIME_31};
     }
 
     @Override

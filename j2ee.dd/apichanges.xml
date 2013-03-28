@@ -125,6 +125,22 @@ is the proper place.
             <package name="org.netbeans.modules.j2ee.dd.api.common"/>
             <issue number="53320"/>
         </change>
+        <change id="javaEE7DDVersionsAdded">
+            <api name="J2EEDDAPI"/>
+            <summary>Added deployment descriptors versions for the JavaEE7.</summary>
+            <version major="1" minor="29"/>
+            <date day="28" month="3" year="2013"/>
+            <author login="marfous@netbeans.org"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" modification="no" deprecation="no"/>
+            <description>
+                New DD versions of the ejb-jar.xml, web.xml, web-fragment.xml, application.xml, application-client.xml for JavaEE7 platform.
+            </description>
+            <class package="org.netbeans.modules.j2ee.dd.api.application" name="Application"/>
+            <class package="org.netbeans.modules.j2ee.dd.api.client" name="AppClient"/>
+            <class package="org.netbeans.modules.j2ee.dd.api.ejb" name="EjbJar"/>
+            <class package="org.netbeans.modules.j2ee.dd.api.web" name="WebApp"/>
+            <issue number="######"/>
+        </change>
 
     </changes>
 

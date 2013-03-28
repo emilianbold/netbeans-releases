@@ -109,6 +109,13 @@ public final class WebFragmentProvider {
                 } finally {
                     inputStream.close();
                 }
+            } else if (WebFragment.VERSION_3_1.equals(version)) {
+                InputStream inputStream = fo.getInputStream();
+                try {
+                    return org.netbeans.modules.j2ee.dd.impl.web.model_3_1_frag.WebFragment.createGraph(inputStream);
+                } finally {
+                    inputStream.close();
+                }
             } else {
                 throw new IOException("Unsupported version of web-fragment.xml found! Version: "+version);
             }
