@@ -49,6 +49,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
+import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowserSupport;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
@@ -112,7 +113,7 @@ public final class CustomizerBrowser extends JPanel {
     private void initComponents() {
 
         browserLabel = new JLabel();
-        browserComboBox = new JComboBox();
+        browserComboBox = new JComboBox<WebBrowser>();
         reloadOnSaveCheckBox = new JCheckBox();
 
         Mnemonics.setLocalizedText(browserLabel, NbBundle.getMessage(CustomizerBrowser.class, "CustomizerBrowser.browserLabel.text")); // NOI18N
@@ -143,7 +144,7 @@ public final class CustomizerBrowser extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JComboBox browserComboBox;
+    private JComboBox<WebBrowser> browserComboBox;
     private JLabel browserLabel;
     private JCheckBox reloadOnSaveCheckBox;
     // End of variables declaration//GEN-END:variables

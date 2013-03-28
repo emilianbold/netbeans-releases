@@ -254,7 +254,7 @@ public final class FrameworkCommandChooser extends JPanel {
         params.addAll(getStoredParams(task));
         // FIXME from ruby
         //params.addAll(RakeParameters.getParameters(task, project));
-        taskParametersComboBox.setModel(new DefaultComboBoxModel(params.toArray()));
+        taskParametersComboBox.setModel(new DefaultComboBoxModel<String>(params.toArray(new String[params.size()])));
         preselectLastSelectedParam(task);
         taskParametersComboBoxEditor.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -516,11 +516,11 @@ public final class FrameworkCommandChooser extends JPanel {
         taskField = new javax.swing.JTextField();
         taskHint = new javax.swing.JLabel();
         taskParamLabel = new javax.swing.JLabel();
-        taskParametersComboBox = new javax.swing.JComboBox();
+        taskParametersComboBox = new javax.swing.JComboBox<String>();
         matchingTaskLabel = new javax.swing.JLabel();
         splitPane = new javax.swing.JSplitPane();
         matchingTaskSP = new javax.swing.JScrollPane();
-        matchingTaskList = new javax.swing.JList();
+        matchingTaskList = new javax.swing.JList<Object>();
         helpScrollPane = new javax.swing.JScrollPane();
         helpTextPane = new javax.swing.JTextPane();
         previewTextField = new javax.swing.JTextField();
@@ -531,14 +531,11 @@ public final class FrameworkCommandChooser extends JPanel {
         debugCheckbox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.debugCheckbox.AccessibleContext.accessibleName")); // NOI18N
         debugCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.debugCheckbox.AccessibleContext.accessibleDescription")); // NOI18N
 
-        setFocusTraversalPolicy(null);
-
         taskLabel.setLabelFor(taskField);
         org.openide.awt.Mnemonics.setLocalizedText(taskLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskLabel.text")); // NOI18N
 
         taskFieldPanel.setLayout(new java.awt.BorderLayout());
 
-        taskField.setText(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskField.text")); // NOI18N
         taskField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 taskFieldKeyPressed(evt);
@@ -604,20 +601,20 @@ public final class FrameworkCommandChooser extends JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(keepOpenedCheckBox)
-                    .addComponent(splitPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 675, Short.MAX_VALUE)
+                    .addComponent(splitPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(taskLabel)
                             .addComponent(taskParamLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(taskParametersComboBox, 0, 575, Short.MAX_VALUE)
-                            .addComponent(taskFieldPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)))
+                            .addComponent(taskParametersComboBox, 0, 410, Short.MAX_VALUE)
+                            .addComponent(taskFieldPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)))
                     .addComponent(matchingTaskLabel, javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(previewLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(previewTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 589, Short.MAX_VALUE)))
+                        .addComponent(previewTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -634,7 +631,7 @@ public final class FrameworkCommandChooser extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(matchingTaskLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(previewTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -767,7 +764,7 @@ public final class FrameworkCommandChooser extends JPanel {
     private javax.swing.JTextPane helpTextPane;
     private javax.swing.JCheckBox keepOpenedCheckBox;
     private javax.swing.JLabel matchingTaskLabel;
-    private javax.swing.JList matchingTaskList;
+    private javax.swing.JList<Object> matchingTaskList;
     private javax.swing.JScrollPane matchingTaskSP;
     private javax.swing.JLabel previewLabel;
     private javax.swing.JTextField previewTextField;
@@ -777,7 +774,7 @@ public final class FrameworkCommandChooser extends JPanel {
     private javax.swing.JLabel taskHint;
     private javax.swing.JLabel taskLabel;
     private javax.swing.JLabel taskParamLabel;
-    private javax.swing.JComboBox taskParametersComboBox;
+    private javax.swing.JComboBox<String> taskParametersComboBox;
     // End of variables declaration//GEN-END:variables
 
     static final class Filter {

@@ -980,8 +980,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public ElementHandle getElement() {
-            // For completion documentation
-            return ElementHandleSupport.createHandle(info, new KeywordElement(name));
+            return ElementHandleSupport.createHandle(typeName, name, ElementKind.FIELD, getModifiers());
         }
     }
 

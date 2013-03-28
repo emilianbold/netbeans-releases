@@ -217,7 +217,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }
 
     @Override
-    protected JComboBox getRunAsCombo() {
+    protected JComboBox<String> getRunAsCombo() {
         return runAsComboBox;
     }
 
@@ -309,7 +309,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         int size = remoteConnectionComboBox.getModel().getSize();
         for (int i = 0; i < size; ++i) {
-            RemoteConfiguration rc = (RemoteConfiguration) remoteConnectionComboBox.getItemAt(i);
+            RemoteConfiguration rc = remoteConnectionComboBox.getItemAt(i);
             if (remoteConnection.equals(rc.getName())) {
                 remoteConnectionComboBox.setSelectedItem(rc);
                 return;
@@ -338,7 +338,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private void initComponents() {
 
         runAsLabel = new JLabel();
-        runAsComboBox = new JComboBox();
+        runAsComboBox = new JComboBox<String>();
         urlLabel = new JLabel();
         urlTextField = new JTextField();
         indexFileLabel = new JLabel();
@@ -348,13 +348,13 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         argsTextField = new JTextField();
         urlHintLabel = new JTextPane();
         remoteConnectionLabel = new JLabel();
-        remoteConnectionComboBox = new JComboBox();
+        remoteConnectionComboBox = new JComboBox<RemoteConfiguration>();
         manageRemoteConnectionButton = new JButton();
         uploadDirectoryLabel = new JLabel();
         uploadDirectoryTextField = new JTextField();
         remoteConnectionHintLabel = new JLabel();
         uploadFilesLabel = new JLabel();
-        uploadFilesComboBox = new JComboBox();
+        uploadFilesComboBox = new JComboBox<UploadFiles>();
         uploadFilesHintLabel = new JLabel();
         preservePermissionsCheckBox = new JCheckBox();
         preservePermissionsLabel = new JLabel();
@@ -372,6 +372,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         indexFileLabel.setLabelFor(indexFileTextField);
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile")); // NOI18N
+
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Browse")); // NOI18N
         indexFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -391,6 +392,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         remoteConnectionLabel.setLabelFor(remoteConnectionComboBox);
         Mnemonics.setLocalizedText(remoteConnectionLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RemoteConnection")); // NOI18N
+
         Mnemonics.setLocalizedText(manageRemoteConnectionButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Manage")); // NOI18N
         manageRemoteConnectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -410,17 +412,18 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(uploadFilesLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadFiles")); // NOI18N
 
         uploadFilesHintLabel.setLabelFor(this);
-
         Mnemonics.setLocalizedText(uploadFilesHintLabel, "dummy"); // NOI18N
+
         Mnemonics.setLocalizedText(preservePermissionsCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsCheckBox.text")); // NOI18N
 
         preservePermissionsLabel.setLabelFor(preservePermissionsCheckBox);
-
         Mnemonics.setLocalizedText(preservePermissionsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(uploadDirectlyCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyCheckBox.text")); // NOI18N
 
         uploadDirectlyLabel.setLabelFor(uploadDirectlyCheckBox);
         Mnemonics.setLocalizedText(uploadDirectlyLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.text")); // NOI18N
         advancedButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -634,16 +637,16 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private JButton manageRemoteConnectionButton;
     private JCheckBox preservePermissionsCheckBox;
     private JLabel preservePermissionsLabel;
-    private JComboBox remoteConnectionComboBox;
+    private JComboBox<RemoteConfiguration> remoteConnectionComboBox;
     private JLabel remoteConnectionHintLabel;
     private JLabel remoteConnectionLabel;
-    private JComboBox runAsComboBox;
+    private JComboBox<String> runAsComboBox;
     private JLabel runAsLabel;
     private JCheckBox uploadDirectlyCheckBox;
     private JLabel uploadDirectlyLabel;
     private JLabel uploadDirectoryLabel;
     private JTextField uploadDirectoryTextField;
-    private JComboBox uploadFilesComboBox;
+    private JComboBox<UploadFiles> uploadFilesComboBox;
     private JLabel uploadFilesHintLabel;
     private JLabel uploadFilesLabel;
     private JTextPane urlHintLabel;
