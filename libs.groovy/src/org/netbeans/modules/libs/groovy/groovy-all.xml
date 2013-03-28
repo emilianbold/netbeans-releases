@@ -48,13 +48,12 @@ made subject to such option by the copyright holder.
 <library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>groovy-all</name>
     <type>j2se</type>
-    <localizing-bundle>org/netbeans/modules/groovy/editor/resources/Bundle</localizing-bundle>
+    <localizing-bundle>org/netbeans/modules/libs/groovy/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.groovy.editor/modules/ext/groovy-all.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.libs.groovy/modules/ext/groovy-all.jar!/</resource>
     </volume>
     <properties>
-        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
             <value>org.codehaus.groovy:groovy-all:2.0.1:jar</value>
