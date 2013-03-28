@@ -183,16 +183,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private void initComponents() {
 
         configLabel = new JLabel();
-        configCombo = new JComboBox();
+        configCombo = new JComboBox<String>();
         configNew = new JButton();
         configDel = new JButton();
         separator = new JSeparator();
         runPanel = new RunAsPanel(insidePanels);
 
-        setFocusTraversalPolicy(null);
-
         configLabel.setLabelFor(configCombo);
-        Mnemonics.setLocalizedText(configLabel, NbBundle.getMessage(CustomizerRun.class, "LBL_Configuration"));
+        Mnemonics.setLocalizedText(configLabel, NbBundle.getMessage(CustomizerRun.class, "LBL_Configuration")); // NOI18N
 
         configCombo.setRenderer(new ConfigListCellRenderer());
         configCombo.addActionListener(new ActionListener() {
@@ -200,13 +198,15 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 configComboActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(configNew, NbBundle.getMessage(CustomizerRun.class, "LBL_New"));
+
+        Mnemonics.setLocalizedText(configNew, NbBundle.getMessage(CustomizerRun.class, "LBL_New")); // NOI18N
         configNew.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 configNewActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(configDel, NbBundle.getMessage(CustomizerRun.class, "LBL_Delete"));
+
+        Mnemonics.setLocalizedText(configDel, NbBundle.getMessage(CustomizerRun.class, "LBL_Delete")); // NOI18N
         configDel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 configDelActionPerformed(evt);
@@ -224,7 +224,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(configLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(configCombo, 0, 0, Short.MAX_VALUE)
+                .addComponent(configCombo, 0, 1, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(configNew)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -305,7 +305,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }//GEN-LAST:event_configDelActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JComboBox configCombo;
+    private JComboBox<String> configCombo;
     private JButton configDel;
     private JLabel configLabel;
     private JButton configNew;

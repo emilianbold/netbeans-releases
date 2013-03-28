@@ -118,11 +118,11 @@ public class CopyFilesVisual extends JPanel {
         return localServerController.getLocalServer();
     }
 
-    public MutableComboBoxModel getLocalServerModel() {
+    public MutableComboBoxModel<LocalServer> getLocalServerModel() {
         return localServerController.getLocalServerModel();
     }
 
-    public void setLocalServerModel(MutableComboBoxModel localServers) {
+    public void setLocalServerModel(MutableComboBoxModel<LocalServer> localServers) {
         localServerController.setLocalServerModel(localServers);
     }
 
@@ -150,10 +150,8 @@ public class CopyFilesVisual extends JPanel {
 
         copyFilesCheckBox = new JCheckBox();
         localServerLabel = new JLabel();
-        copyFilesComboBox = new JComboBox();
+        copyFilesComboBox = new JComboBox<LocalServer>();
         copyFilesButton = new JButton();
-
-        setFocusTraversalPolicy(null);
 
         Mnemonics.setLocalizedText(copyFilesCheckBox, NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFiles")); // NOI18N
 
@@ -176,7 +174,7 @@ public class CopyFilesVisual extends JPanel {
                 .addContainerGap()
                 .addComponent(localServerLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(copyFilesComboBox, 0, 141, Short.MAX_VALUE)
+                .addComponent(copyFilesComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(copyFilesButton))
         );
@@ -208,7 +206,7 @@ public class CopyFilesVisual extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton copyFilesButton;
     private JCheckBox copyFilesCheckBox;
-    private JComboBox copyFilesComboBox;
+    private JComboBox<LocalServer> copyFilesComboBox;
     private JLabel localServerLabel;
     // End of variables declaration//GEN-END:variables
 
