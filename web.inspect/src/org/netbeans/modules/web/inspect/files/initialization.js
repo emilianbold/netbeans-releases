@@ -332,10 +332,22 @@ NetBeans.paintSelectedElements = function(ctx, elements, color) {
 
 // Fills the area/frame between the given outer and inner rectangles
 NetBeans.paintFrame = function(ctx, inner, outer) {
-    ctx.fillRect(outer.left, outer.top, outer.width, (inner.top-outer.top));
-    ctx.fillRect(outer.left, inner.top+inner.height, outer.width, (outer.top+outer.height-inner.top-inner.height));
-    ctx.fillRect(outer.left, inner.top, (inner.left-outer.left), inner.height);
-    ctx.fillRect(inner.left+inner.width, inner.top, (outer.left+outer.width-inner.left-inner.width), inner.height);
+    var height = inner.top-outer.top;
+    if (height > 0) {
+        ctx.fillRect(outer.left, outer.top, outer.width, height);
+    }
+    height = outer.top+outer.height-inner.top-inner.height;
+    if (height > 0) {
+        ctx.fillRect(outer.left, inner.top+inner.height, outer.width, height);
+    }
+    var width = inner.left-outer.left;
+    if (width > 0) {
+        ctx.fillRect(outer.left, inner.top, width, inner.height);
+    }
+    width = outer.left+outer.width-inner.left-inner.width;
+    if (width > 0) {
+        ctx.fillRect(inner.left+inner.width, inner.top, width, inner.height);
+    }
 };
 
 NetBeans.paintHighlightedElements = function(ctx, elements) {
@@ -390,10 +402,10 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             this.paintFrame(ctx, borderRect, marginRect);
 
             ctx.fillStyle = '#FFFF00';
-            this.paintFrame(ctx, marginRect, paddingRect);
+            this.paintFrame(ctx, paddingRect, borderRect);
 
             ctx.fillStyle = '#00FF00';
-            this.paintFrame(ctx, paddingRect, contentRect);
+            this.paintFrame(ctx, contentRect, paddingRect);
 
             ctx.fillStyle = '#0000FF';
             ctx.fillRect(contentRect.left, contentRect.top, contentRect.width, contentRect.height);
