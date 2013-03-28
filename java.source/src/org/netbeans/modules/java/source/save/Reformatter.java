@@ -1191,13 +1191,58 @@ public class Reformatter implements ReformatTask {
         public Boolean visitAnnotatedType(AnnotatedTypeTree node, Void p) {
             List<? extends AnnotationTree> annotations = node.getAnnotations();
             if (annotations != null && !annotations.isEmpty()) {
-                for (Iterator<? extends AnnotationTree> it = annotations.iterator(); it.hasNext();) {
-                    scan(it.next(), p);
-                    if (it.hasNext())
-                        spaces(1, true);
+                switch (node.getUnderlyingType().getKind()) {
+                    case MEMBER_SELECT:
+                        MemberSelectTree mst = (MemberSelectTree)node.getUnderlyingType();
+                        scan(mst.getExpression(), p);
+                        accept(DOT);
+                        spaces(0);
+                        for (Iterator<? extends AnnotationTree> it = annotations.iterator(); it.hasNext();) {
+                            scan(it.next(), p);
+                            if (it.hasNext())
+                                spaces(1, true);
+                        }
+                        space();
+                        if (ERROR.contentEquals(mst.getIdentifier())) {
+                            do {
+                                if (tokens.offset() >= endPos)
+                                    break;
+                                int len = tokens.token().length();
+                                if (tokens.token().id() == WHITESPACE && tokens.offset() + len >= endPos)
+                                    break;
+                                col += len;
+                            } while (tokens.moveNext());
+                            lastBlankLines = -1;
+                            lastBlankLinesTokenIndex = -1;
+                            lastBlankLinesDiff = null;
+                        } else {
+                            accept(IDENTIFIER, STAR, THIS, SUPER, CLASS);
+                        }
+                        return true;
+                    case ARRAY_TYPE:
+                        ArrayTypeTree att = (ArrayTypeTree)node.getUnderlyingType();
+                        boolean ret = scan(att.getType(), p);
+                        space();
+                        for (Iterator<? extends AnnotationTree> it = annotations.iterator(); it.hasNext();) {
+                            scan(it.next(), p);
+                            if (it.hasNext())
+                                spaces(1, true);
+                        }
+                        space();
+                        JavaTokenId id = accept(LBRACKET, ELLIPSIS);
+                        if (id == ELLIPSIS)
+                            return ret;
+                        accept(RBRACKET);
+                        return ret;
+                    default:
+                        for (Iterator<? extends AnnotationTree> it = annotations.iterator(); it.hasNext();) {
+                            scan(it.next(), p);
+                            if (it.hasNext())
+                                spaces(1, true);
+                        }
+                        space();
                 }
             }
-            space();
             scan(node.getUnderlyingType(), p);
             return true;
         }

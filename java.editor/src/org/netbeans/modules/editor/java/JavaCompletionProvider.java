@@ -2614,6 +2614,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
             boolean isConst = parent.getKind() == Tree.Kind.VARIABLE && ((VariableTree)parent).getModifiers().getFlags().containsAll(EnumSet.of(FINAL, STATIC));
+            if (et.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+                et = ((AnnotatedTypeTree)et).getUnderlyingType();
+                exPath = new TreePath(exPath, et);
+            }
             if ((parent == null || parent.getKind() != Tree.Kind.PARENTHESIZED) &&
                     (et.getKind() == Tree.Kind.PRIMITIVE_TYPE || et.getKind() == Tree.Kind.ARRAY_TYPE || et.getKind() == Tree.Kind.PARAMETERIZED_TYPE)) {
                 TypeMirror tm = controller.getTrees().getTypeMirror(exPath);
@@ -2635,9 +2639,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                     et = t;
                     exPath = new TreePath(exPath, t);
                 }
-            } else if (et.getKind() == Tree.Kind.ANNOTATED_TYPE) {
-                et = ((AnnotatedTypeTree)et).getUnderlyingType();
-                exPath = new TreePath(exPath, et);
             }
             if (et.getKind() == Tree.Kind.IDENTIFIER) {
                 Element e = controller.getTrees().getElement(exPath);
