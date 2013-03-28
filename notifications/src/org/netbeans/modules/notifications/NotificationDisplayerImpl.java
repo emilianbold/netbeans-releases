@@ -41,17 +41,12 @@
  */
 package org.netbeans.modules.notifications;
 
+import org.netbeans.modules.notifications.center.NotificationCenterManager;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.CharConversionException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Date;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.Lookup;
@@ -72,16 +67,12 @@ import org.openide.xml.XMLUtil;
     @ServiceProvider(service = NotificationDisplayerImpl.class)})
 public final class NotificationDisplayerImpl extends NotificationDisplayer {
 
-    static final String PROP_NOTIFICATION_ADDED = "notificationAdded"; //NOI18N
-    static final String PROP_NOTIFICATION_REMOVED = "notificationRemoved"; //NOI18N
-    private static final List<NotificationImpl> model = new LinkedList<NotificationImpl>();
-    private static final PropertyChangeSupport propSupport = new PropertyChangeSupport(NotificationDisplayerImpl.class);
     private final NotificationCenterManager notificationCenter = NotificationCenterManager.getInstance();
 
     public NotificationDisplayerImpl() {
     }
 
-    static NotificationDisplayerImpl getInstance() {
+    public static NotificationDisplayerImpl getInstance() {
         //TODO this wont work since there are 2 implementations
         return Lookup.getDefault().lookup(NotificationDisplayerImpl.class);
     }
@@ -117,96 +108,8 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
         return n;
     }
 
-    /**
-     * Adds given Notification to the model, fires property change.
-     *
-     * @param n
-     */
-    void add(NotificationImpl n) {
-        synchronized (model) {
-            model.add(n);
-            Collections.sort(model);
-        }
+    private void add(NotificationImpl n) {
         notificationCenter.add(n);
-        firePropertyChange(PROP_NOTIFICATION_ADDED, n);
-    }
-
-    /**
-     * Removes given Notification from the popup model, fires property change.
-     *
-     * @param n
-     */
-    void removeFromPopup(NotificationImpl n) {
-        synchronized (model) {
-            if (!model.contains(n)) {
-                return;
-            }
-            model.remove(n);
-        }
-        firePropertyChange(PROP_NOTIFICATION_REMOVED, n);
-    }
-
-    void remove(NotificationImpl n) {
-        removeFromPopup(n);
-        notificationCenter.remove(n);
-    }
-
-    /**
-     * @return The count of active notifications.
-     */
-    int size() {
-        synchronized (model) {
-            return model.size();
-        }
-    }
-
-    /**
-     * @return List of all notifications.
-     */
-    List<NotificationImpl> getNotifications() {
-        List<NotificationImpl> res = null;
-        synchronized (model) {
-            res = new ArrayList<NotificationImpl>(model);
-        }
-        return res;
-    }
-
-    /**
-     * @return The most important notification.
-     */
-    NotificationImpl getTopNotification() {
-        NotificationImpl res = null;
-        synchronized (model) {
-            if (!model.isEmpty()) {
-                res = model.get(0);
-            }
-        }
-        return res;
-    }
-
-    void addPropertyChangeListener(PropertyChangeListener l) {
-        propSupport.addPropertyChangeListener(l);
-    }
-
-    void removePropertyChangeListener(PropertyChangeListener l) {
-        propSupport.removePropertyChangeListener(l);
-    }
-
-    private void firePropertyChange(final String propName, final NotificationImpl notification) {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                if (PROP_NOTIFICATION_ADDED.equals(propName)) {
-                    notification.initDecorations();
-                }
-                propSupport.firePropertyChange(propName, null, notification);
-            }
-        };
-        if (SwingUtilities.isEventDispatchThread()) {
-            r.run();
-        } else {
-            SwingUtilities.invokeLater(r);
-        }
     }
 
     private NotificationImpl createNotification(String title, Icon icon, Priority priority, Category category) {
@@ -220,7 +123,6 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
         } catch (CharConversionException ex) {
             throw new IllegalArgumentException(ex);
         }
-
-        return new NotificationImpl(title, icon, priority, category);
+        return new NotificationImpl(title, icon, priority, category, new Date());
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,44 +40,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.notifications;
 
-import java.util.ArrayList;
-import java.util.List;
+package org.netbeans.modules.notifications.filter;
+
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author jpeska
+ * Utilities
  */
-public class NotificationCenterManager {
+final class Util {
 
-    private static NotificationCenterManager instance = null;
-    private final List<NotificationImpl> notifications = new ArrayList<NotificationImpl>();
-
-    private NotificationCenterManager() {
+    public static String getString(String key) {
+        return NbBundle.getBundle(Util.class).getString(key);
     }
 
-    static NotificationCenterManager getInstance() {
-        if (instance == null) {
-            instance = new NotificationCenterManager();
-        }
-        return instance;
+    public static char getChar(String key) {
+        return NbBundle.getBundle(Util.class).getString(key).charAt(0);
     }
 
-    void add(NotificationImpl notification) {
-        synchronized(notifications) {
-            notifications.add(notification);
-        }
+    public static String getMessage(String key, Object obj) {
+        return NbBundle.getMessage(Util.class,key, obj);
     }
 
-    void remove(NotificationImpl notification) {
-        synchronized(notifications) {
-            notifications.remove(notification);
-        }
+    public static String getMessage(String key, Object obj, Object obj2) {
+        return NbBundle.getMessage(Util.class,key, obj, obj2);
     }
+    
+
 }
