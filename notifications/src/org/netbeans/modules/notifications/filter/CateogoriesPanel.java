@@ -76,7 +76,7 @@ final class CateogoriesPanel extends JPanel {
     }
 
     public boolean isValueValid() {
-        return checkVisibleLimit();
+        return true;
     }
 
     private void init() {
@@ -119,9 +119,7 @@ final class CateogoriesPanel extends JPanel {
             Category category = categories.get(i);
             categoryState[i] = null != filter && filter.isEnabled(category.getName());
         }
-        txtVisibleLimit.setText(null == filter ? "" : String.valueOf(filter.getNotificationCountLimit())); //NOI18N
         lstTypes.setEnabled(null != filter);
-        txtVisibleLimit.setEnabled(null != filter);
     }
 
     /**
@@ -130,16 +128,9 @@ final class CateogoriesPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lblVisibleLimit = new javax.swing.JLabel();
-        txtVisibleLimit = new javax.swing.JTextField();
         scrollTypes = new javax.swing.JScrollPane();
 
         setOpaque(false);
-
-        lblVisibleLimit.setLabelFor(txtVisibleLimit);
-        org.openide.awt.Mnemonics.setLocalizedText(lblVisibleLimit, org.openide.util.NbBundle.getMessage(CateogoriesPanel.class, "CateogoriesPanel.lblVisibleLimit.text")); // NOI18N
-
-        txtVisibleLimit.setText(org.openide.util.NbBundle.getMessage(CateogoriesPanel.class, "CateogoriesPanel.txtVisibleLimit.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -147,31 +138,19 @@ final class CateogoriesPanel extends JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(scrollTypes)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblVisibleLimit)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtVisibleLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 247, Short.MAX_VALUE)))
+                .addComponent(scrollTypes, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(scrollTypes, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblVisibleLimit)
-                    .addComponent(txtVisibleLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(scrollTypes, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel lblVisibleLimit;
     private javax.swing.JScrollPane scrollTypes;
-    private javax.swing.JTextField txtVisibleLimit;
     // End of variables declaration//GEN-END:variables
 
     public CategoryFilter getFilter() {
@@ -180,32 +159,7 @@ final class CateogoriesPanel extends JPanel {
                 Category category = categories.get(i);
                 filter.setEnabled(category.getName(), categoryState[i]);
             }
-            filter.setNotificationCountLimit(getVisibleLimit());
         }
         return filter;
-    }
-
-    private int getVisibleLimit() {
-        int limit = null == filter ? 100 : filter.getNotificationCountLimit();
-        try {
-            String strLimit = txtVisibleLimit.getText();
-            int tmp = Integer.parseInt(strLimit);
-            if (tmp > 0) {
-                limit = tmp;
-            }
-        } catch (NumberFormatException nfE) {
-            //ignore
-        }
-        return limit;
-    }
-
-    private boolean checkVisibleLimit() {
-        try {
-            String strLimit = txtVisibleLimit.getText();
-            int limit = Integer.parseInt(strLimit);
-            return limit > 0;
-        } catch (NumberFormatException nfE) {
-            return false;
-        }
     }
 }

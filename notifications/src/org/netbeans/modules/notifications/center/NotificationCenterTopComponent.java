@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.notifications.center;
 
+import java.awt.Event;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
@@ -49,14 +50,18 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
+import javax.swing.JToggleButton;
+import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -65,15 +70,17 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.api.settings.ConvertAsProperties;
-import org.netbeans.modules.notifications.NotificationDisplayerImpl;
 import org.netbeans.modules.notifications.NotificationImpl;
+import org.netbeans.modules.notifications.NotificationSettings;
 import org.netbeans.swing.etable.ETable;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.CloseButtonFactory;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Top component which displays something.
@@ -83,11 +90,11 @@ import org.openide.windows.TopComponent;
         autostore = false)
 @TopComponent.Description(
         preferredID = "NotificationCenterTopComponent",
-        //iconBase="SET/PATH/TO/ICON/HERE",
-        persistenceType = TopComponent.PERSISTENCE_NEVER)
+        iconBase = "org/netbeans/modules/notifications/resources/notificationsTC.png",
+        persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "output", openAtStartup = false)
 @ActionID(category = "Window", id = "org.netbeans.modules.notifications.NotificationCenterTopComponent")
-@ActionReference(path = "Menu/Window" /*, position = 333 */)
+@ActionReference(path = "Menu/Window/Tools", position = 600)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_NotificationCenterAction",
         preferredID = "NotificationCenterTopComponent")
@@ -95,30 +102,56 @@ public final class NotificationCenterTopComponent extends TopComponent {
 
     private static final int PREVIEW_DETAILS_REFRESH_DELAY = 300;
     private static final int FILTER_REFRESH_DELAY = 300;
-    private NotificationCenterManager notificationManager;
+    private static final int TABLE_REFRESH_PERIOD = 60000;
+    private final NotificationCenterManager notificationManager;
     private JPanel detailsPanel;
     private NotificationTable notificationTable;
     private Timer previewRefreshTimer;
     private JScrollPane notificationScroll;
     private SearchField searchField;
     private final Timer filterTimer;
+    private final Timer tableRefreshTimer;
     private final SearchDocumentListener searchDocumentListener;
+    private final KeyListener escSearchKeyListener;
+    private final KeyAdapter searchKeyAdapter;
+    private final NotificationTable.ProcessKeyEventListener tableKeyListener;
+    private JPanel pnlSearch;
+    private JToggleButton btnSearch;
 
     public NotificationCenterTopComponent() {
-        initComponents();
-        init();
+        notificationManager = NotificationCenterManager.getInstance();
         filterTimer = new Timer(FILTER_REFRESH_DELAY, new SearchTimerListener());
         filterTimer.stop();
+        tableRefreshTimer = new Timer(TABLE_REFRESH_PERIOD, new RefreshTimerListener());
+        tableRefreshTimer.stop();
         searchDocumentListener = new SearchDocumentListener(filterTimer);
+        escSearchKeyListener = new EscKeyListener();
+        searchKeyAdapter = new SearchKeyAdapter();
+        tableKeyListener = new TableKeyListener();
         setName(NbBundle.getMessage(NotificationCenterTopComponent.class, "CTL_NotificationCenterTopComponent"));
         setToolTipText(NbBundle.getMessage(NotificationCenterTopComponent.class, "HINT_NotificationCenterTopComponent"));
     }
 
     private void init() {
+        initComponents();
         detailsPanel = new JPanel(new GridLayout(1, 1));
         splitPane.setRightComponent(detailsPanel);
 
-        notificationManager = NotificationCenterManager.getInstance();
+        toolBar.setFocusable(false);
+        toolBar.setFloatable(false);
+        btnSearch = new JToggleButton(ImageUtilities.loadImageIcon("org/netbeans/modules/notifications/resources/find16.png", true));
+        btnSearch.setToolTipText(NbBundle.getMessage(NotificationCenterTopComponent.class, "LBL_SearchToolTip"));
+        btnSearch.setFocusable(false);
+        btnSearch.setSelected(NotificationSettings.isSearchVisible());
+        btnSearch.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setSearchVisible(btnSearch.isSelected());
+            }
+        });
+        toolBar.add(btnSearch);
+        toolBar.add(new FiltersMenuButton(notificationManager.getActiveFilter()));
+
         initLeft();
     }
 
@@ -127,11 +160,21 @@ public final class NotificationCenterTopComponent extends TopComponent {
         notificationTable = (NotificationTable) notificationManager.getComponent();
         initNotificationTable();
         notificationScroll = new JScrollPane(notificationTable);
-        JComponent toolbar = createToolbar();
-        pnlLeft.add(toolbar, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(3, 3, 0, 3), 0, 0));
 
-        pnlLeft.add(notificationScroll, new GridBagConstraints(0, 1, 1, 1, 1.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(3, 3, 3, 3), 0, 0));
-        SwingUtilities.invokeLater(new Runnable() {
+        pnlSearch = new JPanel(new GridBagLayout());
+        searchField = new SearchField();
+        pnlSearch.add(searchField, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 6, 3, 3), 0, 0));
+
+        pnlSearch.add(new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(3, 3, 3, 3), 0, 0));
+
+        JButton clearButton = CloseButtonFactory.createCloseButton();
+        clearButton.addActionListener(new CloseSearchAction());
+        pnlSearch.add(clearButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(3, 3, 3, 3), 0, 0));
+        setSearchVisible(btnSearch.isSelected());
+        
+        pnlLeft.add(pnlSearch, new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, GridBagConstraints.SOUTH, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+        pnlLeft.add(notificationScroll, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
             @Override
             public void run() {
                 splitPane.setLeftComponent(pnlLeft);
@@ -188,21 +231,8 @@ public final class NotificationCenterTopComponent extends TopComponent {
         messageColumn.setPreferredWidth(remainingWidth);
     }
 
-    private JComponent createToolbar() {
-        JPanel pnlToolbar = new JPanel(new GridBagLayout());
-        JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
-        toolBar.setFocusable(false);
-        toolBar.setFloatable(false);
-        toolBar.add(new FiltersMenuButton(notificationManager.getActiveFilter()));
-        pnlToolbar.add(toolBar, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-
-        searchField = new SearchField();
-        pnlToolbar.add(searchField, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-        return pnlToolbar;
-    }
-
     private NotificationImpl getSelectedNotification() {
-        int selectedRowIndex = notificationTable.getSelectedRow();
+        int selectedRowIndex = notificationTable.convertRowIndexToModel(notificationTable.getSelectedRow());
         if (selectedRowIndex != -1 && selectedRowIndex < notificationTable.getRowCount()) {
             return ((NotificationTableModel) notificationTable.getModel()).getEntry(selectedRowIndex);
         }
@@ -234,58 +264,76 @@ public final class NotificationCenterTopComponent extends TopComponent {
         detailsPanel.repaint();
     }
 
+    private void setSearchVisible(boolean visible) {
+        if (!visible) {
+            searchField.clear();
+        }
+        pnlSearch.setVisible(visible);
+        if (visible != btnSearch.isSelected()) {
+            btnSearch.setSelected(visible);
+        }
+        this.revalidate();
+        this.repaint();
+        if (visible) {
+            searchField.requestFocus();
+        }
+        NotificationSettings.setSearchVisible(visible);
+    }
+
     /**
      * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         splitPane = new javax.swing.JSplitPane();
+        toolBar = new javax.swing.JToolBar();
+
+        setLayout(new java.awt.GridBagLayout());
 
         splitPane.setContinuousLayout(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(splitPane, gridBagConstraints);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 904, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
-        );
+        toolBar.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        toolBar.setRollover(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        add(toolBar, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSplitPane splitPane;
+    private javax.swing.JToolBar toolBar;
     // End of variables declaration//GEN-END:variables
 
     @Override
     public void componentOpened() {
-        String dummyText = "<html>The Netbeans IDE has detected that your system is using most of your available system resources. We recommend shutting down other applications and windows.</html>";
-        // TODO add custom code on component opening
-        NotificationDisplayerImpl.getInstance().notify("Test notification aaaaaa ",
-                new ImageIcon(ImageUtilities.loadImage("org/openide/awt/resources/unknown.gif")),
-                new JLabel(dummyText), new JLabel(dummyText),
-                NotificationDisplayer.Priority.NORMAL,
-                NotificationDisplayer.Category.INFO);
-        NotificationDisplayerImpl.getInstance().notify("IMPORTANT Test notification aaaaaa",
-                new ImageIcon(ImageUtilities.loadImage("org/openide/awt/resources/unknown.gif")),
-                new JLabel(dummyText), new JLabel(dummyText),
-                NotificationDisplayer.Priority.HIGH,
-                NotificationDisplayer.Category.WARNING);
-        NotificationDisplayerImpl.getInstance().notify("LESS IMPORTANT Test notification cccc",
-                new ImageIcon(ImageUtilities.loadImage("org/openide/awt/resources/unknown.gif")),
-                new JLabel(dummyText), new JLabel(dummyText),
-                NotificationDisplayer.Priority.HIGH,
-                NotificationDisplayer.Category.INFO);
+        removeAll();
+        init();
 
         searchField.addDocumentListener(searchDocumentListener);
+        searchField.addSearchKeyListener(escSearchKeyListener);
+        notificationTable.addProcessKeyEventListener(tableKeyListener);
+        tableRefreshTimer.restart();
     }
 
     @Override
     public void componentClosed() {
         NotificationCenterManager.tcClosed();
         searchField.removeDocumentListener(searchDocumentListener);
+        searchField.removeSearchKeyListener(escSearchKeyListener);
+        notificationTable.removeProcessKeyEventListener(tableKeyListener);
+        tableRefreshTimer.stop();
     }
 
     void writeProperties(java.util.Properties p) {
@@ -298,6 +346,93 @@ public final class NotificationCenterTopComponent extends TopComponent {
     void readProperties(java.util.Properties p) {
         String version = p.getProperty("version");
         // TODO read your settings according to their version
+    }
+
+    private class TableKeyListener implements NotificationTable.ProcessKeyEventListener {
+
+        @Override
+        public void processKeyEvent(KeyEvent e) {
+            if (!isEnabled()) {
+                return;
+            }
+            if (pnlSearch.isVisible()) {
+                searchField.setCaretPosition(searchField.getText().length());
+                searchField.processSearchKeyEvent(e);
+                searchField.requestFocus();
+            } else {
+                switch (e.getID()) {
+                    case KeyEvent.KEY_PRESSED:
+                        searchKeyAdapter.keyPressed(e);
+                        break;
+                    case KeyEvent.KEY_RELEASED:
+                        searchKeyAdapter.keyReleased(e);
+                        break;
+                    case KeyEvent.KEY_TYPED:
+                        searchKeyAdapter.keyTyped(e);
+                        break;
+                }
+            }
+        }
+    }
+
+    private class SearchKeyAdapter extends KeyAdapter {
+
+        @Override
+        public void keyTyped(KeyEvent e) {
+            int modifiers = e.getModifiers();
+            int keyCode = e.getKeyCode();
+            char c = e.getKeyChar();
+
+            //#43617 - don't eat + and -
+            //#98634 - and all its duplicates dont't react to space
+            if ((c == '+') || (c == '-') || (c == ' ')) {
+                return; // NOI18N
+            }
+            if (((modifiers > 0) && (modifiers != KeyEvent.SHIFT_MASK)) || e.isActionKey()) {
+                return;
+            }
+            if (Character.isISOControl(c)
+                    || (keyCode == KeyEvent.VK_SHIFT)
+                    || (keyCode == KeyEvent.VK_ESCAPE)) {
+                return;
+            }
+            setSearchVisible(true);
+
+            final KeyStroke stroke = KeyStroke.getKeyStrokeForEvent(e);
+            searchField.setText(String.valueOf(stroke.getKeyChar()));
+            e.consume();
+        }
+    }
+
+    private class RefreshTimerListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            notificationTable.revalidate();
+            notificationTable.repaint();
+        }
+    }
+
+    private class EscKeyListener extends KeyAdapter {
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == Event.ESCAPE) {
+                if (searchField.isEmpty()) {
+                    setSearchVisible(false);
+                } else {
+                    searchField.clear();
+                }
+            }
+        }
+    }
+
+    private class CloseSearchAction implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setSearchVisible(false);
+        }
     }
 
     private class SearchTimerListener implements ActionListener {

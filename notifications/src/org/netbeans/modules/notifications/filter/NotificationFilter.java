@@ -74,10 +74,6 @@ public class NotificationFilter {
         return categoryFilter == null ? true : categoryFilter.isEnabled(notification.getCategory().getName());
     }
 
-    public boolean isNotificationCountLimitReached(int currentTaskCount) {
-        return null == categoryFilter ? false : categoryFilter.isNotificationCountLimitReached(currentTaskCount);
-    }
-
     public String getName() {
         return name;
     }
@@ -134,10 +130,6 @@ public class NotificationFilter {
         @Override
         public boolean isEnabled(NotificationImpl notification) {
             return true;
-        }
-        @Override
-        public boolean isNotificationCountLimitReached(int currentTaskCount) {
-            return false;
         }
     }
 }

@@ -43,24 +43,30 @@
  */
 package org.netbeans.modules.notifications;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JToolTip;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.notifications.center.NotificationCenterManager;
-import org.openide.util.RequestProcessor;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -77,12 +83,8 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
     protected int STOP_FLASHING_DELAY = 5 * 1000;
     protected int DISAPPEAR_DELAY_MILLIS = STOP_FLASHING_DELAY + 50 * 1000;
     protected int FLASHING_FREQUENCY = 500;
-    private boolean keepRunning = false;
-    private boolean isIconVisible = false;
-    private boolean keepFlashing = true;
-    private long startTime = 0;
-    private Task timerTask;
     private NotificationImpl currentNotification;
+    private final NotificationCenterManager manager;
 
     /**
      * Creates a new instance of FlashingIcon
@@ -92,20 +94,20 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
     protected FlashingIcon() {
         addMouseListener(this);
         setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
+        manager = NotificationCenterManager.getInstance();
+
     }
 
     @Override
     public void addNotify() {
         super.addNotify();
-        NotificationCenterManager manager = NotificationCenterManager.getInstance();
         int unreadCount = manager.getUnreadCount();
-        setText(unreadCount > 1 ? String.valueOf(unreadCount) : null);
+        setIcon(getNotificationsIcon(unreadCount));
         currentNotification = manager.getLastUnreadNotification();
         if (null != currentNotification) {
-            setIcon(currentNotification.getIcon());
-            setToolTipText(currentNotification.getTitle());
         }
-        setVisible(manager.getUnreadCount() > 0);
+        setToolTipText(getToolTip(unreadCount, currentNotification));
+        setVisible(unreadCount > 0);
         manager.addPropertyChangeListener(this);
     }
 
@@ -119,73 +121,10 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
         super.removeNotify();
     }
 
-    /**
-     * Start flashing of the icon. If the icon is already flashing, the timer is reset. If the icon is visible but not flashing, it starts flashing again and the disappear timer is reset.
-     */
-    public void startFlashing() {
-        synchronized (this) {
-            startTime = System.currentTimeMillis();
-            isIconVisible = !isIconVisible;
-            keepRunning = true;
-            keepFlashing = true;
-            if (null == timerTask) {
-                timerTask = RequestProcessor.getDefault().post(new Timer());
-            } else {
-                timerTask.run();
-            }
-            this.setVisible(true);
-        }
-        repaint();
-    }
-
-    /**
-     * Stop the flashing and hide the icon.
-     */
-    public void disappear() {
-        synchronized (this) {
-            keepRunning = false;
-            isIconVisible = false;
-            keepFlashing = false;
-            if (null != timerTask) {
-                timerTask.cancel();
-            }
-            timerTask = null;
-            setToolTipText(null);
-            this.setVisible(false);
-        }
-        repaint();
-    }
-
-    /**
-     * Stop flashing of the icon. The icon remains visible and active (listens for mouse clicks and displays tooltip) until the disappear timer expires.
-     */
-    public void stopFlashing() {
-        synchronized (this) {
-            if (keepRunning && !isIconVisible) {
-                isIconVisible = true;
-                repaint();
-            }
-        }
-        keepFlashing = false;
-        isIconVisible = true;
-    }
-
-    /**
-     * Switch the current image and repaint
-     */
-    protected void flashIcon() {
-        isIconVisible = !isIconVisible;
-
-        invalidate();
-        revalidate();
-        repaint();
-    }
-
     @Override
     public void setIcon(Icon icon) {
         if (null != icon) {
             icon = new MyIcon(icon);
-            isIconVisible = true;
         }
         super.setIcon(icon);
     }
@@ -196,25 +135,19 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
 
     @Override
     public void mousePressed(MouseEvent e) {
-        stopFlashing();
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        stopFlashing();
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        stopFlashing();
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (isIconVisible) {
-            //disappear();
-            onMouseClick();
-        }
+        onMouseClick();
     }
 
     /**
@@ -226,18 +159,9 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
         tc.requestActive();
     }
 
-    /**
-     * Invoked when the disappear timer expired.
-     */
-    protected void timeout() {
-    }
-
     @Override
     public Cursor getCursor() {
-        if (isIconVisible) {
-            return Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-        }
-        return Cursor.getDefaultCursor();
+        return Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
     }
 
     @Override
@@ -258,18 +182,11 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
             final NotificationImpl ni = (NotificationImpl) evt.getNewValue();
             setNotification(ni, ni.showBallon());
         } else if (NotificationCenterManager.PROP_NOTIFICATION_READ.equals(evt.getPropertyName())) {
-            NotificationImpl read = (NotificationImpl) evt.getNewValue();
-            if (read.equals(currentNotification)) {
-                NotificationImpl top = NotificationCenterManager.getInstance().getLastUnreadNotification();
-                setNotification(top, false);
-                BalloonManager.dismiss();
-                stopFlashing();
-            } else {
-                int notificationCount = NotificationCenterManager.getInstance().getUnreadCount();
-                setText(notificationCount > 1 ? String.valueOf(notificationCount) : null);
-            }
+            NotificationImpl top = manager.getLastUnreadNotification();
+            setNotification(top, false);
+            BalloonManager.dismiss();
         } else if (NotificationCenterManager.PROP_NOTIFICATIONS_CHANGED.equals(evt.getPropertyName())) {
-            NotificationImpl top = NotificationCenterManager.getInstance().getLastUnreadNotification();
+            NotificationImpl top = manager.getLastUnreadNotification();
             setNotification(top, false);
         }
     }
@@ -279,13 +196,11 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
     }
 
     private void setNotification(final NotificationImpl n, boolean showBalloon) {
-        NotificationCenterManager manager = NotificationCenterManager.getInstance();
         int notificationCount = manager.getUnreadCount();
-        setText(notificationCount > 1 ? String.valueOf(notificationCount) : null);
+        setToolTipText(getToolTip(notificationCount, n));
+        setIcon(getNotificationsIcon(notificationCount));
         currentNotification = n;
         if (null != currentNotification) {
-            setIcon(currentNotification.getIcon());
-            setToolTipText(currentNotification.getTitle());
             if (showBalloon) {
                 if (canShowBalloon()) {
                     SwingUtilities.invokeLater(new Runnable() {
@@ -305,43 +220,42 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
                             }, 3 * 1000);
                         }
                     });
-                } else {
-                    startFlashing();
                 }
             }
         } else {
             BalloonManager.dismiss();
-            stopFlashing();
         }
         setVisible(notificationCount > 0);
     }
 
-    private class Timer implements Runnable {
-
-        @Override
-        public void run() {
-            synchronized (FlashingIcon.this) {
-                long currentTime = System.currentTimeMillis();
-                if (keepFlashing) {
-                    if (currentTime - startTime < STOP_FLASHING_DELAY) {
-                        flashIcon();
-                    } else {
-                        stopFlashing();
-                        if (DISAPPEAR_DELAY_MILLIS == -1) {
-                            timerTask = null;
-                        }
-                    }
-                }
-                if (DISAPPEAR_DELAY_MILLIS > 0 && currentTime - startTime >= DISAPPEAR_DELAY_MILLIS) {
-//                    disappear();
-                    timeout();
-                } else {
-                    if (null != timerTask) {
-                        timerTask.schedule(FLASHING_FREQUENCY);
-                    }
-                }
-            }
+    private String getToolTip(int unread, NotificationImpl n) {
+        if (unread < 1) {
+            return null;
         }
+        String tooltip = "<b>" + NbBundle.getMessage(FlashingIcon.class, unread == 1 ? "LBL_UnreadNotification" : "LBL_UnreadNotifications", unread) + "</b>";
+        if (n != null) {
+            tooltip += "<br>" + NbBundle.getMessage(FlashingIcon.class,"LBL_LastNotification") + " " + n.getTitle();
+        }
+        tooltip = "<html>" + tooltip + "</html>";
+
+        return tooltip;
+    }
+
+    private Icon getNotificationsIcon(int unread) {
+        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/notifications/resources/notifications.png", true);
+        BufferedImage countIcon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = countIcon.createGraphics();
+        g.setFont(getFont().deriveFont(10f));
+        g.setColor(Color.BLACK);
+        if (unread < 10) {
+            g.setFont(g.getFont().deriveFont(Font.BOLD));
+            g.drawString(Integer.toString(unread), 5, 10);
+        } else if (unread < 100) {
+            g.drawString(Integer.toString(unread), 3, 10);
+        } else {
+            g.drawString("...", 2, 10);
+        }
+        return new ImageIcon(ImageUtilities.mergeImages(icon.getImage(), countIcon, 0, 0));
     }
 
     private class MyIcon implements Icon {
@@ -354,9 +268,7 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
 
         @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
-            if (isIconVisible) {
-                orig.paintIcon(c, g, x, y);
-            }
+            orig.paintIcon(c, g, x, y);
         }
 
         @Override

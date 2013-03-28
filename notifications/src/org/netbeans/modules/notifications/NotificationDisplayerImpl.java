@@ -44,7 +44,7 @@ package org.netbeans.modules.notifications;
 import org.netbeans.modules.notifications.center.NotificationCenterManager;
 import java.awt.event.ActionListener;
 import java.io.CharConversionException;
-import java.util.Date;
+import java.util.Calendar;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.openide.awt.Notification;
@@ -56,14 +56,14 @@ import org.openide.util.lookup.ServiceProviders;
 import org.openide.xml.XMLUtil;
 
 /**
- * Implementation of NotificationDisplayer which shows new Notifications as balloon-like tooltips and the list of all Notifications in a popup window.
+ * Implementation of NotificationDisplayer which shows new Notifications as balloon-like tooltips and the list of all Notifications in a output window.
  *
  * @since 1.14
  * @author S. Aubrecht
  * @author jpeska
  */
 @ServiceProviders({
-    @ServiceProvider(service = NotificationDisplayer.class),
+    @ServiceProvider(service = NotificationDisplayer.class, position = 100),
     @ServiceProvider(service = NotificationDisplayerImpl.class)})
 public final class NotificationDisplayerImpl extends NotificationDisplayer {
 
@@ -73,7 +73,6 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
     }
 
     public static NotificationDisplayerImpl getInstance() {
-        //TODO this wont work since there are 2 implementations
         return Lookup.getDefault().lookup(NotificationDisplayerImpl.class);
     }
 
@@ -123,6 +122,6 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
         } catch (CharConversionException ex) {
             throw new IllegalArgumentException(ex);
         }
-        return new NotificationImpl(title, icon, priority, category, new Date());
+        return new NotificationImpl(title, icon, priority, category, Calendar.getInstance());
     }
 }

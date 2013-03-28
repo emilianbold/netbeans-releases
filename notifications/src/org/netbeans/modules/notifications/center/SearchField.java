@@ -41,25 +41,17 @@
  */
 package org.netbeans.modules.notifications.center;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Event;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
-import javax.swing.JButton;
-import javax.swing.JComponent;
+import java.awt.event.KeyListener;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.openide.awt.CloseButtonFactory;
+import org.netbeans.modules.notifications.Utils;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  * @author Jan Becicka
@@ -69,10 +61,8 @@ public class SearchField extends JPanel {
 
     private JLabel leftIcon;
     private JPanel panel;
-    private JTextField txtSearch;
+    private SearchTextField txtSearch;
     private JSeparator separator;
-    private JButton clearButton;
-    private JLabel placeHolder;
 
     public SearchField() {
         super();
@@ -84,29 +74,23 @@ public class SearchField extends JPanel {
 
         panel = new JPanel();
         leftIcon = new JLabel();
-        clearButton = CloseButtonFactory.createCloseButton();
-        clearButton.addActionListener(new ClearAction());
-        clearButton.setVisible(false);
-        placeHolder = new PlaceHolder(clearButton);
-        txtSearch = new JTextField();
-        txtSearch.getDocument().addDocumentListener(new SearchDocumentListener());
-        txtSearch.addKeyListener(new KeyAdapter() {
+        txtSearch = new SearchTextField();
+        txtSearch.addFocusListener(new FocusAdapter() {
             @Override
-            public void keyPressed(KeyEvent e) {
-                if (txtSearch.equals(e.getSource())) {
-                    if (e.getKeyCode() == Event.ESCAPE) {
-                        clear();
-                    }
+            public void focusGained(FocusEvent e) {
+                if (e.getSource() == txtSearch) {
+                    // make sure nothing is selected
+                    int n = txtSearch.getText().length();
+                    txtSearch.select(n, n);
                 }
             }
-
         });
         separator = new javax.swing.JSeparator();
 
         setLayout(new java.awt.GridBagLayout());
 
-        panel.setBackground(getTextBackground());
-        panel.setBorder(javax.swing.BorderFactory.createLineBorder(getComboBorderColor()));
+        panel.setBackground(Utils.getTextBackground());
+        panel.setBorder(javax.swing.BorderFactory.createLineBorder(Utils.getComboBorderColor()));
         panel.setLayout(new java.awt.GridBagLayout());
 
         leftIcon.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/notifications/resources/find.png", true));//NOI18N
@@ -121,7 +105,7 @@ public class SearchField extends JPanel {
 
         txtSearch.setBorder(null);
         txtSearch.setMinimumSize(new java.awt.Dimension(100, 18));
-        txtSearch.setPreferredSize(new java.awt.Dimension(130, 18));
+        txtSearch.setPreferredSize(new java.awt.Dimension(150, 18));
 
         separator.setOrientation(javax.swing.SwingConstants.VERTICAL);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -141,31 +125,38 @@ public class SearchField extends JPanel {
         panel.add(txtSearch, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(1, 1, 1, 2);
-        panel.add(placeHolder, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(1, 1, 1, 2);
-        panel.add(clearButton, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(panel, gridBagConstraints);
+    }
+
+    @Override
+    public void requestFocus() {
+        txtSearch.requestFocus(); //To change body of generated methods, choose Tools | Templates.
     }
 
     public String getText() {
         return txtSearch.getText().trim();
     }
 
+    public void setText(String text) {
+        txtSearch.setText(text);
+    }
+
+    public boolean isEmpty() {
+        return txtSearch.getText().trim().isEmpty();
+    }
+
     public void clear() {
         txtSearch.setText("");
+    }
+
+    void setCaretPosition(int position) {
+        txtSearch.setCaretPosition(position);
+    }
+
+    void processSearchKeyEvent(KeyEvent e) {
+        txtSearch.processKeyEvent(e);
     }
 
     public void addDocumentListener(DocumentListener listener) {
@@ -176,79 +167,19 @@ public class SearchField extends JPanel {
         txtSearch.getDocument().removeDocumentListener(listener);
     }
 
-    private static Color getTextBackground() {
-        Color textB = UIManager.getColor("TextPane.background"); //NOI18N
-        if ("Aqua".equals(UIManager.getLookAndFeel().getID())) //NOI18N
-        {
-            textB = UIManager.getColor("NbExplorerView.background"); //NOI18N
-        }
-        return textB != null ? textB : Color.WHITE;
+    public void addSearchKeyListener(KeyListener listener) {
+        txtSearch.addKeyListener(listener);
     }
 
-    private static Color getComboBorderColor() {
-        Color shadow = UIManager.getColor(
-                Utilities.isWindows() ? "Nb.ScrollPane.Border.color" : "TextField.shadow"); //NOI18N
-        return shadow != null ? shadow : getPopupBorderColor();
+    public void removeSearchKeyListener(KeyListener listener) {
+        txtSearch.removeKeyListener(listener);
     }
 
-    private static Color getPopupBorderColor() {
-        Color shadow = UIManager.getColor("controlShadow"); //NOI18N
-        return shadow != null ? shadow : Color.GRAY;
-    }
-
-    private void checkClearButton() {
-        boolean visible = !getText().isEmpty();
-        boolean oldVisible = clearButton.isVisible();
-        if (oldVisible != visible) {
-            clearButton.setVisible(visible);
-            placeHolder.setVisible(!visible);
-            this.revalidate();
-            this.repaint();
-        }
-    }
-
-    private class ClearAction implements ActionListener {
+    private static class SearchTextField extends JTextField {
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            clear();
-        }
-    }
-
-    private class SearchDocumentListener implements DocumentListener {
-
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            checkClearButton();
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            checkClearButton();
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            checkClearButton();
-        }
-    }
-
-    private static class PlaceHolder extends JLabel {
-
-        private final JComponent component;
-
-        public PlaceHolder(JComponent component) {
-            this.component = component;
-        }
-
-        @Override
-        public Dimension getSize() {
-            return component.getSize();
-        }
-
-        @Override
-        public Dimension getPreferredSize() {
-            return component.getPreferredSize();
+        protected void processKeyEvent(KeyEvent e) {
+            super.processKeyEvent(e);
         }
     }
 }

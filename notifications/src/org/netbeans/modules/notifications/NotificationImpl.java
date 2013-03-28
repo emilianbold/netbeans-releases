@@ -52,7 +52,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.CharConversionException;
-import java.util.Date;
+import java.util.Calendar;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -83,10 +83,10 @@ public class NotificationImpl extends Notification implements Comparable<Notific
     private String detailsText;
     private ActionListener al;
     private final Category category;
-    private final Date dateCreated;
+    private final Calendar dateCreated;
     private boolean read;
 
-    public NotificationImpl(String title, Icon icon, Priority priority, Category category, Date dateCreated) {
+    public NotificationImpl(String title, Icon icon, Priority priority, Category category, Calendar dateCreated) {
         this.title = title;
         this.icon = icon;
         this.priority = priority;
@@ -97,13 +97,15 @@ public class NotificationImpl extends Notification implements Comparable<Notific
 
     @Override
     public void clear() {
-        NotificationCenterManager.getInstance().remove(this);
+        NotificationCenterManager.getInstance().delete(this);
     }
 
     public void markAsRead(boolean read) {
-        this.read = read;
-        NotificationCenterManager manager = NotificationCenterManager.getInstance();
-        manager.wasRead(this);
+        if (read != this.read) {
+            this.read = read;
+            NotificationCenterManager manager = NotificationCenterManager.getInstance();
+            manager.wasRead(this);
+        }
     }
 
     @Override
@@ -143,7 +145,7 @@ public class NotificationImpl extends Notification implements Comparable<Notific
         return category;
     }
 
-    public Date getDateCreated() {
+    public Calendar getDateCreated() {
         return dateCreated;
     }
 
@@ -276,7 +278,7 @@ public class NotificationImpl extends Notification implements Comparable<Notific
         return panel;
     }
 
-    private JComponent createDate(Date dateCreated) {
-        return new JLabel(Utils.getFormatedDate(dateCreated));
+    private JComponent createDate(Calendar dateCreated) {
+        return new JLabel(Utils.getFullFormatedDate(dateCreated));
     }
 }

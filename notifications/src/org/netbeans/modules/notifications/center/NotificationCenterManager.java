@@ -66,6 +66,7 @@ public class NotificationCenterManager {
     public static final String PROP_NOTIFICATIONS_CHANGED = "notificationsChanged"; //NOI18N
     public static final String PROP_NOTIFICATION_ADDED = "notificationAdded"; //NOI18N
     public static final String PROP_NOTIFICATION_READ = "notificationRead"; //NOI18N
+    private static final int NOTIFICATIONS_CAPACITY = 100;
     private static final PropertyChangeSupport propSupport = new PropertyChangeSupport(NotificationCenterManager.class);
     private static NotificationCenterManager instance = null;
     private final List<NotificationImpl> notifications = new ArrayList<NotificationImpl>();
@@ -88,24 +89,28 @@ public class NotificationCenterManager {
     }
 
     public void add(NotificationImpl notification) {
+        boolean capacityFull = false;
         synchronized (notifications) {
+            capacityFull = notifications.size() == NOTIFICATIONS_CAPACITY;
+            if (capacityFull) {
+                notifications.remove(0).clear();
+            }
             notifications.add(notification);
         }
         if (isEnabled(notification)) {
             filteredNotifications.add(notification);
             firePropertyChange(PROP_NOTIFICATION_ADDED, notification);
         }
-        updateTable(false);
+        updateTable(capacityFull);
     }
 
-    public void remove(NotificationImpl notification) {
+    public void delete(NotificationImpl notification) {
         synchronized (notifications) {
             if (!notifications.remove(notification)) {
                 return;
             }
         }
-        boolean isEnabled = isEnabled(notification);
-        if (isEnabled) {
+        if (isEnabled(notification)) {
             filteredNotifications.remove(notification);
             if (!notification.isRead()) {
                 firePropertyChange(PROP_NOTIFICATION_READ, notification);
@@ -145,11 +150,21 @@ public class NotificationCenterManager {
         }
     }
 
-    public void clearAll() {
+    public void deleteAll() {
         synchronized (notifications) {
             notifications.clear();
+            filteredNotifications.clear();
+            firePropertyChange(PROP_NOTIFICATIONS_CHANGED, null);
+            updateTable(false);
         }
-        updateTable(true);
+    }
+
+    public void markAllRead() {
+        synchronized (notifications) {
+            for (NotificationImpl n : notifications) {
+                n.markAsRead(true);
+            }
+        }
     }
 
     public List<Category> getCategories() {
@@ -157,9 +172,7 @@ public class NotificationCenterManager {
     }
 
     public void wasRead(NotificationImpl notification) {
-        if (notification.isRead()) {
-            firePropertyChange(PROP_NOTIFICATION_READ, notification);
-        }
+        firePropertyChange(PROP_NOTIFICATION_READ, notification);
         update(notification);
     }
 
@@ -178,7 +191,7 @@ public class NotificationCenterManager {
     public int getUnreadCount() {
         int count = 0;
         synchronized (notifications) {
-            for (NotificationImpl notification : filteredNotifications) {
+            for (NotificationImpl notification : notifications) {
                 if (!notification.isRead()) {
                     count++;
                 }

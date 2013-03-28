@@ -39,77 +39,31 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.notifications.center;
+package org.netbeans.modules.notifications;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.table.AbstractTableModel;
-import org.netbeans.modules.notifications.NotificationImpl;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author jpeska
  */
-public class NotificationTableModel extends AbstractTableModel {
+public class NotificationSettings {
+    private static final String SEARCH_VISIBLE = "notification.searchVisible"; //NOI18N
+    private static final boolean DEFAULT_SEARCH_VISIBLE = true;
 
-    static final int PRIORITY_COLUMN = 0;
-    static final int MESSAGE_COLUMN = 1;
-    static final int TIMESTAMP_COLUMN = 2;
-    static final int CATEGORY_COLUMN = 3;
-
-    private static final int COLUMN_COUNT = 4;
-
-    private final List<NotificationImpl> entries;
-
-    public NotificationTableModel() {
-        this.entries = new ArrayList<NotificationImpl>();
+    private NotificationSettings() {
     }
 
-    public void setEntries(List<NotificationImpl> entries) {
-        this.entries.clear();
-        this.entries.addAll(entries);
-        fireTableDataChanged();
+    public static boolean isSearchVisible() {
+        return getPreferences().getBoolean(SEARCH_VISIBLE, DEFAULT_SEARCH_VISIBLE);
     }
 
-    public NotificationImpl getEntry(int index) {
-        return entries.get(index);
+    public static void setSearchVisible(boolean searchVisible) {
+        getPreferences().putBoolean(SEARCH_VISIBLE, searchVisible);
     }
 
-    @Override
-    public int getRowCount() {
-        return entries.size();
-    }
-
-    @Override
-    public int getColumnCount() {
-        return COLUMN_COUNT;
-    }
-
-    @Override
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        NotificationImpl notification = getEntry(rowIndex);
-        switch (columnIndex) {
-            case PRIORITY_COLUMN:
-                return notification.getPriority();
-            case TIMESTAMP_COLUMN:
-                return notification.getDateCreated();
-            case CATEGORY_COLUMN:
-                return notification.getCategory().getDisplayName();
-            case MESSAGE_COLUMN:
-                return notification.getTitle();
-            default:
-                throw new IllegalStateException("Invalid columnIndex=" + columnIndex); // NOI18N
-        }
-    }
-
-
-
-    @Override
-    public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return false;
-    }
-
-    void updateIndex(int index) {
-        fireTableRowsUpdated(index, index);
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(NotificationSettings.class);
     }
 }

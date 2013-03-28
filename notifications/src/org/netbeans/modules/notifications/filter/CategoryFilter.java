@@ -59,14 +59,12 @@ import org.openide.awt.NotificationDisplayer.Category;
 class CategoryFilter {
 
     private final Set<String> enabledCategories = new HashSet<String>();
-    private int countLimit = 100;
 
     public CategoryFilter() {
         addDefaultTypes();
     }
 
     private CategoryFilter(CategoryFilter src) {
-        this.countLimit = src.countLimit;
         this.enabledCategories.addAll(src.enabledCategories);
     }
 
@@ -82,18 +80,6 @@ class CategoryFilter {
         }
     }
 
-    public boolean isNotificationCountLimitReached(int notificationCount) {
-        return notificationCount >= countLimit;
-    }
-
-    public void setNotificationCountLimit(int limit) {
-        this.countLimit = limit;
-    }
-
-    public int getNotificationCountLimit() {
-        return this.countLimit;
-    }
-
     @Override
     public CategoryFilter clone() {
         return new CategoryFilter(this);
@@ -104,7 +90,6 @@ class CategoryFilter {
     }
 
     void load(Preferences prefs, String prefix) throws BackingStoreException {
-        countLimit = prefs.getInt(prefix + "_countLimit", 100); //NOI18N
         enabledCategories.clear();
         String enabled = prefs.get(prefix + "_enabled", ""); //NOI18N //NOI18N
         if (enabled.trim().length() > 0) {
@@ -118,7 +103,6 @@ class CategoryFilter {
     }
 
     void save(Preferences prefs, String prefix) throws BackingStoreException {
-        prefs.putInt(prefix + "_countLimit", countLimit);
         StringBuilder buffer = new StringBuilder();
         for (Iterator<String> type = enabledCategories.iterator(); type.hasNext();) {
             buffer.append(type.next());

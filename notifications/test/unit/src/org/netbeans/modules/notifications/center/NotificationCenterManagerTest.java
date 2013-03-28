@@ -76,7 +76,7 @@ public class NotificationCenterManagerTest extends NbTestCase {
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         manager = NotificationCenterManager.getInstance();
-        manager.clearAll();
+        manager.deleteAll();
         manager.setActiveFilter(NotificationFilter.EMPTY);
         manager.setMessageFilter("");
     }
