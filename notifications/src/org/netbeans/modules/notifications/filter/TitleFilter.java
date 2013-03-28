@@ -45,15 +45,15 @@ package org.netbeans.modules.notifications.filter;
  *
  * @author jpeska
  */
-public class MessageFilter {
+public class TitleFilter {
 
     private final String searchString;
 
-    public MessageFilter(String searchString) {
+    public TitleFilter(String searchString) {
         this.searchString = searchString;
     }
 
-    public boolean isEnabled(String message) {
-        return message.toLowerCase().contains(searchString.toLowerCase());
+    public boolean isEnabled(String title) {
+        return title.toLowerCase().contains(searchString.toLowerCase());
     }
 }

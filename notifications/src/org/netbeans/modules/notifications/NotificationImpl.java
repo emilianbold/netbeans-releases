@@ -103,7 +103,7 @@ public class NotificationImpl extends Notification implements Comparable<Notific
     public void markAsRead(boolean read) {
         this.read = read;
         NotificationCenterManager manager = NotificationCenterManager.getInstance();
-        manager.markAsRead(this);
+        manager.wasRead(this);
     }
 
     @Override

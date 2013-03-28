@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.notifications.center;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -52,7 +53,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.notifications.NotificationImpl;
 import org.netbeans.modules.notifications.filter.FilterRepository;
-import org.netbeans.modules.notifications.filter.MessageFilter;
+import org.netbeans.modules.notifications.filter.TitleFilter;
 import org.netbeans.modules.notifications.filter.NotificationFilter;
 import org.openide.awt.NotificationDisplayer.Category;
 
@@ -69,20 +70,14 @@ public class NotificationCenterManager {
     private static NotificationCenterManager instance = null;
     private final List<NotificationImpl> notifications = new ArrayList<NotificationImpl>();
     private final List<NotificationImpl> filteredNotifications = new ArrayList<NotificationImpl>();
-    private final NotificationTable notificationTable;
+    private NotificationTable notificationTable;
     private final FilterRepository filterRepository;
     private NotificationFilter notificationFilter;
-    private MessageFilter messageFilter;
+    private TitleFilter titleFilter;
 
     private NotificationCenterManager() {
-        notificationTable = new NotificationTable();
         filterRepository = FilterRepository.getInstance();
-        try {
-            filterRepository.load();
-        } catch (IOException ioE) {
-            getLogger().log(Level.INFO, ioE.getMessage(), ioE);
-        }
-        notificationFilter = filterRepository.getActive();
+        loadFilters();
     }
 
     public static NotificationCenterManager getInstance() {
@@ -123,29 +118,48 @@ public class NotificationCenterManager {
         if (filter) {
             filterNotifications();
         }
-        NotificationTableModel model = getModel();
-        synchronized (notifications) {
-            model.setEntries(filteredNotifications);
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                NotificationTableModel model = getModel();
+                synchronized (notifications) {
+                    model.setEntries(filteredNotifications);
+                }
+            }
+        });
     }
 
     public void update(NotificationImpl n) {
-        int index;
+        final int index;
         synchronized (notifications) {
             index = filteredNotifications.indexOf(n);
         }
         if (index != -1) {
-            NotificationTableModel model = getModel();
-            model.updateIndex(index);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    NotificationTableModel model = getModel();
+                    model.updateIndex(index);
+                }
+            });
         }
+    }
+
+    public void clearAll() {
+        synchronized (notifications) {
+            notifications.clear();
+        }
+        updateTable(true);
     }
 
     public List<Category> getCategories() {
         return Category.getCategories();
     }
 
-    public void markAsRead(NotificationImpl notification) {
-        firePropertyChange(PROP_NOTIFICATION_READ, notification);
+    public void wasRead(NotificationImpl notification) {
+        if (notification.isRead()) {
+            firePropertyChange(PROP_NOTIFICATION_READ, notification);
+        }
         update(notification);
     }
 
@@ -154,11 +168,11 @@ public class NotificationCenterManager {
     }
 
     public JComponent getComponent() {
-        return notificationTable;
+        return getTable();
     }
 
-    public NotificationTableModel getModel() {
-        return (NotificationTableModel) notificationTable.getModel();
+    private NotificationTableModel getModel() {
+        return (NotificationTableModel) getTable().getModel();
     }
 
     public int getUnreadCount() {
@@ -173,7 +187,7 @@ public class NotificationCenterManager {
         return count;
     }
 
-    public NotificationImpl getLastNotification() {
+    public NotificationImpl getLastUnreadNotification() {
         synchronized (notifications) {
             for (int i = filteredNotifications.size() - 1; i >= 0; i--) {
                 NotificationImpl n = filteredNotifications.get(i);
@@ -224,11 +238,11 @@ public class NotificationCenterManager {
 
     public boolean isEnabled(NotificationImpl notification) {
         boolean categoryEnabled = notificationFilter == null || (notificationFilter != null && notificationFilter.isEnabled(notification));
-        boolean messageEnabled = true;
+        boolean titleEnabled = true;
         if (categoryEnabled) {//save unnecessary condition check
-            messageEnabled = messageFilter == null ? true : messageFilter.isEnabled(notification.getTitle());
+            titleEnabled = titleFilter == null ? true : titleFilter.isEnabled(notification.getTitle());
         }
-        return categoryEnabled && messageEnabled;
+        return categoryEnabled && titleEnabled;
     }
 
     private void filterNotifications() {
@@ -246,10 +260,72 @@ public class NotificationCenterManager {
 
     void setMessageFilter(String searchText) {
         if (searchText == null || searchText.isEmpty()) {
-            messageFilter = null;
+            titleFilter = null;
         } else {
-            messageFilter = new MessageFilter(searchText);
+            titleFilter = new TitleFilter(searchText);
         }
         updateTable(true);
+    }
+
+    private void loadFilters() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    filterRepository.load();
+                } catch (IOException ioE) {
+                    getLogger().log(Level.INFO, ioE.getMessage(), ioE);
+                }
+                if (notificationTable != null) {
+                    updateTable(true);
+                } else {
+                    notificationFilter = filterRepository.getActive();
+                }
+            }
+        }).start();
+    }
+
+    private NotificationTable getTable() {
+        if (notificationTable == null) {
+            notificationTable = new NotificationTable();
+        }
+        return notificationTable;
+    }
+
+    /**
+     * for testing
+     */
+    void setActiveFilter(NotificationFilter notificationFilter) {
+        this.notificationFilter = notificationFilter;
+        filterNotifications();
+    }
+
+    /**
+     * for testing
+     */
+    int getTotalCount() {
+        int count = 0;
+        synchronized (notifications) {
+            count = notifications.size();
+        }
+        return count;
+    }
+
+    /**
+     * for testing
+     */
+    int getFilteredCount() {
+        int count = 0;
+        synchronized (notifications) {
+            count = filteredNotifications.size();
+        }
+        return count;
+    }
+
+    /**
+     * for testing
+     */
+    List<NotificationImpl> getFilteredNotifications() {
+        return filteredNotifications;
     }
 }

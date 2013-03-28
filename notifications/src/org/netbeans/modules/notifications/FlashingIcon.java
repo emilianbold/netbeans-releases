@@ -100,7 +100,7 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
         NotificationCenterManager manager = NotificationCenterManager.getInstance();
         int unreadCount = manager.getUnreadCount();
         setText(unreadCount > 1 ? String.valueOf(unreadCount) : null);
-        currentNotification = manager.getLastNotification();
+        currentNotification = manager.getLastUnreadNotification();
         if (null != currentNotification) {
             setIcon(currentNotification.getIcon());
             setToolTipText(currentNotification.getTitle());
@@ -260,7 +260,7 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
         } else if (NotificationCenterManager.PROP_NOTIFICATION_READ.equals(evt.getPropertyName())) {
             NotificationImpl read = (NotificationImpl) evt.getNewValue();
             if (read.equals(currentNotification)) {
-                NotificationImpl top = NotificationCenterManager.getInstance().getLastNotification();
+                NotificationImpl top = NotificationCenterManager.getInstance().getLastUnreadNotification();
                 setNotification(top, false);
                 BalloonManager.dismiss();
                 stopFlashing();
@@ -269,7 +269,7 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
                 setText(notificationCount > 1 ? String.valueOf(notificationCount) : null);
             }
         } else if (NotificationCenterManager.PROP_NOTIFICATIONS_CHANGED.equals(evt.getPropertyName())) {
-            NotificationImpl top = NotificationCenterManager.getInstance().getLastNotification();
+            NotificationImpl top = NotificationCenterManager.getInstance().getLastUnreadNotification();
             setNotification(top, false);
         }
     }
