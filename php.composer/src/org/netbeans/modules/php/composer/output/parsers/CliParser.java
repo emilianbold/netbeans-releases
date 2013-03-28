@@ -57,20 +57,29 @@ class CliParser implements Parser {
 
     @Override
     public List<SearchResult> parseSearch(String chunk) {
-        if (!Composer.isValidOutput(chunk)) {
-            // ignore warnings
-            return Collections.emptyList();
-        }
         String[] lines = chunk.split("\n"); // NOI18N
         if (lines.length == 0) {
             return Collections.emptyList();
         }
         List<SearchResult> result = new ArrayList<SearchResult>(lines.length);
         for (String line : lines) {
+            if (!Composer.isValidOutput(line)) {
+                // ignore warnings
+                continue;
+            }
+            // legacy
             String[] split = line.split(":", 2); // NOI18N
             if (split.length == 2) {
-                result.add(new SearchResult(split[0].trim(), split[1].trim()));
+                String name = split[0].trim();
+                // verify name
+                if (name.indexOf(' ') == -1) { // NOI18N
+                    result.add(new SearchResult(name, split[1].trim()));
+                    continue;
+                }
             }
+            // current
+            split = line.split(" ", 2); // NOI18N
+            result.add(new SearchResult(split[0].trim(), split[1].trim()));
         }
         return result;
     }

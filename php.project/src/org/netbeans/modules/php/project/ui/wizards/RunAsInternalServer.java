@@ -131,7 +131,7 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
     }
 
     @Override
-    protected JComboBox getRunAsCombo() {
+    protected JComboBox<String> getRunAsCombo() {
         return runAsComboBox;
     }
 
@@ -204,7 +204,7 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
     private void initComponents() {
 
         runAsLabel = new JLabel();
-        runAsComboBox = new JComboBox();
+        runAsComboBox = new JComboBox<String>();
         hostnameLabel = new JLabel();
         hostnameTextField = new JTextField();
         portLabel = new JLabel();
@@ -215,18 +215,26 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
         routerBrowseButton = new JButton();
         noteLabel = new JLabel();
         phpVersionInfoLabel = new JLabel();
+
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.runAsLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(hostnameLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.hostnameLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.portLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(urlHintLabel, " "); // NOI18N
+
         Mnemonics.setLocalizedText(routerLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.routerLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(routerBrowseButton, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.routerBrowseButton.text")); // NOI18N
         routerBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 routerBrowseButtonActionPerformed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.noteLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(phpVersionInfoLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.phpVersionInfoLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
@@ -256,9 +264,9 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(phpVersionInfoLabel)
-                .addContainerGap())
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(noteLabel)
+                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -283,7 +291,7 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
                     .addComponent(routerTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(routerBrowseButton))
                 .addGap(18, 18, 18)
-                .addComponent(noteLabel)
+                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(phpVersionInfoLabel)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -309,7 +317,7 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
     private JButton routerBrowseButton;
     private JLabel routerLabel;
     private JTextField routerTextField;
-    private JComboBox runAsComboBox;
+    private JComboBox<String> runAsComboBox;
     private JLabel runAsLabel;
     private JLabel urlHintLabel;
     // End of variables declaration//GEN-END:variables

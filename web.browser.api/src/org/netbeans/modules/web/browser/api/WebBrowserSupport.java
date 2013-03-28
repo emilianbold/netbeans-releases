@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -103,7 +104,7 @@ public final class WebBrowserSupport {
         }
         BrowserComboBoxModel model = new BrowserComboBoxModel(browsers);
         for (int i = 0; i < model.getSize(); i++) {
-            WebBrowser browser = (WebBrowser) model.getElementAt(i);
+            WebBrowser browser = model.getElementAt(i);
             assert browser != null;
             if ((selectedBrowserId == null
                     && browser.hasNetBeansIntegration())
@@ -120,7 +121,7 @@ public final class WebBrowserSupport {
      * @return renderer for component with browsers
      * @see #createBrowserModel(String)
      */
-    public static ListCellRenderer createBrowserRenderer() {
+    public static ListCellRenderer<WebBrowser> createBrowserRenderer() {
         return new BrowserRenderer();
     }
 
@@ -146,7 +147,7 @@ public final class WebBrowserSupport {
                 && browserId.endsWith(WebBrowser.INTEGRATED)) {
             return true;
         }
-        ComboBoxModel model = createBrowserModel(browserId, true);
+        ComboBoxModel<WebBrowser> model = createBrowserModel(browserId, true);
         return ((WebBrowser) model.getSelectedItem()).hasNetBeansIntegration();
     }
 
@@ -164,7 +165,7 @@ public final class WebBrowserSupport {
             return findWebBrowserById(browserId);
         }
         // otherwise create a model to figure out default browser:
-        ComboBoxModel model = createBrowserModel(browserId, true);
+        ComboBoxModel<WebBrowser> model = createBrowserModel(browserId, true);
         return (WebBrowser) model.getSelectedItem();
     }
 
@@ -182,9 +183,9 @@ public final class WebBrowserSupport {
     /**
      * Model for component with browsers.
      */
-    public static final class BrowserComboBoxModel extends AbstractListModel implements ComboBoxModel {
+    public static final class BrowserComboBoxModel extends AbstractListModel<WebBrowser> implements ComboBoxModel<WebBrowser> {
 
-        private static final long serialVersionUID = -45857643232L;
+        private static final long serialVersionUID = -65798754321321L;
 
         private final List<WebBrowser> browsers = new CopyOnWriteArrayList<WebBrowser>();
 
@@ -211,7 +212,7 @@ public final class WebBrowserSupport {
          */
         @CheckForNull
         @Override
-        public Object getElementAt(int index) {
+        public WebBrowser getElementAt(int index) {
             try {
                 return browsers.get(index);
             } catch (IndexOutOfBoundsException ex) {
@@ -233,7 +234,7 @@ public final class WebBrowserSupport {
          * {@inheritDoc}
          */
         @Override
-        public Object getSelectedItem() {
+        public WebBrowser getSelectedItem() {
             assert selectedBrowser != null;
             return selectedBrowser;
         }
@@ -262,18 +263,15 @@ public final class WebBrowserSupport {
     /**
      * Renderer for component with browsers.
      */
-    private static final class BrowserRenderer implements ListCellRenderer {
+    private static final class BrowserRenderer implements ListCellRenderer<WebBrowser> {
 
         // @GuardedBy("EDT")
-        private static final ListCellRenderer ORIGINAL_RENDERER = new JComboBox().getRenderer();
+        private final ListCellRenderer<Object> defaultRenderer = new DefaultListCellRenderer();
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends WebBrowser> list, WebBrowser value, int index, boolean isSelected, boolean cellHasFocus) {
             assert EventQueue.isDispatchThread();
-            if (value instanceof WebBrowser) {
-                value = ((WebBrowser) value).getName();
-            }
-            return ORIGINAL_RENDERER.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            return defaultRenderer.getListCellRendererComponent(list, value.getName(), index, isSelected, cellHasFocus);
         }
 
     }
