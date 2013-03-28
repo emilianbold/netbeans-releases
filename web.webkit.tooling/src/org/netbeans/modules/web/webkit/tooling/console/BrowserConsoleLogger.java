@@ -141,7 +141,6 @@ public class BrowserConsoleLogger implements Console.Listener {
     public void messagesCleared() {
         try {
             io.getOut().reset();
-            io.getErr().reset();
         } catch (IOException ex) {}
     }
 
