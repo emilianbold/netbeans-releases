@@ -53,8 +53,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.ui.issue.cache.StorageUtils.FileLocks;
-import org.netbeans.modules.bugtracking.ui.issue.cache.StorageUtils.FileLocks.FileLock;
 import org.openide.modules.Places;
 
 /**
@@ -88,7 +86,7 @@ public class IssueSettingsStorage {
 
     public Collection<Long> loadCollapsedCommenst(String repoUrl, String id) {
         File file = getIssuePropertiesFile(repoUrl, id);
-        FileLock l = FileLocks.getLock(file);
+        StorageUtils.FileLocks.FileLock l = StorageUtils.FileLocks.getLock(file);
         try {
             Properties p = load(file, repoUrl, id);
             Set<Long> s = new HashSet<Long>();
@@ -124,7 +122,7 @@ public class IssueSettingsStorage {
     
     public void storeCollapsedComments(Collection<Long> collapsedComments, String repoUrl, String id) {
         File file = getIssuePropertiesFile(repoUrl, id);
-        FileLock l = FileLocks.getLock(file);
+        StorageUtils.FileLocks.FileLock l = StorageUtils.FileLocks.getLock(file);
         try {
             Properties p = load(file, repoUrl, id);
             clear(p, PROP_COLLAPSED_COMMENT_PREFIX);

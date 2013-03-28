@@ -496,10 +496,6 @@ public class CacheTest extends NbTestCase {
                             return ((CTestIssue)issue).getAttributes();
                         }
                         @Override
-                        public String getRecentChanges(CTestIssue issue) {
-                            throw new UnsupportedOperationException("Not supported yet.");
-                        }
-                        @Override
                         public long getLastModified(CTestIssue issue) {
                             return Long.parseLong(((CTestIssue)issue).dataArray[3]);
                         }
@@ -507,9 +503,7 @@ public class CacheTest extends NbTestCase {
                         public long getCreated(CTestIssue issue) {
                             return Long.parseLong(((CTestIssue)issue).dataArray[2]);
                         }
-                    },
-                    new CTestIssueProvider(), 
-                    repository.getRepository());
+                    });
             }
             
             protected void cleanup() {

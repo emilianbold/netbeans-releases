@@ -380,12 +380,7 @@ public class StorageTest extends NbTestCase {
             public Map getAttributes(Object issue) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
-
-            @Override
-            public String getRecentChanges(Object issue) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
+            
             @Override
             public long getLastModified(Object issue) {
                 throw new UnsupportedOperationException("Not supported yet.");
@@ -397,6 +392,6 @@ public class StorageTest extends NbTestCase {
             }
         };
         RepositoryImpl impl = TestKit.getRepository(new DummyRepository(DummyBugtrackingConnector.instance, "dummy"));
-        return new IssueCache<DummyIssue, Object>("dummy", ia, null, impl.getRepository());
+        return new IssueCache<DummyIssue, Object>("dummy", ia);
     }
 }

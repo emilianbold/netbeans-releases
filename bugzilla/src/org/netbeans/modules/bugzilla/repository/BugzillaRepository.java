@@ -782,11 +782,7 @@ public class BugzillaRepository {
 
     private class Cache extends IssueCache<BugzillaIssue, TaskData> {
         Cache() {
-            super(
-                BugzillaRepository.this.getUrl(), 
-                new IssueAccessorImpl(), 
-                Bugzilla.getInstance().getIssueProvider(), 
-                BugzillaUtil.getRepository(BugzillaRepository.this));
+            super(BugzillaRepository.this.getUrl(), new IssueAccessorImpl());
         }
     }
 
@@ -801,11 +797,6 @@ public class BugzillaRepository {
         public void setIssueData(BugzillaIssue issue, TaskData taskData) {
             assert issue != null && taskData != null;
             ((BugzillaIssue)issue).setTaskData(taskData);
-        }
-        @Override
-        public String getRecentChanges(BugzillaIssue issue) {
-            assert issue != null;
-            return ((BugzillaIssue)issue).getRecentChanges();
         }
         @Override
         public long getLastModified(BugzillaIssue issue) {

@@ -711,11 +711,7 @@ public class JiraRepository {
 
     private class Cache extends IssueCache<NbJiraIssue, TaskData> {
         Cache() {
-            super(
-                JiraRepository.this.getUrl(), 
-                new IssueAccessorImpl(),
-                Jira.getInstance().getIssueProvider(),
-                JiraUtils.getRepository(JiraRepository.this));
+            super(JiraRepository.this.getUrl(), new IssueAccessorImpl());
         }
     }
     private class IssueAccessorImpl implements IssueCache.IssueAccessor<NbJiraIssue, TaskData> {
@@ -729,11 +725,6 @@ public class JiraRepository {
         public void setIssueData(NbJiraIssue issue, TaskData taskData) {
             assert issue != null && taskData != null;
             ((NbJiraIssue)issue).setTaskData(taskData);
-        }
-        @Override
-        public String getRecentChanges(NbJiraIssue issue) {
-            assert issue != null;
-            return ((NbJiraIssue)issue).getRecentChanges();
         }
         @Override
         public long getLastModified(NbJiraIssue issue) {

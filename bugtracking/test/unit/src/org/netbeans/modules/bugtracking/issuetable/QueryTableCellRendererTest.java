@@ -522,10 +522,6 @@ public class QueryTableCellRendererTest {
                         throw new UnsupportedOperationException("Not supported yet.");
                     }
                     @Override
-                    public String getRecentChanges(TestIssue issue) {
-                        return ((RendererIssue) issue).getRecentChanges();
-                    }
-                    @Override
                     public long getLastModified(TestIssue issue) {
                         throw new UnsupportedOperationException("Not supported yet.");
                     }
@@ -536,7 +532,7 @@ public class QueryTableCellRendererTest {
                 };
                 TestIssueProvider issueProvider = new TestIssueProvider();
                 RepositoryImpl repo = TestKit.getRepository(this);
-                cache = new IssueCache<TestIssue, Object>("test", issueAccessor, issueProvider, repo.getRepository());
+                cache = new IssueCache<TestIssue, Object>("test", issueAccessor);
             }
             return cache;
         }

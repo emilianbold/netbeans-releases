@@ -98,13 +98,11 @@ public class IssueCache<I, D> {
     private Map<String, IssueEntry> cache;
     private Map<String, Map<String, String>> lastSeenAttributes;
 
-    private String nameSpace;
+    private final String nameSpace;
 
     private final Object CACHE_LOCK = new Object();
-    private long referenceTime;
+    private final long referenceTime;
     private final IssueAccessor<I, D> issueAccessor;
-    private final IssueProvider<I> issueProvider;
-    private final RepositoryImpl repository;
 
     /**
      *
@@ -145,14 +143,6 @@ public class IssueCache<I, D> {
         public Map<String, String> getAttributes(I issue);
 
         /**
-         * Returns a description summarizing the changes made
-         * in the given issue since the last time it was as seen.
-         *
-         * @return
-         */
-        public String getRecentChanges(I issue);
-
-        /**
          * Returns the last modification time for the given issue
          *
          * @issue issue
@@ -168,7 +158,6 @@ public class IssueCache<I, D> {
          */
         public long getCreated(I issue);
 
-
     }
 
     /**
@@ -177,20 +166,19 @@ public class IssueCache<I, D> {
      * @param nameSpace
      * @param issueAccessor
      */
-    public IssueCache(String nameSpace, IssueAccessor<I, D> issueAccessor, IssueProvider<I> issueProvider, Repository repository) {
+    public IssueCache(String nameSpace, IssueAccessor<I, D> issueAccessor) {
         assert issueAccessor != null;
         this.nameSpace = nameSpace;
         this.issueAccessor = issueAccessor;
-        this.issueProvider = issueProvider;
-        this.repository = APIAccessor.IMPL.getImpl(repository);
 
+        long t = System.currentTimeMillis(); // fallback
         try {
-            this.referenceTime = IssueStorage.getInstance().getReferenceTime(nameSpace);
+            t = IssueStorage.getInstance().getReferenceTime(nameSpace);
         } catch (IOException ex) {
-            referenceTime = System.currentTimeMillis(); // fallback
             LOG.log(Level.SEVERE, null, ex);
         }
-
+        this.referenceTime = t;
+        
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
@@ -238,27 +226,9 @@ public class IssueCache<I, D> {
         assert issueData != null;
         assert issue != null;
 
-        String id;
-//        if(issueProvider.isNew(issue)) {
-            id = issueAccessor.getID(issueData);
-//        } else {
-//            id = issue.getID();
-//        }
+        String id = issueAccessor.getID(issueData);
         assert id != null && !id.equals("");
         setIssueData(id, issue, issueData);
-    }
-
-    String getRecentChanges(String id) {
-        IssueEntry entry;
-        synchronized(CACHE_LOCK) {
-            entry = getCache().get(id);
-            if(entry == null) {
-                assert !SwingUtilities.isEventDispatchThread();
-                entry = createNewEntry(id);
-                readIssue(entry);
-            }
-            return getIssueAccessor().getRecentChanges(entry.issue);
-        }
     }
 
     private I setIssueData(String id, I issue, D issueData) throws IOException {
@@ -300,7 +270,7 @@ public class IssueCache<I, D> {
                 if(entry.wasSeen()) {
                     LOG.log(Level.FINE, " issue {0} was seen", new Object[] {id}); // NOI18N
                     long lastModified = issueAccessor.getLastModified(entry.issue);
-                    if(isChanged(entry.seenAttributes, issueAccessor.getAttributes(entry.issue)) || entry.lastSeenModified < lastModified) {
+                    if(entry.lastSeenModified < lastModified) {
                         LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
                         if(entry.lastSeenModified >= lastModified) {
                             LOG.log(Level.WARNING, " issue '{'0'}' changed, yet last known modify > last modify. [{0},{1}]", new Object[]{entry.lastSeenModified, lastModified}); // NOI18N
@@ -314,8 +284,7 @@ public class IssueCache<I, D> {
                     }
                 } else {
                     LOG.log(Level.FINE, " issue {0} wasn't seen yet", new Object[] {id}); // NOI18N
-                    if(isChanged(entry.seenAttributes, issueAccessor.getAttributes(entry.issue)) ||
-                       referenceTime < issueAccessor.getLastModified(entry.issue))
+                    if(referenceTime < issueAccessor.getLastModified(entry.issue))
                     {
                         LOG.log(Level.FINE, " issue {0} is changed", new Object[] {id}); // NOI18N
                         entry.seen = false;
@@ -451,7 +420,7 @@ public class IssueCache<I, D> {
     }
 
     /**
-     * Stres the given id-s for a query
+     * Stores the given id-s for a query
      * @param name query name
      * @param ids id-s
      */
@@ -495,7 +464,7 @@ public class IssueCache<I, D> {
      * Stores the given id-s as archived
      *
      * @param name query name
-     * @param ids isues id-s
+     * @param ids issues id-s
      */
     public void storeArchivedQueryIssues(String name, String[] ids) {
         synchronized(CACHE_LOCK) {
@@ -527,7 +496,7 @@ public class IssueCache<I, D> {
 
     /**
      *
-     * Removes all data assotiated with a query from the storage.
+     * Removes all data associated with a query from the storage.
      *
      * @param name query name
      */
@@ -551,10 +520,6 @@ public class IssueCache<I, D> {
             entry.status = status;
             entry.seen = seen;
         }
-    }
-    
-    private Issue getIssue(I issue) {
-        return repository.getIssue(issue).getIssue();
     }
     
     private IssueEntry createNewEntry(String id) {
@@ -589,20 +554,6 @@ public class IssueCache<I, D> {
 
     private void storeIssue(IssueEntry entry) throws IOException {
         IssueStorage.getInstance().storeIssue(nameSpace, entry);
-    }
-
-    private boolean isChanged(Map<String, String> oldAttr, Map<String, String> newAttr) {
-        if(oldAttr == null) {
-            return false; // can't be changed if it wasn't seen yet
-        }
-        for (Entry<String, String> e : oldAttr.entrySet()) {
-            String newValue = newAttr.get(e.getKey());
-            String oldValue = e.getValue();
-            if(newValue == null && oldValue == null) {
-                continue;
-            }
-        }
-        return false;
     }
 
     class IssueEntry {
