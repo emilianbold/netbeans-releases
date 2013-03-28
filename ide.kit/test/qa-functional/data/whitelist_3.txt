@@ -1,5 +1,15 @@
 #include whitelist_2.txt
 
+#227810
+org.netbeans.modules.groovy.antproject.base.AbstractGroovyActionProvider
+org.netbeans.modules.groovy.antproject.base.AbstractGroovyExtender
+org.netbeans.modules.groovy.antproject.common.BuildScriptHelper
+org.netbeans.modules.groovy.antproject.common.BuildScriptType
+org.netbeans.modules.groovy.antproject.j2se.JavaSEGroovyActionProvider
+org.netbeans.modules.groovy.antproject.j2se.JavaSEGroovyExtender
+org.netbeans.modules.groovy.antproject.j2se.JavaSEGroovyProjectOpenedHook
+org.netbeans.modules.groovy.support.spi.GroovyExtender
+
 #227664
 com.sun.tools.javac.api.BasicJavacTask
 com.sun.tools.javac.api.ClientCodeWrapper$WrappedTaskListener
