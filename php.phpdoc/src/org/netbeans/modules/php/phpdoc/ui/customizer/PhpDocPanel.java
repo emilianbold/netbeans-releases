@@ -99,7 +99,7 @@ final class PhpDocPanel extends JPanel implements HelpCtx.Provider {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(PhpDocPanel.class);
+        return new HelpCtx("org.netbeans.modules.php.phpdoc.ui.customizer.PhpDocPanel"); // NI18N
     }
 
     private String getPhpDocTarget() {

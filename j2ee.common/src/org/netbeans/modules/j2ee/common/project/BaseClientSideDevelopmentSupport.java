@@ -183,6 +183,9 @@ public abstract class BaseClientSideDevelopmentSupport implements
         if (bs == null) {
             return;
         }
+        if (!bs.canRefreshOnSaveThisFileType(fo)) {
+            return;
+        }
         URL u = bs.getBrowserURL(fo, true);
         if (u == null) {
             // check if given file is one of the welcome files and therefore
@@ -191,8 +194,7 @@ public abstract class BaseClientSideDevelopmentSupport implements
                 u = bs.getBrowserURL(project.getProjectDirectory(), true);
             }
         }
-        if (u != null) {
-            assert bs.canReload(u) : u;
+        if (u != null && bs.canReload(u)) {
             bs.reload(u);
         }
     }

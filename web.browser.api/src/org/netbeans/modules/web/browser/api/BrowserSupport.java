@@ -240,10 +240,24 @@ public final class BrowserSupport {
      * remember last URL opened.
      */
     public boolean canReload(URL url) {
-        return currentURL != null && currentURL.equals(url);
+        return currentURL != null && currentURL.equals(url) &&
+                getWebBrowserPane().canReloadPage();
     }
-    
-         /**
+
+    /**
+     * Some file types should not be refresh upon save in case of some browsers.
+     * For example CSS are handled directly by CSS support in case of "Chrome with
+     * NetBeans integration" browser.
+     */
+    public boolean canRefreshOnSaveThisFileType(FileObject fo) {
+        if (getWebBrowserPane().hasNetBeansIntegration()) {
+            // #217284 - ignore changes in CSS
+            return !fo.hasExt("css");
+        }
+        return true;
+    }
+
+    /**
      * Returns URL which was opened in the browser and which was associated with
      * given FileObject. That is calling load(URL, FileObject) creates mapping 
      * between FileObject in IDE side and URL in browser side and this method 

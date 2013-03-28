@@ -251,14 +251,14 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             // no connections defined
             connections = Arrays.asList(RunConfigRemote.NO_REMOTE_CONFIGURATION);
         }
-        DefaultComboBoxModel model = new DefaultComboBoxModel(new Vector<RemoteConfiguration>(connections));
+        DefaultComboBoxModel<RemoteConfiguration> model = new DefaultComboBoxModel<RemoteConfiguration>(new Vector<RemoteConfiguration>(connections));
         remoteConnectionComboBox.setModel(model);
     }
 
     private void selectRemoteConnection() {
         String remoteConnection = getValue(RunConfigurationPanel.REMOTE_CONNECTION);
         // #141849 - can be null if one adds remote config for the first time for a project but already has some remote connection
-        DefaultComboBoxModel model = (DefaultComboBoxModel) remoteConnectionComboBox.getModel();
+        DefaultComboBoxModel<RemoteConfiguration> model = (DefaultComboBoxModel<RemoteConfiguration>) remoteConnectionComboBox.getModel();
         if (remoteConnection == null
                 && model.getIndexOf(RunConfigRemote.NO_REMOTE_CONFIGURATION) != -1) {
             remoteConnectionComboBox.setSelectedItem(RunConfigRemote.NO_REMOTE_CONFIGURATION);

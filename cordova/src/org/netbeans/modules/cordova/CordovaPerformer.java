@@ -48,6 +48,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.Properties;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
@@ -112,18 +113,29 @@ public class CordovaPerformer implements BuildPerformer {
     }
     
     @Override
-    public void perform(String target, Project project) {
+    public void perform(final String target, final Project project) {
         if (!CordovaPlatform.getDefault().isReady()) {
             throw new IllegalStateException();
         }
-        generateBuildScripts(project);
-        FileObject buildFo = project.getProjectDirectory().getFileObject(PATH_BUILD_XML);//NOI18N
-        try {
-            ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
+        Runnable run = new Runnable() {
+            @Override
+            public void run() {
+                generateBuildScripts(project);
+                FileObject buildFo = project.getProjectDirectory().getFileObject(PATH_BUILD_XML);//NOI18N
+                try {
+                    ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(run);
+        } else {
+            run.run();
         }
     }
 

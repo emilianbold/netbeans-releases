@@ -95,12 +95,12 @@ public class JsStructureScanner implements StructureScanner {
         Collection<? extends JsObject> properties = jsObject.getProperties().values();
         boolean countFunctionChild = (jsObject.getJSKind().isFunction() && !jsObject.isAnonymous() && jsObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
                 && !containsFunction(jsObject)) 
-                || ("prototype".equals(jsObject.getName()) && properties.isEmpty());
+                || (ModelUtils.PROTOTYPE.equals(jsObject.getName()) && properties.isEmpty());
         
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();
             if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
-                    && !child.getName().equals("prototype")) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+                    && !child.getName().equals(ModelUtils.PROTOTYPE)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
                 // don't count children for functions and methods and anonyms
                 continue;
             }

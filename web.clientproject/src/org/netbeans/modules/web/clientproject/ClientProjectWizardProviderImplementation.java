@@ -39,23 +39,23 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi;
+package org.netbeans.modules.web.clientproject;
 
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.web.clientproject.spi.ClientProjectWizardProviderImpl;
+import org.netbeans.modules.web.clientproject.ui.wizard.ClientSideProjectWizardIterator;
+import org.openide.WizardDescriptor;
+import org.openide.util.lookup.ServiceProvider;
 
-public final class RefreshOnSaveSupport {
+/**
+ *
+ * @author Jan Becicka
+ */
+@ServiceProvider(service=ClientProjectWizardProviderImpl.class)
+public class ClientProjectWizardProviderImplementation implements ClientProjectWizardProviderImpl{
 
-    private RefreshOnSaveSupport() {
+    @Override
+    public WizardDescriptor.InstantiatingIterator newClientProjectWithExtender() {
+        return ClientSideProjectWizardIterator.newProjectWithExtender();
     }
-
-    /**
-     * This is a filter which checks whether file can be refreshed on
-     * save in browser or not.
-     * @return false for files which should not be reloaded
-     * @since 1.18
-     */
-    public static boolean canRefreshOnSaveFileFilter(FileObject fo) {
-        // #217284 - ignore changes in CSS
-        return !fo.hasExt("css");
-    }
+    
 }
