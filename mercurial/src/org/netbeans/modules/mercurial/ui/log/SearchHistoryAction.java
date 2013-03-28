@@ -63,6 +63,15 @@ import org.openide.nodes.Node;
  * @author Maros Sandor
  */
 public abstract class SearchHistoryAction extends ContextAction {
+    
+    protected SearchHistoryAction () {
+        
+    }
+    
+    protected SearchHistoryAction (String menuIcon) {
+        super(menuIcon);
+    }
+    
     static final int DIRECTORY_ENABLED_STATUS = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     static final int FILE_ENABLED_STATUS = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
 

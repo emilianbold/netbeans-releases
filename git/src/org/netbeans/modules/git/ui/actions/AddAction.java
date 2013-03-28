@@ -62,7 +62,12 @@ import org.openide.util.NbBundle;
 @ActionID(id = "org.netbeans.modules.git.ui.actions.AddAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_AddAction_Name")
 public class AddAction extends SingleRepositoryAction {
-
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/add.png"; //NOI18N
+    
+    public AddAction () {
+        super(ICON_RESOURCE);
+    }
+    
     @Override
     protected void performAction (File repository, final File[] roots, VCSContext context) {
         GitProgressSupport supp = new GitProgressSupport () {
