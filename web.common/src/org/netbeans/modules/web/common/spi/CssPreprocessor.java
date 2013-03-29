@@ -94,6 +94,7 @@ public interface CssPreprocessor {
      * @param project the project that is to be customized
      * @return a new CSS preprocessor customizer; can be {@code null} if the CSS preprocessor doesn't need
      *         to store/read any project specific properties (or does not need to be added/removed to given project)
+     * @see org.netbeans.modules.web.common.api.CssPreprocessorsCustomizer
      */
     @CheckForNull
     Customizer createCustomizer(@NonNull Project project);
@@ -103,16 +104,16 @@ public interface CssPreprocessor {
     /**
      * Provide support for customizing a project (via Project Properties dialog).
      * For reading and storing properties, {@link org.netbeans.api.project.ProjectUtils#getPreferences(Project, Class, boolean)} can be used.
+     * <p>
+     * Implementations <b>must be thread safe</b> since {@link #save() save} method is called in a background thread.
      */
     interface Customizer {
 
         /**
          * Return the display name of this customizer.
-         * <p>
-         * If this method returns {@code null}, {@link CssPreprocessor#getDisplayName()} is used.
-         * @return display name used in customizer, can be {@code null}
+         * @return display name used in customizer, cannot be empty
          */
-        @CheckForNull
+        @NonNull
         String getDisplayName();
 
         /**
@@ -177,7 +178,7 @@ public interface CssPreprocessor {
         String getWarningMessage();
 
         /**
-         * Called to extend properties of the given PHP module. This method
+         * Called to update properties of the given project. This method
          * is called in a background thread and only if user clicks the OK button;
          * also, it cannot be called if {@link #isValid()} is {@code false}.
          * <p>
