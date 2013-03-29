@@ -49,6 +49,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
@@ -59,7 +60,7 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 public class JsObjectReference extends JsObjectImpl {
  
     private final JsObject original;
-
+    
     private final Set<Modifier> modifiers;
 
     public JsObjectReference(JsObject parent, Identifier declarationName,
@@ -88,12 +89,16 @@ public class JsObjectReference extends JsObjectImpl {
 
     @Override
     public boolean isAnonymous() {
-        return original.isAnonymous();
+        return false;
     }
 
     @Override
     public Kind getJSKind() {
-        return original.getJSKind();
+        Kind kind = original.getJSKind();
+        if (kind == JsElement.Kind.ANONYMOUS_OBJECT) {
+            kind = JsElement.Kind.OBJECT_LITERAL;
+        }
+        return kind;
     }
 
     @Override
@@ -132,5 +137,5 @@ public class JsObjectReference extends JsObjectImpl {
     public String getDocumentation() {
         return original.getDocumentation(); 
     }
-    
+
 }
