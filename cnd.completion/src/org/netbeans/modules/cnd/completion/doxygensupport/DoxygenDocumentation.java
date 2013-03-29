@@ -73,8 +73,19 @@ public class DoxygenDocumentation {
     private static final String[] formatItalic = new String[]{"<i>", "</i>"}; // NOI18N
 
     static String doxygen2HTML(String doxygen, CppTokenId kind) {
-        if(doxygen.length() >= 5) {
-            doxygen = doxygen.substring(3, doxygen.length() - 2);
+        switch (kind) {
+            case LINE_COMMENT:
+                doxygen = doxygen.substring(2);
+                break;
+            case DOXYGEN_LINE_COMMENT:
+                doxygen = doxygen.substring(3);
+                break;
+            case DOXYGEN_COMMENT:
+                doxygen = doxygen.substring(3, doxygen.length() - 2);
+                break;
+            case BLOCK_COMMENT:
+                doxygen = doxygen.substring(2, doxygen.length() - 2);
+                break;
         }
         doxygen = STRIP_STARS.matcher(doxygen).replaceAll("");
         doxygen = doxygen.trim();
@@ -243,12 +254,13 @@ public class DoxygenDocumentation {
     private static DocCandidate getBestDoc(List<DocCandidate> list) {
         DocCandidate candidate = null;
         for(DocCandidate doc : list) {
-            if (doc.kind == CppTokenId.DOXYGEN_COMMENT) {
-                return doc;
-            } else if (doc.kind == CppTokenId.BLOCK_COMMENT) {
-                if (candidate == null || candidate.text.length() < doc.text.length()) {
+            switch (doc.kind) {
+                case DOXYGEN_COMMENT:
+                case DOXYGEN_LINE_COMMENT:
+                    return doc;
+                case BLOCK_COMMENT:
+                case LINE_COMMENT:
                     candidate = doc;
-                }
             }
         }
         return candidate;
@@ -265,45 +277,61 @@ public class DoxygenDocumentation {
 
         // check right after declaration on the same line
         ts.move(csmOffsetable.getEndOffset());
-        OUTER:
         while (ts.moveNext()) {
             switch (ts.token().id()) {
-                case LINE_COMMENT:
                 case NEW_LINE:
-                    break OUTER;
+                    break;
+                case LINE_COMMENT:
                 case BLOCK_COMMENT:
-                    list.add(new DocCandidate(ts.token().text().toString(), ts.token().id()));
-                    continue;
                 case DOXYGEN_COMMENT:
+                case DOXYGEN_LINE_COMMENT:
                     list.add(new DocCandidate(ts.token().text().toString(), ts.token().id()));
-                    break OUTER;
+                    break;
                 default:
                     continue;
             }
+            break;
         }
         
+        // check the line before the declaration
         ts.move(csmOffsetable.getStartOffset());
-        OUTER:
+        boolean newLineOccured = false;
         while (ts.movePrevious()) {
             switch (ts.token().id()) {
-                case LINE_COMMENT:
-                case WHITESPACE:
                 case NEW_LINE:
-                    continue;
+                    if (newLineOccured) {
+                        break;
+                    } else {
+                        newLineOccured = true;
+                        continue;
+                    }
+                case LINE_COMMENT:
                 case BLOCK_COMMENT:
-                    list.add(new DocCandidate(ts.token().text().toString(), ts.token().id()));
-                    continue;
                 case DOXYGEN_COMMENT:
-                    list.add(new DocCandidate(ts.token().text().toString(), ts.token().id()));
-                    break OUTER;
+                case DOXYGEN_LINE_COMMENT:
+                    DocCandidate docCandidate = new DocCandidate(ts.token().text().toString(), ts.token().id());
+                    while (ts.movePrevious()) {
+                        switch (ts.token().id()) {
+                            case WHITESPACE:
+                                continue;
+                            case NEW_LINE:
+                                list.add(docCandidate);
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    }
+                    break;
                 case SEMICOLON:
                 case RBRACE:
                 case LBRACE:
                 case PREPROCESSOR_DIRECTIVE:
-                    break OUTER;
+                    break;
                 default:
                     continue;
             }
+            break;
         }
         if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
             // K&K does not supported by model
@@ -312,24 +340,25 @@ public class DoxygenDocumentation {
             //CsmParameterList<CsmKnRName> kernighanAndRitchieParameterList = parameterList.getKernighanAndRitchieParameterList();
             //if (kernighanAndRitchieParameterList != null) {
                 ts.move(csmOffsetable.getStartOffset());
-                OUTER2:
+                
                 while (ts.moveNext()) {
                     switch (ts.token().id()) {
-                        case LINE_COMMENT:
                         case WHITESPACE:
                         case NEW_LINE:
                             continue;
+                        case LINE_COMMENT:
                         case BLOCK_COMMENT:
                             list.add(new DocCandidate(ts.token().text().toString(), ts.token().id()));
                             continue;
                         case DOXYGEN_COMMENT:
                             list.add(new DocCandidate(ts.token().text().toString(), ts.token().id()));
-                            break OUTER2;
+                            break;
                         case LBRACE:
-                            break OUTER2;
+                            break;
                         default:
                             continue;
                     }
+                    break;
                 }
             //}
         }
