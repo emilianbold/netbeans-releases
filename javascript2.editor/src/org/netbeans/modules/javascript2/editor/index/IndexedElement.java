@@ -100,10 +100,10 @@ public class IndexedElement extends JsElementImpl {
         return isPlatform;
     }
 
-    public static IndexDocument createDocument(JsObject object, IndexingSupport support, Indexable indexable) {
+    protected static IndexDocument createDocument(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
         IndexDocument elementDocument = support.createDocument(indexable);
         elementDocument.addPair(JsIndex.FIELD_BASE_NAME, object.getName(), true, true);
-        elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  ModelUtils.createFQN(object), true, true);
+        elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  fqn, true, true);
         boolean isGlobal = object.getParent() != null ? ModelUtils.isGlobal(object.getParent()) : ModelUtils.isGlobal(object);
         elementDocument.addPair(JsIndex.FIELD_IS_GLOBAL, (isGlobal ? "1" : "0"), true, true);
         elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            

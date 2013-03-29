@@ -185,7 +185,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                         }
                     }
                     if (types.isEmpty()) {
-                        List<OffsetRange> usages = findMemberUsage(result.getModel().getGlobalObject(), ModelUtils.createFQN(parent), object.getName(), caretPosition);
+                        List<OffsetRange> usages = findMemberUsage(result.getModel().getGlobalObject(), parent.getFullyQualifiedName(), object.getName(), caretPosition);
                         for (OffsetRange range : usages) {
                             offsets.add(range);
                         }
