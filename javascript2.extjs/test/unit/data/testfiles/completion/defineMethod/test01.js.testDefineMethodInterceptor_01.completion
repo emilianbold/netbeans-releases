@@ -3,4 +3,3 @@ NetB|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      NetBeans                        [PUBLIC]   defineMethod.js
-VARIABLE   NetB                            [PUBLIC]   test01.js

@@ -4,4 +4,3 @@ NetBeans.s|
 ------------------------------------
 CLASS      stuff                           [PUBLIC]   defineMethod.js
 METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
-FIELD      s                               [PUBLIC]   test02.js

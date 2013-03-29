@@ -64,7 +64,6 @@ i:VARIABLE:[PRIVATE]:ESCAPED{i}:
 ln:VARIABLE:[PRIVATE]:ESCAPED{ln}:
 widgetPrefixLength:VARIABLE:[PRIVATE]:ESCAPED{widgetPrefixLength}<font color="#999999">ESCAPED{ : }widgetPrefix.length</font>:
 widgetPrefix:VARIABLE:[PRIVATE]:ESCAPED{widgetPrefix}<font color="#999999">ESCAPED{ : }String</font>:
-prototype:VARIABLE:[PRIVATE]:ESCAPED{prototype}<font color="#999999">ESCAPED{ : }cls.prototype</font>:
 xtypesChain:VARIABLE:[PRIVATE]:ESCAPED{xtypesChain}:
 i:VARIABLE:[PRIVATE]:ESCAPED{i}:
 xtypesMap:CLASS:[PRIVATE]:ESCAPED{xtypesMap}:

@@ -200,7 +200,7 @@ _L1774    : FUNCTION _L1774 [ANONYMOUS: true, DECLARED: true - _L1774, MODIFIERS
           # PARAMETERS
           OBJECT cls [ANONYMOUS: false, DECLARED: true - cls, MODIFIERS: PUBLIC, PARAMETER]
                   # PROPERTIES
-                  prototype : OBJECT prototype [ANONYMOUS: false, DECLARED: false - prototype, MODIFIERS: PUBLIC, PROPERTY]
+                  prototype : OBJECT prototype [ANONYMOUS: false, DECLARED: false - prototype, MODIFIERS: PUBLIC, OBJECT]
                   xtype     : OBJECT xtype [ANONYMOUS: false, DECLARED: true - xtype, MODIFIERS: PUBLIC, PROPERTY]
           OBJECT data [ANONYMOUS: false, DECLARED: true - data, MODIFIERS: PUBLIC, PARAMETER]
                   # PROPERTIES
@@ -226,7 +226,7 @@ _L1774    : FUNCTION _L1774 [ANONYMOUS: true, DECLARED: true - _L1774, MODIFIERS
           arguments          : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
           i                  : OBJECT i [ANONYMOUS: false, DECLARED: true - i, MODIFIERS: PRIVATE, VARIABLE]
           ln                 : OBJECT ln [ANONYMOUS: false, DECLARED: true - ln, MODIFIERS: PRIVATE, VARIABLE]
-          prototype          : OBJECT prototype [ANONYMOUS: false, DECLARED: true - prototype, MODIFIERS: PRIVATE, VARIABLE]
+          prototype          : OBJECT prototype [ANONYMOUS: false, DECLARED: true - prototype, MODIFIERS: PRIVATE, OBJECT]
                              # PROPERTIES
                              mixins      : OBJECT mixins [ANONYMOUS: false, DECLARED: false - mixins, MODIFIERS: PUBLIC, PROPERTY]
                              xtypesChain : OBJECT xtypesChain [ANONYMOUS: false, DECLARED: false - xtypesChain, MODIFIERS: PUBLIC, PROPERTY]

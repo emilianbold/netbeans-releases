@@ -5,4 +5,3 @@ NetBeans.stuff.engineer.d|
 CLASS      developer                       [PUBLIC]   defineMethod.js
 METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
 METHOD     defineProperty(O: Object, P: S  [PUBLIC,   JS Platform
-FIELD      d                               [PUBLIC]   test04.js
