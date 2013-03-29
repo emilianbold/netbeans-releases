@@ -60,14 +60,13 @@ import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCodeCompletion
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationElement;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
-import org.netbeans.modules.javascript2.editor.jquery.JQueryCodeCompletion;
-import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -87,7 +86,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private static final Logger LOGGER = Logger.getLogger(JsCodeCompletion.class.getName());
 
     private boolean caseSensitive;
-    private final JQueryCodeCompletion jqueryCC = new JQueryCodeCompletion();
 
     private static final List<String> WINDOW_EXPRESSION_CHAIN = Arrays.<String>asList("window", "@pro"); //NOI18N
 
@@ -167,7 +165,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 case GLOBAL:
                     HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
                     addedProperties.putAll(getDomCompletionResults(request));
-                    for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+                    for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
                         for (JsObject object : libGlobal.getProperties().values()) {
                             addPropertyToMap(request, addedProperties, object);
                         }
@@ -775,14 +773,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
     }
     
-    private Collection<JsObject> getLibrariesGlobalObjects() {
-        Collection<JsObject> result = new ArrayList<JsObject>();
-        JsObject libGlobal = JQueryModel.getGlobalObject();
-        if (libGlobal != null) {
-            result.add(libGlobal);
-        }
-        return result;
-    }
+//    private Collection<JsObject> getLibrariesGlobalObjects() {
+//        Collection<JsObject> result = new ArrayList<JsObject>();
+//        JsObject libGlobal = JQueryModel.getGlobalObject();
+//        if (libGlobal != null) {
+//            result.add(libGlobal);
+//        }
+//        return result;
+//    }
 
     private Map<String, List<JsElement>> getDomCompletionResults(CompletionRequest request) {
         Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);
