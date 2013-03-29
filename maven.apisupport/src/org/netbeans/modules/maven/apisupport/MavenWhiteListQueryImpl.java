@@ -223,11 +223,16 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
             processFolder(root, fileObject, foundPackages);
         }
     }
+    
+    public static boolean isUseOSGiDependencies(Project project) {
+        String useOsgiString = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "useOSGiDependencies", null, null);
+        return  useOsgiString != null ? Boolean.parseBoolean(useOsgiString) : false;
+    }
+    
 
     private Tuple calculateLists() {
         //System.out.println("calculate for project=" + project.getProjectDirectory());
-        String useOsgiString = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "useOSGiDependencies", null, null);
-        boolean useOsgi = useOsgiString != null ? Boolean.parseBoolean(useOsgiString) : false;
+        boolean useOsgi = isUseOSGiDependencies(project);
         List<NBMWrapper> nbms = new ArrayList<NBMWrapper>();
         List<OSGIWrapper> osgis = new ArrayList<OSGIWrapper>();
         List<Wrapper> directCPs = new ArrayList<Wrapper>();
