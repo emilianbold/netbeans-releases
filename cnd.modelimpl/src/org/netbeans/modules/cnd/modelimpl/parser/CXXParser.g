@@ -1727,7 +1727,7 @@ finally                                                                         
 function_body[boolean class_late_binding]
 @init                                                                           {if(state.backtracking == 0){action.function_body(input.LT(1));}}
     :
-        compound_statement[class_late_binding] 
+        compound_statement[!class_late_binding] 
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_function_body(input.LT(0));}}
 
@@ -2419,7 +2419,7 @@ handler[boolean class_late_binding]
         LPAREN                                                                  {action.handler(action.HANDLER__LPAREN, input.LT(0));}
         exception_declaration 
         RPAREN                                                                  {action.handler(action.HANDLER__RPAREN, input.LT(0));}
-        compound_statement[class_late_binding]                           
+        compound_statement[!class_late_binding]                           
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_handler(input.LT(0));}}
 

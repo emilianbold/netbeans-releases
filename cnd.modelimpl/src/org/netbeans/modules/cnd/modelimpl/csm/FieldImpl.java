@@ -127,7 +127,8 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
         private CsmScope scope;
         private FieldImpl instance;
 
-        public FieldBuilder(FileContent fileContent) {
+        public FieldBuilder(SimpleDeclarationBuilder builder, FileContent fileContent) {
+            super(builder);
             assert fileContent != null;
             this.fileContent = fileContent;
         }

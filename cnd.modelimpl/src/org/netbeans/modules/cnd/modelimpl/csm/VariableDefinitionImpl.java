@@ -344,6 +344,10 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 
     
     public static class VariableDefinitionBuilder extends VariableBuilder implements CsmObjectBuilder {
+
+        public VariableDefinitionBuilder(SimpleDeclarationBuilder builder) {
+            super(builder);
+        }
         
         @Override
         public VariableDefinitionImpl create() {

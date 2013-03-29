@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
@@ -500,7 +501,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             org.antlr.runtime.CharStream s = null;
 
             public Antlr2ToAntlr3TokenAdapter(org.netbeans.modules.cnd.antlr.Token antlr2Token) {
-                this.t = antlr2Token;
+                this.t = (antlr2Token.getType() == APTTokenTypes.EOF) ? APTUtils.EOF_TOKEN2 : antlr2Token;
             }
 
             @Override
@@ -515,7 +516,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
             @Override
             public int getType() {
-                return t.getType() == APTTokenTypes.EOF ? CXXParserEx.EOF : t.getType();
+                return t.getType();
             }
 
             @Override
