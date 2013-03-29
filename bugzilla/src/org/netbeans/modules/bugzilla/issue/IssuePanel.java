@@ -569,7 +569,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 }
 
                 // modified field
-                Date modification = issue.getCreatedDate();
+                Date modification = issue.getLastModifyDate();
                 String modifiedTxt = modification != null ? DateFormat.getDateTimeInstance().format(modification) : ""; // NOI18N
                 modifiedField.setText(modifiedTxt);
                 fixPrefSize(modifiedField);
