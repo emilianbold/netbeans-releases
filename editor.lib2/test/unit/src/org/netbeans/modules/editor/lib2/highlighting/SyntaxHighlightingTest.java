@@ -47,17 +47,18 @@ package org.netbeans.modules.editor.lib2.highlighting;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
+import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.Filter;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.lib.lexer.lang.TestPlainTokenId;
 import org.netbeans.lib.lexer.lang.TestTokenId;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
@@ -93,6 +94,21 @@ public class SyntaxHighlightingTest extends NbTestCase {
         Filter filter = new Filter();
         filter.setIncludes(includeTests.toArray(new Filter.IncludeExclude[includeTests.size()]));
         setFilter(filter);
+    }
+    
+    public static TestSuite suite() {
+        TestSuite suite = new NbTestSuite();
+        
+        suite.addTest(new SyntaxHighlightingTest("testSimple"));
+        suite.addTest(new SyntaxHighlightingTest("testEmbedded"));
+        suite.addTest(new SyntaxHighlightingTest("testComplex"));
+        suite.addTest(new SyntaxHighlightingTest("testNoPrologEpilogEmbedding"));
+        suite.addTest(new SyntaxHighlightingTest("testConcurrentModifications"));
+        suite.addTest(new SyntaxHighlightingTest("testEvents"));
+        suite.addTest(new SyntaxHighlightingTest("testRanges"));
+        suite.addTest(new SyntaxHighlightingTest("testEmbeddedRanges"));
+        
+        return suite;
     }
 
     @Override
@@ -174,8 +190,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
         assertFalse("There should only be one highlight", hs.moveNext());
 
         hs = layer.getHighlights(5, 11);
-        // Embeddings in "bbb" -> split to single chars by SimpleLanguageProvider.findLanguageEmbedding()
-        checkHighlights("Wrong highlights", hs, new Integer [] { 5, 6, 6, 7, 7, 8, 8, 9, 9, 11 });
+        checkHighlights("Wrong highlights", hs, new Integer [] { 5, 6, 6, 9, 9, 11 });
     }
 
     public void testEmbeddedRanges() {
