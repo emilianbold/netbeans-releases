@@ -181,7 +181,7 @@ public class GsfFoldManager implements FoldManager {
     
     private FoldOperation operation;
     private FileObject    file;
-    private JavaElementFoldTask task;
+    private volatile JavaElementFoldTask task;
     
     private volatile Preferences prefs;
     
@@ -220,7 +220,7 @@ public class GsfFoldManager implements FoldManager {
     @Override
     public void changedUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
     }
-
+    
     @Override
     public void removeEmptyNotify(Fold emptyFold) {
         removeDamagedNotify(emptyFold);
@@ -251,7 +251,7 @@ public class GsfFoldManager implements FoldManager {
     }
     
     static final class JavaElementFoldTask extends IndexingAwareParserResultTask<ParserResult> {
-
+        
         private final AtomicBoolean cancelled = new AtomicBoolean(false);
         
         private FoldInfo initComment;
@@ -346,19 +346,16 @@ public class GsfFoldManager implements FoldManager {
                 return;
             }
             
+            // pending: refactor!!
             if (mgrs instanceof GsfFoldManager) {
-                SwingUtilities.invokeLater(((GsfFoldManager)mgrs).createCommit(
-                        folds, 
-                        initComment, imports, doc, info.getSnapshot().getSource()));
+                ((GsfFoldManager)mgrs).new CommitFolds(folds, 
+                        initComment, imports, doc, info.getSnapshot().getSource(), cancelled).run();
             } else {
-                SwingUtilities.invokeLater(new Runnable() {
-                    Collection<GsfFoldManager> jefms = (Collection<GsfFoldManager>)mgrs;
-                    public void run() {
-                        for (GsfFoldManager jefm : jefms) {
-                            jefm.createCommit(folds, initComment, imports, 
-                                    doc, info.getSnapshot().getSource()).run();
-                        }
-                }});
+                Collection<GsfFoldManager> jefms = (Collection<GsfFoldManager>)mgrs;
+                for (GsfFoldManager jefm : jefms) {
+                    jefm.new CommitFolds(folds, 
+                        initComment, imports, doc, info.getSnapshot().getSource(), cancelled).run();
+                }
             }
             
             long endTime = System.currentTimeMillis();
@@ -589,10 +586,6 @@ public class GsfFoldManager implements FoldManager {
 
     }
     
-    private Runnable createCommit(Collection<FoldInfo> folds, FoldInfo initComment, FoldInfo imports, Document d, Source s) {
-        return new CommitFolds(folds, initComment, imports, d, s);
-    }
-    
     private class CommitFolds implements Runnable {
         private final Document scannedDocument;
         private Source  scanSource;
@@ -602,13 +595,16 @@ public class GsfFoldManager implements FoldManager {
         private long startTime;
         private FoldInfo    initComment;
         private FoldInfo    imports;
+        private final AtomicBoolean cancel;
         
-        public CommitFolds(Collection<FoldInfo> infos, FoldInfo initComment, FoldInfo imports, Document scannedDocument, Source s) {
+        public CommitFolds(Collection<FoldInfo> infos, FoldInfo initComment, FoldInfo imports, Document scannedDocument, Source s,
+                AtomicBoolean cancel) {
             this.infos = infos;
             this.initComment = initComment;
             this.imports = imports;
             this.scannedDocument = scannedDocument;
             this.scanSource = s;
+            this.cancel = cancel;
         }
         
         /**
@@ -631,7 +627,9 @@ public class GsfFoldManager implements FoldManager {
                 
                 return;
             }
-            
+            if (cancel.get()) {
+                return;
+            }
             operation.getHierarchy().lock();
             if (task == null) {
                 return;
