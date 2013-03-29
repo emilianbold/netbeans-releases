@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.template;
+package org.netbeans.modules.cordova.wizard;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
