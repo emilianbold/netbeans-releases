@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -159,11 +160,11 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
         
         CsmNamespace res = null;
         
-        if (CharSequenceUtilities.startsWith(namespace, "::")) {
+        if (CharSequenceUtilities.startsWith(namespace, APTUtils.SCOPE)) {
             // If namespace has '::' as prefix, then it is a full path from global namspace
             
             res = ((ProjectBase)(getContainingFile().getProject())).findNamespace(
-                    namespace.subSequence("::".length(), namespace.length()), 
+                    namespace.subSequence(APTUtils.SCOPE.length(), namespace.length()), 
                     true
             );
         } else {
@@ -177,7 +178,7 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
                 do  {
                     if (!currentNamespace.isGlobal()) {
                         StringBuilder sb = new StringBuilder(currentNamespace.getQualifiedName());
-                        sb.append("::"); // NOI18N
+                        sb.append(APTUtils.SCOPE);
                         sb.append(namespace);
                         res = ((ProjectBase)(getContainingFile().getProject())).findNamespace(sb, true);
                     }

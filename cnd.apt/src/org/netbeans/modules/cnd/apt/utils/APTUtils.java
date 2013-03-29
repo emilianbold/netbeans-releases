@@ -91,6 +91,9 @@ import org.openide.util.CharSequences;
  */
 public class APTUtils {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.apt"); // NOI18N
+    
+    public static final String SCOPE = "::"; // NOI18N
+            
 
     static {
         // command line param has priority for logging
