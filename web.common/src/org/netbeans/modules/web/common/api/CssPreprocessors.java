@@ -53,9 +53,10 @@ import org.openide.util.Parameters;
 import org.openide.util.lookup.Lookups;
 
 /**
- * This class provides access to the list of registered CSS preprocessors.
+ * This class provides access to the list of registered CSS preprocessors. The path
+ * for registration is "{@value #PREPROCESSORS_PATH}" on SFS.
  * <p>
- * The path is "{@value #PREPROCESSORS_PATH}" on SFS.
+ * For typical usage, {@link Support support} class can be used.
  * @since 1.37
  */
 public final class CssPreprocessors {
@@ -75,6 +76,7 @@ public final class CssPreprocessors {
     /**
      * Get all registered {@link CssPreprocessor}s.
      * @return a list of all registered {@link CssPreprocessor}s; never {@code null}
+     * @see Support#getPreprocessors()
      */
     public static List<CssPreprocessor> getPreprocessors() {
         return new ArrayList<CssPreprocessor>(PREPROCESSORS.allInstances());
