@@ -105,6 +105,8 @@ import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowserSupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.spi.CssPreprocessor;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -197,6 +199,9 @@ public final class PhpProject implements Project {
     public static final String PROP_WEB_ROOT = "webRoot"; // NOI18N
     final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<PropertyChangeListener>();
+
+    final CssPreprocessors.Support cssPreprocessorsSupport = new CssPreprocessors.Support();
+
 
     public PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -724,6 +729,7 @@ public final class PhpProject implements Project {
             new ProjectUpgrader(PhpProject.this).upgrade();
 
             addSourceDirListener();
+            cssPreprocessorsSupport.start();
 
             testingProviders.projectOpened();
             frameworks.projectOpened();
@@ -762,6 +768,7 @@ public final class PhpProject implements Project {
         protected void projectClosed() {
             try {
                 removeSourceDirListener();
+                cssPreprocessorsSupport.stop();
 
                 testingProviders.projectClosed();
                 frameworks.projectClosed();
@@ -878,6 +885,7 @@ public final class PhpProject implements Project {
         public void fileFolderCreated(FileEvent fe) {
             FileObject file = fe.getFile();
             frameworksReset(file);
+            processChange(file);
         }
 
         @Override
@@ -885,12 +893,14 @@ public final class PhpProject implements Project {
             FileObject file = fe.getFile();
             frameworksReset(file);
             browserReload(file);
+            processChange(file);
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
             FileObject file = fe.getFile();
             browserReload(file);
+            processChange(file);
         }
 
         @Override
@@ -898,12 +908,14 @@ public final class PhpProject implements Project {
             FileObject file = fe.getFile();
             frameworksReset(file);
             browserReload(file);
+            processChange(file);
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             FileObject file = fe.getFile();
             frameworksReset(file);
+            processChange(file);
         }
 
         @Override
@@ -930,6 +942,12 @@ public final class PhpProject implements Project {
             assert easelSupport != null;
             if (easelSupport.canReload(file)) {
                 easelSupport.reload();
+            }
+        }
+
+        private void processChange(FileObject file) {
+            for (CssPreprocessor cssPreprocessor : cssPreprocessorsSupport.getPreprocessors()) {
+                cssPreprocessor.process(PhpProject.this, file);
             }
         }
 
