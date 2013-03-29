@@ -72,14 +72,14 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
     @Override
     public void update() {
         assert EventQueue.isDispatchThread();
-        getCssPrepOptionsPanel().setSassPath(getAnalysisOptions().getSassPath());
+        getCssPrepOptionsPanel().setSassPath(getCssPrepOptions().getSassPath());
 
         changed = false;
     }
 
     @Override
     public void applyChanges() {
-        getAnalysisOptions().setSassPath(getCssPrepOptionsPanel().getSassPath());
+        getCssPrepOptions().setSassPath(getCssPrepOptionsPanel().getSassPath());
 
         changed = false;
     }
@@ -154,7 +154,7 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
         return cssPrepOptionsPanel;
     }
 
-    private CssPrepOptions getAnalysisOptions() {
+    private CssPrepOptions getCssPrepOptions() {
         return CssPrepOptions.getInstance();
     }
 

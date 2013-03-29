@@ -64,7 +64,7 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.css.prep.sass.Sass;
+import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.FileUtils;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -104,7 +104,7 @@ public final class CssPrepOptionsPanel extends JPanel {
         "CssPrepOptionsPanel.sass.path.hint=Full path of Sass executable (typically {0}).",
     })
     private void initSass(DocumentListener defaultDocumentListener) {
-        sassPathHintLabel.setText(Bundle.CssPrepOptionsPanel_sass_path_hint(Sass.EXECUTABLE_NAME));
+        sassPathHintLabel.setText(Bundle.CssPrepOptionsPanel_sass_path_hint(SassExecutable.EXECUTABLE_NAME));
 
         // listeners
         sassPathTextField.getDocument().addDocumentListener(defaultDocumentListener);
@@ -242,7 +242,7 @@ public final class CssPrepOptionsPanel extends JPanel {
     }//GEN-LAST:event_sassPathBrowseButtonActionPerformed
 
     private void sassPathSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sassPathSearchButtonActionPerformed
-        List<String> sassPaths = FileUtils.findFileOnUsersPath(Sass.EXECUTABLE_NAME);
+        List<String> sassPaths = FileUtils.findFileOnUsersPath(SassExecutable.EXECUTABLE_NAME);
         if (!sassPaths.isEmpty()) {
             sassPathTextField.setText(sassPaths.get(0));
         }

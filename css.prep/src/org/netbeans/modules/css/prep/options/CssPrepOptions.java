@@ -43,7 +43,7 @@ package org.netbeans.modules.css.prep.options;
 
 import java.util.List;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.css.prep.sass.Sass;
+import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.FileUtils;
 import org.openide.util.NbPreferences;
 
@@ -72,7 +72,7 @@ public final class CssPrepOptions {
         String path = getPreferences().get(SASS_PATH, null);
         if (path == null && !sassSearched) {
             sassSearched = true;
-            List<String> paths = FileUtils.findFileOnUsersPath(Sass.EXECUTABLE_NAME);
+            List<String> paths = FileUtils.findFileOnUsersPath(SassExecutable.EXECUTABLE_NAME);
             if (!paths.isEmpty()) {
                 path = paths.get(0);
                 setSassPath(path);

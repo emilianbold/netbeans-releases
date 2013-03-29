@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.css.prep.options;
 
-import org.netbeans.modules.css.prep.sass.Sass;
+import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 
 public final class CssPrepOptionsValidator {
@@ -54,7 +54,7 @@ public final class CssPrepOptionsValidator {
     }
 
     public CssPrepOptionsValidator validateSassPath(String sassPath) {
-        String warning = Sass.validate(sassPath);
+        String warning = SassExecutable.validate(sassPath);
         if (warning != null) {
             result.addWarning(new ValidationResult.Message("sass.path", warning)); // NOI18N
         }

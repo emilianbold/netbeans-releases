@@ -89,7 +89,7 @@ public final class SassProcessor {
     }
 
     private void fileChanged(Project project, FileObject fileObject) {
-        Sass sass = getSass();
+        SassExecutable sass = getSass();
         if (sass == null) {
             return;
         }
@@ -109,9 +109,9 @@ public final class SassProcessor {
     }
 
     @CheckForNull
-    private Sass getSass() {
+    private SassExecutable getSass() {
         try {
-            return Sass.getDefault();
+            return SassExecutable.getDefault();
         } catch (InvalidExternalExecutableException ex) {
             UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
         }

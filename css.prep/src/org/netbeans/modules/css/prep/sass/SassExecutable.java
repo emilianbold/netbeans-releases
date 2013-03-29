@@ -43,7 +43,6 @@ package org.netbeans.modules.css.prep.sass;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -60,29 +59,29 @@ import org.openide.util.NbBundle;
 /**
  * Class representing <tt>sass</tt> command line tool.
  */
-public final class Sass {
+public final class SassExecutable {
 
     public static final String EXECUTABLE_NAME = "sass"; // NOI18N
 
     private final String sassPath;
 
 
-    private Sass(String sassPath) {
+    private SassExecutable(String sassPath) {
         this.sassPath = sassPath;
     }
 
     /**
-     * Get the default, <b>valid only</b> Sass.
-     * @return the default, <b>valid only</b> Sass.
-     * @throws InvalidExternalExecutableException if Sass is not valid.
+     * Get the default, <b>valid only</b> Sass executable.
+     * @return the default, <b>valid only</b> Sass executable.
+     * @throws InvalidExternalExecutableException if Sass executable is not valid.
      */
-    public static Sass getDefault() throws InvalidExternalExecutableException {
+    public static SassExecutable getDefault() throws InvalidExternalExecutableException {
         String path = CssPrepOptions.getInstance().getSassPath();
         String error = validate(path);
         if (error != null) {
             throw new InvalidExternalExecutableException(error);
         }
-        return new Sass(path);
+        return new SassExecutable(path);
     }
 
     @NbBundle.Messages("Sass.executable.label=Sass")
