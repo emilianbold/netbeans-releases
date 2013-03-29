@@ -107,11 +107,20 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
                 addTest(J2SEProjectGeneratorTest.class).
                 suite();
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+        MockLookup.setLayersAndInstances(
+                new TestLibTypeProvider(),
+                new TestLibProvider());
+    }
+
+
             
     public void testCreateProject() throws Exception {
-        MockLookup.setLayersAndInstances();
-        File proj = getWorkDir();
-        clearWorkDir();
+        File proj = getWorkDir();        
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, "test-project", null, "manifest.mf", null, false);
         J2SEProjectGenerator.setDefaultSourceLevel(null);
@@ -124,7 +133,6 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
     
     public void testCreateProjectFromExtSources () throws Exception {
         File root = getWorkDir();
-        clearWorkDir();
         File proj = new File (root, "ProjectDir");
         proj.mkdir();
         File srcRoot = new File (root, "src");
@@ -155,7 +163,6 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
     //Tests issue: #147128:J2SESources does not register new external roots immediately
     public void testProjectFromExtSourcesOwnsTheSources () throws Exception {
         File root = getWorkDir();
-        clearWorkDir();
         File proj = new File (root, "ProjectDir");
         proj.mkdir();
         File srcRoot = new File (root, "src");
@@ -170,10 +177,8 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         assertEquals(expected, FileOwnerQuery.getOwner(Utilities.toURI(testRoot)));
     }
     
-    public void testProjectBuilder() throws Exception {
-        MockLookup.setLayersAndInstances(new TestLibTypeProvider(), new TestLibProvider());
+    public void testProjectBuilder() throws Exception {        
         final File root = getWorkDir();
-        clearWorkDir();
         final File projectDir = new File(root,"proj");
         final String projectName = "Test Project";
         final Library[] compileTimeLibs = new Library[] {
