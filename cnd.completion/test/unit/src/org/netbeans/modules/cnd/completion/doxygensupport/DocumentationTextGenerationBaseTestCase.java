@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.completion.doxygensupport;
 
-package org.netbeans.modules.groovy.editor.api.completion;
+import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.HyperlinkBaseTestCase;
+import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Petr Hejl
+ * @author Nikolay Koldunov
  */
-public class TransformationsCCTest extends GroovyCCTestBase {
-
-    public TransformationsCCTest(String testName) {
+public class DocumentationTextGenerationBaseTestCase extends HyperlinkBaseTestCase {
+    
+    public DocumentationTextGenerationBaseTestCase(String testName) {
         super(testName);
     }
-
-    @Override
-    protected String getTestType() {
-        return "transformations"; //NOI18N
-    }
-
-    public void testSingleton1_withInPrefix() throws Exception {
-        checkCompletion(BASE + "Singleton1.groovy", "        Singleton1.in^", true);
-    }
-
-    public void testSingleton2_withGetPrefix() throws Exception {
-        checkCompletion(BASE + "Singleton2.groovy", "        Singleton2.get^", true);
-    }
-
-    public void testSingleton3_withoutPrefix() throws Exception {
-        checkCompletion(BASE + "Singleton3.groovy", "        Singleton3.^", true);
-    }
-
-    public void testDelegate1_interfaceDelegator_withoutPrefix() throws Exception {
-        checkCompletion(BASE + "Delegate1.groovy", "showcase.^", true);
-    }
-
-    public void testDelegate2_classDelegator_withPrefix() throws Exception {
-        checkCompletion(BASE + "Delegate2.groovy", "showcase.f^", true);
+    
+    void performTest(String source, int lineIndex, int colIndex, String expectedDoc) throws Exception {
+        CsmDocProvider docProvider = Lookup.getDefault().lookup(CsmDocProvider.class);
+        assertNotNull(docProvider);
+        
+        CsmOffsetable targetObject = findTargetObject(source, lineIndex, colIndex, new AtomicReference<TokenItem<TokenId>>(null));
+        CharSequence documentation = docProvider.getDocumentation(targetObject, targetObject.getContainingFile());
+        
+        assertEquals(expectedDoc, documentation.toString());
     }
 }

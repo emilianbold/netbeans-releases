@@ -141,7 +141,6 @@ public class BrowserConsoleLogger implements Console.Listener {
     public void messagesCleared() {
         try {
             io.getOut().reset();
-            io.getErr().reset();
         } catch (IOException ex) {}
     }
 
@@ -206,7 +205,7 @@ public class BrowserConsoleLogger implements Console.Listener {
         boolean doPrintStackTrace = LEVEL_ERROR.equals(level) ||
                                     LEVEL_DEBUG.equals(level);
         
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb;
         boolean first = true;
         if (doPrintStackTrace && msg.getStackTrace() != null) {
             for (ConsoleMessage.StackFrame sf : msg.getStackTrace()) {
@@ -501,10 +500,10 @@ public class BrowserConsoleLogger implements Console.Listener {
         try {
             DataObject dataObject = DataObject.find(fo);
             if (dataObject != null) {
-                result = dataObject.getCookie(LineCookie.class);
+                result = dataObject.getLookup().lookup(LineCookie.class);
             }
         } catch (DataObjectNotFoundException e) {
-            e.printStackTrace();
+            Exceptions.printStackTrace(Exceptions.attachSeverity(e, Level.INFO));
         }
         return result;
     }

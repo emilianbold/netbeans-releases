@@ -44,7 +44,7 @@ package org.netbeans.modules.cordova.project;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
-import org.netbeans.modules.cordova.template.CordovaTemplate;
+import org.netbeans.modules.cordova.wizard.CordovaTemplate;
 import org.openide.util.NbBundle;
 
 /**

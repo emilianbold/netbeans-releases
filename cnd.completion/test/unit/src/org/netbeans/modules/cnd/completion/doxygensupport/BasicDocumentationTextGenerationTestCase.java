@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.completion.doxygensupport;
 
-package org.netbeans.modules.groovy.editor.api.completion;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 
 /**
  *
- * @author Petr Hejl
+ * @author Nikolay Koldunov
  */
-public class TransformationsCCTest extends GroovyCCTestBase {
+public class BasicDocumentationTextGenerationTestCase extends DocumentationTextGenerationBaseTestCase {
 
-    public TransformationsCCTest(String testName) {
+    public BasicDocumentationTextGenerationTestCase(String testName) {
         super(testName);
     }
 
-    @Override
-    protected String getTestType() {
-        return "transformations"; //NOI18N
+    public void test216015() throws Exception {
+        performTest("doctest.c", 21, 13, DoxygenDocumentation.doxygen2HTML("/* Link count.  */", CppTokenId.BLOCK_COMMENT));
     }
 
-    public void testSingleton1_withInPrefix() throws Exception {
-        checkCompletion(BASE + "Singleton1.groovy", "        Singleton1.in^", true);
+    public void test216015_1() throws Exception {
+        performTest("doctest.c", 22, 12, DoxygenDocumentation.doxygen2HTML("/* File mode.  */", CppTokenId.BLOCK_COMMENT));
     }
 
-    public void testSingleton2_withGetPrefix() throws Exception {
-        checkCompletion(BASE + "Singleton2.groovy", "        Singleton2.get^", true);
+    public void test216015_2() throws Exception {
+        performTest("doctest.c", 23, 6, DoxygenDocumentation.doxygen2HTML("/* this is a comment\n    and it extends until the closing\n    star-slash comment mark */", CppTokenId.BLOCK_COMMENT));
     }
 
-    public void testSingleton3_withoutPrefix() throws Exception {
-        checkCompletion(BASE + "Singleton3.groovy", "        Singleton3.^", true);
+    public void test216015_3() throws Exception {
+        performTest("doctest.c", 24, 6, DoxygenDocumentation.doxygen2HTML("// double slash comment", CppTokenId.LINE_COMMENT));
     }
-
-    public void testDelegate1_interfaceDelegator_withoutPrefix() throws Exception {
-        checkCompletion(BASE + "Delegate1.groovy", "showcase.^", true);
+    
+    public void test216015_4() throws Exception {
+        performTest("doctest.c", 25, 6, DoxygenDocumentation.doxygen2HTML("// double slash comment2", CppTokenId.LINE_COMMENT));
     }
-
-    public void testDelegate2_classDelegator_withPrefix() throws Exception {
-        checkCompletion(BASE + "Delegate2.groovy", "showcase.f^", true);
+    
+    public void test216015_5() throws Exception {
+        performTest("doctest.c", 26, 7, DoxygenDocumentation.doxygen2HTML("// Comment 1", CppTokenId.LINE_COMMENT));
+    }
+    
+    public void test216015_6() throws Exception {
+        performTest("doctest.c", 27, 7, DoxygenDocumentation.doxygen2HTML("/*! Comment 4*/", CppTokenId.DOXYGEN_COMMENT));
+    }
+    
+    public void test216015_7() throws Exception {
+        performTest("doctest.c", 28, 7, DoxygenDocumentation.doxygen2HTML("/// Comment 6", CppTokenId.DOXYGEN_LINE_COMMENT));
     }
 }
