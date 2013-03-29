@@ -94,22 +94,22 @@ public class JsIndexer extends EmbeddingIndexer {
         JsObject globalObject = model.getGlobalObject();
         for(JsObject object : globalObject.getProperties().values()) {
             if (object.getParent() != null) {
-                storeObject(object, support, indexable);
+                storeObject(object, object.getName(), support, indexable);
             }
         }
     }
 
-    private void storeObject(JsObject object, IndexingSupport support, Indexable indexable) {
+    private void storeObject(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
         if (!isInvisibleFunction(object)) {
             if (object.isDeclared() || object.getName().equals("prototype")) {
                 // if it's delcared, then store in the index as new document.
-                IndexDocument document = IndexedElement.createDocument(object, support, indexable);
+                IndexDocument document = IndexedElement.createDocument(object, fqn, support, indexable);
                 support.addDocument(document);
             }
             // look for all other properties. Even if the object doesn't have to be delcared in the file
             // there can be declared it's properties or methods
             for (JsObject property : object.getProperties().values()) {
-                storeObject(property, support, indexable);
+                storeObject(property, fqn + '.' + property.getName(), support, indexable);
             }
         }
     }
@@ -127,7 +127,7 @@ public class JsIndexer extends EmbeddingIndexer {
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "js"; // NOI18N
-        public static final int VERSION = 5;
+        public static final int VERSION = 6;
 
         private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();
 
