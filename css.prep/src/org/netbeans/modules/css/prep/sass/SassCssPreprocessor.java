@@ -41,15 +41,8 @@
  */
 package org.netbeans.modules.css.prep.sass;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.ui.customizer.SassCustomizer;
-import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
-import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.CssPreprocessor;
 import org.openide.filesystems.FileObject;
@@ -59,13 +52,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CssPreprocessor.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 100)
 public final class SassCssPreprocessor implements CssPreprocessor {
 
-    private static final Logger LOGGER = Logger.getLogger(SassCssPreprocessor.class.getName());
-
     private static final String IDENTIFIER = "SASS"; // NOI18N
-
-    private static final String SCSS_EXTENSION = "scss"; // NOI18N
-    private static final String SASS_EXTENSION = "sass"; // NOI18N
-    private static final String CSS_EXTENSION = "css"; // NOI18N
 
 
     @Override
@@ -81,61 +68,12 @@ public final class SassCssPreprocessor implements CssPreprocessor {
 
     @Override
     public void process(Project project, FileObject fileObject) {
-        if (!isSassFile(fileObject)) {
-            // not sass file
-            return;
-        }
-        if (!SassPreferences.isEnabled(project)) {
-            // not enabled in this project
-            return;
-        }
-        if (fileObject.isValid()) {
-            fileChanged(project, fileObject);
-        } else {
-            // deleted file
-            fileDeleted(project, fileObject);
-        }
+        new SassProcessor().process(project, fileObject);
     }
 
     @Override
     public Customizer createCustomizer(Project project) {
         return new SassCustomizer(project);
-    }
-
-    private boolean isSassFile(FileObject fileObject) {
-        String extension = fileObject.getExt().toLowerCase();
-        return SASS_EXTENSION.equals(extension)
-                || SCSS_EXTENSION.equals(extension);
-    }
-
-    private void fileChanged(Project project, FileObject fileObject) {
-        Sass sass = getSass();
-        if (sass == null) {
-            return;
-        }
-        sass.compile(fileObject);
-    }
-
-    private void fileDeleted(Project project, FileObject fileObject) {
-        FileObject cssFile = fileObject.getParent().getFileObject(fileObject.getName(), CSS_EXTENSION);
-        if (cssFile != null
-                && cssFile.isValid()) {
-            try {
-                cssFile.delete();
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Cannot delete file", ex);
-            }
-        }
-    }
-
-    @CheckForNull
-    private Sass getSass() {
-        try {
-            return Sass.getDefault();
-        } catch (InvalidExternalExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
-        }
-        return null;
     }
 
 }
