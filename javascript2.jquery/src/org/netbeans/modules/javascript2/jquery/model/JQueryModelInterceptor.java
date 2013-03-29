@@ -51,7 +51,7 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
  *
  * @author Petr Hejl
  */
-@ModelInterceptor.Registration(priority=10)
+@ModelInterceptor.Registration(priority=100)
 public class JQueryModelInterceptor implements ModelInterceptor {
 
     @Override
