@@ -457,6 +457,9 @@ abstract public class CsmCompletionQuery {
         if (resolver != null) {
             CompletionSupport sup = CompletionSupport.get(doc);
             CsmOffsetableDeclaration context = sup.getDefinition(getCsmFile(), offset, getFileReferencesContext());
+            if (!openingSource && context == null) {
+                instantiateTypes = false;
+            }
             Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort, instantiateTypes);
             ctx.resolveExp(exp, true);
             if (ctx.result != null) {
