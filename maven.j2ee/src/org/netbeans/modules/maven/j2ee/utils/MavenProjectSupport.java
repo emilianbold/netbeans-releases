@@ -131,7 +131,7 @@ public class MavenProjectSupport {
                 problems.addReport(createBrokenLibraryReport(project));
                 BrokenServerLibrarySupport.fixOrShowAlert(project, null);
             }
-            if (RunUtils.hasApplicationCompileOnSaveEnabled(project)) {
+            if (RunUtils.isCompileOnSaveEnabled(project)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(moduleProvider);
             }
         }

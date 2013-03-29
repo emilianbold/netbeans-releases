@@ -98,7 +98,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
 
     @Override
     public boolean isOnlyCompileOnSaveEnabled() {
-        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !BaseEEModuleProvider.isDeployOnSave(project);
+        return RunUtils.isCompileOnSaveEnabled(project) && !BaseEEModuleProvider.isDeployOnSave(project);
     }
     
     @Override

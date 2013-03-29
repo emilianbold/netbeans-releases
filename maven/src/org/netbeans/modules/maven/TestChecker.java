@@ -44,7 +44,6 @@ package org.netbeans.modules.maven;
 
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ActionProvider;
@@ -69,15 +68,14 @@ public class TestChecker implements PrerequisitesChecker {
         if (ActionProvider.COMMAND_TEST.equals(action) ||
             ActionProvider.COMMAND_TEST_SINGLE.equals(action) ||
             ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(action) ||
-            "profile-tests".equals(action)) { //NOI18N - profile-tests is not really nice but well.
-            if (!RunUtils.hasTestCompileOnSaveEnabled(config)) {
+            "profile-tests".equals(action)) 
+        { //NOI18N - profile-tests is not really nice but well.
                 String test = config.getProperties().get("test");
                 String method = config.getProperties().get(DefaultReplaceTokenProvider.METHOD_NAME);
                 if (test != null && method != null) {
                     config.setProperty(DefaultReplaceTokenProvider.METHOD_NAME, null);
                     config.setProperty("test", test + '#' + method);
                 }
-            }
         }
         if (MavenSettings.getDefault().isSkipTests()) {
             if (!String.valueOf(config.getGoals()).contains("test")) { // incl. integration-test

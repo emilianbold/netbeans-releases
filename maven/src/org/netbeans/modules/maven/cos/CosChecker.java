@@ -465,8 +465,9 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
         if (prj != null) {
             MavenProject mvn = prj.getMavenProject();
-            if (RunUtils.hasApplicationCompileOnSaveEnabled(project)) {
+            if (RunUtils.isCompileOnSaveEnabled(project)) {
                 touchCoSTimeStamp(mvn, false);
+                touchCoSTimeStamp(mvn, true);
             } else {
                 File f = getCoSFile(mvn, false);
                 boolean doClean = f != null && f.exists();
@@ -478,10 +479,6 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     }
                 }
                 deleteCoSTimeStamp(mvn, false);
-            }
-            if (RunUtils.hasTestCompileOnSaveEnabled(project)) {
-                touchCoSTimeStamp(mvn, true);
-            } else {
                 deleteCoSTimeStamp(mvn, true);
             }
         }
@@ -669,14 +666,11 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
             // after each build put the Cos stamp in the output folder to have
             // the classes really compiled on save.
-            if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
+            if (RunUtils.isCompileOnSaveEnabled(config)) {
                 touchCoSTimeStamp(config, false);
-            } else {
-                deleteCoSTimeStamp(config, false);
-            }
-            if (RunUtils.hasTestCompileOnSaveEnabled(config)) {
                 touchCoSTimeStamp(config, true);
             } else {
+                deleteCoSTimeStamp(config, false);
                 deleteCoSTimeStamp(config, true);
             }
         }

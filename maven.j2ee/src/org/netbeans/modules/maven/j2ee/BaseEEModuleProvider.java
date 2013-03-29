@@ -78,7 +78,7 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
     
     @Override
     public boolean isOnlyCompileOnSaveEnabled() {
-        return RunUtils.hasApplicationCompileOnSaveEnabled(project) && !isDeployOnSave(project);
+        return RunUtils.isCompileOnSaveEnabled(project) && !isDeployOnSave(project);
     }
     
     @Override

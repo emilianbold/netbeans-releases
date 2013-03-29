@@ -228,12 +228,14 @@ public final class RunUtils {
         }
         String cos = auxprops.get(Constants.HINT_COMPILE_ON_SAVE, true);
         if (cos == null) {
-            String packaging = prj.getLookup().lookup(NbMavenProject.class).getPackagingType();
-            if ("war".equals(packaging) || "ejb".equals(packaging) || "ear".equals(packaging)) {
-                cos = "app";
-            } else {
-                cos = "none";
-            }
+            cos = "all";
+
+//            String packaging = prj.getLookup().lookup(NbMavenProject.class).getPackagingType();
+//            if ("war".equals(packaging) || "ejb".equals(packaging) || "ear".equals(packaging)) {
+//                cos = "app";
+//            } else {
+//                cos = "none";
+//            }
         }
         return "all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos);
     }
