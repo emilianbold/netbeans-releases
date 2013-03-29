@@ -46,7 +46,9 @@ package org.netbeans.core.ui.options.general;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -54,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.core.ProxySettings;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 class GeneralOptionsModel {
@@ -223,7 +226,7 @@ class GeneralOptionsModel {
         return pacUrl != null && pacUrl.length() > 0;
     }
     
-    static boolean testHttpConnection() {
+    static boolean testConnection(int proxyType, String proxyHost, String proxyPortString) {
         boolean result = false;
         URL testingUrl = null;
         
@@ -233,21 +236,45 @@ class GeneralOptionsModel {
             LOGGER.log(Level.SEVERE, "Cannot create url from string.", ex);
         }
         
-        ProxySelector ps = ProxySelector.getDefault();
-        if (ps != null) {
-            try {
-                HttpURLConnection httpConnection = (HttpURLConnection) testingUrl.openConnection(ps.select(testingUrl.toURI()).get(0));
-                
-                httpConnection.connect();
-                
-                if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    result = true;
+        switch(proxyType) {
+            case ProxySettings.DIRECT_CONNECTION:
+                result = testHttpConnection(testingUrl, Proxy.NO_PROXY);
+                break;
+            case ProxySettings.AUTO_DETECT_PROXY:
+            case ProxySettings.AUTO_DETECT_PAC:
+                ProxySelector ps = ProxySelector.getDefault();            
+                try {
+                    result = testHttpConnection(testingUrl, ps.select(testingUrl.toURI()).get(0));
+                } catch (URISyntaxException ex) {
+                    LOGGER.log(Level.SEVERE, "Cannot connect via http protocol.", ex);                
                 }
-                
-                httpConnection.disconnect();
-            } catch (IOException | URISyntaxException ex) {
-                LOGGER.log(Level.SEVERE, "Cannot connect via http protocol.", ex);
+                break;
+            case ProxySettings.MANUAL_SET_PROXY:
+            case ProxySettings.MANUAL_SET_PAC:
+                int proxyPort = Integer.valueOf(proxyPortString);
+                Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+                result = testHttpConnection(testingUrl, proxy);
+                break;
+        }
+        
+        return result;
+    }
+    
+    private static boolean testHttpConnection(URL url, Proxy proxy) {
+        boolean result = false;
+        
+        try {
+            HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection(proxy);
+
+            httpConnection.connect();
+
+            if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                result = true;
             }
+
+            httpConnection.disconnect();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Cannot connect via http protocol.", ex);
         }
         
         return result;

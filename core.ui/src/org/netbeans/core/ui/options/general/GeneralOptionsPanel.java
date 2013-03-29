@@ -50,11 +50,7 @@ import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.ProxySelector;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
@@ -72,7 +68,6 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -520,7 +515,24 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }//GEN-LAST:event_bReloadProxyActionPerformed
 
     private void bTestConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bTestConnectionActionPerformed
-        if (GeneralOptionsModel.testHttpConnection()) {
+        int type;
+        String host, port;
+        
+        if (rbNoProxy.isSelected()) {
+            type = ProxySettings.DIRECT_CONNECTION;
+            host = null;
+            port = null;
+        } else if (rbUseSystemProxy.isSelected()) {
+            type = ProxySettings.AUTO_DETECT_PROXY;
+            host = null;
+            port = null;
+        } else {
+            type = ProxySettings.MANUAL_SET_PROXY;
+            host = tfProxyHost.getText();
+            port = tfProxyPort.getText();
+        }
+        
+        if (GeneralOptionsModel.testConnection(type, host, port)) {
             lblTestResult.setText("OK");
         } else {
             lblTestResult.setText("FAILED");
