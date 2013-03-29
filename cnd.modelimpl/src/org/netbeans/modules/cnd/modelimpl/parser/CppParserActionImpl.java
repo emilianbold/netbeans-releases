@@ -746,7 +746,8 @@ public class CppParserActionImpl implements CppParserActionEx {
                 CsmObjectBuilder parent = builderContext.top(1);
                 builder.setParent(parent);
                 builder.setFile(currentContext.file);
-                builder.setEndOffset(((APTToken)token).getOffset());
+                // FIXME: We add 1 because previously we included ; inside
+                builder.setEndOffset(((APTToken)token).getOffset()+1);
                 builder.setName(declBuilder.getDeclaratorBuilder().getName());
                 if(declBuilder.getTemplateDescriptorBuilder() != null) {
                     builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
@@ -2141,7 +2142,8 @@ public class CppParserActionImpl implements CppParserActionEx {
             ClassBuilder parent = (ClassBuilder)builderContext.top(1);
             builder.setParent(parent);
             builder.setFile(currentContext.file);
-            builder.setEndOffset(((APTToken)token).getOffset());
+            // FIXME: We add 1 because previously we included ; inside
+            builder.setEndOffset(((APTToken)token).getOffset()+1);
             builder.setName(declBuilder.getDeclaratorBuilder().getName());
             if(declBuilder.getTemplateDescriptorBuilder() != null) {
                 builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
