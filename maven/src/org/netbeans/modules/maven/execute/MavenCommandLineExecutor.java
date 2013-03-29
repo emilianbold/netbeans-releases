@@ -522,7 +522,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 
     private void printCoSWarning(BeanRunConfig clonedConfig, InputOutput ioput) {
         if (clonedConfig.getProperties().containsKey(CosChecker.NETBEANS_PROJECT_MAPPINGS)) {
-            printGray(ioput, "Running NetBeans Compile On Save execution. Output directoring of dependency projects (with Compile on Save turned on) will be used instead of their jar artifacts.");
+            printGray(ioput, "Running NetBeans Compile On Save execution. Phase execution is skipped and output directories of dependency projects (with Compile on Save turned on) will be used instead of their jar artifacts.");
             File mvnHome = EmbedderFactory.getEffectiveMavenHome();
             String version = MavenSettings.getCommandLineMavenVersion(mvnHome);
             if (version != null && version.startsWith("2")) {
