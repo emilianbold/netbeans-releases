@@ -158,4 +158,9 @@ public class TypeUsageImpl implements TypeUsage {
         hash = 83 * hash + (this.resolved ? 1 : 0);
         return hash;
     }
+
+    @Override
+    public String toString() {
+        return "TypeUsageImpl{" + "type=" + type + ", offset=" + offset + ", resolved=" + resolved + '}';
+    }
 }

@@ -54,20 +54,19 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
+import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.JsCompletionItem.CompletionRequest;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCodeCompletion;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationElement;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
-import org.netbeans.modules.javascript2.editor.jquery.JQueryCodeCompletion;
-import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -87,7 +86,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private static final Logger LOGGER = Logger.getLogger(JsCodeCompletion.class.getName());
 
     private boolean caseSensitive;
-    private final JQueryCodeCompletion jqueryCC = new JQueryCodeCompletion();
 
     private static final List<String> WINDOW_EXPRESSION_CHAIN = Arrays.<String>asList("window", "@pro"); //NOI18N
 
@@ -167,7 +165,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 case GLOBAL:
                     HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
                     addedProperties.putAll(getDomCompletionResults(request));
-                    for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+                    for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
                         for (JsObject object : libGlobal.getProperties().values()) {
                             addPropertyToMap(request, addedProperties, object);
                         }
@@ -210,7 +208,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
         
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting JS CC took {0}ms ",  (end - start));
-        resultList.addAll(jqueryCC.complete(ccContext, context, pref));
+        for (CompletionProvider interceptor : EditorExtender.getDefault().getCompletionProviders()) {
+            resultList.addAll(interceptor.complete(ccContext, context, pref));
+        }
         if (!resultList.isEmpty()) {
             return new DefaultCompletionResult(resultList, false);
         }
@@ -258,9 +258,11 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
         if (documentation.length() == 0) {
-            String doc = jqueryCC.getHelpDocumentation(info, element);
-            if (doc != null && !doc.isEmpty()) {
-                documentation.append(doc);
+            for (CompletionProvider interceptor : EditorExtender.getDefault().getCompletionProviders()) {
+                String doc = interceptor.getHelpDocumentation(info, element);
+                if (doc != null && !doc.isEmpty()) {
+                    documentation.append(doc);
+                }
             }
         }
         if (element instanceof JsDocumentationElement) {
@@ -428,7 +430,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
         
         // from libraries
-        for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
             for (JsObject object : libGlobal.getProperties().values()) {
                 addPropertyToMap(request, foundObjects, object);
             }
@@ -494,7 +496,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             addObjectPropertiesToCC(resolved, request, addedProperties);
             if (!resolved.isDeclared()) {
                 // if the object is not defined here, look to the index as well
-                addObjectPropertiesFromIndex(ModelUtils.createFQN(resolved), jsIndex, request, addedProperties);
+                addObjectPropertiesFromIndex(resolved.getFullyQualifiedName(), jsIndex, request, addedProperties);
             }
         }
 
@@ -635,7 +637,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
         
-        String fqn = ModelUtils.createFQN(jsObject);
+        String fqn = jsObject.getFullyQualifiedName();
         
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
         Collection<IndexedElement> indexedProperties = JsIndex.get(fo).getProperties(fqn);
@@ -677,15 +679,11 @@ class JsCodeCompletion implements CodeCompletionHandler {
             lastResolvedObjects.add(jsObject);
         }
 
-        for (JsObject libGlobal : getLibrariesGlobalObjects()) {
-            for (JsObject object : libGlobal.getProperties().values()) {
-                if (object.getName().equals(type.getType())) {
-                    jsObject = object;
-                    lastResolvedObjects.add(jsObject);
-                    break;
-                }
-            }
-            if (jsObject != null) {
+        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+            JsObject found = ModelUtils.findJsObjectByName(libGlobal, type.getType());
+            if (found != null && found != libGlobal) {
+                jsObject = found;
+                lastResolvedObjects.add(jsObject);
                 break;
             }
         }
@@ -775,14 +773,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
     }
     
-    private Collection<JsObject> getLibrariesGlobalObjects() {
-        Collection<JsObject> result = new ArrayList<JsObject>();
-        JsObject libGlobal = JQueryModel.getGlobalObject();
-        if (libGlobal != null) {
-            result.add(libGlobal);
-        }
-        return result;
-    }
+//    private Collection<JsObject> getLibrariesGlobalObjects() {
+//        Collection<JsObject> result = new ArrayList<JsObject>();
+//        JsObject libGlobal = JQueryModel.getGlobalObject();
+//        if (libGlobal != null) {
+//            result.add(libGlobal);
+//        }
+//        return result;
+//    }
 
     private Map<String, List<JsElement>> getDomCompletionResults(CompletionRequest request) {
         Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);

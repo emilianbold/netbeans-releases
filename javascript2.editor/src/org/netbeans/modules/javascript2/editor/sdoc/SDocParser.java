@@ -52,7 +52,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementType;
