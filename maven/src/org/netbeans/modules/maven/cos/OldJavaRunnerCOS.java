@@ -342,7 +342,7 @@ public class OldJavaRunnerCOS {
         params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cp);
         params.put(JavaRunner.PROP_RUN_JVMARGS, jvmProps);
         params.put("maven.disableSources", Boolean.TRUE);
-        final String action2Quick = CosChecker.action2Quick(actionName);
+        final String action2Quick = action2Quick(actionName);
         boolean supported = JavaRunner.isSupported(action2Quick, params);
         if (supported) {
             try {
@@ -430,7 +430,7 @@ public class OldJavaRunnerCOS {
         params.put(JavaRunner.PROP_PLATFORM, config.getProject().getLookup().lookup(ActiveJ2SEPlatformProvider.class).getJavaPlatform());
         params.put("maven.disableSources", Boolean.TRUE);
         if (params.get(JavaRunner.PROP_EXECUTE_FILE) != null || params.get(JavaRunner.PROP_CLASSNAME) != null) {
-            final String action2Quick = CosChecker.action2Quick(actionName);
+            final String action2Quick = action2Quick(actionName);
             boolean supported = JavaRunner.isSupported(action2Quick, params);
             if (supported) {
                 try {
@@ -528,4 +528,24 @@ public class OldJavaRunnerCOS {
             params.put(STARTUP_ARGS_KEY, sb.toString());
         }
     }    
+
+    static String action2Quick(String actionName) {
+        if (ActionProvider.COMMAND_CLEAN.equals(actionName)) {
+            return JavaRunner.QUICK_CLEAN;
+        } else if (ActionProvider.COMMAND_RUN.equals(actionName) || CosChecker.RUN_MAIN.equals(actionName)) {
+            return JavaRunner.QUICK_RUN;
+        } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || CosChecker.DEBUG_MAIN.equals(actionName)) {
+            return JavaRunner.QUICK_DEBUG;
+        } else if (ActionProvider.COMMAND_PROFILE.equals(actionName) || CosChecker.PROFILE_MAIN.equals(actionName)) {
+            return JavaRunner.QUICK_PROFILE;
+        } else if (ActionProvider.COMMAND_TEST.equals(actionName) || ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) || SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(actionName)) {
+            return JavaRunner.QUICK_TEST;
+        } else if (ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(actionName)) {
+            return JavaRunner.QUICK_TEST_DEBUG;
+        } else if (ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName)) {
+            return JavaRunner.QUICK_TEST_PROFILE;
+        }
+        assert false : "Cannot convert " + actionName + " to quick actions.";
+        return null;
+    }
 }

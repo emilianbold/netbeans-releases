@@ -168,15 +168,14 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     private void checkRunMainClass(final RunConfig config) {
         final String actionName = config.getActionName();
         //compile on save stuff
-        if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
-            if ((NbMavenProject.TYPE_JAR.equals(
-                    config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType()) &&
-                    (ActionProvider.COMMAND_RUN.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG.equals(actionName) ||
-                    ActionProvider.COMMAND_PROFILE.equals(actionName))) ||
-                    RUN_MAIN.equals(actionName) ||
-                    DEBUG_MAIN.equals(actionName) ||
-                    PROFILE_MAIN.equals(actionName)) {
+        if (RunUtils.isCompileOnSaveEnabled(config)) {
+            if (ActionProvider.COMMAND_RUN.equals(actionName) ||
+                ActionProvider.COMMAND_DEBUG.equals(actionName) ||
+                ActionProvider.COMMAND_PROFILE.equals(actionName) ||
+                RUN_MAIN.equals(actionName) ||
+                DEBUG_MAIN.equals(actionName) ||
+                PROFILE_MAIN.equals(actionName)) 
+            {
                 long stamp = getLastCoSLastTouch(config, false);
                 //check the COS timestamp against critical files (pom.xml)
                 // if changed, don't do COS.
@@ -224,7 +223,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName))) {
             return;
         }
-        if (RunUtils.hasTestCompileOnSaveEnabled(config)) {
+        if (RunUtils.isCompileOnSaveEnabled(config)) {
             String testng = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
                     Constants.PLUGIN_SUREFIRE, "testNGArtifactName", "test", "testNGArtifactName"); //NOI18N
             if (testng == null) {
@@ -462,29 +461,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         }
         return toRet;
     }
-
-    static String action2Quick(String actionName) {
-        if (ActionProvider.COMMAND_CLEAN.equals(actionName)) {
-            return JavaRunner.QUICK_CLEAN;
-        } else if (ActionProvider.COMMAND_RUN.equals(actionName) || RUN_MAIN.equals(actionName)) {
-            return JavaRunner.QUICK_RUN;
-        } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || DEBUG_MAIN.equals(actionName)) {
-            return JavaRunner.QUICK_DEBUG;
-        } else if (ActionProvider.COMMAND_PROFILE.equals(actionName) || PROFILE_MAIN.equals(actionName)) {
-            return JavaRunner.QUICK_PROFILE;
-        } else if (ActionProvider.COMMAND_TEST.equals(actionName) || ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) || SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(actionName)) {
-            return JavaRunner.QUICK_TEST;
-        } else if (ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(actionName)) {
-            return JavaRunner.QUICK_TEST_DEBUG;
-        } else if (ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName)) {
-            return JavaRunner.QUICK_TEST_PROFILE;
-        }
-        assert false : "Cannot convert " + actionName + " to quick actions.";
-        return null;
-    }
     
- 
-
     static void touchProject(Project project) {
         NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
         if (prj != null) {
