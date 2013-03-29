@@ -50,21 +50,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.classpath.DependencyProjectsProvider;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
-import static org.netbeans.modules.maven.apisupport.MavenNbModuleImpl.GROUPID_MOJO;
-import static org.netbeans.modules.maven.apisupport.MavenNbModuleImpl.NBM_PLUGIN;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
