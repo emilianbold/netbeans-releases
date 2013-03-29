@@ -518,6 +518,8 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         }
         String[] entries = text.split(","); // NOI18N
         for (String entry : entries) {
+            // strip zero width spaces
+            entry = entry.replaceAll("\u200B", "");  // NOI18N
             // strip wildcards
             if (entry.contains("*"))  { // NOI18N
                 entry = entry.replaceAll("\\*", "");  // NOI18N
