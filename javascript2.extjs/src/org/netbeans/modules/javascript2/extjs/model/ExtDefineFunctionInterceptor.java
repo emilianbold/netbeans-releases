@@ -45,7 +45,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
-import javax.lang.model.element.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
@@ -105,10 +104,9 @@ public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
                         if(definedObject.getModifiers().remove(org.netbeans.modules.csl.api.Modifier.PRIVATE)) {
                             definedObject.getModifiers().add(org.netbeans.modules.csl.api.Modifier.PUBLIC);
                         }
-
                         OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
-                        JsObject jsObject = factory.newObject(parent, name, offsetRange, true);
-                        jsObject.addAssignment(factory.newType(definedObject.getFullyQualifiedName(), offset, false), offset);
+                        JsObject jsObject = factory.newReference(parent, name, offsetRange, definedObject, true, definedObject.getModifiers());
+//                        jsObject.addAssignment(factory.newType(definedObject.getFullyQualifiedName(), offset, false), offset);
 
                         parent.addProperty(name, jsObject);
                         for (Occurrence occurrence : jsObject.getOccurrences()) {
