@@ -57,13 +57,14 @@ implements AbstractLookupBaseHid.Impl, Executor, LookupListener {
     public AbstractLookupExecutorTest(java.lang.String testName) {
         super(testName, null);
     }
-
+    
     //
     // Impl of AbstractLookupBaseHid.Impl
     //
 
     /** Creates the initial abstract lookup.
      */
+    @Override
     public Lookup createInstancesLookup (InstanceContent ic) {
         ic.attachExecutor(this);
         Lookup l = new AbstractLookup (ic, new InheritanceTree ());
@@ -75,16 +76,20 @@ implements AbstractLookupBaseHid.Impl, Executor, LookupListener {
      * @param lookup in lookup
      * @return a lookup to use
      */
+    @Override
     public Lookup createLookup (Lookup lookup) {
         res = lookup.lookupResult(Object.class);
         res.addLookupListener(this);
         return lookup;
     }
 
+    @Override
     public void clearCaches () {
+        res = null;
     }    
 
     ThreadLocal<Object> ME = new ThreadLocal<Object>();
+    @Override
     public void execute(Runnable command) {
         assertEquals("Not yet set", null, ME.get());
         ME.set(this);
@@ -95,7 +100,16 @@ implements AbstractLookupBaseHid.Impl, Executor, LookupListener {
         }
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         assertEquals("Changes delivered only from execute method", this, ME.get());
+    }
+    
+    //
+    // need to clean the res field
+    @Override
+    public void testDoubleAddIssue35274() throws Exception {
+        res = null;
+        super.testDoubleAddIssue35274();
     }
 }
