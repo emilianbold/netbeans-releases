@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl.FieldBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendClassImpl.FriendClassBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDDImpl.FriendFunctionDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDefinitionImpl.FriendFunctionDefinitionBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionImpl.FriendFunctionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl.FunctionDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl.FunctionDefinitionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl.FunctionBuilder;
@@ -2132,10 +2133,12 @@ public class CppParserActionImpl implements CppParserActionEx {
                     builder = new ConstructorBuilder(declBuilder);
                 } else if(declBuilder.isDestructor()) {
                     builder = new DestructorBuilder(declBuilder);
+                } else if (declBuilder.isFriend()){
+                    builder = new FriendFunctionBuilder(declBuilder);
                 } else {
                     builder = new MethodBuilder(declBuilder);
                 }
-            } else {            
+            } else {
                 builder = new FieldBuilder(declBuilder, currentContext.file.getParsingFileContent());
             }
             
@@ -2147,8 +2150,12 @@ public class CppParserActionImpl implements CppParserActionEx {
             builder.setName(declBuilder.getDeclaratorBuilder().getName());
             if(declBuilder.getTemplateDescriptorBuilder() != null) {
                 builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-            }  
-            parent.addMemberBuilder((MemberBuilder)builder);
+            }
+            if (builder instanceof FriendFunctionBuilder) {
+                parent.addFriendBuilder((FriendFunctionBuilder)builder);
+            } else {
+                parent.addMemberBuilder((MemberBuilder)builder);
+            }
         }    
     }
     
