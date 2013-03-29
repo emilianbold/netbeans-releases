@@ -54,6 +54,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -206,25 +207,32 @@ public class WrappingTest extends GeneratorTestMDRCompat {
     }
     
     private void runWrappingTest(String code, Task<WorkingCopy> task, String... settings) throws Exception {
-        Map<String, String> originalSettings = alterSettings(FmtOptions.blankLinesAfterClassHeader, "0", FmtOptions.blankLinesBeforeMethods, "0");
+        String[] augmentedSettings = Arrays.copyOf(settings, settings.length + 4);
         
-        alterSettings(settings);
+        augmentedSettings[settings.length + 0] = FmtOptions.blankLinesAfterClassHeader;
+        augmentedSettings[settings.length + 1] = "0";
+        augmentedSettings[settings.length + 2] = FmtOptions.blankLinesBeforeMethods;
+        augmentedSettings[settings.length + 3] = "0";
         
-        for (int m = 1; m < 200; m++) {
-            alterSettings(FmtOptions.rightMargin, Integer.toString(m));
-            testFile = new File(getWorkDir(), "Test.java");
-            TestUtilities.copyStringToFile(testFile, code);
-            JavaSource src = getJavaSource(testFile);
+        Map<String, String> originalSettings = alterSettings(augmentedSettings);
+        
+        try {
+            for (int m = 1; m < 200; m++) {
+                alterSettings(FmtOptions.rightMargin, Integer.toString(m));
+                testFile = new File(getWorkDir(), "Test.java");
+                TestUtilities.copyStringToFile(testFile, code);
+                JavaSource src = getJavaSource(testFile);
 
-            src.runModificationTask(task).commit();
-            String res = TestUtilities.copyFileToString(testFile);
-            String formattedRes = Reformatter.reformat(res.replaceAll("[\\s]+", " "), CodeStyle.getDefault(FileUtil.toFileObject(testFile)));
-            System.err.println(res);
-            System.err.println(formattedRes);
-            assertEquals("margin=" + m, formattedRes, res);
+                src.runModificationTask(task).commit();
+                String res = TestUtilities.copyFileToString(testFile);
+                String formattedRes = Reformatter.reformat(res.replaceAll("[\\s]+", " "), CodeStyle.getDefault(FileUtil.toFileObject(testFile)));
+                System.err.println(res);
+                System.err.println(formattedRes);
+                assertEquals("margin=" + m, formattedRes, res);
+            }
+        } finally {
+            reset(originalSettings);
         }
-        
-        reset(originalSettings);
     }
     
     private Map<String, String> alterSettings(String... settings) {

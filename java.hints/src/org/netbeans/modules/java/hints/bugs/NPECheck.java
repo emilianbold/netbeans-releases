@@ -585,8 +585,10 @@ public class NPECheck {
             scan(node.getTypeArguments(), p);
             
             for (Tree param : node.getArguments()) {
+                Map<VariableElement, State> origVariable2State = variable2State;
+                variable2State = new HashMap<VariableElement, State>(variable2State);
                 scan(param, p);
-                clearHypothetical();
+                mergeNonHypotheticalVariable2State(origVariable2State);
             }
             
             scan(node.getClassBody(), p);
@@ -606,8 +608,10 @@ public class NPECheck {
             scan(node.getMethodSelect(), p);
             
             for (Tree param : node.getArguments()) {
+                Map<VariableElement, State> origVariable2State = variable2State;
+                variable2State = new HashMap<VariableElement, State>(variable2State);
                 scan(param, p);
-                clearHypothetical();
+                mergeNonHypotheticalVariable2State(origVariable2State);
             }
             
             Element e = info.getTrees().getElement(getCurrentPath());
@@ -954,6 +958,20 @@ public class NPECheck {
                 if (t == State.NULL_HYPOTHETICAL || t == State.NOT_NULL_HYPOTHETICAL) {
                     State originalValue = original.get(e.getKey());
                     e.setValue(originalValue == State.POSSIBLE_NULL || originalValue == null ? State.POSSIBLE_NULL_REPORT : originalValue);
+                }
+            }
+        }
+        
+        private void mergeNonHypotheticalVariable2State(Map<VariableElement, State> original) {
+            Map<VariableElement, State> backup = variable2State;
+            
+            variable2State = original;
+            
+            for (Entry<VariableElement, State> e : backup.entrySet()) {
+                State t = e.getValue();
+                
+                if (t  != null && t != State.NOT_NULL_HYPOTHETICAL && t != NULL_HYPOTHETICAL) {
+                    variable2State.put(e.getKey(), t);
                 }
             }
         }
