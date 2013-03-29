@@ -29,7 +29,6 @@
         <folder name="Project">
             <folder name="Samples">
                 <folder name="HTML5">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cordova.wizard.Bundle"/>
                     <file name="PhoneGapSample" url="PhoneGapSample.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.cordova.wizard.Bundle#Templates/Project/Samples/HTML5/PhoneGapMaps"/>
                         <attr name="position" intvalue="2000"/>
