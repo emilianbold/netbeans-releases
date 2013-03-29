@@ -305,21 +305,27 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
             return null;
 
         if (node.getBoolean(MarkOccurencesSettings.EXCEPTIONS, true)) {
-            //detect caret inside catch:
-            if (typePath != null && ((typePath.getParentPath().getLeaf().getKind() == Kind.UNION_TYPE
+            if (typePath != null) {
+                TreePath ttpath = null;
+                if (typePath.getParentPath().getLeaf().getKind() == Kind.UNION_TYPE
                     && typePath.getParentPath().getParentPath().getLeaf().getKind() == Kind.VARIABLE
-                    && typePath.getParentPath().getParentPath().getParentPath().getLeaf().getKind() == Kind.CATCH)
-                    || (typePath.getParentPath().getLeaf().getKind() == Kind.VARIABLE
-                    && typePath.getParentPath().getParentPath().getLeaf().getKind() == Kind.CATCH))) {
+                    && typePath.getParentPath().getParentPath().getParentPath().getLeaf().getKind() == Kind.CATCH) {
+                    ttpath = typePath.getParentPath().getParentPath().getParentPath().getParentPath();
+                } else if (typePath.getParentPath().getLeaf().getKind() == Kind.VARIABLE
+                    && typePath.getParentPath().getParentPath().getLeaf().getKind() == Kind.CATCH) {
+                    ttpath = typePath.getParentPath().getParentPath().getParentPath();
+                }
+                if (ttpath != null && ttpath.getLeaf().getKind() == Tree.Kind.TRY) {
                     MethodExitDetector med = new MethodExitDetector();
 
                     setExitDetector(med);
 
                     try {
-                        return med.process(info, doc, ((TryTree)typePath.getParentPath().getParentPath().getParentPath().getLeaf()).getBlock(), Collections.singletonList(typePath.getLeaf()));
+                        return med.process(info, doc, ((TryTree)ttpath.getLeaf()).getBlock(), Collections.singletonList(typePath.getLeaf()));
                     } finally {
                         setExitDetector(null);
                     }
+                }
             }
         }
 
