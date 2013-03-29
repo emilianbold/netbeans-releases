@@ -211,83 +211,91 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
         int index = input.index();
         int scopeLevel = 0;
-        SymTabEntry entry = null;
-
-        if(builderContext.top() instanceof NameBuilder) {
-            NameBuilder nameBuilder = (NameBuilder) builderContext.top();
-            if(!nameBuilder.getNameParts().isEmpty()) {
-                for (int i = 0; i < nameBuilder.getNameParts().size(); i++) {
-                    CharSequence part = nameBuilder.getNameParts().get(i);
-
-                    SymTabEntry classEntry = globalSymTab.lookup(part);
-                    SymTab st = null;
-                    if (classEntry != null) {
-                        st = (SymTab)classEntry.getAttribute(CppAttributes.SYM_TAB);
-                    }
-                    if(st != null) {
-                        globalSymTab.push(st);
-                        scopeLevel++;
-                    }
-                }            
-            }
-        }
         
-        while (true) {
-            APTToken aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
-            if (aToken.getType() == APTTokenTypes.IDENT) {
-                final CharSequence name = aToken.getTextID();
-                entry = globalSymTab.lookup(name);
-                if (entry == null || entry.getAttribute(CppAttributes.TYPE) == null) {
+        try {
+            SymTabEntry entry = null;
+
+            if(builderContext.top() instanceof NameBuilder) {
+                NameBuilder nameBuilder = (NameBuilder) builderContext.top();
+                if(!nameBuilder.getNameParts().isEmpty()) {
+                    for (int i = 0; i < nameBuilder.getNameParts().size(); i++) {
+                        CharSequence part = nameBuilder.getNameParts().get(i);
+
+                        SymTabEntry classEntry = globalSymTab.lookup(part);
+                        SymTab st = null;
+                        if (classEntry != null) {
+                            st = (SymTab)classEntry.getAttribute(CppAttributes.SYM_TAB);
+                        }
+                        if(st != null) {
+                            globalSymTab.push(st);
+                            scopeLevel++;
+                        }
+                    }            
+                }
+            }
+
+            while (true) {
+                int LA = input.LA(1);
+                if (LA == APTTokenTypes.IDENT) {
+                    final CharSequence name = ((APTToken) CXXParserActionImpl.convertToken(input.LT(1))).getTextID();
+                    entry = globalSymTab.lookup(name);
+                    if (entry == null || entry.getAttribute(CppAttributes.TYPE) == null) {
+                        break;
+                    }
+                    input.consume();
+                    LA = input.LA(1);
+                    if (LA == APTTokenTypes.LESSTHAN) {
+                        input.consume();
+                        LA = input.LA(1);
+                        int templateLevel = 0;
+                        while (templateLevel != 0 || LA != APTTokenTypes.GREATERTHAN) {
+                            if(LA == APTTokenTypes.GREATERTHAN) {
+                                templateLevel--;
+                            } else if(LA == APTTokenTypes.LESSTHAN) {
+                                templateLevel++;
+                            }
+                            input.consume();
+                            LA = input.LA(1);
+                            if (LA == CXXParserEx.EOF) {
+                                break;
+                            }
+                        }
+                        input.consume();
+                        LA = input.LA(1);
+                    }
+                    if (LA == APTTokenTypes.SCOPE) {
+                        if (entry.getAttribute(CppAttributes.SYM_TAB) == null) {
+                            entry = null;
+                            break;
+                        }
+                        scopeLevel++;
+                        globalSymTab.push((SymTab) entry.getAttribute(CppAttributes.SYM_TAB));
+                    } else {
+                        break;
+                    }
+                } else if (LA == APTTokenTypes.STAR) {
+                    return true;
+                } else { 
+                    entry = null;
                     break;
                 }
                 input.consume();
-                aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
-                if (aToken.getType() == APTTokenTypes.LESSTHAN) {
-                    input.consume();
-                    aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
-                    int templateLevel = 0;
-                    while (templateLevel != 0 || aToken.getType() != APTTokenTypes.GREATERTHAN) {
-                        if(aToken.getType() == APTTokenTypes.GREATERTHAN) {
-                            templateLevel--;
-                        } else if(aToken.getType() == APTTokenTypes.LESSTHAN) {
-                            templateLevel++;
-                        }
-                        input.consume();
-                        aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
-                    }
-                    input.consume();
-                    aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
-                }
-                if (aToken.getType() == APTTokenTypes.SCOPE) {
-                    if (entry.getAttribute(CppAttributes.SYM_TAB) == null) {
-                        entry = null;
-                        break;
-                    }
-                    scopeLevel++;
-                    globalSymTab.push((SymTab) entry.getAttribute(CppAttributes.SYM_TAB));
-                } else {
-                    break;
-                }
-            } else if (aToken.getType() == APTTokenTypes.STAR) {
-                return true;
-            } else { 
-                entry = null;
-                break;
             }
-            input.consume();
-        }
-        for (int i = 0; i < scopeLevel; i++) {
-            globalSymTab.pop();
-        }
-        input.rewind(index);
-        if(entry != null && entry.getAttribute(CppAttributes.TYPE) != null) {
+            
+            if (entry != null && entry.getAttribute(CppAttributes.TYPE) != null) {
 //            if(entry.toString().startsWith("Entry{name=value_type")) {
 //                int i = 0;
 //                globalSymTab.lookup(((APTToken) CXXParserActionImpl.convertToken(input.LT(1))).getTextID());
 //            }
-            return true;
+                return true;
+            }
+            return false;
+        } finally {
+            for (int i = 0; i < scopeLevel; i++) {
+                globalSymTab.pop();
+            }
+            input.rewind(index);
         }
-        return false;
     }
     
     @Override
@@ -595,7 +603,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                     if(bodyTokenStream != null) {
                         builderContext.push((MethodDDBuilder)memberBuilder);
                         ParserProviderImpl.Antlr3CXXParser parser = new ParserProviderImpl.Antlr3CXXParser(params);
-                        parser.init(null, ((MethodDDBuilder)memberBuilder).getBodyTokenStream(), wrapper);
+                        parser.init(null, bodyTokenStream, wrapper);
                         parser.parse(CsmParserProvider.CsmParser.ConstructionKind.FUNCTION_DEFINITION_AFTER_DECLARATOR);
                         builderContext.pop();
                     }
@@ -1967,15 +1975,15 @@ public class CppParserActionImpl implements CppParserActionEx {
                 
             builder.setParent(parent);
             builder.setFile(currentContext.file);
-            builder.setStartOffset(declBuilder.getStartOffset());
-            
+                builder.setStartOffset(declBuilder.getStartOffset());
+
             builder.setName(name);
-            builder.setTypeBuilder(declBuilder.getTypeBuilder());
+                builder.setTypeBuilder(declBuilder.getTypeBuilder());
             if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
+                    builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
                 builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
             }        
-            builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
+                builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
             builderContext.push(builder);
         }
     }
