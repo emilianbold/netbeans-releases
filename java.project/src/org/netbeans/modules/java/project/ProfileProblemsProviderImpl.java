@@ -138,9 +138,11 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
     //@GuardedBy("foreignSlResults")
     private final Collection<SourceLevelQuery.Result> foreignSlResults;
     private final RequestProcessor.Task firer;
-    private final AtomicBoolean listenersInitialized;
-    private volatile ClassPath classPath;
-    private volatile SourceLevelQuery.Result slRes;
+    private final Object listenersInitLock = new Object();
+    //@GuardedBy("listenersInitLock")
+    private ClassPath classPath;
+    //@GuardedBy("listenersInitLock")
+    private SourceLevelQuery.Result slRes;
 
     ProfileProblemsProviderImpl(
             @NonNull final AntProjectHelper antProjectHelper,
@@ -162,7 +164,6 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         this.problemsProviderSupport = new ProjectProblemsProviderSupport(this);
         this.foreignSlResults = Collections.synchronizedCollection(new ArrayList<SourceLevelQuery.Result>());
         this.firer = RP.create(this);
-        this.listenersInitialized = new AtomicBoolean();
     }
 
     @Override
@@ -183,15 +184,15 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         "DESC_InvalidProfile=The project profile ({0}) is lower than the profile of used libraries ({1}).",
         "DESC_IllegalProfile=The project libraries have illegal value of profile."
     })
-    public Collection<? extends ProjectProblem> getProblems() {
-        listenenOnProjectMetadata();
+    public Collection<? extends ProjectProblem> getProblems() {        
         return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
             @Override
             public Collection<? extends ProjectProblem> collectProblems() {
                 return ProjectManager.mutex().readAccess(new Mutex.Action<Collection<? extends ProjectProblem>>() {
                     @Override
                     public Collection<? extends ProjectProblem> run() {
-                        final Profile profile = StandardProfile.forName(slRes.getProfile());
+                        final SourceLevelQuery.Result mySL = listenenOnProjectMetadata();
+                        final Profile profile = StandardProfile.forName(mySL.getProfile());
                         if (!profile.isValid() || profile == StandardProfile.DEFAULT) {
                             return Collections.<ProjectProblem>emptySet();
                         }
@@ -234,20 +235,24 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         problemsProviderSupport.fireProblemsChange();
     }
 
-    private void listenenOnProjectMetadata() {
-        if (listenersInitialized.compareAndSet(false, true)) {
-            slRes = SourceLevelQuery.getSourceLevel2(antProjectHelper.getProjectDirectory());
-            slRes.addChangeListener(this);
-            final File baseFolder = FileUtil.toFile(antProjectHelper.getProjectDirectory());
-            if (baseFolder != null) {
-                final ClassPath cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    baseFolder,
-                    evaluator,
-                    classPathProperties.toArray(new String[classPathProperties.size()])));
-                cp.addPropertyChangeListener(this);
-                cp.getRoots();
-                classPath = cp;
+    private SourceLevelQuery.Result listenenOnProjectMetadata() {
+        synchronized (listenersInitLock) {
+            if (slRes == null) {
+                assert classPath == null;
+                slRes = SourceLevelQuery.getSourceLevel2(antProjectHelper.getProjectDirectory());
+                slRes.addChangeListener(this);
+                final File baseFolder = FileUtil.toFile(antProjectHelper.getProjectDirectory());
+                if (baseFolder != null) {
+                    final ClassPath cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                        baseFolder,
+                        evaluator,
+                        classPathProperties.toArray(new String[classPathProperties.size()])));
+                    cp.addPropertyChangeListener(this);
+                    cp.getRoots();
+                    classPath = cp;
+                }
             }
+            return slRes;
         }
     }
 
