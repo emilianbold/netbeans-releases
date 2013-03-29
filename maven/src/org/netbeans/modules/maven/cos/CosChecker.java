@@ -79,7 +79,6 @@ import org.netbeans.modules.maven.spi.cos.CompileOnSaveSkipper;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
@@ -159,13 +158,13 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 touchProject(openprj);
             }
             //new style Compile on Save
-            checkRunMainClass(config);
-            checkRunTest(config);
+            checkRunMainClass(config, con);
+            checkRunTest(config, con);
         } 
         return true;
     }
 
-    private void checkRunMainClass(final RunConfig config) {
+    private void checkRunMainClass(final RunConfig config, ExecutionContext con) {
         final String actionName = config.getActionName();
         //compile on save stuff
         if (RunUtils.isCompileOnSaveEnabled(config)) {
@@ -206,7 +205,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                         }
                         if (processedGoals.size() > 0) {
                             brc.setGoals(processedGoals);
-                            injectDependencyProjects(brc, false);
+                            injectDependencyProjects(brc, false, con);
                         }
                     } else {
                         LOG.log(Level.INFO, "could not strip phase goals from RunConfig subclass {0}", config.getClass().getName());
@@ -216,7 +215,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         }
     }
 
-    private void checkRunTest(final RunConfig config) {
+    private void checkRunTest(final RunConfig config, ExecutionContext con) {
         String actionName = config.getActionName();
         if (!(ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
                 ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) ||
@@ -272,7 +271,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     }
                     if (processedGoals.size() > 0) {
                         brc.setGoals(processedGoals);
-                        injectDependencyProjects(brc, true);
+                        injectDependencyProjects(brc, true, con);
                     }
                 } else {
                     LOG.log(Level.INFO, "could not strip phase goals from RunConfig subclass {0}", config.getClass().getName());
@@ -573,7 +572,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 //        }
     }
 
-    private void injectDependencyProjects(BeanRunConfig brc, boolean test) {
+    private void injectDependencyProjects(BeanRunConfig brc, boolean test, ExecutionContext con) {
         if (brc.getProject() == null) {
             return;
         }
@@ -584,20 +583,12 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         assert dep != null;
         StringBuilder value = new StringBuilder();
         for (DependencyProjectsProvider.Pair pair : dep.getDependencyProjects()) {
-            if (!test && "test".equals(pair.getArtifact().getScope())) {
+            if (!test && "test".equals(pair.getArtifact().getScope())) { //TODO finetune what about provided?
                 continue;
             }
             Artifact a = pair.getArtifact();
-            if (!pair.getArtifact().hasClassifier() && RunUtils.hasApplicationCompileOnSaveEnabled(pair.getProject())) {
-                if (value.length() != 0) {
-                    value.append(",");
-                }
-                value.append(a.getGroupId()).append(":").append(a.getArtifactId()).append(":").append(a.getBaseVersion());
-                File f = FileUtil.toFile(pair.getProject().getProjectDirectory());
-                value.append("=").append(FileUtil.normalizeFile(new File(f, "target" + File.separator + "classes")));
-            }
-            //TODO how to make sure to enable -tests jar and test cos? we need just one setting apparently.
-            if (!pair.getArtifact().hasClassifier() && RunUtils.hasApplicationCompileOnSaveEnabled(pair.getProject())) {
+            if ((!pair.getArtifact().hasClassifier() || "tests".equals(pair.getArtifact().getClassifier())) 
+                    && RunUtils.isCompileOnSaveEnabled(pair.getProject())) {
                 if (value.length() != 0) {
                     value.append(",");
                 }
@@ -608,8 +599,8 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         }
         if (value.length() > 0) {
             brc.setProperty(MAVENEXTCLASSPATH, jar.getAbsolutePath());
-            brc.setProperty(NETBEANS_PROJECT_MAPPINGS, value.toString());
         }
+        brc.setProperty(NETBEANS_PROJECT_MAPPINGS, value.toString()); //always put ti recognize later and print warnings
     }
 
     

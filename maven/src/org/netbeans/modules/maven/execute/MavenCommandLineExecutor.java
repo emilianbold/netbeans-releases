@@ -103,7 +103,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 
     private static final String KEY_UUID = "NB_EXEC_MAVEN_PROCESS_UUID"; //NOI18N
 
-    private ProgressHandle handle;
+    private final ProgressHandle handle;
     private Process process;
     private String processUUID;
     private Process preProcess;
@@ -466,7 +466,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
         display.append(Utilities.escapeParameters(command.toArray(new String[command.size()])));
         printGray(ioput, display.toString());
-
+        
         return builder;
     }
 
@@ -522,7 +522,12 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 
     private void printCoSWarning(BeanRunConfig clonedConfig, InputOutput ioput) {
         if (clonedConfig.getProperties().containsKey(CosChecker.NETBEANS_PROJECT_MAPPINGS)) {
-            printGray(ioput, "Running a Compile On Save Execution in NetBeans. Output directoring of dependency projects (with Compile on Save on as well) will be used instead of their jar artifacts.");
+            printGray(ioput, "Running NetBeans Compile On Save execution. Output directoring of dependency projects (with Compile on Save turned on) will be used instead of their jar artifacts.");
+            File mvnHome = EmbedderFactory.getEffectiveMavenHome();
+            String version = MavenSettings.getCommandLineMavenVersion(mvnHome);
+            if (version != null && version.startsWith("2")) {
+                printGray(ioput, "WARNING: Using Maven 2.x for execution, cannot establish links between current project and output directories of dependency projects with Compile on Save turned on. Only works with Maven 3.0+.");
+            }
         }
     }
 
