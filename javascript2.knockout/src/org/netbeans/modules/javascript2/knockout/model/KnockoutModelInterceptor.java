@@ -55,7 +55,7 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
  *
  * @author Petr Hejl
  */
-@ModelInterceptor.Registration(priority=10)
+@ModelInterceptor.Registration(priority=200)
 public class KnockoutModelInterceptor implements ModelInterceptor {
 
     private static final Logger LOGGER = Logger.getLogger(KnockoutModelInterceptor.class.getName());
