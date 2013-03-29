@@ -113,7 +113,7 @@ public final class SassExecutable {
                 .optionsPath(UiUtils.OPTIONS_PATH)
                 .inputVisible(false)
                 .frontWindow(false)
-                .frontWindowOnError(false)
+                .frontWindowOnError(true)
                 .controllable(false)
                 .showProgress(true);
     }
