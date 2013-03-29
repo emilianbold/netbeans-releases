@@ -526,7 +526,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             File mvnHome = EmbedderFactory.getEffectiveMavenHome();
             String version = MavenSettings.getCommandLineMavenVersion(mvnHome);
             if (version != null && version.startsWith("2")) {
-                printGray(ioput, "WARNING: Using Maven 2.x for execution, cannot establish links between current project and output directories of dependency projects with Compile on Save turned on. Only works with Maven 3.0+.");
+                printGray(ioput, "WARNING: Using Maven 2.x for execution, NetBeans cannot establish links between current project and output directories of dependency projects with Compile on Save turned on. Only works with Maven 3.0+.");
             }
         }
     }
