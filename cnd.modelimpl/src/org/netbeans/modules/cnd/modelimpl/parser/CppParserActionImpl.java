@@ -1951,6 +1951,10 @@ public class CppParserActionImpl implements CppParserActionEx {
             builder.setParent(parent);
             builder.setFile(currentContext.file);
             builder.setStartOffset(declBuilder.getStartOffset());
+            
+            if (declBuilder.isConst()) {
+                builder.setConst();
+            }
 
             builder.setName(name);
             builder.setTypeBuilder(declBuilder.getTypeBuilder());
@@ -1977,7 +1981,11 @@ public class CppParserActionImpl implements CppParserActionEx {
                 
             builder.setParent(parent);
             builder.setFile(currentContext.file);
-                builder.setStartOffset(declBuilder.getStartOffset());
+            builder.setStartOffset(declBuilder.getStartOffset());
+            
+            if (declBuilder.isConst()) {
+                builder.setConst();
+            }
 
             builder.setName(name);
                 builder.setTypeBuilder(declBuilder.getTypeBuilder());
