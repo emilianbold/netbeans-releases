@@ -360,6 +360,11 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug226516.cpp", 53, 28, "bug226516.cpp", 33, 5);
     }
     
+    public void testBug227045() throws Exception {
+        // Bug 226516 - Anonymous namespace class methods not found
+        performTest("bug227045.cpp", 19, 36, "bug227045.cpp", 12, 1);
+    }    
+    
     public void testBug219398() throws Exception {
         // Bug 219398 - "Unable to resolve identifier name" mark happened and source code format is wrong in c++ project
         performTest("typeid.cpp", 39, 61, "typeinfo.h", 21, 5);

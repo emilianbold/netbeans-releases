@@ -1754,7 +1754,7 @@ abstract public class CsmCompletionQuery {
                                             lastNamespace = CsmCompletion.getProjectNamespace(getCsmProject(), curNs);
                                             lastType = null;
                                         } else { // package doesn't exist
-                                            res = finder.findNamespaceElements(lastNamespace, var, true, false, true);
+                                            res = finder.findNamespaceElements(lastNamespace, var, true, true, true);
 //                                        if(res.isEmpty()) {
 //                                            res = finder.findStaticNamespaceElements(lastNamespace, endOffset, var, true, false, true);
 //                                        }
@@ -1766,7 +1766,7 @@ abstract public class CsmCompletionQuery {
                                     } else { // last and searching for completion output
                                         if (last) { // get all matching fields/methods/packages
                                             List res = finder.findNestedNamespaces(lastNamespace, var, openingSource, false); // find matching nested namespaces
-                                            res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, false, false)); // matching classes
+                                            res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, true, false)); // matching classes
                                             res.addAll(finder.findStaticNamespaceElements(lastNamespace, var, openingSource)); // matching static elements
                                             result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*', item, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
                                         }
