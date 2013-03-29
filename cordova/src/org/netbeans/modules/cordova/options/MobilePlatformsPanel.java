@@ -315,4 +315,8 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel cordovaSdkLabel;
     private javax.swing.JLabel phonegapVersion;
     // End of variables declaration//GEN-END:variables
+
+    boolean isCordovaEmpty() {
+        return cordovaSdkField.getText().trim().isEmpty();
+    }
 }
