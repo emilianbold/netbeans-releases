@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.bugtracking.cache;
 
-import org.netbeans.modules.bugtracking.util.*;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -70,6 +69,8 @@ import java.util.zip.ZipOutputStream;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.modules.Places;
 

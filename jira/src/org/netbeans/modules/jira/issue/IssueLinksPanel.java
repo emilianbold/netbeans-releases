@@ -122,7 +122,7 @@ public class IssueLinksPanel extends JPanel {
     private void reloadIssueDetails() {
         summaryMap.clear();
         JiraRepository repository = issue.getRepository();
-        IssueCache<NbJiraIssue, TaskData> cache = repository.getIssueCache();
+        IssueCache<NbJiraIssue> cache = repository.getIssueCache();
         for (NbJiraIssue.LinkedIssue linkedIssue : issue.getLinkedIssues()) {
             String issueKey = linkedIssue.getIssueKey();
             NbJiraIssue izzue = cache.getIssue(issueKey);

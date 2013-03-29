@@ -306,7 +306,7 @@ public class JiraQuery {
             ids.addAll(issues);
         }
         
-        IssueCache<NbJiraIssue, TaskData> cache = repository.getIssueCache();
+        IssueCache<NbJiraIssue> cache = repository.getIssueCache();
         List<NbJiraIssue> ret = new ArrayList<NbJiraIssue>();
         for (String id : ids) {
             IssueCache.Status status = getIssueStatus(id);
@@ -335,13 +335,18 @@ public class JiraQuery {
 
     private class IssuesCollector extends TaskDataCollector {
         public IssuesCollector() {}
+        @Override
         public void accept(TaskData taskData) {
             String id = NbJiraIssue.getID(taskData);
             NbJiraIssue issue;
             try {
                 getController().progress(NbJiraIssue.getDisplayName(taskData));
-                IssueCache<NbJiraIssue, TaskData> cache = repository.getIssueCache();
-                issue = (NbJiraIssue) cache.setIssueData(id, taskData);
+                IssueCache<NbJiraIssue> cache = repository.getIssueCache();
+                issue = cache.getIssue(id);
+                if(issue != null) {
+                    issue.setTaskData(taskData);
+                }
+                issue = (NbJiraIssue) cache.setIssueData(id, issue != null ? issue : new NbJiraIssue(taskData, repository));
                 issues.add(issue.getID());
             } catch (IOException ex) {
                 Jira.LOG.log(Level.SEVERE, null, ex);

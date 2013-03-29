@@ -495,44 +495,30 @@ public class QueryTableCellRendererTest {
 
     private class RendererRepository extends TestRepository {
         private RepositoryInfo info;
-        private IssueCache<TestIssue, Object> cache;
+        private IssueCache<TestIssue> cache;
         private Lookup lookup;
         public RendererRepository() {
             info = new RepositoryInfo("testrepo", "testconnector", null, null, null, null, null, null, null);
             lookup = Lookups.singleton(getCache());
         }
 
-        public IssueCache<TestIssue, Object> getCache() {
+        public IssueCache<TestIssue> getCache() {
             if(cache == null) {
-                IssueAccessor<TestIssue, Object> issueAccessor = new IssueCache.IssueAccessor<TestIssue, Object>() {
-                    @Override
-                    public String getID(Object issueData) {
-                        return ((RendererIssue)issueData).getID();
-                    }
-                    @Override
-                    public TestIssue createIssue(Object issueData) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-                    @Override
-                    public void setIssueData(TestIssue issue, Object issueData) {
-
-                    }
+                IssueAccessor<TestIssue> issueAccessor = new IssueCache.IssueAccessor<TestIssue>() {
                     @Override
                     public Map<String, String> getAttributes(TestIssue issue) {
                         throw new UnsupportedOperationException("Not supported yet.");
                     }
                     @Override
                     public long getLastModified(TestIssue issue) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        return System.currentTimeMillis() - 10 * 60 * 1000;
                     }
                     @Override
                     public long getCreated(TestIssue issue) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        return System.currentTimeMillis() - 15 * 60 * 1000;
                     }
                 };
-                TestIssueProvider issueProvider = new TestIssueProvider();
-                RepositoryImpl repo = TestKit.getRepository(this);
-                cache = new IssueCache<TestIssue, Object>("test", issueAccessor);
+                cache = new IssueCache<TestIssue>("test", issueAccessor);
             }
             return cache;
         }
@@ -591,13 +577,13 @@ public class QueryTableCellRendererTest {
     };
 
     private void setEntryValues(RendererRepository repository, RendererIssue rendererIssue, IssueCache.Status status, boolean seen) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        IssueCache cache = repository.getLookup().lookup(IssueCache.class);
+        IssueCache cache = repository.getCache();
         try {
-            cache.setIssueData(rendererIssue, rendererIssue); // ensure issue is cached
+            cache.setIssueData(rendererIssue.getID(), rendererIssue); // ensure issue is cached
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        Method m = cache.getClass().getDeclaredMethod("setEntryValues", String.class, int.class, boolean.class);
+        Method m = cache.getClass().getDeclaredMethod("setEntryValues", String.class, IssueCache.Status.class, boolean.class);
         m.setAccessible(true);
         m.invoke(cache, rendererIssue.getID(), status, seen);
     }

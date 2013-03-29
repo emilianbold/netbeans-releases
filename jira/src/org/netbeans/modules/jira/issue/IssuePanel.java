@@ -1963,7 +1963,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                IssueCache<NbJiraIssue, TaskData> cache = issue.getRepository().getIssueCache();
+                IssueCache<NbJiraIssue> cache = issue.getRepository().getIssueCache();
                 String parentKey = issue.getParentKey();
                 if ((parentKey != null) && (parentKey.trim().length()>0)) {
                     NbJiraIssue parentIssue = cache.getIssue(parentKey);

@@ -539,7 +539,7 @@ public class NbJiraIssue {
 
     public void setUpToDate(boolean seen) {
         try {
-            final IssueCache<NbJiraIssue, TaskData> issueCache = getRepository().getIssueCache();
+            final IssueCache<NbJiraIssue> issueCache = getRepository().getIssueCache();
             boolean wasSeen = issueCache.wasSeen(getID());
             if(seen != wasSeen) {
                 issueCache.setSeen(getID(), seen);
@@ -562,7 +562,9 @@ public class NbJiraIssue {
             if(td == null) {
                 return false;
             }
-            getRepository().getIssueCache().setIssueData(this, td); // XXX
+            IssueCache<NbJiraIssue> cache = getRepository().getIssueCache();
+            NbJiraIssue issue = cache.getIssue(key);
+            cache.setIssueData(td.getTaskId(), issue != null ? issue : new NbJiraIssue(td, repository)); // XXX
             refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
@@ -582,7 +584,9 @@ public class NbJiraIssue {
             if(td == null) {
                 return false;
             }
-            getRepository().getIssueCache().setIssueData(this, td);
+            IssueCache<NbJiraIssue> cache = getRepository().getIssueCache();
+            NbJiraIssue issue = cache.getIssue(id);
+            cache.setIssueData(td.getTaskId(), issue != null ? issue : new NbJiraIssue(td, repository));
             refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);

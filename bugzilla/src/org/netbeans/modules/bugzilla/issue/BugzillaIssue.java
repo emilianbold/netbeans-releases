@@ -1015,7 +1015,8 @@ public class BugzillaIssue {
             if(td == null) {
                 return false;
             }
-            getRepository().getIssueCache().setIssueData(this, td); // XXX
+            setTaskData(td);
+            getRepository().getIssueCache().setIssueData(td.getTaskId(), this); // XXX
             getRepository().ensureConfigurationUptodate(this);
             refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
@@ -1103,7 +1104,7 @@ public class BugzillaIssue {
 
     public void setUpToDate(boolean seen) {
         try {
-            final IssueCache<BugzillaIssue, TaskData> issueCache = getRepository().getIssueCache();
+            final IssueCache<BugzillaIssue> issueCache = getRepository().getIssueCache();
             boolean wasSeen = issueCache.wasSeen(getID());
             if(seen != wasSeen) {
                 issueCache.setSeen(getID(), seen);

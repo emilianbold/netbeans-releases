@@ -55,7 +55,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
-import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.TestKit;
@@ -87,7 +86,7 @@ public class RepositorySelectorTest extends NbTestCase {
         super.setUp();
     }
 
-    public void testRepositorySelectorBuilder() throws MalformedURLException, CoreException, IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void testRepositorySelectorBuilder() throws MalformedURLException, IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         String errorMsg = "tpyo";
         MyRepository repo = new MyRepository();
 

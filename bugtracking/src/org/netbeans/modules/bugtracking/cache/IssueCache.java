@@ -58,7 +58,7 @@ import org.netbeans.modules.bugtracking.api.Issue;
  *
  * @author Tomas Stupka
  */
-public class IssueCache<I, D> {
+public class IssueCache<I> {
 
     public enum Status {
         /**
@@ -111,7 +111,7 @@ public class IssueCache<I, D> {
 
     private final Object CACHE_LOCK = new Object();
     private final long referenceTime;
-    private final IssueAccessor<I, D> issueAccessor;
+    private final IssueAccessor<I> issueAccessor;
 
     /**
      *
@@ -120,33 +120,10 @@ public class IssueCache<I, D> {
      *
      * @param <T>
      */
-    public interface IssueAccessor<I, T> {
+    public interface IssueAccessor<I> {
 
         /**
-         * Returns the id given by the issueData
-         *
-         * @param issueData
-         * @return id
-         */
-        public String getID(T issueData);
-
-        /**
-         * Creates a new Issue for the given taskdata
-         * @param taskData
-         * @return
-         */
-        public I createIssue(T issueData);
-
-        /**
-         * Sets new task data in the issue.
-         *
-         * @param issue
-         * @param taskData
-         */
-        public void setIssueData(I issue, T issueData);
-
-        /**
-         * Returns attributes for the given Issue
+         * Returns attributes to be stored for the given Issue once it was seen
          * @return
          */
         public Map<String, String> getAttributes(I issue);
@@ -175,7 +152,7 @@ public class IssueCache<I, D> {
      * @param nameSpace
      * @param issueAccessor
      */
-    public IssueCache(String nameSpace, IssueAccessor<I, D> issueAccessor) {
+    public IssueCache(String nameSpace, IssueAccessor<I> issueAccessor) {
         assert issueAccessor != null;
         this.nameSpace = nameSpace;
         this.issueAccessor = issueAccessor;
@@ -205,23 +182,8 @@ public class IssueCache<I, D> {
         IssueStorage.getInstance().cleanup(IssueCache.this.nameSpace);
     }
 
-    IssueAccessor<I, D> getIssueAccessor() {
+    IssueAccessor<I> getIssueAccessor() {
         return issueAccessor;
-    }
-
-    /**
-     * Sets new data into {@link Issue} with the given id. A new issue will be created
-     * in case it doesn't exist yet.
-     *
-     * @param issue id
-     * @param issueData data representing an issue
-     * @return the {@link Issue} with the given id
-     * @throws IOException
-     */
-    public I setIssueData(String id, D issueData) throws IOException {
-        assert issueData != null;
-        assert id != null && !id.equals("");
-        return setIssueData(id, null, issueData);
     }
 
     /**
@@ -231,17 +193,8 @@ public class IssueCache<I, D> {
      * @param issueData data representing an issue
      * @throws IOException
      */
-    public void setIssueData(I issue, D issueData) throws IOException {
-        assert issueData != null;
-        assert issue != null;
-
-        String id = issueAccessor.getID(issueData);
+    public I setIssueData(String id, I issue) throws IOException {
         assert id != null && !id.equals("");
-        setIssueData(id, issue, issueData);
-    }
-
-    private I setIssueData(String id, I issue, D issueData) throws IOException {
-        assert issueData != null;
 
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
@@ -250,29 +203,20 @@ public class IssueCache<I, D> {
                 entry = createNewEntry(id);
             }
 
-            if(entry.issue == null) {
-                if(issue != null) {
-                    entry.issue = issue;
-                    LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
-                    issueAccessor.setIssueData(entry.issue, issueData);
-                } else {
-                    entry.issue = issueAccessor.createIssue(issueData);
-                    LOG.log(Level.FINE, "created issue {0} ", new Object[] {id}); // NOI18N
-                    readIssue(entry);
-                    Map<String, String> attr = entry.getSeenAttributes();
-                    if(attr == null || attr.isEmpty()) {
-                        // firsttimer
-                        if(referenceTime >= issueAccessor.getLastModified(entry.issue)) {
-                            setSeen(id, true);
-                        } else if(referenceTime >= issueAccessor.getCreated(entry.issue)) {
-                            entry.seenAttributes = issueAccessor.getAttributes(entry.issue);
-                            storeIssue(entry);
-                        }
+            entry.issue = issue;
+            LOG.log(Level.FINE, "setting issue {0} ", new Object[] {id}); // NOI18N
+            if(!entry.wasRead()) {
+                readIssue(entry);
+                Map<String, String> attr = entry.getSeenAttributes();
+                if(attr == null || attr.isEmpty()) {
+                    // firsttimer
+                    if(referenceTime >= issueAccessor.getLastModified(entry.issue)) {
+                        setSeen(id, true);
+                    } else if(referenceTime >= issueAccessor.getCreated(entry.issue)) {
+                        entry.seenAttributes = issueAccessor.getAttributes(entry.issue);
+                        storeIssue(entry);
                     }
                 }
-            } else {
-                LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
-                issueAccessor.setIssueData(entry.issue, issueData);
             }
 
             if(entry.seenAttributes != null) {
@@ -613,6 +557,9 @@ public class IssueCache<I, D> {
         }
         public void setLastUnseenStatus(Status lastUnseenStatus) {
             this.lastUnseenStatus = lastUnseenStatus;
+        }
+        private boolean wasRead() {
+            return seenAttributes != null;
         }
     }
 }

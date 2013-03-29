@@ -332,7 +332,7 @@ public class BugzillaQuery {
             ids.addAll(issues);
         }
 
-        IssueCache<BugzillaIssue, TaskData> cache = repository.getIssueCache();
+        IssueCache<BugzillaIssue> cache = repository.getIssueCache();
         List<BugzillaIssue> ret = new ArrayList<BugzillaIssue>();
         for (String id : ids) {
             IssueCache.Status status = getIssueStatus(id);
@@ -367,8 +367,12 @@ public class BugzillaQuery {
             getController().addProgressUnit(BugzillaIssue.getDisplayName(taskData));
             BugzillaIssue issue;
             try {
-                IssueCache<BugzillaIssue, TaskData> cache = repository.getIssueCache();
-                issue = (BugzillaIssue) cache.setIssueData(id, taskData);
+                IssueCache<BugzillaIssue> cache = repository.getIssueCache();
+                issue = cache.getIssue(id);
+                if(issue != null) {
+                    issue.setTaskData(taskData);
+                }
+                issue = (BugzillaIssue) cache.setIssueData(id, issue != null ? issue : new BugzillaIssue(taskData, repository));
             } catch (IOException ex) {
                 Bugzilla.LOG.log(Level.SEVERE, null, ex);
                 return;
