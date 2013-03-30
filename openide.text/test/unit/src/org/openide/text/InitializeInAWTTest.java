@@ -83,6 +83,7 @@ import org.openide.windows.WindowManager;
  *
  * @author  Jarda Tulach
  */
+@org.netbeans.junit.RandomlyFails // NB-Core-Build #9915: Unstable, locally passes
 public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSupport.Env {
 
     public static Test suite() {
