@@ -68,7 +68,7 @@ public class ActionProviderImplTest extends NbTestCase {
                 + "<dependencies><dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>4.8.2</version><scope>test</scope></dependency></dependencies>"
                 + "<properties><netbeans.compile.on.save>all</netbeans.compile.on.save></properties>"
                 + "</project>");
-        assertSupportsRunSingleMethod(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), true);
+        assertSupportsRunSingleMethod(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), false); // used to be true, but now all is run with maven, not JavaRunner.
     }
     */
 
