@@ -92,9 +92,9 @@ import org.openide.windows.WindowManager;
         preferredID = "NotificationCenterTopComponent",
         iconBase = "org/netbeans/modules/notifications/resources/notificationsTC.png",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "output", openAtStartup = false)
+@TopComponent.Registration(mode = "output", openAtStartup = false, position = 123)
 @ActionID(category = "Window", id = "org.netbeans.modules.notifications.NotificationCenterTopComponent")
-@ActionReference(path = "Menu/Window/Tools", position = 600)
+@ActionReference(path = "Menu/Window/Tools", position = 650)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_NotificationCenterAction",
         preferredID = "NotificationCenterTopComponent")
