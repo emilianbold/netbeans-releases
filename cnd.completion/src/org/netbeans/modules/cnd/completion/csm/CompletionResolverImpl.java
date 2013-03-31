@@ -596,12 +596,12 @@ public class CompletionResolverImpl implements CompletionResolver {
             }
         }
         if (needGlobalNamespaces(context, offset)) {
-            resImpl.globProjectNSs = getGlobalNamespaces(context, prj, strPrefix, match, offset);
-            if (isEnough(strPrefix, match, resImpl.globProjectNSs)) {
-                return true;
-            }
             resImpl.projectNsAliases = getProjectNamespaceAliases(context, prj, strPrefix, match, offset);
             if (isEnough(strPrefix, match, resImpl.projectNsAliases)) {
+                return true;
+            }
+            resImpl.globProjectNSs = getGlobalNamespaces(context, prj, strPrefix, match, offset);
+            if (isEnough(strPrefix, match, resImpl.globProjectNSs)) {
                 return true;
             }
         }

@@ -61,6 +61,7 @@ public class OperatorsCCTest extends GroovyCCTestBase {
         return "operators";
     }
 
+    // Safe Navigation operator should access the same items as dot
     public void testSafeNavigation1_1() throws Exception {
         checkCompletion(BASE + "SafeNavigation1.groovy", "        x?.b^", true);
     }
@@ -77,6 +78,10 @@ public class OperatorsCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "SafeNavigation2.groovy", "        \"\"?.a^", true);
     }
 
+    
+    // Method Closure operator is used for accessing methods only on the given object
+    // Thus we are expecting that methods from either String in case of "x" or Integer
+    // in case of "r" will be shown in code completion results
     public void testMethodClosure1_1() throws Exception {
         checkCompletion(BASE + "MethodClosure1.groovy", "        x.&b^", true);
     }
@@ -105,6 +110,9 @@ public class OperatorsCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "ElvisOperator3.groovy", "    def something = x ?: e^", true);
     }
 
+    
+    // Spread operator is accessing fields/methods on each item in the given collection
+    // Thus we are expecting that fields/methods from String will be shown in code completion
     public void testSpreadOperator1_stringArray_all() throws Exception {
         checkCompletion(BASE + "SpreadOperator1.groovy", "        ['cat', 'elephant']*.^", true);
     }
@@ -121,6 +129,9 @@ public class OperatorsCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "SpreadOperator4.groovy", "        [1,2]*.s^", true);
     }
     
+    
+    // Java Field operator is accessing fields only on the given object. Thus we are expecting
+    // that only properties/field of the Foo object will be shown in code completion
     public void testJavaFieldOperator1_all() throws Exception {
         checkCompletion(BASE + "JavaFieldOperator1.groovy", "        new Foo().@^", true);
     }
@@ -137,6 +148,9 @@ public class OperatorsCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "JavaFieldOperator4.groovy", "        new Foo().@te^s", true);
     }
     
+    
+    // Spread Java Field operator is accessing fields on each item in the given collection
+    // Thus we are expecting that properties/fields from String will be shown in code completion
     public void testSpreadJavaFieldOperator1_all() throws Exception {
         checkCompletion(BASE + "SpreadJavaFieldOperator1.groovy", "        ['abc', 'def']*.@^", true);
     }

@@ -770,7 +770,7 @@ public final class ExternalBrowserPlugin {
         }
 
         private void init() {
-            if (initialized) {
+            if (initialized || !browserImpl.hasEnhancedMode()) {
                 return;
             }
             initialized = true;
@@ -807,7 +807,7 @@ public final class ExternalBrowserPlugin {
         }
 
         private void deinitialize() {
-            if (!initialized) {
+            if (!initialized || !browserImpl.hasEnhancedMode()) {
                 return;
             }
             initialized = false;

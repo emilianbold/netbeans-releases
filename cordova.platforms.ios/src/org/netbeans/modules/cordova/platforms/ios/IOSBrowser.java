@@ -90,6 +90,11 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
     public void setProjectContext(Lookup projectContext) {
         this.projectContext = projectContext;
     }
+
+    @Override
+    public boolean canReloadPage() {
+        return false;
+    }
     
     public static enum Kind {
         IOS_DEVICE_DEFAULT,

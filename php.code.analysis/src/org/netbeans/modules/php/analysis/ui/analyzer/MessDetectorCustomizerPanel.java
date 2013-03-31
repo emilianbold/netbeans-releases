@@ -113,12 +113,7 @@ public class MessDetectorCustomizerPanel extends JPanel {
     }
 
     List<String> getSelectedRuleSets() {
-        Object[] selectedValues = ruleSetsList.getSelectedValues();
-        List<String> ruleSets = new ArrayList<String>(selectedValues.length);
-        for (Object selected : selectedValues) {
-            ruleSets.add((String) selected);
-        }
-        return ruleSets;
+        return ruleSetsList.getSelectedValuesList();
     }
 
     void selectRuleSets(List<String> ruleSets) {
@@ -140,7 +135,7 @@ public class MessDetectorCustomizerPanel extends JPanel {
 
         ruleSetsLabel = new JLabel();
         ruleSetsScrollPane = new JScrollPane();
-        ruleSetsList = new JList();
+        ruleSetsList = new JList<String>();
 
         ruleSetsLabel.setLabelFor(ruleSetsList);
         Mnemonics.setLocalizedText(ruleSetsLabel, NbBundle.getMessage(MessDetectorCustomizerPanel.class, "MessDetectorCustomizerPanel.ruleSetsLabel.text")); // NOI18N
@@ -166,7 +161,7 @@ public class MessDetectorCustomizerPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel ruleSetsLabel;
-    private JList ruleSetsList;
+    private JList<String> ruleSetsList;
     private JScrollPane ruleSetsScrollPane;
     // End of variables declaration//GEN-END:variables
 }

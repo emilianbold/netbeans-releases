@@ -116,22 +116,24 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <folder name="RefactoringActions">
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createVariableGlobal"/>
-                        <attr name="position" intvalue="1400"/>
-                    </file>
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createConstantGlobal"/>
-                        <attr name="position" intvalue="1500"/>
-                    </file>
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createFieldGlobal"/>
-                        <attr name="position" intvalue="1600"/>
-                    </file>
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMethodGlobal"/>
-                        <attr name="position" intvalue="1700"/>
-                    </file>
+                    <folder name="Introduce">
+                        <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance">
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createVariableGlobal"/>
+                            <attr name="position" intvalue="1400"/>
+                        </file>
+                        <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance">
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createConstantGlobal"/>
+                            <attr name="position" intvalue="1500"/>
+                        </file>
+                        <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance">
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createFieldGlobal"/>
+                            <attr name="position" intvalue="1600"/>
+                        </file>
+                        <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance">
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMethodGlobal"/>
+                            <attr name="position" intvalue="1700"/>
+                        </file>
+                    </folder>
                     <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance">
                         <attr name="position" intvalue="1050"/>
                     </file>

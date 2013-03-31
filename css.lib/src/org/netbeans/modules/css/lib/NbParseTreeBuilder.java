@@ -60,6 +60,7 @@ import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.css.lib.Bundle.*;
 
 /**
  * A patched version of ANLR's ParseTreeBuilder 
@@ -73,21 +74,21 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     //the error recovery implementation in syncToSet(...)
     //calls DBG.enter/exit/Rule("recovery") itself.
     private String[] IGNORED_RULES = new String[]{"syncToDeclarationsRule", "syncToFollow"}; //!!! must be sorted alphabetically !!!
-    Stack<RuleNode> callStack = new Stack<RuleNode>();
-    List<CommonToken> hiddenTokens = new ArrayList<CommonToken>();
+    Stack<RuleNode> callStack = new Stack<>();
+    List<CommonToken> hiddenTokens = new ArrayList<>();
     private int backtracking = 0;
     private CommonToken lastConsumedToken;
     private CharSequence source;
     static boolean debug_tokens = false; //testing 
-    private Stack<ErrorNode> errorNodes = new Stack<ErrorNode>();
+    private Stack<ErrorNode> errorNodes = new Stack<>();
     private boolean resync;
     private CommonToken unexpectedToken;
 
-    private Map<CommonToken, Pair<Node>> noViableAltNodes = new HashMap<CommonToken, Pair<Node>>();
-    private Collection<RuleNode> leafRuleNodes = new ArrayList<RuleNode>();
+    private Map<CommonToken, Pair<Node>> noViableAltNodes = new HashMap<>();
+    private Collection<RuleNode> leafRuleNodes = new ArrayList<>();
     
     private static final String RECOVERY_RULE_NAME = "recovery";
-    private final Collection<ProblemDescription> problems = new LinkedHashSet<ProblemDescription> ();
+    private final Collection<ProblemDescription> problems = new LinkedHashSet<> ();
     
     public NbParseTreeBuilder(CharSequence source) {
         this.source = source;
@@ -175,7 +176,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
                     ProblemDescription problemDescription = new ProblemDescription(
                         ruleNode.from(),
                         ruleNode.to(),
-                        NbBundle.getMessage(NbParseTreeBuilder.class, "MSG_Error_Unexpected_Char", tokensList),
+                        MSG_Error_Unexpected_Char(tokensList),
                         ProblemDescription.Keys.PARSING.name(),
                         ProblemDescription.Type.ERROR);
 
@@ -263,6 +264,10 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     }
 
     @Override
+    @NbBundle.Messages({
+        "# {0} - the unexpected token", 
+        "MSG_Error_Unexpected_Token=Unexpected token {0} found", 
+        "MSG_Error_Premature_EOF=Premature end of file"})
     public void recognitionException(RecognitionException e) {
         if (backtracking > 0) {
             return;
@@ -292,9 +297,9 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         }
       
         if (unexpectedTokenId == CssTokenId.EOF) {
-            message = NbBundle.getMessage(NbParseTreeBuilder.class, "MSG_Error_Premature_EOF");
+            message = MSG_Error_Premature_EOF();
         } else {
-            message = NbBundle.getMessage(NbParseTreeBuilder.class, "MSG_Error_Unexpected_Token", unexpectedTokenId.name());
+            message = MSG_Error_Unexpected_Token(unexpectedTokenId.name());
         }
         
         //create a ParsingProblem

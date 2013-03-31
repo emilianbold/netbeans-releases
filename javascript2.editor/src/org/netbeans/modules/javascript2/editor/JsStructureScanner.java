@@ -51,8 +51,8 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -95,12 +95,12 @@ public class JsStructureScanner implements StructureScanner {
         Collection<? extends JsObject> properties = jsObject.getProperties().values();
         boolean countFunctionChild = (jsObject.getJSKind().isFunction() && !jsObject.isAnonymous() && jsObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
                 && !containsFunction(jsObject)) 
-                || ("prototype".equals(jsObject.getName()) && properties.isEmpty());
+                || (ModelUtils.PROTOTYPE.equals(jsObject.getName()) && properties.isEmpty());
         
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();
             if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
-                    && !child.getName().equals("prototype")) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+                    && !child.getName().equals(ModelUtils.PROTOTYPE)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
                 // don't count children for functions and methods and anonyms
                 continue;
             }
@@ -110,7 +110,7 @@ public class JsStructureScanner implements StructureScanner {
                 if (function.isAnonymous()) {
                     collectedItems.addAll(children);
                 } else {
-                    if (function.isDeclared() && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && ModelUtils.createFQN(jsObject).indexOf('.') == -1))) {
+                    if (function.isDeclared() && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && jsObject.getFullyQualifiedName().indexOf('.') == -1))) {
                         collectedItems.add(new JsFunctionStructureItem(function, children, result));                          
                     }
                 }
@@ -122,7 +122,7 @@ public class JsStructureScanner implements StructureScanner {
                         || !(jsObject.getParent() instanceof JsFunction)))
                 collectedItems.add(new JsSimpleStructureItem(child, "prop-", result)); //NOI18N
             } else if (child.getJSKind() == JsElement.Kind.VARIABLE && child.isDeclared()
-                && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && ModelUtils.createFQN(jsObject).indexOf('.') == -1))) {
+                && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && jsObject.getFullyQualifiedName().indexOf('.') == -1))) {
                     collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N
             }
          }
@@ -152,7 +152,6 @@ public class JsStructureScanner implements StructureScanner {
         // expect that the ts in on "{"
         int position = ts.offset();
         boolean value = false;
-        TokenId tokenId = ts.token().id();
         // find the function keyword
         ts.move(functionKeywordPosition);
         ts.movePrevious();
@@ -290,7 +289,7 @@ public class JsStructureScanner implements StructureScanner {
             this.modelElement = elementHandle;
             this.sortPrefix = sortPrefix;
             this.parserResult = parserResult;
-            this.fqn = ModelUtils.createFQN(modelElement);
+            this.fqn = modelElement.getFullyQualifiedName();
             if (children != null) {
                 this.children = children;
             } else {

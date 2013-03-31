@@ -162,6 +162,9 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.localServerComboBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;LocalServer&gt;"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JButton" name="localServerButton">
       <Properties>
@@ -215,6 +218,9 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.phpVersionComboBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;PhpVersion&gt;"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="phpVersionInfoLabel">
       <Properties>
@@ -263,6 +269,9 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.encodingComboBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;Charset&gt;"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JSeparator" name="separator">
       <AccessibilityProperties>

@@ -136,6 +136,10 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
     }
 
     public static class ConstructorBuilder extends MethodBuilder {
+
+        public ConstructorBuilder(SimpleDeclarationBuilder builder) {
+            super(builder);
+        }
         
         @Override
         public ConstructorImpl create() {

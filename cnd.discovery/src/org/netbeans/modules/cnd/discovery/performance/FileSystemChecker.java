@@ -83,11 +83,14 @@ public class FileSystemChecker {
         }
         String root = null;
         int depth = 0;
+        boolean checkLinks = false;
         for (int i = 0; i < args.length; i++) {
             if ("-path".equals(args[i]) && i + 1 < args.length) { // NOI18N
                 root = args[i + 1];
             } else if ("-depth".equals(args[i]) && i + 1 < args.length) { // NOI18N
                 depth = Integer.parseInt(args[i + 1]);
+            } else if ("-link".equals(args[i])) { // NOI18N
+                checkLinks = true;
             }
         }
         if (root == null || depth == 0) {
@@ -96,18 +99,18 @@ public class FileSystemChecker {
         }
         Path resolve = Paths.get(root);
         if (Files.exists(resolve)) {
-            go(resolve, depth);
+            go(resolve, depth, checkLinks);
         } else {
             System.err.println("Path " + resolve + " does not exist"); // NOI18N
         }
     }
 
-    private static void go(Path root, int depth) throws IOException {
+    private static void go(Path root, int depth, boolean checkLinks) throws IOException {
         Set<FileVisitOption> options = new HashSet<>();
         options.add(FileVisitOption.FOLLOW_LINKS);
         System.out.println("Root " + root); // NOI18N
         System.out.println("Depth " + depth); // NOI18N
-        MyFileVisitor myVisitor = new MyFileVisitor(root);
+        MyFileVisitor myVisitor = new MyFileVisitor(root, checkLinks);
         Files.walkFileTree(root, options, depth, myVisitor);
         for (Statistic store : myVisitor.stores.values()) {
             System.out.println(store.store.type() + "\t" + store.store.name()); // NOI18N
@@ -134,7 +137,7 @@ public class FileSystemChecker {
                         host = host.substring(0, host.indexOf(','));
                     }
                     long socketPing = getSocketPing(host);
-                    System.out.println("\tPing " + format(socketPing / 1000) + " mks."); // NOI18N
+                    System.out.println("\tPing " + format(socketPing / 1000) + " mcs."); // NOI18N
 
                 }
             }
@@ -211,16 +214,19 @@ public class FileSystemChecker {
         System.err.println("java -cp org.netbeans.modules.dlight.libs.common.jar org.netbeans.modules.dlight.libs.common.FileSystemChecker -path <path> -depth <depth>"); // NOI18N
         System.err.println("\t-path <path>\tAbsolute path to source root"); // NOI18N
         System.err.println("\t-depth <depth>\tRestrict traverse subfolders"); // NOI18N
+        System.err.println("\t-link\tPrint links that go out of the root"); // NOI18N
     }
 
     private static final class MyFileVisitor implements FileVisitor<Path> {
 
         private final Path root;
+        private boolean checkLinks;
         private long currStart;
         private final HashMap<FileStore, Statistic> stores = new HashMap<>();
 
-        private MyFileVisitor(Path root) {
+        private MyFileVisitor(Path root, boolean checkLinks) {
             this.root = root;
+            this.checkLinks = checkLinks;
             this.currStart = System.nanoTime();
         }
 
@@ -239,43 +245,73 @@ public class FileSystemChecker {
                     stat.startPath = dir;
                 }
             }
-            final String name = dir.getFileName().toString();
-            if (name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals(".svn")) { // NOI18N
-                return FileVisitResult.SKIP_SUBTREE;
+            final Path fileName = dir.getFileName();
+            if (fileName != null) {
+                final String name = fileName.toString();
+                if (name != null) {
+                    if (name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals(".svn") || name.equals(".ade_path")) { // NOI18N
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                }
             }
             return FileVisitResult.CONTINUE;
         }
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            if (Files.isSymbolicLink(file)) {
-                try {
+            try {
+                if (Files.isSymbolicLink(file)) {
                     Path to = Files.readSymbolicLink(file);
                     if (!to.isAbsolute()) {
                         to = file.getParent().resolve(Files.readSymbolicLink(file)).normalize();
                     }
-                    if (!to.startsWith(root)) {
-                        System.out.println("Linked dir " + file + " -> " + to); // NOI18N
+                    if (checkLinks) {
+                        if (!to.startsWith(root)) {
+                            System.out.println("Linked dir " + file + " -> " + to); // NOI18N
+                        }
                     }
-                } catch (IOException ex) {
-                }
-            } else if (Files.isRegularFile(file)) {
-                FileStore fileStore = Files.getFileStore(file);
-                Statistic stat = stores.get(fileStore);
-                if (stat == null) {
-                    stat = new Statistic(fileStore);
-                    stores.put(fileStore, stat);
-                }
-                if (stat.startPath == null) {
-                    stat.startPath = file;
-                } else {
-                    if (stat.startPath.toString().length() > file.toString().length()) {
+                    if (Files.isRegularFile(to)) {
+                        countRegularFile(to);
+                    }
+                } else if (Files.isRegularFile(file)) {
+                    countRegularFile(file);
+                } else if (Files.isDirectory(file)) {
+                    FileStore fileStore = Files.getFileStore(file);
+                    Statistic stat = stores.get(fileStore);
+                    if (stat == null) {
+                        stat = new Statistic(fileStore);
+                        stores.put(fileStore, stat);
+                    }
+                    if (stat.startPath == null) {
                         stat.startPath = file;
+                    } else {
+                        if (stat.startPath.toString().length() > file.toString().length()) {
+                            stat.startPath = file;
+                        }
                     }
+                    stat.visitCount++;
+                    long beg = System.nanoTime();
+                    stat.duration += beg - currStart;
+                    currStart = beg;
                 }
-                stat.visitCount++;
-                long beg = System.nanoTime();
-                stat.duration += beg - currStart;
+            } catch (IOException ex) {
+            }
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            return FileVisitResult.CONTINUE;
+        }
+
+        private void readFile(Path file, Statistic stat) {
+            long beg = System.nanoTime();
+            if (Files.isReadable(file)) {
                 try (InputStream read = Files.newInputStream(file)) {
                     int count = 0;
                     while (true) {
@@ -293,37 +329,27 @@ public class FileSystemChecker {
                 } finally {
                     stat.readTime += System.nanoTime() - beg;
                 }
-                currStart = System.nanoTime();
-            } else if (Files.isDirectory(file)) {
-                FileStore fileStore = Files.getFileStore(file);
-                Statistic stat = stores.get(fileStore);
-                if (stat == null) {
-                    stat = new Statistic(fileStore);
-                    stores.put(fileStore, stat);
-                }
-                if (stat.startPath == null) {
-                    stat.startPath = file;
-                } else {
-                    if (stat.startPath.toString().length() > file.toString().length()) {
-                        stat.startPath = file;
-                    }
-                }
-                stat.visitCount++;
-                long beg = System.nanoTime();
-                stat.duration += beg - currStart;
-                currStart = beg;
             }
-            return FileVisitResult.CONTINUE;
         }
 
-        @Override
-        public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-            return FileVisitResult.CONTINUE;
-        }
-
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-            return FileVisitResult.CONTINUE;
+        private void countRegularFile(Path file) throws IOException {
+            FileStore fileStore = Files.getFileStore(file);
+            Statistic stat = stores.get(fileStore);
+            if (stat == null) {
+                stat = new Statistic(fileStore);
+                stores.put(fileStore, stat);
+            }
+            if (stat.startPath == null) {
+                stat.startPath = file;
+            } else {
+                if (stat.startPath.toString().length() > file.toString().length()) {
+                    stat.startPath = file;
+                }
+            }
+            stat.visitCount++;
+            stat.duration += System.nanoTime() - currStart;
+            readFile(file, stat);
+            currStart = System.nanoTime();
         }
     }
 

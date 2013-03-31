@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
 @ActionRegistration(displayName = "#LBL_IntroduceParameterAction", lazy = false)
 @ActionReferences({
     @ActionReference(path = "Shortcuts", name = "OS-P"),
-    @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "IntroduceParameterAction", position = 1650)
+    @ActionReference(path = "Editors/text/x-java/RefactoringActions/Introduce" , name = "IntroduceParameterAction", position = 1650)
 })
 public class IntroduceParameterAction extends JavaRefactoringGlobalAction {
     

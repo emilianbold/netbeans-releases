@@ -57,11 +57,23 @@ public class TransformationsCCTest extends GroovyCCTestBase {
         return "transformations"; //NOI18N
     }
 
-    public void testTransformations1() throws Exception {
-        checkCompletion(BASE + "Transformations1.groovy", "        Transformations1.in^", true);
+    public void testSingleton1_withInPrefix() throws Exception {
+        checkCompletion(BASE + "Singleton1.groovy", "        Singleton1.in^", true);
     }
 
-    public void testTransformations2() throws Exception {
-        checkCompletion(BASE + "Transformations2.groovy", "        Transformations2.get^", true);
+    public void testSingleton2_withGetPrefix() throws Exception {
+        checkCompletion(BASE + "Singleton2.groovy", "        Singleton2.get^", true);
+    }
+
+    public void testSingleton3_withoutPrefix() throws Exception {
+        checkCompletion(BASE + "Singleton3.groovy", "        Singleton3.^", true);
+    }
+
+    public void testDelegate1_interfaceDelegator_withoutPrefix() throws Exception {
+        checkCompletion(BASE + "Delegate1.groovy", "showcase.^", true);
+    }
+
+    public void testDelegate2_classDelegator_withPrefix() throws Exception {
+        checkCompletion(BASE + "Delegate2.groovy", "showcase.f^", true);
     }
 }

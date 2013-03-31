@@ -64,6 +64,7 @@ import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ProjectSettings;
+import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
@@ -237,12 +238,12 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private final ConfigManager configManager;
 
     // CustomizerPhpIncludePath
-    private DefaultListModel includePathListModel = null;
-    private ListCellRenderer includePathListRenderer = null;
+    private DefaultListModel<BasePathSupport.Item> includePathListModel = null;
+    private ListCellRenderer<BasePathSupport.Item> includePathListRenderer = null;
 
     // CustomizerIgnorePath
-    private DefaultListModel ignorePathListModel = null;
-    private ListCellRenderer ignorePathListRenderer = null;
+    private DefaultListModel<BasePathSupport.Item> ignorePathListModel = null;
+    private ListCellRenderer<BasePathSupport.Item> ignorePathListRenderer = null;
 
     public PhpProjectProperties(PhpProject project) {
         this(project, null, null);
@@ -397,7 +398,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         this.indexFile = indexFile;
     }
 
-    public DefaultListModel getIncludePathListModel() {
+    public DefaultListModel<BasePathSupport.Item> getIncludePathListModel() {
         if (includePathListModel == null) {
             EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             includePathListModel = PathUiSupport.createListModel(includePathSupport.itemsIterator(
@@ -406,7 +407,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         return includePathListModel;
     }
 
-    public ListCellRenderer getIncludePathListRenderer() {
+    public ListCellRenderer<BasePathSupport.Item> getIncludePathListRenderer() {
         if (includePathListRenderer == null) {
             includePathListRenderer = new PathUiSupport.ClassPathListCellRenderer(ProjectPropertiesSupport.getPropertyEvaluator(project),
                 project.getProjectDirectory());
@@ -414,7 +415,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         return includePathListRenderer;
     }
 
-    public DefaultListModel getIgnorePathListModel() {
+    public DefaultListModel<BasePathSupport.Item> getIgnorePathListModel() {
         if (ignorePathListModel == null) {
             EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             ignorePathListModel = PathUiSupport.createListModel(ignorePathSupport.itemsIterator(
@@ -423,7 +424,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         return ignorePathListModel;
     }
 
-    public ListCellRenderer getIgnorePathListRenderer() {
+    public ListCellRenderer<BasePathSupport.Item> getIgnorePathListRenderer() {
         if (ignorePathListRenderer == null) {
             ignorePathListRenderer = new PathUiSupport.ClassPathListCellRenderer(ProjectPropertiesSupport.getPropertyEvaluator(project),
                 project.getProjectDirectory());

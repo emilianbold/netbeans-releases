@@ -60,4 +60,12 @@ made subject to such option by the copyright holder.
         <delete file="${cluster}/ant/extra/org-netbeans-modules-cordova-projectupdate.jar"/>
     </target>
     
+    <target name="jar" depends="zip-examples,projectized-common.jar"/>
+
+    <target name="zip-examples" depends="compile">
+        <property name="examples" value="${build.classes.dir}/org/netbeans/modules/cordova/resources"/>
+	<mkdir dir="PhoneGapSample/config"/>
+	<mkdir dir="PhoneGapSample/test"/>
+        <zip basedir="PhoneGapSample" destfile="${examples}/PhoneGapSample.zip"/>
+    </target>
 </project>

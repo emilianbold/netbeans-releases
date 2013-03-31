@@ -151,13 +151,21 @@ public final class WebBrowsers {
      * Returns browser corresponding to user's choice in IDE options.
      */
     public WebBrowser getPreferred() {
+        WebBrowserFactoryDescriptor someFactory = null;
         for (WebBrowserFactoryDescriptor desc : getFactories(true)) {
+            if (someFactory == null) {
+                someFactory = desc;
+            }
             if (!desc.isDefault()) {
                 continue;
             }
             return new WebBrowser(desc, false);
         }
-        assert false : "no default browser instance found: " + getFactories(true);
+        // if none of the browsers is marked as default one then simply use first one:
+        if (someFactory != null) {
+            return new WebBrowser(someFactory, false);
+        }
+        assert false : "there are no browsers registered on your classpath. can you fix that"; // NOI18N
         return null;
     }
 

@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -119,6 +120,8 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
             }
             namespace = QualifiedNameCache.getManager().getString(sb.toString());
         }
+        
+        
     }
     
     private NamespaceAliasImpl(CharSequence alias, CharSequence namespace, CharSequence rawName, CsmScope scope, CsmFile file, int startOffset, int endOffset) {
@@ -153,14 +156,37 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
         if (!isValid()) {
             return null;
         }
-        CsmNamespace res = ((ProjectBase)(getContainingFile().getProject())).findNamespace(namespace, true);
-        if(res == null) {
+        
+        CsmNamespace res = null;
+        
+        if (CharSequenceUtilities.startsWith(namespace, "::")) {
+            // If namespace has '::' as prefix, then it is a full path from global namspace
+            
+            res = ((ProjectBase)(getContainingFile().getProject())).findNamespace(
+                    namespace.subSequence("::".length(), namespace.length()), 
+                    true
+            );
+        } else {
+            // Otherwise we must search it in all namespaces from current down to global
+            
             CsmScope scope = getScope();
+            
             if(scope instanceof CsmNamespace) {
-                StringBuilder sb = new StringBuilder(((CsmNamespace)scope).getQualifiedName());
-                sb.append("::"); // NOI18N
-                sb.append(namespace);
-                res = ((ProjectBase)(getContainingFile().getProject())).findNamespace(sb, true);
+                CsmNamespace currentNamespace = (CsmNamespace) scope;
+                
+                do  {
+                    if (!currentNamespace.isGlobal()) {
+                        StringBuilder sb = new StringBuilder(currentNamespace.getQualifiedName());
+                        sb.append("::"); // NOI18N
+                        sb.append(namespace);
+                        res = ((ProjectBase)(getContainingFile().getProject())).findNamespace(sb, true);
+                    }
+                } while (res == null && ((currentNamespace = currentNamespace.getParent()) != null));
+            }
+            
+            if (res == null) {
+                // target namespace is not in nested namespaces => search it in global
+                res = ((ProjectBase)(getContainingFile().getProject())).findNamespace(namespace, true);
             }
         }
         return res;
@@ -206,6 +232,13 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
         }
         return CharSequences.empty();
     }
+
+    private CharSequence trimNamespacePrefix(CharSequence namespaceName) {
+        if (namespaceName != null && CharSequenceUtilities.startsWith(namespaceName, "::")) {
+            return namespaceName.subSequence("::".length(), namespaceName.length());
+        }
+        return namespaceName;
+    }    
 
     @Override
     public CharSequence[] getRawName() {
