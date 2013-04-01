@@ -232,14 +232,7 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
             }
         }
         return CharSequences.empty();
-    }
-
-    private CharSequence trimNamespacePrefix(CharSequence namespaceName) {
-        if (namespaceName != null && CharSequenceUtilities.startsWith(namespaceName, "::")) {
-            return namespaceName.subSequence("::".length(), namespaceName.length());
-        }
-        return namespaceName;
-    }    
+    }  
 
     @Override
     public CharSequence[] getRawName() {
