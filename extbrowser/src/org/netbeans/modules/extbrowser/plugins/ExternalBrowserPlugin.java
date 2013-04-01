@@ -167,11 +167,16 @@ public final class ExternalBrowserPlugin {
         });
     }
 
-    public void close(BrowserTabDescriptor tab, boolean closeTab) {
-        tab.deinitialize();
-        if (closeTab) {
-            server.sendMessage(tab.keyForFeature(FEATURE_ROS), createCloseTabMessage(tab.tabID));
-        }
+    public void close(final BrowserTabDescriptor tab, final boolean closeTab) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                tab.deinitialize();
+                if (closeTab) {
+                    server.sendMessage(tab.keyForFeature(FEATURE_ROS), createCloseTabMessage(tab.tabID));
+                }
+            }
+        });
     }
     
     public void attachWebKitDebugger(BrowserTabDescriptor tab) {
