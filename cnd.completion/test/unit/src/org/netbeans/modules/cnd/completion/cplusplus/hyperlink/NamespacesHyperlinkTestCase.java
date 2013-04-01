@@ -356,6 +356,8 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug226516.cpp", 43, 28, "bug226516.cpp", 12, 1);
         performTest("bug226516.cpp", 43, 42, "bug226516.cpp", 15, 5);        
         
+        performNullTargetTest("bug226516.cpp", 51, 25);
+
         performTest("bug226516.cpp", 53, 13, "bug226516.cpp", 32, 1);
         performTest("bug226516.cpp", 53, 28, "bug226516.cpp", 33, 5);
     }
