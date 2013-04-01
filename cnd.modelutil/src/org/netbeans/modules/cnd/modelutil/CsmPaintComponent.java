@@ -1076,12 +1076,12 @@ public abstract class CsmPaintComponent extends JPanel {
             if(indexOfSqr == -1) {
                 builder.append(simpleTypeName);
                 if (parmName != null && parmName.length() > 0) {
-                    builder.append(" ").append(parmName);
+                    builder.append(" ").append(parmName); // NOI18N
                 }
             } else {
                 builder.append(simpleTypeName.substring(0, indexOfSqr));
                 if (parmName != null && parmName.length() > 0) {
-                    builder.append(" ").append(parmName);
+                    builder.append(" ").append(parmName); // NOI18N
                 }
                 builder.append(simpleTypeName.substring(indexOfSqr));
             }
