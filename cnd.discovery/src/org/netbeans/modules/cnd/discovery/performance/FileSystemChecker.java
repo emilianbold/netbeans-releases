@@ -72,6 +72,9 @@ import java.util.Set;
 public class FileSystemChecker {
 
     private static final int SOCKET_CONNECTION_TIMEOUT = 5 * 1000;
+    private static final int TIME_TRASH_HOLD = 10;
+    private static final int LS_SPEED_TRASH_HOLD = 300;
+    private static final int READ_SPEED_TRASH_HOLD = 100;
 
     /**
      * @param args the command line arguments
@@ -145,15 +148,15 @@ public class FileSystemChecker {
                 if (store.duration > 0) {
                     long time = store.duration / 1000 / 1000 / 1000;
                     long speed = store.visitCount * 1000 * 1000 * 1000 / store.duration;
-                    if (time > 10 && speed < 100) {
-                        System.out.println("\tSlow file system detected. Expected visiting speed more than 100 items/s."); // NOI18N
+                    if (time > TIME_TRASH_HOLD && speed < LS_SPEED_TRASH_HOLD) {
+                        System.out.println("\tSlow file system detected. Expected visiting speed more than "+LS_SPEED_TRASH_HOLD+" items/s."); // NOI18N
                     }
                 }
                 if (store.readTime > 0) {
                     long time = store.readTime / 1000 / 1000 / 1000;
                     long speed = store.readCount * 1000 * 1000 * 1000 / store.readTime / 1024;
-                    if (time > 10 && speed < 100) {
-                        System.out.println("\tSlow file system detected. Expected reading speed more than 100 Kb/s."); // NOI18N
+                    if (time > TIME_TRASH_HOLD && speed < READ_SPEED_TRASH_HOLD) {
+                        System.out.println("\tSlow file system detected. Expected reading speed more than "+READ_SPEED_TRASH_HOLD+" Kb/s."); // NOI18N
                     }
                 }
             }
