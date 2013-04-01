@@ -106,7 +106,6 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowserSupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
-import org.netbeans.modules.web.common.spi.CssPreprocessor;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -730,6 +729,11 @@ public final class PhpProject implements Project {
 
             addSourceDirListener();
             cssPreprocessorsSupport.start();
+            FileObject sourcesDirectory = getSourcesDirectory();
+            if (sourcesDirectory != null) {
+                // force recompiling
+                cssPreprocessorsSupport.process(PhpProject.this, sourcesDirectory, true);
+            }
 
             testingProviders.projectOpened();
             frameworks.projectOpened();
@@ -946,9 +950,7 @@ public final class PhpProject implements Project {
         }
 
         private void processChange(FileObject file) {
-            for (CssPreprocessor cssPreprocessor : cssPreprocessorsSupport.getPreprocessors()) {
-                cssPreprocessor.process(PhpProject.this, file);
-            }
+            cssPreprocessorsSupport.process(PhpProject.this, file, false);
         }
 
     }
