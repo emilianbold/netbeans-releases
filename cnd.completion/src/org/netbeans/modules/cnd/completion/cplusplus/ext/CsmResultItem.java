@@ -1483,7 +1483,7 @@ public abstract class CsmResultItem implements CompletionItem {
 
         @Override
         protected String getReplaceText() {
-            String text = cls.getName().toString();
+            String text = getName();
             if (classDisplayOffset > 0 && classDisplayOffset < text.length()) { // Only the last name for inner classes
                 text = text.substring(classDisplayOffset);
             }
