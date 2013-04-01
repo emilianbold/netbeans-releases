@@ -49,16 +49,16 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
  *
  * @author Nikolay Koldunov
  */
-public class DocumentationTestSuite extends CndBaseTestSuite{
+public class DocumentationTest extends CndBaseTestSuite{
 
-    public DocumentationTestSuite() {
+    public DocumentationTest() {
         super("C/C++ Documentation");
         
         this.addTestSuite(BasicDocumentationTextGenerationTestCase.class);
     }
     
     public static Test suite() {
-        TestSuite suite = new DocumentationTestSuite();
+        TestSuite suite = new DocumentationTest();
         return suite;
     }
     
