@@ -51,10 +51,10 @@ import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.util.ExternalExecutable;
 import org.netbeans.modules.css.prep.util.ExternalExecutableValidator;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
-import org.netbeans.modules.css.prep.util.UiUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
 
 /**
  * Class representing <tt>sass</tt> command line tool.
@@ -108,13 +108,12 @@ public final class SassExecutable {
     }
 
     private ExecutionDescriptor getDescriptor() {
-        // XXX no reset but custom IO is needed
         return new ExecutionDescriptor()
-                .optionsPath(UiUtils.OPTIONS_PATH)
+                .inputOutput(IOProvider.getDefault().getIO(Bundle.Sass_compile(), false))
                 .inputVisible(false)
                 .frontWindow(false)
                 .frontWindowOnError(true)
-                .controllable(false)
+                .noReset(true)
                 .showProgress(true);
     }
 
