@@ -59,6 +59,12 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         super(testName, true);
     }
 
+    public void test208053() throws Exception {
+        // IZ#208053: Method completion replaces uint64_t as unsigned long int
+        String text = "template <typename T> MyClass<T>::";
+        performTest("test208053.cpp", 9, 1, text);
+    }
+    
     public void test142903_1() throws Exception {
         // IZ#142903: Code completion does not work immediately after "{" or "}"
         super.performTest("file.cc", 44, 35);
