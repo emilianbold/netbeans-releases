@@ -114,6 +114,13 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
                 store();
             }
         });
+        // close
+        category.setCloseListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                removeListeners();
+            }
+        });
     }
 
     private Collection<? extends CssPreprocessor.Customizer> getCustomizers() {
@@ -149,12 +156,17 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
     void store() {
         for (CssPreprocessor.Customizer customizer : customizers) {
             assert customizer.isValid() : "Saving invalid customizer: " + customizer.getDisplayName() + " (error: " + customizer.getErrorMessage() + ")";
-            customizer.removeChangeListener(this);
             try {
                 customizer.save();
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, "Error while saving CSS preprocessor: " + customizer.getDisplayName(), ex);
             }
+        }
+    }
+
+    void removeListeners() {
+        for (CssPreprocessor.Customizer customizer : customizers) {
+            customizer.removeChangeListener(this);
         }
     }
 
