@@ -1451,6 +1451,7 @@ abstract public class CsmCompletionQuery {
 
                                 // if not "using namespace A::" or "namespace A = B::" then add elements
                                 if (!isInNamespaceOnlyUsage(exp.getTokenOffset(0))) {
+                                    // FIXME: review how can we do not ask for search in nested unnamed namespace?
                                     res.addAll(finder.findNamespaceElements(lastNamespace, "", false, false, false)); // namespace elements //NOI18N
                                 }
                             }
