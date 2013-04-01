@@ -52,7 +52,7 @@ import org.netbeans.modules.css.prep.util.UiUtils;
 import org.openide.filesystems.FileObject;
 
 /**
- * Process file changes.
+ * Process file/folder changes.
  */
 public final class SassProcessor {
 
@@ -63,13 +63,39 @@ public final class SassProcessor {
     private static final String CSS_EXTENSION = "css"; // NOI18N
 
 
-    // XXX handle files starting with "_"
     void process(Project project, FileObject fileObject) {
+        if (fileObject.isData()) {
+            processFile(project, fileObject, true);
+        } else {
+            assert fileObject.isFolder() : "Folder expected: " + fileObject;
+            if (!isEnabled(project)) {
+                // not enabled in this project
+                return;
+            }
+            processFolder(project, fileObject);
+        }
+    }
+
+    private void processFolder(Project project, FileObject fileObject) {
+        assert fileObject.isFolder() : "Folder expected: " + fileObject;
+        for (FileObject child : fileObject.getChildren()) {
+            if (child.isData()) {
+                processFile(project, child, false);
+            } else {
+                processFolder(project, child);
+            }
+        }
+    }
+
+    // XXX handle files starting with "_"
+    private void processFile(Project project, FileObject fileObject, boolean checkEnabled) {
+        assert fileObject.isData() : "File expected: " + fileObject;
         if (!isSassFile(fileObject)) {
             // not sass file
             return;
         }
-        if (!SassPreferences.isEnabled(project)) {
+        if (checkEnabled
+                && !isEnabled(project)) {
             // not enabled in this project
             return;
         }
@@ -79,6 +105,13 @@ public final class SassProcessor {
             // deleted file
             fileDeleted(project, fileObject);
         }
+    }
+
+    private boolean isEnabled(Project project) {
+        if (project == null) {
+            return true;
+        }
+        return SassPreferences.isEnabled(project);
     }
 
     private boolean isSassFile(FileObject fileObject) {
