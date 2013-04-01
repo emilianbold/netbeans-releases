@@ -203,7 +203,9 @@ public class Network {
         String requestId = String.valueOf(params.get("requestId"));
         assert requestId != null;
         WebSocketRequest req = activeWebSocketRequests.get(requestId);
-        assert req != null;
+        if (req == null) {
+            return;
+        }
         req.setHandshakeRequest(params);
     }
 
@@ -211,7 +213,9 @@ public class Network {
         String requestId = String.valueOf(params.get("requestId"));
         assert requestId != null;
         WebSocketRequest req = activeWebSocketRequests.get(requestId);
-        assert req != null;
+        if (req == null) {
+            return;
+        }
         req.setHandshakeResponse(params);
     }
 
@@ -219,7 +223,9 @@ public class Network {
         String requestId = String.valueOf(params.get("requestId"));
         assert requestId != null;
         WebSocketRequest req = activeWebSocketRequests.get(requestId);
-        assert req != null;
+        if (req == null) {
+            return;
+        }
         req.addFrame(Direction.SEND, params);
     }
 
@@ -227,7 +233,9 @@ public class Network {
         String requestId = String.valueOf(params.get("requestId"));
         assert requestId != null;
         WebSocketRequest req = activeWebSocketRequests.get(requestId);
-        assert req != null;
+        if (req == null) {
+            return;
+        }
         req.addFrame(Direction.RECEIVED, params);
     }
 
@@ -235,7 +243,9 @@ public class Network {
         String requestId = String.valueOf(params.get("requestId"));
         assert requestId != null;
         WebSocketRequest req = activeWebSocketRequests.get(requestId);
-        assert req != null;
+        if (req == null) {
+            return;
+        }
         req.setFrameError(params);
     }
 
@@ -243,7 +253,9 @@ public class Network {
         String requestId = String.valueOf(params.get("requestId"));
         assert requestId != null;
         WebSocketRequest req = activeWebSocketRequests.remove(requestId);
-        assert req != null;
+        if (req == null) {
+            return;
+        }
         req.close();
     }
 
