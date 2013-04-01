@@ -47,6 +47,8 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Arrays;
+import javax.swing.text.JTextComponent;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.editor.completion.CompletionItemComparator;
@@ -114,7 +116,7 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
         Arrays.sort(array, CompletionItemComparator.BY_PRIORITY);
         for (int i = 0; i < array.length; i++) {
             CompletionItem completionItem = array[i];
-            streamOut.println(completionItem.toString());
+            streamOut.println(completionItem.toString());           
         }
         streamOut.close();
         
@@ -133,6 +135,29 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
             fail(buf.toString());
         }
     }
+    
+    protected void performSubstitutionTest(String source, int lineIndex, int colIndex, String textToInsert, int offsetAfterInsertion, String ... substitutions) throws Exception {
+        File testFile = getDataFile(source);
+        
+        CompletionItem[] array = createTestPerformer().test(logWriter, textToInsert, offsetAfterInsertion, false, testFile, lineIndex, colIndex, false); // NOI18N
+
+	assertNotNull("Result should not be null", array);
+        Arrays.sort(array, CompletionItemComparator.BY_PRIORITY);
+        
+        JTextComponent textComponent = new JTextComponent() {};
+        textComponent.setDocument(new BaseDocument(false, "text/plain"));
+        
+        // check substitutions
+        for (int i = 0 ; i < array.length; i++) {
+            CompletionItem completionItem = array[i];
+            
+            if (completionItem instanceof CsmResultItem) {
+                textComponent.setText("");
+                ((CsmResultItem) completionItem).substituteText(textComponent, 0, 0, false);
+                assertEquals(textComponent.getText(), substitutions[i]);
+            }
+        }
+    }    
 
     protected CompletionTestPerformer createTestPerformer() {
         return new CompletionTestPerformer();
