@@ -79,6 +79,8 @@ public interface CssPreprocessor {
     /**
      * Process given file (can be a folder as well).
      * <p>
+     * For folder, it usually means that all children should be processed.
+     * <p>
      * <b>Warning:</b> The given file can be {@link FileObject#isValid() invalid}, it means deleted.
      * <p>
      * It usually means that if the given file can be processed by this CSS preprocessor, some action is done

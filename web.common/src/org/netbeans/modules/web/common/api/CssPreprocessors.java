@@ -44,12 +44,18 @@ package org.netbeans.modules.web.common.api;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.spi.CssPreprocessor;
+import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -57,6 +63,8 @@ import org.openide.util.lookup.Lookups;
  * for registration is "{@value #PREPROCESSORS_PATH}" on SFS.
  * <p>
  * For typical usage, {@link Support support} class can be used.
+ * <p>
+ * This class is not thread safe.
  * @since 1.37
  */
 public final class CssPreprocessors {
@@ -110,10 +118,15 @@ public final class CssPreprocessors {
     /**
      * Support class for {@link CssPreprocessors} which avoids lookup calls. In other words,
      * it {@link #start() starts} and {@link #stop() stops} holding CSS preprocessors and listening to SFS changes.
+     * <p>
+     * This class is thread safe.
      */
     public static final class Support implements LookupListener {
 
+        private static final RequestProcessor RP = new RequestProcessor(Support.class.getName(), 2);
+
         private final List<CssPreprocessor> preprocessors = new CopyOnWriteArrayList<CssPreprocessor>();
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
         /**
@@ -146,6 +159,35 @@ public final class CssPreprocessors {
         }
 
         /**
+         * Process given file (can be a folder as well).
+         * <p>
+         * For detailed information see {@link CssPreprocessor#process(Project, FileObject)}.
+         * @param project project where the file belongs, can be {@code null} for file without a project
+         * @param fileObject valid or even invalid file (or folder) to be processed
+         * @param async {@code true} for running in a separate background thread
+         */
+        public void process(@NullAllowed final Project project, @NonNull final FileObject fileObject, boolean async) {
+            Parameters.notNull("fileObject", fileObject); // NOI18N
+            Runnable task = new Runnable() {
+                @Override
+                public void run() {
+                    processInternal(project, fileObject);
+                }
+            };
+            if (async) {
+                RP.post(task);
+            } else {
+                task.run();
+            }
+        }
+
+        void processInternal(Project project, FileObject fileObject) {
+            for (CssPreprocessor cssPreprocessor : getPreprocessors()) {
+                cssPreprocessor.process(project, fileObject);
+            }
+        }
+
+        /**
          * Get all registered {@link CssPreprocessor}s.
          * @return a list of all registered {@link CssPreprocessor}s; never {@code null}
          * @see CssPreprocessors#getPreprocessors()
@@ -154,12 +196,30 @@ public final class CssPreprocessors {
             return new ArrayList<CssPreprocessor>(preprocessors);
         }
 
+        /**
+         * Attach a change listener that is to be notified of changes
+         * in CSS preprocessors.
+         * @param listener a listener, can be {@code null}
+         */
+        public void addChangeListener(@NullAllowed ChangeListener listener) {
+            changeSupport.addChangeListener(listener);
+        }
+
+        /**
+         * Removes a change listener.
+         * @param listener a listener, can be {@code null}
+         */
+        public void removeChangeListener(@NullAllowed ChangeListener listener) {
+            changeSupport.removeChangeListener(listener);
+        }
+
         @Override
         public void resultChanged(LookupEvent ev) {
             synchronized (preprocessors) {
                 preprocessors.clear();
                 preprocessors.addAll(CssPreprocessors.getPreprocessors());
             }
+            changeSupport.fireChange();
         }
 
     }
