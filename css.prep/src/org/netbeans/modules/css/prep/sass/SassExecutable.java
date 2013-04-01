@@ -91,12 +91,19 @@ public final class SassExecutable {
 
     @NbBundle.Messages("Sass.compile=Sass (compile)")
     @CheckForNull
-    public void compile(FileObject file) {
-        assert file.isValid() : "Invalid file given: " + file;
+    public void compile(FileObject fileObject) {
+        assert fileObject.isValid() : "Invalid file given: " + fileObject;
         try {
+            File sassFile = FileUtil.toFile(fileObject);
+            final File cssFile = getCssFile(sassFile, fileObject.getName());
             getExecutable(Bundle.Sass_compile())
-                    .additionalParameters(getParameters(file))
-                    .run(getDescriptor());
+                    .additionalParameters(getParameters(sassFile, cssFile))
+                    .run(getDescriptor(new Runnable() {
+                @Override
+                public void run() {
+                    FileUtil.refreshFor(cssFile.getParentFile());
+                }
+            }));
         } catch (CancellationException ex) {
             // cancelled
         }
@@ -107,24 +114,28 @@ public final class SassExecutable {
                 .displayName(title);
     }
 
-    private ExecutionDescriptor getDescriptor() {
+    private ExecutionDescriptor getDescriptor(Runnable postTask) {
         return new ExecutionDescriptor()
                 .inputOutput(IOProvider.getDefault().getIO(Bundle.Sass_compile(), false))
                 .inputVisible(false)
                 .frontWindow(false)
                 .frontWindowOnError(true)
                 .noReset(true)
-                .showProgress(true);
+                .showProgress(true)
+                .postExecution(postTask);
     }
 
-    private List<String> getParameters(FileObject fileObject) {
-        File file = FileUtil.toFile(fileObject);
+    private List<String> getParameters(File inputFile, File outputFile) {
         List<String> params = new ArrayList<String>();
         // input
-        params.add(file.getAbsolutePath());
+        params.add(inputFile.getAbsolutePath());
         // output
-        params.add(new File(file.getParent(), fileObject.getName() + ".css").getAbsolutePath()); // NOI18N
+        params.add(outputFile.getAbsolutePath());
         return params;
+    }
+
+    private File getCssFile(File sassFile, String name) {
+        return new File(sassFile.getParent(), name + ".css"); // NOI18N
     }
 
 }
