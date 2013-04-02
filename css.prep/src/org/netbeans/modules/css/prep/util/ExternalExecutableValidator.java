@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,58 +34,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.prep.util;
 
-package org.netbeans.modules.web.jspcompiler;
+import org.netbeans.api.annotations.common.NullAllowed;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.LineNumberReader;
+// XXX copied from PHP
+public final class ExternalExecutableValidator {
 
-
-/**
- * This class reads SMAP information from files.
- * @author  mg116726
- */
-public class SmapFileReader implements SmapReader {
-
-    private File file;
-
-    public SmapFileReader(java.io.File file) {
-        this.file = file;
+    private ExternalExecutableValidator() {
     }
 
-    @Override
-    public String toString() {
-        if (file != null) return file.toString();
-        return null;
+    /**
+     * Return {@code true} if the given command is {@link #validateCommand(String, String) valid}.
+     * @param command command to be validated, can be {@code null}
+     * @return {@code true} if the given command is {@link #validateCommand(String, String) valid}, {@code false} otherwise
+     */
+    public static boolean isValidCommand(@NullAllowed String command) {
+        return validateCommand(command, (String) null) == null;
     }
 
-    public String readSmap() {
-        if (file != null) {
-            try {
-                FileReader fr = new FileReader(file);
-                LineNumberReader lnr = new LineNumberReader(fr);
-                try {
-                    String line = "";
-                    String out = "";
-                    while ((line = lnr.readLine()) != null) {
-                        out = out.concat(line);
-                        out = out.concat("\n");
-                    }
-                    return out;
-                } finally {
-                    lnr.close();
-                }
-            } catch (FileNotFoundException fne) {
-                return null;
-            } catch (IOException ioe) {
-                return null;
-            }
+    /**
+     * Validate the given command and return error if it is not valid, {@code null} otherwise.
+     * @param command command to be validated, can be {@code null}
+     * @param executableName the name of the executable (e.g. "Doctrine script"), can be {@code null} (in such case, "File" is used)
+     * @return error if it is not valid, {@code null} otherwise
+     */
+    public static String validateCommand(@NullAllowed String command, @NullAllowed String executableName) {
+        String executable = null;
+        if (command != null) {
+            executable = ExternalExecutable.parseCommand(command).getA();
         }
-        return null;
+        if (executableName == null) {
+            return FileUtils.validateFile(executable, false);
+        }
+        return FileUtils.validateFile(executableName, executable, false);
     }
 
 }

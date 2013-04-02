@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,58 +34,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.prep.preferences;
 
-package org.netbeans.modules.web.jspcompiler;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.LineNumberReader;
-
+import java.util.prefs.Preferences;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 
 /**
- * This class reads SMAP information from files.
- * @author  mg116726
+ * Less preferences specific for project.
  */
-public class SmapFileReader implements SmapReader {
+public final class LessPreferences {
 
-    private File file;
+    private static final String ENABLED = "less.enabled"; // NOI18N
 
-    public SmapFileReader(java.io.File file) {
-        this.file = file;
+
+    private LessPreferences() {
     }
 
-    @Override
-    public String toString() {
-        if (file != null) return file.toString();
-        return null;
+    public static boolean isEnabled(Project project) {
+        return getPreferences(project).getBoolean(ENABLED, true);
     }
 
-    public String readSmap() {
-        if (file != null) {
-            try {
-                FileReader fr = new FileReader(file);
-                LineNumberReader lnr = new LineNumberReader(fr);
-                try {
-                    String line = "";
-                    String out = "";
-                    while ((line = lnr.readLine()) != null) {
-                        out = out.concat(line);
-                        out = out.concat("\n");
-                    }
-                    return out;
-                } finally {
-                    lnr.close();
-                }
-            } catch (FileNotFoundException fne) {
-                return null;
-            } catch (IOException ioe) {
-                return null;
-            }
-        }
-        return null;
+    public static void setEnabled(Project project, boolean enabled) {
+        getPreferences(project).putBoolean(ENABLED, enabled);
+    }
+
+    private static Preferences getPreferences(Project project) {
+        return ProjectUtils.getPreferences(project, LessPreferences.class, true);
     }
 
 }

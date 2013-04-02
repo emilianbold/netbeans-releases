@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,58 +34,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.prep.util;
 
-package org.netbeans.modules.web.jspcompiler;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Parameters;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.LineNumberReader;
+// XXX copied & adjusted from PHP
+public final class UiUtils {
+
+    public static final String OPTIONS_CATEGORY = "Advanced"; // NOI18N
+    public static final String OPTIONS_SUBCATEGORY = "CssPreprocessors"; // NOI18N
+    public static final String OPTIONS_PATH = OPTIONS_CATEGORY + "/" + OPTIONS_SUBCATEGORY; // NOI18N
 
 
-/**
- * This class reads SMAP information from files.
- * @author  mg116726
- */
-public class SmapFileReader implements SmapReader {
-
-    private File file;
-
-    public SmapFileReader(java.io.File file) {
-        this.file = file;
+    private UiUtils() {
     }
 
-    @Override
-    public String toString() {
-        if (file != null) return file.toString();
-        return null;
+    /**
+     * Display Options dialog with Miscellaneous &lt; CSS Preprocessors panel preselected.
+     */
+    public static void showOptions() {
+        OptionsDisplayer.getDefault().open(OPTIONS_PATH);
     }
 
-    public String readSmap() {
-        if (file != null) {
-            try {
-                FileReader fr = new FileReader(file);
-                LineNumberReader lnr = new LineNumberReader(fr);
-                try {
-                    String line = "";
-                    String out = "";
-                    while ((line = lnr.readLine()) != null) {
-                        out = out.concat(line);
-                        out = out.concat("\n");
-                    }
-                    return out;
-                } finally {
-                    lnr.close();
-                }
-            } catch (FileNotFoundException fne) {
-                return null;
-            } catch (IOException ioe) {
-                return null;
-            }
-        }
-        return null;
+    /**
+     * Display a dialog with the message and then open IDE options.
+     * @param message message to display before IDE options are opened
+     * @param optionsSubcategory IDE options subcategory to open (suitable e.g. for frameworks)
+     * @see #invalidScriptProvided(String)
+     */
+    public static void invalidScriptProvided(String message) {
+        Parameters.notNull("message", message);
+
+        informAndOpenOptions(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+    }
+
+    private static void informAndOpenOptions(NotifyDescriptor descriptor) {
+        assert descriptor != null;
+
+        DialogDisplayer.getDefault().notify(descriptor);
+        showOptions();
     }
 
 }
