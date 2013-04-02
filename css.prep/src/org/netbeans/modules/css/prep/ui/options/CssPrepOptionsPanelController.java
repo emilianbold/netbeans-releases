@@ -73,6 +73,7 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
     public void update() {
         assert EventQueue.isDispatchThread();
         getCssPrepOptionsPanel().setSassPath(getCssPrepOptions().getSassPath());
+        getCssPrepOptionsPanel().setLessPath(getCssPrepOptions().getLessPath());
 
         changed = false;
     }
@@ -80,6 +81,7 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
     @Override
     public void applyChanges() {
         getCssPrepOptions().setSassPath(getCssPrepOptionsPanel().getSassPath());
+        getCssPrepOptions().setLessPath(getCssPrepOptionsPanel().getLessPath());
 
         changed = false;
     }
@@ -94,6 +96,7 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
         CssPrepOptionsPanel panel = getCssPrepOptionsPanel();
         ValidationResult result = new CssPrepOptionsValidator()
                 .validateSassPath(panel.getSassPath())
+                .validateLessPath(panel.getLessPath())
                 .getResult();
         // errors
         if (result.hasErrors()) {
