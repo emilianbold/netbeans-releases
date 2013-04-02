@@ -183,10 +183,10 @@ public final class OpenProjectList {
     /** Property change listeners */
     private final PropertyChangeSupport pchSupport;
     
-    private ProjectDeletionListener deleteListener = new ProjectDeletionListener();
-    private NbProjectDeletionListener nbprojectDeleteListener = new NbProjectDeletionListener();
+    private final ProjectDeletionListener deleteListener = new ProjectDeletionListener();
+    private final NbProjectDeletionListener nbprojectDeleteListener = new NbProjectDeletionListener();
     
-    private PropertyChangeListener infoListener;
+    private final PropertyChangeListener infoListener;
     private final LoadOpenProjects LOAD;
     private final ArrayList<ProjectGroupChangeListener> projectGroupSupport;
     private final AtomicBoolean groupChanging = new AtomicBoolean(false);
@@ -229,7 +229,7 @@ public final class OpenProjectList {
         });
     }
     
-    static void waitProjectsFullyOpen() {
+    public static void waitProjectsFullyOpen() {
         getDefault().LOAD.waitFinished();
     }
 
@@ -527,7 +527,7 @@ public final class OpenProjectList {
 
         }
 
-        private RequestProcessor.Task resChangedTask = Hacks.RP.create(new Runnable() {
+        private final RequestProcessor.Task resChangedTask = Hacks.RP.create(new Runnable() {
                 public @Override void run() {
                     Set<FileObject> lazyPDirs = new HashSet<FileObject>();
                     for (FileObject fileObject : currentFiles.allInstances()) {
@@ -1001,7 +1001,7 @@ public final class OpenProjectList {
     }
     
     public void setMainProject( final Project project ) {
-        LOGGER.finer("Setting main project: " + project); // NOI18N
+        LOGGER.log(Level.FINER, "Setting main project: {0}", project); // NOI18N
         logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
             public @Override Void run() {
@@ -1141,8 +1141,12 @@ public final class OpenProjectList {
     static void shutdown() {
         if (INSTANCE != null) {
             try {
-                for (Project p : INSTANCE.openProjects) {
-                    notifyClosed(p);
+                //a bit on magic here. We want to do the goup document persistence before notifyClosed in hope of the 
+                // ant projects saving their project data before being closed. (ant ptojects call saveProjct() in the openclose hook.
+                // the caller of this method calls saveAllProjectt() later. 
+                Group.onShutdown(new HashSet<Project>(INSTANCE.openProjects));
+                for (Project p : INSTANCE.openProjects) {                    
+                    notifyClosed(p);                    
                 }
             } catch (ConcurrentModificationException x) {
                 LOGGER.log(Level.INFO, "#198097: could not get list of projects to close", x);
@@ -1468,10 +1472,10 @@ public final class OpenProjectList {
      */    
     private class RecentProjectList {
        
-        private List<ProjectReference> recentProjects;
-        private List<UnloadedProjectInformation> recentProjectsInfos;
+        private final List<ProjectReference> recentProjects;
+        private final List<UnloadedProjectInformation> recentProjectsInfos;
         
-        private int size;
+        private final int size;
         
         /**
          *@size Max number of the project list.
@@ -1707,7 +1711,7 @@ public final class OpenProjectList {
         private class ProjectReference {
             
             private WeakReference<Project> projectReference;
-            private URL projectURL;
+            private final URL projectURL;
             
             public ProjectReference( URL url ) {                
                 this.projectURL = url;
@@ -1778,7 +1782,7 @@ public final class OpenProjectList {
     
     private static class ProjectByDisplayNameComparator implements Comparator<Project> {
         
-        private static Comparator<Object> COLLATOR = Collator.getInstance();
+        private static final Comparator<Object> COLLATOR = Collator.getInstance();
 
         // memoize results since it could be called >1 time per project:
         private final Map<Project,String> names = new HashMap<Project,String>();
@@ -1912,7 +1916,7 @@ public final class OpenProjectList {
             return;
         }
         Collection<Project> toRemove = new ArrayList<Project>(openProjectsModuleInfos.get(info));
-        if (toRemove != null && toRemove.size() > 0) {
+        if (toRemove.size() > 0) {
             for (Project prj : toRemove) {
                 removeModuleInfo(prj, info);
             }
