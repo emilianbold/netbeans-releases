@@ -189,9 +189,10 @@ public final class Utilities {
             }
             if (cachedSubwordsPattern == null) {
                 cachedPrefix = prefix;
-                cachedSubwordsPattern = Pattern.compile(createSubwordsPattern(prefix));
+                String patternString = createSubwordsPattern(prefix);
+                cachedSubwordsPattern = patternString != null ? Pattern.compile(patternString) : null;
             }
-            if (cachedSubwordsPattern.matcher(theString).matches()) {
+            if (cachedSubwordsPattern != null && cachedSubwordsPattern.matcher(theString).matches()) {
                 return true;
             };
         }
@@ -205,6 +206,9 @@ public final class Utilities {
         sb.append(".*?");
         for (int i = 0; i < prefix.length(); i++) {
             char charAt = prefix.charAt(i);
+            if (!Character.isJavaIdentifierPart(charAt)) {
+                return null;
+            }
             if (Character.isLowerCase(charAt)) {
                 sb.append("[");
                 sb.append(charAt);
