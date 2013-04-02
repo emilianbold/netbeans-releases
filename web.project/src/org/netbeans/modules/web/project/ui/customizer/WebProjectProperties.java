@@ -491,9 +491,6 @@ final public class WebProjectProperties {
             //ignore
         }
         String selectedBrowser = projectProperties.get(SELECTED_BROWSER);
-        if (selectedBrowser == null) {
-            selectedBrowser = WebBrowserSupport.getDefaultBrowserId();
-        }
         BROWSERS_MODEL = WebBrowserSupport.createBrowserModel(selectedBrowser, true);
         loadingFrameworksTask = RP.post(new Runnable() {
                 public void run() {
