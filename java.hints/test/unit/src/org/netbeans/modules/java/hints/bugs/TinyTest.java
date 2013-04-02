@@ -335,6 +335,25 @@ public class TinyTest extends NbTestCase {
             reset(original);
         }
     }
+    
+    public void testInconsistentIndentationLast() throws Exception {
+        Map<String, String> original = alterSettings(FmtOptions.tabSize, "8");
+        
+        try {
+            HintTest.create()
+                    .input("package test;\n" +
+                           "public class Test {\n" +
+                           "    public void test(boolean b) {\n" +
+                           "        if (b)\n" +
+                           "            System.err.println(1);\n" +
+                           "    }" +
+                           "}\n")
+                    .run(Tiny.class)
+                    .assertWarnings();
+        } finally {
+            reset(original);
+        }
+    }
 
     private static Map<String, String> alterSettings(String... settings) {
         Map<String, String> adjustPreferences = new HashMap<String, String>();

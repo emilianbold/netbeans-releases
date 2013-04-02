@@ -278,7 +278,7 @@ public class Tiny {
         
         int index = parentStatements.indexOf(found);
         
-        if (index < 0 && index + 1 >= parentStatements.size()) return null;
+        if (index < 0 || index + 1 >= parentStatements.size()) return null;
         
         Tree secondStatement = parentStatements.get(index + 1);
         int firstIndent = indent(ctx, firstStatement);
