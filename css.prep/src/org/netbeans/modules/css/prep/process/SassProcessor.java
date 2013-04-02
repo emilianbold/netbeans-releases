@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.sass;
+package org.netbeans.modules.css.prep.process;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
+import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.openide.filesystems.FileObject;
@@ -63,7 +64,7 @@ public final class SassProcessor {
     private static final String CSS_EXTENSION = "css"; // NOI18N
 
 
-    void process(Project project, FileObject fileObject) {
+    public void process(Project project, FileObject fileObject) {
         if (fileObject.isData()) {
             processFile(project, fileObject, true);
         } else {

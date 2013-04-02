@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.prep.sass;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.process.SassProcessor;
 import org.netbeans.modules.css.prep.ui.customizer.SassCustomizer;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.CssPreprocessor;
