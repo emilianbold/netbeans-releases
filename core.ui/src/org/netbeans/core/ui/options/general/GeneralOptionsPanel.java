@@ -532,11 +532,7 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             port = tfProxyPort.getText();
         }
         
-        if (GeneralOptionsModel.testConnection(type, host, port)) {
-            lblTestResult.setText("OK");
-        } else {
-            lblTestResult.setText("FAILED");
-        }      
+        GeneralOptionsModel.testConnection(this, type, host, port);     
     }//GEN-LAST:event_bTestConnectionActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -650,24 +646,28 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         switch (model.getProxyType ()) {
             case ProxySettings.DIRECT_CONNECTION:
                 rbNoProxy.setSelected (true);
+                bReloadProxy.setEnabled(false);
                 tfProxyHost.setEnabled (false);
                 tfProxyPort.setEnabled (false);
                 bMoreProxy.setEnabled (false);
                 break;
             case ProxySettings.AUTO_DETECT_PROXY:
                 rbUseSystemProxy.setSelected (true);
+                bReloadProxy.setEnabled(true);
                 tfProxyHost.setEnabled (false);
                 tfProxyPort.setEnabled (false);
                 bMoreProxy.setEnabled (false);
                 break;
             case ProxySettings.MANUAL_SET_PROXY:
                 rbHTTPProxy.setSelected (true);
+                bReloadProxy.setEnabled(false);
                 tfProxyHost.setEnabled (true);
                 tfProxyPort.setEnabled (true);
                 bMoreProxy.setEnabled (true);
                 break;
             case ProxySettings.AUTO_DETECT_PAC:
                 rbUseSystemProxy.setSelected (true);
+                bReloadProxy.setEnabled(true);
                 tfProxyHost.setEnabled (false);
                 tfProxyPort.setEnabled (false);
                 bMoreProxy.setEnabled (false);
@@ -763,10 +763,28 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
         return changed;
     }
+    
+    void updateTestConnectionStatus(GeneralOptionsModel.TestingStatus status, String message) {
+        switch (status) {
+            case NOT_TESTED:
+                lblTestResult.setText("");
+                break;
+            case WAITING:
+                lblTestResult.setText("WAITING");
+                break;
+            case OK:
+                lblTestResult.setText("OK");
+                break;
+            case FAILED:
+                lblTestResult.setText("FAILED (" + message + ")");
+                break;
+        }       
+    }
 
     @Override
     public void actionPerformed (ActionEvent e) {
         changed = true;
+        bReloadProxy.setEnabled(rbUseSystemProxy.isSelected());
         tfProxyHost.setEnabled (rbHTTPProxy.isSelected ());
         tfProxyPort.setEnabled (rbHTTPProxy.isSelected ());
         bMoreProxy.setEnabled (rbHTTPProxy.isSelected ());

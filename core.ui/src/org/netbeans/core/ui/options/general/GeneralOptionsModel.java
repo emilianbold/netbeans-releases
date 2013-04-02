@@ -56,14 +56,23 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.core.ProxySettings;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 class GeneralOptionsModel {
     
+    enum TestingStatus {
+        OK,
+        FAILED,
+        WAITING,
+        NOT_TESTED
+    }
+    
     private static final Logger LOGGER = Logger.getLogger(GeneralOptionsModel.class.getName());
     
-    private static final String TESTING_URL = "http://www.netbeans.org"; //NOI18N
+    private static final String TESTING_URL = "http://netbeans.org"; //NOI18N
+    
+    private static final RequestProcessor rp = new RequestProcessor(GeneralOptionsModel.class);
     
     private static Preferences getProxyPreferences () {
         return NbPreferences.root ().node ("org/netbeans/core");
@@ -226,9 +235,25 @@ class GeneralOptionsModel {
         return pacUrl != null && pacUrl.length() > 0;
     }
     
-    static boolean testConnection(int proxyType, String proxyHost, String proxyPortString) {
-        boolean result = false;
+    static void testConnection(final GeneralOptionsPanel panel, final int proxyType, final String proxyHost, final String proxyPortString){
+        rp.post(new Runnable() {
+
+            @Override
+            public void run() {
+                testProxy(panel, proxyType, proxyHost, proxyPortString);
+            }
+        });
+    }    
+        
+    // private helper methods ..................................................
+    
+    private static void testProxy(GeneralOptionsPanel panel, int proxyType, String proxyHost, String proxyPortString) {
+        panel.updateTestConnectionStatus(TestingStatus.WAITING, null);
+        
+        TestingStatus status = TestingStatus.FAILED;
+        String message = null;
         URL testingUrl = null;
+        Proxy testingProxy = null;
         
         try {
             testingUrl = new URL(TESTING_URL);
@@ -238,49 +263,54 @@ class GeneralOptionsModel {
         
         switch(proxyType) {
             case ProxySettings.DIRECT_CONNECTION:
-                result = testHttpConnection(testingUrl, Proxy.NO_PROXY);
+                testingProxy = Proxy.NO_PROXY;
                 break;
             case ProxySettings.AUTO_DETECT_PROXY:
             case ProxySettings.AUTO_DETECT_PAC:
                 ProxySelector ps = ProxySelector.getDefault();            
-                try {
-                    result = testHttpConnection(testingUrl, ps.select(testingUrl.toURI()).get(0));
+                try {                    
+                    testingProxy = ps.select(testingUrl.toURI()).get(0);
                 } catch (URISyntaxException ex) {
-                    LOGGER.log(Level.SEVERE, "Cannot connect via http protocol.", ex);                
+                    LOGGER.log(Level.SEVERE, "Cannot create URI from URL (" + testingUrl + ")", ex); //NOI18N
+                    message = ex.getLocalizedMessage();
                 }
                 break;
             case ProxySettings.MANUAL_SET_PROXY:
             case ProxySettings.MANUAL_SET_PAC:
                 int proxyPort = Integer.valueOf(proxyPortString);
-                Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
-                result = testHttpConnection(testingUrl, proxy);
+                testingProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));                
                 break;
+            default:
+                testingProxy = Proxy.NO_PROXY;
         }
-        
-        return result;
-    }
-    
-    private static boolean testHttpConnection(URL url, Proxy proxy) {
-        boolean result = false;
         
         try {
-            HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection(proxy);
-
-            httpConnection.connect();
-
-            if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                result = true;
-            }
-
-            httpConnection.disconnect();
+            status = testHttpConnection(testingUrl, testingProxy) ? TestingStatus.OK : TestingStatus.FAILED;
         } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "Cannot connect via http protocol.", ex);
+            LOGGER.log(Level.INFO, "Cannot connect via http protocol.", ex); //NOI18N
+            message = ex.getLocalizedMessage();
         }
+        
+        panel.updateTestConnectionStatus(status, message);
+    }
+    
+    private static boolean testHttpConnection(URL url, Proxy proxy) throws IOException{
+        boolean result = false;
+        
+        HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection(proxy);
+        // Timeout shorten to 5s
+        httpConnection.setConnectTimeout(5000);
+        httpConnection.connect();
+
+        if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK || 
+                httpConnection.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP) {
+            result = true;
+        }
+
+        httpConnection.disconnect();
         
         return result;
     }
-    
-    // private helper methods ..................................................
 
     private static boolean validatePort (String port) {
         if (port.trim ().length () == 0) return true;
