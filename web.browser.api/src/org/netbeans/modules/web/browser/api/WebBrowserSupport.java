@@ -277,7 +277,7 @@ public final class WebBrowserSupport {
         @Override
         public Component getListCellRendererComponent(JList<? extends WebBrowser> list, WebBrowser value, int index, boolean isSelected, boolean cellHasFocus) {
             assert EventQueue.isDispatchThread();
-            Component c = (JLabel)defaultRenderer.getListCellRendererComponent(list, value.getName(), index, isSelected, cellHasFocus);
+            Component c = defaultRenderer.getListCellRendererComponent(list, value.getName(), index, isSelected, cellHasFocus);
             if (c instanceof JLabel) {
                 JLabel l = (JLabel)c;
                 l.setIcon(new ImageIcon(value.getIconImage()));
