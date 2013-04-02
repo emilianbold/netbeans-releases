@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -70,6 +70,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
@@ -92,12 +93,12 @@ public class Hk2ItemNode extends AbstractNode {
         if(decorator.isRefreshable()) {
             getCookieSet().add(new RefreshModulesCookie() {
                 @Override
-                public void refresh() {
-                    refresh(null, null);
+                public RequestProcessor.Task refresh() {
+                    return refresh(null, null);
                 }
 
                 @Override
-                public void refresh(String expected, String unexpected) {
+                public RequestProcessor.Task refresh(String expected, String unexpected) {
                     Children children = getChildren();
                     if(children instanceof Refreshable) {
                         ((Refreshable) children).updateKeys();
@@ -116,6 +117,7 @@ public class Hk2ItemNode extends AbstractNode {
                             Logger.getLogger("glassfish").log(Level.WARNING, null, new IllegalStateException("found unexpected child node, named "+unexpected));
                         }
                     }
+                    return null;
                 }
             });
         }
