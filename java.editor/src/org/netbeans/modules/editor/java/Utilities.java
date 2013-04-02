@@ -376,6 +376,12 @@ public final class Utilities {
         }
     }
 
+    public static int getImportanceLevel(CompilationInfo info, ReferencesCount referencesCount, @NonNull Element element) {
+        boolean isType = element.getKind().isClass() || element.getKind().isInterface();
+        
+        return Utilities.getImportanceLevel(referencesCount, isType ? ElementHandle.create((TypeElement) element) : ElementHandle.create((TypeElement) element.getEnclosingElement()));
+    }
+    
     public static int getImportanceLevel(ReferencesCount referencesCount, ElementHandle<TypeElement> handle) {
         int typeRefCount = 999 - Math.min(referencesCount.getTypeReferenceCount(handle), 999);
         int pkgRefCount = 999;
