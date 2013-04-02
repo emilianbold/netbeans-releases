@@ -201,7 +201,6 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         /* find bar */
         findInQuerySupport = FindInQuerySupport.create(this);
         FindInQueryBar findBar = findInQuerySupport.getFindBar();
-        findInQuerySupport.setQuery(query);
         
         initComponents(tableScrollPane, findBar);       
         
