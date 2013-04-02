@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -358,6 +359,12 @@ class RevisionSetupsSupport {
                     cacheSummaries(diffSummaries, leftFileUrl, leftRevision, rightRevision);
                 }
                 List<String> skippedPaths = new ArrayList<String>();
+                Set<String> deletedPaths = new HashSet<String>();
+                for (SVNDiffSummary summary : diffSummaries) {
+                    if (summary.getDiffKind() == SVNDiffKind.DELETED) {
+                        deletedPaths.add(summary.getPath());
+                    }
+                }
                 for (SVNDiffSummary summary : diffSummaries) {
                     if (supp.isCanceled()) {
                         return null;
@@ -366,6 +373,7 @@ class RevisionSetupsSupport {
                     File file = filePath.isEmpty() ? root : new File(root, filePath);
                     boolean skipItem = !filePath.isEmpty();
                     if (addAll || summary.getDiffKind() == SVNDiffSummary.SVNDiffKind.DELETED 
+                            && containsAllParents(filePath, deletedPaths)
                             // diff for package but a subpackage was deleted or a file somewhere lower in the subtree
                             && !(flatFile && (summary.getNodeKind() == SVNNodeKind.DIR.toInt() || filePath.contains("/")))
                             // if skipped path contains its ancestor, it means the ancestor exists locally
@@ -488,6 +496,21 @@ class RevisionSetupsSupport {
             url = url.getParent();
         }
         return false;
+    }
+
+    private boolean containsAllParents (String filePath, Set<String> deletedPaths) {
+        while (filePath != null) {
+            if (!deletedPaths.contains(filePath)) {
+                return false;
+            }
+            int pos = filePath.lastIndexOf("/");
+            if (pos > -1) {
+                filePath = filePath.substring(0, pos);
+            } else {
+                filePath = null;
+            }
+        }
+        return true;
     }
 
     private static class RevisionsFileInformation extends FileInformation {
