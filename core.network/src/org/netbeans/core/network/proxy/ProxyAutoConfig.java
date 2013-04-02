@@ -65,7 +65,7 @@ import org.openide.util.Utilities;
 public class ProxyAutoConfig {
 
     private static final Map<String, ProxyAutoConfig> file2pac = new HashMap<String, ProxyAutoConfig>(2);
-    private static RequestProcessor RP = new RequestProcessor(ProxyAutoConfig.class);
+    private static final RequestProcessor RP = new RequestProcessor(ProxyAutoConfig.class);
     private static final String NS_PROXY_AUTO_CONFIG_URL = "nbinst://org.netbeans.core/modules/ext/nsProxyAutoConfig.js"; // NOI18N
     private static final String PROTO_FILE = "file://";
 

@@ -111,7 +111,7 @@ public class ProxySettings {
     }
     
     public static String getSystemNonProxyHosts() {
-        return getPreferences().get(SYSTEM_NON_PROXY_HOSTS, "");
+        return getPreferences().get(SYSTEM_NON_PROXY_HOSTS, getModifiedNonProxyHosts(""));
     }
     
     public static String getSystemPac() {
