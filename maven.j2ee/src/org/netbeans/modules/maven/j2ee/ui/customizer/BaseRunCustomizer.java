@@ -89,6 +89,9 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
         if (ExecutionChecker.DEV_NULL.equals(selectedServer.getServerInstanceID())) {
             MavenProjectSupport.setServerID(project, null);
             MavenProjectSupport.setServerInstanceID(project, null);
+        } else {
+            MavenProjectSupport.setServerID(project, selectedServer.getServerID());
+            MavenProjectSupport.setServerInstanceID(project, selectedServer.getServerInstanceID());
         }
 
         MavenProjectSupport.changeServer(project, false);
@@ -114,7 +117,7 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
     }
 
     protected void initServerModel(JComboBox serverCBox, JLabel serverLabel, J2eeModule.Type projectType) {
-        ServerComboBoxUpdater.create(handle, serverCBox, serverLabel, projectType);
+        ServerComboBoxUpdater.create(project, serverCBox, serverLabel, projectType);
     }
 
     protected void initVersionModel(JComboBox javaeeVersionCBox, JLabel javaeeVersionLabel) {
