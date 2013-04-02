@@ -62,6 +62,7 @@
       Overrides the '-pre-package' target in product.xml.
     -->
     <target name="-pre-package">
+        <echo>CALLING GLASSFISH PRE-PACKAGE</echo>
 	<set property="gf.sub.dir" value="glassfish4"/>
         <move todir="${data.directory}">
             <fileset dir="${data.directory}/${gf.sub.dir}">
