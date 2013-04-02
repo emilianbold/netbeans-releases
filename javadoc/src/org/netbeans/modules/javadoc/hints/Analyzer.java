@@ -613,18 +613,6 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         errors.add(desc);
     }
 */
-    /**
-     * computes name of throws clause to work around
-     * <a href="http://www.netbeans.org/issues/show_bug.cgi?id=160414">issue 160414</a>.
-     */
-    static String resolveThrowsName(Element el, String fqn, ExpressionTree throwTree) {
-        boolean nestedClass = ElementKind.CLASS == el.getKind()
-                && NestingKind.TOP_LEVEL != ((TypeElement) el).getNestingKind();
-        String insertName = nestedClass ? fqn : throwTree.toString();
-        return insertName;
-    }
-    
-    
     
     @Override
     public Void visitAttribute(AttributeTree node, List<ErrorDescription> errors) {

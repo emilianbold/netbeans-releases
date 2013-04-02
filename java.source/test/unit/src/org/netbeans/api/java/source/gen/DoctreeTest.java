@@ -112,6 +112,55 @@ public class DoctreeTest extends GeneratorTestBase {
         return suite;
     }
     
+    public void testAddDocComment() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    private void test() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    /**\n" +
+            "     * Test method\n" +
+            "     * @param test\n" +
+            "     */\n" +
+            "    private void test() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            @Override
+            public void run(final WorkingCopy wc) throws IOException {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                final TreeMaker make = wc.getTreeMaker();
+                new TreePathScanner<Void, Void>() {
+                    @Override
+                    public Void visitMethod(final MethodTree mt, Void p) {
+                        ParamTree param = make.Param(false, make.DocIdentifier("test"), new LinkedList<DocTree>());
+                        DocCommentTree newDoc = make.DocComment(
+                                Collections.singletonList(make.Text("Test method")),
+                                Collections.EMPTY_LIST,
+                                Collections.singletonList(param));
+                        wc.rewrite(mt, null, newDoc);
+                        return super.visitMethod(mt, p);
+                    }
+                }.scan(wc.getCompilationUnit(), null);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     public void testAddDocCommentTagA() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -624,7 +673,7 @@ public class DoctreeTest extends GeneratorTestBase {
                 + "public class Test {\n"
                 + "\n"
                 + "    /**\n"
-                + "     * a<!-- comment -->{@docRoot}</a>&a;{@inheritDoc}{@link H#H(H, H) H}{@literal H}<a a/>{@a H}{@value H#H(H, H)}\n"
+                + "     * <!-- comment -->{@docRoot}</a>&a;{@inheritDoc}{@link H#H(H, H) H}{@literal H}<a a/>{@a H}{@value H#H(H, H)}\n"
                 + "     * @author H\n"
                 + "     * @deprecated H\n"
                 + "     * @param a H\n"

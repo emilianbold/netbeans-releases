@@ -154,6 +154,7 @@ import org.netbeans.modules.java.source.save.DiffUtilities;
 import org.netbeans.modules.java.source.save.ElementOverlay;
 import org.netbeans.modules.java.source.save.ElementOverlay.FQNComputer;
 import org.netbeans.modules.java.source.save.OverlayTemplateAttributesProvider;
+import org.netbeans.modules.java.source.transform.ImmutableDocTreeTranslator;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
 import org.netbeans.modules.java.source.transform.TreeDuplicator;
 import org.netbeans.modules.java.source.usages.Pair;
@@ -539,7 +540,6 @@ public class WorkingCopy extends CompilationController {
                 private final Map<Tree, TreePath> tree2Path = new IdentityHashMap<Tree, TreePath>();
                 private final FQNComputer fqn = new FQNComputer();
                 private final Set<Tree> rewriteTarget;
-                private final TreeVisitor<Tree, Void> duplicator = new TreeDuplicator(getContext());
                 
                 {
                     rewriteTarget = Collections.newSetFromMap(new IdentityHashMap<Tree, Boolean>());
@@ -580,22 +580,6 @@ public class WorkingCopy extends CompilationController {
                             if (!parent2Rewrites.containsKey(parentPath)) {
                                 parent2Rewrites.put(parentPath, new IdentityHashMap<Tree, Tree>());
                             }
-                        }
-                        Map<Tree, Tree> rewrites = parent2Rewrites.get(parentPath);
-                        Map<DocTree, DocTree> rev = docChanges.remove(tree);
-                        Tree newTree = tree;
-                        if(!rewrites.containsKey(tree)) {
-                            Tree importComments = GeneratorUtilities.get(WorkingCopy.this).importComments(tree, getCompilationUnit());
-                            newTree = importComments.accept(duplicator, null);
-                            rewrites.put(tree, newTree);
-                        }
-                        
-                        DocCommentTree oldDoc = ((DocTrees)getTrees()).getDocCommentTree(new TreePath(parentPath, tree));
-                        DocCommentTree newDoc = (DocCommentTree) getTreeUtilities().translate(oldDoc, rev);
-                        Pair<DocCommentTree, DocCommentTree> docChange = Pair.of(oldDoc, newDoc);
-                        tree2Doc.put(tree, docChange);
-                        if(tree != newTree) {
-                            tree2Doc.put(newTree, docChange);
                         }
                     }
                     if (changes.containsKey(tree)) {
@@ -655,20 +639,12 @@ public class WorkingCopy extends CompilationController {
             fillImports = false;
         }
         
-        // translate all the new DocTree added to new JTrees
-        for (Map.Entry<Tree, Map<DocTree, DocTree>> entry : docChanges.entrySet()) {
-//            Map<DocTree, DocTree> rev = docChanges.remove(tree);
-            DocTree newDoc = entry.getValue().get(null);
-            if(newDoc != null && newDoc.getKind() == DocTree.Kind.DOC_COMMENT) {
-                tree2Doc.put(entry.getKey(), Pair.of((DocCommentTree)null, (DocCommentTree)newDoc));
-            }
-        }
         List<Diff> diffs = new ArrayList<Diff>();
-        ImportAnalysis2 ia = new ImportAnalysis2(this);
+        final ImportAnalysis2 ia = new ImportAnalysis2(this);
         
         boolean importsFilled = false;
 
-        for (TreePath path : pathsToRewrite) {
+        for (final TreePath path : pathsToRewrite) {
             List<ClassTree> classes = new ArrayList<ClassTree>();
 
             if (path.getParentPath() != null) {
@@ -708,10 +684,62 @@ public class WorkingCopy extends CompilationController {
                 ia.classEntered(ct);
                 ia.enterVisibleThroughClasses(ct);
             }
+            final Map<Tree, Tree> rewrites = parent2Rewrites.get(path);
             
-            // XXX: import from new javadoc tree
+            ImmutableDocTreeTranslator itt = new ImmutableDocTreeTranslator(this) {
+                private @NonNull Map<Tree, Tree> map = new HashMap<Tree, Tree>(rewrites);
+                private @NonNull Map<DocTree, DocTree> docMap = null;
+                private final TreeVisitor<Tree, Void> duplicator = new TreeDuplicator(getContext());
 
-            Tree brandNew = getTreeUtilities().translate(path.getLeaf(), parent2Rewrites.get(path), ia, tree2Tag);
+                @Override
+                public Tree translate(Tree tree) {
+                    if(docChanges.containsKey(tree)) {
+                        Tree newTree = null;
+                        if(!map.containsKey(tree)) {
+                            Tree importComments = GeneratorUtilities.get(WorkingCopy.this).importComments(tree, getCompilationUnit());
+                            newTree = importComments.accept(duplicator, null);
+                            map.put(tree, newTree);
+                        }
+                        docMap = docChanges.remove(tree);
+                        DocCommentTree oldDoc;
+                        DocCommentTree newDoc;
+                        Pair<DocCommentTree, DocCommentTree> docChange;
+                        if(docMap.size() == 1 && docMap.containsKey(null)) {
+                            newDoc = (DocCommentTree) translate((DocCommentTree) docMap.get(null)); // Update QualIdent Trees
+                            docChange = Pair.of((DocCommentTree)null, (DocCommentTree)newDoc);
+                        } else {
+                            oldDoc = ((DocTrees)getTrees()).getDocCommentTree(new TreePath(path, tree));
+                            newDoc = (DocCommentTree) translate(oldDoc);
+                            docChange = Pair.of(oldDoc, newDoc);
+                        }
+                        tree2Doc.put(tree, docChange);
+                        if(tree != newTree) {
+                            tree2Doc.put(newTree, docChange);
+                        }
+                    }
+                    Tree translated = map.remove(tree);
+
+                    if (translated != null) {
+                        return translate(translated);
+                    } else {
+                        return super.translate(tree);
+                    }
+                }
+                
+                @Override
+                public DocTree translate(DocTree tree) {
+                    if(docMap != null) {
+                        DocTree translated = docMap.remove(tree);
+                        if (translated != null) {
+                            return translate(translated);
+                        }
+                    }
+                    return super.translate(tree);
+                }
+            };
+            Context c = impl.getJavacTask().getContext();
+            itt.attach(c, ia, tree2Tag);
+            Tree brandNew = itt.translate(path.getLeaf());
 
             //tagging debug
             //System.err.println("brandNew=" + brandNew);

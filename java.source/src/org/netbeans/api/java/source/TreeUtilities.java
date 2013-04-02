@@ -1112,10 +1112,10 @@ public final class TreeUtilities {
     }
     
     public @NonNull DocTree translate(final @NonNull DocTree original, final @NonNull Map<? extends DocTree, ? extends DocTree> original2Translated) {
-        return translate(original, original2Translated, null);
+        return translate(original, original2Translated, new NoImports(info), null);
     }
     
-    @NonNull DocTree translate(final @NonNull DocTree original, final @NonNull Map<? extends DocTree, ? extends DocTree> original2Translated, Map<DocTree, Object> tree2Tag) {
+    @NonNull DocTree translate(final @NonNull DocTree original, final @NonNull Map<? extends DocTree, ? extends DocTree> original2Translated, ImportAnalysis2 ia, Map<Tree, Object> tree2Tag) {
         ImmutableDocTreeTranslator itt = new ImmutableDocTreeTranslator(info instanceof WorkingCopy ? (WorkingCopy)info : null) {
             private @NonNull Map<DocTree, DocTree> map = new HashMap<DocTree, DocTree>(original2Translated);
             @Override
@@ -1132,7 +1132,7 @@ public final class TreeUtilities {
 
         Context c = info.impl.getJavacTask().getContext();
 
-        itt.attach(c, tree2Tag);
+        itt.attach(c, ia, tree2Tag);
 
         return itt.translate(original);
     }

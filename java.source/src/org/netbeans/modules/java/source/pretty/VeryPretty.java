@@ -2003,7 +2003,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
     @Override
     public Void visitDocComment(DocCommentTree node, Void p) {
-        newline();
+        blankline();
         toLeftMargin();
         print("/**");
         newline();
@@ -2024,8 +2024,6 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         newline();
         toLeftMargin();
         print(" */");
-        newline();
-        toLeftMargin();
         return null;
     }
 

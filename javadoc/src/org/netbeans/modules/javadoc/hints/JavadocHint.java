@@ -44,9 +44,11 @@
 
 package org.netbeans.modules.javadoc.hints;
 
+import com.sun.source.doctree.DocCommentTree;
 import static org.netbeans.modules.javadoc.hints.JavadocUtilities.*;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -83,7 +85,6 @@ import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -99,20 +100,14 @@ public final class JavadocHint {
     public static final String SCOPE_DEFAULT = "protected"; // NOI18N
     public static final String AVAILABILITY_KEY = "availability"; // NOI18N
 
-    @Hint(id = "create-javadoc", category = "javadoc", description = "#DESC_CREATE_JAVADOC_HINT", displayName = "#DN_CREATE_JAVADOC_HINT", hintKind = Hint.Kind.ACTION, severity = Severity.HINT, customizerProvider = JavadocHint.CustomizerProviderImplCreate.class)
+    @Hint(id = "create-javadoc", category = "JavaDoc", description = "#DESC_CREATE_JAVADOC_HINT", displayName = "#DN_CREATE_JAVADOC_HINT", hintKind = Hint.Kind.INSPECTION, severity = Severity.HINT, customizerProvider = JavadocHint.CustomizerProviderImplCreate.class)
     @TriggerTreeKind({Kind.METHOD, Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE, Kind.VARIABLE})
     public static List<ErrorDescription> createHint(HintContext ctx) {
-        List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
-        int caretLocation = ctx.getCaretLocation();
-        if(caretLocation < 0) {
-            return errors;
-        }
         Preferences pref = ctx.getPreferences();
         boolean createJavadocForNonPublic = pref.getBoolean(AVAILABILITY_KEY + true, false);
 
         CompilationInfo javac = ctx.getInfo();
-        FileObject file = javac.getFileObject();
-        Boolean publiclyAccessible = AccessibilityQuery.isPubliclyAccessible(file.getParent());
+        Boolean publiclyAccessible = AccessibilityQuery.isPubliclyAccessible(javac.getFileObject().getParent());
         boolean isPubliclyA11e = publiclyAccessible == null ? true : publiclyAccessible;
 
         if (!isPubliclyA11e && !createJavadocForNonPublic) {
@@ -139,6 +134,9 @@ public final class JavadocHint {
         TreePath currentPath = ctx.getPath();
         Severity severity = ctx.getSeverity();
         Access access = Access.resolve(pref.get(SCOPE_KEY, SCOPE_DEFAULT));
+        
+        List<ErrorDescription> errors = Collections.<ErrorDescription>emptyList();
+        int caretLocation = ctx.isBulkMode()? -1 : CaretAwareJavaSourceTaskFactory.getLastPosition(ctx.getInfo().getFileObject());
         Tree node = currentPath.getLeaf();
         if (javac.getTreeUtilities().isSynthetic(currentPath) || !isValid(javac, currentPath, severity, access, caretLocation)) {
             return errors;
@@ -148,14 +146,18 @@ public final class JavadocHint {
 
         if (elm == null) {
             Logger.getLogger(Analyzer.class.getName()).log(
-                    Level.INFO, "Cannot resolve element for {0} in {1}", new Object[]{node, file}); // NOI18N
-            return errors;
-        } else if (isGuarded(node, javac, doc)) {
+                    Level.INFO, "Cannot resolve element for {0} in {1}", new Object[]{node, javac.getFileObject()}); // NOI18N
             return errors;
         }
-        String jdText = javac.getElements().getDocComment(elm);
+        if (isGuarded(node, javac, doc)) {
+            return errors;
+        }
+        DocCommentTree docCommentTree = ((DocTrees) javac.getTrees()).getDocCommentTree(currentPath);
         // create hint descriptor + prepare javadoc
-        if (jdText == null || jdText.length() == 0 && null == JavadocUtilities.findTokenSequence(javac, elm)) {
+        if (docCommentTree == null ||
+                (docCommentTree.getFirstSentence().isEmpty() &&
+                 docCommentTree.getBody().isEmpty() &&
+                 docCommentTree.getBlockTags().isEmpty())) {
             if (hasErrors(node) || JavadocUtilities.hasInheritedDoc(javac, elm)) {
                 return errors;
             }
@@ -166,7 +168,7 @@ public final class JavadocHint {
                     return errors;
                 }
                 
-                TreePathHandle handle = TreePathHandle.create(javac.getTrees().getPath(elm), javac);
+                TreePathHandle handle = TreePathHandle.create(currentPath, javac);
 
                 String description;
                 if (elm.getKind() == ElementKind.CONSTRUCTOR) {
@@ -175,15 +177,18 @@ public final class JavadocHint {
                     description = elm.getSimpleName().toString();
                 }
 
-                GenerateJavadocFix javadocFix = new GenerateJavadocFix(description, handle, resolveSourceVersion(file));
-                if (severity == Severity.HINT) {
-                    errors.add(ErrorDescriptionFactory.createErrorDescription(
-                            severity,
-                            NbBundle.getMessage(Analyzer.class, "MISSING_JAVADOC_DESC"), // NOI18N
-                            Collections.singletonList(javadocFix.toEditorFix()), file,
-                            caretLocation,
-                            caretLocation));
-                } else {
+                errors = new ArrayList<ErrorDescription>();
+                GenerateJavadocFix javadocFix = new GenerateJavadocFix(description, handle, resolveSourceVersion(javac.getFileObject()));
+//                if (severity == Severity.HINT) {
+//                    if(caretLocation >= 0) {
+//                        errors.add(ErrorDescriptionFactory.createErrorDescription(
+//                                severity,
+//                                NbBundle.getMessage(Analyzer.class, "MISSING_JAVADOC_DESC"), // NOI18N
+//                                Collections.singletonList(javadocFix.toEditorFix()), javac.getFileObject(),
+//                                caretLocation,
+//                                caretLocation));
+//                    }
+//                } else {
                     errors.add(ErrorDescriptionFactory.createErrorDescription(
                             severity,
                             NbBundle.getMessage(Analyzer.class, "MISSING_JAVADOC_DESC"), // NOI18N
@@ -191,7 +196,7 @@ public final class JavadocHint {
                             doc,
                             positions[0],
                             positions[1]));
-                }
+//                }
             } catch (BadLocationException ex) {
                 Logger.getLogger(Analyzer.class.getName()).log(Level.INFO, ex.getMessage(), ex);
             }
@@ -199,7 +204,7 @@ public final class JavadocHint {
         return errors;
     }
 
-    @Hint(id = "error-in-javadoc", category = "javadoc", description = "#DESC_ERROR_IN_JAVADOC_HINT", displayName = "#DN_ERROR_IN_JAVADOC_HINT", hintKind = Hint.Kind.INSPECTION, severity = Severity.WARNING, customizerProvider = JavadocHint.CustomizerProviderImplError.class)
+    @Hint(id = "error-in-javadoc", category = "JavaDoc", description = "#DESC_ERROR_IN_JAVADOC_HINT", displayName = "#DN_ERROR_IN_JAVADOC_HINT", hintKind = Hint.Kind.INSPECTION, severity = Severity.WARNING, customizerProvider = JavadocHint.CustomizerProviderImplError.class)
     @TriggerTreeKind({Kind.METHOD, Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE, Kind.VARIABLE})
     public static List<ErrorDescription> errorHint(HintContext ctx) {
         Preferences pref = ctx.getPreferences();
@@ -233,6 +238,7 @@ public final class JavadocHint {
         TreePath path = ctx.getPath();
         Severity severity = ctx.getSeverity();
         Access access = Access.resolve(pref.get(SCOPE_KEY, SCOPE_DEFAULT));
+        
         Analyzer a = new Analyzer(javac, doc, path, severity, access);
         return a.analyze();
     }

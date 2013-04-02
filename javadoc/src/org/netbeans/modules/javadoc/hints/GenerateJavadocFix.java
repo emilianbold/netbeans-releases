@@ -43,11 +43,14 @@
  */
 package org.netbeans.modules.javadoc.hints;
 
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -64,8 +67,7 @@ import org.openide.util.NbBundle;
  */
 final class GenerateJavadocFix extends JavaFix {
 
-    private static final int NOPOS = -2; // XXX copied from jackpot; should be in api
-    private String name;
+    private final String name;
     private final SourceVersion spec;
 
     public GenerateJavadocFix(String name, TreePathHandle handle, SourceVersion spec) {
@@ -81,61 +83,16 @@ final class GenerateJavadocFix extends JavaFix {
 
     @Override
     protected void performRewrite(TransformationContext ctx) throws Exception {
-        WorkingCopy wc = ctx.getWorkingCopy();
+        WorkingCopy javac = ctx.getWorkingCopy();
+        TreeMaker make = javac.getTreeMaker();
         TreePath path = ctx.getPath();
-        Element elm = wc.getTrees().getElement(path);
+        Element elm = javac.getTrees().getElement(path);
         
-        Tree t = null;
-        if (elm != null) {
-            t = wc.getTrees().getTree(elm);
-        }
-        if (t != null) {
+        if(elm != null) {
             final JavadocGenerator gen = new JavadocGenerator(spec);
-            
-            String javadocTxt = gen.generateComment(elm, wc);
-            Comment javadoc = Comment.create(Comment.Style.JAVADOC, NOPOS, NOPOS, NOPOS, javadocTxt);
-            final TreeMaker make = wc.getTreeMaker();
-            
-            Tree newTree;
-            switch(t.getKind()) {
-                case ANNOTATION_TYPE: {
-                    ClassTree old = (ClassTree) t;
-                    newTree = make.AnnotationType(old.getModifiers(), old.getSimpleName(), old.getMembers());
-                    break;
-                }
-                case CLASS: {
-                    ClassTree old = (ClassTree) t;
-                    newTree = make.Class(old.getModifiers(), old.getSimpleName(), old.getTypeParameters(), old.getExtendsClause(), old.getImplementsClause(), old.getMembers());
-                    break;
-                }
-                case ENUM: {
-                    ClassTree old = (ClassTree) t;
-                    newTree = make.Enum(old.getModifiers(), old.getSimpleName(), old.getImplementsClause(), old.getMembers());
-                    break;
-                }
-                case INTERFACE: {
-                    ClassTree old = (ClassTree) t;
-                    newTree = make.Interface(old.getModifiers(), old.getSimpleName(), old.getTypeParameters(), old.getImplementsClause(), old.getMembers());
-                    break;
-                }
-                case METHOD: {
-                    MethodTree old = (MethodTree) t;
-                    newTree = make.Method(old.getModifiers(), old.getName(), old.getReturnType(), old.getTypeParameters(), old.getParameters(), old.getThrows(), old.getBody(), (ExpressionTree) old.getDefaultValue());
-                    break;
-                }
-                case VARIABLE: {
-                    VariableTree old = (VariableTree) t;
-                    newTree = make.Variable(old.getModifiers(), old.getName(), old.getType(), old.getInitializer());
-                    break;
-                }
-                default:
-                    newTree = null;
-            }
-
-            if(newTree != null) {
-                make.addComment(newTree, javadoc, true);
-                wc.rewrite(t, newTree);
-            }
+            DocCommentTree newDocCommentTree = gen.generateComment(elm, javac, make);
+            DocCommentTree docCommentTree = ((DocTrees) javac.getTrees()).getDocCommentTree(path);
+            javac.rewrite(path.getLeaf(), docCommentTree, newDocCommentTree);
         }
     }
 }

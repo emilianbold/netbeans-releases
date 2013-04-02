@@ -71,7 +71,7 @@ import static org.netbeans.modules.javadoc.hints.Bundle.*;
     "MISSING_DEPRECATED_HINT=Add @deprecated tag"})
 abstract class AddTagFix extends JavaFix {
 
-    private String message;
+    private final String message;
     private final DocTreePathHandle dtph;
     private final int index;
 

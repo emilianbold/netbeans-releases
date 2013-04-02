@@ -71,32 +71,24 @@ import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
 import com.sun.source.doctree.ValueTree;
 import com.sun.source.doctree.VersionTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.tools.javac.tree.DCTree;
-import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.source.builder.TreeFactory;
 
 /**
  *
  * @author Ralph Benjamin Ruijs
  */
-public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Object> {
+public class ImmutableDocTreeTranslator extends ImmutableTreeTranslator implements DocTreeVisitor<DocTree, Object> {
 
-    private final WorkingCopy copy;
-    private TreeFactory make;
     private Map<DocTree, Object> tree2Tag;
 
     public ImmutableDocTreeTranslator(WorkingCopy copy) {
-        this.copy = copy;
-    }
-
-    public void attach(Context context, Map<DocTree, Object> tree2Tag) {
-        make = TreeFactory.instance(context);
-        this.tree2Tag = tree2Tag;
+        super(copy);
     }
 
     public DocTree translate(DocTree tree) {
@@ -115,7 +107,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
      * Visitor method: translate a list of nodes.
      */
     @SuppressWarnings("unchecked")
-    public <T extends DocTree> List<T> translate(List<T> trees) {
+    public <T extends DocTree> List<T> translateDoc(List<T> trees) {
         if (trees == null || trees.isEmpty()) {
             return trees;
         }
@@ -136,9 +128,9 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
     //<editor-fold defaultstate="collapsed" desc="Rewrites">
     protected final DocCommentTree rewriteChildren(DocCommentTree tree) {
         DocCommentTree value = tree;
-        List<? extends DocTree> firstSentence = translate(tree.getFirstSentence());
-        List<? extends DocTree> body = translate(tree.getBody());
-        List<? extends DocTree> blockTags = translate(tree.getBlockTags());
+        List<? extends DocTree> firstSentence = translateDoc(tree.getFirstSentence());
+        List<? extends DocTree> body = translateDoc(tree.getBody());
+        List<? extends DocTree> blockTags = translateDoc(tree.getBlockTags());
         if (firstSentence != tree.getFirstSentence() || body != tree.getBody() || blockTags != tree.getBlockTags()) {
             value = make.DocComment(firstSentence, body, blockTags);
         }
@@ -147,7 +139,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
 
     protected final AttributeTree rewriteChildren(AttributeTree tree) {
         AttributeTree value = tree;
-        List<? extends DocTree> vl = translate(tree.getValue());
+        List<? extends DocTree> vl = translateDoc(tree.getValue());
         if (vl != tree.getValue()) {
             value = make.Attribute((Name) tree.getName(), tree.getValueKind(), vl);
         }
@@ -156,7 +148,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
 
     protected final AuthorTree rewriteChildren(AuthorTree tree) {
         AuthorTree value = tree;
-        List<? extends DocTree> name = translate(tree.getName());
+        List<? extends DocTree> name = translateDoc(tree.getName());
         if (name != tree.getName()) {
             value = make.Author(name);
         }
@@ -202,7 +194,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
 
     protected final LinkTree rewriteChildren(LinkTree tree) {
         LinkTree value = tree;
-        List<? extends DocTree> label = translate(tree.getLabel());
+        List<? extends DocTree> label = translateDoc(tree.getLabel());
         ReferenceTree ref = (ReferenceTree) translate(tree.getReference());
         if (label != tree.getLabel() || ref != tree.getReference()) {
             value = make.Link(ref, label);
@@ -222,7 +214,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
     protected final ParamTree rewriteChildren(ParamTree tree) {
         ParamTree value = tree;
         IdentifierTree name = (IdentifierTree) translate(tree.getName());
-        List<? extends DocTree> description = translate(tree.getDescription());
+        List<? extends DocTree> description = translateDoc(tree.getDescription());
         if (name != tree.getName() || description != tree.getDescription()) {
             value = make.Param(tree.isTypeParameter(), name, description);
         }
@@ -230,12 +222,18 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
     }
 
     protected final ReferenceTree rewriteChildren(ReferenceTree tree) {
-        return tree; // Nothing to do for a string
+        ReferenceTree value = tree;
+        ExpressionTree classReference = (ExpressionTree) translate(tree.getClassReference());
+        List<? extends ExpressionTree> methodParameters = translate(tree.getMethodParameters());
+        if(classReference != tree.getClassReference() || methodParameters != tree.getMethodParameters()) {
+            value = make.Reference(classReference, tree.getMemberName(), methodParameters);
+        }
+        return value;
     }
 
     protected final ReturnTree rewriteChildren(ReturnTree tree) {
         ReturnTree value = tree;
-        List<? extends DocTree> description = translate(tree.getDescription());
+        List<? extends DocTree> description = translateDoc(tree.getDescription());
         if (description != tree.getDescription()) {
             value = make.Return(description);
         }
@@ -244,7 +242,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
 
     protected final SeeTree rewriteChildren(SeeTree tree) {
         SeeTree value = tree;
-        List<? extends DocTree> ref = translate(tree.getReference());
+        List<? extends DocTree> ref = translateDoc(tree.getReference());
         if (ref != tree.getReference()) {
             value = make.See(ref);
         }
@@ -253,7 +251,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
 
     protected final SerialTree rewriteChildren(SerialTree tree) {
         SerialTree value = tree;
-        List<? extends DocTree> desc = translate(tree.getDescription());
+        List<? extends DocTree> desc = translateDoc(tree.getDescription());
         if (desc != tree.getDescription()) {
             value = make.Serial(desc);
         }
@@ -262,7 +260,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
 
     protected final SerialDataTree rewriteChildren(SerialDataTree tree) {
         SerialDataTree value = tree;
-        List<? extends DocTree> desc = translate(tree.getDescription());
+        List<? extends DocTree> desc = translateDoc(tree.getDescription());
         if (desc != tree.getDescription()) {
             value = make.SerialData(desc);
         }
@@ -272,7 +270,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
     protected final SerialFieldTree rewriteChildren(SerialFieldTree tree) {
         SerialFieldTree value = tree;
         IdentifierTree name = (IdentifierTree) translate(tree.getName());
-        List<? extends DocTree> description = translate(tree.getDescription());
+        List<? extends DocTree> description = translateDoc(tree.getDescription());
         ReferenceTree ref = (ReferenceTree) translate(tree.getType());
         if (ref != tree.getType() || name != tree.getName() || description != tree.getDescription()) {
             value = make.SerialField(name, ref, description);
@@ -291,7 +289,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
 
     protected final StartElementTree rewriteChildren(StartElementTree tree) {
         StartElementTree value = tree;
-        List<? extends DocTree> attributes = translate(tree.getAttributes());
+        List<? extends DocTree> attributes = translateDoc(tree.getAttributes());
         if (attributes != tree.getAttributes()) {
             value = make.StartElement((Name) tree.getName(), attributes, tree.isSelfClosing());
         }
@@ -305,7 +303,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
     protected final ThrowsTree rewriteChildren(ThrowsTree tree) {
         ThrowsTree value = tree;
         ReferenceTree exception = (ReferenceTree) translate(tree.getExceptionName());
-        List<? extends DocTree> description = translate(tree.getDescription());
+        List<? extends DocTree> description = translateDoc(tree.getDescription());
         if (exception != tree.getExceptionName() || description != tree.getDescription()) {
             value = make.Throws(exception, description);
         }
@@ -314,7 +312,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
 
     protected final UnknownBlockTagTree rewriteChildren(UnknownBlockTagTree tree) {
         UnknownBlockTagTree value = tree;
-        List<? extends DocTree> content = translate(tree.getContent());
+        List<? extends DocTree> content = translateDoc(tree.getContent());
         if (content != tree.getContent()) {
             value = make.UnknownBlockTag(((DCTree.DCUnknownBlockTag) tree).name, tree.getContent());
         }
@@ -323,7 +321,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
 
     protected final UnknownInlineTagTree rewriteChildren(UnknownInlineTagTree tree) {
         UnknownInlineTagTree value = tree;
-        List<? extends DocTree> content = translate(tree.getContent());
+        List<? extends DocTree> content = translateDoc(tree.getContent());
         if (content != tree.getContent()) {
             value = make.UnknownInlineTag(((DCTree.DCUnknownInlineTag) tree).name, tree.getContent());
         }
@@ -341,7 +339,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
 
     protected final VersionTree rewriteChildren(VersionTree tree) {
         VersionTree value = tree;
-        List<? extends DocTree> body = translate(tree.getBody());
+        List<? extends DocTree> body = translateDoc(tree.getBody());
         if (body != tree.getBody()) {
             value = make.Version(body);
         }

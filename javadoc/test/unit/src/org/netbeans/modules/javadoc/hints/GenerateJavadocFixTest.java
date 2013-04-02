@@ -62,6 +62,7 @@ public class GenerateJavadocFixTest extends NbTestCase {
                 .applyFix("Create missing javadoc for leden")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
+                "import java.io.FileNotFoundException;\n" +
                 "import java.io.IOException;\n" +
                 "public class Test {\n" +
                 "    /**\n" +
@@ -73,7 +74,7 @@ public class GenerateJavadocFixTest extends NbTestCase {
                 "     * @return\n" +
                 "     * @throws IOException\n" +
                 "     * @throws IllegalArgumentException\n" +
-                "     * @throws java.io.FileNotFoundException\n" +
+                "     * @throws FileNotFoundException\n" +
                 "     * @deprecated\n" +
                 "     */\n" +
                 "    @Deprecated public <T> int leden(int param1, int param2, T param3) throws IOException, IllegalArgumentException, java.io.FileNotFoundException {\n" +
@@ -98,6 +99,7 @@ public class GenerateJavadocFixTest extends NbTestCase {
                 .applyFix("Create missing javadoc for Test")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
+                "import java.io.FileNotFoundException;\n" +
                 "import java.io.IOException;\n" +
                 "class Test {\n" +
                 "    /**\n" +
@@ -108,7 +110,7 @@ public class GenerateJavadocFixTest extends NbTestCase {
                 "     * @param param3\n" +
                 "     * @throws IOException\n" +
                 "     * @throws IllegalArgumentException\n" +
-                "     * @throws java.io.FileNotFoundException\n" +
+                "     * @throws FileNotFoundException\n" +
                 "     * @deprecated\n" +
                 "     */\n" +
                 "    @Deprecated <T> Test(int param1, int param2, T param3) throws IOException, IllegalArgumentException, java.io.FileNotFoundException {\n" +
