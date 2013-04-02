@@ -78,7 +78,12 @@ public final class WebBrowserSupport {
      * @see #createBrowserRenderer()
      */
     public static BrowserComboBoxModel createBrowserModel(@NullAllowed String selectedBrowserId, boolean showIDEGlobalBrowserOption) {
-        List<WebBrowser> browsers = WebBrowsers.getInstance().getAll(false, true, showIDEGlobalBrowserOption, true);
+        return createBrowserModel(selectedBrowserId, showIDEGlobalBrowserOption, false);
+    }
+
+    public static BrowserComboBoxModel createBrowserModel(@NullAllowed String selectedBrowserId, 
+            boolean showIDEGlobalBrowserOption, boolean includePhoneGap) {
+        List<WebBrowser> browsers = WebBrowsers.getInstance().getAll(false, true, showIDEGlobalBrowserOption, includePhoneGap, true);
         String chromeId = null, chromiumId = null, javafxId = null;
         if (selectedBrowserId == null) {
             for (WebBrowser bw : browsers) {

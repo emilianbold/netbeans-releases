@@ -218,7 +218,10 @@ public final class WebBrowsers {
         List<BrowserWrapper> browsers = new ArrayList<BrowserWrapper>();
         int chrome = 200;
         int chromium = 300;
-        int others = 400;
+        int others = 1000;
+        int android = 1400;
+        int ios = 1500;
+        int phonegap = 1600;
         for (WebBrowserFactoryDescriptor desc : getFactories(includeSystemDefaultBrowser)) {
             if (desc.getBrowserFamily().equals(BrowserFamilyId.PHONEGAP) && !includePhoneGap) {
                 continue;
@@ -240,6 +243,12 @@ public final class WebBrowsers {
                     WebBrowser browser2 = new WebBrowser(desc, true);
                     browsers.add(new BrowserWrapper(browser2, chromium++));
                 }
+            } else if (browser.getBrowserFamily() == BrowserFamilyId.ANDROID) { // NOI18N
+                browsers.add(new BrowserWrapper(browser, android++));
+            } else if (browser.getBrowserFamily() == BrowserFamilyId.IOS) { // NOI18N
+                browsers.add(new BrowserWrapper(browser, ios++));
+            } else if (browser.getBrowserFamily() == BrowserFamilyId.PHONEGAP) { // NOI18N
+                browsers.add(new BrowserWrapper(browser, phonegap++));
             } else {
                 browsers.add(new BrowserWrapper(browser, others++));
             }
