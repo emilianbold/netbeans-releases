@@ -121,8 +121,7 @@ public final class WebBrowserSupport {
     /**
      * Check whether the given {@link BrowserComboBoxModel#getSelectedBrowserId() browser identifier} represents browser with NetBeans integration.
      * <p>
-     * If the browser identifier is {@code null} (likely not set yet?), then the first (external,
-     * if possible) browser with NetBeans integration is used.
+     * If the browser identifier is {@code null} (likely not set yet?), then the {@link #getDefaultBrowserId() default} browser is used.
      * @param browserId browser identifier, can be {@code null} if e.g. not set yet
      * @return {@code true} if the given browser identifier represents browser with NetBeans integration
      */
