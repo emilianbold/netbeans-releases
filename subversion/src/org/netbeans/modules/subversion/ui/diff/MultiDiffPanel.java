@@ -190,6 +190,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private SvnProgressSupport refreshSetupsSupport;
     private SvnProgressSupport executeStatusSupport;
     private boolean internalChange;
+    private boolean propertiesVisible;
     
     /**
      * Creates diff panel and immediatelly starts loading...
@@ -443,6 +444,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             localToggle.addActionListener(this);
             remoteToggle.addActionListener(this);
             allToggle.addActionListener(this);
+            filterPropertiesButton.addActionListener(this);
 
             commitButton.setToolTipText(NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Commit_Tooltip"));
             updateButton.setToolTipText(NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Update_Tooltip"));
@@ -451,6 +453,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             else if (currentType == Setup.DIFFTYPE_ALL) allToggle.setSelected(true);
 
             commitButton.setEnabled(false);
+            boolean propsVisible = SvnModuleConfig.getDefault().isFilterPropertiesEnabled();
+            filterPropertiesButton.setSelected(propsVisible);
+            if (currentType == -1) {
+                filterPropertiesButton.setEnabled(false);
+            }
+            propertiesVisible = propsVisible && filterPropertiesButton.isEnabled();
         } else {
             commitButton.setVisible(false);
             updateButton.setVisible(false);
@@ -458,6 +466,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             remoteToggle.setVisible(false);
             allToggle.setVisible(false);
             refreshButton.setVisible(false);
+            filterPropertiesButton.setVisible(false);
         }
     }
 
@@ -760,6 +769,11 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 synchronizeButtons();
                 refreshStatuses();
             }
+        } else if (source == filterPropertiesButton) {
+            boolean propsVisible = filterPropertiesButton.isSelected();
+            SvnModuleConfig.getDefault().setFilterPropertiesEnabled(propsVisible);
+            propertiesVisible = propsVisible && filterPropertiesButton.isEnabled();
+            refreshStatuses();
         }
     }
     
@@ -1043,7 +1057,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 }
                 if (none) {
                     btnGroup.clearSelection();
+                    filterPropertiesButton.setEnabled(false);
+                    propertiesVisible = false;
                     currentType = -1;
+                } else {
+                    filterPropertiesButton.setEnabled(true);
+                    propertiesVisible = filterPropertiesButton.isSelected();
                 }
                 commitButton.setEnabled(!none);
                 updateButton.setEnabled(!none);
@@ -1091,7 +1110,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     private class SetupsPrepareSupport extends SvnProgressSupport {
-                
+        
         @Override
         protected void perform() {
             if (dpt != null) {
@@ -1214,14 +1233,17 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
         private Setup[] computeSetups(File[] files, int displayStatus, int setupType) {
             List<Setup> newSetups = new ArrayList<Setup>(files.length);
+            int statusWithoutProperties = displayStatus & ~FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY_PROPERTY;
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
-                if (!file.isDirectory()) {
+                if (!file.isDirectory() && (cache.getStatus(file).getStatus() & statusWithoutProperties) != 0) {
                     Setup setup = new Setup(file, null, setupType);
                     setup.setNode(new DiffNode(setup, new SvnFileNode(file), displayStatus));
                     newSetups.add(setup);
                 }
-                addPropertiesSetups(file, newSetups, displayStatus);
+                if (propertiesVisible) {
+                    addPropertiesSetups(file, newSetups, displayStatus);
+                }
                 if (isCanceled()) {
                     return null;
                 }
@@ -1466,8 +1488,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         jPanel2 = new javax.swing.JPanel();
         refreshButton = new javax.swing.JButton();
         updateButton = new javax.swing.JButton();
-        jPanel5 = new javax.swing.JPanel();
         commitButton = new javax.swing.JButton();
+        jPanel5 = new javax.swing.JPanel();
+        filterPropertiesButton = new javax.swing.JToggleButton();
         splitPane = new javax.swing.JSplitPane();
         jLabel1 = new javax.swing.JLabel();
         cmbDiffTreeFirst = new javax.swing.JComboBox();
@@ -1490,7 +1513,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 12, Short.MAX_VALUE)
+            .addGap(0, 11, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1513,7 +1536,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 12, Short.MAX_VALUE)
+            .addGap(0, 11, Short.MAX_VALUE)
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1536,7 +1559,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 80, Short.MAX_VALUE)
+            .addGap(0, 79, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1565,7 +1588,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 30, Short.MAX_VALUE)
+            .addGap(0, 29, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1597,13 +1620,20 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         });
         controlsToolBar.add(updateButton);
 
+        commitButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/commit.png"))); // NOI18N
+        commitButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MSG_CommitDiff_Tooltip")); // NOI18N
+        commitButton.setFocusable(false);
+        commitButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        commitButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        controlsToolBar.add(commitButton);
+
         jPanel5.setMaximumSize(new java.awt.Dimension(20, 32767));
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 20, Short.MAX_VALUE)
+            .addGap(0, 19, Short.MAX_VALUE)
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1612,12 +1642,10 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
         controlsToolBar.add(jPanel5);
 
-        commitButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/commit.png"))); // NOI18N
-        commitButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MSG_CommitDiff_Tooltip")); // NOI18N
-        commitButton.setFocusable(false);
-        commitButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        commitButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        controlsToolBar.add(commitButton);
+        filterPropertiesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/properties.png"))); // NOI18N
+        filterPropertiesButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.filterPropertiesButton.toolTipText")); // NOI18N
+        filterPropertiesButton.setFocusable(false);
+        controlsToolBar.add(filterPropertiesButton);
 
         splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
@@ -1660,7 +1688,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(controlsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(controlsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
             .addComponent(splitPane)
             .addComponent(treeSelectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -1691,6 +1719,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     final javax.swing.JComboBox cmbDiffTreeSecond = new javax.swing.JComboBox();
     private javax.swing.JButton commitButton;
     private javax.swing.JToolBar controlsToolBar;
+    private javax.swing.JToggleButton filterPropertiesButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;

@@ -336,7 +336,7 @@ public class Annotator {
         } else if (match(status, FileInformation.STATUS_VERSIONED_MERGE)) {
             return name;
         } else if (match(status, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
-            return name;
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
             return name;
         } else {
