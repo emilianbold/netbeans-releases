@@ -278,7 +278,7 @@ public class FileInformation implements Serializable {
         this(status, 0, null, isDirectory);
     }
     
-    FileInformation(int status, int propStatus, boolean isDirectory) {
+    public FileInformation(int status, int propStatus, boolean isDirectory) {
         this(status, propStatus, null, isDirectory);
     }
     
