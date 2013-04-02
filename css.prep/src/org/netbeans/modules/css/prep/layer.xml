@@ -236,7 +236,6 @@
             <file name="CssPreprocessors">
                 <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/css/prep/css-prep.properties"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.css.prep.Bundle#ImportExport.CssPrep"/>
-                <attr name="position" intvalue="2000"/>
             </file>
         </folder>
     </folder>
