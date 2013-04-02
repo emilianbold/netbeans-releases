@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Children;
 
 /**
  * Descriptor of a resource (basically a typed wrapper of a {@code String}
@@ -102,6 +103,8 @@ public final class Resource {
      * or if the corresponding {@code FileObject} cannot be found.
      */
     public FileObject toFileObject() {
+        // Issue 227766 and 228154
+        assert !Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess();
         if (project != null) {
             try {
                 return ServerURLMapping.fromServer(project, new URL(name));
