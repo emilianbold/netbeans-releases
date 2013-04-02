@@ -47,7 +47,6 @@ package org.netbeans.modules.subversion;
 import org.netbeans.modules.subversion.ui.status.StatusAction;
 import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.netbeans.modules.subversion.ui.update.*;
-import org.netbeans.modules.subversion.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.openide.util.actions.SystemAction;
@@ -74,6 +73,7 @@ import org.netbeans.modules.subversion.options.AnnotationColorProvider;
 import org.netbeans.modules.subversion.ui.lock.LockAction;
 import org.netbeans.modules.subversion.ui.lock.UnlockAction;
 import org.netbeans.modules.subversion.ui.menu.CopyMenu;
+import org.netbeans.modules.subversion.ui.menu.DiffMenu;
 import org.netbeans.modules.subversion.ui.menu.IgnoreMenu;
 import org.netbeans.modules.subversion.ui.menu.PatchesMenu;
 import org.netbeans.modules.subversion.ui.menu.UpdateMenu;
@@ -336,7 +336,7 @@ public class Annotator {
         } else if (match(status, FileInformation.STATUS_VERSIONED_MERGE)) {
             return name;
         } else if (match(status, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
-            return name;
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
             return name;
         } else {
@@ -440,7 +440,7 @@ public class Annotator {
                 if(a != null) actions.add(a);
             } else {
                 actions.add(SystemAction.get(StatusAction.class));
-                actions.add(SystemAction.get(DiffAction.class));
+                actions.add(new DiffMenu(destination, null));
                 actions.add(SystemAction.get(CommitAction.class));
                 actions.add(SystemAction.get(RevertModificationsAction.class));
                 actions.add(SystemAction.get(BlameAction.class));
@@ -481,7 +481,7 @@ public class Annotator {
             } else {
                 Node[] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context));
+                actions.add(new DiffMenu(destination, context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(BlameAction.class),

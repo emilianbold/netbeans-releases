@@ -68,6 +68,7 @@ import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /** The MainWindow of IDE. Holds toolbars, main menu and also entire desktop
  * if in MDI user interface. Singleton.
@@ -218,7 +219,7 @@ public final class MainWindow {
                // text in line should be shifted for 4pix.
                status.setBorder (BorderFactory.createEmptyBorder (0, 4, 0, 0));
 
-               JPanel statusLinePanel = new JPanel(new BorderLayout());
+               final JPanel statusLinePanel = new JPanel(new BorderLayout());
                if( isShowCustomBackground() )
                    statusLinePanel.setOpaque( false);
                int magicConstant = 0;
@@ -245,7 +246,12 @@ public final class MainWindow {
                }
                statusLinePanel.add(status, BorderLayout.CENTER);
 
-               decoratePanel (statusLinePanel, false);
+               WindowManager.getDefault().invokeWhenUIReady( new Runnable() {
+                   @Override
+                   public void run() {
+                        decoratePanel (statusLinePanel, false);
+                   }
+               });
                statusLinePanel.setName("statusLine"); //NOI18N
                frame.getContentPane().add (statusLinePanel, BorderLayout.SOUTH);
            } else { // custom status line provided

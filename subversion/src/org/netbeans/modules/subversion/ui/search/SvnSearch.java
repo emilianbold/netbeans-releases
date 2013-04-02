@@ -88,6 +88,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
     public final static String SEACRH_HELP_ID_MERGE = "org.netbeans.modules.subversion.ui.search.merge"; 
     public final static String SEACRH_HELP_ID_REVERT = "org.netbeans.modules.subversion.ui.search.revert";     
     public final static String SEARCH_HELP_ID_UPDATE = "org.netbeans.modules.subversion.ui.search.update"; 
+    public final static String SEARCH_HELP_ID_SELECT_DIFF_TREE = "org.netbeans.modules.subversion.ui.search.selectdifftree"; //NOI18N
     
     private static final String DATE_FROM = "svnSearch.dateFrom";    // NOI18N
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
