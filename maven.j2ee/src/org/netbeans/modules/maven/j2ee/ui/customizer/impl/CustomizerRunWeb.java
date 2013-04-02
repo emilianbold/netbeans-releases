@@ -110,9 +110,6 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
     
     private void initBrowser() {
         String selectedBrowser = MavenProjectSupport.getBrowserID(project);
-        if (selectedBrowser == null) {
-            selectedBrowser = WebBrowserSupport.getDefaultBrowserId();
-        }
         browserModel = WebBrowserSupport.createBrowserModel(selectedBrowser, true);
         browserCBox.setModel(browserModel);
         browserCBox.setRenderer(WebBrowserSupport.createBrowserRenderer());
