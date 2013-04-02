@@ -159,7 +159,7 @@ public final class CssPreprocessors {
         }
 
         /**
-         * Process given file (can be a folder as well).
+         * Process given file (can be a folder as well) by {@link #getPreprocessors() all CSS preprocessors}.
          * <p>
          * For detailed information see {@link CssPreprocessor#process(Project, FileObject)}.
          * @param project project where the file belongs, can be {@code null} for file without a project
