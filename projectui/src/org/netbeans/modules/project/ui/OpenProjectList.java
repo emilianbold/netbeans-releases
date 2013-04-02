@@ -229,7 +229,7 @@ public final class OpenProjectList {
         });
     }
     
-    static void waitProjectsFullyOpen() {
+    public static void waitProjectsFullyOpen() {
         getDefault().LOAD.waitFinished();
     }
 
@@ -1141,8 +1141,12 @@ public final class OpenProjectList {
     static void shutdown() {
         if (INSTANCE != null) {
             try {
-                for (Project p : INSTANCE.openProjects) {
-                    notifyClosed(p);
+                //a bit on magic here. We want to do the goup document persistence before notifyClosed in hope of the 
+                // ant projects saving their project data before being closed. (ant ptojects call saveProjct() in the openclose hook.
+                // the caller of this method calls saveAllProjectt() later. 
+                Group.onShutdown(new HashSet<Project>(INSTANCE.openProjects));
+                for (Project p : INSTANCE.openProjects) {                    
+                    notifyClosed(p);                    
                 }
             } catch (ConcurrentModificationException x) {
                 LOGGER.log(Level.INFO, "#198097: could not get list of projects to close", x);
