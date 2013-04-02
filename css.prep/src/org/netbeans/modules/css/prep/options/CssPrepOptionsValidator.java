@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.prep.options;
 
+import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 
@@ -57,6 +58,14 @@ public final class CssPrepOptionsValidator {
         String warning = SassExecutable.validate(sassPath);
         if (warning != null) {
             result.addWarning(new ValidationResult.Message("sass.path", warning)); // NOI18N
+        }
+        return this;
+    }
+
+    public CssPrepOptionsValidator validateLessPath(String lessPath) {
+        String warning = LessExecutable.validate(lessPath);
+        if (warning != null) {
+            result.addWarning(new ValidationResult.Message("less.path", warning)); // NOI18N
         }
         return this;
     }
