@@ -1862,6 +1862,10 @@ public class JsFormatterTest extends JsTestBase {
         setupDocumentIndentation(doc, preferences);
 
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        // clear prefs
+        prefs.clear();
+
+        prefs = CodeStylePreferences.get(doc).getPreferences();
         for (String option : options.keySet()) {
             assertNull(prefs.get(option, null));
             Object value = options.get(option);
@@ -1869,7 +1873,7 @@ public class JsFormatterTest extends JsTestBase {
                 prefs.put(option, ((CodeStyle.BracePlacement) value).name());
             } else if (value instanceof CodeStyle.WrapStyle) {
                 prefs.put(option, ((CodeStyle.WrapStyle) value).name());
-	    } else {
+            } else {
                 prefs.put(option, value.toString());
             }
         }
