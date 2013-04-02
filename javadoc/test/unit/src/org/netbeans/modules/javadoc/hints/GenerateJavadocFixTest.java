@@ -58,7 +58,7 @@ public class GenerateJavadocFixTest extends NbTestCase {
                 "    }\n" +
                 "}\n")
                 .run(JavadocHint.class)
-                .findWarning("3:33-3:33:hint:Missing javadoc.")
+                .findWarning("3:31-3:36:hint:Missing javadoc.")
                 .applyFix("Create missing javadoc for leden")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -95,7 +95,7 @@ public class GenerateJavadocFixTest extends NbTestCase {
                 .preference(AVAILABILITY_KEY + true, true)
                 .preference(SCOPE_KEY, "private")
                 .run(JavadocHint.class)
-                .findWarning("3:22-3:22:hint:Missing javadoc.")
+                .findWarning("3:20-3:24:hint:Missing javadoc.")
                 .applyFix("Create missing javadoc for Test")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -128,7 +128,7 @@ public class GenerateJavadocFixTest extends NbTestCase {
                 .preference(AVAILABILITY_KEY + true, true)
                 .preference(SCOPE_KEY, "private")
                 .run(JavadocHint.class)
-                .findWarning("1:20-1:20:hint:Missing javadoc.")
+                .findWarning("1:18-1:22:hint:Missing javadoc.")
                 .applyFix("Create missing javadoc for Zima")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -154,7 +154,7 @@ public class GenerateJavadocFixTest extends NbTestCase {
                 .preference(AVAILABILITY_KEY + true, true)
                 .preference(SCOPE_KEY, "private")
                 .run(JavadocHint.class)
-                .findWarning("3:10-3:10:hint:Missing javadoc.")
+                .findWarning("3:8-3:13:hint:Missing javadoc.")
                 .applyFix("Create missing javadoc for leden")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -179,7 +179,7 @@ public class GenerateJavadocFixTest extends NbTestCase {
                 .preference(AVAILABILITY_KEY + true, true)
                 .preference(SCOPE_KEY, "private")
                 .run(JavadocHint.class)
-                .findWarning("3:17-3:17:hint:Missing javadoc.")
+                .findWarning("3:15-3:19:hint:Missing javadoc.")
                 .applyFix("Create missing javadoc for unor")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -202,7 +202,7 @@ public class GenerateJavadocFixTest extends NbTestCase {
                 .preference(AVAILABILITY_KEY + true, true)
                 .preference(SCOPE_KEY, "private")
                 .run(JavadocHint.class)
-                .findWarning("1:13-1:13:hint:Missing javadoc.")
+                .findWarning("1:11-1:16:hint:Missing javadoc.")
                 .applyFix("Create missing javadoc for LEDEN")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -221,7 +221,7 @@ public class GenerateJavadocFixTest extends NbTestCase {
                 .preference(AVAILABILITY_KEY + true, true)
                 .preference(SCOPE_KEY, "private")
                 .run(JavadocHint.class)
-                .findWarning("1:20-1:20:hint:Missing javadoc.")
+                .findWarning("1:18-1:22:hint:Missing javadoc.")
                 .applyFix("Create missing javadoc for UNOR")
                 .assertCompilable()
                 .assertOutput("package test;\n" +

@@ -3290,6 +3290,9 @@ public class CasualDiff {
             newC = safeNext(oldIter);
         }
         if(preceding && javadoc == null && newDoc != null) {
+            if (!firstNewCommentPrinted && preceding) {
+                copyTo(localPointer, localPointer = oldTreeStartPos);
+            }
             printer.print((DCTree) newDoc);
         }
         return localPointer;
