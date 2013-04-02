@@ -50,7 +50,8 @@ import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComboBox;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -276,7 +277,12 @@ public final class WebBrowserSupport {
         @Override
         public Component getListCellRendererComponent(JList<? extends WebBrowser> list, WebBrowser value, int index, boolean isSelected, boolean cellHasFocus) {
             assert EventQueue.isDispatchThread();
-            return defaultRenderer.getListCellRendererComponent(list, value.getName(), index, isSelected, cellHasFocus);
+            Component c = (JLabel)defaultRenderer.getListCellRendererComponent(list, value.getName(), index, isSelected, cellHasFocus);
+            if (c instanceof JLabel) {
+                JLabel l = (JLabel)c;
+                l.setIcon(new ImageIcon(value.getIconImage()));
+            }
+            return c;
         }
 
     }
