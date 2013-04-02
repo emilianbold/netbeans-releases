@@ -70,7 +70,7 @@ import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
@@ -196,7 +196,9 @@ public class ClientSideProject implements Project {
     public synchronized WebBrowser getProjectWebBrowser() {
         if (projectWebBrowser == null) {
             String id = getSelectedBrowser();
-            projectWebBrowser = WebBrowserSupport.getBrowser(id);
+            if (id != null) {
+                projectWebBrowser = BrowserUISupport.getBrowser(id);
+            }
         }
         return projectWebBrowser;
     }

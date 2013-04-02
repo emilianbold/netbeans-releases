@@ -55,25 +55,30 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
- * Support for web browsers.
+ * Support for web browser selection in the UI.
  * @since 1.9
  */
-public final class WebBrowserSupport {
+public final class BrowserUISupport {
 
-    private static final Logger LOGGER = Logger.getLogger(WebBrowserSupport.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(BrowserUISupport.class.getName());
 
-    private WebBrowserSupport() {
+    private BrowserUISupport() {
     }
 
     /**
      * Create model for component with browsers, possibly with the
      * {@link BrowserComboBoxModel#getSelectedBrowserId() selected browser identifier}.
      * <p>
-     * If the browser identifier is {@code null} (likely not set yet?), then the {@link #getDefaultBrowserId() default} browser is selected.
+     * If the browser identifier is {@code null} (likely not set yet?), then the 
+     * selected browser will depend on whether {@code showIDEGlobalBrowserOption} is set
+     * to true or not. If it is set to true then {@link #getDefaultBrowserId() IDE default}
+     * browser is selected; otherwise a browser with NetBeans integration will be selected.
      * @param selectedBrowserId browser identifier, can be {@code null} if e.g. not set yet
+     * @param showIDEGlobalBrowserOption show "IDE's Default Browser" option
      * @return model for component with browsers
      * @see #createBrowserRenderer()
      */
@@ -81,12 +86,49 @@ public final class WebBrowserSupport {
         return createBrowserModel(selectedBrowserId, showIDEGlobalBrowserOption, false);
     }
 
-    // XXX dkonecny: add javadoc!
+    /**
+     * Create model for component with browsers, possibly with the
+     * {@link BrowserComboBoxModel#getSelectedBrowserId() selected browser identifier}.
+     * <p>
+     * If the browser identifier is {@code null} (likely not set yet?), then the
+     * selected browser will depend on whether {@code showIDEGlobalBrowserOption} is set
+     * to true or not. If it is set to true then {@link #getDefaultBrowserId() IDE default}
+     * browser is selected; otherwise a browser with NetBeans integration will be selected.
+     * @param selectedBrowserId browser identifier, can be {@code null} if e.g. not set yet
+     * @param showIDEGlobalBrowserOption show "IDE's Default Browser" option
+     * @param includePhoneGap show PhoneGap browser
+     * @return model for component with browsers
+     * @see #createBrowserRenderer()
+     */
     public static BrowserComboBoxModel createBrowserModel(@NullAllowed String selectedBrowserId,
             boolean showIDEGlobalBrowserOption, boolean includePhoneGap) {
         List<WebBrowser> browsers = WebBrowsers.getInstance().getAll(false, true, showIDEGlobalBrowserOption, includePhoneGap, true);
         if (selectedBrowserId == null) {
-            selectedBrowserId = getDefaultBrowserId();
+            if (showIDEGlobalBrowserOption) {
+                selectedBrowserId = getDefaultBrowserId();
+            } else {
+                // try to find first browser with NB integration;
+                // preferrably Chrome or Chromium; failing that try at least Embedded WebKit
+                String chromeId = null, chromiumId = null, javafxId = null;
+                for (WebBrowser bw : browsers) {
+                    if (bw.getBrowserFamily() == BrowserFamilyId.CHROME && chromeId == null && bw.hasNetBeansIntegration()) {
+                        chromeId = bw.getId();
+                    }
+                    if (bw.getBrowserFamily() == BrowserFamilyId.CHROMIUM && chromiumId == null && bw.hasNetBeansIntegration()) {
+                        chromiumId = bw.getId();
+                    }
+                    if (bw.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW && javafxId == null && bw.hasNetBeansIntegration()) {
+                        javafxId = bw.getId();
+                    }
+                }
+                if (chromeId != null) {
+                    selectedBrowserId = chromeId;
+                } else if (chromeId != null) {
+                    selectedBrowserId = chromeId;
+                } else if (javafxId != null) {
+                    selectedBrowserId = javafxId;
+                }
+            }
         }
         BrowserComboBoxModel model = new BrowserComboBoxModel(browsers);
         for (int i = 0; i < model.getSize(); i++) {
@@ -119,33 +161,14 @@ public final class WebBrowserSupport {
     }
 
     /**
-     * Check whether the given {@link BrowserComboBoxModel#getSelectedBrowserId() browser identifier} represents browser with NetBeans integration.
-     * <p>
-     * If the browser identifier is {@code null} (likely not set yet?), then the {@link #getDefaultBrowserId() default} browser is used.
-     * @param browserId browser identifier, can be {@code null} if e.g. not set yet
-     * @return {@code true} if the given browser identifier represents browser with NetBeans integration
-     */
-    public static boolean isIntegratedBrowser(@NullAllowed String browserId) {
-        if (browserId != null
-                && browserId.endsWith(WebBrowser.INTEGRATED)) {
-            return true;
-        }
-        ComboBoxModel<WebBrowser> model = createBrowserModel(browserId, true);
-        return ((WebBrowser) model.getSelectedItem()).hasNetBeansIntegration();
-    }
-
-    /**
-     * Get browser for the given {@link BrowserComboBoxModel#getSelectedBrowserId() browser identifier}. Returns {@code null}
-     * for the default IDE browser (set in IDE Options).
-     * If the browser identifier is {@code null} (likely not set yet?), then the {@link #getDefaultBrowserId() default} browser is returned.
-     * @param browserId browser identifier, can be {@code null} if e.g. not set yet
-     * @return browser for the given browser identifier
+     * Get browser for the given {@link BrowserComboBoxModel#getSelectedBrowserId() browser identifier}.
+     * @param browserId browser identifier, cannot be {@code null}
+     * @return browser for the given browser identifier; can be null if no browser
+     *    corresponds to the given ID
      */
     @CheckForNull
-    public static WebBrowser getBrowser(@NullAllowed String browserId) {
-        if (browserId == null) {
-            browserId = getDefaultBrowserId();
-        }
+    public static WebBrowser getBrowser(@NonNull String browserId) {
+        assert browserId != null;
         return findWebBrowserById(browserId);
     }
 

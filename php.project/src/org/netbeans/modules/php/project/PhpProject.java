@@ -103,7 +103,7 @@ import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
@@ -1285,13 +1285,16 @@ public final class PhpProject implements Project {
             }
             browserSupportInitialized = true;
             initBrowser();
-            WebBrowser browser = WebBrowserSupport.getBrowser(browserId);
+            if (browserId == null) {
+                browserSupport = null;
+                return null;
+            }
+            WebBrowser browser = BrowserUISupport.getBrowser(browserId);
             if (browser == null) {
                 browserSupport = null;
                 return null;
             }
-            boolean integrated = WebBrowserSupport.isIntegratedBrowser(browserId);
-            browserSupport = BrowserSupport.create(browser, !integrated);
+            browserSupport = BrowserSupport.create(browser);
             return browserSupport;
         }
 
