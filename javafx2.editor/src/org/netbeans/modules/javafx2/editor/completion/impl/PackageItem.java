@@ -54,21 +54,29 @@ final class PackageItem extends AbstractCompletionItem {
     private static ImageIcon icon;
     
     private String  fqn;
-    private String  simpleName;
     
-    PackageItem(String fullName, int offset, int len) {
-        super(offset, len, null);
+    private static String simpleName(String fullName) {
         int dot = fullName.lastIndexOf('.');
         if (dot > 0 && dot < fullName.length() - 1) {
-            simpleName = fullName.substring(dot + 1);
+            return fullName.substring(dot + 1);
         } else {
-            simpleName = fullName;
+            return fullName;
         }
+        
+    }
+    
+    PackageItem(CompletionContext ctx, String fullName) {
+        super(ctx, simpleName(fullName));
+        this.fqn = fullName;
     }
 
     @Override
     protected String getSubstituteText() {
-        return fqn;
+        if (Character.isJavaIdentifierPart(fqn.charAt(fqn.length() - 1))) {
+            return fqn + "."; // NOI18N
+        } else {
+            return fqn; // NO18N
+        }
     }
 
     protected ImageIcon getIcon() {
