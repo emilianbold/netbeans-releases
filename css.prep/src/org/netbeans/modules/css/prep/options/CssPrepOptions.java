@@ -43,6 +43,7 @@ package org.netbeans.modules.css.prep.options;
 
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.FileUtils;
 import org.openide.util.NbPreferences;
@@ -57,8 +58,11 @@ public final class CssPrepOptions {
 
     // sass
     private static final String SASS_PATH = "sass.path"; // NOI18N
+    // less
+    private static final String LESS_PATH = "less.path"; // NOI18N
 
     private volatile boolean sassSearched = false;
+    private volatile boolean lessSearched = false;
 
 
     private CssPrepOptions() {
@@ -83,6 +87,23 @@ public final class CssPrepOptions {
 
     public void setSassPath(String sassPath) {
         getPreferences().put(SASS_PATH, sassPath);
+    }
+
+    public String getLessPath() {
+        String path = getPreferences().get(LESS_PATH, null);
+        if (path == null && !lessSearched) {
+            lessSearched = true;
+            List<String> paths = FileUtils.findFileOnUsersPath(LessExecutable.EXECUTABLE_NAME);
+            if (!paths.isEmpty()) {
+                path = paths.get(0);
+                setLessPath(path);
+            }
+        }
+        return path;
+    }
+
+    public void setLessPath(String lessPath) {
+        getPreferences().put(LESS_PATH, lessPath);
     }
 
     private Preferences getPreferences() {
