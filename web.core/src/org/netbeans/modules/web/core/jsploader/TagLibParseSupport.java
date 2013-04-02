@@ -80,12 +80,14 @@ import org.openide.util.Exceptions;
  */
 public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLibParseCookie {
 
+    //allow max 10 requests to run in parallel & have one RP for all taglib parsings
+    private static final RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("background jsp parsing", 10); // NOI18N;
+
     private FileObject jspFile;
     
     // request processing stuff
     private boolean documentDirty;
     private RequestProcessor.Task parsingTask = null;
-    private static RequestProcessor requestProcessor;
 
 //    private static final int WAIT_FOR_EDITOR_TIMEOUT = 15 * 1000; //15 seconds
 
@@ -132,9 +134,6 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
      */
     public TagLibParseSupport(FileObject jspFile) {
         this.jspFile = jspFile;
-        //allow max 10 requests to run in parallel & have one RP for all taglib parsings
-        if(requestProcessor == null)
-            requestProcessor = new RequestProcessor("background jsp parsing", 10); // NOI18N
         annotations = ErrorAnnotationFactory.Query.create(jspFile);
     }
 
@@ -190,7 +189,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
         if(isDocumentDirty() || !isParserStarted()) {
             return parseObject(Thread.MIN_PRIORITY);
         } else {
-            return requestProcessor.post(new Runnable() {
+            return REQUEST_PROCESSOR.post(new Runnable() {
                 public void run() {
                     //do nothing, just a dummy task
                 }
@@ -227,7 +226,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
             setParserStarted();
 
             setDocumentDirty(false);
-            t = requestProcessor.post(new ParsingRunnable(), 0, priority);
+            t = REQUEST_PROCESSOR.post(new ParsingRunnable(), 0, priority);
             parsingTask = t;
             return parsingTask;
         }
