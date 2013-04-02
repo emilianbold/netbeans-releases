@@ -64,6 +64,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
@@ -114,6 +115,10 @@ public class MavenProjectSupport {
 
         // We know server instance which should be assigned to the project
         if (instanceID != null && serverID == null) {
+            assignServer(project, instanceID, initContextPath);
+            
+        // We know both server name and server ID, just do the same as above
+        } else if (instanceID != null && serverID != null) {
             assignServer(project, instanceID, initContextPath);
             
         // We don't know anything which means we want to assign <No Server> value to the project
@@ -401,8 +406,20 @@ public class MavenProjectSupport {
         return getPreferences(project, true).get(MavenJavaEEConstants.HINT_J2EE_VERSION, null);
     }
     
+    public static boolean isDeployOnSave(Project project)  {
+        return getPreferences(project, true).getBoolean(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
+    }
+    
+    public static void setDeployOnSave(Project project, boolean value) {
+        getPreferences(project, true).putBoolean(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, value);
+    }
+    
     public static void setJ2eeVersion(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, true);
+    }
+    
+    public static void setJDK(Project project, String value) {
+        setSettings(project, Constants.HINT_JDK_PLATFORM, value, true);
     }
     
     public static void setServerID(Project project, String value) {
