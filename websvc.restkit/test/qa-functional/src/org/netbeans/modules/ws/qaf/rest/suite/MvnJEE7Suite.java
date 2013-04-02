@@ -65,7 +65,7 @@ public class MvnJEE7Suite extends J2eeTestCase {
         addServerTests(Server.GLASSFISH, conf);//register server
         conf = conf.addTest(JEE7MvnFromDBTest.class,
                 "testFromDB",
-                "testDeploy",
+                "testRun",
                 "testUndeploy");
         conf = conf.addTest(JEE7MvnCRUDTest.class,
                 "testRfE", //NOI18N
