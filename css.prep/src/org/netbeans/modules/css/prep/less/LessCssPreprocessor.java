@@ -45,13 +45,13 @@ import org.netbeans.modules.css.prep.process.LessProcessor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.ui.customizer.LessCustomizer;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
-import org.netbeans.modules.web.common.spi.CssPreprocessor;
+import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service = CssPreprocessor.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200)
-public final class LessCssPreprocessor implements CssPreprocessor {
+@ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200)
+public final class LessCssPreprocessor implements CssPreprocessorImplementation {
 
     private static final String IDENTIFIER = "LESS"; // NOI18N
 
