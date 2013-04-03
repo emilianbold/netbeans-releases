@@ -50,7 +50,6 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
-import org.netbeans.modules.bugtracking.QueryImpl;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
@@ -60,7 +59,6 @@ import org.openide.windows.TopComponent;
  * @author Tomas Stupka
  */
 class FindInQuerySupport {
-    private QueryImpl query;
     private final FindInQueryBar bar;
     private final AncestorListener ancestorListener;
     private final IssueTable issueTable;
@@ -110,10 +108,6 @@ class FindInQuerySupport {
 
     static FindInQuerySupport create(IssueTable issueTable) {
         return new FindInQuerySupport(issueTable);
-    }
-
-    void setQuery(QueryImpl query) {
-        this.query = query;
     }
 
     FindInQueryBar getFindBar() {
