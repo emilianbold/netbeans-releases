@@ -53,7 +53,7 @@ import org.netbeans.modules.css.model.api.*;
  */
 public class BodyI extends ModelElement implements Body {
 
-    private final List<BodyItem> bodyItems = new ArrayList<BodyItem>();
+    private final List<BodyItem> bodyItems = new ArrayList<>();
     
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 
@@ -82,10 +82,10 @@ public class BodyI extends ModelElement implements Body {
     public List<BodyItem> getBodyItems() {
         return Collections.unmodifiableList(bodyItems);
     }
-
+    
     @Override
     public List<Rule> getRules() {
-        List<Rule> rules = new ArrayList<Rule>();
+        List<Rule> rules = new ArrayList<>();
         for(BodyItem bi : getBodyItems()) {
             if(bi.getElement() instanceof Rule) {
                 rules.add((Rule)bi.getElement());
@@ -106,10 +106,24 @@ public class BodyI extends ModelElement implements Body {
         return removeBodyItemChild(rule);
     }
     
+    private List<AtRule> getAtRules() {
+        List<AtRule> atRules = new ArrayList<>();
+        for(Element e : getBodyItems()) {
+            if(e instanceof BodyItem) {
+                Element biElement = ((BodyItem)e).getElement();
+                if(biElement instanceof AtRule) {
+                    AtRule atr = (AtRule)biElement;
+                    atRules.add(atr);
+                }
+            }
+        }
+        return atRules;
+    }
+    
     @Override
     public List<Media> getMedias() {
-        List<Media> rules = new ArrayList<Media>();
-        for(BodyItem bi : getBodyItems()) {
+        List<Media> rules = new ArrayList<>();
+        for(AtRule bi : getAtRules()) {
             if(bi.getElement() instanceof Media) {
                 rules.add((Media)bi.getElement());
             }
@@ -120,7 +134,9 @@ public class BodyI extends ModelElement implements Body {
     @Override
     public void addMedia(Media media) {
         BodyItem bi = model.getElementFactory().createBodyItem();
-        bi.setElement(media);
+        AtRule atr = model.getElementFactory().createAtRule();
+        atr.setElement(media);
+        bi.setElement(atr);
         addElement(bi);
     }
     
@@ -131,8 +147,8 @@ public class BodyI extends ModelElement implements Body {
     
     @Override
     public List<Page> getPages() {
-        List<Page> rules = new ArrayList<Page>();
-        for(BodyItem bi : getBodyItems()) {
+        List<Page> rules = new ArrayList<>();
+        for(AtRule bi : getAtRules()) {
             if(bi.getElement() instanceof Page) {
                 rules.add((Page)bi.getElement());
             }
@@ -143,7 +159,9 @@ public class BodyI extends ModelElement implements Body {
     @Override
     public void addPage(Page page) {
         BodyItem bi = model.getElementFactory().createBodyItem();
-        bi.setElement(page);
+        AtRule atr = model.getElementFactory().createAtRule();
+        atr.setElement(page);
+        bi.setElement(atr);
         addElement(bi);
     }
 
@@ -154,8 +172,8 @@ public class BodyI extends ModelElement implements Body {
     
     @Override
     public List<FontFace> getFontFaces() {
-        List<FontFace> rules = new ArrayList<FontFace>();
-        for(BodyItem bi : getBodyItems()) {
+        List<FontFace> rules = new ArrayList<>();
+        for(AtRule bi : getAtRules()) {
             if(bi.getElement() instanceof FontFace) {
                 rules.add((FontFace)bi.getElement());
             }
@@ -166,7 +184,9 @@ public class BodyI extends ModelElement implements Body {
     @Override
     public void addFontFace(FontFace fontFace) {
         BodyItem bi = model.getElementFactory().createBodyItem();
-        bi.setElement(fontFace);
+        AtRule atr = model.getElementFactory().createAtRule();
+        atr.setElement(fontFace);
+        bi.setElement(atr);
         addElement(bi);
     }
 
@@ -176,9 +196,14 @@ public class BodyI extends ModelElement implements Body {
     }
     
     private boolean removeBodyItemChild(Element element) {
-        Element bodyItem = element.getParent();
+        Element atRule = element.getParent();
+        assert atRule != null;
+        Element bodyItem = atRule.getParent();
         assert bodyItem != null;
-        bodyItem.removeElement(element);
+        boolean removed = atRule.removeElement(element);
+        assert removed;
+        removed = bodyItem.removeElement(atRule);
+        assert removed;
         return removeElement(bodyItem);
     }
     
@@ -193,8 +218,8 @@ public class BodyI extends ModelElement implements Body {
     }
 
     private List<VendorAtRule> getVendorAtRules() {
-        List<VendorAtRule> rules = new ArrayList<VendorAtRule>();
-        for(BodyItem bi : getBodyItems()) {
+        List<VendorAtRule> rules = new ArrayList<>();
+        for(AtRule bi : getAtRules()) {
             if(bi.getElement() instanceof VendorAtRule) {
                 rules.add((VendorAtRule)bi.getElement());
             }
@@ -203,7 +228,7 @@ public class BodyI extends ModelElement implements Body {
     }
     
     private <T extends Element> List<T> getVendorAtRuleElements(Class<T> ofType) {
-         List<T> rules = new ArrayList<T>();
+        List<T> rules = new ArrayList<>();
         for(VendorAtRule var : getVendorAtRules()) {
             Element element = var.getElement();
             if(ofType.isAssignableFrom(element.getClass())) {
@@ -215,12 +240,16 @@ public class BodyI extends ModelElement implements Body {
     }
 
     private void addVendorAtRuleMember(Element element) {
-        BodyItem bi = model.getElementFactory().createBodyItem();
-        addElement(bi);
-        
         VendorAtRule vendorAtRule = model.getElementFactory().createVendorAtRule();
-        bi.setElement(vendorAtRule);
         vendorAtRule.setElement(element);
+        
+        AtRule atr = model.getElementFactory().createAtRule();
+        atr.setElement(vendorAtRule);
+        
+        BodyItem bi = model.getElementFactory().createBodyItem();
+        bi.setElement(atr);
+        
+        addElement(bi);
     }
     
     @Override

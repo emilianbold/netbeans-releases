@@ -46,8 +46,8 @@ import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.Declarations;
-import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.RuleEditorPanel;
@@ -80,14 +80,15 @@ public class RemovePropertyAction extends AbstractAction {
 
             @Override
             public void run(StyleSheet styleSheet) {
-                Declaration toremove = propertyDescriptor.getDeclaration();
-                Declarations declarations = (Declarations)toremove.getParent();
-                declarations.removeDeclaration(toremove);
+                PropertyDeclaration toremove = propertyDescriptor.getDeclaration();
+                Declaration declaration = (Declaration)toremove.getParent();
+                Declarations declarations = (Declarations)declaration.getParent();
+                declaration.removeElement(toremove);
+                
+                declarations.removeDeclaration(declaration);
                 try {
                     model.applyChanges();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (BadLocationException ex) {
+                } catch (IOException | BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
