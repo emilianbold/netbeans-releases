@@ -41,6 +41,11 @@
  */
 package org.netbeans.core.network.proxy;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
 import org.netbeans.core.ProxySettings;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,6 +55,7 @@ import org.netbeans.core.network.proxy.gnome.GnomeNetworkProxy;
 import org.netbeans.core.network.proxy.kde.KdeNetworkProxy;
 import org.netbeans.core.network.proxy.mac.MacNetworkProxy;
 import org.netbeans.core.network.proxy.windows.WindowsNetworkProxy;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
@@ -62,16 +68,18 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = ProxySettings.Reloader.class, position = 1000)
 public class NetworkProxyReloader extends ProxySettings.Reloader {
     
-    private final static Logger LOGGER = Logger.getLogger(NetworkProxyReloader.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(NetworkProxyReloader.class.getName());
     
-    private final static String COMMA = ","; //NOI18N
+    private static final String EMPTY_STRING = ""; //NOI18N
+    private static final String COMMA = ","; //NOI18N
     
-    private final static String GNOME = "gnome"; //NOI18N
-    private final static String KDE = "kde"; //NOI18N
-    private final static String RUNNING_ENV_SYS_PROPERTY = "netbeans.running.environment"; //NOI18N
+    private static final String GNOME = "gnome"; //NOI18N
+    private static final String KDE = "kde"; //NOI18N
+    private static final String RUNNING_ENV_SYS_PROPERTY = "netbeans.running.environment"; //NOI18N
     
     private static final NetworkProxyResolver NETWORK_PROXY_RESOLVER = getNetworkProxyResolver();
     private static final NetworkProxyResolver FALLBACK_NETWORK_PROXY_RESOLVER = getFallbackProxyResolver();
+    
     /**
      * Reloads system proxy network settings.
      * 
@@ -97,8 +105,29 @@ public class NetworkProxyReloader extends ProxySettings.Reloader {
                        
         switch (networkProxySettings.getProxyMode()) {
             case AUTO:
+                final ProxyAutoConfig pacForTest = ProxyAutoConfig.get(networkProxySettings.getPacFileUrl());
+                List<Proxy> testHttpProxy = null;
+                final String testHttpProxyHost;
+                final String testHttpProxyPort;
+
+                try {
+                    testHttpProxy = pacForTest.findProxyForURL(new URI(ProxySettings.HTTP_CONNECTION_TEST_URL));
+                } catch (URISyntaxException ex) {
+                    LOGGER.log(Level.WARNING, "Cannot create URI from: " + ProxySettings.HTTP_CONNECTION_TEST_URL, ex); //NOI18N
+                }
+
+                if (testHttpProxy != null && !testHttpProxy.isEmpty()) {
+                    testHttpProxyHost = ((InetSocketAddress) testHttpProxy.get(0).address()).getHostName();
+                    testHttpProxyPort = Integer.toString(((InetSocketAddress) testHttpProxy.get(0).address()).getPort());
+                } else {
+                    testHttpProxyHost = EMPTY_STRING;
+                    testHttpProxyPort = Integer.toString(0);
+                }
+                        
                 LOGGER.log(Level.INFO, "System network proxy - mode: auto"); //NOI18N
                 LOGGER.log(Level.INFO, "System network proxy - pac url: {0}", networkProxySettings.getPacFileUrl()); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy TEST - http host: {0}", testHttpProxyHost); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy TEST - http port: {0}", testHttpProxyPort); //NOI18N
                 getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTP_HOST);
                 getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTP_PORT);
                 getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTPS_HOST);
@@ -106,6 +135,8 @@ public class NetworkProxyReloader extends ProxySettings.Reloader {
                 getPreferences().remove(ProxySettings.SYSTEM_PROXY_SOCKS_HOST);
                 getPreferences().remove(ProxySettings.SYSTEM_PROXY_SOCKS_PORT);
                 getPreferences().remove(ProxySettings.SYSTEM_NON_PROXY_HOSTS);
+                getPreferences().put(ProxySettings.TEST_SYSTEM_PROXY_HTTP_HOST, testHttpProxyHost);
+                getPreferences().put(ProxySettings.TEST_SYSTEM_PROXY_HTTP_PORT, testHttpProxyPort);
                 getPreferences().put(ProxySettings.SYSTEM_PAC, networkProxySettings.getPacFileUrl());
                 break;
             case MANUAL:
@@ -117,6 +148,8 @@ public class NetworkProxyReloader extends ProxySettings.Reloader {
                 LOGGER.log(Level.INFO, "System network proxy - socks host: {0}", networkProxySettings.getSocksProxyHost()); //NOI18N
                 LOGGER.log(Level.INFO, "System network proxy - socks port: {0}", networkProxySettings.getSocksProxyPort()); //NOI18N
                 LOGGER.log(Level.INFO, "System network proxy - no prohy hosts: {0}", getStringFromArray(networkProxySettings.getNoProxyHosts())); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy TEST - http host: {0}", networkProxySettings.getHttpProxyHost()); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy TEST - http port: {0}", networkProxySettings.getHttpProxyPort()); //NOI18N
                 getPreferences().put(ProxySettings.SYSTEM_PROXY_HTTP_HOST, networkProxySettings.getHttpProxyHost());
                 getPreferences().put(ProxySettings.SYSTEM_PROXY_HTTP_PORT, networkProxySettings.getHttpProxyPort());
                 getPreferences().put(ProxySettings.SYSTEM_PROXY_HTTPS_HOST, networkProxySettings.getHttpsProxyHost());
@@ -124,6 +157,8 @@ public class NetworkProxyReloader extends ProxySettings.Reloader {
                 getPreferences().put(ProxySettings.SYSTEM_PROXY_SOCKS_HOST, networkProxySettings.getSocksProxyHost());
                 getPreferences().put(ProxySettings.SYSTEM_PROXY_SOCKS_PORT, networkProxySettings.getSocksProxyPort());
                 getPreferences().put(ProxySettings.SYSTEM_NON_PROXY_HOSTS, getStringFromArray(networkProxySettings.getNoProxyHosts()));
+                getPreferences().put(ProxySettings.TEST_SYSTEM_PROXY_HTTP_HOST, networkProxySettings.getHttpProxyHost());
+                getPreferences().put(ProxySettings.TEST_SYSTEM_PROXY_HTTP_PORT, networkProxySettings.getHttpProxyPort());
                 getPreferences().remove(ProxySettings.SYSTEM_PAC);
                 break;
             case DIRECT:
@@ -138,6 +173,8 @@ public class NetworkProxyReloader extends ProxySettings.Reloader {
                 getPreferences().remove(ProxySettings.SYSTEM_PROXY_SOCKS_PORT);
                 getPreferences().remove(ProxySettings.SYSTEM_NON_PROXY_HOSTS);
                 getPreferences().remove(ProxySettings.SYSTEM_PAC);
+                getPreferences().remove(ProxySettings.TEST_SYSTEM_PROXY_HTTP_HOST);
+                getPreferences().remove(ProxySettings.TEST_SYSTEM_PROXY_HTTP_PORT);
         }        
         LOGGER.log(Level.FINE, "System network proxy reloading fineshed."); //NOI18N
     }
@@ -222,7 +259,7 @@ public class NetworkProxyReloader extends ProxySettings.Reloader {
             return FALLBACK_NETWORK_PROXY_RESOLVER;
         }
     }
-
+    
     @Override
     public void reload() {
         NetworkProxyReloader.reloadNetworkProxy();

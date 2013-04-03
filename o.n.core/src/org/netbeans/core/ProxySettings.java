@@ -84,41 +84,10 @@ public class ProxySettings {
     public static final String SYSTEM_NON_PROXY_HOSTS = "systemProxyNonProxyHosts";
     public static final String SYSTEM_PAC = "systemPAC";
     
-    
-    // TODO move to proper place
-    public static String getSystemHttpHost() {
-        return getPreferences().get(SYSTEM_PROXY_HTTP_HOST, "");
-    }
-    
-    public static String getSystemHttpPort() {
-        return getPreferences().get(SYSTEM_PROXY_HTTP_PORT, "");
-    }
-    
-    public static String getSystemHttpsHost() {
-        return getPreferences().get(SYSTEM_PROXY_HTTPS_HOST, "");
-    }
-    
-    public static String getSystemHttpsPort() {
-        return getPreferences().get(SYSTEM_PROXY_HTTPS_PORT, "");
-    }
-    
-    public static String getSystemSocksHost() {
-        return getPreferences().get(SYSTEM_PROXY_SOCKS_HOST, "");
-    }
-    
-    public static String getSystemSocksPort() {
-        return getPreferences().get(SYSTEM_PROXY_SOCKS_PORT, "");
-    }
-    
-    public static String getSystemNonProxyHosts() {
-        return getPreferences().get(SYSTEM_NON_PROXY_HOSTS, getModifiedNonProxyHosts(""));
-    }
-    
-    public static String getSystemPac() {
-        return getPreferences().get(SYSTEM_PAC, null);
-    }
-    
-    
+    // Only for testing purpose (Test connection in General options panel)
+    public static final String TEST_SYSTEM_PROXY_HTTP_HOST = "testSystemProxyHttpHost";
+    public static final String TEST_SYSTEM_PROXY_HTTP_PORT = "testSystemProxyHttpPort";
+    public static final String HTTP_CONNECTION_TEST_URL = "http://netbeans.org";
     
     private static String presetNonProxyHosts;
 
@@ -142,6 +111,7 @@ public class ProxySettings {
     private static Preferences getPreferences() {
         return NbPreferences.forModule (ProxySettings.class);
     }
+    
     
     public static String getHttpHost () {
         return normalizeProxyHost (getPreferences ().get (PROXY_HTTP_HOST, ""));
@@ -195,6 +165,49 @@ public class ProxySettings {
         }
         return type;
     }
+    
+    
+    public static String getSystemHttpHost() {
+        return getPreferences().get(SYSTEM_PROXY_HTTP_HOST, "");
+    }
+    
+    public static String getSystemHttpPort() {
+        return getPreferences().get(SYSTEM_PROXY_HTTP_PORT, "");
+    }
+    
+    public static String getSystemHttpsHost() {
+        return getPreferences().get(SYSTEM_PROXY_HTTPS_HOST, "");
+    }
+    
+    public static String getSystemHttpsPort() {
+        return getPreferences().get(SYSTEM_PROXY_HTTPS_PORT, "");
+    }
+    
+    public static String getSystemSocksHost() {
+        return getPreferences().get(SYSTEM_PROXY_SOCKS_HOST, "");
+    }
+    
+    public static String getSystemSocksPort() {
+        return getPreferences().get(SYSTEM_PROXY_SOCKS_PORT, "");
+    }
+    
+    public static String getSystemNonProxyHosts() {
+        return getPreferences().get(SYSTEM_NON_PROXY_HOSTS, getModifiedNonProxyHosts(""));
+    }
+    
+    public static String getSystemPac() {
+        return getPreferences().get(SYSTEM_PAC, null);
+    }
+    
+    
+    public static String getTestSystemHttpHost() {
+        return getPreferences().get(TEST_SYSTEM_PROXY_HTTP_HOST, "");
+    }
+    
+    public static String getTestSystemHttpPort() {
+        return getPreferences().get(TEST_SYSTEM_PROXY_HTTP_PORT, "");
+    }
+    
     
     public static boolean useAuthentication () {
         return getPreferences ().getBoolean (USE_PROXY_AUTHENTICATION, false);

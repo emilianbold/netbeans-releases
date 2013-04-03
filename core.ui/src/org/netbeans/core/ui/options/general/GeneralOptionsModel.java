@@ -49,8 +49,6 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,9 +66,7 @@ class GeneralOptionsModel {
         NOT_TESTED
     }
     
-    private static final Logger LOGGER = Logger.getLogger(GeneralOptionsModel.class.getName());
-    
-    private static final String TESTING_URL = "http://netbeans.org"; //NOI18N
+    private static final Logger LOGGER = Logger.getLogger(GeneralOptionsModel.class.getName());  
     
     private static final RequestProcessor rp = new RequestProcessor(GeneralOptionsModel.class);
     
@@ -256,7 +252,7 @@ class GeneralOptionsModel {
         Proxy testingProxy = null;
         
         try {
-            testingUrl = new URL(TESTING_URL);
+            testingUrl = new URL(ProxySettings.HTTP_CONNECTION_TEST_URL);
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.SEVERE, "Cannot create url from string.", ex);
         }
@@ -265,21 +261,23 @@ class GeneralOptionsModel {
             case ProxySettings.DIRECT_CONNECTION:
                 testingProxy = Proxy.NO_PROXY;
                 break;
-            case ProxySettings.AUTO_DETECT_PROXY:
+            case ProxySettings.AUTO_DETECT_PROXY:            
             case ProxySettings.AUTO_DETECT_PAC:
-                ProxySelector ps = ProxySelector.getDefault();            
-                try {                    
-                    testingProxy = ps.select(testingUrl.toURI()).get(0);
-                } catch (URISyntaxException ex) {
-                    LOGGER.log(Level.SEVERE, "Cannot create URI from URL (" + testingUrl + ")", ex); //NOI18N
-                    message = ex.getLocalizedMessage();
+                String host = ProxySettings.getTestSystemHttpHost();
+                int port = 0;
+                try {
+                    port = Integer.valueOf(ProxySettings.getTestSystemHttpPort());
+                } catch (NumberFormatException ex) {
+                    LOGGER.log(Level.INFO, "Cannot parse port number", ex); //NOI18N
                 }
+                testingProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port));
                 break;
-            case ProxySettings.MANUAL_SET_PROXY:
-            case ProxySettings.MANUAL_SET_PAC:
+            case ProxySettings.MANUAL_SET_PROXY:            
                 int proxyPort = Integer.valueOf(proxyPortString);
                 testingProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));                
                 break;
+            case ProxySettings.MANUAL_SET_PAC:
+                // Never should get here, user cannot set up PAC manualy from IDE
             default:
                 testingProxy = Proxy.NO_PROXY;
         }
