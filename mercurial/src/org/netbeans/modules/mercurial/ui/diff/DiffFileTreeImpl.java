@@ -76,6 +76,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
     
     private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; //NOI18N
     private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; //NOI18N
+    private final static String PATH_SEPARATOR_REGEXP = File.separator.replace("\\", "\\\\"); //NOI18N
     
     /**
      * Defines labels for Diff view table columns.
@@ -278,7 +279,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
             for (DiffNode n : nestedNodes) {
                 String location = n.getLocation();
                 if (prefix == null) {
-                    prefix = path + location.substring(path.length()).split(File.separator, 0)[0];
+                    prefix = path + location.substring(path.length()).split(PATH_SEPARATOR_REGEXP, 0)[0];
                 }
                 if (location.equals(prefix)) {
                     if (!subNodes.isEmpty()) {
@@ -292,7 +293,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
                 } else {
                     data.add(new NodeData(getFile(prefix), prefix, subNodes.toArray(new DiffNode[subNodes.size()])));
                     subNodes.clear();
-                    prefix = path + location.substring(path.length()).split(File.separator, 0)[0];
+                    prefix = path + location.substring(path.length()).split(PATH_SEPARATOR_REGEXP, 0)[0];
                     subNodes.add(n);
                 }
             }
@@ -316,7 +317,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
                     if (top) {
                         name = key.path;
                     } else {
-                        String[] segments = key.path.split(File.separator);
+                        String[] segments = key.path.split(PATH_SEPARATOR_REGEXP);
                         name = segments[segments.length - 1];
                     }
                     final Image icon = getFolderIcon(key.file);
