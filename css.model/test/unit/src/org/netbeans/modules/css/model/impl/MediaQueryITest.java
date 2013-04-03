@@ -44,8 +44,6 @@ package org.netbeans.modules.css.model.impl;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.lib.TestUtil;
-import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.ModelTestBase;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -63,7 +61,6 @@ public class MediaQueryITest extends ModelTestBase {
         Model model = createModel();
         ElementFactory f = model.getElementFactory();
         
-        
         MediaQueryOperator mqo = f.createMediaQueryOperator("ONLY");
         MediaType mt = f.createMediaType("screen");
         
@@ -77,7 +74,7 @@ public class MediaQueryITest extends ModelTestBase {
         Rule rule = f.createRule(
                 f.createSelectorsGroup(f.createSelector(".myclass")),
                 f.createDeclarations(
-                f.createDeclaration(
+                f.createPropertyDeclaration(
                     f.createProperty("color"),
                     f.createPropertyValue(f.createExpression("red")), false))
                 );

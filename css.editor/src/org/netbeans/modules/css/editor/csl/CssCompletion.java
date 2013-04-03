@@ -191,6 +191,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 tokenNode,
                 info,
                 ts,
+                ts.index(),
                 diff,
                 context.getQueryType(),
                 caretOffset,
@@ -698,6 +699,7 @@ public class CssCompletion implements CodeCompletionHandler {
         //possible values there
 
         Node node = context.getActiveNode();
+//        Node node = context.getNodeForNonWhiteTokenBackward();
         FileObject file = context.getSnapshot().getSource().getFileObject();
         String prefix = context.getPrefix();
         int offset = context.getAnchorOffset();
@@ -749,6 +751,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
     private void completeIdSelectors(CompletionContext context, List<CompletionProposal> completionProposals, boolean unmappableClassOrId) {
         Node node = context.getActiveNode();
+//        Node node = context.getNodeForNonWhiteTokenBackward();
         FileObject file = context.getSnapshot().getSource().getFileObject();
         String prefix = context.getPrefix();
         int offset = context.getAnchorOffset();
@@ -804,6 +807,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
     private void completeAtRulesAndHtmlSelectors(CompletionContext context, List<CompletionProposal> completionProposals) {
         Node node = context.getActiveNode();
+//        Node node = context.getNodeForNonWhiteTokenBackward();
         String prefix = context.getPrefix();
         int offset = context.getAnchorOffset();
         NodeType nodeType = node.type();
@@ -825,11 +829,12 @@ public class CssCompletion implements CodeCompletionHandler {
     }
 
     private void completeHtmlSelectors(CompletionContext completionContext, List<CompletionProposal> completionProposals, TokenId tokenNodeTokenId) {
-        NodeType nodeType = completionContext.getActiveNode().type();
         String prefix = completionContext.getPrefix();
         int caretOffset = completionContext.getCaretOffset();
 
-        switch (nodeType) {
+//        Node node = completionContext.getNodeForNonWhiteTokenBackward();
+        Node node = completionContext.getActiveNode();
+        switch (node.type()) {
             case media:
                 completionProposals.addAll(completeHtmlSelectors(completionContext, completionContext.getPrefix(), completionContext.getCaretOffset()));
                 break;
@@ -847,6 +852,8 @@ public class CssCompletion implements CodeCompletionHandler {
             case simpleSelectorSequence:
             case combinator:
             case selector:
+            case rule:
+                assert completionContext.getActiveTokenId() == CssTokenId.WS;
                 //complete selector list without prefix in selector list e.g. BODY, | { ... }
                 completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                 break;
@@ -856,12 +863,14 @@ public class CssCompletion implements CodeCompletionHandler {
                 if (parentNode == null) {
                     break;
                 }
-                switch (completionContext.getTokenSequence().token().id()) {
+                switch (completionContext.getActiveTokenId()) {
                     //completion of selectors after universal selector * | { ... }
                     case WS:
                         switch (parentNode.type()) {
                             case rule:
                             case typeSelector:
+                            case selector:
+                            case selectorsGroup:
                             case simpleSelectorSequence:
                                 //complete selector list in selector list with an error
                                 completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
@@ -876,7 +885,9 @@ public class CssCompletion implements CodeCompletionHandler {
     }
 
     private void completeKeywords(CompletionContext completionContext, List<CompletionProposal> completionProposals, boolean tokenFound) {
-        NodeType nodeType = completionContext.getActiveNode().type();
+        Node node = completionContext.getActiveNode();
+//        Node node = completionContext.getNodeForNonWhiteTokenBackward();
+        NodeType nodeType = node.type();
         if (nodeType == NodeType.imports 
                 || nodeType == NodeType.media 
                 || nodeType == NodeType.page 
@@ -905,8 +916,17 @@ public class CssCompletion implements CodeCompletionHandler {
     }
 
     private void completePropertyName(CompletionContext cc, List<CompletionProposal> completionProposals) {
-        NodeType nodeType = cc.getActiveNode().type();
-
+//        Node activeNode = cc.getActiveNode();
+        
+//        System.out.println("caret =" + cc.getCaretOffset());
+//        Node nonwsnode = cc.getNodeForNonWhiteTokenBackward();
+//        System.out.println("non ws node back= " + nonwsnode);
+        Node node = cc.getActiveNode();
+//        System.out.println("active node= " + node);
+//        CssTokenId tid = cc.getActiveTokenId();
+//        System.out.println("token id= " + tid);
+        NodeType nodeType = node.type();
+        
         String prefix = cc.getPrefix();
         Collection<PropertyDefinition> defs = Properties.getPropertyDefinitions(cc.getFileObject());
         
@@ -924,6 +944,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     || parent.type() == NodeType.rule 
                     || parent.type() == NodeType.declarations 
                     || parent.type() == NodeType.declaration //related to the declarations rule error recovery issue
+                    || parent.type() == NodeType.propertyDeclaration //related to the declarations rule error recovery issue
                     || parent.type() == NodeType.moz_document)) {
                 
                 //>>> Bug 204821 - Incorrect completion for vendor specific properties
@@ -933,11 +954,8 @@ public class CssCompletion implements CodeCompletionHandler {
                     //If the vendor specific property name is completed with the - (MINUS)
                     //prefix the cc.getPrefix() is empty since minus is operator
                     //But particulary in this case the prefix must count
-                    if (cc.getActiveTokenNode().type() == NodeType.token) {
-                        CssTokenId tokenId = NodeUtil.getTokenNodeTokenId(cc.getActiveTokenNode());
-                        if (tokenId == CssTokenId.MINUS) {
+                    if (cc.getActiveTokenId() == CssTokenId.MINUS) {
                             bug204821 = true;
-                        }
                     }
                 }
                 if(bug204821) {
@@ -975,12 +993,15 @@ public class CssCompletion implements CodeCompletionHandler {
             char charAfterCaret) {
 
         Node node = context.getActiveNode();
+//        Node node = context.getNodeForNonWhiteTokenBackward();
         String prefix = context.getPrefix();
         NodeType nodeType = node.type();
-
+        
         switch (nodeType) {
 
-            case declaration: {
+            case declarations:
+            case declaration:
+            case propertyDeclaration: {
                 //value cc without prefix
                 //find property node
 
@@ -1087,8 +1108,17 @@ public class CssCompletion implements CodeCompletionHandler {
             //fall through
 
             case error:
-                NodeType parentType = node.parent().type();
-                if (!(parentType == NodeType.propertyValue || parentType == NodeType.term || parentType == NodeType.expression || parentType == NodeType.operator)) {
+                Node parentNode = node.parent();
+                NodeType parentType = parentNode.type();
+                
+                if (!(
+                        parentType == NodeType.propertyValue 
+                        || parentType == NodeType.term 
+                        || parentType == NodeType.expression 
+                        || parentType == NodeType.operator
+                        || parentType == NodeType.propertyDeclaration
+                        || parentType == NodeType.declaration
+                    )) {
                     break;
                 }
             //fall through
@@ -1100,28 +1130,46 @@ public class CssCompletion implements CodeCompletionHandler {
             case term:
             case expression:
             case operator: {
+                parentNode = node.parent();
+                parentType = parentNode.type();                
+                Node declarationNode = null;
+                
+                if(parentType != null && parentType == NodeType.declaration) {
+                    //fallen through from the error case
+                    //this means there's an error in a property value and 
+                    //due to some semantic predicates we are not in propertyValue
+                    //node but in some of its predecessors.
+                    //Lets ry to find the preceeding propertyDeclaration node
+                    Node siblingBefore = NodeUtil.getSibling(parentNode, true);
+                    if(siblingBefore != null && siblingBefore.type() == NodeType.declaration) {
+                        declarationNode = NodeUtil.getChildByType(siblingBefore, NodeType.propertyDeclaration);
+                    }
+                }
+                
                 //value cc with prefix
                 //a. for term nodes
                 //b. for error skip declaration nodes with declaration parent,
                 //for example if user types color: # and invokes the completion
                 //find property node
                 //1.find declaration node first
-
                 final Node[] result = new Node[1];
-                NodeVisitor declarationSearch = new NodeVisitor() {
+                if(declarationNode == null) {
+                    NodeVisitor declarationSearch = new NodeVisitor() {
 
-                    @Override
-                    public boolean visit(Node node) {
-                        if (node.type() == NodeType.declaration) {
-                            result[0] = node;
+                        @Override
+                        public boolean visit(Node node) {
+                            if (node.type() == NodeType.propertyDeclaration) {
+                                result[0] = node;
+                            }
+                            return false;
                         }
-                        return false;
-                    }
-                };
-                declarationSearch.visitAncestors(node);
-                Node declaratioNode = result[0];
+                        
+                    };
+                    declarationSearch.visitAncestors(node);
+                    declarationNode = result[0];
+                }
                 
-                if(declaratioNode == null) {
+                if(declarationNode == null) {
                     //not in property declaration, give up
                     break;
                 }
@@ -1138,7 +1186,7 @@ public class CssCompletion implements CodeCompletionHandler {
                         return false;
                     }
                 };
-                propertySearch.visitChildren(declaratioNode);
+                propertySearch.visitChildren(declarationNode);
 
                 Node property = result[0];
                 if(property == null) {
@@ -1154,10 +1202,10 @@ public class CssCompletion implements CodeCompletionHandler {
 
                 //text from the node start to the embedded anchor offset (=embedded caret offset - prefix length)
 
-                Node expressionNode = NodeUtil.query(declaratioNode, "propertyValue/expression"); //NOI18N
+                Node expressionNode = NodeUtil.query(declarationNode, "propertyValue/expression"); //NOI18N
                 if(expressionNode == null) {
                     //no expression node, broken source => try just propertyValue node
-                    expressionNode = NodeUtil.query(declaratioNode, "propertyValue"); //NOI18N
+                    expressionNode = NodeUtil.query(declarationNode, "propertyValue"); //NOI18N
                     if(expressionNode == null) {
                         return ;
                     }

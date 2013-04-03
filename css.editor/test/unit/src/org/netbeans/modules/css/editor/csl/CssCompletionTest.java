@@ -134,6 +134,9 @@ public class CssCompletionTest extends CssModuleTestBase {
 
     public void testHtmlSelectorsCompletionAfterIdSelector() throws ParseException, BadLocationException {
         checkCC("#myid |", arr("html"), Match.CONTAINS);
+        checkCC("#myid | { }", arr("html"), Match.CONTAINS);
+        checkCC("#myid | body { }", arr("html"), Match.CONTAINS);
+        
         checkCC("#myid h|", arr("html"), Match.CONTAINS);
         assertComplete("#myid b| { }", "#myid body| { }", "body");
         assertComplete("#myid | { }", "#myid body| { }", "body");
@@ -146,6 +149,10 @@ public class CssCompletionTest extends CssModuleTestBase {
         assertComplete(".aclass | { }", ".aclass body| { }", "body");
     }
 
+    public void testCompleteSelectorAfterSelector() throws ParseException {
+        checkCC("html | { }", arr("body"), Match.CONTAINS);
+    }
+    
     public void testCompleteSelectors() throws ParseException, BadLocationException {
         assertComplete("html b| { }", "html body| { }", "body");
         assertComplete("html bo| { }", "html body| { }", "body");
