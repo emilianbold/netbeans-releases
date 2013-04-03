@@ -746,6 +746,7 @@ public final class EditorFindSupport {
         if (wrapSearch){
             localProps.put(FIND_WRAP_SEARCH, Boolean.FALSE);
             localProps.put(FIND_BACKWARD_SEARCH, Boolean.FALSE);
+            backSearch = false;
             firePropertyChange(null, null, null);
         }
 
