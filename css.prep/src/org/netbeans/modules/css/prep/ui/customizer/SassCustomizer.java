@@ -45,11 +45,11 @@ import java.io.IOException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
-import org.netbeans.modules.web.common.spi.CssPreprocessor;
+import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public final class SassCustomizer implements CssPreprocessor.Customizer {
+public final class SassCustomizer implements CssPreprocessorImplementation.Customizer {
 
     private final Project project;
 
