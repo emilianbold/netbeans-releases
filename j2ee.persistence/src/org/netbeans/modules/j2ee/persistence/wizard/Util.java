@@ -203,7 +203,7 @@ public class Util {
             return false;
         }
         if (JPAModuleInfo.ModuleType.EJB == moduleInfo.getType()
-                && ("3.1".equals(moduleInfo.getVersion()) || "3.0".equals(moduleInfo.getVersion()))) {
+                && ("3.1".equals(moduleInfo.getVersion()) || "3.0".equals(moduleInfo.getVersion()) || "3.2".equals(moduleInfo.getVersion()))) {
             return true;
         }
         if (JPAModuleInfo.ModuleType.WEB == moduleInfo.getType()
