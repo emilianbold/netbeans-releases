@@ -167,11 +167,13 @@ public class DefaultFaceletLibraries {
         private final String namespace;
         private final String prefix;
         private final String displayName;
+        private final String legacyNamespace;
 
         public JsfFaceletPseudoLibrary(FaceletsLibrarySupport support, DefaultLibraryInfo defaultLibraryInfo) {
             this.namespace = defaultLibraryInfo.getNamespace();
             this.prefix = defaultLibraryInfo.getDefaultPrefix();
             this.displayName = defaultLibraryInfo.getDisplayName();
+            this.legacyNamespace = defaultLibraryInfo.getLegacyNamespace();
         }
 
         @Override
@@ -207,6 +209,11 @@ public class DefaultFaceletLibraries {
         @Override
         public String getDisplayName() {
             return displayName;
+        }
+
+        @Override
+        public String getLegacyNamespace() {
+            return legacyNamespace;
         }
 
     }

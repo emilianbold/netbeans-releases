@@ -271,7 +271,7 @@ public enum JSFVersion {
                 return null;
             }
 
-            SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA); //NOII18N
+            SourceGroup[] sourceGroups = sources.getSourceGroups("java"); //NOII18N
             if (sourceGroups.length > 0) {
                 return cpp.findClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
             }
