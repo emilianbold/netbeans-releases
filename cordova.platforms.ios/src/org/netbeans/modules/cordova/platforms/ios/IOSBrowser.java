@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
@@ -53,6 +54,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -64,6 +66,8 @@ import org.openide.util.lookup.Lookups;
 public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
     private final Kind kind;
     private Lookup projectContext;
+    private static final Logger LOGGER = Logger.getLogger(EnhancedBrowserImpl.class.getName());
+    
 
     @Override
     public boolean hasEnhancedMode() {
@@ -145,7 +149,13 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
         ProgressUtils.runOffEventDispatchThread(new Runnable() {
             @Override
             public void run() {
-                    IOSDevice.IPHONE.openUrl(build.getUrl(project, context));
+                IOSDevice.IPHONE.openUrl(build.getUrl(project, context));
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                build.startDebugging(IOSDevice.IPHONE, project, context);
             }
         }, Bundle.LBL_Opening(), new AtomicBoolean(), false);
     }
