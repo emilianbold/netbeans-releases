@@ -87,10 +87,9 @@ public class WebProjectBrowserProvider implements ProjectBrowserProvider {
     public WebBrowser getActiveBrowser() {
         String selectedBrowser = project.evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
         if (selectedBrowser == null) {
-            return null;
-        } else {
-            return BrowserUISupport.getBrowser(selectedBrowser);
+            return BrowserUISupport.getDefaultBrowserChoice(true);
         }
+        return BrowserUISupport.getBrowser(selectedBrowser);
     }
 
     @Override

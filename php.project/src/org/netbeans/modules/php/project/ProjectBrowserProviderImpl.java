@@ -81,7 +81,7 @@ public final class ProjectBrowserProviderImpl implements ProjectBrowserProvider,
     public WebBrowser getActiveBrowser() {
         String browserId = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
         if (browserId == null) {
-            return null;
+            return BrowserUISupport.getDefaultBrowserChoice(true);
         }
         return BrowserUISupport.getBrowser(browserId);
     }

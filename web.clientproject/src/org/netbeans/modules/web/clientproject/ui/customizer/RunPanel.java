@@ -132,7 +132,14 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
 
     private void init() {
         jBrowserComboBox.setRenderer(BrowserUISupport.createBrowserRenderer());
-        jBrowserComboBox.setModel(BrowserUISupport.createBrowserModel(uiProperties.getSelectedBrowser(), false, true));
+        String selectedBrowser = uiProperties.getSelectedBrowser();
+        if (selectedBrowser == null || BrowserUISupport.getBrowser(selectedBrowser) == null) {
+            WebBrowser wb = project.getProjectWebBrowser();
+            if (wb != null) {
+                selectedBrowser = wb.getId();
+            }
+        }
+        jBrowserComboBox.setModel(BrowserUISupport.createBrowserModel(selectedBrowser, false, true));
         updateConfigurationCustomizer();
         // start file
         jFileToRunTextField.setText(uiProperties.getStartFile());

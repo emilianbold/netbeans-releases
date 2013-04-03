@@ -84,12 +84,7 @@ public class ClientSideProjectBrowserProvider implements ProjectBrowserProvider 
 
     @Override
     public WebBrowser getActiveBrowser() {
-        String selectedBrowser = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SELECTED_BROWSER);
-        if (selectedBrowser == null) {
-            return null;
-        } else {
-            return BrowserUISupport.getBrowser(selectedBrowser);
-        }
+        return project.getProjectWebBrowser();
     }
 
     @Override

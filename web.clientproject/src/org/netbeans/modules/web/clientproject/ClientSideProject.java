@@ -199,6 +199,9 @@ public class ClientSideProject implements Project {
             if (id != null) {
                 projectWebBrowser = BrowserUISupport.getBrowser(id);
             }
+            if (projectWebBrowser == null) {
+                projectWebBrowser = BrowserUISupport.getDefaultBrowserChoice(false);
+            }
         }
         return projectWebBrowser;
     }

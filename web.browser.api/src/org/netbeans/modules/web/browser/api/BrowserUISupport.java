@@ -104,31 +104,7 @@ public final class BrowserUISupport {
             boolean showIDEGlobalBrowserOption, boolean includePhoneGap) {
         List<WebBrowser> browsers = WebBrowsers.getInstance().getAll(false, true, showIDEGlobalBrowserOption, includePhoneGap, true);
         if (selectedBrowserId == null) {
-            if (showIDEGlobalBrowserOption) {
-                selectedBrowserId = getDefaultBrowserId();
-            } else {
-                // try to find first browser with NB integration;
-                // preferrably Chrome or Chromium; failing that try at least Embedded WebKit
-                String chromeId = null, chromiumId = null, javafxId = null;
-                for (WebBrowser bw : browsers) {
-                    if (bw.getBrowserFamily() == BrowserFamilyId.CHROME && chromeId == null && bw.hasNetBeansIntegration()) {
-                        chromeId = bw.getId();
-                    }
-                    if (bw.getBrowserFamily() == BrowserFamilyId.CHROMIUM && chromiumId == null && bw.hasNetBeansIntegration()) {
-                        chromiumId = bw.getId();
-                    }
-                    if (bw.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW && javafxId == null && bw.hasNetBeansIntegration()) {
-                        javafxId = bw.getId();
-                    }
-                }
-                if (chromeId != null) {
-                    selectedBrowserId = chromeId;
-                } else if (chromeId != null) {
-                    selectedBrowserId = chromeId;
-                } else if (javafxId != null) {
-                    selectedBrowserId = javafxId;
-                }
-            }
+            selectedBrowserId = getDefaultBrowserChoice(showIDEGlobalBrowserOption).getId();
         }
         BrowserComboBoxModel model = new BrowserComboBoxModel(browsers);
         for (int i = 0; i < model.getSize(); i++) {
@@ -152,11 +128,37 @@ public final class BrowserUISupport {
     }
 
     /**
+     * Returns default recommended browser for project.
+     * @param isIDEGlobalBrowserValidOption can "IDE Global Browser" browser
+     *   be considered as acceptable default browser choice
+     * @return
+     */
+    public static WebBrowser getDefaultBrowserChoice(boolean isIDEGlobalBrowserValidOption) {
+        if (isIDEGlobalBrowserValidOption) {
+            return findWebBrowserById(getDefaultBrowserId());
+        } else {
+            // try to find first browser with NB integration;
+            // preferrably Chrome or Chromium; failing that use first browser from ordered list:
+            List<WebBrowser> browsers = WebBrowsers.getInstance().getAll(false, true, false, true, true);
+            for (WebBrowser bw : browsers) {
+                if (bw.getBrowserFamily() == BrowserFamilyId.CHROME && bw.hasNetBeansIntegration()) {
+                    return bw;
+                }
+                if (bw.getBrowserFamily() == BrowserFamilyId.CHROMIUM && bw.hasNetBeansIntegration()) {
+                    return bw;
+                }
+            }
+            assert !browsers.isEmpty();
+            return browsers.get(0);
+        }
+    }
+
+    /**
      * Returns an ID of default IDE's browser, that is not really a browser instance
      * but an artificial browser item representing whatever is IDE's default browser.
      * @since 1.11
      */
-    public static String getDefaultBrowserId() {
+    private static String getDefaultBrowserId() {
         return WebBrowsers.DEFAULT;
     }
 
