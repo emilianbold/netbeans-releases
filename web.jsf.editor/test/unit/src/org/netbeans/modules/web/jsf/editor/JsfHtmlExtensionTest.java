@@ -71,12 +71,12 @@ public class JsfHtmlExtensionTest extends TestBaseForTestProject {
         testCC("testWebProject/web/cctest.xhtml", "<f:ajax immediate=\"|\"/>", new String[]{"true", "false"}, Match.EXACT);
     }
 
-//    public void testAttributeValueCompletion02() throws BadLocationException, ParseException {
-//        // attribute completion for new namespaces
-//        testCC("testWebProject/web/cctest_newns.xhtml", "<h:selectManyCheckbox layout=\"|\"/>", new String[]{"pageDirection", "lineDirection"}, Match.EXACT);
-//        testCC("testWebProject/web/cctest_newns.xhtml", "<f:ajax immediate=\"|\"/>", new String[]{"true", "false"}, Match.EXACT);
-//    }
-    
+    public void testAttributeValueCompletion02() throws BadLocationException, ParseException {
+        // attribute completion for new namespaces
+        testCC("testWebProject/web/cctest_newns.xhtml", "<h:selectManyCheckbox layout=\"|\"/>", new String[]{"pageDirection", "lineDirection"}, Match.EXACT);
+        testCC("testWebProject/web/cctest_newns.xhtml", "<f:ajax immediate=\"|\"/>", new String[]{"true", "false"}, Match.EXACT);
+    }
+
     protected void testCC(String filePath, String testText, String[] expected, Match matchType) throws BadLocationException, ParseException {
         testCC(filePath, testText, expected, matchType, -1);
     }
