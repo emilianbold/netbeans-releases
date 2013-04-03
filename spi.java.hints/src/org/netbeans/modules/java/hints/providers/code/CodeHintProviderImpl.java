@@ -81,6 +81,7 @@ import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.BooleanOption;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
 import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.IntegerOption;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
@@ -193,21 +194,41 @@ public class CodeHintProviderImpl implements HintProvider {
 
         for (FieldWrapper fw : clazz.getFields()) {
             BooleanOption option = fw.getAnnotation(BooleanOption.class);
-
-            if (option == null) continue;
-
+            IntegerOption iOption = fw.getAnnotation(IntegerOption.class);
+            
             String key = fw.getConstantValue();
 
             if (key == null) continue;
-
             if (allowedOptions != null && !allowedOptions.contains(key)) continue;
             
-            declarativeOptions.add(new OptionDescriptor(key, option.defaultValue(), option.displayName(), option.tooltip()));
+            Object defValue;
+            String displayName;
+            String tooltip;
+            if (option != null) {
+                defValue = option.defaultValue();
+                displayName = option.displayName();
+                tooltip = option.tooltip();
+            } else if (iOption != null) {
+                defValue = iOption.defaultValue();
+                displayName = iOption.displayName();
+                tooltip = iOption.tooltip();
+            } else {
+                return null;
+            }
+            
+            declarativeOptions.add(
+                new OptionDescriptor(
+                    key, 
+                    defValue,
+                    displayName,
+                    tooltip,
+                    option != null ? option : iOption)
+            );
         }
 
         return !declarativeOptions.isEmpty() ? new ReflectiveCustomizerProvider(clazz.getName(), id, declarativeOptions) : null;
     }
-
+    
     static void processMethod(Map<HintMetadata, Collection<HintDescription>> hints, MethodWrapper m, HintMetadata metadata) {
         //XXX: combinations of TriggerTreeKind and TriggerPattern?
         processTreeKindHint(hints, m, metadata);
