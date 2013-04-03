@@ -300,11 +300,6 @@ public abstract class CsmResultItem implements CompletionItem {
                     completion.hideCompletion();
                     completion.hideDocumentation();
                     break;
-                case '.':
-                    if (defaultAction((JTextComponent) evt.getSource(), Character.toString(evt.getKeyChar()))) {
-                        evt.consume();
-                        break;
-                    }
             }
         }
     }
