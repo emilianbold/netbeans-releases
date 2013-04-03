@@ -288,6 +288,7 @@ public class ProxyAutoConfig {
                 fo = URLMapper.findFileObject(new URL(NS_PROXY_AUTO_CONFIG_URL));
             } catch (MalformedURLException ex) {
                 LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                return "";
             }
             reader = new BufferedReader(new java.io.FileReader(FileUtil.toFile(fo)));
         } catch (FileNotFoundException ex) {
