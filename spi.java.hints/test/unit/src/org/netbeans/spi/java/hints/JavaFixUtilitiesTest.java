@@ -899,6 +899,22 @@ public class JavaFixUtilitiesTest extends TestBase {
 		           "}\n");
     }
     
+    public void testExpression2ExpressionStatementTolerance227429() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t() {\n" +
+                           "        System.err.println(1);\n" +
+                           "    }\n" +
+                           "}\n",
+                           "java.lang.System.err.println($args$) => java.lang.System.out.println($args$);",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t() {\n" +
+                           "        System.out.println(1);\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);
 
