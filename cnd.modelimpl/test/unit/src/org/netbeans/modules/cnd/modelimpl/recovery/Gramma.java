@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api;
+package org.netbeans.modules.cnd.modelimpl.recovery;
 
-import java.util.concurrent.atomic.AtomicReference;
-import org.netbeans.modules.web.common.api.LexerUtils;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  *
- * @author marekfukala
+ * @author Alexander Simon
  */
-public class ModelUtilsTest extends ModelTestBase {
-
-    public ModelUtilsTest(String name) {
-        super(name);
-    }
-    
-    public void testFindMatchingMedia() {
-        final Model m1 = createModel("@media screen { div {} } @media xxx { div {} } @media print { } ");
-        final AtomicReference<Media> mr = new AtomicReference<>();
-        ModelVisitor visitor = new ModelVisitor.Adapter() {
-
-            @Override
-            public void visitMedia(Media media) {
-                CharSequence mql =  LexerUtils.trim(m1.getElementSource(media.getMediaQueryList()));
-                if(mql.equals("print")) {
-                    mr.set(media);
-                }
-            }
-            
-        };
-        m1.getStyleSheet().accept(visitor);
-        
-        Media print = mr.get();
-        assertNotNull(print);
-        
-        final Model m2 = createModel("@media xxx { div {} } .clz {}  @media print { } ");
-        m2.getStyleSheet().accept(visitor);
-        
-        Media print2 = mr.get();
-        assertNotNull(print2);
-        
-        ModelUtils utils = new ModelUtils(m2);
-        Media match = utils.findMatchingMedia(m1, print);
-        
-        assertNotNull(match);
-        assertSame(print2, match);
-        
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Gramma {
+    boolean newGramma() default false;
 }

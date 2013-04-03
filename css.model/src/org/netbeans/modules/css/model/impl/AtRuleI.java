@@ -39,51 +39,77 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api;
+package org.netbeans.modules.css.model.impl;
 
-import java.util.concurrent.atomic.AtomicReference;
-import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.*;
 
 /**
+ * Temporary solution for not yet implemented models for | media | page |
+ * counterStyle | fontFace | moz_document
  *
  * @author marekfukala
  */
-public class ModelUtilsTest extends ModelTestBase {
+public class AtRuleI extends ModelElement implements AtRule {
 
-    public ModelUtilsTest(String name) {
-        super(name);
+    private Element element;
+
+    private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
+
+        @Override
+        public void elementAdded(PlainElement plainElement) {
+            element = plainElement;
+        }
+
+        @Override
+        public void elementAdded(Media media) {
+            element = media;
+        }
+        
+        @Override
+        public void elementAdded(Page page) {
+            element = page;
+        }
+        
+        @Override
+        public void elementAdded(FontFace fontFace) {
+            element = fontFace;
+        }
+
+        @Override
+        public void elementAdded(VendorAtRule var) {
+            element = var;
+        }
+        
+    };
+
+    public AtRuleI(Model model) {
+        super(model);
+    }
+
+    public AtRuleI(Model model, Node node) {
+        super(model, node);
+        initChildrenElements();
     }
     
-    public void testFindMatchingMedia() {
-        final Model m1 = createModel("@media screen { div {} } @media xxx { div {} } @media print { } ");
-        final AtomicReference<Media> mr = new AtomicReference<>();
-        ModelVisitor visitor = new ModelVisitor.Adapter() {
-
-            @Override
-            public void visitMedia(Media media) {
-                CharSequence mql =  LexerUtils.trim(m1.getElementSource(media.getMediaQueryList()));
-                if(mql.equals("print")) {
-                    mr.set(media);
-                }
-            }
-            
-        };
-        m1.getStyleSheet().accept(visitor);
-        
-        Media print = mr.get();
-        assertNotNull(print);
-        
-        final Model m2 = createModel("@media xxx { div {} } .clz {}  @media print { } ");
-        m2.getStyleSheet().accept(visitor);
-        
-        Media print2 = mr.get();
-        assertNotNull(print2);
-        
-        ModelUtils utils = new ModelUtils(m2);
-        Media match = utils.findMatchingMedia(m1, print);
-        
-        assertNotNull(match);
-        assertSame(print2, match);
-        
+    @Override
+    public Element getElement() {
+        return element;
     }
+
+    @Override
+    public void setElement(Element element) {
+        super.setElement(element);
+    }
+
+    @Override
+    protected ModelElementListener getElementListener() {
+        return elementListener;
+    }
+    
+    @Override
+    protected Class getModelClass() {
+        return AtRule.class;
+    }
+    
 }

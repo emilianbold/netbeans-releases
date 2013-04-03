@@ -39,51 +39,45 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api;
+package org.netbeans.modules.css.model.impl;
 
-import java.util.concurrent.atomic.AtomicReference;
-import org.netbeans.modules.web.common.api.LexerUtils;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.ModelTestBase;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
+import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
  * @author marekfukala
  */
-public class ModelUtilsTest extends ModelTestBase {
+public class PropertyDeclarationITest extends ModelTestBase {
 
-    public ModelUtilsTest(String name) {
+    public PropertyDeclarationITest(String name) {
         super(name);
     }
-    
-    public void testFindMatchingMedia() {
-        final Model m1 = createModel("@media screen { div {} } @media xxx { div {} } @media print { } ");
-        final AtomicReference<Media> mr = new AtomicReference<>();
-        ModelVisitor visitor = new ModelVisitor.Adapter() {
 
-            @Override
-            public void visitMedia(Media media) {
-                CharSequence mql =  LexerUtils.trim(m1.getElementSource(media.getMediaQueryList()));
-                if(mql.equals("print")) {
-                    mr.set(media);
-                }
-            }
-            
-        };
-        m1.getStyleSheet().accept(visitor);
+    public void testResolvedProperty() throws BadLocationException, ParseException {
+        String code = "div { padding : 1px 2px }";
         
-        Media print = mr.get();
-        assertNotNull(print);
+        StyleSheet styleSheet = createStyleSheet(code);
+        Declaration d = styleSheet.getBody().getRules().get(0).getDeclarations().getDeclarations().get(0);
+        assertNotNull(d);
         
-        final Model m2 = createModel("@media xxx { div {} } .clz {}  @media print { } ");
-        m2.getStyleSheet().accept(visitor);
+        PropertyDeclaration pd = d.getPropertyDeclaration();
+        assertNotNull(pd);
         
-        Media print2 = mr.get();
-        assertNotNull(print2);
+        ResolvedProperty rp = pd.getResolvedProperty();
+        assertNotNull(rp);
         
-        ModelUtils utils = new ModelUtils(m2);
-        Media match = utils.findMatchingMedia(m1, print);
+        assertTrue(rp.isResolved());
+        Node ptree = rp.getParseTree();
         
-        assertNotNull(match);
-        assertSame(print2, match);
-        
+        assertNotNull(ptree);
     }
+    
+    
 }

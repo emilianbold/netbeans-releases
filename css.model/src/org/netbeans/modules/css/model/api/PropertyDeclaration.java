@@ -41,49 +41,30 @@
  */
 package org.netbeans.modules.css.model.api;
 
-import java.util.concurrent.atomic.AtomicReference;
-import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 
 /**
  *
  * @author marekfukala
  */
-public class ModelUtilsTest extends ModelTestBase {
-
-    public ModelUtilsTest(String name) {
-        super(name);
-    }
+public interface PropertyDeclaration extends Element {
     
-    public void testFindMatchingMedia() {
-        final Model m1 = createModel("@media screen { div {} } @media xxx { div {} } @media print { } ");
-        final AtomicReference<Media> mr = new AtomicReference<>();
-        ModelVisitor visitor = new ModelVisitor.Adapter() {
-
-            @Override
-            public void visitMedia(Media media) {
-                CharSequence mql =  LexerUtils.trim(m1.getElementSource(media.getMediaQueryList()));
-                if(mql.equals("print")) {
-                    mr.set(media);
-                }
-            }
-            
-        };
-        m1.getStyleSheet().accept(visitor);
-        
-        Media print = mr.get();
-        assertNotNull(print);
-        
-        final Model m2 = createModel("@media xxx { div {} } .clz {}  @media print { } ");
-        m2.getStyleSheet().accept(visitor);
-        
-        Media print2 = mr.get();
-        assertNotNull(print2);
-        
-        ModelUtils utils = new ModelUtils(m2);
-        Media match = utils.findMatchingMedia(m1, print);
-        
-        assertNotNull(match);
-        assertSame(print2, match);
-        
-    }
+    public Property getProperty();
+    
+    public void setProperty(Property property);
+    
+    public PropertyValue getPropertyValue();
+    
+    public void setPropertyValue(PropertyValue propertyValue);
+    
+    public Prio getPrio();
+    
+    public void setPrio(Prio prio);
+    
+     /**
+     * Returns an instance of {@link ResolvedProperty} which is an object
+     * encapsulation result of the css property value parsing.
+     */
+    public ResolvedProperty getResolvedProperty();
+    
 }

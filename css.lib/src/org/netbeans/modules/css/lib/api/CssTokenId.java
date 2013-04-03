@@ -173,7 +173,7 @@ public enum CssTokenId implements TokenId {
     
     INVALID(Css3Lexer.INVALID, OTHERS),
     DIMENSION(Css3Lexer.DIMENSION, NUMBERS),
-    NL(Css3Lexer.NL, OTHERS), //newline
+    NL(Css3Lexer.NL, WHITESPACES), //newline
     PIPE(Css3Lexer.PIPE, OPERATORS),  //NOI18N
     
     GEN(Css3Lexer.GEN, OTHERS),

@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.css.visual.api;
 
-import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 
 /**
  * Provides additional information for a {@link Declaration}.
