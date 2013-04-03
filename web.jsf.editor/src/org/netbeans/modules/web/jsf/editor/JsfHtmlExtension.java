@@ -71,7 +71,6 @@ import org.netbeans.modules.web.common.taginfo.TagAttrMetadata;
 import org.netbeans.modules.web.common.taginfo.TagMetadata;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
-import org.netbeans.modules.web.jsf.editor.facelets.DefaultFaceletLibraries;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryMetadata;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
@@ -426,7 +425,7 @@ public class JsfHtmlExtension extends HtmlExtension {
     //</cc:implementation>
     //offsers facet declarations only from within this document
     private void completeFacetsInCCImpl(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
-        if ("http://java.sun.com/jsf/composite".equalsIgnoreCase(ns)) {
+        if ("http://java.sun.com/jsf/composite".equalsIgnoreCase(ns) || "http://xmlns.jcp.org/jsf/composite".equalsIgnoreCase(ns)) {
             String tagName = openTag.unqualifiedName().toString();
             if ("renderFacet".equalsIgnoreCase(tagName) || "insertFacet".equalsIgnoreCase(tagName)) { //NOI18N
                 if ("name".equalsIgnoreCase(context.getAttributeName())) { //NOI18N
@@ -445,7 +444,7 @@ public class JsfHtmlExtension extends HtmlExtension {
     //2.<f:facet name="|">
     //offsers all facetes
     private void completeFacets(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
-        if ("http://java.sun.com/jsf/core".equalsIgnoreCase(ns)) {
+        if ("http://java.sun.com/jsf/core".equalsIgnoreCase(ns) || "http://xmlns.jcp.org/jsf/core".equalsIgnoreCase(ns)) {
             String tagName = openTag.unqualifiedName().toString();
             if ("facet".equalsIgnoreCase(tagName)) { //NOI18N
                 if ("name".equalsIgnoreCase(context.getAttributeName())) { //NOI18N
@@ -502,11 +501,15 @@ public class JsfHtmlExtension extends HtmlExtension {
     private void completeXMLNSAttribute(CompletionContext context, List<CompletionItem> items, JsfSupportImpl jsfs) {
         if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) { //NOI18N
             //xml namespace completion for facelets namespaces
-            Collection<String> nss = new ArrayList<String>();
+            Set<String> nss = new HashSet<String>();
             for (Entry<String, Library> entry : jsfs.getLibraries().entrySet()) {
                 nss.add(entry.getKey());
-                if (DefaultLibraryInfo.NS_MAPPING.containsKey(entry.getKey())) {
-                    nss.add(DefaultLibraryInfo.NS_MAPPING.get(entry.getKey()));
+                if (jsfs.isJsf22Plus()) {
+                    nss.add(entry.getValue().getNamespace());
+                    //add also JSF, PASS legacy namespaces
+                    if (DefaultLibraryInfo.NS_MAPPING.containsKey(entry.getValue().getNamespace())) {
+                        nss.add(DefaultLibraryInfo.NS_MAPPING.get(entry.getValue().getNamespace()));
+                    }
                 }
             }
             //add also xhtml ns to the completion
