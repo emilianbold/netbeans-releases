@@ -179,6 +179,11 @@ public class JsfFacesComponentsProvider {
         public String getDisplayName() {
             return namespace;
         }
+
+        @Override
+        public String getLegacyNamespace() {
+            return null;
+        }
     }
 
     private static final class FacesLibraryComponent implements LibraryComponent {
