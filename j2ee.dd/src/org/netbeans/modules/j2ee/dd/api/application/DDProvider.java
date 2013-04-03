@@ -280,7 +280,7 @@ public final class DDProvider {
                 return new InputSource("nbres:/org/netbeans/modules/javaee/dd/impl/resources/application_5.xsd"); //NOI18N
             } else if ("http://java.sun.com/xml/ns/javaee/application_6.xsd".equals(systemId)) {
                 return new InputSource("nbres:/org/netbeans/modules/javaee/dd/impl/resources/application_6.xsd"); //NOI18N
-            } else if ("http://java.sun.com/xml/ns/javaee/application_7.xsd".equals(systemId)) {
+            } else if ("http://xmlns.jcp.org/xml/ns/javaee/application_7.xsd".equals(systemId)) {
                 return new InputSource("nbres:/org/netbeans/modules/javaee/dd/impl/resources/application_7.xsd"); //NOI18N
             } else {
                 // use the default behaviour
