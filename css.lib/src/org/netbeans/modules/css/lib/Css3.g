@@ -603,7 +603,9 @@ declarations
 //        {declarationType == DeclarationType.BLOCK}? ((ws? SEMI)=>ws? SEMI)? ws? declaration?
 //        | {declarationType == DeclarationType.COMMAND}? ws? SEMI ws? declaration?
 //        )
-         declaration ((ws? SEMI)=>ws? SEMI)? ws?
+         ( declaration ((ws? SEMI)=>ws? SEMI)? ws? )
+         |
+         ( SEMI ws? )
     )+
     ;
 //    (

@@ -1279,4 +1279,14 @@ public class Css3ParserTest extends CssTestBase {
     public void testPageContext() throws ParseException, BadLocationException {
         assertParses("@page:left { margin-left: 2cm }");
     }
+    
+    public void testParseJustSemiInDeclarations() throws ParseException, BadLocationException {
+        assertParses(".clz { ; }");
+        assertParses(".clz { ; ; }");
+        assertParses(".clz { ;;; ; }");
+        assertParses(".clz { ;;; ; color: red }");
+        assertParses(".clz { ;;; ; color: red; ; }");
+        assertParses(".clz { color: red; ;; }");
+    }
+    
 }
