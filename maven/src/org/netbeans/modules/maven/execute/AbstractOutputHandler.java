@@ -147,7 +147,7 @@ public abstract class AbstractOutputHandler {
     
     protected final void initProcessorList(Project proj, RunConfig config) {
         // get the registered processors.
-        Lookup.Result<OutputProcessorFactory> result  = Lookup.getDefault().lookup(new Lookup.Template<OutputProcessorFactory>(OutputProcessorFactory.class));
+        Lookup.Result<OutputProcessorFactory> result  = Lookup.getDefault().lookupResult(OutputProcessorFactory.class);
         Iterator<? extends OutputProcessorFactory> it = result.allInstances().iterator();
         while (it.hasNext()) {
             OutputProcessorFactory factory = it.next();
@@ -157,9 +157,7 @@ public abstract class AbstractOutputHandler {
                 _procs.addAll(((ContextOutputProcessorFactory)factory).createProcessorsSet(proj, config));
                 procs = _procs;
             }
-            Iterator it2 = procs.iterator();
-            while (it2.hasNext()) {
-                OutputProcessor proc = (OutputProcessor)it2.next();
+            for (OutputProcessor proc : procs) {
                 String[] regs = proc.getRegisteredOutputSequences();
                 for (int i = 0; i < regs.length; i++) {
                     String str = regs[i];
@@ -181,9 +179,7 @@ public abstract class AbstractOutputHandler {
             currentProcessors.addAll(set);
         }
         visitor.resetVisitor();
-        Iterator it = currentProcessors.iterator();
-        while (it.hasNext()) {
-            OutputProcessor proc = (OutputProcessor)it.next();
+        for (OutputProcessor proc : currentProcessors) {
             proc.sequenceStart(id, visitor);
         }
         if (visitor.getLine() != null) {
@@ -241,9 +237,7 @@ public abstract class AbstractOutputHandler {
     protected final void processFail(String id, OutputWriter writer) {
         checkSleepiness();
         visitor.resetVisitor();
-        Iterator it = currentProcessors.iterator();
-        while (it.hasNext()) {
-            OutputProcessor proc = (OutputProcessor)it.next();
+        for (OutputProcessor proc : currentProcessors) {
             if (proc instanceof NotifyFinishOutputProcessor) {
                 toFinishProcessors.add((NotifyFinishOutputProcessor)proc);
             }
@@ -294,9 +288,7 @@ public abstract class AbstractOutputHandler {
         checkSleepiness();
         
         visitor.resetVisitor();
-        Iterator it = currentProcessors.iterator();
-        while (it.hasNext()) {
-            OutputProcessor proc = (OutputProcessor)it.next();
+        for (OutputProcessor proc : currentProcessors) {
             proc.processLine(input, visitor);
         }
         if (!visitor.isLineSkipped()) {
