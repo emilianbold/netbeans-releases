@@ -169,9 +169,9 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
             @Override
             public void run() {
                 int width = view.getWidth();
-                view.getOutline().getColumnModel().getColumn(0).setPreferredWidth(width * 20 / 100);
+                view.getOutline().getColumnModel().getColumn(0).setPreferredWidth(width * 40 / 100);
                 view.getOutline().getColumnModel().getColumn(1).setPreferredWidth(width * 20 / 100);
-                view.getOutline().getColumnModel().getColumn(2).setPreferredWidth(width * 60 / 100);
+                view.getOutline().getColumnModel().getColumn(2).setPreferredWidth(width * 40 / 100);
             }
         });
     }
