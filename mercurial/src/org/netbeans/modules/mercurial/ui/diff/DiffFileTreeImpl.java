@@ -48,14 +48,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.versioning.util.common.FileTreeView;
 import org.netbeans.swing.outline.RenderDataProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -76,6 +81,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
      * Defines labels for Diff view table columns.
      */ 
     private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
+    private static Image FOLDER_ICON;
     private final MultiDiffPanel master;
 
     {
@@ -313,6 +319,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
                         String[] segments = key.path.split(File.separator);
                         name = segments[segments.length - 1];
                     }
+                    final Image icon = getFolderIcon(key.file);
                     NodeChildren ch = new NodeChildren(new NodeData(key.file, key.path + File.separator, key.nestedNodes), false);
                     node = new AbstractNode(ch, Lookups.fixed(key.file)) {
                         @Override
@@ -322,7 +329,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
 
                         @Override
                         public Image getIcon (int type) {
-                            return getFolderIcon();
+                            return icon;
                         }
                     };
                     ch.buildSubNodes();
@@ -330,6 +337,22 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
                 toCreate.add(node);
             }
             return toCreate.toArray(new Node[toCreate.size()]);
+        }
+
+        private Image getFolderIcon (File file) {
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            Icon icon = null;
+            if (fo != null) {
+                try {
+                    ProjectManager.Result res = ProjectManager.getDefault().isProject2(fo);
+                    if (res != null) {
+                        icon = res.getIcon();
+                    }
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(DiffFileTreeImpl.class.getName()).log(Level.INFO, null, ex);
+                }
+            }
+            return icon == null ? DiffFileTreeImpl.getFolderIcon() : ImageUtilities.icon2Image(icon);
         }
     }
     
@@ -346,17 +369,20 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
     }
 
     private static Image getFolderIcon () {
-        Icon baseIcon = UIManager.getIcon(ICON_KEY_UIMANAGER);
-        Image base;
-        if (baseIcon != null) {
-            base = ImageUtilities.icon2Image(baseIcon);
-        } else {
-            base = (Image) UIManager.get(ICON_KEY_UIMANAGER_NB);
-            if (base == null) { // fallback to our owns
-                base = ImageUtilities.loadImage("org/openide/loaders/defaultFolder.gif"); //NOI18N
+        if (FOLDER_ICON == null) {
+            Icon baseIcon = UIManager.getIcon(ICON_KEY_UIMANAGER);
+            Image base;
+            if (baseIcon != null) {
+                base = ImageUtilities.icon2Image(baseIcon);
+            } else {
+                base = (Image) UIManager.get(ICON_KEY_UIMANAGER_NB);
+                if (base == null) { // fallback to our owns
+                    base = ImageUtilities.loadImage("org/openide/loaders/defaultFolder.gif"); //NOI18N
+                }
             }
+            FOLDER_ICON = base;
         }
-        return base;
+        return FOLDER_ICON;
     }
     
 }
