@@ -215,7 +215,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
         }
 
         private RepositoryRootNode (File repository, DiffNode[] nestedNodes) {
-            super(new NodeChildren(new NodeData(repository, getCommonPrefix(nestedNodes), nestedNodes), true), Lookups.fixed(repository));
+            super(new NodeChildren(new NodeData(new File(repository, getCommonPrefix(nestedNodes)), getCommonPrefix(nestedNodes), nestedNodes), true), Lookups.fixed(repository));
             this.repo = repository;
         }
         
@@ -282,22 +282,22 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
                 }
                 if (location.equals(prefix)) {
                     if (!subNodes.isEmpty()) {
-                        data.add(new NodeData(new File(file, prefix), prefix, subNodes.toArray(new DiffNode[subNodes.size()])));
+                        data.add(new NodeData(getFile(prefix), prefix, subNodes.toArray(new DiffNode[subNodes.size()])));
                         subNodes.clear();
                     }
-                    data.add(new NodeData(new File(file, prefix), prefix, new DiffNode[] { n }));
+                    data.add(new NodeData(getFile(prefix), prefix, new DiffNode[] { n }));
                     prefix = null;
                 } else if (location.startsWith(prefix)) {
                     subNodes.add(n);
                 } else {
-                    data.add(new NodeData(new File(file, prefix), prefix, subNodes.toArray(new DiffNode[subNodes.size()])));
+                    data.add(new NodeData(getFile(prefix), prefix, subNodes.toArray(new DiffNode[subNodes.size()])));
                     subNodes.clear();
                     prefix = path + location.substring(path.length()).split(File.separator, 0)[0];
                     subNodes.add(n);
                 }
             }
             if (!subNodes.isEmpty()) {
-                data.add(new NodeData(new File(file, prefix), prefix, subNodes.toArray(new DiffNode[subNodes.size()])));
+                data.add(new NodeData(getFile(prefix), prefix, subNodes.toArray(new DiffNode[subNodes.size()])));
             }
             
             add(createNodes(data));
@@ -353,6 +353,14 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
                 }
             }
             return icon == null ? DiffFileTreeImpl.getFolderIcon() : ImageUtilities.icon2Image(icon);
+        }
+
+        private File getFile (String prefix) {
+            String p = prefix;
+            if (prefix.startsWith(path)) {
+                p = prefix.substring(path.length());
+            }
+            return new File(file, p);
         }
     }
     
