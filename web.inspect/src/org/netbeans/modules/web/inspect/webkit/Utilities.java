@@ -234,7 +234,7 @@ public class Utilities {
                 Declarations declarations = rule.getDeclarations();
                 if (declarations != null) {
                     for (Declaration declaration : declarations.getDeclarations()) {
-                        org.netbeans.modules.css.model.api.Property modelProperty = declaration.getProperty();
+                        org.netbeans.modules.css.model.api.Property modelProperty = declaration.getPropertyDeclaration().getProperty();
                         String modelPropertyName = modelProperty.getContent().toString().trim();
                         if (properties.contains(modelPropertyName)) {
                             value += 2;
@@ -389,10 +389,10 @@ public class Utilities {
         Declarations declarations = rule.getDeclarations();
         if (declarations != null) {
             for (Declaration declaration : declarations.getDeclarations()) {
-                org.netbeans.modules.css.model.api.Property modelProperty = declaration.getProperty();
+                org.netbeans.modules.css.model.api.Property modelProperty = declaration.getPropertyDeclaration().getProperty();
                 String modelPropertyName = modelProperty.getContent().toString().trim();
                 if (propertyName.equals(modelPropertyName)) {
-                    PropertyValue value = declaration.getPropertyValue();
+                    PropertyValue value = declaration.getPropertyDeclaration().getPropertyValue();
                     propertyValue = value.getExpression().getContent().toString();
                 }
             }
