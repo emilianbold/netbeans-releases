@@ -44,9 +44,6 @@ package org.netbeans.modules.css.model.impl;
 import java.io.IOException;
 import java.util.Collection;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.lib.TestUtil;
-import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.model.api.ModelTestBase;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -72,7 +69,7 @@ public class StyleSheetITest extends ModelTestBase {
         Property p = factory.createProperty("border-color");
         Expression e = factory.createExpression("green");
         PropertyValue pv = factory.createPropertyValue(e);
-        Declaration d = factory.createDeclaration(p, pv, false);
+        PropertyDeclaration d = factory.createPropertyDeclaration(p, pv, false);
 
         Declarations ds = factory.createDeclarations(d);
 
@@ -115,9 +112,11 @@ public class StyleSheetITest extends ModelTestBase {
         assertEquals(1, declarations.size());
 
         Declaration declaration = declarations.iterator().next();
-        assertEquals("color", declaration.getProperty().getContent());
+        assertNotNull(declaration);
+        PropertyDeclaration pd = declaration.getPropertyDeclaration();
+        assertEquals("color", pd.getProperty().getContent());
         
-        PropertyValue pv = declaration.getPropertyValue();
+        PropertyValue pv = pd.getPropertyValue();
         assertNotNull(pv);
         
         Expression expression = pv.getExpression();

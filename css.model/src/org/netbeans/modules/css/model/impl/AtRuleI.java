@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,79 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl.semantic.box;
+package org.netbeans.modules.css.model.impl;
 
-import org.netbeans.modules.css.model.api.semantic.box.BoxType;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.*;
 
 /**
+ * Temporary solution for not yet implemented models for | media | page |
+ * counterStyle | fontFace | moz_document
  *
  * @author marekfukala
  */
-public class BorderColorTest extends BoxTestBase {
+public class AtRuleI extends ModelElement implements AtRule {
 
-    public BorderColorTest(String name) {
-        super(name);
+    private Element element;
+
+    private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
+
+        @Override
+        public void elementAdded(PlainElement plainElement) {
+            element = plainElement;
+        }
+
+        @Override
+        public void elementAdded(Media media) {
+            element = media;
+        }
+        
+        @Override
+        public void elementAdded(Page page) {
+            element = page;
+        }
+        
+        @Override
+        public void elementAdded(FontFace fontFace) {
+            element = fontFace;
+        }
+
+        @Override
+        public void elementAdded(VendorAtRule var) {
+            element = var;
+        }
+        
+    };
+
+    public AtRuleI(Model model) {
+        super(model);
+    }
+
+    public AtRuleI(Model model, Node node) {
+        super(model, node);
+        initChildrenElements();
+    }
+    
+    @Override
+    public Element getElement() {
+        return element;
     }
 
     @Override
-    protected boolean isDebugMode() {
-        return true;
+    public void setElement(Element element) {
+        super.setElement(element);
     }
 
-    public void testBorderColor() {
-        assertBox("border-color", "red", BoxType.BORDER_COLOR, "red");
-        assertBox("border-color", "red green", BoxType.BORDER_COLOR, "red", "green", "red", "green");
-        assertBox("border-color", "red green blue", BoxType.BORDER_COLOR, "red", "green", "blue", "green");
-        assertBox("border-color", "red green blue yellow", BoxType.BORDER_COLOR, "red", "green", "blue", "yellow");
+    @Override
+    protected ModelElementListener getElementListener() {
+        return elementListener;
     }
+    
+    @Override
+    protected Class getModelClass() {
+        return AtRule.class;
+    }
+    
 }

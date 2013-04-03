@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl.semantic.box;
+package org.netbeans.modules.css.model.api;
 
-import org.netbeans.junit.MockServices;
-import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.impl.semantic.PropertyModelId;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderSingleEdgeModelTest extends BoxTestBase {
-
-    public BorderSingleEdgeModelTest(String name) {
-        super(name);
-    }
-
-    public void testBorderXXXColor() {
-        BoxType t = BoxType.BORDER_COLOR;
-        assertBox("border-top-color", "red", t,"red", null, null, null);
-        assertBox("border-right-color", "yellow", t, null, "yellow", null, null);
-        assertBox("border-left-color", "green", t, null, null, null, "green");
-        assertBox("border-bottom-color", "blue", t, null, null, "blue", null);
-    }
+public interface PropertyDeclaration extends Element {
     
-    public void testBorderXXXStyle() {
-        BoxType t = BoxType.BORDER_STYLE;
-        assertBox("border-top-style", "dotted", t, "dotted", null, null, null);
-        assertBox("border-right-style", "dashed", t, null, "dashed", null, null);
-        assertBox("border-bottom-style", "none", t, null, null, "none", null);
-        assertBox("border-left-style", "solid", t, null, null, null, "solid");
-    }
+    public Property getProperty();
     
-    public void testBorderXXXWidth() {
-        BoxType t = BoxType.BORDER_WIDTH;
-        assertBox("border-top-width", "2px", t, "2px", null, null, null);
-        assertBox("border-right-width", "thick", t, null, "thick", null, null);
-        assertBox("border-bottom-width", "5cm", t, null, null, "5cm", null);
-        assertBox("border-left-width", "thin", t, null, null, null, "thin");
-    }
+    public void setProperty(Property property);
     
-   
+    public PropertyValue getPropertyValue();
+    
+    public void setPropertyValue(PropertyValue propertyValue);
+    
+    public Prio getPrio();
+    
+    public void setPrio(Prio prio);
+    
+     /**
+     * Returns an instance of {@link ResolvedProperty} which is an object
+     * encapsulation result of the css property value parsing.
+     */
+    public ResolvedProperty getResolvedProperty();
+    
 }
