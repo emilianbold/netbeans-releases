@@ -88,8 +88,8 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     private String returnType;
 
     //new contructors
-    FunctionScopeImpl(Scope inScope, FunctionDeclarationInfo info, String returnType) {
-        super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody(), inScope.isDeprecated());
+    FunctionScopeImpl(Scope inScope, FunctionDeclarationInfo info, String returnType, boolean isDeprecated) {
+        super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody(), isDeprecated);
         this.paremeters = info.getParameters();
         this.returnType = returnType;
     }

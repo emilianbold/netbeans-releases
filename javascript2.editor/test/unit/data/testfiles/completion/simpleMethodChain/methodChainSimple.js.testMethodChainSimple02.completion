@@ -3,3 +3,4 @@ MyObj.cr|eate().getInfo().big();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     create(): MyObj                 [PUBLIC]   methodChainSimple.js
+METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
