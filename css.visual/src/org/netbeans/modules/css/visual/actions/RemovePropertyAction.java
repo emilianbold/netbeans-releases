@@ -83,7 +83,7 @@ public class RemovePropertyAction extends AbstractAction {
                 PropertyDeclaration toremove = propertyDescriptor.getDeclaration();
                 Declaration declaration = (Declaration)toremove.getParent();
                 Declarations declarations = (Declarations)declaration.getParent();
-                declaration.setPropertyDeclaration(null);
+                declaration.removeElement(toremove);
                 
                 declarations.removeDeclaration(declaration);
                 try {

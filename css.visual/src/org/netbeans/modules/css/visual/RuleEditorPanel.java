@@ -387,7 +387,7 @@ public class RuleEditorPanel extends JPanel {
                public void run(StyleSheet styleSheet) {
                    Declaration declaration = (Declaration)remove.getParent();
                    Declarations declarations = (Declarations)declaration.getParent();
-                   declaration.setPropertyDeclaration(null);
+                   declaration.removeElement(remove);
                    declarations.removeDeclaration(declaration);
                }
            });

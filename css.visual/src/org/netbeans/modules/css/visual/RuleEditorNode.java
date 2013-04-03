@@ -1080,7 +1080,7 @@ public class RuleEditorNode extends AbstractNode {
                                     //remove the whole declaration
                                     Declaration declaration = (Declaration) propertyDeclaration.getParent();
                                     Declarations declarations = (Declarations)declaration.getParent();
-                                    declaration.setPropertyDeclaration(null);
+                                    declaration.removeElement(propertyDeclaration);
                                     declarations.removeDeclaration(declaration);
                                 } else {
                                     //update the value
