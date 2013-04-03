@@ -529,6 +529,20 @@ made subject to such option by the copyright holder.
                 </api>
             </li>
             <li>
+                <api type="export" group="systemproperty" name="netbeans.systemclassloader.patches" category="devel">
+                    By setting this system property
+                    to a classpath (list of directories and JARs separated by the normal
+                    path separator) you may append to the system class loader.
+                </api>
+            </li>
+            <li>
+                <api type="export" group="systemproperty" name="netbeans.patches.cnb" category="devel">
+                    By setting a system property to <code>"netbeans.patches." + module.getCodeNameBase()</code>
+                    one can influence installed modules without changing the build.
+                    Format is <code>-Dnetbeans.patches.org.nb.mods.foo=/path/to.file.jar:/path/to/dir</code>.
+                </api>
+            </li>
+            <li>
                 <api type="export" group="logger" name="org.netbeans.ProxyClassLoader" category="private">
                     This logger logs at <code>WARNING</code> level about accessing resources from the default package.
                 </api>
