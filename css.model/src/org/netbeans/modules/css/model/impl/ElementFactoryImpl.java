@@ -69,6 +69,8 @@ public final class ElementFactoryImpl implements ElementFactory {
         
         if (className.equals("AtRuleId")) {
             return new AtRuleIdI(model, node);
+        } else if (className.equals("AtRule")) {
+            return new AtRuleI(model, node);
         } else if (className.equals("GenericAtRule")) {
             return new GenericAtRuleI(model, node);
         } else if (className.equals("MozDocument")) {
@@ -129,6 +131,8 @@ public final class ElementFactoryImpl implements ElementFactory {
             return new SelectorI(model, node);
         } else if (className.equals("Declarations")) {
             return new DeclarationsI(model, node);
+        } else if (className.equals("PropertyDeclaration")) {
+            return new PropertyDeclarationI(model, node);
         } else if (className.equals("Declaration")) {
             return new DeclarationI(model, node);
         } else if (className.equals("Property")) {
@@ -291,22 +295,29 @@ public final class ElementFactoryImpl implements ElementFactory {
     }
 
     @Override
-    public Declarations createDeclarations(Declaration... declarations) {
+    public Declarations createDeclarations(PropertyDeclaration... declarations) {
         Declarations ds = createDeclarations();
-        for (Declaration d : declarations) {
-            ds.addDeclaration(d);
+        for (PropertyDeclaration pd : declarations) {
+            Declaration declaration = createDeclaration();
+            declaration.setPropertyDeclaration(pd);
+            ds.addDeclaration(declaration);
         }
         return ds;
     }
 
-    @Override
+     @Override
     public Declaration createDeclaration() {
         return new DeclarationI(model);
     }
+    
+    @Override
+    public PropertyDeclaration createPropertyDeclaration() {
+        return new PropertyDeclarationI(model);
+    }
 
     @Override
-    public Declaration createDeclaration(Property property, PropertyValue propertyValue, boolean isImportant) {
-        Declaration d = createDeclaration();
+    public PropertyDeclaration createPropertyDeclaration(Property property, PropertyValue propertyValue, boolean isImportant) {
+        PropertyDeclaration d = createPropertyDeclaration();
         d.setProperty(property);
         d.setPropertyValue(propertyValue);
 
@@ -511,5 +522,10 @@ public final class ElementFactoryImpl implements ElementFactory {
     @Override
     public WebkitKeyframeSelectors createWebkitKeyframeSelectors() {
         return new WebkitKeyframeSelectorsI(model);
+    }
+
+    @Override
+    public AtRule createAtRule() {
+        return new AtRuleI(model);
     }
 }

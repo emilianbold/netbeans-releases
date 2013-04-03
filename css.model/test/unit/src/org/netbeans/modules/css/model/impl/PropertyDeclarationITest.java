@@ -39,28 +39,45 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl.semantic.box;
+package org.netbeans.modules.css.model.impl;
 
-import org.netbeans.modules.css.model.api.semantic.box.Box;
-import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-import org.netbeans.modules.css.model.api.semantic.Edge;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.ModelTestBase;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
+import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
  * @author marekfukala
  */
-public class BoxWithSingleEdge implements Box {
-    private BoxElement value;
-    private Edge edge;
+public class PropertyDeclarationITest extends ModelTestBase {
 
-    public BoxWithSingleEdge(BoxElement value, Edge e) {
-        this.value = value;
-        this.edge = e;
+    public PropertyDeclarationITest(String name) {
+        super(name);
     }
 
-    @Override
-    public BoxElement getEdge(Edge edge) {
-        return this.edge == edge ? value : null;
+    public void testResolvedProperty() throws BadLocationException, ParseException {
+        String code = "div { padding : 1px 2px }";
+        
+        StyleSheet styleSheet = createStyleSheet(code);
+        Declaration d = styleSheet.getBody().getRules().get(0).getDeclarations().getDeclarations().get(0);
+        assertNotNull(d);
+        
+        PropertyDeclaration pd = d.getPropertyDeclaration();
+        assertNotNull(pd);
+        
+        ResolvedProperty rp = pd.getResolvedProperty();
+        assertNotNull(rp);
+        
+        assertTrue(rp.isResolved());
+        Node ptree = rp.getParseTree();
+        
+        assertNotNull(ptree);
     }
+    
     
 }

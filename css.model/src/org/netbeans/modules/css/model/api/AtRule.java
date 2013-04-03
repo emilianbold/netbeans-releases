@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl.semantic.box;
-
-import org.netbeans.modules.css.model.impl.semantic.NodeModel;
-import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.api.semantic.Edge;
-import org.netbeans.modules.css.model.api.semantic.box.Box;
-import org.netbeans.modules.css.lib.api.properties.Node;
-
+package org.netbeans.modules.css.model.api;
 
 /**
  *
  * @author marekfukala
  */
-public class PaddingTop extends NodeModel implements BoxProvider {
-
-    public BoxEdgeSize boxEdgeSize;
-
-    public PaddingTop(Node node) {
-        super(node);
-    }
-
-    @Override
-    public Box getBox(BoxType boxType) {
-        if (boxType == BoxType.PADDING) {
-            return new BoxWithSingleEdge(boxEdgeSize, Edge.TOP);
-        } else {
-            return null;
-        }
-    }
+public interface AtRule extends Element {
+    
+    public Element getElement();
+        
+    public void setElement(Element e);
 }
