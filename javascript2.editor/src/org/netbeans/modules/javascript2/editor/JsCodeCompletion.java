@@ -775,21 +775,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                 }
                             }
                         }
-//                        if (elements.size() == 1) {
-//                            // check whether the item is declaration
-//                            JsElement element = elements.get(0);
-//                            if (!element.isDeclared()) {
-//                                elements.remove(0);
-//                                elements.add(property);
-//                                addAsNew = false;
-//                            }
-//                        } 
                         if (addAsNew) {
                             // expect that all items are declaration -> so just add the next declaraiton
                             elements.add(property);
-                            if (property.getFileObject().getName().equals("ext-debug")) {
-                                System.out.println("offset: " + property.getOffset() + " " + property.isDeclared() + " " + property.getFileObject());
-                            }
                         }
                     }
                 }
@@ -797,14 +785,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
     }
     
-//    private Collection<JsObject> getLibrariesGlobalObjects() {
-//        Collection<JsObject> result = new ArrayList<JsObject>();
-//        JsObject libGlobal = JQueryModel.getGlobalObject();
-//        if (libGlobal != null) {
-//            result.add(libGlobal);
-//        }
-//        return result;
-//    }
 
     private Map<String, List<JsElement>> getDomCompletionResults(CompletionRequest request) {
         Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);
