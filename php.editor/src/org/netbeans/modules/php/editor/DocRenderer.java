@@ -334,6 +334,10 @@ class DocRenderer {
                     PHPDocTypeTag typeTag = (PHPDocTypeTag) tag;
                     String type = composeType(typeTag.getTypes());
                     others.append(processPhpDoc(String.format("<tr><th align=\"left\">Type:</th><td>%s</td></tr>", type))); //NOI18N
+                } else if (kind.equals(PHPDocTag.Type.DEPRECATED)) {
+                    String oline = String.format("<tr><th align=\"left\">%s</th><td>%s</td></tr>%n", //NOI18N
+                            processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getDocumentation()));
+                    others.append(oline);
                 } else if (kind instanceof LinkParsedLine) {
                     String line = String.format("<a href=\"%s\">%s</a><br>%n", kind.getDescription(), kind.getDescription()); //NOI18N
                     links.append(line);
