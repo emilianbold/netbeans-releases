@@ -508,7 +508,7 @@ page
             //the grammar in the http://www.w3.org/TR/css3-page/ says the declaration/margins should be delimited by the semicolon,
             //but there's no such char in the examples => making it arbitrary
             //the original rule:
-            (propertyDeclaration|margin ws?)? (SEMI ws? (propertyDeclaration|margin ws?)?)*
+            ((propertyDeclaration|margin) ws?)? (SEMI ws? ((propertyDeclaration|margin) ws?)?)*
         RBRACE
     ;
     

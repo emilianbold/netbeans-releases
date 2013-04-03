@@ -1275,4 +1275,8 @@ public class Css3ParserTest extends CssTestBase {
     public void testPropertyValueSeparatedByCommas() throws ParseException, BadLocationException {
         assertParses("div { font-family: fantasy,monospace; }");
     }
+    
+    public void testPageContext() throws ParseException, BadLocationException {
+        assertParses("@page:left { margin-left: 2cm }");
+    }
 }
