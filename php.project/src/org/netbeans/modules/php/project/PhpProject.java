@@ -238,6 +238,12 @@ public final class PhpProject implements Project {
             }
         };
         frameworks.addChangeListener(WeakListeners.change(frameworksListener, frameworks));
+        cssPreprocessorsSupport.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                recompileSources();
+            }
+        });
     }
 
     @Override
@@ -417,6 +423,15 @@ public final class PhpProject implements Project {
                 sourceDirectoryFileChangeListener.setSourceDir(null);
             }
         }
+    }
+
+    void recompileSources() {
+        FileObject sourcesDirectory = getSourcesDirectory();
+        if (sourcesDirectory == null) {
+            return;
+        }
+        // force recompiling
+        cssPreprocessorsSupport.process(this, sourcesDirectory, true);
     }
 
     public PhpModule getPhpModule() {
@@ -729,11 +744,7 @@ public final class PhpProject implements Project {
 
             addSourceDirListener();
             cssPreprocessorsSupport.start();
-            FileObject sourcesDirectory = getSourcesDirectory();
-            if (sourcesDirectory != null) {
-                // force recompiling
-                cssPreprocessorsSupport.process(PhpProject.this, sourcesDirectory, true);
-            }
+            recompileSources();
 
             testingProviders.projectOpened();
             frameworks.projectOpened();

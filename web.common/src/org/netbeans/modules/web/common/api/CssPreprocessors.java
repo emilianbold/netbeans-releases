@@ -48,7 +48,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.spi.CssPreprocessor;
+import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
@@ -75,19 +75,19 @@ public final class CssPreprocessors {
      */
     public static final String PREPROCESSORS_PATH = "CSS/PreProcessors"; // NOI18N
 
-    private static final Lookup.Result<CssPreprocessor> PREPROCESSORS = Lookups.forPath(PREPROCESSORS_PATH).lookupResult(CssPreprocessor.class);
+    private static final Lookup.Result<CssPreprocessorImplementation> PREPROCESSORS = Lookups.forPath(PREPROCESSORS_PATH).lookupResult(CssPreprocessorImplementation.class);
 
 
     private CssPreprocessors() {
     }
 
     /**
-     * Get all registered {@link CssPreprocessor}s.
-     * @return a list of all registered {@link CssPreprocessor}s; never {@code null}
+     * Get all registered {@link CssPreprocessorImplementation}s.
+     * @return a list of all registered {@link CssPreprocessorImplementation}s; never {@code null}
      * @see Support#getPreprocessors()
      */
-    public static List<CssPreprocessor> getPreprocessors() {
-        return new ArrayList<CssPreprocessor>(PREPROCESSORS.allInstances());
+    public static List<CssPreprocessorImplementation> getPreprocessors() {
+        return new ArrayList<CssPreprocessorImplementation>(PREPROCESSORS.allInstances());
     }
 
     /**
@@ -125,7 +125,7 @@ public final class CssPreprocessors {
 
         private static final RequestProcessor RP = new RequestProcessor(Support.class.getName(), 2);
 
-        private final List<CssPreprocessor> preprocessors = new CopyOnWriteArrayList<CssPreprocessor>();
+        private final List<CssPreprocessorImplementation> preprocessors = new CopyOnWriteArrayList<CssPreprocessorImplementation>();
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
@@ -161,7 +161,7 @@ public final class CssPreprocessors {
         /**
          * Process given file (can be a folder as well) by {@link #getPreprocessors() all CSS preprocessors}.
          * <p>
-         * For detailed information see {@link CssPreprocessor#process(Project, FileObject)}.
+         * For detailed information see {@link CssPreprocessorImplementation#process(Project, FileObject)}.
          * @param project project where the file belongs, can be {@code null} for file without a project
          * @param fileObject valid or even invalid file (or folder) to be processed
          * @param async {@code true} for running in a separate background thread
@@ -182,18 +182,18 @@ public final class CssPreprocessors {
         }
 
         void processInternal(Project project, FileObject fileObject) {
-            for (CssPreprocessor cssPreprocessor : getPreprocessors()) {
+            for (CssPreprocessorImplementation cssPreprocessor : getPreprocessors()) {
                 cssPreprocessor.process(project, fileObject);
             }
         }
 
         /**
-         * Get all registered {@link CssPreprocessor}s.
-         * @return a list of all registered {@link CssPreprocessor}s; never {@code null}
+         * Get all registered {@link CssPreprocessorImplementation}s.
+         * @return a list of all registered {@link CssPreprocessorImplementation}s; never {@code null}
          * @see CssPreprocessors#getPreprocessors()
          */
-        public List<CssPreprocessor> getPreprocessors() {
-            return new ArrayList<CssPreprocessor>(preprocessors);
+        public List<CssPreprocessorImplementation> getPreprocessors() {
+            return new ArrayList<CssPreprocessorImplementation>(preprocessors);
         }
 
         /**

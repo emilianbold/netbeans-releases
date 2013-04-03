@@ -57,9 +57,9 @@ import org.openide.util.HelpCtx;
  * Instances of this class are {@link org.openide.util.lookup.ServiceProvider registered}
  * in the <code>{@value org.netbeans.modules.web.common.api.CssPreprocessors#PREPROCESSORS_PATH}</code> folder
  * in the module layer.
- * @since 1.37
+ * @since 1.39
  */
-public interface CssPreprocessor {
+public interface CssPreprocessorImplementation {
 
     /**
      * Return the <b>non-localized (usually english)</b> identifier of this CSS preprocessor.
