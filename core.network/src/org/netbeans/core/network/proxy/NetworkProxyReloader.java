@@ -55,7 +55,6 @@ import org.netbeans.core.network.proxy.gnome.GnomeNetworkProxy;
 import org.netbeans.core.network.proxy.kde.KdeNetworkProxy;
 import org.netbeans.core.network.proxy.mac.MacNetworkProxy;
 import org.netbeans.core.network.proxy.windows.WindowsNetworkProxy;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
@@ -71,7 +70,7 @@ public class NetworkProxyReloader extends ProxySettings.Reloader {
     private static final Logger LOGGER = Logger.getLogger(NetworkProxyReloader.class.getName());
     
     private static final String EMPTY_STRING = ""; //NOI18N
-    private static final String COMMA = ","; //NOI18N
+    private static final String NON_PROXY_HOSTS_DELIMITER = "|"; //NOI18N
     
     private static final String GNOME = "gnome"; //NOI18N
     private static final String KDE = "kde"; //NOI18N
@@ -189,8 +188,8 @@ public class NetworkProxyReloader extends ProxySettings.Reloader {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < stringArray.length; i++) {
             sb.append(stringArray[i]);
-            if (i == stringArray.length - 1) {
-                sb.append(COMMA);
+            if (i < stringArray.length - 1) {
+                sb.append(NON_PROXY_HOSTS_DELIMITER);
             }
         }
         

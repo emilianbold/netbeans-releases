@@ -516,23 +516,26 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     private void bTestConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bTestConnectionActionPerformed
         int type;
-        String host, port;
+        String host, port, nonProxyHosts;
         
         if (rbNoProxy.isSelected()) {
             type = ProxySettings.DIRECT_CONNECTION;
             host = null;
             port = null;
+            nonProxyHosts = null;
         } else if (rbUseSystemProxy.isSelected()) {
             type = ProxySettings.AUTO_DETECT_PROXY;
             host = null;
             port = null;
+            nonProxyHosts = null;
         } else {
             type = ProxySettings.MANUAL_SET_PROXY;
             host = tfProxyHost.getText();
             port = tfProxyPort.getText();
+            nonProxyHosts = advancedPanel == null ? null : advancedPanel.getNonProxyHosts();
         }
         
-        GeneralOptionsModel.testConnection(this, type, host, port);     
+        GeneralOptionsModel.testConnection(this, type, host, port, nonProxyHosts);     
     }//GEN-LAST:event_bTestConnectionActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
