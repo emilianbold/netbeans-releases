@@ -167,10 +167,30 @@ public class TraceFlags {
     public static final boolean EXPRESSION_EVALUATOR_RECURSIVE_CALC = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.recursive.calc", false); // NOI18N
     public static final boolean EXPRESSION_EVALUATOR_EXTRA_SPEC_PARAMS_MATCHING = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.extra.spec.params.matching", false); // NOI18N
 
-    public static final boolean CPP_PARSER_ACTION = DebugUtils.getBoolean("cnd.modelimpl.cpp.parser.action", false); // NOI18N
-    public static final boolean TRACE_CPP_PARSER_ACTION = DebugUtils.getBoolean("cnd.modelimpl.cpp.parser.action.trace", false); // NOI18N
-    public static final boolean CPP_PARSER_NEW_GRAMMAR = DebugUtils.getBoolean("cnd.modelimpl.cpp.parser.new.grammar", false); // NOI18N
-    public static final boolean PARSE_HEADERS_WITH_SOURCES = DebugUtils.getBoolean("cnd.modelimpl.parse.headers.with.sources", false); // NOI18N
+    private static final String CNDMODELIMPLCPPPARSERACTION = "cnd.modelimpl.cpp.parser.action";
+    public static boolean CPP_PARSER_ACTION = DebugUtils.getBoolean(CNDMODELIMPLCPPPARSERACTION, false); // NOI18N
+    private static final String CNDMODELIMPLCPPPARSERACTIONTRACE = "cnd.modelimpl.cpp.parser.action.trace";
+    public static boolean TRACE_CPP_PARSER_ACTION = DebugUtils.getBoolean(CNDMODELIMPLCPPPARSERACTIONTRACE, false); // NOI18N
+    private static final String CNDMODELIMPLCPPPARSERNEWGRAMMAR = "cnd.modelimpl.cpp.parser.new.grammar";
+    public static boolean CPP_PARSER_NEW_GRAMMAR = DebugUtils.getBoolean(CNDMODELIMPLCPPPARSERNEWGRAMMAR, false); // NOI18N
+    private static final String CNDMODELIMPLPARSEHEADERSWITHSOURCES = "cnd.modelimpl.parse.headers.with.sources";
+    public static boolean PARSE_HEADERS_WITH_SOURCES = DebugUtils.getBoolean(CNDMODELIMPLPARSEHEADERSWITHSOURCES, false); // NOI18N
+    
+    public static void validate(String flag, boolean value) {
+        if (CNDMODELIMPLCPPPARSERACTION.equals(flag)) {
+            System.setProperty(CNDMODELIMPLCPPPARSERACTION, Boolean.toString(value));
+            CPP_PARSER_ACTION = value;
+        } else if (CNDMODELIMPLCPPPARSERACTIONTRACE.equals(flag)) {
+            System.setProperty(CNDMODELIMPLCPPPARSERACTIONTRACE, Boolean.toString(value));
+            TRACE_CPP_PARSER_ACTION = value;
+        } else if (CNDMODELIMPLCPPPARSERNEWGRAMMAR.equals(flag)) {
+            System.setProperty(CNDMODELIMPLCPPPARSERNEWGRAMMAR, Boolean.toString(value));
+            CPP_PARSER_NEW_GRAMMAR = value;
+        } else if (CNDMODELIMPLPARSEHEADERSWITHSOURCES.equals(flag)) {
+            System.setProperty(CNDMODELIMPLPARSEHEADERSWITHSOURCES, Boolean.toString(value));
+            PARSE_HEADERS_WITH_SOURCES = value;
+        } 
+    }
 
     public static final boolean CACHE_IN_PROJECT = DebugUtils.getBoolean("cnd.cache.in.project", true); // NOI18N
     public static final boolean USE_CURR_PARSE_TIME = DebugUtils.getBoolean("cnd.use.curr.parse.time", false); // NOI18N
