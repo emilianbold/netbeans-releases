@@ -68,6 +68,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
@@ -171,6 +172,8 @@ public class CSSStylesSelectionPanel extends JPanel {
     private JLabel propertySummaryLabel;
     /** Component showing the style information for the current selection. */
     private JComponent selectionView;
+    /** Mapping of {@code Resource} to the corresponding {@code FileObject}. */
+    private final Map<Resource,FileObject> resourceCache = new WeakHashMap<Resource, FileObject>();
 
     /**
      * Creates a new {@code CSSStylesSelectionPanel}.
@@ -347,7 +350,7 @@ public class CSSStylesSelectionPanel extends JPanel {
     private JPanel initRulePane() {
         rulePane = new ListView() {
             {
-                final StylesRenderer renderer = new StylesRenderer();
+                final StylesRenderer renderer = new StylesRenderer(resourceCache);
                 list.setCellRenderer(renderer);
                 MouseAdapter adapter = new MouseAdapter() {
                     @Override
@@ -677,6 +680,7 @@ public class CSSStylesSelectionPanel extends JPanel {
             Project project = pageModel.getProject();
             final Node rulePaneRoot = new MatchedRulesNode(project, selectedNode, matchedStyles);
             rulePaneManager.setRootContext(rulePaneRoot);
+            updateResourceCache(rulePaneRoot);
             final Node propertyPaneRoot = new MatchedPropertiesNode(project, matchedStyles, propertyInfos);
             propertyPaneManager.setRootContext(propertyPaneRoot);
             if (keepSelection) {
@@ -727,6 +731,22 @@ public class CSSStylesSelectionPanel extends JPanel {
                         preselectRule();
                     }
                 });
+            }
+        }
+    }
+
+    /**
+     * Updates the {@code resourceCache} map for the children of the given node.
+     * 
+     * @param parent parent of the nodes for which the {@code resourceCache}
+     * should be updated.
+     */
+    void updateResourceCache(Node parent) {
+        Children children = parent.getChildren();
+        for (Node node : children.getNodes(true)) {
+            Resource ruleOrigin = node.getLookup().lookup(Resource.class);
+            if (ruleOrigin != null) {
+                resourceCache.put(ruleOrigin, ruleOrigin.toFileObject());
             }
         }
     }
@@ -998,11 +1018,17 @@ public class CSSStylesSelectionPanel extends JPanel {
         private final JPanel ruleLocationPanel = new JPanel();
         /** HTML renderer used to obtain background color. */
         private final ListCellRenderer htmlRenderer = HtmlRenderer.createRenderer();
+        /** Mapping of {@code Resource} to the corresponding {@code FileObject}. */
+        private final Map<Resource,FileObject> resourceCache;
 
         /**
          * Creates a new {@code StylesRenderer}.
+         * 
+         * @param resourceCache mapping of {@code Resource} to the corresponding
+         * {@code FileObject}.
          */
-        StylesRenderer() {
+        StylesRenderer(Map<Resource,FileObject> resourceCache) {
+            this.resourceCache = resourceCache;
             ruleLocationPanel.setOpaque(false);
             ruleLocationPanel.setLayout(new BorderLayout());
             ruleLocationPanel.add(ruleLocationLabel, BorderLayout.LINE_START);
@@ -1078,7 +1104,7 @@ public class CSSStylesSelectionPanel extends JPanel {
                 } else {
                     Resource ruleOrigin = node.getLookup().lookup(Resource.class);
                     if (ruleOrigin != null) {
-                        FileObject fob = ruleOrigin.toFileObject();
+                        FileObject fob = resourceCache.get(ruleOrigin);
                         if (fob == null) {
                             ruleLocation = rule.getSourceURL();
                         } else {

@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.hints.bugs;
 
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -272,7 +273,7 @@ public class Tiny {
         
         switch (parent.getKind()) {
             case BLOCK: parentStatements = ((BlockTree) parent).getStatements(); break;
-            case CASE: parentStatements = ((BlockTree) parent).getStatements(); break;
+            case CASE: parentStatements = ((CaseTree) parent).getStatements(); break;
             default: return null;
         }
         

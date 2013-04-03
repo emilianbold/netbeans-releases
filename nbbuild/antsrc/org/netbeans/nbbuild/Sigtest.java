@@ -296,7 +296,7 @@ public class Sigtest extends Task {
         setM(task, "setPackages", String.class, packages);
         setM(task, "setVersion", String.class, version);
         
-        Class<?> actionType = url.loadClass("org.netbeans.apitest.Sigtest$ActionType");
+        Class<? extends EnumeratedAttribute> actionType = url.loadClass("org.netbeans.apitest.Sigtest$ActionType").asSubclass(EnumeratedAttribute.class);
         setM(task, "setAction", EnumeratedAttribute.getInstance(actionType, action.getValue()));
 
         Path path = getM(task, "createClasspath", Path.class);

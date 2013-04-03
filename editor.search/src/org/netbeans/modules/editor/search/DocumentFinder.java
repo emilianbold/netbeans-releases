@@ -274,11 +274,8 @@ public class DocumentFinder
                 if (matcher.find()){
                     try{
                         replaceText = matcher.replaceFirst(convertStringForMatcher(replaceText));
-                    }catch(IndexOutOfBoundsException ioobe){
+                    }catch(IndexOutOfBoundsException | IllegalArgumentException ioobe){
                         notifyRegexpException(ioobe);
-                        return null;
-                    } catch (IllegalArgumentException  iae) {
-                        notifyRegexpException(iae);
                         return null;
                     }   
                 }

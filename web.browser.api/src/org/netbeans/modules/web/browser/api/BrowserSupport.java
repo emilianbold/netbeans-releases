@@ -71,7 +71,6 @@ public final class BrowserSupport {
     private WebBrowser browser;
     private PropertyChangeListener listener;
     private FileObject file;
-    private boolean disableNetBeansIntegration;
 
     private static BrowserSupport INSTANCE = create();
     
@@ -111,18 +110,14 @@ public final class BrowserSupport {
      * Creates a new instance of BrowserSupport for given browser.
      */
     public static BrowserSupport create(WebBrowser browser) {
-        return create(browser, false);
-    }
-    
-    public static BrowserSupport create(WebBrowser browser, boolean disableNetBeansIntegration) {
-        return new BrowserSupport(browser, disableNetBeansIntegration);
+        return new BrowserSupport(browser);
     }
     
     public static BrowserSupport getDefaultEmbedded() {
         if (INSTANCE_EMBEDDED == null) {
             WebBrowser browser = WebBrowsers.getInstance().getEmbedded();
             if (browser != null) {
-                INSTANCE_EMBEDDED = create(browser, false);
+                INSTANCE_EMBEDDED = create(browser);
             }
         }
         return INSTANCE_EMBEDDED;
@@ -133,12 +128,11 @@ public final class BrowserSupport {
      * browser changes in IDE options.
      */
     private BrowserSupport() {
-        this(null, false);
+        this(null);
     }
     
-    private BrowserSupport(WebBrowser browser, boolean disableNetBeansIntegration) {
+    private BrowserSupport(WebBrowser browser) {
         this.browser = browser;
-        this.disableNetBeansIntegration = disableNetBeansIntegration;
     }
     
     public void disablePageInspector() {
@@ -177,7 +171,7 @@ public final class BrowserSupport {
                 };
                 WebBrowsers.getInstance().addPropertyChangeListener(listener);
             }
-            pane = browser.createNewBrowserPane(true, disableNetBeansIntegration);
+            pane = browser.createNewBrowserPane(true);
         }
         return pane;
     }
@@ -233,6 +227,13 @@ public final class BrowserSupport {
         }
         getWebBrowserPane().reload();
         return true;
+    }
+
+    /**
+     * Does this browser supports page reload?
+     */
+    public boolean canReload() {
+        return getWebBrowserPane().canReloadPage();
     }
 
     /**

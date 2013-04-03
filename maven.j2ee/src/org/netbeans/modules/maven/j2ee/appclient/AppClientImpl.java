@@ -57,8 +57,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.BaseEEModuleImpl;
-import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
-import org.netbeans.spi.project.AuxiliaryProperties;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -89,7 +88,7 @@ public class AppClientImpl extends BaseEEModuleImpl {
     }
     
     public Profile getJ2eeProfile() {
-        String version = project.getLookup().lookup(AuxiliaryProperties.class).get(MavenJavaEEConstants.HINT_J2EE_VERSION, true);
+        String version = MavenProjectSupport.readJ2eeVersion(project);
         if (version != null) {
             return Profile.fromPropertiesString(version);
         }
