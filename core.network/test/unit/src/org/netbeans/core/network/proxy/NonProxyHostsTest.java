@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans.core.network.proxy;
 
 import java.net.Proxy;
 import java.net.ProxySelector;
@@ -50,6 +50,7 @@ import java.net.URI;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.core.ProxySettings;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.util.NbPreferences;
@@ -90,7 +91,7 @@ public class NonProxyHostsTest extends NbTestCase {
         System.setProperty ("netbeans.system_socks_proxy", SYSTEM_PROXY_HOST + ":" + SYSTEM_PROXY_PORT);
         System.setProperty ("netbeans.system_http_non_proxy_hosts", "*.other.org");
         System.setProperty ("http.nonProxyHosts", "*.netbeans.org");
-        NbProxySelector.register();
+        new NbProxySelector();
         selector = ProxySelector.getDefault ();
         proxyPreferences  = NbPreferences.root ().node ("/org/netbeans/core");
         proxyPreferences.addPreferenceChangeListener (new PreferenceChangeListener () {

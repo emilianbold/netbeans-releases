@@ -55,13 +55,7 @@
 class PlatformLauncher {
     static const char *REQ_JAVA_VERSION;
     static const char *HELP_MSG;
-    static const char *REG_PROXY_KEY;
-    static const char *REG_PROXY_ENABLED_NAME;
-    static const char *REG_PROXY_SERVER_NAME;
-    static const char *REG_PROXY_OVERRIDE_NAME;
-    static const char *REG_PAC_FILE;
 
-    static const char *PROXY_DIRECT;
     static const char *HEAP_DUMP_PATH;
     static const char *RESTART_FILE_PATH;
 
@@ -70,9 +64,6 @@ class PlatformLauncher {
     static const char *OPT_NB_CLUSTERS;
     static const char *OPT_NB_USERDIR;
     static const char *OPT_DEFAULT_USERDIR_ROOT;
-    static const char *OPT_HTTP_PROXY;
-    static const char *OPT_HTTP_NONPROXY;
-    static const char *OPT_SOCKS_PROXY;
     static const char *OPT_HEAP_DUMP;
     static const char *OPT_HEAP_DUMP_PATH;
     static const char *OPT_KEEP_WORKING_SET_ON_MINIMIZE;
@@ -106,8 +97,6 @@ private:
     bool shouldAutoUpdate(bool firstStart, const char *basePath);
     bool shouldAutoUpdateClusters(bool firstStart);
     void prepareOptions();
-    bool findHttpProxyFromEnv(std::string &proxy);
-    bool findProxiesFromRegistry(std::string &proxy, std::string &nonProxy, std::string &socksProxy);
     std::string & constructClassPath(bool runUpdater);
     void addFilesToClassPath(const char *dir, const char *subdir, const char *pattern);
     void addToClassPath(const char *path, bool onlyIfExists = false);

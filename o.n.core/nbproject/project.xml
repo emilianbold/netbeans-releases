@@ -205,6 +205,10 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.core.network</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.core.startup</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -278,6 +282,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.core.browser.webview</friend>
                 <friend>org.netbeans.core.browser.xulrunner</friend>
                 <friend>org.netbeans.core.execution</friend>
+                <friend>org.netbeans.core.network</friend>
                 <friend>org.netbeans.core.ui</friend>
                 <friend>org.netbeans.core.windows</friend>
                 <friend>org.netbeans.modules.jellytools.platform</friend>
