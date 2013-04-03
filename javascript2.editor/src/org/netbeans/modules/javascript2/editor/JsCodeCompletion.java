@@ -748,7 +748,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
         String name = property.getName();
         if (startsWith(name, request.prefix)) {
             if (!(name.equals(request.prefix) && !property.isDeclared() && request.anchor == property.getOffset())) { // don't include just the prefix
-                boolean addAsNew = false;
                 List<JsElement> elements = addedProperties.get(name);
                 if (elements == null || elements.isEmpty()) {
                     List<JsElement> properties = new ArrayList<JsElement>(1);
@@ -756,14 +755,27 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     addedProperties.put(name, properties);
                 } else {
                     if (!ModelUtils.PROTOTYPE.equals(name) && property.isDeclared()) {
-                        if (elements.size() == 1) {
-                            // check whether the item is declaration
-                            JsElement element = elements.get(0);
-                            if (!element.isDeclared()) {
-                                elements.remove(0);
-                                elements.add(property);
+                        boolean addAsNew = true;
+                        if (!elements.isEmpty()) {
+                            for (int i = 0; i < elements.size(); i++) {
+                                JsElement element = elements.get(i);
+                                if (!element.isDeclared() || element.getFileObject().equals(property.getFileObject())) {
+                                    if (!element.isDeclared() || (element.getOffsetRange() == OffsetRange.NONE && property.getOffsetRange() != OffsetRange.NONE)) {
+                                        elements.remove(i);
+                                        elements.add(property);
+                                        addAsNew = false;
+                                        break;
+                                    } else if (element.getFileObject().equals(property.getFileObject())) {
+                                        addAsNew = false;
+                                        break;
+                                    }
+                                } else if (element.isPlatform() && property.isPlatform()) {
+                                    addAsNew = false;
+                                    break;
+                                }
                             }
-                        } else {
+                        }
+                        if (addAsNew) {
                             // expect that all items are declaration -> so just add the next declaraiton
                             elements.add(property);
                         }
@@ -773,14 +785,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
     }
     
-//    private Collection<JsObject> getLibrariesGlobalObjects() {
-//        Collection<JsObject> result = new ArrayList<JsObject>();
-//        JsObject libGlobal = JQueryModel.getGlobalObject();
-//        if (libGlobal != null) {
-//            result.add(libGlobal);
-//        }
-//        return result;
-//    }
 
     private Map<String, List<JsElement>> getDomCompletionResults(CompletionRequest request) {
         Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);
