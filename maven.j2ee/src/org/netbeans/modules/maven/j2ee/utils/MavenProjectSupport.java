@@ -79,6 +79,7 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
@@ -470,7 +471,8 @@ public class MavenProjectSupport {
     public static String getBrowserID(@NonNull Project project) {
         Parameters.notNull("project", project);
         
-        return getPreferences(project, false).get(MavenJavaEEConstants.SELECTED_BROWSER, null);
+        return getPreferences(project, false).get(MavenJavaEEConstants.SELECTED_BROWSER, 
+                BrowserUISupport.getDefaultBrowserChoice(true).getId());
     }
     
     /**
