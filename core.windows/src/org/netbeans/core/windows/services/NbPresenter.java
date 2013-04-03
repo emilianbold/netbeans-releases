@@ -623,6 +623,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         
         if (isDefaultButton) {
             result++;
+        } else if( b.equals(descriptor.getDefaultValue ()) ) {
+            result--;
         }
         return result;
     }

@@ -66,6 +66,12 @@ import org.openide.util.NbBundle;
  */
 public final class SvnPropertiesAction extends ContextAction {
 
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/properties.png"; //NOI18N
+
+    public SvnPropertiesAction () {
+        super(ICON_RESOURCE);
+    }
+    
     @Override
     protected boolean enable(Node[] nodes) {
         return super.enable(nodes);
