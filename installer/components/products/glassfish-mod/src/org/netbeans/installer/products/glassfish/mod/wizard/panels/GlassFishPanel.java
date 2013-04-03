@@ -151,16 +151,6 @@ public class GlassFishPanel extends DestinationPanel {
         
         jdkLocationPanel.initialize();
 
-        //This makes it possible to perform silent installation with emptry state files 
-        //that means that JDK_LOCATION_PROPERTY property is explicitely set to the first location
-        //that fits the requirements
-        //TODO: Investigate the prons&cons and side affects of moving
-        //this code to the end of JdkLocationPanel.initialize() method        
-        File jdkLocation = jdkLocationPanel.getSelectedLocation();        
-        if(jdkLocation!=null && !jdkLocation.getPath().equals(StringUtils.EMPTY_STRING)) {
-            jdkLocationPanel.setLocation(jdkLocation);
-        }
-        
         getWizard().setProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY, jdkSelectedInGF == null ? "" : jdkSelectedInGF); // NOI18N
     }
 
@@ -340,7 +330,8 @@ public class GlassFishPanel extends DestinationPanel {
         private String getNeedJava7Warning() {
             String warningMessage = null;
             if (getWarningMessage() == null) {
-                if (JavaUtils.criticalLowVersion.newerThan(JavaUtils.getVersion(panel.getJdkLocationPanel().getSelectedLocation()))) {
+                if (JavaUtils.criticalLowVersion.newerThan(
+                        JavaUtils.getVersion(new File(jdkLocationField.getText())))) {
                     warningMessage = StringUtils.format(
                             panel.getProperty(WARNING_JDK_NOT_RECOMMENDED_VERSION), 
                             panel.jdkLocationPanel.getProperty(JdkLocationPanel.JAVA_DOWNLOAD_PAGE_PROPERTY));
