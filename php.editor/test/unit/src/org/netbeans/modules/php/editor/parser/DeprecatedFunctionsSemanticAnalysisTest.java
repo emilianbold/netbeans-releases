@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,74 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.parser;
 
-package org.netbeans.modules.php.editor.verification;
-
+import java.io.File;
 import java.util.Collections;
-import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.RuleContext;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class HintRule implements CaretSensitiveRule, InvokableRule<Hint> {
-    private int caretOffset;
-    private OffsetRange lineBounds;
+public class DeprecatedFunctionsSemanticAnalysisTest extends PHPCodeCompletionTestBase {
 
-    @Override
-    public void setCaretOffset(int caretOffset) {
-        this.caretOffset = caretOffset;
-        this.lineBounds = null;
+    public DeprecatedFunctionsSemanticAnalysisTest(String testName) {
+        super(testName);
     }
 
-    protected boolean showHint(OffsetRange hintOffsetRange, BaseDocument doc) {
-        OffsetRange currentLineBounds = getLineBounds(doc);
-        return currentLineBounds == OffsetRange.NONE || hintOffsetRange.overlaps(currentLineBounds);
-    }
-
-    private OffsetRange getLineBounds(BaseDocument doc) {
-        if (lineBounds == null) {
-            lineBounds = VerificationUtils.createLineBounds(caretOffset, doc);
-        }
-        return lineBounds;
+    public void testDeprecatedPrivateClassMethod() throws Exception {
+        checkSemantic("testfiles/semantic/deprecatedFunctions/deprecatedFunction.php");
     }
 
     @Override
-    public Set<? extends Object> getKinds() {
-        return Collections.singleton(PHPHintsProvider.DEFAULT_HINTS);
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/semantic/deprecatedFunctions"))
+            })
+        );
     }
 
-    @Override
-    public boolean getDefaultEnabled() {
-        return true;
-    }
-
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }
-
-    @Override
-    public boolean appliesTo(RuleContext context) {
-        return context instanceof PHPRuleContext;
-    }
-
-    @Override
-    public boolean showInTasklist() {
-        return false;
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
-    }
 }

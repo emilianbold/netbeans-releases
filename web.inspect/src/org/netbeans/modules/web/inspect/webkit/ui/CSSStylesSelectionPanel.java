@@ -105,6 +105,7 @@ import org.netbeans.modules.css.visual.api.EditCSSRulesAction;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.inspect.ui.DomTC;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
@@ -131,6 +132,8 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 import org.w3c.dom.Document;
 
 /**
@@ -612,7 +615,12 @@ public class CSSStylesSelectionPanel extends JPanel {
                 setDummyRoots();
                 String key;
                 if (containsUnkownNode) {
-                    key = "CSSStylesSelectionPanel.unknownElementSelected"; // NOI18N
+                    TopComponent tc = WindowManager.getDefault().findTopComponent(DomTC.ID);
+                    if (tc.isOpened()) {
+                        key = "CSSStylesSelectionPanel.selectInDOMTree"; // NOI18N
+                    } else {
+                        key = "CSSStylesSelectionPanel.unknownElementSelected"; // NOI18N
+                    }
                 } else {
                     key = "CSSStylesSelectionPanel.noElementSelected"; // NOI18N
                 }

@@ -96,6 +96,10 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             FileObject index = FileUtil.copyFile(examples.getFileObject("index.html"), p, "index");//NOI18N
             FileUtil.copyFile(examples.getFileObject("main.js"), p, "main");//NOI18N
             FileUtil.copyFile(examples.getFileObject("master.css"), p, "master");//NOI18N
+            FileUtil.copyFile(examples.getFileObject("js/index.js"), FileUtil.createFolder(p, "js"), "index");//NOI18N
+            FileUtil.copyFile(examples.getFileObject("css/index.css"), FileUtil.createFolder(p, "css"), "index");//NOI18N
+            FileUtil.copyFile(examples.getFileObject("img/cordova.png"), FileUtil.createFolder(p, "img"), "cordova");//NOI18N
+            FileUtil.copyFile(examples.getFileObject("img/logo.png"), FileUtil.createFolder(p, "img"), "logo");//NOI18N
             DataObject find = DataObject.find(index);
             EditorCookie c = find.getLookup().lookup(EditorCookie.class);
             StyledDocument openDocument = c.openDocument();

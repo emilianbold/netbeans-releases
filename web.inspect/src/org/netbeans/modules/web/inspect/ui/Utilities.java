@@ -152,7 +152,9 @@ public class Utilities {
                             public void run() {
                                 FileObject selectedFile = selectedEditorFile();
                                 // Do not touch editor when it is switched to a related file
-                                if ((selectedFile == null) || !DependentFileQuery.isDependent(fob, selectedFile)) {
+                                if ((selectedFile == null)
+                                        || !isStyledMimeType(selectedFile.getMIMEType())
+                                        || !DependentFileQuery.isDependent(fob, selectedFile)) {
                                     try {
                                         DataObject dob = DataObject.find(fob);
                                         EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
