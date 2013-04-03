@@ -91,10 +91,10 @@ public class CssAnalyser implements ErrorsProvider {
 
             @Override
             public boolean visit(Node node) {
-                if (node.type() == NodeType.property_declaration) {
+                if (node.type() == NodeType.propertyDeclaration) {
                     //do not check declarations in fontFace and counterStyle
                     
-                    //structure: declarations/declaration/property_declaration
+                    //structure: declarations/declaration/propertyDeclaration
                     Node parent = node.parent().parent();
                     if(parent.type() == NodeType.declarations) {
                         switch(parent.parent().type()) {

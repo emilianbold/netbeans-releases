@@ -101,7 +101,7 @@ public class Css3ParserTest extends CssTestBase {
 //        TestUtil.dumpResult(res);
 
         assertNotNull(NodeUtil.query(res.getParseTree(),
-                "styleSheet/body/bodyItem|1/rule/declarations/declaration/property_declaration/property/color"));
+                "styleSheet/body/bodyItem|1/rule/declarations/declaration/propertyDeclaration/property/color"));
     }
 
     public void testErrorRecoveryInsideDeclaration() throws ParseException, BadLocationException {
@@ -120,7 +120,7 @@ public class Css3ParserTest extends CssTestBase {
 
         //the background: red; declaration is properly parsed even if the previous declaration is broken
         assertNotNull(NodeUtil.query(res.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|1/property_declaration/property/background"));
+                TestUtil.bodysetPath + "rule/declarations/declaration|1/propertyDeclaration/property/background"));
 
     }
 
@@ -139,9 +139,9 @@ public class Css3ParserTest extends CssTestBase {
 
         //the garbage char @ is skipped by Parser.syncToIdent()
         assertNotNull(NodeUtil.query(res.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|0/property_declaration/property/color"));
+                TestUtil.bodysetPath + "rule/declarations/declaration|0/propertyDeclaration/property/color"));
         assertNotNull(NodeUtil.query(res.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|1/property_declaration/property/background"));
+                TestUtil.bodysetPath + "rule/declarations/declaration|1/propertyDeclaration/property/background"));
 
     }
 
@@ -155,7 +155,7 @@ public class Css3ParserTest extends CssTestBase {
         assertResult(res, 0);
 
         assertNotNull(NodeUtil.query(res.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration/property_declaration/property/color"));
+                TestUtil.bodysetPath + "rule/declarations/declaration/propertyDeclaration/property/color"));
 
     }
 
@@ -171,9 +171,9 @@ public class Css3ParserTest extends CssTestBase {
         assertResult(res, 0);
 
         assertNotNull(NodeUtil.query(res.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|0/property_declaration/property/color"));
+                TestUtil.bodysetPath + "rule/declarations/declaration|0/propertyDeclaration/property/color"));
         assertNotNull(NodeUtil.query(res.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|1/property_declaration/property/background"));
+                TestUtil.bodysetPath + "rule/declarations/declaration|1/propertyDeclaration/property/background"));
 
     }
 
@@ -446,10 +446,10 @@ public class Css3ParserTest extends CssTestBase {
         TestUtil.dumpResult(result);
 
         assertNotNull(NodeUtil.query(result.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|0/property_declaration/property/filter"));
+                TestUtil.bodysetPath + "rule/declarations/declaration|0/propertyDeclaration/property/filter"));
 
         Node function = NodeUtil.query(result.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|0/property_declaration/propertyValue/expression/term/function");
+                TestUtil.bodysetPath + "rule/declarations/declaration|0/propertyDeclaration/propertyValue/expression/term/function");
         assertNotNull(function);
 
         Node functionName = NodeUtil.query(function, "functionName");
@@ -622,7 +622,7 @@ public class Css3ParserTest extends CssTestBase {
 //        TestUtil.dumpResult(result);
         Node error = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
-                + "rule/declarations/declaration/property_declaration/propertyValue/expression/term/function/error");
+                + "rule/declarations/declaration/propertyDeclaration/propertyValue/expression/term/function/error");
         assertNotNull(error);
 
     }
@@ -705,7 +705,7 @@ public class Css3ParserTest extends CssTestBase {
 
         //declaration
         Node declaration = NodeUtil.query(page,
-                "property_declaration");
+                "propertyDeclaration");
         assertNotNull(declaration);
         assertEquals("color: green", declaration.image().toString());
 
@@ -720,7 +720,7 @@ public class Css3ParserTest extends CssTestBase {
         assertEquals("@top-left", margin_sym.image().toString());
 
         //declaration in the margin body
-        Node declarationInMargin = NodeUtil.query(margin, "declarations/declaration/property_declaration");
+        Node declarationInMargin = NodeUtil.query(margin, "declarations/declaration/propertyDeclaration");
         assertNotNull(declarationInMargin);
 
         //next margin
@@ -733,7 +733,7 @@ public class Css3ParserTest extends CssTestBase {
         assertNotNull(margin_sym2);
         assertEquals("@top-right", margin_sym2.image().toString());
 
-        assertNotNull(NodeUtil.query(margin2, "declarations/declaration/property_declaration"));
+        assertNotNull(NodeUtil.query(margin2, "declarations/declaration/propertyDeclaration"));
 
 
 
@@ -758,7 +758,7 @@ public class Css3ParserTest extends CssTestBase {
 
         //declaration
         Node declaration = NodeUtil.query(page,
-                "property_declaration");
+                "propertyDeclaration");
         assertNotNull(declaration);
         assertEquals("color: green", declaration.image().toString());
 
@@ -780,7 +780,7 @@ public class Css3ParserTest extends CssTestBase {
         assertNotNull(ident);
         assertEquals("cool", ident.image().toString());
 
-        Node declaration = NodeUtil.query(counterStyle, "declarations/declaration/property_declaration");
+        Node declaration = NodeUtil.query(counterStyle, "declarations/declaration/propertyDeclaration");
         assertNotNull(declaration);
         assertEquals("glyph: '|'", declaration.image().toString());
 
@@ -806,7 +806,7 @@ public class Css3ParserTest extends CssTestBase {
                 + "at_rule/fontFace");
         assertNotNull(counterStyle);
 
-        Node declaration = NodeUtil.query(counterStyle, "declarations/declaration|0/property_declaration");
+        Node declaration = NodeUtil.query(counterStyle, "declarations/declaration|0/propertyDeclaration");
         assertNotNull(declaration);
         assertEquals("font-family: Gentium", declaration.image().toString());
 
@@ -921,7 +921,7 @@ public class Css3ParserTest extends CssTestBase {
 //                + "rule/declarations/declaration/propertyValue/error");
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/"
-                + "rule/declarations/declaration/property_declaration/propertyValue/expression/term/error");
+                + "rule/declarations/declaration/propertyDeclaration/propertyValue/expression/term/error");
         assertNotNull(node);
         assertEquals(15, node.from());
         assertEquals(16, node.to());
@@ -1048,7 +1048,7 @@ public class Css3ParserTest extends CssTestBase {
         //in the preceding erroneous declaration
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/"
-                + "rule/declarations/declaration|2/property_declaration");
+                + "rule/declarations/declaration|2/propertyDeclaration");
         assertNotNull(node);
 
         //check if the #header rule is properly parsed
@@ -1124,8 +1124,8 @@ public class Css3ParserTest extends CssTestBase {
 
         Node declarations = NodeUtil.query(wkf, "webkitKeyframesBlock/declarations");
         assertNotNull(declarations);
-        assertNotNull(NodeUtil.query(declarations, "declaration/property_declaration/property"));
-        assertNotNull(NodeUtil.query(declarations, "declaration/property_declaration/propertyValue"));
+        assertNotNull(NodeUtil.query(declarations, "declaration/propertyDeclaration/property"));
+        assertNotNull(NodeUtil.query(declarations, "declaration/propertyDeclaration/propertyValue"));
 
         //block2
         block = NodeUtil.query(wkf, "webkitKeyframesBlock|1");
@@ -1135,8 +1135,8 @@ public class Css3ParserTest extends CssTestBase {
 
         declarations = NodeUtil.query(wkf, "webkitKeyframesBlock/declarations");
         assertNotNull(declarations);
-        assertNotNull(NodeUtil.query(declarations, "declaration/property_declaration/property"));
-        assertNotNull(NodeUtil.query(declarations, "declaration/property_declaration/propertyValue"));
+        assertNotNull(NodeUtil.query(declarations, "declaration/propertyDeclaration/property"));
+        assertNotNull(NodeUtil.query(declarations, "declaration/propertyDeclaration/propertyValue"));
 
 
     }
@@ -1191,7 +1191,7 @@ public class Css3ParserTest extends CssTestBase {
         assertEquals(0, result.getDiagnostics().size());
 
         Node term = NodeUtil.query(result.getParseTree(),
-                "styleSheet/body/bodyItem/rule/declarations/declaration/property_declaration/propertyValue/expression/term");
+                "styleSheet/body/bodyItem/rule/declarations/declaration/propertyDeclaration/propertyValue/expression/term");
         assertNotNull(term);
 
         Node uri = NodeUtil.getChildTokenNode(term, CssTokenId.URI);

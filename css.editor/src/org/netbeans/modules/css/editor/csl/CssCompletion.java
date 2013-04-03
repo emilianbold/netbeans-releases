@@ -944,7 +944,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     || parent.type() == NodeType.rule 
                     || parent.type() == NodeType.declarations 
                     || parent.type() == NodeType.declaration //related to the declarations rule error recovery issue
-                    || parent.type() == NodeType.property_declaration //related to the declarations rule error recovery issue
+                    || parent.type() == NodeType.propertyDeclaration //related to the declarations rule error recovery issue
                     || parent.type() == NodeType.moz_document)) {
                 
                 //>>> Bug 204821 - Incorrect completion for vendor specific properties
@@ -1001,7 +1001,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
             case declarations:
             case declaration:
-            case property_declaration: {
+            case propertyDeclaration: {
                 //value cc without prefix
                 //find property node
 
@@ -1116,7 +1116,7 @@ public class CssCompletion implements CodeCompletionHandler {
                         || parentType == NodeType.term 
                         || parentType == NodeType.expression 
                         || parentType == NodeType.operator
-                        || parentType == NodeType.property_declaration
+                        || parentType == NodeType.propertyDeclaration
                         || parentType == NodeType.declaration
                     )) {
                     break;
@@ -1139,10 +1139,10 @@ public class CssCompletion implements CodeCompletionHandler {
                     //this means there's an error in a property value and 
                     //due to some semantic predicates we are not in propertyValue
                     //node but in some of its predecessors.
-                    //Lets ry to find the preceeding property_declaration node
+                    //Lets ry to find the preceeding propertyDeclaration node
                     Node siblingBefore = NodeUtil.getSibling(parentNode, true);
                     if(siblingBefore != null && siblingBefore.type() == NodeType.declaration) {
-                        declarationNode = NodeUtil.getChildByType(siblingBefore, NodeType.property_declaration);
+                        declarationNode = NodeUtil.getChildByType(siblingBefore, NodeType.propertyDeclaration);
                     }
                 }
                 
@@ -1158,7 +1158,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
                         @Override
                         public boolean visit(Node node) {
-                            if (node.type() == NodeType.property_declaration) {
+                            if (node.type() == NodeType.propertyDeclaration) {
                                 result[0] = node;
                             }
                             return false;

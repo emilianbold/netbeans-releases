@@ -978,7 +978,7 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
         //the "$width: 1000px;" is supposed to be parsed as variable declaration, not property declaration!
-        assertNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration/property_declaration"));
+        assertNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration/propertyDeclaration"));
         assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration/cp_variable_declaration"));
 
     }

@@ -395,7 +395,7 @@ public enum NodeType {
             
     at_rule,
     
-    property_declaration,
+    propertyDeclaration,
 
     fnAttributes
     

@@ -382,7 +382,7 @@ media
         (
             (
             //allow just semicolon closed declaration
-            (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | sass_declaration_interpolation_expression COLON )=>property_declaration ws? SEMI
+            (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | sass_declaration_interpolation_expression COLON )=>propertyDeclaration ws? SEMI
             | {isScssSource()}? sass_extend ws? SEMI
             | {isScssSource()}? sass_debug ws? SEMI
             | {isScssSource()}? sass_control ws? SEMI
@@ -508,7 +508,7 @@ page
             //the grammar in the http://www.w3.org/TR/css3-page/ says the declaration/margins should be delimited by the semicolon,
             //but there's no such char in the examples => making it arbitrary
             //the original rule:
-            (property_declaration|margin ws?)? (SEMI ws? (property_declaration|margin ws?)?)*
+            (propertyDeclaration|margin ws?)? (SEMI ws? (propertyDeclaration|margin ws?)?)*
         RBRACE
     ;
     
@@ -618,9 +618,9 @@ declaration
     :
     (cp_variable_declaration)=>cp_variable_declaration { declarationType = DeclarationType.COMMAND; }
     | (sass_nested_properties)=>sass_nested_properties { declarationType = DeclarationType.BLOCK; }
-    | (property_declaration)=>property_declaration { declarationType = DeclarationType.COMMAND; }
+    | (propertyDeclaration)=>propertyDeclaration { declarationType = DeclarationType.COMMAND; }
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
-    | (~(LBRACE|SEMI|RBRACE|COLON)* COLON)=>property_declaration { declarationType = DeclarationType.COMMAND; }
+    | (~(LBRACE|SEMI|RBRACE|COLON)* COLON)=>propertyDeclaration { declarationType = DeclarationType.COMMAND; }
     | (rule)=>rule { declarationType = DeclarationType.BLOCK; }
     | {isCssPreprocessorSource()}? at_rule { declarationType = DeclarationType.BLOCK; }
     | {isScssSource()}? sass_control { declarationType = DeclarationType.COMMAND; }
@@ -768,7 +768,7 @@ pseudo
              )
     ;
 
-property_declaration
+propertyDeclaration
     : 
     STAR? property COLON ws? propertyValue (ws? prio)?
     | {isCssPreprocessorSource()}? STAR? property COLON ws? cp_propertyValue //cp_expression may contain the IMPORT_SYM
