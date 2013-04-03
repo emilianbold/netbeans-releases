@@ -346,6 +346,9 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         updateButton(pbp);
     }
 
+    @NbBundle.Messages({
+        "ActiveBrowserAction.missingProject=Project does not have any browser selected"
+    })
     private void updateButton(ProjectBrowserProvider pbp) {
         JButton tb = toolbarButton;
         if (tb != null) {
@@ -360,7 +363,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
                     tb.setToolTipText(wb.getName());
                 } else {
                     im = ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-generic.png");
-                    tb.setToolTipText(null);
+                    tb.setToolTipText(Bundle.ActiveBrowserAction_missingProject());
                 }
                 tb.setIcon(new ImageIcon(badgeImageWithArrow(im)));
             }

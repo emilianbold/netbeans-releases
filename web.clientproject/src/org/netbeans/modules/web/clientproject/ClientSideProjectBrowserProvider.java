@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import static org.netbeans.modules.web.browser.spi.ProjectBrowserProvider.PROP_BROWSER_ACTIVE;
@@ -84,13 +84,7 @@ public class ClientSideProjectBrowserProvider implements ProjectBrowserProvider 
 
     @Override
     public WebBrowser getActiveBrowser() {
-        String selectedBrowser = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SELECTED_BROWSER);
-        WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
-        if (browser == null) {
-            return null;
-        } else {
-            return browser;
-        }
+        return project.getProjectWebBrowser();
     }
 
     @Override
