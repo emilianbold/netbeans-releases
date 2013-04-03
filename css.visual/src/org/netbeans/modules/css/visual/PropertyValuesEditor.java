@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.editors;
+package org.netbeans.modules.css.visual;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -78,7 +78,7 @@ import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
-import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.css.visual.RuleEditorPanel;

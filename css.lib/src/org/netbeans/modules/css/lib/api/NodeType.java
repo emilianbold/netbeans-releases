@@ -361,7 +361,6 @@ public enum NodeType {
     
     sass_selector_interpolation_expression,
     sass_declaration_interpolation_expression,
-    sass_mq_interpolation_expression,
     
     sass_interpolation_expression_var,
     
@@ -394,8 +393,12 @@ public enum NodeType {
     
     cp_propertyValue,
             
-    at_rule
+    at_rule,
+    
+    propertyDeclaration,
 
+    fnAttributes
+    
     ;
     
     
