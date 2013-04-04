@@ -39,18 +39,57 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor.model;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
+
+/**
+ *
+ * @author marekfukala
+ */
+public class CPElementHandle {
+    
+    private FileObject file;
+    private String name;
+    private CPElementType type;
+    private String elementId;
+
+    public CPElementHandle(FileObject file, String name, CPElementType type, String elementId) {
+        this.file = file;
+        this.name = name;
+        this.type = type;
+        this.elementId = elementId;
+    }
+
+    public FileObject getFile() {
+        return file;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public CPElementType getType() {
+        return type;
+    }
+    
+    public String getElementId() {
+        return elementId;
+    }
+        
+    /**
+     * Resolve to {@link Element}.
+     */
+    public CPElement resolve(CPModel model) {
+        for(CPElement var : model.getElements()) {
+            CPElementHandle handle = var.getHandle();
+            if(handle.getType() == getType() 
+                    && handle.getName().equals(getName()) 
+                    && handle.getElementId().equals(getElementId())) {
+                return var;
+            }
+        }
+        return null;
+    }
+    
+}

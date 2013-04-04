@@ -39,18 +39,42 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor.less;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
+import org.netbeans.modules.css.prep.process.LessProcessor;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.ui.customizer.LessCustomizer;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
+
+@ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200)
+public final class LessCssPreprocessor implements CssPreprocessorImplementation {
+
+    private static final String IDENTIFIER = "LESS"; // NOI18N
+
+
+    @Override
+    public String getIdentifier() {
+        return IDENTIFIER;
+    }
+
+    @NbBundle.Messages("LessCssPreprocessor.displayName=LESS")
+    @Override
+    public String getDisplayName() {
+        return Bundle.LessCssPreprocessor_displayName();
+    }
+
+    @Override
+    public void process(Project project, FileObject fileObject) {
+        new LessProcessor().process(project, fileObject);
+    }
+
+    @Override
+    public Customizer createCustomizer(Project project) {
+        return new LessCustomizer(project);
+    }
+
+}

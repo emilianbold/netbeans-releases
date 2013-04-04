@@ -39,18 +39,27 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
-import org.openide.util.NbBundle;
+import javax.swing.text.Document;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+
+/**
+ *
+ * @author marekfukala
+ */
+public class EmptyDeclarationFinder implements DeclarationFinder {
+
+    @Override
+    public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
+        return DeclarationLocation.NONE;
+    }
+
+    @Override
+    public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
+        return OffsetRange.NONE;
+    }
+
+}

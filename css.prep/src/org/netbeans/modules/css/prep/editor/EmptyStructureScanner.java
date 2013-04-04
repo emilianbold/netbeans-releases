@@ -39,18 +39,35 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
-import org.openide.util.NbBundle;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.ParserResult;
+
+/**
+ *
+ * @author marekfukala
+ */
+public class EmptyStructureScanner implements StructureScanner {
+
+    @Override
+    public List<? extends StructureItem> scan(ParserResult info) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Map<String, List<OffsetRange>> folds(ParserResult info) {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return null;
+    }
+    
+}

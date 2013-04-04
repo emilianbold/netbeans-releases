@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor.scss;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
-import org.openide.util.NbBundle;
+import java.util.*;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.EmbeddingProvider;
+
+/**
+ *
+ * @author marekfukala
+ */
+@EmbeddingProvider.Registration(mimeType="text/scss", targetMimeType="text/css")
+public class ScssEmbeddingProvider extends EmbeddingProvider {
+
+    @Override
+    public List<Embedding> getEmbeddings(Snapshot snapshot) {
+        return Collections.singletonList(snapshot.create(0, snapshot.getText().length(), "text/css"));
+    }
+
+    @Override
+    public int getPriority() {
+        return Integer.MAX_VALUE; //todo specify reasonable number
+    }
+
+    @Override
+    public void cancel() {
+        //ignore //todo resolve cancel operation
+    }
+}

@@ -39,18 +39,51 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor.refactoring;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.openide.filesystems.FileObject;
+
+/**
+ *
+ * @author marekfukala
+ */
+public class RefactoringElement {
+    
+    private FileObject file;
+    private OffsetRange range;
+    private String name;
+
+    public RefactoringElement(FileObject file, OffsetRange range, String name) {
+        this.file = file;
+        this.range = range;
+        this.name = name;
+    }
+
+    public FileObject getFile() {
+        return file;
+    }
+
+    public OffsetRange getRange() {
+        return range;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder()
+                .append(RefactoringElement.class.getSimpleName())
+                .append(':')
+                .append(file.getNameExt())
+                .append(',')
+                .append(name)
+                .append(',')
+                .append(range).toString();
+    }
+    
+    
+    
+}
