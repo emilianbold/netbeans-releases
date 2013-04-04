@@ -123,8 +123,10 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         lookup = LastActivatedWindowLookup.INSTANCE;
         Lookup.Result<Project> resultPrj = lookup.lookupResult(Project.class);
         Lookup.Result<DataObject> resultDO = lookup.lookupResult(DataObject.class);
+        Lookup.Result<FileObject> resultFO = lookup.lookupResult(FileObject.class);
         resultPrj.addLookupListener(WeakListeners.create(LookupListener.class, this, resultPrj));
         resultDO.addLookupListener(WeakListeners.create(LookupListener.class, this, resultDO));
+        resultFO.addLookupListener(WeakListeners.create(LookupListener.class, this, resultFO));
         currentBrowserProviderListener = new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent evt) {
                 if (ProjectBrowserProvider.PROP_BROWSER_ACTIVE.equals(evt.getPropertyName())) {
@@ -423,6 +425,13 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         Set<Project> result = new LinkedHashSet<Project>(); // XXX or use OpenProjectList.projectByDisplayName?
         for (Project p : lookup.lookupAll(Project.class)) {
             result.add(p);
+        }
+        // Now try to guess the project from fileobjects
+        for (FileObject fObj : lookup.lookupAll(FileObject.class)) {
+            Project p = FileOwnerQuery.getOwner(fObj);
+            if ( p != null ) {
+                result.add( p );
+            }
         }
         // Now try to guess the project from dataobjects
         for (DataObject dObj : lookup.lookupAll(DataObject.class)) {

@@ -123,12 +123,12 @@ public class JsLanguage extends DefaultLanguageConfig {
 
     @Override
     public HintsProvider getHintsProvider() {
-        return  new JsHintsProvider();
+        return new JsHintsProvider();
     }
 
     @Override
     public StructureScanner getStructureScanner() {
-        return new JsStructureScanner();
+        return new JsStructureScanner(JsTokenId.javascriptLanguage());
     }
 
     @Override
