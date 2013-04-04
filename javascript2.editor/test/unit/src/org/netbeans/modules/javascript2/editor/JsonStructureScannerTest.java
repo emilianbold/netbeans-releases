@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.bugzilla;
-
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import org.netbeans.modules.bugtracking.cache.IssueCache.Status;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
-import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugzilla.query.QueryNotifyListener;
+package org.netbeans.modules.javascript2.editor;
 
 /**
  *
- * @author tomas
+ * @author Petr Hejl
  */
-public class TestQueryNotifyListener implements QueryNotifyListener {
-    public boolean started = false;
-    public boolean finished = false;
-    public List<BugzillaIssue> issues = new ArrayList<BugzillaIssue>();
-    private BugzillaQuery q;
-    public TestQueryNotifyListener(BugzillaQuery q) {
-        this.q = q;
-        q.addNotifyListener(this);
+public class JsonStructureScannerTest extends JsonTestBase {
+    
+    public JsonStructureScannerTest(String testName) {
+        super(testName);
     }
-    public void started() {
-        started = true;
+    
+    public void testFolds01() throws Exception {
+        checkFolds("testfiles/simple.json");
     }
-    public void notifyData(BugzillaIssue issue) {
-        issues.add(issue);
-    }
-    public void finished() {
-        finished = true;
-    }
-    public void reset() {
-        started = false;
-        finished = false;
-        issues = new ArrayList<BugzillaIssue>();
-    }
-    public List<BugzillaIssue> getIssues(EnumSet<Status> includeStatus) {
-        List<BugzillaIssue> ret = new ArrayList<BugzillaIssue>();
-        for (BugzillaIssue issue : issues) {
-            if (q == null || includeStatus.contains(q.getIssueStatus(issue.getID()))) {
-                ret.add(issue);
-            }
-        }
-        return ret;
-    }
+
 }

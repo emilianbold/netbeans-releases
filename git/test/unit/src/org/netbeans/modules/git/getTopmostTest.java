@@ -207,12 +207,12 @@ public class getTopmostTest extends NbTestCase {
         r1f1 = getFile(r1, "file", "s2", 1500);
         tm1 = Git.getInstance().getRepositoryRoot(r1f1);
         assertEquals(r1, tm1);
-        assertEquals(1472, m.size());
+        assertEquals(1500, m.size());
 
         r1f1 = getFile(r1, "file", "s3", 10);
         tm1 = Git.getInstance().getRepositoryRoot(r1f1);
         assertEquals(r1, tm1);
-        assertEquals(1482, m.size());
+        assertEquals(1500, m.size());
     }
 
     public void testGetRepositoryRootUnversioned() throws Exception {
@@ -304,7 +304,7 @@ public class getTopmostTest extends NbTestCase {
     }
 
     private File createFolder(String f) throws IOException {
-        return createFolder(getTempDir(), f);
+        return createFolder(getWorkDir(), f);
     }
 
     private File createFolder(File parentfolder, String f) {

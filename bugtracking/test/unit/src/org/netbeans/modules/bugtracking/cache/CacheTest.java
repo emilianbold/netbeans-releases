@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.ui.issue.cache;
+package org.netbeans.modules.bugtracking.cache;
 
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
@@ -54,15 +54,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
-import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache.IssueAccessor;
+import org.netbeans.modules.bugtracking.cache.IssueCache.IssueAccessor;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -90,28 +88,31 @@ public class CacheTest extends NbTestCase {
         BugtrackingUtil.deleteRecursively(wd);
     }
 
-    public void testInitialSeen2Modified2Seen() throws MalformedURLException, CoreException, IOException, InterruptedException {
+    public void testInitialSeen2Modified2Seen() throws MalformedURLException, IOException, InterruptedException {
         long tsBeforeRepo = System.currentTimeMillis();
         Thread.sleep(10);
 
         CTestRepository repo = new CTestRepository("test repo");
-        IssueCache<CTestIssue, String> cache = repo.getLookup().lookup(IssueCache.class);
+        IssueCache<CTestIssue> cache = repo.getCache();
         // creating issue with creation     < repo reference time;
         //                     modification < repo reference time
         // => initial status SEEN
-        CTestIssue issue = cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsBeforeRepo + "#v11#v21#v31");
+        //        new CTestIssue(TestKit.getRepository(CTestRepository.this), issueData)
+        CTestIssue issue = new CTestIssue(TestKit.getRepository(repo), "1#issue1#" + tsBeforeRepo + "#" + tsBeforeRepo + "#v11#v21#v31");
+        issue = cache.setIssueData("1", issue);
         assertNotNull(issue);
-        int status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        IssueCache.Status status = cache.getStatus(issue.getID());
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         Map<String, String> attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
 
         // setting changed data => MODIFIED, attrs stay the same
         long tsAfterRepo = System.currentTimeMillis();
-        cache.setIssueData(issue, "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v12#v22#v32");
+        issue.setData("1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v12#v22#v32");
+        cache.setIssueData(issue.getID(), issue);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -119,39 +120,41 @@ public class CacheTest extends NbTestCase {
         // set SEEN TRUE => SEEN
         cache.setSeen(issue.getID(), true);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v12", "v22", "v32");
     }
 
-    public void testInitialNew2RefreshChanged2Seen2Unseen() throws MalformedURLException, CoreException, IOException, InterruptedException {
+    public void testInitialNew2RefreshChanged2Seen2Unseen() throws MalformedURLException, IOException, InterruptedException {
         CTestRepository repo = new CTestRepository("test repo");
-        IssueCache<CTestIssue, String> cache = repo.getLookup().lookup(IssueCache.class);
+        IssueCache<CTestIssue> cache = repo.getCache();
         Thread.sleep(10);
         long tsAfterRepo = System.currentTimeMillis();
         // creating issue with creation     > repo reference time;
         //                     modification > repo reference time
         // => initial status NEW
-        CTestIssue issue = cache.setIssueData("1", "1#issue1#" + tsAfterRepo + "#" + tsAfterRepo + "#v11#v21#v31");
+        CTestIssue  issue = new CTestIssue(TestKit.getRepository(repo), "1#issue1#" + tsAfterRepo + "#" + tsAfterRepo + "#v11#v21#v31");
+        cache.setIssueData("1", issue);
         assertNotNull(issue);
-        int status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_NEW, status);
+        IssueCache.Status status = cache.getStatus(issue.getID());
+        assertEquals(IssueCache.Status.ISSUE_STATUS_NEW, status);
         Map<String, String> attr = cache.getSeenAttributes(issue.getID());
         assertNull(attr);
 
         // refresh
         Thread.sleep(10);
-        cache.setIssueData(issue, "1#issue1#" + tsAfterRepo + "#" + System.currentTimeMillis()  + "#v12#v22#v32");
+        issue.setData("1#issue1#" + tsAfterRepo + "#" + System.currentTimeMillis()  + "#v12#v22#v32");
+        cache.setIssueData(issue.getID(), issue);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_NEW, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_NEW, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNull(attr);
 
         // set SEEN TRUE => SEEN
         cache.setSeen(issue.getID(), true);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v12", "v22", "v32");
@@ -159,27 +162,28 @@ public class CacheTest extends NbTestCase {
         // set SEEN FALSE => NEW
         cache.setSeen(issue.getID(), false);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_NEW, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_NEW, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v12", "v22", "v32");
     }
 
-    public void testInitialModified2Seen2Unseen() throws MalformedURLException, CoreException, IOException, InterruptedException {
+    public void testInitialModified2Seen2Unseen() throws MalformedURLException, IOException, InterruptedException {
         long tsBeforeRepo = System.currentTimeMillis();
         Thread.sleep(10);
 
         CTestRepository repo = new CTestRepository("test repo");
-        IssueCache<CTestIssue, String> cache = repo.getLookup().lookup(IssueCache.class);
+        IssueCache<CTestIssue> cache = repo.getCache();
         Thread.sleep(10);
         long tsAfterRepo = System.currentTimeMillis();
         // creating issue with creation     < repo reference time;
         //                     modification > repo reference time
         // => initial status MODIFIED
-        CTestIssue issue = cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31");
+        CTestIssue issue = new CTestIssue(TestKit.getRepository(repo), "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31");        
+        issue = cache.setIssueData("1", issue);
         assertNotNull(issue);
-        int status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        IssueCache.Status status = cache.getStatus(issue.getID());
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         Map<String, String> attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);        
         assertAttributes(attr, "v11", "v21", "v31");
@@ -187,7 +191,7 @@ public class CacheTest extends NbTestCase {
         // set SEEN TRUE => SEEN. attrs from the last setData
         cache.setSeen(issue.getID(), true);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -196,7 +200,7 @@ public class CacheTest extends NbTestCase {
         Thread.sleep(10);
         cache.setSeen(issue.getID(), false);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -204,18 +208,18 @@ public class CacheTest extends NbTestCase {
         // set SEEN TRUE => SEEN, attsr stay the same
         cache.setSeen(issue.getID(), true);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
     }
 
-    public void testIssueModified2Seen2Restart2Unseen() throws MalformedURLException, CoreException, IOException, InterruptedException {
+    public void testIssueModified2Seen2Restart2Unseen() throws MalformedURLException, IOException, InterruptedException {
         long tsBeforeRepo = System.currentTimeMillis();
         Thread.sleep(10);
 
         CTestRepository repo = new CTestRepository("test repo");
-        IssueCache<CTestIssue, String> cache = repo.getLookup().lookup(IssueCache.class);
+        IssueCache<CTestIssue> cache = repo.getCache();
         Thread.sleep(10);
         long tsAfterRepo = System.currentTimeMillis();
 
@@ -223,10 +227,11 @@ public class CacheTest extends NbTestCase {
         //                     modification > repo reference time
         // => initial status MODIFIED
         String data = "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31";
-        CTestIssue issue = cache.setIssueData("1", data);
+        CTestIssue issue = new CTestIssue(TestKit.getRepository(repo), data);
+        cache.setIssueData("1", issue);
         assertNotNull(issue);
-        int status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        IssueCache.Status status = cache.getStatus(issue.getID());
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         Map<String, String> attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -234,19 +239,20 @@ public class CacheTest extends NbTestCase {
         // set SEEN TRUE => SEEN. attrs from the last setData
         cache.setSeen(issue.getID(), true);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
 
         // recreating the same repo emulates restart
         repo = new CTestRepository("test repo");
-        cache = repo.getLookup().lookup(IssueCache.class);
+        cache = repo.getCache();
         // setting the last set data emulates refresh with unchanged data
         // status is expected to be SEEN, and data the last set
-        cache.setIssueData("1", data);
+        issue.setData(data);
+        cache.setIssueData("1", issue);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -255,25 +261,25 @@ public class CacheTest extends NbTestCase {
         Thread.sleep(10);
         cache.setSeen(issue.getID(), false);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
     }
 
-    public void testModified2RefreshChange2Seen2RefreshChange() throws MalformedURLException, CoreException, IOException, InterruptedException {
+    public void testModified2RefreshChange2Seen2RefreshChange() throws MalformedURLException, IOException, InterruptedException {
         modified2RefreshChange2Seen2RefreshChange(false);
     }
 
-    public void testModified2RefreshChange2Seen2Restart2RefreshChange() throws MalformedURLException, CoreException, IOException, InterruptedException {
+    public void testModified2RefreshChange2Seen2Restart2RefreshChange() throws MalformedURLException, IOException, InterruptedException {
         modified2RefreshChange2Seen2RefreshChange(true);
     }
-    public void modified2RefreshChange2Seen2RefreshChange(boolean restart) throws MalformedURLException, CoreException, IOException, InterruptedException {
+    public void modified2RefreshChange2Seen2RefreshChange(boolean restart) throws MalformedURLException, IOException, InterruptedException {
         long tsBeforeRepo = System.currentTimeMillis();
         Thread.sleep(10);
 
         CTestRepository repo = new CTestRepository("test repo");
-        IssueCache<CTestIssue, String> cache = repo.getLookup().lookup(IssueCache.class);
+        IssueCache<CTestIssue> cache = repo.getCache();
         Thread.sleep(10);
         long tsAfterRepo = System.currentTimeMillis();
 
@@ -281,19 +287,21 @@ public class CacheTest extends NbTestCase {
         //                     modification > repo reference time
         // => initial status MODIFIED
         String data = "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31";
-        CTestIssue issue = cache.setIssueData("1", data);
+        CTestIssue issue = new CTestIssue(TestKit.getRepository(repo), data);
+        issue = cache.setIssueData("1", issue);
         assertNotNull(issue);
-        int status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        IssueCache.Status status = cache.getStatus(issue.getID());
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         Map<String, String> attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
 
         // one more time setting changed data => MODIFIED, attrs stay the same
         tsAfterRepo = System.currentTimeMillis();
-        cache.setIssueData(issue, "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v12#v22#v32");
+        issue.setData("1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v12#v22#v32");
+        cache.setIssueData(issue.getID(), issue);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -301,7 +309,7 @@ public class CacheTest extends NbTestCase {
         // set SEEN TRUE => SEEN, attrs from the last refresh
         cache.setSeen(issue.getID(), true);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v12", "v22", "v32");
@@ -309,41 +317,44 @@ public class CacheTest extends NbTestCase {
         if(restart) {
             // recreating the same repo emulates restart
             repo = new CTestRepository("test repo");
-            cache = repo.getLookup().lookup(IssueCache.class);
+            cache = repo.getCache();
         }
 
         // setting changed data => MODIFIED, attrs stay the same
         tsAfterRepo = System.currentTimeMillis();
-        cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v13#v23#v33"); // reload
+        issue.setData("1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v13#v23#v33");
+        cache.setIssueData("1", issue); // reload
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v12", "v22", "v32");
     }
 
-    public void testInitialSeen2ModifiedNoChanges2Seen() throws MalformedURLException, CoreException, IOException, InterruptedException {
+    public void testInitialSeen2ModifiedNoChanges2Seen() throws MalformedURLException, IOException, InterruptedException {
         long tsBeforeRepo = System.currentTimeMillis();
         Thread.sleep(10);
 
         CTestRepository repo = new CTestRepository("test repo");
-        IssueCache<CTestIssue, String> cache = repo.getLookup().lookup(IssueCache.class);
+        IssueCache<CTestIssue> cache = repo.getCache();
         // creating issue with creation     < repo reference time;
         //                     modification < repo reference time
         // => initial status SEEN
-        CTestIssue issue = cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsBeforeRepo + "#v11#v21#v31");
+        CTestIssue issue = new CTestIssue(TestKit.getRepository(repo), "1#issue1#" + tsBeforeRepo + "#" + tsBeforeRepo + "#v11#v21#v31");
+        issue = cache.setIssueData("1", issue);
         assertNotNull(issue);
-        int status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        IssueCache.Status status = cache.getStatus(issue.getID());
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         Map<String, String> attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
 
         // setting changed data => MODIFIED, unchanged attrs
         long tsAfterRepo = System.currentTimeMillis();
-        cache.setIssueData(issue, "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31");
+        issue.setData("1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31");
+        cache.setIssueData(issue.getID(), issue);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_MODIFIED, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -351,7 +362,7 @@ public class CacheTest extends NbTestCase {
         // set SEEN TRUE => SEEN
         cache.setSeen(issue.getID(), true);
         status = cache.getStatus(issue.getID());
-        assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
+        assertEquals(IssueCache.Status.ISSUE_STATUS_SEEN, status);
         attr = cache.getSeenAttributes(issue.getID());
         assertNotNull(attr);
         assertAttributes(attr, "v11", "v21", "v31");
@@ -364,7 +375,7 @@ public class CacheTest extends NbTestCase {
         }
     }
 
-    private class CTestIssue extends TestIssue {
+    private static class CTestIssue extends TestIssue {
         private String[] dataArray;
         private Map<String, String> attrs = new HashMap<String, String>(3);
         private RepositoryImpl repository;
@@ -450,11 +461,11 @@ public class CacheTest extends NbTestCase {
             return info;
         }
 
-        public Lookup getLookup() {
+        public TestCache getCache() {
             if(cache == null) {
                 cache = new TestCache(name, TestKit.getRepository(this));
             }
-            return Lookups.singleton(cache);
+            return cache;
         }
 
         public TestIssue[] getIssues(String[] id) {throw new UnsupportedOperationException("Not supported yet.");}
@@ -471,33 +482,14 @@ public class CacheTest extends NbTestCase {
         @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) { }
 
-        private class TestCache extends IssueCache<CTestIssue, String> {
+        private class TestCache extends IssueCache<CTestIssue> {
             public TestCache(String nameSpace, RepositoryImpl repository) {
                 super(
                     nameSpace, 
-                    new IssueAccessor<CTestIssue, String>() {
-                        @Override
-                        public String getID(String issueData) {
-                            String[] a = issueData.split("#");
-                            return a[0];
-                        }
-                        @Override
-                        public CTestIssue createIssue(String issueData) {
-                            return new CTestIssue(TestKit.getRepository(CTestRepository.this), issueData);
-                        }
-
-                        @Override
-                        public void setIssueData(CTestIssue issue, String issueData) {
-                            ((CTestIssue)issue).setData(issueData);
-                        }
-
+                    new IssueAccessor<CTestIssue>() {
                         @Override
                         public Map<String, String> getAttributes(CTestIssue issue) {
                             return ((CTestIssue)issue).getAttributes();
-                        }
-                        @Override
-                        public String getRecentChanges(CTestIssue issue) {
-                            throw new UnsupportedOperationException("Not supported yet.");
                         }
                         @Override
                         public long getLastModified(CTestIssue issue) {
@@ -507,9 +499,7 @@ public class CacheTest extends NbTestCase {
                         public long getCreated(CTestIssue issue) {
                             return Long.parseLong(((CTestIssue)issue).dataArray[2]);
                         }
-                    },
-                    new CTestIssueProvider(), 
-                    repository.getRepository());
+                    });
             }
             
             protected void cleanup() {
