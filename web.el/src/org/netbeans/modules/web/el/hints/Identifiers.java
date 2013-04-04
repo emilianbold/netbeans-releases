@@ -139,7 +139,7 @@ public final class Identifiers extends ELRule {
         }
 
         // EL3.0 stream method
-        if (!node.getImage().isEmpty() && ELStreamCompletionItem.STREAM_METHOD.equals(node.getImage())) {
+        if (node.getImage() != null && ELStreamCompletionItem.STREAM_METHOD.equals(node.getImage())) {
             if (parent == null) {
                 return false;
             } else {
