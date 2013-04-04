@@ -285,7 +285,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             @Override
             public void run() {
                 String fullUrl = url;
-                if (!(url.startsWith( "http://") || url.startsWith( "https://") || url.startsWith("file:/"))) { // NOI18N
+                if (!(url.startsWith( "http://") || url.startsWith( "https://") || url.startsWith("file:/") || url.startsWith("jar:file:/"))) { // NOI18N
                     fullUrl = "http://" + url; // NOI18N //NOI18N
                 }
                 getEngine().load( fullUrl );
