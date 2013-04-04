@@ -87,8 +87,11 @@ public class CssCompletion implements CodeCompletionHandler {
     private static char firstPrefixChar; //read getPrefix() comment!
     private static final String EMPTY_STRING = ""; //NOI18N
     private static final String UNIVERSAL_SELECTOR = "*"; //NOI18N
+    
     //unit testing support
     static String[] TEST_USED_COLORS;
+    static String[] TEST_CLASSES;
+    static String[] TEST_IDS;
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
@@ -688,26 +691,57 @@ public class CssCompletion implements CodeCompletionHandler {
     }
 
     private void completeClassSelectors(CompletionContext context, List<CompletionProposal> completionProposals, boolean unmappableClassOrId) {
-        //Why we need the (prefix.length() > 0 || astCaretOffset == node.from())???
-        //
-        //We need to filter out situation when the node contains some whitespaces
-        //at the end. For example:
-        //    h1 { color     : red;}
-        // the color property node contains the whole text to the colon
-        //
-        //In such case the prefix is empty and the cc would offer all 
-        //possible values there
-
         Node node = context.getActiveNode();
-//        Node node = context.getNodeForNonWhiteTokenBackward();
         FileObject file = context.getSnapshot().getSource().getFileObject();
         String prefix = context.getPrefix();
         int offset = context.getAnchorOffset();
         NodeType nodeType = node.type();
 
-        if (nodeType == NodeType.cssClass
-                || (unmappableClassOrId || nodeType == NodeType.error) && prefix.length() == 1 && prefix.charAt(0) == '.') {
+        switch(nodeType) {
+            case cssClass:
+                break;
+            case error:
+            case recovery:
+                //check if the error is in a rule
+                if(NodeUtil.getAncestorByType(node, NodeType.rule) != null) {
+                    //check the prefix
+                    try {
+                        TokenSequence<CssTokenId> tokenSequence = context.getTokenSequence();
+                        switch(tokenSequence.token().id()) {
+                            case DOT:
+                                //.| case
+                                break;
+                            case IDENT:
+                                if(tokenSequence.movePrevious()) {
+                                    if(tokenSequence.token().id() == CssTokenId.DOT) {
+                                        //.sg| case
+                                        break;
+                                    }
+                                }
+                            default:
+                                return;
+                        }
+                    } finally {
+                        context.restoreTokenSequence();
+                    }
+                }
+                break;
+                
+            default:
+                return; //exit
+        }
+        
             //complete class selectors
+            Collection<String> allclasses = new HashSet<String>();
+            Collection<String> refclasses = new HashSet<String>();
+            
+            //adjust prefix - if there's just . before the caret, it is returned
+            //as a prefix. If there are another characters, the dot is ommited
+            if (prefix.length() == 1 && prefix.charAt(0) == '.') {
+                prefix = "";
+                offset++; //offset point to the dot position, we need to skip it
+            }
+            
             if (file != null) {
                 CssProjectSupport sup = CssProjectSupport.findFor(file);
                 if (sup != null) {
@@ -715,16 +749,8 @@ public class CssCompletion implements CodeCompletionHandler {
                     DependenciesGraph deps = index.getDependencies(file);
                     Collection<FileObject> refered = deps.getAllReferedFiles();
 
-                    //adjust prefix - if there's just . before the caret, it is returned
-                    //as a prefix. If there are another characters, the dot is ommited
-                    if (prefix.length() == 1 && prefix.charAt(0) == '.') {
-                        prefix = "";
-                        offset++; //offset point to the dot position, we need to skip it
-                    }
                     //get map of all fileobject declaring classes with the prefix
                     Map<FileObject, Collection<String>> search = index.findClassesByPrefix(prefix);
-                    Collection<String> refclasses = new HashSet<String>();
-                    Collection<String> allclasses = new HashSet<String>();
                     for (FileObject fo : search.keySet()) {
                         allclasses.addAll(search.get(fo));
                         //is the file refered by the current file?
@@ -734,19 +760,24 @@ public class CssCompletion implements CodeCompletionHandler {
                         }
                     }
 
-                    //lets create the completion items
-                    List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(refclasses.size());
-                    for (String clazz : allclasses) {
-                        proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(context.getFileObject(), clazz),
-                                clazz,
-                                offset,
-                                refclasses.contains(clazz)));
-                    }
-                    completionProposals.addAll(proposals);
 
                 }
             }
-        }
+            
+            //unit test support
+            if(TEST_CLASSES != null) {
+                allclasses.addAll(Arrays.asList(TEST_CLASSES));
+            }
+            
+            //lets create the completion items
+            List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(refclasses.size());
+            for (String clazz : allclasses) {
+                proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(context.getFileObject(), clazz),
+                        clazz,
+                        offset,
+                        refclasses.contains(clazz)));
+            }
+            completionProposals.addAll(proposals);
     }
 
     private void completeIdSelectors(CompletionContext context, List<CompletionProposal> completionProposals, boolean unmappableClassOrId) {
@@ -762,26 +793,26 @@ public class CssCompletion implements CodeCompletionHandler {
                  * || nodeType == NodeType.JJTERROR_SKIPBLOCK
                  */) && prefix.charAt(0) == '#')) {
             //complete class selectors
+            Collection<String> allids = new HashSet<String>();
+            Collection<String> refids = new HashSet<String>();
+            
+            //adjust prefix - if there's just # before the caret, it is returned as a prefix
+            //if there is some text behind the prefix the hash is part of the prefix
+            if (prefix.length() == 1 && prefix.charAt(0) == '#') {
+                prefix = "";
+            } else {
+                prefix = prefix.substring(1); //cut off the #
+            }
+            offset++; //offset point to the hash position, we need to skip it
+            
             if (file != null) {
                 CssProjectSupport sup = CssProjectSupport.findFor(file);
                 if (sup != null) {
                     CssIndex index = sup.getIndex();
                     DependenciesGraph deps = index.getDependencies(file);
                     Collection<FileObject> refered = deps.getAllReferedFiles();
-
-                    //adjust prefix - if there's just # before the caret, it is returned as a prefix
-                    //if there is some text behind the prefix the hash is part of the prefix
-                    if (prefix.length() == 1 && prefix.charAt(0) == '#') {
-                        prefix = "";
-                    } else {
-                        prefix = prefix.substring(1); //cut off the #
-                    }
-                    offset++; //offset point to the hash position, we need to skip it
-
                     //get map of all fileobject declaring classes with the prefix
                     Map<FileObject, Collection<String>> search = index.findIdsByPrefix(prefix); //cut off the dot (.)
-                    Collection<String> allids = new HashSet<String>();
-                    Collection<String> refids = new HashSet<String>();
                     for (FileObject fo : search.keySet()) {
                         allids.addAll(search.get(fo));
                         //is the file refered by the current file?
@@ -790,18 +821,24 @@ public class CssCompletion implements CodeCompletionHandler {
                             refids.addAll(search.get(fo));
                         }
                     }
-
-                    //lets create the completion items
-                    List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(allids.size());
-                    for (String id : allids) {
-                        proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(context.getFileObject(), id),
-                                id,
-                                offset,
-                                refids.contains(id)));
-                    }
-                    completionProposals.addAll(proposals);
                 }
             }
+            
+            //unit test support
+            if(TEST_IDS != null) {
+                allids.addAll(Arrays.asList(TEST_IDS));
+            }
+            
+            //lets create the completion items
+            List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(allids.size());
+            for (String id : allids) {
+                proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(context.getFileObject(), id),
+                        id,
+                        offset,
+                        refids.contains(id)));
+            }
+            completionProposals.addAll(proposals);
+            
         }
     }
 
@@ -941,7 +978,6 @@ public class CssCompletion implements CodeCompletionHandler {
             Node parent = cc.getActiveNode().parent();
             if (parent != null && (
                     parent.type() == NodeType.property
-                    || parent.type() == NodeType.rule 
                     || parent.type() == NodeType.declarations 
                     || parent.type() == NodeType.declaration //related to the declarations rule error recovery issue
                     || parent.type() == NodeType.propertyDeclaration //related to the declarations rule error recovery issue
