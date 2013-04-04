@@ -351,7 +351,7 @@ public class CodeHintProviderImpl implements HintProvider {
             } catch (NoSuchMethodException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (InvocationTargetException ex) {
-                LOG.log(Level.INFO, null, ex);
+                LOG.log(Level.INFO, className + "." + methodName, ex);
                 //so that the exceptions are categorized better:
                 Exceptions.printStackTrace(ex.getCause());
             }
