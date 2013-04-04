@@ -118,7 +118,7 @@ public class IssueCache<I> {
      * Provides access to the particular {@link Issue} implementations
      * kept in {@link IssueCache}
      *
-     * @param <T>
+     * @param <I>
      */
     public interface IssueAccessor<I> {
 
@@ -156,7 +156,7 @@ public class IssueCache<I> {
         assert issueAccessor != null;
         this.nameSpace = nameSpace;
         this.issueAccessor = issueAccessor;
-
+        
         long t = System.currentTimeMillis(); // fallback
         try {
             t = IssueStorage.getInstance().getReferenceTime(nameSpace);
@@ -164,7 +164,7 @@ public class IssueCache<I> {
             LOG.log(Level.SEVERE, null, ex);
         }
         this.referenceTime = t;
-        
+
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
@@ -180,10 +180,6 @@ public class IssueCache<I> {
      */
     protected void cleanup() {
         IssueStorage.getInstance().cleanup(IssueCache.this.nameSpace);
-    }
-
-    IssueAccessor<I> getIssueAccessor() {
-        return issueAccessor;
     }
 
     /**
@@ -209,7 +205,7 @@ public class IssueCache<I> {
                 readIssue(entry);
                 Map<String, String> attr = entry.getSeenAttributes();
                 if(attr == null || attr.isEmpty()) {
-                    // firsttimer
+                    // first timer -> this means the issue was loaded for the first time in the IDE 
                     if(referenceTime >= issueAccessor.getLastModified(entry.issue)) {
                         setSeen(id, true);
                     } else if(referenceTime >= issueAccessor.getCreated(entry.issue)) {
@@ -281,6 +277,7 @@ public class IssueCache<I> {
                 if(entry.lastUnseenStatus != Status.ISSUE_STATUS_UNKNOWN) {
                     entry.status = entry.lastUnseenStatus;
                     if(entry.seenAttributes == null) {
+                        // no need to set the attributes once they have been set already
                         entry.seenAttributes = issueAccessor.getAttributes(entry.issue);
                     }
                 }
@@ -398,7 +395,7 @@ public class IssueCache<I> {
     /**
      * Returns the id-s stored for a query
      * @param name query name
-     * @return list od id-s
+     * @return list of id-s
      */
     public List<String> readQueryIssues(String name) {
         synchronized(CACHE_LOCK) {
