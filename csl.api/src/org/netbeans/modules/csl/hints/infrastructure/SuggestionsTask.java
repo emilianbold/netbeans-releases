@@ -167,15 +167,19 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
     }
     
     private static OffsetRange findLineBoundaries(CharSequence s, int position) {
-        if (position == -1) {
+        int l = s.length();
+        if (position == -1 || position > l) {
             return OffsetRange.NONE;
         }
+        // the position is at the end of file, after a newline.
+        if (position == l && l >= 1 && s.charAt(l - 1) == '\n') {
+            return new OffsetRange(l -1, l);
+        }
         int min = position;
-        while (min > 0 && s.charAt(min) != '\n') {
+        while (min > 1 && s.charAt(min - 1) != '\n') {
             min--;
         }
         int max = position;
-        int l = s.length();
         while (max < l && s.charAt(max) != '\n') {
             max++;
         }
