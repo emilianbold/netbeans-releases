@@ -39,42 +39,41 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.el.completion;
+package org.netbeans.spi.java.hints.support;
 
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.util.TreePath;
+import java.util.EnumSet;
+import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.SourceUtilsTestUtil;
+import org.netbeans.modules.java.hints.spiimpl.TestBase;
+import org.openide.LifecycleManager;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author lahvac
  */
-public class ELOperatorCompletionItem extends DefaultCompletionProposal {
-
-    private final String operator;
-
-    public ELOperatorCompletionItem(String operator) {
-        this.operator = operator;
+public class FixFactoryTest extends TestBase {
+    
+    public FixFactoryTest(String name) {
+        super(name);
     }
 
     @Override
-    public ElementHandle getElement() {
-        return null;
+    protected void setUp() throws Exception {
+        super.setUp();
+        SourceUtilsTestUtil.makeScratchDir(this);
     }
-
-    @Override
-    public ElementKind getKind() {
-        return ElementKind.METHOD;
+    
+    public void testInterfaceModifiers() throws Exception {
+        prepareTest("test/Test.java", "package test; public interface I { }");
+        
+        ClassTree i = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
+        
+        FixFactory.removeModifiersFix(info, TreePath.getPath(info.getCompilationUnit(), i.getModifiers()), EnumSet.of(Modifier.PUBLIC), "").implement();
+        
+        LifecycleManager.getDefault().saveAll();
+        
+        assertEquals("package test; interface I { }", info.getFileObject().asText());
     }
-
-    @Override
-    public String getName() {
-        return operator + "()";
-    }
-
-    @Override
-    public String getCustomInsertTemplate() {
-        return operator + "(${cursor})";
-    }
-
 }

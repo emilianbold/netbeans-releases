@@ -436,7 +436,8 @@ class DTDGrammar implements ExtendedGrammarQuery {
          * @output provide additional information simplifiing decision
          */
         public String getDescription() {
-            return getNodeName() + " desc";
+            // #223537: suppress useless generated documentation
+            return null;
         }
         
         /**

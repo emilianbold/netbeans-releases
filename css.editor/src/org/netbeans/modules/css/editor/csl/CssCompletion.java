@@ -892,7 +892,15 @@ public class CssCompletion implements CodeCompletionHandler {
             case rule:
                 assert completionContext.getActiveTokenId() == CssTokenId.WS;
                 //complete selector list without prefix in selector list e.g. BODY, | { ... }
-                completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
+                
+                //filter out situation when the completion is invoked just after the left curly bracket
+                // div { | color: red;} or div { | }
+                //in this case the caret position falls to the rule node as the declarations node
+                //doesn't contain the whitespace before first declaration
+                TokenSequence<CssTokenId> tokenSequence = completionContext.getTokenSequence();
+                if(null == LexerUtils.followsToken(tokenSequence, CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                    completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
+                }
                 break;
 
             case error:
@@ -1003,7 +1011,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 } else {
                     Collection<PropertyDefinition> possibleProps = 
                             filterProperties(defs, prefix);
-                    completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getCaretOffset()));
+                    completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getAnchorOffset()));
                 }
             }
         }
@@ -1015,12 +1023,25 @@ public class CssCompletion implements CodeCompletionHandler {
         //h1 { color:red; | font: bold }
         //
         //should be no prefix 
-        if (nodeType == NodeType.rule
-                || nodeType == NodeType.moz_document
-                || nodeType == NodeType.declarations) {
-            completionProposals.addAll(Utilities.wrapProperties(defs, cc.getCaretOffset()));
+        switch(nodeType) {
+            case declarations:
+                //div { font: bold | } case -- we need to continue offering property values
+                //until the property declaration is not closed by semicolon
+                Node nodeBw = cc.getNodeForNonWhiteTokenBackward();
+                if(NodeUtil.getAncestorByType(nodeBw, NodeType.propertyDeclaration) != null) {
+                    //the previous non-ws token belongs to a property declaration so 
+                    //this means the property declaration is not closed by semicolon as the
+                    //semicolon belongs directly to declarations node => do not offer properties here
+                    break;
+                }
+                //fall through
+            case rule:
+            case moz_document:
+                completionProposals.addAll(Utilities.wrapProperties(defs, cc.getCaretOffset()));
+                break;
+                
         }
-
+        
     }
 
     private void completePropertyValue(
@@ -1036,6 +1057,19 @@ public class CssCompletion implements CodeCompletionHandler {
         switch (nodeType) {
 
             case declarations:
+                //In following case the caret offset falls into the declarations node
+                //which contains the whitespace after the propertyDescription.
+                //However as the propertyDeclaration is not closed by semicolon 
+                //we should go on and offer property values for "color" property
+                //div { color: red | }
+                if(context.getActiveTokenId() == CssTokenId.SEMI 
+                        || LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.SEMI, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
+                    //semicolon found when searching backward - we are not going to
+                    //complete property values
+                    break;
+                }
+                //fall through to the next section
+                
             case declaration:
             case propertyDeclaration: {
                 //value cc without prefix

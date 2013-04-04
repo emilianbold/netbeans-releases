@@ -39,42 +39,78 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.editor.less;
+package org.netbeans.modules.java.hints.errors;
 
-import org.netbeans.modules.css.prep.process.LessProcessor;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.ui.customizer.LessCustomizer;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.util.TreePath;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.spi.ErrorRule;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle.Messages;
 
-@ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200)
-public final class LessCssPreprocessor implements CssPreprocessorImplementation {
+/**
+ *
+ * @author lahvac
+ */
+public class ClassNameMismatch implements ErrorRule<Void> {
 
-    private static final String IDENTIFIER = "LESS"; // NOI18N
-
-
+    private static final Set<String> CODES = new HashSet<>(Arrays.asList("compiler.err.class.public.should.be.in.file"));
+    
     @Override
-    public String getIdentifier() {
-        return IDENTIFIER;
+    public Set<String> getCodes() {
+        return CODES;
     }
 
-    @NbBundle.Messages("LessCssPreprocessor.displayName=LESS")
     @Override
+    public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
+        FileObject file = info.getFileObject();
+        
+        if (!file.getParent().canWrite()) return Collections.emptyList();
+        return Arrays.<Fix>asList(new RenameFile(file, ((ClassTree) treePath.getLeaf()).getSimpleName().toString()));
+    }
+
+    @Override
+    public String getId() {
+        return ClassNameMismatch.class.getName();
+    }
+
+    @Override
+    @Messages("DN_ClassNameMismatch=Class Name not Matching File Name")
     public String getDisplayName() {
-        return Bundle.LessCssPreprocessor_displayName();
+        return Bundle.DN_ClassNameMismatch();
     }
 
     @Override
-    public void process(Project project, FileObject fileObject) {
-        new LessProcessor().process(project, fileObject);
-    }
+    public void cancel() { }
+    
+    private static final class RenameFile implements Fix {
+        private final FileObject toRename;
+        private final String newName;
 
-    @Override
-    public Customizer createCustomizer(Project project) {
-        return new LessCustomizer(project);
-    }
+        public RenameFile(FileObject toRename, String newName) {
+            this.toRename = toRename;
+            this.newName = newName;
+        }
+        
+        @Override
+        @Messages("FIX_ChangeFileName=Rename file to {0}")
+        public String getText() {
+            return Bundle.FIX_ChangeFileName(newName + "." + toRename.getExt());
+        }
 
+        @Override
+        public ChangeInfo implement() throws Exception {
+            DataObject.find(toRename).rename(newName);
+            return null;
+        }
+    }
+    
 }

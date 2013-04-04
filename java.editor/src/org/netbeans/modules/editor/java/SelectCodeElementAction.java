@@ -248,7 +248,12 @@ final class SelectCodeElementAction extends BaseAction {
 	    SortedSet<SelectionInfo> orderedPositions = new TreeSet<SelectionInfo>(new Comparator<SelectionInfo>() {
 		@Override
 		public int compare(SelectionInfo o1, SelectionInfo o2) {
-		    return o2.getStartOffset() - o1.getStartOffset();
+                    //to support selections, which start at the same offset also compare the end offsets
+                    int offsetStartDiff = o2.getStartOffset() - o1.getStartOffset();
+                    if (0 == offsetStartDiff) {
+                        return (o1.getEndOffset() - o2.getEndOffset());
+                    }
+                    return offsetStartDiff;
 		}
 	    });
 	    orderedPositions.addAll(positions);

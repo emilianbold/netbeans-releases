@@ -75,6 +75,7 @@ made subject to such option by the copyright holder.
         <file name="application-client-1.4.xml" url="application-client-1.4.xml"/>
         <file name="application-client-5.xml" url="application-client-5.xml"/>
         <file name="application-client-6.xml" url="application-client-6.xml"/>
+        <file name="application-client-7.xml" url="application-client-7.xml"/>
         <file name="MANIFEST.MF" url="MANIFEST.MF"/>
     </folder>
     

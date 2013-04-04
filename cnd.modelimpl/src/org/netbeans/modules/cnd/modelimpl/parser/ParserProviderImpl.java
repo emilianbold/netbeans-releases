@@ -689,6 +689,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             public PPTokensBasedTokenStream(org.netbeans.modules.cnd.antlr.TokenBuffer tb, CXXParserActionEx cppCallback) {
                 super(tb);
                 this.cppCallback = cppCallback;
+                this.lastConsumed = new Antlr2ToAntlr3TokenAdapter(APTUtils.EOF_TOKEN);
             }
             
             private static final boolean TRACE = false;

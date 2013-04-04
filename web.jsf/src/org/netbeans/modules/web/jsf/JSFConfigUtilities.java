@@ -424,7 +424,8 @@ public class JSFConfigUtilities {
                         InitParam[] params = webApp.getContextParam();
                         for (int i = 0; i < params.length; i++) {
                             InitParam initParam = params[i];
-                            if (CONFIG_FILES_PARAM_NAME.equals(initParam.getParamName().trim())) {
+                            if (initParam.getParamName() != null
+                                    && CONFIG_FILES_PARAM_NAME.equals(initParam.getParamName().trim())) {
                                 param = initParam;
                                 break;
                             }
