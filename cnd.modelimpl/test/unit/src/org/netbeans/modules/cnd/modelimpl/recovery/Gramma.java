@@ -54,4 +54,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Gramma {
     boolean newGramma() default false;
+    boolean traceAST() default false;
 }
