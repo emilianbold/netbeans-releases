@@ -62,6 +62,8 @@ public final class LessProcessor {
     private static final String LESS_EXTENSION = "less"; // NOI18N
     private static final String CSS_EXTENSION = "css"; // NOI18N
 
+    public static volatile boolean warningShown = false;
+
 
     public void process(Project project, FileObject fileObject) {
         if (fileObject.isData()) {
@@ -144,7 +146,10 @@ public final class LessProcessor {
         try {
             return LessExecutable.getDefault();
         } catch (InvalidExternalExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
+            if (!warningShown) {
+                warningShown = true;
+                UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
+            }
         }
         return null;
     }
