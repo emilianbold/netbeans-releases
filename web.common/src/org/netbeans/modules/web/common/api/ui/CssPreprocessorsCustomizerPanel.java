@@ -60,8 +60,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.HelpCtx;
 import org.openide.util.Parameters;
@@ -77,8 +77,8 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
 
     private final ProjectCustomizer.Category category;
     private final Project project;
-    private final List<CssPreprocessorImplementation.Customizer> customizers = new CopyOnWriteArrayList<CssPreprocessorImplementation.Customizer>();
-    private final Map<Component, CssPreprocessorImplementation.Customizer> componentCustomizers = new ConcurrentHashMap<Component, CssPreprocessorImplementation.Customizer>();
+    private final List<CssPreprocessor.Customizer> customizers = new CopyOnWriteArrayList<>();
+    private final Map<Component, CssPreprocessor.Customizer> componentCustomizers = new ConcurrentHashMap<>();
 
 
     public CssPreprocessorsCustomizerPanel(ProjectCustomizer.Category category, Project project) {
@@ -97,14 +97,11 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
 
     private void init() {
         // tabs
-        for (CssPreprocessorImplementation.Customizer customizer : customizers) {
+        for (CssPreprocessor.Customizer customizer : customizers) {
             assert customizer != null;
             customizer.addChangeListener(this);
-            String displayName = customizer.getDisplayName();
             JComponent component = customizer.getComponent();
-            Parameters.notEmpty("displayName", displayName); // NOI18N
-            Parameters.notNull("component", component); // NOI18N
-            mainTabbedPane.addTab(displayName, component);
+            mainTabbedPane.addTab(customizer.getDisplayName(), component);
             componentCustomizers.put(component, customizer);
         }
         // store
@@ -123,11 +120,11 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
         });
     }
 
-    private Collection<? extends CssPreprocessorImplementation.Customizer> getCustomizers() {
-        List<CssPreprocessorImplementation> preprocessors = CssPreprocessors.getPreprocessors();
-        List<CssPreprocessorImplementation.Customizer> result = new ArrayList<CssPreprocessorImplementation.Customizer>(preprocessors.size());
-        for (CssPreprocessorImplementation cssPreprocessor : preprocessors) {
-            CssPreprocessorImplementation.Customizer customizer = cssPreprocessor.createCustomizer(project);
+    private Collection<CssPreprocessor.Customizer> getCustomizers() {
+        List<CssPreprocessor> preprocessors = CssPreprocessors.getDefault().getPreprocessors();
+        List<CssPreprocessor.Customizer> result = new ArrayList<>(preprocessors.size());
+        for (CssPreprocessor cssPreprocessor : preprocessors) {
+            CssPreprocessor.Customizer customizer = cssPreprocessor.createCustomizer(project);
             if (customizer != null) {
                 result.add(customizer);
             }
@@ -137,7 +134,7 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
 
     void validateCustomizers() {
         String warning = null; // NOI18N
-        for (CssPreprocessorImplementation.Customizer customizer : customizers) {
+        for (CssPreprocessor.Customizer customizer : customizers) {
             if (!customizer.isValid()) {
                 String errorMessage = customizer.getErrorMessage();
                 Parameters.notNull("errorMessage", errorMessage); // NOI18N
@@ -154,7 +151,7 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
     }
 
     void store() {
-        for (CssPreprocessorImplementation.Customizer customizer : customizers) {
+        for (CssPreprocessor.Customizer customizer : customizers) {
             assert customizer.isValid() : "Saving invalid customizer: " + customizer.getDisplayName() + " (error: " + customizer.getErrorMessage() + ")";
             try {
                 customizer.save();
@@ -165,7 +162,7 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
     }
 
     void removeListeners() {
-        for (CssPreprocessorImplementation.Customizer customizer : customizers) {
+        for (CssPreprocessor.Customizer customizer : customizers) {
             customizer.removeChangeListener(this);
         }
     }
@@ -202,7 +199,7 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
 
     @Override
     public HelpCtx getHelpCtx() {
-        CssPreprocessorImplementation.Customizer customizer = componentCustomizers.get(mainTabbedPane.getSelectedComponent());
+        CssPreprocessor.Customizer customizer = componentCustomizers.get(mainTabbedPane.getSelectedComponent());
         assert customizer != null : "Unknown tab: " + mainTabbedPane.getSelectedIndex();
         HelpCtx help = customizer.getHelp();
         if (help != null) {
