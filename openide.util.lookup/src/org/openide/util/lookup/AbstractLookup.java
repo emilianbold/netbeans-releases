@@ -487,6 +487,11 @@ public class AbstractLookup extends Lookup implements Serializable {
             AbstractLookup.Storage<?> t = enterStorage();
 
             try {
+                Lookup.Result<T> prev = t.findResult(template);
+                if (prev != null) {
+                    return prev;
+                }
+                
                 R<T> r = new R<T>();
                 ReferenceToResult<T> newRef = new ReferenceToResult<T>(r, this, template);
                 newRef.next = t.registerReferenceToResult(newRef);
@@ -819,6 +824,8 @@ public class AbstractLookup extends Lookup implements Serializable {
          * @return null if all references for this template were cleared or one of them
          */
         public ReferenceToResult<?> cleanUpResult(Lookup.Template<?> templ);
+
+        public <T> Result<T> findResult(Template<T> template);
     }
 
     /** Extension to the default lookup item that offers additional information

@@ -315,8 +315,9 @@ class StandardModule extends Module {
                     Util.err.warning("Could not search for patches in " + patchdir);
                 }
             }
-            // Use of the following system property is not supported, but is used
-            // by e.g. XTest to influence installed modules without changing the build.
+            // The following system property is used
+            // by XTest, Maven Compile On Save & co.
+            // to influence installed modules without changing the build.
             // Format is -Dnetbeans.patches.org.nb.mods.foo=/path/to.file.jar:/path/to/dir
             String patchesClassPath = System.getProperty("netbeans.patches." + getCodeNameBase()); // NOI18N
             if (patchesClassPath != null) {

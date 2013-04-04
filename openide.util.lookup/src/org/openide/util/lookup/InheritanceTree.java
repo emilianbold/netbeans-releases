@@ -981,6 +981,22 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
             }
         }
     }
+    @Override
+    public <T> Lookup.Result<T> findResult(Lookup.Template<T> t) {
+        if (reg == null) {
+            return null;
+        }
+        ReferenceToResult prev = reg.get(t.getType());
+        if (prev != null) {
+            AbstractLookup.ReferenceIterator it = new AbstractLookup.ReferenceIterator(prev);
+            while (it.next()) {
+                if (it.current().template.equals(t)) {
+                    return (Lookup.Result<T>) it.current().getResult();
+                }
+            }
+        }
+        return null;
+    }
 
     public ReferenceToResult registerReferenceToResult(ReferenceToResult<?> newRef) {
         if (reg == null) {
@@ -988,7 +1004,7 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
         }
 
         Class<? extends Object> clazz = newRef.template.getType();
-
+        
         // initialize the data structures if not yet
         lookup(clazz);
 
