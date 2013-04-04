@@ -130,6 +130,8 @@ public class APTUtils {
     public static String getAPTTokenName(int type) {
         if (type == APTTokenTypes.IDENT) {
             return "ID"; // NOI18N
+        } else if (type == -1) {
+            return "SKIP"; // NOI18N
         }
         return APTExprParser._tokenNames[type];
     }
@@ -887,6 +889,10 @@ public class APTUtils {
             return this == obj;
         }
 
+        @Override
+        public String toString() {
+            return "<EOF>"; // NOI18N
+        }
     }
 
 }

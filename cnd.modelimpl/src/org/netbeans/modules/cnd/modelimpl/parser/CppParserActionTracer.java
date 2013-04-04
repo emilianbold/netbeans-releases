@@ -45,6 +45,7 @@ import java.util.LinkedList;
 import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
@@ -1729,11 +1730,13 @@ public class CppParserActionTracer extends CppParserActionImpl implements CppPar
         if (token.length > 0) {
             buf.append(' '); //NOI18N
             buf.append(getCurrentFile().getAbsolutePath());
-            buf.append('['); //NOI18N
-            buf.append(Integer.toString(token[0].getLine()));
-            buf.append(','); //NOI18N
-            buf.append(Integer.toString(token[0].getColumn()));
-            buf.append(']'); //NOI18N
+            if (!APTUtils.isEOF(token[0])) {
+                buf.append('['); //NOI18N
+                buf.append(Integer.toString(token[0].getLine()));
+                buf.append(','); //NOI18N
+                buf.append(Integer.toString(token[0].getColumn()));
+                buf.append(']'); //NOI18N
+            }
             for(int j = 0; j < token.length; j++) {
                 buf.append(' '); //NOI18N
                 buf.append(token[j].toString());
@@ -1762,12 +1765,14 @@ public class CppParserActionTracer extends CppParserActionImpl implements CppPar
         if (token.length > 0) {
             buf.append(' '); //NOI18N
             buf.append(getCurrentFile().getAbsolutePath());
-            buf.append('['); //NOI18N
-            buf.append(Integer.toString(token[0].getLine()));
-            buf.append(','); //NOI18N
-            buf.append(Integer.toString(token[0].getColumn()));
-            buf.append(']'); //NOI18N
-            buf.append(' '); //NOI18N
+            if (!APTUtils.isEOF(token[0])) {
+                buf.append('['); //NOI18N
+                buf.append(Integer.toString(token[0].getLine()));
+                buf.append(','); //NOI18N
+                buf.append(Integer.toString(token[0].getColumn()));
+                buf.append(']'); //NOI18N
+                buf.append(' '); //NOI18N
+            }
             buf.append(token[0].toString());
         }
         System.out.println(buf.toString());
@@ -1787,12 +1792,14 @@ public class CppParserActionTracer extends CppParserActionImpl implements CppPar
         if (token.length > 0) {
             buf.append(' '); //NOI18N
             buf.append(getCurrentFile().getAbsolutePath());
-            buf.append('['); //NOI18N
-            buf.append(Integer.toString(token[0].getLine()));
-            buf.append(','); //NOI18N
-            buf.append(Integer.toString(token[0].getColumn()));
-            buf.append(']'); //NOI18N
-            buf.append(' '); //NOI18N
+            if (!APTUtils.isEOF(token[0])) {
+                buf.append('['); //NOI18N
+                buf.append(Integer.toString(token[0].getLine()));
+                buf.append(','); //NOI18N
+                buf.append(Integer.toString(token[0].getColumn()));
+                buf.append(']'); //NOI18N
+                buf.append(' '); //NOI18N
+            }
             buf.append(token[0].toString());
         }
         System.out.println(buf.toString());
