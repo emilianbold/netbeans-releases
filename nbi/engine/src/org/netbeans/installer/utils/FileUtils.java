@@ -1383,7 +1383,7 @@ public final class FileUtils {
     }
     
     public static File getNormalizedPathFile(File file) {
-        if (file != null) {
+        if (file != null && !file.getPath().isEmpty()) {
             Path path = FileSystems.getDefault().getPath(file.getPath());
             
             if (path != null) {
