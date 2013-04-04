@@ -80,7 +80,7 @@ public class CssCompletionTest extends CssModuleTestBase {
 
     public void testPropertyNames() throws ParseException {
         //empty rule
-        checkCC("h1 { | }", arr("azimuth"), Match.CONTAINS);
+//        checkCC("h1 { | }", arr("azimuth"), Match.CONTAINS);
         checkCC("h1 { az| }", arr("azimuth"), Match.CONTAINS);
         checkCC("h1 { azimuth| }", arr("azimuth"), Match.CONTAINS);
 
@@ -315,5 +315,38 @@ public class CssCompletionTest extends CssModuleTestBase {
     
     public void testURICompletion() throws ParseException {
         checkCC("div { background-image: | } ", arr("url"), Match.CONTAINS);
+    }
+    
+    public void testClassCompletion() throws ParseException {
+        CssCompletion.TEST_CLASSES = new String[]{"clz"};
+        try {
+            checkCC(".|", arr("clz"), Match.EXACT);
+            checkCC(".c|", arr("clz"), Match.EXACT);
+            
+            checkCC(".c| ", arr("clz"), Match.EXACT);
+            checkCC(".| ", arr("clz"), Match.EXACT);
+            
+            checkCC(".c| {}", arr("clz"), Match.EXACT);
+            checkCC(".| {}", arr("clz"), Match.EXACT);
+            
+            checkCC(".my{} .c| ", arr("clz"), Match.EXACT);
+            checkCC(".my{} .| ", arr("clz"), Match.EXACT);
+            
+            checkCC(".pre{} .c| .post{}", arr("clz"), Match.EXACT);
+            checkCC(".pre{} .| .post{}", arr("clz"), Match.EXACT);
+            
+            checkCC(".c| .post{}", arr("clz"), Match.EXACT);
+            checkCC(".| .post{}", arr("clz"), Match.EXACT);
+            
+            checkCC("a{} .c| .post{}", arr("clz"), Match.EXACT);
+            checkCC("a{} .| .post{}", arr("clz"), Match.EXACT);
+            
+            checkCC("a{} .c| b{}", arr("clz"), Match.EXACT);
+            checkCC("a{} .| b{}", arr("clz"), Match.EXACT);
+            
+            
+        } finally {
+            CssCompletion.TEST_CLASSES = null;
+        }
     }
 }
