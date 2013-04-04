@@ -113,23 +113,24 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
     public boolean attach() {
         try {
             init();
-
             socketListener = RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
-                    while (keepGoing) {
-                        try {
-                            Thread.sleep(200);
-                            process();
-                        } catch (Exception exception) {
-                            Exceptions.printStackTrace(exception);
+                    try {
+                        InputStream is = socket.getInputStream();
+                        while (keepGoing) {
+                            try {
+                                process(is);
+                            } catch (Exception exception) {
+                                Exceptions.printStackTrace(exception);
+                            }
                         }
+                    } catch (IOException e) {
+                        Exceptions.printStackTrace(e);
                     }
-                }
-            });
-
+                }});
             return true;
-        } catch (Exception ex) {
+        }  catch (Exception ex) {
             Exceptions.printStackTrace(ex);
             return false;
         }
@@ -141,10 +142,14 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
         do {
             try {
                 Socket socket = new Socket(LOCALHOST_IPV6, port);
+                socket.close();
+                Thread.sleep(1000);
                 run.run();
             } catch (UnknownHostException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
             time = System.currentTimeMillis() - started;
@@ -230,33 +235,24 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
         os.write(bytes);
     }
 
-    private void pushInput(byte[] inputBytes) throws Exception {
-        buf.write(inputBytes);
-        while (buf.size() >= 4) {
-            byte[] bytes = buf.toByteArray();
-            int size = ByteBuffer.wrap(bytes, 0, 4).getInt();
-            if (bytes.length >= 4 + size) {
-                String message = plistBinaryToXml(Arrays.copyOfRange(bytes, 4, size + 4));
-                //System.out.println("receiving " + message );
-                JSONObject jmessage = extractResponse(message);
-                if (jmessage != null) {
-                    callBack.handleResponse(new Response(jmessage));
-                }
-                buf = new ByteArrayOutputStream();
-                buf.write(bytes, 4 + size, bytes.length - size - 4);
-            } else {
-                //throw new IllegalStateException();
-            }
+    private void process(InputStream is) throws Exception {
+        byte sizeBuffer[] = new byte[4];
+        int count = is.read(sizeBuffer);
+        while (count < 4) {
+            count += is.read(sizeBuffer, count, 4 - count);
         }
-    }
-
-    private void process() throws Exception {
-        InputStream is = socket.getInputStream();
-        while (is.available() > 0) {
-            byte[] bytes = new byte[is.available()];
-            is.read(bytes);
-            // System.err.println("Received " + bytes.length + " bytes.");
-            pushInput(bytes);
+        int size = ByteBuffer.wrap(sizeBuffer, 0, 4).getInt();
+        byte[] content = new byte[size];
+        count = is.read(content);
+        while (count < size) {
+            count += is.read(content, count, size - count);
+        }
+        assert count == size;
+        String message = plistBinaryToXml(content);
+        //System.out.println("receiving " + message );
+        JSONObject jmessage = extractResponse(message);
+        if (jmessage != null) {
+            callBack.handleResponse(new Response(jmessage));
         }
     }
 

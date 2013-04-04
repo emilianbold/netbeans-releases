@@ -150,12 +150,13 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
             @Override
             public void run() {
                 IOSDevice.IPHONE.openUrl(build.getUrl(project, context));
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                build.startDebugging(IOSDevice.IPHONE, project, context);
+                IOSDebugTransport.runWhenReady(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        build.startDebugging(IOSDevice.IPHONE, project, context);
+                    }
+                }, 30000);
             }
         }, Bundle.LBL_Opening(), new AtomicBoolean(), false);
     }
