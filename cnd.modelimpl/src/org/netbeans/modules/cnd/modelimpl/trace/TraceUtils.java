@@ -50,6 +50,7 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 
 /**
@@ -97,5 +98,9 @@ public class TraceUtils {
         } else {
             return String.format("start file=%s, start-prj=%s", startEntry.getStartFile(), startEntry.getStartFileProject()); // NOI18N
         }
+    }
+    
+    public static void updateTraceFlag(String flag, boolean value) {
+        TraceFlags.validate(flag, value);
     }
 }
