@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,37 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.formatter;
-
-import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
-import org.netbeans.modules.javascript2.editor.JsonTestBase;
+package org.netbeans.modules.javascript2.editor;
 
 /**
  *
  * @author Petr Hejl
  */
-public class JsonFormatterTest extends JsonTestBase {
-
-    public JsonFormatterTest(String testName) {
+public class JsonStructureScannerTest extends JsonTestBase {
+    
+    public JsonStructureScannerTest(String testName) {
         super(testName);
     }
-
-    public void testSimple() throws Exception {
-        reformatFileContents("testfiles/simple.json",new IndentPrefs(4, 4));
-    }
-
-    public void testBasic1() throws Exception {
-        reformatFileContents("testfiles/formatter/basic1.json",new IndentPrefs(4, 4));
-    }
-
-    public void testBasic2() throws Exception {
-        reformatFileContents("testfiles/formatter/basic2.json",new IndentPrefs(4, 4));
-    }
-
-    public void testBasic3() throws Exception {
-        reformatFileContents("testfiles/formatter/basic3.json",new IndentPrefs(4, 4));
+    
+    public void testFolds01() throws Exception {
+        checkFolds("testfiles/simple.json");
     }
 
 }

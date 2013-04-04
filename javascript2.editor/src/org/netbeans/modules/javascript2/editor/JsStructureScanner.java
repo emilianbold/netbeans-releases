@@ -45,6 +45,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -65,17 +66,23 @@ import org.openide.util.ImageUtilities;
 public class JsStructureScanner implements StructureScanner {
 
     //private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY";
-    
+
     private static final String FOLD_FUNCTION = "codeblocks"; //NOI18N
     private static final String FOLD_JSDOC = "comments"; //NOI18N
     private static final String FOLD_COMMENT = "initial-comment"; //NOI18N
     private static final String FOLD_OTHER_CODE_BLOCKS = "othercodeblocks"; //NOI18N
-    
+
     private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
     private static final String CLOSE_FONT = "</font>";                   //NOI18N
-    
+
     private static final Logger LOGGER = Logger.getLogger(JsStructureScanner.class.getName());
-    
+
+    private final Language<JsTokenId> language;
+
+    public JsStructureScanner(Language<JsTokenId> language) {
+        this.language = language;
+    }
+
     @Override
     public List<? extends StructureItem> scan(ParserResult info) {
         final List<StructureItem> items = new ArrayList<StructureItem>();
@@ -195,7 +202,7 @@ public class JsStructureScanner implements StructureScanner {
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
          
         TokenHierarchy th = info.getSnapshot().getTokenHierarchy();
-        TokenSequence ts = th.tokenSequence(JsTokenId.javascriptLanguage());
+        TokenSequence ts = th.tokenSequence(language);
         List<TokenSequence<?>> list = th.tokenSequenceList(ts.languagePath(), 0, info.getSnapshot().getText().length());
         List<FoldingItem> stack = new ArrayList<FoldingItem>();
 
