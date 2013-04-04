@@ -70,6 +70,12 @@ public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInte
     static final String VERSION_2_4 = "2.4"; //NOI18N
     static final String VERSION_2_5 = "2.5"; //NOI18N
     static final String VERSION_3_0 = "3.0"; //NOI18N
+
+    /**
+     * web.xml, web-fragment.xml DD version for JavaEE7
+     * @since 1.29
+     */
+    static final String VERSION_3_1 = "3.1"; //NOI18N
     static final int STATE_VALID = 0;
     static final int STATE_INVALID_PARSABLE = 1;
     static final int STATE_INVALID_UNPARSABLE = 2;
