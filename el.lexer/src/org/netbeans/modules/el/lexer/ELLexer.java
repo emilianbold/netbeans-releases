@@ -114,7 +114,7 @@ public class ELLexer implements Lexer<ELTokenId> {
     private static final int ISA_EQ = 17; // after '='
     private static final int ISA_GT = 18; // after '>'
     private static final int ISA_LT = 19; // after '<'
-    //private static final int ISA_PLUS = 20; // after '+'
+    private static final int ISA_PLUS = 20; // after '+'
     private static final int ISA_MINUS = 21; // after '-'
     //private static final int ISA_STAR = 22; // after '*'
     private static final int ISA_PIPE = 23; // after '|'
@@ -139,6 +139,7 @@ public class ELLexer implements Lexer<ELTokenId> {
     private static final int ISI_BRACKET_ISI_DOULE_EXP_ISA_SIGN = 42;
     //private static final int ISA_PERCENT = 24; // after '%'
     private static final int ISI_BRACKET_ISA_MINUS = 43;
+    private static final int ISI_BRACKET_ISA_PLUS = 44;
     
     
     public ELLexer(LexerRestartInfo<ELTokenId> info) {
@@ -207,7 +208,8 @@ public class ELLexer implements Lexer<ELTokenId> {
                             lexerState = ISA_LT;
                             break;
                         case '+':
-                            return token(ELTokenId.PLUS);
+                            lexerState = ISA_PLUS;
+                            break;
                         case '-':
                             lexerState = ISA_MINUS;
                             break;
@@ -294,7 +296,8 @@ public class ELLexer implements Lexer<ELTokenId> {
                         case '/':
                             return token(ELTokenId.DIV);
                         case '+':
-                            return token(ELTokenId.PLUS);
+                            lexerState = ISI_BRACKET_ISA_PLUS;
+                            break;
                         case '-':
                             lexerState = ISI_BRACKET_ISA_MINUS;
                             break;
@@ -388,6 +391,18 @@ public class ELLexer implements Lexer<ELTokenId> {
                             lexerState = (lexerState == ISI_BRACKET_ISA_MINUS) ? ISI_BRACKET : INIT;
                             input.backup(1);
                             return token(ELTokenId.MINUS);
+                    }
+
+                case ISI_BRACKET_ISA_PLUS:
+                case ISA_PLUS:
+                    switch (actChar) {
+                        case '=':
+                            lexerState = INIT;
+                            return token(ELTokenId.CONCAT);
+                        default:
+                            lexerState = (lexerState == ISI_BRACKET_ISA_PLUS) ? ISI_BRACKET : INIT;
+                            input.backup(1);
+                            return token(ELTokenId.PLUS);
                     }
 
                 case ISI_BRACKET_ISA_GT:
