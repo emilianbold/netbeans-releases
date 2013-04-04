@@ -563,6 +563,7 @@ public final class ServerRegistry implements java.io.Serializable {
             LOGGER.log(Level.FINE, "Instance already registered {0}", url);
         } catch (InstanceCreationException ice) {
             LOGGER.log(Level.INFO, "Could not create instance {0}", url);
+            LOGGER.log(Level.FINE, null, ice);
         }
     }
 

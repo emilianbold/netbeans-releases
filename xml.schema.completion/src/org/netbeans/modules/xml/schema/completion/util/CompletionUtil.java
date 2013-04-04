@@ -976,8 +976,9 @@ public class CompletionUtil {
         Token token = null;
         String incompleteTagName = null;
 
-        tokenSequence.move(caretPos);
+        int cut = tokenSequence.move(caretPos);
         tokenSequence.moveNext();
+        boolean inMiddle = cut != 0;
         do {
             token = tokenSequence.token();
             TokenId tokenID = token.id();
@@ -994,7 +995,10 @@ public class CompletionUtil {
                 } else {
                     return null;
                 }
+            } else if (inMiddle && tokenID.equals(XMLTokenId.BLOCK_COMMENT)) {
+                
             }
+            inMiddle = false;
         } while (tokenSequence.movePrevious());
 
         if (! tagFirstCharFound) return null;
@@ -1059,14 +1063,17 @@ public class CompletionUtil {
         boolean tagFirstCharFound = false, tagLastCharFound = false;
         Token token = null;
 
-        tokenSequence.move(caretPos);
+        boolean checkComment = tokenSequence.move(caretPos) != 0;
         tokenSequence.moveNext();
         do {
             token = tokenSequence.token();
             if (isTagFirstChar(token)) {
                 tagFirstCharFound = true;
                 break;
+            } else if (checkComment && token.id() == XMLTokenId.BLOCK_COMMENT) {
+                return true;
             }
+            checkComment = false;
         } while (tokenSequence.movePrevious());
         
         if (! tagFirstCharFound) return false;

@@ -40,8 +40,11 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.ui.issue.cache;
+package org.netbeans.modules.bugtracking.cache;
 
+import org.netbeans.modules.bugtracking.cache.IssueStorage;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.StorageUtils;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
@@ -57,7 +60,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
@@ -65,7 +67,7 @@ import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.TestKit;
 import org.netbeans.modules.bugtracking.dummies.DummyBugtrackingConnector;
 import org.netbeans.modules.bugtracking.dummies.DummyRepository;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache.IssueEntry;
+import org.netbeans.modules.bugtracking.cache.IssueCache.IssueEntry;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -91,7 +93,7 @@ public class StorageTest extends NbTestCase {
         emptyStorage();
     }
 
-    public void testStorage() throws MalformedURLException, CoreException, IOException {
+    public void testStorage() throws MalformedURLException, IOException {
         final IssueStorage storage = IssueStorage.getInstance();
 
         Map<String, String> attr1 = new HashMap<String, String>();
@@ -113,9 +115,9 @@ public class StorageTest extends NbTestCase {
         storage.storeQuery(url, qName, new String[] {id1, id2});
 
         long lm = System.currentTimeMillis();
-        IssueCache<DummyIssue, Object> cache = getCache();
-        IssueEntry ie1 = cache.new IssueEntry(i1, i1.id, attr1, -1, -1, false, lm);
-        IssueEntry ie2 = cache.new IssueEntry(i2, i2.id, attr2, -1, -1, false, lm);
+        IssueCache<DummyIssue> cache = getCache();
+        IssueEntry ie1 = cache.new IssueEntry(i1, i1.id, attr1, IssueCache.Status.ISSUE_STATUS_UNKNOWN, IssueCache.Status.ISSUE_STATUS_UNKNOWN, false, lm);
+        IssueEntry ie2 = cache.new IssueEntry(i2, i2.id, attr2, IssueCache.Status.ISSUE_STATUS_UNKNOWN, IssueCache.Status.ISSUE_STATUS_UNKNOWN, false, lm);
         
         storage.storeIssue(url, ie1);
         storage.storeIssue(url, ie2);
@@ -124,8 +126,8 @@ public class StorageTest extends NbTestCase {
         assertTrue(issues.contains(id1));
         assertTrue(issues.contains(id2));
 
-        ie1 = cache.new IssueEntry(i1, i1.id, null, -1, -1, false, lm);
-        ie2 = cache.new IssueEntry(i2, i2.id, null, -1, -1, false, lm);
+        ie1 = cache.new IssueEntry(i1, i1.id, null, IssueCache.Status.ISSUE_STATUS_UNKNOWN, IssueCache.Status.ISSUE_STATUS_UNKNOWN, false, lm);
+        ie2 = cache.new IssueEntry(i2, i2.id, null, IssueCache.Status.ISSUE_STATUS_UNKNOWN, IssueCache.Status.ISSUE_STATUS_UNKNOWN, false, lm);
         storage.readIssue(url, ie1);
         if(ie1.getSeenAttributes() == null) fail("missing issue id [" + id1 + "]");
         assertAttribute(ie1.getSeenAttributes(), "dummy1", "dummy3");
@@ -154,7 +156,7 @@ public class StorageTest extends NbTestCase {
 
     }
 
-    public void testArchivedStorage() throws MalformedURLException, CoreException, IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void testArchivedStorage() throws MalformedURLException, IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         IssueStorage storage = IssueStorage.getInstance();
         long ts = System.currentTimeMillis();
         String id1 = "id1";
@@ -185,7 +187,7 @@ public class StorageTest extends NbTestCase {
         
     }
 
-    public void testCleanup() throws MalformedURLException, CoreException, IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void testCleanup() throws MalformedURLException, IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         IssueStorage storage = IssueStorage.getInstance();
         long ts = System.currentTimeMillis();
         Map<String, String> attr = new HashMap<String, String>();
@@ -199,9 +201,9 @@ public class StorageTest extends NbTestCase {
         DummyIssue i2 = new DummyIssue(id2, attr);
         
         long lm = System.currentTimeMillis();
-        IssueCache<DummyIssue, Object> cache = getCache();
-        IssueEntry ie1 = cache. new IssueEntry(i1, i1.id, attr, -1, -1, false, lm);
-        IssueEntry ie2 = cache. new IssueEntry(i2, i2.id, attr, -1, -1, false, lm);
+        IssueCache<DummyIssue> cache = getCache();
+        IssueEntry ie1 = cache. new IssueEntry(i1, i1.id, attr, IssueCache.Status.ISSUE_STATUS_UNKNOWN, IssueCache.Status.ISSUE_STATUS_UNKNOWN, false, lm);
+        IssueEntry ie2 = cache. new IssueEntry(i2, i2.id, attr, IssueCache.Status.ISSUE_STATUS_UNKNOWN, IssueCache.Status.ISSUE_STATUS_UNKNOWN, false, lm);
 
         storage.storeIssue(url, ie1);
         storage.storeIssue(url, ie2);
@@ -358,34 +360,14 @@ public class StorageTest extends NbTestCase {
         }
     }
     
-    private IssueCache<DummyIssue, Object> getCache() {
+    private IssueCache<DummyIssue> getCache() {
         IssueCache.IssueAccessor ia = new IssueCache.IssueAccessor() {
-
-            @Override
-            public String getID(Object issueData) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public Object createIssue(Object issueData) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public void setIssueData(Object issue, Object issueData) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
 
             @Override
             public Map getAttributes(Object issue) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
-
-            @Override
-            public String getRecentChanges(Object issue) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
+            
             @Override
             public long getLastModified(Object issue) {
                 throw new UnsupportedOperationException("Not supported yet.");
@@ -397,6 +379,6 @@ public class StorageTest extends NbTestCase {
             }
         };
         RepositoryImpl impl = TestKit.getRepository(new DummyRepository(DummyBugtrackingConnector.instance, "dummy"));
-        return new IssueCache<DummyIssue, Object>("dummy", ia, null, impl.getRepository());
+        return new IssueCache<DummyIssue>("dummy", ia);
     }
 }

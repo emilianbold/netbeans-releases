@@ -104,8 +104,8 @@ public final class SearchPropertiesSupport {
     }
 
     public static final class SearchProperties {
-        private Map<String, Object> props;
-        private String id;
+        private final Map<String, Object> props;
+        private final String id;
         private SearchProperties(Map<String, Object> props, String identification) {
             this.props = props;
             this.id = identification;

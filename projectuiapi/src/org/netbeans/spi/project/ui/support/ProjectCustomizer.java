@@ -414,10 +414,10 @@ public final class ProjectCustomizer {
      */
     public static final class Category {
         
-        private String name;
-        private String displayName;
-        private Image icon;
-        private Category[] subcategories;
+        private final String name;
+        private final String displayName;
+        private final Image icon;
+        private final Category[] subcategories;
         private boolean valid;
         private String errorMessage;
         private ActionListener okListener;
@@ -622,6 +622,7 @@ public final class ProjectCustomizer {
             selfProvider = sProv;
         }
 
+        @Override
         public JComponent create(ProjectCustomizer.Category category) {
             CompositeCategoryProvider prov = category2provider.get(category);
             assert prov != null : "Category doesn't have a provider associated.";
@@ -652,7 +653,7 @@ public final class ProjectCustomizer {
                             }
                         }
                     }
-                    CompositeCategoryProvider prov = null;
+                    CompositeCategoryProvider prov;
                     if (sProvider != null) {
                         prov = new DelegateCategoryProvider((DataFolder) dob, context, category2provider, sProvider);
                     } else {
@@ -698,6 +699,7 @@ public final class ProjectCustomizer {
         /**
          * provides category for folder..
          */
+        @Override
         public ProjectCustomizer.Category createCategory(Lookup context) {
             FileObject fo = folder.getPrimaryFile();
             String dn = fo.getNameExt();
@@ -712,6 +714,7 @@ public final class ProjectCustomizer {
         /**
          * provides component for folder category
          */
+        @Override
         public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
             if (selfProvider != null) {
                 return selfProvider.createComponent(category, context);
@@ -719,6 +722,7 @@ public final class ProjectCustomizer {
             return new JPanel();
         }
         //#97998 related
+        @Override
         public Lookup getLookup() {
             return context;
         }
@@ -801,14 +805,17 @@ public final class ProjectCustomizer {
                 super (name, new String[0]);
             }
 
+            @Override
             public boolean contains(Charset c) {
                 return false;
             }
 
+            @Override
             public CharsetDecoder newDecoder() {
                 throw new UnsupportedOperationException();
             }
 
+            @Override
             public CharsetEncoder newEncoder() {
                 throw new UnsupportedOperationException();
             }
