@@ -14,7 +14,6 @@ import javax.jms.MessageListener;
  * @author jskrivanek
  */
 @MessageDriven(mappedName = "jms/QueueMdb", activationConfig = {
-    @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
     @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")
 })
 public class QueueMdb implements MessageListener {

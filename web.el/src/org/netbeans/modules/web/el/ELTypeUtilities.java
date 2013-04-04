@@ -66,6 +66,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
+import org.netbeans.modules.web.el.completion.ELStreamCompletionItem;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
@@ -621,6 +622,9 @@ public final class ELTypeUtilities {
                     || ccontext.info().getTypeUtilities().isCastable(returnType, iterableElement.asType())) {
                 return true;
             }
+        } else if (element.getKind() == ElementKind.INTERFACE) {
+            TypeElement iterableElement = ccontext.info().getElements().getTypeElement("java.lang.Iterable"); //NOI18N
+            return ccontext.info().getTypeUtilities().isCastable(element.asType(), iterableElement.asType());
         }
         return false;
     }
@@ -687,6 +691,11 @@ public final class ELTypeUtilities {
                                     // it's a managed bean in a scope
                                     propertyType = getTypeFor(info, clazz);
                                 }
+
+                                // stream method
+                                if (ELTypeUtilities.isIterableElement(info, enclosing)) {
+                                    propertyType = enclosing = info.info().getElements().getTypeElement("com.sun.el.stream.Stream"); //NOI18N
+                                }
                             }
                             if (propertyType == null) {
                                 return;
@@ -695,13 +704,40 @@ public final class ELTypeUtilities {
                                 result = propertyType;
                             } else if (propertyType.getKind() == ElementKind.METHOD) {
                                 final ExecutableElement method = (ExecutableElement) propertyType;
-                                enclosing = info.info().getTypes().asElement(getReturnType(info, method));
-
+                                TypeMirror returnType = getReturnType(info, method);
+                                if (returnType.getKind() == TypeKind.ARRAY) {
+                                    // for array try to look like Iterable (operators for array return type)
+                                    enclosing = info.info().getElements().getTypeElement("java.lang.Iterable"); //NOI18N
+                                } else {
+                                    enclosing = info.info().getTypes().asElement(returnType);
+                                }
                                 if (enclosing == null) {
                                     return;
                                 }
                             } else {
                                 enclosing = propertyType;
+                            }
+                        }
+                    }
+                }
+            } else if (node instanceof AstListData || node instanceof AstMapData) {
+                Node parent = node.jjtGetParent();
+                for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
+                    Node child = parent.jjtGetChild(i);
+                    if (child instanceof AstDotSuffix) {
+                        if (ELStreamCompletionItem.STREAM_METHOD.equals(child.getImage())) {
+                            if (target.getImage() != null && target.getImage().equals(child.getImage())) {
+                                result = info.info().getElements().getTypeElement("com.sun.el.stream.Stream"); //NOI18N
+                                return;
+                            } else {
+                                enclosing = info.info().getElements().getTypeElement("com.sun.el.stream.Stream"); //NOI18N
+                            }
+                        } else {
+                            if (enclosing != null) {
+                                Element propertyType = getElementForProperty(info, child, enclosing);
+                                if (child.equals(target)) {
+                                    result = propertyType;
+                                }
                             }
                         }
                     }

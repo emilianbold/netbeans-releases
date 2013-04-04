@@ -243,7 +243,7 @@ public class CommonServerSupport
     // prevent j2eeserver from stopping an authenticated domain that
     // the IDE did not start.
     private boolean stopDisabled = false;
-    
+
     private Process localStartProcess;
 
     ////////////////////////////////////////////////////////////////////////////
@@ -665,7 +665,8 @@ public class CommonServerSupport
     @Override
     public ServerState getServerState() {
         if (serverState == ServerState.UNKNOWN) {
-            refresh();
+            RequestProcessor.Task task = refresh();
+            task.waitFinished();
         }
         return serverState;
     }
@@ -792,28 +793,24 @@ public class CommonServerSupport
     private final AtomicBoolean refreshRunning = new AtomicBoolean(false);
 
     @Override
-    public final void refresh() {
-        refresh(null,null);
+    public final RequestProcessor.Task refresh() {
+        return refresh(null,null);
     }
 
     @Override
-    public void refresh(String expected, String unexpected) {
+    public RequestProcessor.Task refresh(String expected, String unexpected) {
         // !PW FIXME we can do better here, but for now, make sure we only change
         // server state from stopped or running states -- leave stopping or starting
         // states alone.
         if(refreshRunning.compareAndSet(false, true)) {
-            RP.post(new Runnable() {
+            return RP.post(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         // Can block for up to a few seconds...
                         boolean isRunning = GlassFishStatus.isReady(
                                 instance, false, GlassFishStatus.Mode.REFRESH);
-                        if (isRunning && !Util.isDefaultOrServerTarget(
-                                instance.getProperties())) {
-                            isRunning = pingHttp(1);
-                        }
-                        ServerState currentState = getServerState();
+                        ServerState currentState = serverState;
 
                         if ((currentState == ServerState.STOPPED || currentState == ServerState.UNKNOWN) && isRunning) {
                             setServerState(ServerState.RUNNING);
@@ -830,6 +827,8 @@ public class CommonServerSupport
                     }
                 }
             });
+        } else {
+            return null;
         }
     }
 
@@ -1130,39 +1129,4 @@ public class CommonServerSupport
         return LOCALHOST.equals(retVal) ? nameOfLocalhost : retVal; // NOI18N
     }
 
-    @SuppressWarnings("SleepWhileInLoop")
-    private boolean pingHttp(int maxTries) {
-        boolean retVal = false;
-        URL url = null;
-        int tries = 0;
-        while (false == retVal && tries < maxTries) {
-            tries++;
-            HttpURLConnection httpConn = null;
-            try {
-                url = new URL("http://" + getInstanceProperties().get(GlassfishModule.HTTPHOST_ATTR)
-                        + ":" + getInstanceProperties().get(GlassfishModule.HTTPPORT_ATTR) + "/"); // NOI18N
-                httpConn = (HttpURLConnection) url.openConnection();
-                retVal = httpConn.getResponseCode() > 0;
-            } catch (java.net.MalformedURLException mue) {
-                LOGGER.log(Level.INFO, null, mue);
-            } catch (java.net.ConnectException ce) {
-                // we expect this...
-                LOGGER.log(Level.FINE,
-                        url != null ? url.toString() : "null", ce);
-            } catch (java.io.IOException ioe) {
-                LOGGER.log(Level.INFO,
-                        url != null ? url.toString() : "null", ioe);
-            } finally {
-                if (null != httpConn) {
-                    httpConn.disconnect();
-                }
-            }
-            try {
-                if (tries < maxTries) Thread.sleep(300);
-            } catch (InterruptedException ex) {
-            }
-        }
-        LOGGER.log(Level.FINE, "pingHttp returns {0}", retVal); // NOI18N
-        return retVal;
-    }
 }

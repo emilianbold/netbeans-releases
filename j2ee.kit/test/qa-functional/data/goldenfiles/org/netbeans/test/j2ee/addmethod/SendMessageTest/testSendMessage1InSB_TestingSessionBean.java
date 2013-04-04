@@ -103,7 +103,7 @@ public class TestingSessionBean implements javax.ejb.SessionBean, test.TestingSe
         return tm;
     }
 
-    private void sendJMSMessageToTestingMessageBean(Object messageData) throws NamingException, JMSException {
+    private void sendJMSMessageToTestingMessageBean(Object messageData) throws JMSException, NamingException {
         Context c = new InitialContext();
         ConnectionFactory cf = (ConnectionFactory) c.lookup("java:comp/env/jms/TestingMessageBeanFactory");
         Connection conn = null;
