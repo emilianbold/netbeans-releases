@@ -339,6 +339,17 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 }
             }
 
+            if (ip != null) {
+                String root = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+                if (root == null || !new File(root).isDirectory()) {
+                    throw new DeploymentManagerCreationException("Non existent server root " + root); // NOI18N
+                }
+                String server = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
+                if (server == null || !new File(server).isDirectory()) {
+                    throw new DeploymentManagerCreationException("Non existent domain root " + server); // NOI18N
+                }
+            }
+            
             return new JBDeploymentManager(null, uri, null, null, null);
         } catch (NoClassDefFoundError e) {
             DeploymentManagerCreationException dmce = new DeploymentManagerCreationException("Classpath is incomplete"); // NOI18N
