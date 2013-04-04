@@ -175,6 +175,11 @@ public class ComputeImports {
             
             Iterable<Symbols> simpleNames = info.getClasspathInfo().getClassIndex().getDeclaredSymbols(unresolved, NameKind.SIMPLE_NAME,EnumSet.allOf(ClassIndex.SearchScope.class));
 
+            if (simpleNames == null) {
+                //Canceled:
+                return null;
+            }
+            
             for (final Symbols p : simpleNames) {
                 final TypeElement te = p.getEnclosingType().resolve(info);
                 final Set<String> idents = p.getSymbols();

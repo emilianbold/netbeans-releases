@@ -70,7 +70,7 @@ public final class ReplaceBar extends JPanel implements PropertyChangeListener {
     private final JCheckBox preserveCaseCheckBox;
     private final JCheckBox backwardsCheckBox;
     private final FocusTraversalPolicy searchBarFocusTraversalPolicy;
-    private final List<Component> focusList = new ArrayList<Component>();
+    private final List<Component> focusList = new ArrayList<>();
     private boolean popupMenuWasCanceled = false;
 
     public static ReplaceBar getInstance(SearchBar searchBar) {
@@ -352,7 +352,7 @@ public final class ReplaceBar extends JPanel implements PropertyChangeListener {
         this.updateReplaceComboBoxHistory(replaceTextField.getText());
 
         EditorFindSupport findSupport = EditorFindSupport.getInstance();
-        Map<String, Object> findProps = new HashMap<String, Object>();
+        Map<String, Object> findProps = new HashMap<>();
         findProps.putAll(searchBar.getSearchProperties());
         findProps.put(EditorFindSupport.FIND_REPLACE_WITH, replaceTextField.getText());
         findProps.put(EditorFindSupport.FIND_BACKWARD_SEARCH, backwardsCheckBox.isSelected());
