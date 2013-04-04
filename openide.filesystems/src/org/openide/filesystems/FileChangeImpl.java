@@ -44,7 +44,6 @@ package org.openide.filesystems;
 import java.io.File;
 import java.io.FileFilter;
 import java.lang.ref.WeakReference;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -222,8 +221,12 @@ final class FileChangeImpl extends WeakReference<FileChangeListener> implements 
         logger.log(Level.FINE, "addFileChangeListener {0} @ {1}", new Object[]{listener, path});
         synchronized (holders) {
             Map<File, FileChangeImpl> f2H = holders.get(listener);
-            final FileChangeImpl prev;
-            if (f2H != null && (prev = f2H.get(path)) != null) {
+            if (f2H == null) {
+                f2H = new HashMap<File, FileChangeImpl>();
+                holders.put(listener, f2H);
+            }
+            final FileChangeImpl prev = f2H.get(path);
+            if (prev != null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("Already listening to ").append(path);
                 sb.append("\nnew listener   : ").append(listener);
@@ -231,15 +234,7 @@ final class FileChangeImpl extends WeakReference<FileChangeListener> implements 
                 throw new IllegalArgumentException(sb.toString());
             }
             final FileChangeImpl holder = new FileChangeImpl(listener, path);
-            if (f2H == null) {
-                f2H = Collections.singletonMap(path, holder);
-                holders.put(listener, f2H);
-            } else {
-                if (!(f2H instanceof HashMap)) {
-                    f2H = new HashMap<File, FileChangeImpl>(f2H);
-                }
-                f2H.put(path, holder);
-            }
+            f2H.put(path, holder);
             holder.locateCurrent();
         }
     }
@@ -252,19 +247,11 @@ final class FileChangeImpl extends WeakReference<FileChangeListener> implements 
             if (f2H == null) {
                 throw new IllegalArgumentException("Was not listening to " + path);
             }
-            FileChangeImpl h;
-            boolean remove;
-            if (f2H instanceof HashMap) {
-                h = f2H.remove(path);
-                remove = f2H.isEmpty();
-            } else {
-                h = f2H.get(path);
-                remove = true;
-            }
-            if (h == null) {
+            if (!f2H.containsKey(path)) {
                 throw new IllegalArgumentException(listener + " was not listening to " + path + "; only to " + f2H.keySet());
             }
-            if (remove) {
+            FileChangeImpl h = f2H.remove(path);
+            if (f2H.isEmpty()) {
                 holders.remove(listener);
             }
             h.run();
