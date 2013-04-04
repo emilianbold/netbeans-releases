@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.css.prep.util;
 
+import java.util.concurrent.ExecutionException;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 // XXX copied & adjusted from PHP
@@ -67,16 +70,39 @@ public final class UiUtils {
     /**
      * Display a dialog with the message and then open IDE options.
      * @param message message to display before IDE options are opened
-     * @param optionsSubcategory IDE options subcategory to open (suitable e.g. for frameworks)
-     * @see #invalidScriptProvided(String)
      */
     public static void invalidScriptProvided(String message) {
-        Parameters.notNull("message", message);
+        Parameters.notNull("message", message); // NOI18N
 
         informAndOpenOptions(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
-    private static void informAndOpenOptions(NotifyDescriptor descriptor) {
+    /**
+     * Show a dialog that informs user about exception during running an external process.
+     * Opens IDE options.
+     * @param exc {@link ExecutionException} thrown
+     */
+    @NbBundle.Messages({
+        "# {0} - error message",
+        "UiUtils.running.exception=Script invocation failed with the error message:\n{0}"
+    })
+    public static void processExecutionException(ExecutionException exc) {
+        Parameters.notNull("exc", exc); // NOI18N
+
+        final Throwable cause = exc.getCause();
+        assert cause != null;
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                informAndOpenOptions(new NotifyDescriptor.Message(
+                        Bundle.UiUtils_running_exception(cause.getLocalizedMessage()),
+                        NotifyDescriptor.ERROR_MESSAGE));
+            }
+        });
+    }
+
+
+    static void informAndOpenOptions(NotifyDescriptor descriptor) {
         assert descriptor != null;
 
         DialogDisplayer.getDefault().notify(descriptor);

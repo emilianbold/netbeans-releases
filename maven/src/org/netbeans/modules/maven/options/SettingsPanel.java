@@ -357,6 +357,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         });
 
+        lblIndex.setLabelFor(comIndex);
         org.openide.awt.Mnemonics.setLocalizedText(lblIndex, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblIndex.text")); // NOI18N
 
         comIndex.setModel(createComboModel());

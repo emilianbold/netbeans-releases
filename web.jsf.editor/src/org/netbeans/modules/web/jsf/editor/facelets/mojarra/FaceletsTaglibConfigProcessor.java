@@ -232,8 +232,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                         "Processing facelet-taglibrary document: ''{0}''",
                         documents[i].getDocument().getDocumentURI()));
             }
-            String namespace =
-                    documents[i].getDocument().getDocumentElement().getNamespaceURI();
+            String namespace = documents[i].getDocument().getDocumentElement().getNamespaceURI();
             Element documentElement = documents[i].getDocument().getDocumentElement();
             NodeList libraryClass =
                     documentElement.getElementsByTagNameNS(namespace, LIBRARY_CLASS);
