@@ -228,10 +228,10 @@ made subject to such option by the copyright holder.
   </target>
 
   <target name="build-jnlp" depends="init,jnlp-generate-keystore" description="Create a JNLP distribution.">
-      <fail message="Please build using Ant 1.8.5 or higher.">
+      <fail message="Please build using Ant 1.8.4 or higher.">
         <condition>
           <not>
-            <antversion atleast="1.8.5"/>
+            <antversion atleast="1.8.4"/>
           </not>
         </condition>
       </fail>
