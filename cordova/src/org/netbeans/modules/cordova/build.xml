@@ -87,8 +87,9 @@ made subject to such option by the copyright holder.
     <target name="create-android" depends="check-android-template,check-phonegap-version" unless="android.generated.exists">
         <mkdir dir="${cordova.platforms}"/>
         
-        <exec dir="${cordova.platforms}" executable="/bin/sh" osfamily="unix" resolveexecutable="true" failonerror="true">
-            <env key="PATH" path="/usr/bin:/bin:${android.sdk.home}/tools"/>
+        <exec dir="${cordova.platforms}" executable="/bin/bash" osfamily="unix" resolveexecutable="true" failonerror="true">
+            <env key="PATH" path="${env.PATH}:/usr/bin:/bin:${android.sdk.home}/tools"/>
+            <env key="JAVA_HOME" path="${jdk.home}"/>
             <arg value="${cordova.home}/lib/android/bin/create"/>
             <arg value="android"/>
             <arg value="${android.project.package}"/>
@@ -96,7 +97,7 @@ made subject to such option by the copyright holder.
         </exec>
 
         <exec dir="${cordova.platforms}" executable="cmd" osfamily="windows" resolveexecutable="true" failonerror="true" >
-            <env key="PATH" path="%PATH%;c:\Windows\System32;${android.sdk.home}\tools;${ant.home}\bin;${jdk.home}\bin"/>
+            <env key="PATH" path="${env.PATH};c:\Windows\System32;${android.sdk.home}\tools;${ant.home}\bin;${jdk.home}\bin"/>
             <env key="JAVA_HOME" path="${jdk.home}"/>
             <arg value="/C"/>
             <arg value="${cordova.home}/lib/android/bin/create.bat"/>

@@ -70,6 +70,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowserPane;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
@@ -314,9 +315,9 @@ public class JSTestDriverSupport {
 
     private void captureBrowsers() {
         integratedBrowserPanes = new ArrayList<WebBrowserPane>();        
-        for (JSTestDriverCustomizerPanel.WebBrowserDesc bd : JSTestDriverCustomizerPanel.getBrowsers()) {
+        for (WebBrowser bd : JSTestDriverCustomizerPanel.getBrowsers()) {
             String s = JSTestDriverCustomizerPanel.getServerURL()+"/capture"; //NOI18N
-            if (bd.nbIntegration) {
+            if (bd.hasNetBeansIntegration()) {
                 // '/timeout/-1/' - will prevent js-test-driver from timeouting the test
                 //   when test execution takes too much time, for example when test is being debugged
                 s += "/timeout/-1/"; //NOI18N
@@ -326,7 +327,7 @@ public class JSTestDriverSupport {
             }
             try {
                 URL u = new URL(s);
-                WebBrowserPane pane = bd.browser.createNewBrowserPane(true, !bd.nbIntegration);
+                WebBrowserPane pane = bd.createNewBrowserPane(true);
                 pane.disablePageInspector();
                 // the problem here is following: js-test-driver is a global server
                 // which does not have any project specific context. But in order to
@@ -337,7 +338,7 @@ public class JSTestDriverSupport {
                 // updating the lookup; JS debugger listens on lookup changes
                 pane.setProjectContext(projectContext);
                 pane.showURL(u);
-                if (bd.nbIntegration) {
+                if (bd.hasNetBeansIntegration()) {
                     integratedBrowserPanes.add(pane);
                 }
             } catch (MalformedURLException ex) {

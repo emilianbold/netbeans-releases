@@ -63,6 +63,7 @@ public abstract class HintRule implements CaretSensitiveRule, InvokableRule<Hint
     @Override
     public void setCaretOffset(int caretOffset) {
         this.caretOffset = caretOffset;
+        this.lineBounds = null;
     }
 
     protected boolean showHint(OffsetRange hintOffsetRange, BaseDocument doc) {

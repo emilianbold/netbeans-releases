@@ -44,6 +44,7 @@ package org.netbeans.modules.css.model.impl;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.css.lib.TestUtil;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.ModelTestBase;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -78,6 +79,9 @@ public class BodyITest extends ModelTestBase {
     
     public void testAddRemovePage() {
         String code = "@page:left { margin-left: 2cm }";
+        CssParserResult result = TestUtil.parse(code);
+//        TestUtil.dumpResult(result);
+        assertEquals(0, result.getDiagnostics().size());
         
         Model model = createModel(code);
         StyleSheet styleSheet = getStyleSheet(model);
@@ -90,6 +94,7 @@ public class BodyITest extends ModelTestBase {
         assertNotNull(page);
         
         assertEquals(code, page.getContent().toString());
+        assertEquals(code, model.getModelSource().toString());
         
         styleSheet.getBody().removePage(page);
         

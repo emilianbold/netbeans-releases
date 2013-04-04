@@ -61,8 +61,8 @@ import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport.BrowserComboBoxModel;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport.BrowserComboBoxModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -110,12 +110,9 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
     
     private void initBrowser() {
         String selectedBrowser = MavenProjectSupport.getBrowserID(project);
-        if (selectedBrowser == null) {
-            selectedBrowser = WebBrowserSupport.getDefaultBrowserId();
-        }
-        browserModel = WebBrowserSupport.createBrowserModel(selectedBrowser, true);
+        browserModel = BrowserUISupport.createBrowserModel(selectedBrowser, true);
         browserCBox.setModel(browserModel);
-        browserCBox.setRenderer(WebBrowserSupport.createBrowserRenderer());
+        browserCBox.setRenderer(BrowserUISupport.createBrowserRenderer());
     }
 
     @Override

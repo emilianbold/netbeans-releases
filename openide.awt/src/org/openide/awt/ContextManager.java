@@ -439,7 +439,9 @@ class ContextManager extends Object {
             long now = 0; 
             assert (now = System.currentTimeMillis()) >= 0;
             for (ContextAction a : arr) {
-                a.updateState();
+                if (a != null) {
+                    a.updateState();
+                }
             }
             long took = 0;
             assert (took = System.currentTimeMillis() - now) >= 0;

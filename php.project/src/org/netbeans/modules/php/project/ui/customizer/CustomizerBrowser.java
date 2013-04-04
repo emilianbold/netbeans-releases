@@ -50,7 +50,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -60,7 +60,7 @@ public final class CustomizerBrowser extends JPanel {
     private static final long serialVersionUID = -8744546565465456L;
 
     private final PhpProjectProperties uiProps;
-    private final WebBrowserSupport.BrowserComboBoxModel browserModel;
+    private final BrowserUISupport.BrowserComboBoxModel browserModel;
 
 
     CustomizerBrowser(ProjectCustomizer.Category category, PhpProjectProperties uiProps) {
@@ -68,7 +68,7 @@ public final class CustomizerBrowser extends JPanel {
         assert uiProps != null;
 
         this.uiProps = uiProps;
-        browserModel = WebBrowserSupport.createBrowserModel(uiProps.getBrowserId(), true);
+        browserModel = BrowserUISupport.createBrowserModel(uiProps.getBrowserId(), true);
 
         initComponents();
         init();
@@ -77,7 +77,7 @@ public final class CustomizerBrowser extends JPanel {
     private void init() {
         // browser
         browserComboBox.setModel(browserModel);
-        browserComboBox.setRenderer(WebBrowserSupport.createBrowserRenderer());
+        browserComboBox.setRenderer(BrowserUISupport.createBrowserRenderer());
         browserComboBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
@@ -102,7 +102,8 @@ public final class CustomizerBrowser extends JPanel {
     }
 
     void setReloadVisible() {
-        reloadOnSaveCheckBox.setVisible(WebBrowserSupport.isIntegratedBrowser(browserModel.getSelectedBrowserId()));
+        WebBrowser browser = browserModel.getSelectedBrowser();
+        reloadOnSaveCheckBox.setVisible(browser != null && browser.hasNetBeansIntegration());
     }
 
     /**

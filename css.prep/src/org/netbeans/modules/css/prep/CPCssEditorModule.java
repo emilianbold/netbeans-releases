@@ -144,9 +144,21 @@ public class CPCssEditorModule extends CssEditorModule {
                         //2. less variable
 
                         //1.@-rule
-                        return Utilities.createRAWCompletionProposals(model.getDirectives(), ElementKind.KEYWORD, context.getAnchorOffset());
+                        proposals.addAll(Utilities.createRAWCompletionProposals(model.getDirectives(), ElementKind.KEYWORD, context.getAnchorOffset()));
+                        
+                        //2.less variables
+                        if(model.getPreprocessorType() == CPType.LESS) {
+                            proposals.addAll(allVars);
+                        }
+                        return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);
                 }
                 break;
+                
+            case SASS_VAR:
+                //sass variable: $v|
+                if(model.getPreprocessorType() == CPType.SCSS) {
+                    return Utilities.filterCompletionProposals(allVars, context.getPrefix(), true);
+                }
 
             case AT_IDENT:
                 //not complete keyword (complete keyword have their own token types,

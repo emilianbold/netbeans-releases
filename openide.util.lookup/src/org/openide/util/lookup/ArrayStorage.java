@@ -268,13 +268,23 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
             return InheritanceTree.emptyEn();
         }
     }
+    
+    @Override
+    public <T> Lookup.Result<T> findResult(Lookup.Template<T> t) {
+        AbstractLookup.ReferenceIterator it = new AbstractLookup.ReferenceIterator(this.results);
+        while (it.next()) {
+            if (it.current().template.equals(t)) {
+                return (Lookup.Result<T>) it.current().getResult();
+            }
+        }
+        return null;
+    }
 
     /** Associates another result with this storage.
      */
     public AbstractLookup.ReferenceToResult registerReferenceToResult(AbstractLookup.ReferenceToResult<?> newRef) {
         AbstractLookup.ReferenceToResult prev = this.results;
         this.results = newRef;
-
         return prev;
     }
 

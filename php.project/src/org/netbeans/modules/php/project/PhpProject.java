@@ -103,8 +103,9 @@ import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -198,6 +199,9 @@ public final class PhpProject implements Project {
     final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<PropertyChangeListener>();
 
+    final CssPreprocessors.Support cssPreprocessorsSupport = new CssPreprocessors.Support();
+
+
     public PhpProject(AntProjectHelper helper) {
         assert helper != null;
 
@@ -234,6 +238,12 @@ public final class PhpProject implements Project {
             }
         };
         frameworks.addChangeListener(WeakListeners.change(frameworksListener, frameworks));
+        cssPreprocessorsSupport.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                recompileSources();
+            }
+        });
     }
 
     @Override
@@ -413,6 +423,15 @@ public final class PhpProject implements Project {
                 sourceDirectoryFileChangeListener.setSourceDir(null);
             }
         }
+    }
+
+    void recompileSources() {
+        FileObject sourcesDirectory = getSourcesDirectory();
+        if (sourcesDirectory == null) {
+            return;
+        }
+        // force recompiling
+        cssPreprocessorsSupport.process(this, sourcesDirectory, true);
     }
 
     public PhpModule getPhpModule() {
@@ -724,6 +743,8 @@ public final class PhpProject implements Project {
             new ProjectUpgrader(PhpProject.this).upgrade();
 
             addSourceDirListener();
+            cssPreprocessorsSupport.start();
+            recompileSources();
 
             testingProviders.projectOpened();
             frameworks.projectOpened();
@@ -762,6 +783,7 @@ public final class PhpProject implements Project {
         protected void projectClosed() {
             try {
                 removeSourceDirListener();
+                cssPreprocessorsSupport.stop();
 
                 testingProviders.projectClosed();
                 frameworks.projectClosed();
@@ -878,6 +900,7 @@ public final class PhpProject implements Project {
         public void fileFolderCreated(FileEvent fe) {
             FileObject file = fe.getFile();
             frameworksReset(file);
+            processChange(file);
         }
 
         @Override
@@ -885,12 +908,14 @@ public final class PhpProject implements Project {
             FileObject file = fe.getFile();
             frameworksReset(file);
             browserReload(file);
+            processChange(file);
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
             FileObject file = fe.getFile();
             browserReload(file);
+            processChange(file);
         }
 
         @Override
@@ -898,12 +923,14 @@ public final class PhpProject implements Project {
             FileObject file = fe.getFile();
             frameworksReset(file);
             browserReload(file);
+            processChange(file);
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             FileObject file = fe.getFile();
             frameworksReset(file);
+            processChange(file);
         }
 
         @Override
@@ -931,6 +958,10 @@ public final class PhpProject implements Project {
             if (easelSupport.canReload(file)) {
                 easelSupport.reload();
             }
+        }
+
+        private void processChange(FileObject file) {
+            cssPreprocessorsSupport.process(PhpProject.this, file, false);
         }
 
     }
@@ -1210,7 +1241,7 @@ public final class PhpProject implements Project {
                 return false;
             }
             BrowserSupport support = getBrowserSupport();
-            if (!support.canRefreshOnSaveThisFileType(fo)) {
+            if (support == null || !support.canRefreshOnSaveThisFileType(fo)) {
                 return false;
             }
             // #226256
@@ -1265,13 +1296,16 @@ public final class PhpProject implements Project {
             }
             browserSupportInitialized = true;
             initBrowser();
-            WebBrowser browser = WebBrowserSupport.getBrowser(browserId);
+            if (browserId == null) {
+                browserSupport = null;
+                return null;
+            }
+            WebBrowser browser = BrowserUISupport.getBrowser(browserId);
             if (browser == null) {
                 browserSupport = null;
                 return null;
             }
-            boolean integrated = WebBrowserSupport.isIntegratedBrowser(browserId);
-            browserSupport = BrowserSupport.create(browser, !integrated);
+            browserSupport = BrowserSupport.create(browser);
             return browserSupport;
         }
 

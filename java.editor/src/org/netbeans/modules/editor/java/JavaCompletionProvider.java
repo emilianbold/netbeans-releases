@@ -3487,14 +3487,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                 }                
             } else {
+                String subwordsPattern = null;
                 if (!env.isCamelCasePrefix() && Utilities.isSubwordSensitive()) {
-                    prefix = Utilities.createSubwordsPattern(prefix);
+                    subwordsPattern = Utilities.createSubwordsPattern(prefix);
                 }
                 ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
                     Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
-                    Utilities.isSubwordSensitive() ? ClassIndex.NameKind.REGEXP :
+                    subwordsPattern != null ? ClassIndex.NameKind.REGEXP :
                     Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
-                Set<ElementHandle<TypeElement>> declaredTypes = controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix != null ? prefix : EMPTY, kind, EnumSet.allOf(ClassIndex.SearchScope.class));
+                Set<ElementHandle<TypeElement>> declaredTypes = controller.getClasspathInfo().getClassIndex().getDeclaredTypes(subwordsPattern != null ? subwordsPattern : prefix != null ? prefix : EMPTY, kind, EnumSet.allOf(ClassIndex.SearchScope.class));
                 results.ensureCapacity(results.size() + declaredTypes.size());
                 for(ElementHandle<TypeElement> name : declaredTypes) {
                     if (excludeHandles != null && excludeHandles.contains(name) || isAnnonInner(name))
@@ -3514,14 +3515,15 @@ public class JavaCompletionProvider implements CompletionProvider {
             Trees trees = controller.getTrees();
             Scope scope = env.getScope();
             if (prefix != null && prefix.length() > 2 && baseType.getTypeArguments().isEmpty()) {
+                String subwordsPattern = null;
                 if (!env.isCamelCasePrefix() && Utilities.isSubwordSensitive()) {
-                    prefix = Utilities.createSubwordsPattern(prefix);
+                    subwordsPattern = Utilities.createSubwordsPattern(prefix);
                 }
                 ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
                     Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
-                    Utilities.isSubwordSensitive() ? ClassIndex.NameKind.REGEXP :
+                    subwordsPattern != null ? ClassIndex.NameKind.REGEXP :
                     Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
-                for(ElementHandle<TypeElement> handle : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+                for(ElementHandle<TypeElement> handle : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(subwordsPattern != null ? subwordsPattern : prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
                     TypeElement te = handle.resolve(controller);
                     if (te != null && trees.isAccessible(scope, te) && types.isSubtype(types.getDeclaredType(te), baseType))
                         subtypes.add(types.getDeclaredType(te));

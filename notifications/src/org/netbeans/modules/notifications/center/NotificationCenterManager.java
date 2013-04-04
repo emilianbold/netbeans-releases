@@ -56,6 +56,7 @@ import org.netbeans.modules.notifications.filter.FilterRepository;
 import org.netbeans.modules.notifications.filter.TitleFilter;
 import org.netbeans.modules.notifications.filter.NotificationFilter;
 import org.openide.awt.NotificationDisplayer.Category;
+import org.openide.awt.QuickSearch;
 
 /**
  *
@@ -278,6 +279,10 @@ public class NotificationCenterManager {
             titleFilter = new TitleFilter(searchText);
         }
         updateTable(true);
+    }
+
+    boolean isQuickFilter() {
+        return titleFilter != null;
     }
 
     private void loadFilters() {
