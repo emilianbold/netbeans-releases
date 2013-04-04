@@ -44,8 +44,6 @@ package org.openide.awt;
 import java.awt.*;
 import java.awt.event.*;
 import java.lang.ref.WeakReference;
-import java.util.LinkedList;
-import java.util.List;
 import javax.activation.DataContentHandler;
 import javax.activation.DataContentHandlerFactory;
 import javax.swing.*;
