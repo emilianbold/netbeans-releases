@@ -95,8 +95,8 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
             annotation = declaredMethod.getAnnotation(Diff.class);
             if (annotation != null) {
                 applyChanges(annotation);
-                isGolden = false;
             }
+            isGolden = declaredMethod.getAnnotation(Golden.class) != null;
             Gramma gramma = declaredMethod.getAnnotation(Gramma.class);
             if (gramma != null) {
                 if (gramma.newGramma()) {
@@ -104,6 +104,11 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
                     TraceFlags.validate("cnd.modelimpl.cpp.parser.action", true);
                     TraceFlags.validate("cnd.modelimpl.cpp.parser.new.grammar", true);
                     TraceFlags.validate("cnd.modelimpl.parse.headers.with.sources", true);
+                    if (gramma.traceAST()) {
+                        TraceFlags.validate("cnd.modelimpl.cpp.parser.action.trace", true);
+                    } else {
+                        TraceFlags.validate("cnd.modelimpl.cpp.parser.action.trace", false);
+                    }
                 } else {
                     isNew = false;
                     TraceFlags.validate("cnd.modelimpl.cpp.parser.action", false);
@@ -148,9 +153,9 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
         if (!actualText.equals(expectedText)) {
             StringBuilder sb = new StringBuilder();
             sb.append(msg);
-            sb.append("\n----- expected model: -----\n");
+            sb.append("\n----- expected model:\n");
             sb.append(expectedText);
-            sb.append("\n----- actual modeltext: -----\n");
+            sb.append("\n----- actual model:\n");
             sb.append(actualText);
             sb.append("\n-----\n");
             int startLine = 1;

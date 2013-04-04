@@ -56,6 +56,7 @@ public class EjbJar30DataLoader extends EjbJarDataLoader{
     private static final long serialVersionUID = 1L;
     private static final String REQUIRED_MIME_PREFIX_3 = "text/x-dd-ejbjar3.0"; // NOI18N
     private static final String REQUIRED_MIME_PREFIX_3_1 = "text/x-dd-ejbjar3.1"; // NOI18N
+    private static final String REQUIRED_MIME_PREFIX_3_2 = "text/x-dd-ejbjar3.2"; // NOI18N
 
 
     public EjbJar30DataLoader () {
@@ -67,7 +68,7 @@ public class EjbJar30DataLoader extends EjbJarDataLoader{
     }
     
     protected String[] getSupportedMimeTypes(){
-        return new String[]{REQUIRED_MIME_PREFIX_3, REQUIRED_MIME_PREFIX_3_1};
+        return new String[]{REQUIRED_MIME_PREFIX_3, REQUIRED_MIME_PREFIX_3_1, REQUIRED_MIME_PREFIX_3_2};
     }
 
 }

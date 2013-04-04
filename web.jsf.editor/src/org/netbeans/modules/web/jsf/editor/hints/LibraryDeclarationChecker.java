@@ -79,6 +79,7 @@ import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.DefaultFaceletLibraries;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -113,7 +114,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
         final Collection<Library> declaredLibraries = new ArrayList<Library>();
-        JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(context.parserResult.getSnapshot().getSource());
+        final JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(context.parserResult.getSnapshot().getSource());
         Map<String, Library> libs = Collections.emptyMap();
         if (jsfSupport != null) {
             libs = jsfSupport.getLibraries();
@@ -184,7 +185,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     List<HintFix> fixes = new ArrayList<HintFix>();
                     Set<Library> libs = getLibsByPrefixes(context, getUndeclaredNamespaces(undeclaredNodes));
                     for (Library lib : libs) {
-                        FixLibDeclaration fix = new FixLibDeclaration(context.doc, lib.getDefaultPrefix(), lib);
+                        FixLibDeclaration fix = new FixLibDeclaration(context.doc, lib.getDefaultPrefix(), lib, jsfSupport.isJsf22Plus());
                         fixes.add(fix);
                     }
 
@@ -215,6 +216,9 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
         for (String namespace : declaredNamespaces) {
             Library lib = libs.get(namespace);
+            if (lib == null && DefaultLibraryInfo.NS_MAPPING.containsKey(namespace)) {
+                lib = libs.get(DefaultLibraryInfo.NS_MAPPING.get(namespace));
+            }
             if (lib != null) {
                 // http://java.sun.com/jsf/passthrough usage needs to be resolved on base of all declared libraries
                 if (!DefaultFaceletLibraries.JSF_PASSTHROUGH_NS.equals(lib.getNamespace())) {
@@ -242,6 +246,9 @@ public class LibraryDeclarationChecker extends HintsProvider {
         final Collection<OffsetRange> ranges = new ArrayList<OffsetRange>();
         for (Library lib : declaredLibraries) {
             Node rootNode = result.root(lib.getNamespace());
+            if (lib.getLegacyNamespace() != null && (rootNode == null || rootNode.children().isEmpty())) {
+                rootNode = result.root(lib.getLegacyNamespace());
+            }
             if (rootNode == null) {
                 continue; //no parse result for this namespace, the namespace is not declared
             }
@@ -331,7 +338,8 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
     private void addUnusedLibrary(Collection<OffsetRange> ranges, Map<String, Attribute> namespace2Attribute,
             Library lib, Snapshot snapshot, CharSequence docText) {
-        Attribute declAttr = namespace2Attribute.get(lib.getNamespace());
+        Attribute declAttr = namespace2Attribute.get(lib.getNamespace()) != null ?
+                namespace2Attribute.get(lib.getNamespace()) : namespace2Attribute.get(lib.getLegacyNamespace());
         if (declAttr != null) {
             int from = declAttr.nameOffset();
             int to = declAttr.valueOffset() + declAttr.value().length();

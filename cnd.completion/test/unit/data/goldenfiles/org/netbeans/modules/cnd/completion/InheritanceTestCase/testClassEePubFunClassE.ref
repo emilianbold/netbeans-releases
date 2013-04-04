@@ -1,10 +1,10 @@
-cProt int
-cPub int
-ePriv int
-eProt int
-ePub int
-cProtFun() void
-cPubFun() void
-ePrivFun() void
-eProtFun() void
-ePubFun() void
+cProt int	$	    ClassE::cProt
+cPub int	$	    ClassE::cPub
+ePriv int	$	    ClassE::ePriv
+eProt int	$	    ClassE::eProt
+ePub int	$	    ClassE::ePub
+cProtFun() void	$	    ClassE::cProtFun()
+cPubFun() void	$	    ClassE::cPubFun()
+ePrivFun() void	$	    ClassE::ePrivFun()
+eProtFun() void	$	    ClassE::eProtFun()
+ePubFun() void	$	    ClassE::ePubFun()

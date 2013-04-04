@@ -1,8 +1,4 @@
 /*
- * $Id: ConfigManager.java,v 1.24 2008/03/05 21:34:52 rlubke Exp $
- */
-
-/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
@@ -43,25 +39,29 @@ Other names may be trademarks of their respective owners.
 
 package org.netbeans.modules.web.jsf.editor.facelets.mojarra;
 
+import com.sun.faces.RIConstants;
 import com.sun.faces.config.ConfigurationException;
 import com.sun.faces.config.DbfFactory;
+import com.sun.faces.config.DelegatingAnnotationProvider;
 import com.sun.faces.config.DocumentInfo;
 import com.sun.faces.config.DocumentOrderingWrapper;
 import com.sun.faces.config.FacesConfigInfo;
+import com.sun.faces.config.InitFacesContext;
 import com.sun.faces.config.WebConfiguration;
-import static com.sun.faces.config.WebConfiguration.BooleanWebContextInitParameter.ValidateFacesConfigFiles;
 import static com.sun.faces.config.WebConfiguration.BooleanWebContextInitParameter.DisableFaceletJSFViewHandler;
 import static com.sun.faces.config.WebConfiguration.BooleanWebContextInitParameter.EnableThreading;
+import static com.sun.faces.config.WebConfiguration.BooleanWebContextInitParameter.ValidateFacesConfigFiles;
 import com.sun.faces.spi.ConfigurationResourceProvider;
 import com.sun.faces.spi.ConfigurationResourceProviderFactory;
 import com.sun.faces.spi.AnnotationProvider;
 import com.sun.faces.spi.AnnotationProviderFactory;
+import com.sun.faces.spi.HighAvailabilityEnabler;
 import static com.sun.faces.spi.ConfigurationResourceProviderFactory.ProviderType.*;
-import static com.sun.faces.spi.ConfigurationResourceProviderFactory.ProviderType.FaceletConfig;
 import com.sun.faces.config.configprovider.MetaInfFacesConfigResourceProvider;
 import com.sun.faces.config.configprovider.MojarraFacesConfigResourceProvider;
 import com.sun.faces.config.configprovider.WebFacesConfigResourceProvider;
 import com.sun.faces.config.configprovider.MetaInfFaceletTaglibraryConfigProvider;
+import com.sun.faces.config.configprovider.WebAppFlowConfigResourceProvider;
 import com.sun.faces.config.configprovider.WebFaceletTaglibResourceProvider;
 import com.sun.faces.config.processor.ApplicationConfigProcessor;
 import com.sun.faces.config.processor.BehaviorConfigProcessor;
@@ -75,8 +75,16 @@ import com.sun.faces.config.processor.NavigationConfigProcessor;
 import com.sun.faces.config.processor.RenderKitConfigProcessor;
 import com.sun.faces.config.processor.ValidatorConfigProcessor;
 import com.sun.faces.config.processor.FaceletTaglibConfigProcessor;
+import com.sun.faces.config.processor.FacesConfigExtensionProcessor;
+import com.sun.faces.config.processor.FacesFlowDefinitionConfigProcessor;
+import com.sun.faces.config.processor.ProtectedViewsConfigProcessor;
+import com.sun.faces.config.processor.ResourceLibraryContractsConfigProcessor;
+import com.sun.faces.el.ELContextImpl;
+import com.sun.faces.spi.InjectionProvider;
+import com.sun.faces.spi.InjectionProviderFactory;
 import com.sun.faces.util.FacesLogger;
 import com.sun.faces.util.Timer;
+import com.sun.faces.util.Util;
 import org.xml.sax.InputSource;
 
 import javax.faces.FacesException;
@@ -119,10 +127,17 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.lang.annotation.Annotation;
-import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.Iterator;
 
+import java.util.ServiceLoader;
+import javax.el.ELContext;
+import javax.el.ELContextEvent;
+import javax.el.ELContextListener;
+import javax.faces.application.ApplicationConfigurationPopulator;
+import javax.faces.component.UIViewRoot;
 import org.w3c.dom.*;
+import org.xml.sax.SAXParseException;
 
 /**
  * <p>
@@ -181,7 +196,15 @@ public class ConfigManager {
 
 
     /**
-     * Name of the attribute added by {@link ParseTask} to indiciate a
+     * The initialization time FacesContext scoped key under which the
+     * InjectionProvider is stored.
+     */
+    public static final String INJECTION_PROVIDER_KEY =
+          ConfigManager.class.getName() + "_INJECTION_PROVIDER_TASK";
+
+
+    /**
+     * Name of the attribute added by ParseTask to indicate a
      * {@link Document} instance as a representation of
      * <code>/WEB-INF/faces-config.xml</code>.
      */
@@ -244,6 +267,7 @@ public class ConfigManager {
           new ArrayList<ConfigurationResourceProvider>(3);
         facesConfigProviders.add(new MojarraFacesConfigResourceProvider());
         facesConfigProviders.add(new MetaInfFacesConfigResourceProvider());
+        facesConfigProviders.add(new WebAppFlowConfigResourceProvider());
         facesConfigProviders.add(new WebFacesConfigResourceProvider());
         FACES_CONFIG_RESOURCE_PROVIDERS = Collections.unmodifiableList(facesConfigProviders);
 
@@ -266,6 +290,10 @@ public class ConfigManager {
              new RenderKitConfigProcessor(),
              new NavigationConfigProcessor(),
              new BehaviorConfigProcessor(),
+             new FacesConfigExtensionProcessor(),
+             new ProtectedViewsConfigProcessor(),
+             new FacesFlowDefinitionConfigProcessor(),
+             new ResourceLibraryContractsConfigProcessor()
         };
         for (int i = 0; i < configProcessors.length; i++) {
             ConfigProcessor p = configProcessors[i];
@@ -293,6 +321,15 @@ public class ConfigManager {
 
     }
 
+    private void initializeConfigProcessers(ServletContext sc) {
+        ConfigProcessor p = FACES_CONFIG_PROCESSOR_CHAIN;
+        do {
+            p.initializeClassMetadataMap(sc);
+
+        } while (null != (p = p.getNext()));
+
+    }
+
 
     /**
      * <p>
@@ -306,6 +343,7 @@ public class ConfigManager {
 
         if (!hasBeenInitialized(sc)) {
             initializedContexts.add(sc);
+            initializeConfigProcessers(sc);
             ExecutorService executor = null;
             try {
                 WebConfiguration webConfig = WebConfiguration.getInstance(sc);
@@ -324,46 +362,93 @@ public class ConfigManager {
                       new FacesConfigInfo(facesDocuments[facesDocuments.length - 1]);
 
                 facesDocuments = sortDocuments(facesDocuments, webInfFacesConfigInfo);
+                InitFacesContext context = (InitFacesContext) FacesContext.getCurrentInstance();
+
+                InjectionProvider containerConnector =
+                        InjectionProviderFactory.createInstance(context.getExternalContext());
+                context.getAttributes().put(INJECTION_PROVIDER_KEY, containerConnector);
 
                 boolean isFaceletsDisabled =
                       isFaceletsDisabled(webConfig, webInfFacesConfigInfo);
                 if (!webInfFacesConfigInfo.isWebInfFacesConfig() || !webInfFacesConfigInfo.isMetadataComplete()) {
                     // execute the Task responsible for finding annotation classes
-                    Set<URI> scanUris = getAnnotationScanURIs(facesDocuments);
+                    ConfigManager.ProvideMetadataToAnnotationScanTask taskMetadata = new ConfigManager.ProvideMetadataToAnnotationScanTask(facesDocuments, containerConnector);
                     Future<Map<Class<? extends Annotation>,Set<Class<?>>>> annotationScan;
                     if (executor != null) {
-                        annotationScan = executor.submit(new AnnotationScanTask(sc, scanUris));
+                        annotationScan = executor.submit(new ConfigManager.AnnotationScanTask(sc, context, taskMetadata));
                         pushTaskToContext(sc, annotationScan);
                     } else {
                         annotationScan =
-                              new FutureTask<Map<Class<? extends Annotation>,Set<Class<?>>>>(new AnnotationScanTask(sc, scanUris));
+                              new FutureTask<Map<Class<? extends Annotation>,Set<Class<?>>>>(new ConfigManager.AnnotationScanTask(sc, context, taskMetadata));
                         ((FutureTask) annotationScan).run();
                     }
                     pushTaskToContext(sc, annotationScan);
                 }
 
+                //see if the app is running in a HA enabled env
+                if (containerConnector instanceof HighAvailabilityEnabler) {
+                    ((HighAvailabilityEnabler)containerConnector).enableHighAvailability(sc);
+                }
+
+                ServiceLoader<ApplicationConfigurationPopulator> populators =
+                        ServiceLoader.load(ApplicationConfigurationPopulator.class);
+                Document newDoc;
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                dbf.setNamespaceAware(true);
+                DocumentBuilder builder = dbf.newDocumentBuilder();
+                DOMImplementation domImpl = builder.getDOMImplementation();
+                List<DocumentInfo> programmaticDocuments = new ArrayList<DocumentInfo>();
+                DocumentInfo newDocInfo;
+                for (ApplicationConfigurationPopulator pop : populators) {
+                    newDoc = domImpl.createDocument(RIConstants.JAVAEE_XMLNS, "faces-config", null);
+                    Attr versionAttribute = newDoc.createAttribute("version");
+                    versionAttribute.setValue("2.2");
+                    newDoc.getDocumentElement().getAttributes().setNamedItem(versionAttribute);
+
+                    try {
+                        pop.populateApplicationConfiguration(newDoc);
+                        newDocInfo = new DocumentInfo(newDoc, null);
+                        programmaticDocuments.add(newDocInfo);
+                    } catch (Throwable e) {
+                        if (LOGGER.isLoggable(Level.INFO)) {
+                            LOGGER.log(Level.INFO, "{0} thrown when invoking {1}.populateApplicationConfigurationResources: {2}",
+                                    new String [] {
+                                        e.getClass().getName(),
+                                        pop.getClass().getName(),
+                                        e.getMessage()
+                                    }
+                            );
+                        }
+                    }
+                }
+                if (!programmaticDocuments.isEmpty()) {
+                    DocumentInfo [] newDocumentInfo = new DocumentInfo[facesDocuments.length + programmaticDocuments.size()];
+                    System.arraycopy(facesDocuments, 0, newDocumentInfo, 0, facesDocuments.length);
+                    int i = facesDocuments.length;
+                    for (DocumentInfo cur : programmaticDocuments) {
+                        newDocumentInfo[i] = cur;
+                    }
+                    facesDocuments = newDocumentInfo;
+                }
+
                 // process the ordered documents
                 FACES_CONFIG_PROCESSOR_CHAIN.process(sc, facesDocuments);
                 if (!isFaceletsDisabled) {
-                    FACELET_TAGLIB_CONFIG_PROCESSOR_CHAIN.process(sc,
-                          getConfigDocuments(sc,
+                    FACELET_TAGLIB_CONFIG_PROCESSOR_CHAIN.process(
+                          sc, getConfigDocuments(sc,
                                              getFaceletConfigResourceProviders(),
                                              executor,
                                              validating));
                 }
 
-                publishPostConfigEvent();
             } catch (Exception e) {
                 // clear out any configured factories
                 releaseFactories();
-                if (LOGGER.isLoggable(Level.INFO)) {
-                    LOGGER.log(Level.INFO,
-                               "Unsanitized stacktrace from failed start...",
-                               e);
+                Throwable t = e;
+                if (!(e instanceof ConfigurationException)) {
+                    t = new ConfigurationException("CONFIGURATION FAILED! " + t.getMessage(), t);
                 }
-                Throwable t = unwind(e);
-                throw new ConfigurationException("CONFIGURATION FAILED! " + t.getMessage(),
-                                                 t);
+                throw (ConfigurationException)t;
             } finally {
                 if (executor != null) {
                     executor.shutdown();
@@ -384,7 +469,7 @@ public class ConfigManager {
      * @param sc the <code>ServletContext</code> for the application that
      *  needs to be removed
      */
-    public void destory(ServletContext sc) {
+    public void destroy(ServletContext sc) {
 
         releaseFactories();
         initializedContexts.remove(sc);
@@ -426,29 +511,6 @@ public class ConfigManager {
 
 
     // --------------------------------------------------------- Private Methods
-
-
-    private static Set<URI> getAnnotationScanURIs(DocumentInfo[] documentInfos) {
-
-        Set<URI> uris = new HashSet<URI>(documentInfos.length);
-        Set<String> jarNames = new HashSet<String>(documentInfos.length);
-        for (DocumentInfo docInfo : documentInfos) {
-            Matcher m = JAR_PATTERN.matcher(docInfo.getSourceURI().toString());
-            if (m.matches()) {
-                String jarName = m.group(2);
-                if (!jarNames.contains(jarName)) {
-                    FacesConfigInfo configInfo = new FacesConfigInfo(docInfo);
-                    if (!configInfo.isMetadataComplete()) {
-                        uris.add(docInfo.getSourceURI());
-                        jarNames.add(jarName);
-                    }
-                }
-            }
-        }
-
-        return uris;
-
-    }
 
 
     private static boolean useThreads(ServletContext ctx) {
@@ -605,10 +667,27 @@ public class ConfigManager {
      * Publishes a {@link javax.faces.event.PostConstructApplicationEvent} event for the current
      * {@link Application} instance.
      */
-    private void publishPostConfigEvent() {
+    void publishPostConfigEvent() {
 
         FacesContext ctx = FacesContext.getCurrentInstance();
         Application app = ctx.getApplication();
+        if (null == ((InitFacesContext)ctx).getELContext()) {
+            ELContext elContext = new ELContextImpl(app.getELResolver());
+            elContext.putContext(FacesContext.class, ctx);
+            UIViewRoot root = ctx.getViewRoot();
+            if (null != root) {
+                elContext.setLocale(root.getLocale());
+            }
+            ELContextListener[] listeners = app.getELContextListeners();
+            if (listeners.length > 0) {
+                ELContextEvent event = new ELContextEvent(elContext);
+                for (ELContextListener listener: listeners) {
+                    listener.contextCreated(event);
+                }
+            }
+            ((InitFacesContext)ctx).setELContext(elContext);
+        }
+
         app.publishEvent(ctx,
                          PostConstructApplicationEvent.class,
                          Application.class,
@@ -626,7 +705,7 @@ public class ConfigManager {
      * @param sc the <code>ServletContext</code> for the application to be
      *  processed
      * @param providers <code>List</code> of <code>ConfigurationResourceProvider</code>
-     *  instances that provide the URI of the documents to parse.
+     *  instances that provide the URL of the documents to parse.
      * @param executor the <code>ExecutorService</code> used to dispatch parse
      *  request to
      * @param validating flag indicating whether or not the documents
@@ -638,12 +717,12 @@ public class ConfigManager {
                                                  ExecutorService executor,
                                                  boolean validating) {
 
-        List<FutureTask<Collection<URI>>> uriTasks =
+        List<FutureTask<Collection<URI>>> urlTasks =
              new ArrayList<FutureTask<Collection<URI>>>(providers.size());
         for (ConfigurationResourceProvider p : providers) {
             FutureTask<Collection<URI>> t =
-                 new FutureTask<Collection<URI>>(new URITask(p, sc));
-            uriTasks.add(t);
+                 new FutureTask<Collection<URI>>(new ConfigManager.URITask(p, sc));
+            urlTasks.add(t);
             if (executor != null) {
                 executor.execute(t);
             } else {
@@ -654,12 +733,12 @@ public class ConfigManager {
         List<FutureTask<DocumentInfo>> docTasks =
              new ArrayList<FutureTask<DocumentInfo>>(providers.size() << 1);
 
-        for (FutureTask<Collection<URI>> t : uriTasks) {
+        for (FutureTask<Collection<URI>> t : urlTasks) {
             try {
                 Collection<URI> l = t.get();
                 for (URI u : l) {
                     FutureTask<DocumentInfo> d =
-                         new FutureTask<DocumentInfo>(new ParseTask(validating, u.toURL()));
+                         new FutureTask<DocumentInfo>(new ConfigManager.ParseTask(validating, u));
                     docTasks.add(d);
                     if (executor != null) {
                         executor.execute(d);
@@ -705,22 +784,22 @@ public class ConfigManager {
     }
 
 
-    /**
-     * @param throwable Throwable
-     * @return the root cause of this error
-     */
-    private Throwable unwind(Throwable throwable) {
-
-          Throwable t = null;
-          if (throwable != null) {
-              t =  unwind(throwable.getCause());
-              if (t == null) {
-                  t = throwable;
-              }
-          }
-          return t;
-
-    }
+//    /**
+//     * @param throwable Throwable
+//     * @return the root cause of this error
+//     */
+//    private Throwable unwind(Throwable throwable) {
+//
+//          Throwable t = null;
+//          if (throwable != null) {
+//              t =  unwind(throwable.getCause());
+//              if (t == null) {
+//                  t = throwable;
+//              }
+//          }
+//          return t;
+//
+//    }
 
 
     /**
@@ -742,6 +821,63 @@ public class ConfigManager {
 
     // ----------------------------------------------------------- Inner Classes
 
+    private static final class ProvideMetadataToAnnotationScanTask {
+        DocumentInfo [] documentInfos;
+        InjectionProvider containerConnector;
+        Set<URI> uris = null;
+        Set<String> jarNames = null;
+
+        private ProvideMetadataToAnnotationScanTask(DocumentInfo [] documentInfos,
+                InjectionProvider containerConnector) {
+            this.documentInfos = documentInfos;
+            this.containerConnector = containerConnector;
+        }
+
+        private void initializeIvars() {
+            if (null != uris || null != jarNames) {
+                assert(null != uris && null != jarNames);
+                return;
+            }
+            uris = new HashSet<URI>(documentInfos.length);
+            jarNames = new HashSet<String>(documentInfos.length);
+            for (DocumentInfo docInfo : documentInfos) {
+                URI sourceURI = docInfo.getSourceURI();
+                Matcher m = JAR_PATTERN.matcher(sourceURI.toString());
+                if (m.matches()) {
+                    String jarName = m.group(2);
+                    if (!jarNames.contains(jarName)) {
+                        FacesConfigInfo configInfo = new FacesConfigInfo(docInfo);
+                        if (!configInfo.isMetadataComplete()) {
+                            uris.add(sourceURI);
+                            jarNames.add(jarName);
+                        }
+                    }
+                }
+            }
+        }
+
+        private Set<URI> getAnnotationScanURIs() {
+            initializeIvars();
+
+            return uris;
+
+        }
+
+        private Set<String> getJarNames() {
+            initializeIvars();
+
+            return jarNames;
+        }
+
+        private com.sun.faces.spi.AnnotationScanner getAnnotationScanner() {
+            com.sun.faces.spi.AnnotationScanner result = null;
+            if (this.containerConnector instanceof com.sun.faces.spi.AnnotationScanner) {
+                result = (com.sun.faces.spi.AnnotationScanner) this.containerConnector;
+            }
+            return result;
+        }
+    }
+
 
     /**
      * Scans the class files within a web application returning a <code>Set</code>
@@ -750,16 +886,17 @@ public class ConfigManager {
     private static class AnnotationScanTask implements Callable<Map<Class<? extends Annotation>,Set<Class<?>>>> {
 
         private ServletContext sc;
-        private Set<URI> uris;
-
+        private InitFacesContext facesContext;
+        private AnnotationProvider provider;
+        private ConfigManager.ProvideMetadataToAnnotationScanTask metadataGetter;
 
         // -------------------------------------------------------- Constructors
 
 
-        public AnnotationScanTask(ServletContext sc, Set<URI> uris) {
-
-            this.sc = sc;
-            this.uris = uris;
+        public AnnotationScanTask(ServletContext sc, InitFacesContext facesContext, ConfigManager.ProvideMetadataToAnnotationScanTask metadataGetter) {
+            this.facesContext = facesContext;
+            this.provider = AnnotationProviderFactory.createAnnotationProvider(sc);
+            this.metadataGetter = metadataGetter;
 
         }
 
@@ -774,10 +911,28 @@ public class ConfigManager {
                 t.startTiming();
             }
 
+            // We are executing on a different thread.
+//            facesContext.callSetCurrentInstance();
+            Set<URI> scanUris = null;
+            com.sun.faces.spi.AnnotationScanner annotationScanner =
+                    metadataGetter.getAnnotationScanner();
+
+            // This is where we discover what kind of InjectionProvider
+            // we have.
+            if (provider instanceof DelegatingAnnotationProvider &&
+                null != annotationScanner) {
+                // This InjectionProvider is capable of annotation scanning *and*
+                // injection.
+                ((DelegatingAnnotationProvider)provider).setAnnotationScanner(annotationScanner,
+                        metadataGetter.getJarNames());
+                scanUris = Collections.emptySet();
+            } else {
+                // This InjectionProvider is capable of annotation scanning only
+                scanUris = metadataGetter.getAnnotationScanURIs();
+            }
             //AnnotationScanner scanner = new AnnotationScanner(sc);
-            AnnotationProvider provider = AnnotationProviderFactory.createAnnotationProvider(sc);
             Map<Class<? extends Annotation>,Set<Class<?>>> annotatedClasses =
-                  provider.getAnnotatedClasses(uris);
+                  provider.getAnnotatedClasses(scanUris);
 
             if (t != null) {
                 t.stopTiming();
@@ -799,9 +954,13 @@ public class ConfigManager {
      * </p>
      */
     private static class ParseTask implements Callable<DocumentInfo> {
-        private static final String JAVAEE_SCHEMA_DEFAULT_NS =
+        private static final String JAVAEE_SCHEMA_LEGACY_DEFAULT_NS =
             "http://java.sun.com/xml/ns/javaee";
-        private URL documentURL;
+        private static final String JAVAEE_SCHEMA_DEFAULT_NS =
+            "http://xmlns.jcp.org/xml/ns/javaee";
+        private static final String EMPTY_FACES_CONFIG =
+                "com/sun/faces/empty-faces-config.xml";
+        private URI documentURI;
         private DocumentBuilderFactory factory;
         private boolean validating;
 
@@ -814,14 +973,13 @@ public class ConfigManager {
          * </p>
          *
          * @param validating whether or not we're validating
-         * @param documentURL a URL to the configuration resource to be parsed
+         * @param documentURI a URL to the configuration resource to be parsed
          * @throws Exception general error
          */
-        public ParseTask(boolean validating, URL documentURL)
+        public ParseTask(boolean validating, URI documentURI)
         throws Exception {
 
-            this.documentURL = documentURL;
-            this.factory = DbfFactory.getFactory();
+            this.documentURI = documentURI;
             this.validating = validating;
 
         }
@@ -846,14 +1004,14 @@ public class ConfigManager {
 
                 if (timer != null) {
                     timer.stopTiming();
-                    timer.logResult("Parse " + documentURL.toExternalForm());
+                    timer.logResult("Parse " + documentURI.toURL().toExternalForm());
                 }
 
-                return new DocumentInfo(d, new URI(documentURL.toExternalForm()));
+                return new DocumentInfo(d, documentURI);
             } catch (Exception e) {
                 throw new ConfigurationException(MessageFormat.format(
                      "Unable to parse document ''{0}'': {1}",
-                     documentURL.toExternalForm(),
+                     documentURI.toURL().toExternalForm(),
                      e.getMessage()), e);
             }
         }
@@ -863,7 +1021,7 @@ public class ConfigManager {
 
 
         /**
-         * @return <code>Document</code> based on <code>documentURL</code>.
+         * @return <code>Document</code> based on <code>documentURI</code>.
          * @throws Exception if an error occurs during the process of building a
          *  <code>Document</code>
          */
@@ -871,10 +1029,41 @@ public class ConfigManager {
 
             Document returnDoc;
             DocumentBuilder db = getNonValidatingBuilder();
+            URL documentURL = documentURI.toURL();
             InputSource is = new InputSource(getInputStream(documentURL));
-                is.setSystemId(documentURL.toExternalForm());
-            Document doc = db.parse(is);
-            String documentNS = doc.getDocumentElement().getNamespaceURI();
+                is.setSystemId(documentURI.toURL().toExternalForm());
+            Document doc = null;
+
+            try {
+                doc = db.parse(is);
+            } catch (SAXParseException spe) {
+                // [mojarra-1693]
+                // Test if this is a zero length or whitespace only faces-config.xml file.
+                // If so, just make an empty Document
+                InputStream stream = is.getByteStream();
+                stream.close();
+
+                is = new InputSource(getInputStream(documentURL));
+                stream = is.getByteStream();
+                if (streamIsZeroLengthOrEmpty(stream) &&
+                    documentURL.toExternalForm().endsWith("faces-config.xml")) {
+                    ClassLoader loader = this.getClass().getClassLoader();
+                    is = new InputSource(getInputStream(loader.getResource(EMPTY_FACES_CONFIG)));
+                    doc = db.parse(is);
+                }
+
+            }
+
+            String documentNS = null;
+            if (null == doc) {
+                if (FacesFlowDefinitionConfigProcessor.uriIsFlowDefinition(documentURI)) {
+                    documentNS = RIConstants.JAVAEE_XMLNS;
+                    doc = FacesFlowDefinitionConfigProcessor.synthesizeEmptyFlowDefinition(documentURI);
+                }
+            } else {
+                documentNS = doc.getDocumentElement().getNamespaceURI();
+            }
+
             if (validating && documentNS != null) {
                 DOMSource domSource
                      = new DOMSource(doc, documentURL.toExternalForm());
@@ -889,8 +1078,52 @@ public class ConfigManager {
                 if (JAVAEE_SCHEMA_DEFAULT_NS.equals(documentNS)) {
                     Attr version = (Attr)
                             documentElement.getAttributes().getNamedItem("version");
+                    DbfFactory.FacesSchema schema;
                     if (version != null) {
-                        DbfFactory.FacesSchema schema = resolveFacesSchema(version.getValue(), documentElement);
+                        String versionStr = version.getValue();
+                        if ("2.2".equals(versionStr)) {
+                            if ("facelet-taglib".equals(documentElement.getLocalName())) {
+                                schema = DbfFactory.FacesSchema.FACELET_TAGLIB_22;
+                            } else {
+                                schema = DbfFactory.FacesSchema.FACES_22;
+                            }
+                        } else {
+                            throw new ConfigurationException("Unknown Schema version: " + versionStr);
+                        }
+                        DocumentBuilder builder = getBuilderForSchema(schema);
+                        if (builder.isValidating()) {
+                            builder.getSchema().newValidator().validate(domSource);
+                            returnDoc = ((Document) domSource.getNode());
+                        } else {
+                            returnDoc = ((Document) domSource.getNode());
+                        }
+                    } else {
+                        // this shouldn't happen, but...
+                        throw new ConfigurationException("No document version available.");
+                    }
+                } else if (JAVAEE_SCHEMA_LEGACY_DEFAULT_NS.equals(documentNS)) {
+                    Attr version = (Attr)
+                            documentElement.getAttributes().getNamedItem("version");
+                    DbfFactory.FacesSchema schema;
+                    if (version != null) {
+                        String versionStr = version.getValue();
+                        if ("2.0".equals(versionStr)) {
+                            if ("facelet-taglib".equals(documentElement.getLocalName())) {
+                                schema = DbfFactory.FacesSchema.FACELET_TAGLIB_20;
+                            } else {
+                                schema = DbfFactory.FacesSchema.FACES_20;
+                            }
+                        } else if ("2.1".equals(versionStr)) {
+                            if ("facelet-taglib".equals(documentElement.getLocalName())) {
+                                schema = DbfFactory.FacesSchema.FACELET_TAGLIB_20;
+                            } else {
+                                schema = DbfFactory.FacesSchema.FACES_21;
+                            }
+                        } else if ("1.2".equals(versionStr)) {
+                            schema = DbfFactory.FacesSchema.FACES_12;
+                        } else {
+                            throw new ConfigurationException("Unknown Schema version: " + versionStr);
+                        }
                         DocumentBuilder builder = getBuilderForSchema(schema);
                         if (builder.isValidating()) {
                             builder.getSchema().newValidator().validate(domSource);
@@ -916,7 +1149,7 @@ public class ConfigManager {
                     if (FACES_CONFIG_1_X_DEFAULT_NS.equals(documentNS)) {
                         schemaToApply = DbfFactory.FacesSchema.FACES_11;
                     } else if (FACELETS_1_0_DEFAULT_NS.equals(documentNS)) {
-                        schemaToApply = DbfFactory.FacesSchema.FACELET_TAGLIB_22;
+                        schemaToApply = DbfFactory.FacesSchema.FACELET_TAGLIB_20;
                     } else {
                         throw new IllegalStateException();
                     }
@@ -944,37 +1177,21 @@ public class ConfigManager {
 
         }
 
-        /**
-         * Resolves faces schema on base of the version and documentElement.
-         *
-         * @return resolved FacesSchema
-         * @throws ConfigurationException if no adequate schema found
-         */
-        private static DbfFactory.FacesSchema resolveFacesSchema(String versionString,
-                Node documentElement) throws ConfigurationException {
-            if ("2.2".equals(versionString)) {
-                if ("facelet-taglib".equals(documentElement.getLocalName())) {
-                    return DbfFactory.FacesSchema.FACELET_TAGLIB_22;
-                } else {
-                    return DbfFactory.FacesSchema.FACES_22;
+        private boolean streamIsZeroLengthOrEmpty(InputStream is) throws IOException {
+            boolean isZeroLengthOrEmpty = (0 == is.available());
+            final int size = 1024;
+            byte[] b = new byte[size];
+            String s;
+            while (!isZeroLengthOrEmpty && -1 != is.read(b, 0, size)) {
+                s = (new String(b, RIConstants.CHAR_ENCODING)).trim();
+                isZeroLengthOrEmpty = 0 == s.length();
+                b[0] = 0;
+                for (int i = 1; i < size; i += i) {
+                    System.arraycopy(b, 0, b, i, ((size - i) < i) ? (size - i) : i);
                 }
-            } else if ("2.1".equals(versionString)) {
-                if ("facelet-taglib".equals(documentElement.getLocalName())) {
-                    return DbfFactory.FacesSchema.FACELET_TAGLIB_20;
-                } else {
-                    return DbfFactory.FacesSchema.FACES_21;
-                }
-            } else if ("2.0".equals(versionString)) {
-                if ("facelet-taglib".equals(documentElement.getLocalName())) {
-                    return DbfFactory.FacesSchema.FACELET_TAGLIB_20;
-                } else {
-                    return DbfFactory.FacesSchema.FACES_20;
-                }
-            } else if ("1.2".equals(versionString)) {
-                return DbfFactory.FacesSchema.FACES_12;
-            } else {
-                throw new ConfigurationException("Unknown Schema version: " + versionString);
             }
+
+            return isZeroLengthOrEmpty;
         }
 
 
@@ -988,7 +1205,8 @@ public class ConfigManager {
         private static Transformer getTransformer(String documentNS)
         throws Exception {
 
-            TransformerFactory factory = TransformerFactory.newInstance();
+            TransformerFactory factory = Util.createTransformerFactory();
+
             String xslToApply;
             if (FACES_CONFIG_1_X_DEFAULT_NS.equals(documentNS)) {
                 xslToApply = FACES_TO_1_1_PRIVATE_XSL;
@@ -1033,6 +1251,9 @@ public class ConfigManager {
 
         private DocumentBuilder getBuilderForSchema(DbfFactory.FacesSchema schema)
         throws Exception {
+            schema.initSchema();
+            this.factory = DbfFactory.getFactory();
+
             try {
                 factory.setSchema(schema.getSchema());
             } catch (UnsupportedOperationException upe) {
@@ -1050,7 +1271,7 @@ public class ConfigManager {
     /**
      * <p>
      *  This <code>Callable</code> will be used by {@link ConfigManager#getConfigDocuments(javax.servlet.ServletContext, java.util.List, java.util.concurrent.ExecutorService, boolean)}.
-     *  It represents one or more URIs to configuration resources that require
+     *  It represents one or more URLs to configuration resources that require
      *  processing.
      * </p>
      */
@@ -1066,7 +1287,7 @@ public class ConfigManager {
         /**
          * Constructs a new <code>URITask</code> instance.
          * @param provider the <code>ConfigurationResourceProvider</code> from
-         *  which zero or more <code>URI</code>s will be returned
+         *  which zero or more <code>URL</code>s will be returned
          * @param sc the <code>ServletContext</code> of the current application
          */
         public URITask(ConfigurationResourceProvider provider,
@@ -1080,15 +1301,33 @@ public class ConfigManager {
 
 
         /**
-         * @return zero or more <code>URI</code> instances
+         * @return zero or more <code>URL</code> instances
          * @throws Exception if an Exception is thrown by the underlying
-         *  <code>ConfigurationResourceProvider</code> 
+         *  <code>ConfigurationResourceProvider</code>
          */
         public Collection<URI> call() throws Exception {
-            return provider.getResources(sc);
+            Collection untypedCollection = provider.getResources(sc);
+            Iterator untypedCollectionIterator = untypedCollection.iterator();
+            Collection<URI> result = Collections.emptyList();
+            if (untypedCollectionIterator.hasNext()) {
+                Object cur = untypedCollectionIterator.next();
+                // account for older versions of the provider that return Collection<URL>.
+                if (cur instanceof URL) {
+                    result = new ArrayList<URI>(untypedCollection.size());
+                    result.add(new URI(((URL)cur).toExternalForm()));
+                    while (untypedCollectionIterator.hasNext()) {
+                        cur = untypedCollectionIterator.next();
+                        result.add(new URI(((URL)cur).toExternalForm()));
+                    }
+                } else {
+                    result = (Collection<URI>) untypedCollection;
+                }
+            }
+
+            return result;
         }
 
-    } // END URLTask
+    } // END URITask
 
 
 }

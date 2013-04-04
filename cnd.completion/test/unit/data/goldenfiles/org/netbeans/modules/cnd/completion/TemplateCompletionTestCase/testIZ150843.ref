@@ -1,1 +1,1 @@
-one() Person
+one() Person	$	    select<Person>().one()
