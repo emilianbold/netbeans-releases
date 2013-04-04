@@ -122,6 +122,9 @@ public class CPCssEditorModule extends CssEditorModule {
         //errorneous source
         TokenSequence<CssTokenId> ts = context.getTokenSequence();
         Token<CssTokenId> token = ts.token();
+        if(token == null) {
+            return Collections.emptyList();
+        }
         CssTokenId tid = token.id();
         CharSequence ttext = token.text();
         char first = ttext.charAt(0);
