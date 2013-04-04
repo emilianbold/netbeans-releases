@@ -1210,7 +1210,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             enableDefinedLibraryComponent(false);
             enableServerLibraryComponent(true);
             panel.setLibraryType(LibraryType.SERVER);
-            if (!serverJsfLibraries.isEmpty()) {
+            if (!serverJsfLibraries.isEmpty() && serverLibraries.getSelectedItem() instanceof ServerLibraryItem) {
                 ServerLibraryItem item = (ServerLibraryItem) serverLibraries.getSelectedItem();
                 if (item != null) {
                     panel.setServerLibrary(item.getLibrary());
