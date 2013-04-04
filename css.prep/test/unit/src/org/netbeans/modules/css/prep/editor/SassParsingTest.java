@@ -39,18 +39,44 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
-import org.openide.util.NbBundle;
+import java.io.IOException;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.lib.CssTestBase;
+import org.netbeans.modules.css.lib.TestUtil;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.parsing.spi.ParseException;
+
+/**
+ *
+ * @author marekfukala
+ */
+public class SassParsingTest extends CssTestBase {
+
+    public SassParsingTest(String testName) {
+        super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp(); 
+        setScssSource();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown(); 
+        setPlainSource();
+    }
+    
+    //http://netbeans.org/bugzilla/show_bug.cgi?id=227676
+    //Bug 227676 - Css3Parser causes problems during scanning
+    //
+    //symptoms: endless parsing of ext-4.2.0.489/packages/ext-theme-neutral/sass/src/form/field/Trigger.scss file    
+    public void testIssue227676() throws ParseException, BadLocationException, IOException {
+        CssParserResult result = TestUtil.parse(getTestFile("testFiles/testIssue227676.scss"));
+        TestUtil.dumpResult(result);
+        assertResultOK(result);
+    }
+}

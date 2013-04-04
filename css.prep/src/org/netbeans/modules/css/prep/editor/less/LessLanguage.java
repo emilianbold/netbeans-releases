@@ -39,18 +39,69 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor.less;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.css.prep.editor.CPLexer;
+import org.netbeans.modules.css.prep.editor.CPTokenId;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Map;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.css.lib.api.CssTokenId;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
+
+/**
+ *
+ * @author marekfukala
+ */
+public class LessLanguage extends LanguageHierarchy<CPTokenId> {
+
+    private static Language<CPTokenId> INSTANCE;
+    
+    @MimeRegistration(mimeType = "text/less", service = Language.class)
+    public static Language<CPTokenId> getLanguageInstance() {
+        if(INSTANCE == null) {
+            INSTANCE = new LessLanguage().language();
+        }
+        return INSTANCE;
+    }
+    
+    @Override
+    protected Collection<CPTokenId> createTokenIds() {
+        return EnumSet.allOf(CPTokenId.class);
+    }
+
+    @Override
+    protected Map<String, Collection<CPTokenId>> createTokenCategories() {
+        return null;
+    }
+
+    @Override
+    protected Lexer<CPTokenId> createLexer(LexerRestartInfo<CPTokenId> info) {
+        return new CPLexer(info);
+    }
+
+    private Language getCoreCssLanguage() {
+        return CssTokenId.language();
+    }
+
+    @Override
+    protected LanguageEmbedding embedding(
+            Token<CPTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+        //there can be just one token with CssTokenId.CSS type - always create core css language embedding
+        return LanguageEmbedding.create(getCoreCssLanguage(), 0, 0);
+    }
+
+    @Override
+    protected String mimeType() {
+        return "text/less"; //NOI18N
+    }
+    
+}

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,79 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor.refactoring;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
+
+/**
+ *
+ * @author mfukala@netbeans.org
+ */
+public class WhereUsedUI implements RefactoringUI {
+
+    private WhereUsedPanel panel;
+    private final WhereUsedQuery query;
+
+    public WhereUsedUI(RefactoringElementContext context) {
+	this.query = new WhereUsedQuery(Lookups.fixed(context));
+    }
+
+    @Override
+    public String getName() {
+	return NbBundle.getMessage(WhereUsedUI.class, "LBL_FindUsages"); //NOI18N
+    }
+
+    @Override
+    public String getDescription() {
+	return NbBundle.getMessage(WhereUsedUI.class, "LBL_FindUsages"); //NOI18N
+    }
+
+    @Override
+    public boolean isQuery() {
+	return true;
+    }
+
+    @Override
+    public CustomRefactoringPanel getPanel(ChangeListener parent) {
+       if(panel == null) {
+           panel = new WhereUsedPanel();
+       }
+        return panel;
+    }
+
+    @Override
+    public Problem setParameters() {
+	return query.checkParameters();
+    }
+
+    @Override
+    public Problem checkParameters() {
+	return query.fastCheckParameters();
+    }
+
+    @Override
+    public boolean hasParameters() {
+	return true;
+    }
+
+    @Override
+    public AbstractRefactoring getRefactoring() {
+	return this.query;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+	return null;
+    }
+
+}

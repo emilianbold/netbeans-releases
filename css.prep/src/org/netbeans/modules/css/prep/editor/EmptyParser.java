@@ -39,18 +39,60 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
-import org.openide.util.NbBundle;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.prep.editor.less.LessCslLanguage;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+
+/**
+ *
+ * @author marekfukala
+ */
+public class EmptyParser extends Parser {
+    private Parser.Result result;
+
+    @Override
+    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        result = new EmptyParserResult(snapshot);
+    }
+
+    @Override
+    public Parser.Result getResult(Task task) throws ParseException {
+        return result;
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener changeListener) {
+        //no-op
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener changeListener) {
+        //no-op
+    }
+    
+    private static class EmptyParserResult extends ParserResult {
+
+        public EmptyParserResult(Snapshot snapshot) {
+            super(snapshot);
+        }
+
+        @Override
+        protected void invalidate() {
+            //no-op
+        }
+
+        @Override
+        public List<? extends org.netbeans.modules.csl.api.Error> getDiagnostics() {
+            return Collections.emptyList();
+        }
+    }
+}

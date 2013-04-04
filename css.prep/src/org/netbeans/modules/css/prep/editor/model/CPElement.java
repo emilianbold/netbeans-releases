@@ -39,18 +39,76 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor.model;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
-import org.openide.util.NbBundle;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.openide.filesystems.FileObject;
+
+/**
+ * Resolved element.
+ * 
+ * Can hold model and parser result!
+ *
+ * @author marekfukala
+ */
+public class CPElement {
+
+    private CPElementHandle handle;
+    private OffsetRange range; 
+    private OffsetRange scope;
+
+    public CPElement(CPElementHandle handle, OffsetRange range, OffsetRange scope) {
+        this.handle = handle;
+        this.range = range;
+        this.scope = scope;
+    }
+    
+    public String getName() {
+        return getHandle().getName();
+    }
+    
+    public CPElementType getType() {
+        return getHandle().getType();
+    }
+    
+    public FileObject getFile() {
+        return getHandle().getFile();
+    }
+
+    /**
+     * range of the element itself.
+     */
+    public OffsetRange getRange() {
+        return range;
+    }
+
+    /**
+     * range of the element scope.
+     * 
+     * null means no scope 
+     */
+    @CheckForNull
+    public OffsetRange getScope() {
+        return scope;
+    }
+    
+    void setScope(OffsetRange scope) {
+        this.scope = scope;
+    }
+
+    public CPElementHandle getHandle() {
+        return handle;
+    }
+    
+    public static Collection<CPElementHandle> toHandles(Collection<CPElement> elements) {
+        Collection<CPElementHandle> handles = new ArrayList<CPElementHandle>();
+        for(CPElement e : elements) {
+            handles.add(e.getHandle());
+        }
+        return handles;
+    }
+    
+}

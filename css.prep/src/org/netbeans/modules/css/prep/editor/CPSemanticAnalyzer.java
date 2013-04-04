@@ -39,18 +39,27 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.css.editor.module.spi.SemanticAnalyzer;
+import org.netbeans.modules.css.editor.module.spi.SemanticAnalyzerResult;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
+
+/**
+ *
+ * @author marekfukala
+ */
+public class CPSemanticAnalyzer extends SemanticAnalyzer {
+
+    //TODO implement real error checking for the declarations with less syntax,
+    //right now it is used just to ignore the less syntax by the "pure css analyzer"
+    @Override
+    public SemanticAnalyzerResult analyzeDeclaration(Node declarationNode) {
+        return NodeUtil.getChildrenRecursivelyByType(declarationNode, NodeType.cp_variable) != null
+                ? SemanticAnalyzerResult.VALID
+                : SemanticAnalyzerResult.UNKNOWN;
+    }
+    
+}

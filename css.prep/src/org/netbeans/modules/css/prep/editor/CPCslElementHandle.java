@@ -39,18 +39,72 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
-import org.openide.util.NbBundle;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.openide.filesystems.FileObject;
+
+/**
+ *
+ * @author marekfukala
+ */
+public class CPCslElementHandle implements ElementHandle {
+      
+    private FileObject file;
+    private CharSequence name;
+
+    public CPCslElementHandle(CharSequence name) {
+        this(null, name);
+    }
+
+    public CPCslElementHandle(FileObject file, CharSequence name) {
+        this.file = file;
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name.toString();
+    }
+
+    @Override
+    public FileObject getFileObject() {
+        return file;
+    }
+
+    @Override
+    public String getMimeType() {
+        return "text/css";
+    }
+
+    @Override
+    public String getIn() {
+        return null;
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.FIELD;
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public boolean signatureEquals(ElementHandle handle) {
+        return false;
+    }
+
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return null;
+    }
+}

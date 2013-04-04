@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor.refactoring;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.openide.filesystems.FileObject;
+
+/**
+ *
+ * @author mfukala@netbeans.org
+ */
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position = 120)
+public class CPRefactoringPluginFactory implements RefactoringPluginFactory {
+
+    @Override
+    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+	if (refactoring instanceof RenameRefactoring) {
+	    if (null != refactoring.getRefactoringSource().lookup(RefactoringElementContext.class)) {
+		return new CPRenameRefactoringPlugin((RenameRefactoring)refactoring);
+	    } else {
+                //folder refactoring
+                FileObject file = refactoring.getRefactoringSource().lookup(FileObject.class);
+                if(file != null && file.isFolder()) {
+                    return new CPRenameRefactoringPlugin((RenameRefactoring)refactoring);
+                }
+            }
+	} else if(refactoring instanceof WhereUsedQuery) {
+            if (null != refactoring.getRefactoringSource().lookup(RefactoringElementContext.class)) {
+                return new CPWhereUsedQueryPlugin((WhereUsedQuery)refactoring);
+            }
+        }
+
+	return null;
+
+    }
+}

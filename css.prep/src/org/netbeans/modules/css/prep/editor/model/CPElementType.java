@@ -39,18 +39,88 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor.model;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
-import org.openide.util.NbBundle;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ *
+ * @author marekfukala
+ */
+public enum CPElementType {
+
+    /**
+     * Variable in the stylesheet body.
+     *
+     * $var: value;
+     */
+    VARIABLE_GLOBAL_DECLARATION("var_gl"),
+    
+    /**
+     * Variable in a rule or mixin or other code block.
+     *
+     * $var: value;
+     */
+    VARIABLE_LOCAL_DECLARATION("var_loc"),
+    
+    /**
+     * Variable declared as a param in a mixin declaration or for, each, while
+     * block.
+     *
+     * @mixin left($dist) { ... }
+     */
+    VARIABLE_DECLARATION_IN_BLOCK_CONTROL("var_prms"),
+    
+    /**
+     * Variable usage.
+     *
+     * .clz { color: $best; }
+     */
+    VARIABLE_USAGE("var_usg"),
+    
+    /**
+     * Mixin declaration:
+     * 
+     * @mixin mymixin() { ... }
+     */
+    MIXIN_DECLARATION("mx"),
+    
+    /**
+     * Mixin usage:
+     * 
+     * @include mymixin;
+     */
+    MIXIN_USAGE("mx_usg");
+    
+    private static Map<String, CPElementType> CODES_TO_ELEMENTS;
+    
+    private String indexCode;
+
+    private CPElementType(String indexCode) {
+        this.indexCode = indexCode;
+    }
+    
+    public String getIndexCode() {
+        return indexCode;
+    }
+    
+    public boolean isOfTypes(CPElementType... types) {
+        for(CPElementType type : types) {
+            if(type == this) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static CPElementType forIndexCode(String indexCode) {
+        if(CODES_TO_ELEMENTS == null) {
+            CODES_TO_ELEMENTS = new HashMap<String, CPElementType>();
+            for(CPElementType et : values()) {
+                CODES_TO_ELEMENTS.put(et.getIndexCode(), et);
+            }
+        }
+        return CODES_TO_ELEMENTS.get(indexCode);
+    }
+}

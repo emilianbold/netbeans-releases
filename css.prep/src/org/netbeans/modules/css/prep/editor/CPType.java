@@ -39,18 +39,30 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@NbBundle.Messages({
-    "less.template.displayname=Less Source File",
-    "scss.template.displayname=Sassy CSS Source File"
-})
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "style.less",
-            position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "style.scss",
-            position = 670, displayName = "#scss.template.displayname")
-})
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.editor;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
-import org.openide.util.NbBundle;
+/**
+ *
+ * @author marekfukala
+ */
+public enum CPType {
+    
+    NONE(),
+    LESS('@'), 
+    SCSS('$');
+    
+    private final Character varPrefix;
+
+    private CPType() {
+        varPrefix = null;
+    }
+
+    private CPType(char varPrefix) {
+        this.varPrefix = varPrefix;
+    }
+
+    public Character getVarPrefix() {
+        return varPrefix;
+    }
+    
+}
