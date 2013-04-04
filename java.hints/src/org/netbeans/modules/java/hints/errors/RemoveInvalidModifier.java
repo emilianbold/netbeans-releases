@@ -47,6 +47,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +64,6 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.Modifier;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.spi.editor.hints.Fix;
@@ -91,7 +91,7 @@ public class RemoveInvalidModifier implements ErrorRule<Void> {
 
     @Override
     public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
-        EnumSet<Kind> supportedKinds = EnumSet.of(Kind.CLASS, Kind.INTERFACE, Kind.METHOD);
+        EnumSet<Kind> supportedKinds = EnumSet.of(Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.VARIABLE, Kind.INTERFACE, Kind.METHOD);
         boolean isSupported = (supportedKinds.contains(treePath.getLeaf().getKind()));
 	if (!isSupported) {
 	    return null;
@@ -182,10 +182,13 @@ public class RemoveInvalidModifier implements ErrorRule<Void> {
     private ModifiersTree getModifierTree(TreePath treePath) {
         Kind kind = treePath.getLeaf().getKind();
         switch (kind) {
+            case ANNOTATION_TYPE:
             case CLASS:
-                return ((ClassTree) treePath.getLeaf()).getModifiers();
+            case ENUM:
             case INTERFACE:
                 return ((ClassTree) treePath.getLeaf()).getModifiers();
+            case VARIABLE:
+                return ((VariableTree) treePath.getLeaf()).getModifiers();
             case METHOD:
                 return ((MethodTree) treePath.getLeaf()).getModifiers();
             default:
