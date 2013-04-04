@@ -365,7 +365,7 @@ public abstract class CsmResultItem implements CompletionItem {
                     // Bug 186954 - Included files are chaotically inserted
                     if (!CsmClassifierResolver.getDefault().isForwardClassifier((CsmObject) ob)) {
                         CsmFile currentFile = CsmUtilities.getCsmFile(doc, false, false);
-                        if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
+                        if (currentFile != null && !inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
                             String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
                             if (include.length() != 0 && !isForwardDeclaration(component) && !isAlreadyIncluded(component, include)) {
                                 insertInclude(component, currentFile, include, include.charAt(include.length() - 1) == '>');

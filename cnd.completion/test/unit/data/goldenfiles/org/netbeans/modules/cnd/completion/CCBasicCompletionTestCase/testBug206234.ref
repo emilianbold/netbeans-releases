@@ -1,1 +1,1 @@
-background_pixmap QPixmap*
+background_pixmap QPixmap*	$	    inline SkinData::SkinData() : background_pixmap

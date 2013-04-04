@@ -1778,18 +1778,26 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     @Override public void ptr_operator(Token token) {}
     @Override public void ptr_operator(int kind, Token token) {
-        if (kind == PTR_OPERATOR__STAR) {
-            if (builderContext.top(1) instanceof SimpleDeclarationBuilder) {
-                SimpleDeclarationBuilder sdb = (SimpleDeclarationBuilder)builderContext.top(1);
-                sdb.getTypeBuilder().incPointerDepth();
-            }
-        } else if (kind == PTR_OPERATOR__AMPERSAND) {
-            if (builderContext.top(1) instanceof SimpleDeclarationBuilder) {
-                SimpleDeclarationBuilder sdb = (SimpleDeclarationBuilder)builderContext.top(1);
-                sdb.getTypeBuilder().setReference();
+        if (builderContext.top(1) instanceof SimpleDeclarationBuilder) {
+            SimpleDeclarationBuilder sdb = (SimpleDeclarationBuilder) builderContext.top(1);
+            TypeBuilder typeBuilder = sdb.getTypeBuilder();
+            if (typeBuilder != null) {
+                switch (kind) {
+                    case PTR_OPERATOR__STAR:
+                        typeBuilder.incPointerDepth();
+                        break;
+                    case PTR_OPERATOR__AMPERSAND:
+                        typeBuilder.setReference();
+                        break;
+                    default:
+                        System.err.println("Unexpected kind " + kind + " for " + sdb + "\n at " + token);
+                }
+            } else {
+                System.err.println("Unexpected declaration without type " + sdb + "\n at " + token);
             }
         }
     }
+    
     @Override public void end_ptr_operator(Token token) {}
     
     @Override public void cv_qualifier(int kind, Token token) {
