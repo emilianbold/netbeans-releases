@@ -110,8 +110,6 @@ public enum ELTokenId implements TokenId {
     NULL_KEYWORD("null", ELTokenCategories.KEYWORDS.categoryName),
     OR_KEYWORD("or", ELTokenCategories.KEYWORDS.categoryName),
     TRUE_KEYWORD("true", ELTokenCategories.KEYWORDS.categoryName),
-    CAT_KEYWORD("cat", ELTokenCategories.KEYWORDS.categoryName),
-    T_KEYWORD("T", ELTokenCategories.KEYWORDS.categoryName),
     
     //literals
     WHITESPACE(null, "whitespace"),

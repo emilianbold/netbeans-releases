@@ -844,15 +844,10 @@ public class ELLexer implements Lexer<ELTokenId> {
         read.getChars(0, read.length(), buffer, 0);
         int offset = 0;
 
-        if (len < 1 || len > 10) {
+        if (len > 10)
             return null;
-        } else if (len == 1) {
-            if (buffer[offset] == 'T') {
-                return token(ELTokenId.T_KEYWORD);
-            } else {
-                return null;
-            }
-        }
+        if (len <= 1)
+            return null;
         switch (buffer[offset++]) {
             case 'a':
                 if (len <= 2) return null;
@@ -860,12 +855,6 @@ public class ELLexer implements Lexer<ELTokenId> {
                         && buffer[offset++] == 'n'
                         && buffer[offset++] == 'd')
                         ? token(ELTokenId.AND_KEYWORD) : null;
-            case 'c':
-                if (len <= 2) return null;
-                return (len == 3
-                        && buffer[offset++] == 'a'
-                        && buffer[offset++] == 't')
-                        ? token(ELTokenId.CAT_KEYWORD) : null;
             case 'd':
                 if (len <= 2) return null;
                 return (len == 3
