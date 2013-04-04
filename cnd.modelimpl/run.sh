@@ -194,7 +194,6 @@ if [ -n "${DEBUG}" ]; then
     DEBUG="${DEBUG},suspend=${SUSPEND},address=${DBGPORT}"
 fi
 
-##DEFS="-J-Dnetbeans.system_http_proxy=webcache:8080"
 DEFS=""
 DEFS="${DEFS} ${CONSOLE}"
 DEFS="${DEFS} ${PARSERRORS}"

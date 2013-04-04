@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans.core.network.proxy;
 
 import java.net.Proxy;
 import java.net.ProxySelector;
@@ -50,6 +50,7 @@ import java.net.URI;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.core.ProxySettings;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.util.NbPreferences;
@@ -90,7 +91,6 @@ public class NonProxyHostsTest extends NbTestCase {
         System.setProperty ("netbeans.system_socks_proxy", SYSTEM_PROXY_HOST + ":" + SYSTEM_PROXY_PORT);
         System.setProperty ("netbeans.system_http_non_proxy_hosts", "*.other.org");
         System.setProperty ("http.nonProxyHosts", "*.netbeans.org");
-        NbProxySelector.register();
         selector = ProxySelector.getDefault ();
         proxyPreferences  = NbPreferences.root ().node ("/org/netbeans/core");
         proxyPreferences.addPreferenceChangeListener (new PreferenceChangeListener () {
@@ -128,45 +128,4 @@ public class NonProxyHostsTest extends NbTestCase {
         assertEquals ("Connect " + TO_EXTERNAL + " DIRECT.", "[DIRECT]", selector.select (TO_EXTERNAL).toString ());
         assertEquals ("Connect " + SOCKS_TO_EXTERNAL + " DIRECT.", "[DIRECT]", selector.select (SOCKS_TO_EXTERNAL).toString ());
     }
-    
-    @RandomlyFails
-    public void testManualProxySettins () {
-        proxyPreferences.put (ProxySettings.NOT_PROXY_HOSTS, "localhost|" + "*.netbeans.org");
-        proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
-        while (isWaiting);
-        assertEquals ("Proxy type DIRECT_CONNECTION.", ProxySettings.MANUAL_SET_PROXY, ProxySettings.getProxyType ());
-        assertEquals ("Connect TO_LOCALHOST DIRECT.", Proxy.NO_PROXY, selector.select (TO_LOCALHOST).get(0));
-        assertEquals ("Connect " + SOCKS_TO_LOCALHOST + " DIRECT.", Proxy.NO_PROXY, selector.select (SOCKS_TO_LOCALHOST).get(0));
-        assertEquals ("Connect " + TO_LOCAL_DOMAIN_1 + " DIRECT.", Proxy.NO_PROXY, selector.select (TO_LOCAL_DOMAIN_1).get (0));
-        assertEquals ("Connect " + SOCKS_TO_LOCAL_DOMAIN_1 + " DIRECT.",
-                Proxy.NO_PROXY, selector.select (SOCKS_TO_LOCAL_DOMAIN_1).get (0));
-        assertEquals ("Connect " + TO_LOCAL_DOMAIN_2 + " via my.webcache:8080 proxy.",
-                "HTTP @ my.webcache:8080", selector.select (TO_LOCAL_DOMAIN_2).get (0).toString ());
-        assertEquals ("Connect " + SOCKS_TO_LOCAL_DOMAIN_2 + " via my.webcache:8080 proxy.",
-                "SOCKS @ my.webcache:8080", selector.select (SOCKS_TO_LOCAL_DOMAIN_2).get (0).toString ());
-        assertEquals ("Connect TO_EXTERNAL via my.webcache:8080 proxy.", "HTTP @ my.webcache:8080", selector.select (TO_EXTERNAL).get (0).toString ());
-        assertEquals ("Connect SOCKS_TO_EXTERNAL via my.webcache:8080 proxy.",
-                "SOCKS @ my.webcache:8080", selector.select (SOCKS_TO_EXTERNAL).get (0).toString ());
-    }
-    
-    @RandomlyFails
-    public void testSystemProxySettings () {
-        proxyPreferences.putInt ("proxyType", ProxySettings.AUTO_DETECT_PROXY);
-        while (isWaiting);
-        log ("Value of System.getProperty (\"http.nonProxyHosts\"): " + System.getProperty ("http.nonProxyHosts"));
-        assertTrue ("*.other.org is one of non-proxy hosts", System.getProperty ("http.nonProxyHosts").indexOf ("*.other.org") != -1);
-        assertEquals ("Proxy type DIRECT_CONNECTION.", ProxySettings.AUTO_DETECT_PROXY, ProxySettings.getProxyType ());
-        assertEquals ("Connect TO_LOCALHOST DIRECT.", Proxy.NO_PROXY, selector.select (TO_LOCALHOST).get(0));
-        assertEquals ("Connect " + SOCKS_TO_LOCALHOST + " DIRECT.", Proxy.NO_PROXY, selector.select (SOCKS_TO_LOCALHOST).get(0));
-        assertEquals ("Connect " + TO_LOCAL_DOMAIN_1 + " DIRECT.", Proxy.NO_PROXY, selector.select (TO_LOCAL_DOMAIN_1).get (0));
-        assertEquals ("Connect " + SOCKS_TO_LOCAL_DOMAIN_1 + " DIRECT.",
-                Proxy.NO_PROXY, selector.select (SOCKS_TO_LOCAL_DOMAIN_1).get (0));
-        assertEquals ("Connect " + TO_LOCAL_DOMAIN_2 + " DIRECT ignoring settings " + System.getProperty ("http.nonProxyHosts"), Proxy.NO_PROXY, selector.select (TO_LOCAL_DOMAIN_2).get (0));
-        assertEquals ("Connect " + SOCKS_TO_LOCAL_DOMAIN_2 + " DIRECT ignoring settings " + System.getProperty ("http.nonProxyHosts"),
-                Proxy.NO_PROXY, selector.select (SOCKS_TO_LOCAL_DOMAIN_2).get (0));
-        assertEquals ("Connect TO_EXTERNAL via system.cache.org:777 proxy.", "HTTP @ system.cache.org:777", selector.select (TO_EXTERNAL).get (0).toString ());
-        assertEquals ("Connect SOCKS_TO_EXTERNAL via system.cache.org:777 proxy.", "SOCKS @ system.cache.org:777",
-                selector.select (SOCKS_TO_EXTERNAL).get (0).toString ());
-    }
-
 }

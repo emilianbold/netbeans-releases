@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.core;
+package org.netbeans.core.network.proxy;
 
+import org.netbeans.core.ProxySettings;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -64,7 +65,7 @@ import org.openide.util.Utilities;
 public class ProxyAutoConfig {
 
     private static final Map<String, ProxyAutoConfig> file2pac = new HashMap<String, ProxyAutoConfig>(2);
-    private static RequestProcessor RP = new RequestProcessor(ProxyAutoConfig.class);
+    private static final RequestProcessor RP = new RequestProcessor(ProxyAutoConfig.class);
     private static final String NS_PROXY_AUTO_CONFIG_URL = "nbinst://org.netbeans.core/modules/ext/nsProxyAutoConfig.js"; // NOI18N
     private static final String PROTO_FILE = "file://";
 
@@ -287,6 +288,7 @@ public class ProxyAutoConfig {
                 fo = URLMapper.findFileObject(new URL(NS_PROXY_AUTO_CONFIG_URL));
             } catch (MalformedURLException ex) {
                 LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                return "";
             }
             reader = new BufferedReader(new java.io.FileReader(FileUtil.toFile(fo)));
         } catch (FileNotFoundException ex) {
