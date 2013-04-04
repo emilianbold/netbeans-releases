@@ -50,6 +50,7 @@ import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
+import org.netbeans.modules.css.prep.util.Warnings;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -61,8 +62,6 @@ public final class LessProcessor {
 
     private static final String LESS_EXTENSION = "less"; // NOI18N
     private static final String CSS_EXTENSION = "css"; // NOI18N
-
-    public static volatile boolean warningShown = false;
 
 
     public void process(Project project, FileObject fileObject) {
@@ -146,8 +145,7 @@ public final class LessProcessor {
         try {
             return LessExecutable.getDefault();
         } catch (InvalidExternalExecutableException ex) {
-            if (!warningShown) {
-                warningShown = true;
+            if (Warnings.showLessWarning()) {
                 UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
             }
         }
