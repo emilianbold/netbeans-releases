@@ -48,7 +48,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
-import org.netbeans.modules.web.common.api.CssPreprocessorsCustomizer;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -138,7 +138,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             projectType = ClientSideProjectType.TYPE,
             position = 150)
     public static ProjectCustomizer.CompositeCategoryProvider createCssPreprocessors() {
-        return new CssPreprocessorsCustomizer();
+        return CssPreprocessors.getDefault().createCustomizer();
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
