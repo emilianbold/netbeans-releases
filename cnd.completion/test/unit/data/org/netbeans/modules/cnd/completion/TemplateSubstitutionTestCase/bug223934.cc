@@ -32,6 +32,7 @@ class bug223934_A<double> {
 
 int main() {
     bug223934_A<int> a;
+    bug
     
     return 0;
 }

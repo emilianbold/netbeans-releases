@@ -1,2 +1,2 @@
-ePubSt int
-ePubFunSt() void
+ePubSt int	$	    ::ClassE::ePubSt
+ePubFunSt() void	$	    ::ClassE::ePubFunSt()

@@ -1,4 +1,4 @@
-bPub int
-bPubSt int
-bPubFun() void
-bPubFunSt() void
+bPub int	$	    b.bPub
+bPubSt int	$	    b.bPubSt
+bPubFun() void	$	    b.bPubFun()
+bPubFunSt() void	$	    b.bPubFunSt()

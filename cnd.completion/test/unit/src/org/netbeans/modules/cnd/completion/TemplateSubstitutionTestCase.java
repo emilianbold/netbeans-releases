@@ -57,7 +57,7 @@ public class TemplateSubstitutionTestCase extends CompletionBaseTestCase {
     }    
     
     public void testBug223934() throws Exception {
-        super.performSubstitutionTest("bug223934.cc", 34, 8, "", 8, "bug223934_A<double>", "bug223934_A<int>", "bug223934_A<typename T>");
+        super.performTest("bug223934.cc", 35, 8, "");
     }    
     
 }
