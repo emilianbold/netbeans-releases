@@ -358,7 +358,13 @@ public class CssCompletionTest extends CssModuleTestBase {
     }
     
     public void testDoNotOfferPropertyValuesAfterClosedPropertyDeclaration() throws ParseException {
+        checkCC("div { color: red;| }", arr("blue"), Match.DOES_NOT_CONTAIN);
         checkCC("div { color: red; | }", arr("blue"), Match.DOES_NOT_CONTAIN);
+    }
+    
+    public void testDoNotOfferPropertiesAfterUnclosedPropertyValue() throws ParseException {
+        checkCC("div { font: bold | }", arr("azimuth"), Match.DOES_NOT_CONTAIN);
+        checkCC("div { font: bold | }", arr("100"), Match.CONTAINS);
     }
     
     public void testWrongInsertPositionInPropertyName() throws ParseException, BadLocationException {
