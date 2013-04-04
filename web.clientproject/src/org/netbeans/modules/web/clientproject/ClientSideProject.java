@@ -137,7 +137,6 @@ public class ClientSideProject implements Project {
     private RemoteFiles remoteFiles;
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
     private WebBrowser projectWebBrowser;
-    final CssPreprocessors.Support cssPreprocessorsSupport = new CssPreprocessors.Support();
 
     public ClientSideProject(AntProjectHelper helper) {
         this.projectHelper = helper;
@@ -500,10 +499,9 @@ public class ClientSideProject implements Project {
             if (wb != null) {
                 browserId = wb.getId();
             }
-            project.cssPreprocessorsSupport.start();
             FileObject sources = project.getSiteRootFolder();
             if (sources != null) {
-                project.cssPreprocessorsSupport.process(project, sources, true);
+                CssPreprocessors.getDefault().process(project, sources, true);
             }
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
                     new Object[] { browserId,
@@ -512,7 +510,6 @@ public class ClientSideProject implements Project {
 
         @Override
         protected void projectClosed() {
-            project.cssPreprocessorsSupport.stop();
             project.getEvaluator().removePropertyChangeListener(this);
             removeSiteRootListener();
             GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
@@ -608,7 +605,7 @@ public class ClientSideProject implements Project {
         }
 
         private void checkPreprocessors(FileObject file) {
-            p.cssPreprocessorsSupport.process(p, file, true);
+            CssPreprocessors.getDefault().process(p, file, true);
         }
     }
 

@@ -39,22 +39,14 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.common.api;
+package org.netbeans.modules.web.common.api.ui;
 
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.api.ui.CssPreprocessorsCustomizerPanel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-/**
- * Project customizer for CSS preprocessors.
- * <p>
- * Instance of this class can be registered for any project in its project customizer SFS folder.
- * @see ProjectCustomizer.CompositeCategoryProvider.Registration
- * @since 1.37
- */
 public final class CssPreprocessorsCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
 
     @NbBundle.Messages("CssPreprocessorsCustomizer.displayName=CSS Preprocessors")
