@@ -255,11 +255,11 @@ public class CopyTemplatePageTask extends Task {
             final StringBuilder sb = new StringBuilder();
             final Pattern p = Pattern.compile(Pattern.quote(prefix) + "\\.(\\d+)\\." + Pattern.quote(key)); //NOI18N
 
-            final Hashtable<String,String> props = getProject().getProperties();
-            for (Map.Entry<String,String> entry : props.entrySet()) {
+            final Hashtable<String,Object> props = getProject().getProperties();
+            for (Map.Entry<String,Object> entry : props.entrySet()) {
                 Matcher m = p.matcher(entry.getKey());
                 if (m.matches()) {
-                    final String kv = entry.getValue();
+                    final String kv = (String) entry.getValue();
                     final String valueKey = prefix + '.'+ m.group(1) +'.' + value;  //NOI18N
                     final String vv = getProperty(valueKey, ""); //NOI18N
                     addProperty(sb,kv,vv);

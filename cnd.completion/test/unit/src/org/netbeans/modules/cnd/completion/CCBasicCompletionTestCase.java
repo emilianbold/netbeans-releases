@@ -62,7 +62,7 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     public void test208053() throws Exception {
         // IZ#208053: Method completion replaces uint64_t as unsigned long int
         String text = "template <typename T> MyClass<T>::";
-        performTest("test208053.cpp", 9, 1, text);
+        super.performTest("test208053.cpp", 9, 1, text);
     }
     
     public void test142903_1() throws Exception {

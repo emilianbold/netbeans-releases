@@ -68,8 +68,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.Declarations;
-import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.Rule;
@@ -155,9 +155,9 @@ public class RuleEditorPanel extends JPanel {
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     private boolean addPropertyMode;
    
-    private Declaration createdDeclaration;
-    private Declaration editedDeclaration;
-    private List<String> createdDeclarationsIdsList = new ArrayList<String>();
+    private PropertyDeclaration createdDeclaration;
+    private PropertyDeclaration editedDeclaration;
+    private List<String> createdDeclarationsIdsList = new ArrayList<>();
     
     private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
         @Override
@@ -165,25 +165,26 @@ public class RuleEditorPanel extends JPanel {
             Mutex.EVENT.readAccess(new Runnable() {
                 @Override
                 public void run() {
-                    if (Model.NO_CHANGES_APPLIED_TO_DOCUMENT.equals(evt.getPropertyName())) {
-                        //Model.applyChanges() requested, but no changes were done,
-                        //which means no new model will be created and hence no property sets refreshed
-                        node.fireContextChanged(false);
-                        
-                    } else if (Model.CHANGES_APPLIED_TO_DOCUMENT.equals(evt.getPropertyName())) {
-                        northWestPanel.add(appliedLabel);
-                        northWestPanel.revalidate();
-                        northWestPanel.repaint();
-
-                        //XXX this should not be called in EDT, but due to the current "increment support" design it has to.                        
-                        refreshModel();
-                        
-                    } else if (Model.MODEL_WRITE_TASK_FINISHED.equals(evt.getPropertyName())) {
-                        if (createdDeclaration != null) {
+                    switch (evt.getPropertyName()) {
+                        case Model.NO_CHANGES_APPLIED_TO_DOCUMENT:
+                            //Model.applyChanges() requested, but no changes were done,
                             //select & edit the property corresponding to the created declaration
                             node.fireContextChanged(false);
-                            editCreatedDeclaration();
-                        }
+                            break;
+                        case Model.CHANGES_APPLIED_TO_DOCUMENT:
+                            northWestPanel.add(appliedLabel);
+                            northWestPanel.revalidate();
+                            northWestPanel.repaint();
+                            //XXX this should not be called in EDT, but due to the current "increment support" design it has to.
+                            refreshModel();
+                            break;
+                        case Model.MODEL_WRITE_TASK_FINISHED:
+                            if (createdDeclaration != null) {
+                                //select & edit the property corresponding to the created declaration
+                                node.fireContextChanged(false);
+                                editCreatedDeclaration();
+                            }
+                            break;
                     }
                 }
             });
@@ -364,7 +365,7 @@ public class RuleEditorPanel extends JPanel {
         return sheet.getSelectedFeatureDescriptor();
     }
     
-    void setCreatedDeclaration(Rule rule, Declaration declaration) {
+    void setCreatedDeclaration(Rule rule, PropertyDeclaration declaration) {
         createdDeclaration = declaration;
         String declarationId = PropertyUtils.getDeclarationId(rule, declaration);
         createdDeclarationsIdsList.add(declarationId);
@@ -378,14 +379,16 @@ public class RuleEditorPanel extends JPanel {
      * 
      */
     public void disposeEditedDeclaration() {
-       final Declaration remove = editedDeclaration;
+       final PropertyDeclaration remove = editedDeclaration;
        if(remove != null) {
            //1.remove from model
            model.runWriteTask(new Model.ModelTask() {
                @Override
                public void run(StyleSheet styleSheet) {
-                   Declarations parent = (Declarations)remove.getParent();
-                   parent.removeDeclaration(remove);
+                   Declaration declaration = (Declaration)remove.getParent();
+                   Declarations declarations = (Declarations)declaration.getParent();
+                   declaration.removeElement(remove);
+                   declarations.removeDeclaration(declaration);
                }
            });
            node.fireContextChanged(true);
@@ -396,7 +399,7 @@ public class RuleEditorPanel extends JPanel {
         editedDeclaration = null;
     }
     
-    Declaration getCreatedDeclaration() {
+    PropertyDeclaration getCreatedDeclaration() {
         return this.createdDeclaration;
     }
     
@@ -411,7 +414,7 @@ public class RuleEditorPanel extends JPanel {
     //        sheet.select(descriptor, true);
             try {
                 call_PropertySheet_select(sheet, descriptor, true);
-            } catch (Exception ex) {
+            } catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 Exceptions.printStackTrace(ex);
             }
 
@@ -508,7 +511,7 @@ public class RuleEditorPanel extends JPanel {
         
         if (this.rule != null) {
             //resolve the old rule from the previous model to corresponding rule in the new model
-            final AtomicReference<Rule> rule_ref = new AtomicReference<Rule>();
+            final AtomicReference<Rule> rule_ref = new AtomicReference<>();
             this.model.runReadTask(new Model.ModelTask() {
                 @Override
                 public void run(StyleSheet styleSheet) {
@@ -573,7 +576,7 @@ public class RuleEditorPanel extends JPanel {
         //the rule is valid, but the previous was erroneous.
         node.fireContextChanged(old == null || !(old.isValid() && rule.isValid())); 
 
-        final AtomicReference<String> ruleNameRef = new AtomicReference<String>();
+        final AtomicReference<String> ruleNameRef = new AtomicReference<>();
         model.runReadTask(new Model.ModelTask() {
             @Override
             public void run(StyleSheet stylesheet) {
@@ -601,7 +604,7 @@ public class RuleEditorPanel extends JPanel {
         node.fireContextChanged(false);
     }
 
-    public void setDeclarationInfo(Declaration declaration, DeclarationInfo declarationInfo) {
+    public void setDeclarationInfo(PropertyDeclaration declaration, DeclarationInfo declarationInfo) {
         node.fireDeclarationInfoChanged(declaration, declarationInfo);
     }
 

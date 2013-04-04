@@ -67,7 +67,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -76,7 +76,6 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -195,8 +194,7 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
 
         public static List<Fix> createGF3SystemScope(Project prj) {
             List<Fix> fixes = new ArrayList<Fix>();
-            AuxiliaryProperties auxProps = prj.getLookup().lookup(AuxiliaryProperties.class);
-            String usedServer = auxProps.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
+            String usedServer = MavenProjectSupport.readServerInstanceID(prj);
             for (String serId : Deployment.getDefault().getServerInstanceIDs()) {
                 ServerInstance server = Deployment.getDefault().getServerInstance(serId);
                 try {

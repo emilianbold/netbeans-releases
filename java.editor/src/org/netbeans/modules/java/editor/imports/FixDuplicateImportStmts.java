@@ -66,6 +66,8 @@ import javax.swing.JList;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+import org.netbeans.modules.java.editor.imports.JavaFixAllImports.CandidateDescription;
+import org.netbeans.modules.java.editor.imports.JavaFixAllImports.ImportData;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -83,23 +85,23 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
         initComponents();
     }
     
-    public void initPanel(String[] simpleNames, String[][] choices, Icon[][] icons, String[] defaults, boolean removeUnusedImports) {
-        initComponentsMore(simpleNames, choices, icons, defaults, removeUnusedImports);
+    public void initPanel(ImportData data, boolean removeUnusedImports) {
+        initComponentsMore(data, removeUnusedImports);
         setAccessible();
     }
     
-    private void initComponentsMore(String simpleNames[], String choices[][], Icon[][] icons, String defaults[], boolean removeUnusedImports) {
+    private void initComponentsMore(ImportData data, boolean removeUnusedImports) {
         contentPanel.setLayout( new GridBagLayout() );
         contentPanel.setBackground( UIManager.getColor("Table.background") ); //NOI18N
         jScrollPane1.setBorder( UIManager.getBorder("ScrollPane.border") ); //NOI18N
         jScrollPane1.getVerticalScrollBar().setUnitIncrement( new JLabel("X").getPreferredSize().height );
         jScrollPane1.getVerticalScrollBar().setBlockIncrement( new JLabel("X").getPreferredSize().height*10 );
         
-        if( choices.length > 0 ) {
+        if (data.variants.length > 0 ) {
         
             int row = 0;
 
-            combos = new JComboBox[choices.length];
+            combos = new JComboBox[data.variants.length];
 
             Font monoSpaced = new Font( "Monospaced", Font.PLAIN, new JLabel().getFont().getSize() );
             FocusListener focusListener = new FocusListener() {
@@ -111,10 +113,10 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
                 public void focusLost(FocusEvent arg0) {
                 }
             };
-            for (int i=0; i<choices.length; i++){
-                combos[i] = createComboBox( choices[i], defaults[i], icons[i], monoSpaced, focusListener );
+            for (int i=0; i < data.variants.length; i++){
+                combos[i] = createComboBox(data.variants[i], data.defaults[i], monoSpaced, focusListener );
 
-                JLabel lblSimpleName = new JLabel( simpleNames[i] );
+                JLabel lblSimpleName = new JLabel(data.simpleNames[i]);
                 lblSimpleName.setOpaque( false );
                 lblSimpleName.setFont( monoSpaced );
                 lblSimpleName.setLabelFor( combos[i] );
@@ -143,7 +145,7 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
         checkUnusedImports.setSelected(removeUnusedImports);
     }
     
-    private JComboBox createComboBox( String[] choices, String defaultValue, Icon[] icons, Font font, FocusListener listener ) {
+    private JComboBox createComboBox(CandidateDescription[] choices, CandidateDescription defaultValue, Font font, FocusListener listener ) {
         JComboBox combo = new JComboBox(choices);
         combo.setSelectedItem(defaultValue);
         combo.getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_Combo_ACSD")); //NOI18N
@@ -152,7 +154,7 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
         combo.setFont( font );
         combo.addFocusListener( listener );
         combo.setEnabled( choices.length > 1 );
-        combo.setRenderer( new DelegatingRenderer(combo.getRenderer(), choices, icons ) );
+        combo.setRenderer( new DelegatingRenderer(combo.getRenderer()));
         InputMap inputMap = combo.getInputMap( JComboBox.WHEN_FOCUSED );
         inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, 0), "showPopup" ); //NOI18N
         combo.getActionMap().put( "showPopup", new TogglePopupAction() ); //NOI18N
@@ -173,10 +175,10 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
 	checkUnusedImports.getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_checkUnusedImports_a11y")); // NOI18N
     }
     
-    public String[] getSelections() {
-        String[] res = new String[null == combos ? 0 : combos.length];
+    public CandidateDescription[] getSelections() {
+        CandidateDescription[] res = new CandidateDescription[null == combos ? 0 : combos.length];
         for( int i=0; i<res.length; i++ ) {
-            res[i] = combos[i].getSelectedItem().toString();
+            res[i] = (CandidateDescription) combos[i].getSelectedItem();
         }
         return res;
     }
@@ -254,25 +256,21 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
     
     private static class DelegatingRenderer implements ListCellRenderer {
         private ListCellRenderer orig;
-        private Icon[] icons;
-        private String[] values;
-        public DelegatingRenderer( ListCellRenderer orig, String[] values, Icon[] icons ) {
+        public DelegatingRenderer(ListCellRenderer orig) {
             this.orig = orig;
-            this.icons = icons;
-            this.values = values;
         }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Component res = orig.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if( res instanceof JLabel && null != icons ) {
-                for( int i=0; i<values.length; i++ ) {
-                    if( values[i].equals( value ) ) {
-                        ((JLabel)res).setIcon( icons[i] );
-                        break;
-                    }
+            if (value instanceof CandidateDescription) {
+                CandidateDescription cd = (CandidateDescription) value;
+                Component res = orig.getListCellRendererComponent(list, cd.displayName, index, isSelected, cellHasFocus);
+                if( res instanceof JLabel) {
+                    ((JLabel)res).setIcon(cd.icon);
                 }
+                return res;
+            } else {
+                return orig.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
-            return res;
         }
     }
     

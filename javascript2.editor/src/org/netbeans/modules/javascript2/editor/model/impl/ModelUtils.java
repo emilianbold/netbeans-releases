@@ -90,10 +90,13 @@ import org.openide.filesystems.FileObject;
  */
 public class ModelUtils {
       
-    public  static String PROTOTYPE = "prototype";          //NOI18N
-    public  static String ARGUMENTS = "arguments";          //NOI18N
-    private static String GENERATED_FUNCTION_PREFIX = "_L"; //NOI18N
-    private static String GENERATED_ANONYM_PREFIX = "Anonym$"; //NOI18N
+    public static final String PROTOTYPE = "prototype"; //NOI18N
+
+    public static final String ARGUMENTS = "arguments"; //NOI18N
+
+    private static final String GENERATED_FUNCTION_PREFIX = "_L"; //NOI18N
+    
+    private static final String GENERATED_ANONYM_PREFIX = "Anonym$"; //NOI18N
     
     public static JsObjectImpl getJsObject (ModelBuilder builder, List<Identifier> fqName, boolean isLHS) {
         JsObject result = builder.getCurrentObject();

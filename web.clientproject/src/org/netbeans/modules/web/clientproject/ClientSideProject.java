@@ -70,9 +70,7 @@ import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
@@ -84,6 +82,7 @@ import org.netbeans.modules.web.clientproject.ui.action.ProjectOperations;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -138,6 +137,7 @@ public class ClientSideProject implements Project {
     private RemoteFiles remoteFiles;
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
     private WebBrowser projectWebBrowser;
+    final CssPreprocessors.Support cssPreprocessorsSupport = new CssPreprocessors.Support();
 
     public ClientSideProject(AntProjectHelper helper) {
         this.projectHelper = helper;
@@ -196,7 +196,12 @@ public class ClientSideProject implements Project {
     public synchronized WebBrowser getProjectWebBrowser() {
         if (projectWebBrowser == null) {
             String id = getSelectedBrowser();
-            projectWebBrowser = WebBrowserSupport.getBrowser(id);
+            if (id != null) {
+                projectWebBrowser = BrowserUISupport.getBrowser(id);
+            }
+            if (projectWebBrowser == null) {
+                projectWebBrowser = BrowserUISupport.getDefaultBrowserChoice(false);
+            }
         }
         return projectWebBrowser;
     }
@@ -495,6 +500,11 @@ public class ClientSideProject implements Project {
             if (wb != null) {
                 browserId = wb.getId();
             }
+            project.cssPreprocessorsSupport.start();
+            FileObject sources = project.getSiteRootFolder();
+            if (sources != null) {
+                project.cssPreprocessorsSupport.process(project, sources, true);
+            }
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
                     new Object[] { browserId,
                     project.getTestsFolder() != null && project.getTestsFolder().getChildren().length > 0 ? "YES" : "NO"}); // NOI18N
@@ -502,6 +512,7 @@ public class ClientSideProject implements Project {
 
         @Override
         protected void projectClosed() {
+            project.cssPreprocessorsSupport.stop();
             project.getEvaluator().removePropertyChangeListener(this);
             removeSiteRootListener();
             GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
@@ -560,10 +571,12 @@ public class ClientSideProject implements Project {
 
         @Override
         public void fileFolderCreated(FileEvent fe) {
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
@@ -572,6 +585,7 @@ public class ClientSideProject implements Project {
             if (r != null) {
                 r.fileChanged(fe.getFile());
             }
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
@@ -580,17 +594,22 @@ public class ClientSideProject implements Project {
             if (r != null) {
                 r.fileDeleted(fe.getFile());
             }
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             // XXX: notify BrowserReload about filename change
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
+        private void checkPreprocessors(FileObject file) {
+            p.cssPreprocessorsSupport.process(p, file, true);
+        }
     }
 
     private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {

@@ -58,7 +58,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import static org.netbeans.modules.web.browser.spi.ProjectBrowserProvider.PROP_BROWSER_ACTIVE;
@@ -114,13 +114,9 @@ public class WebProjectBrowserProvider implements ProjectBrowserProvider {
     public WebBrowser getActiveBrowser() {
         String selectedBrowser = MavenProjectSupport.getBrowserID(project);
         if (selectedBrowser == null) {
-            selectedBrowser = WebBrowserSupport.getDefaultBrowserId();
-        }
-        WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
-        if (selectedBrowser == null || browser == null) {
             return null;
         } else {
-            return browser;
+            return BrowserUISupport.getBrowser(selectedBrowser);
         }
     }
 

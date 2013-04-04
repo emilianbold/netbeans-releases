@@ -79,7 +79,7 @@ public class NbMerge extends Task {
     private boolean mergedependentmodules = false; // merge also dependent modules
     private String dummyName;
     private Target dummy;
-    private Hashtable targets;
+    private Hashtable<String,Target> targets;
     private String builtmodulesproperty = ""; // if set, update property of the name
                                          // to list of successfuly built modules
     
