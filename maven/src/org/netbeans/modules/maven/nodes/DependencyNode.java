@@ -153,7 +153,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     private static final @StaticResource String MAVEN_ICON = "org/netbeans/modules/maven/resources/Maven2Icon.gif";
     private static final @StaticResource String TRANSITIVE_ARTIFACT_ICON = "org/netbeans/modules/maven/TransitiveArtifactIcon.png";
     private static final @StaticResource String TRANSITIVE_DEPENDENCY_ICON = "org/netbeans/modules/maven/TransitiveDependencyIcon.png";
-    private static final @StaticResource String TRANSITIVE_MAVEN_ICON = "org/netbeans/modules/maven/TransitiveMaven2Icon.gif";
+    private static final @StaticResource String TRANSITIVE_MAVEN_ICON = "org/netbeans/modules/maven/TransitiveMaven2Icon.png";
 
     private Artifact art;
     private NbMavenProjectImpl project;
@@ -161,18 +161,18 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     private PropertyChangeListener listener;
     private ChangeListener listener2;
     private java.util.concurrent.atomic.AtomicReference<FileObject> fileObject;
-    private java.util.concurrent.atomic.AtomicBoolean sourceExists = new AtomicBoolean(false);
-    private java.util.concurrent.atomic.AtomicBoolean javadocExists = new AtomicBoolean(false);
+    private final java.util.concurrent.atomic.AtomicBoolean sourceExists = new AtomicBoolean(false);
+    private final java.util.concurrent.atomic.AtomicBoolean javadocExists = new AtomicBoolean(false);
     
     private volatile String iconBase = DEPENDENCY_ICON;
     
-    private static String toolTipJavadoc = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(JAVADOC_BADGE_ICON) + "\">&nbsp;" //NOI18N
+    private static final String toolTipJavadoc = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(JAVADOC_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_JavadocBadge");//NOI18N
-    private static String toolTipSource = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(SOURCE_BADGE_ICON) + "\">&nbsp;" //NOI18N
+    private static final String toolTipSource = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(SOURCE_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_SourceBadge");//NOI18N
-    private static String toolTipMissing = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MavenProjectNode.BADGE_ICON) + "\">&nbsp;" //NOI18N
+    private static final String toolTipMissing = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MavenProjectNode.BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_MissingBadge");//NOI18N
-    private static String toolTipManaged = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MANAGED_BADGE_ICON) + "\">&nbsp;" //NOI18N
+    private static final String toolTipManaged = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MANAGED_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_ManagedBadge");//NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(DependencyNode.class);
@@ -725,12 +725,12 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 //    }
 
     //why oh why do we have to suffer through this??
-    private static RemoveDependencyAction REMOVEDEPINSTANCE = new RemoveDependencyAction(Lookup.EMPTY);
+    private static final RemoveDependencyAction REMOVEDEPINSTANCE = new RemoveDependencyAction(Lookup.EMPTY);
 
     @Messages("BTN_Remove_Dependency=Remove Dependency")
     private static class RemoveDependencyAction extends AbstractAction implements ContextAwareAction {
 
-        private Lookup lkp;
+        private final Lookup lkp;
 
         RemoveDependencyAction(Lookup look) {
             putValue(Action.NAME, BTN_Remove_Dependency());
@@ -906,7 +906,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
     @SuppressWarnings("serial")
     private class DownloadJavadocSrcAction extends AbstractAction {
-        private boolean javadoc;
+        private final boolean javadoc;
         public DownloadJavadocSrcAction(boolean javadoc) {
             putValue(Action.NAME, javadoc ? LBL_Download_Javadoc() : LBL_Download__Sources());
             this.javadoc = javadoc;
@@ -950,11 +950,11 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     } 
     
     //why oh why do we have to suffer through this??
-    private static SetInCurrentAction SETINCURRENTINSTANCE = new SetInCurrentAction(Lookup.EMPTY);
+    private static final SetInCurrentAction SETINCURRENTINSTANCE = new SetInCurrentAction(Lookup.EMPTY);
 
     @Messages("BTN_Set_Dependency=Declare as Direct Dependency")
     private static class SetInCurrentAction extends AbstractAction  implements ContextAwareAction {
-        private Lookup lkp;
+        private final Lookup lkp;
 
         SetInCurrentAction(Lookup lookup) {
             putValue(Action.NAME, BTN_Set_Dependency());
@@ -1155,7 +1155,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
     private static class ArtifactSourceGroup implements SourceGroup {
 
-        private Artifact art;
+        private final Artifact art;
 
         public ArtifactSourceGroup(Artifact art) {
             this.art = art;

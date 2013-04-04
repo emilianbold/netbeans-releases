@@ -158,14 +158,14 @@ public final class EditorFindSupport {
     private WeakReference<JTextComponent> focusedTextComponent;
 
     private final WeakHashMap<JTextComponent, Map<String, WeakReference<BlockHighlighting>>> comp2layer =
-        new WeakHashMap<JTextComponent, Map<String, WeakReference<BlockHighlighting>>>();
+        new WeakHashMap<>();
     
     /** Support for firing change events */
     private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
     private SPW lastSelected;
-    private List<SPW> historyList = new ArrayList<SPW>();
-    private List<RP> replaceList = new ArrayList<RP>();
+    private List<SPW> historyList = new ArrayList<>();
+    private List<RP> replaceList = new ArrayList<>();
 
     private EditorFindSupport() {
     }
@@ -179,7 +179,7 @@ public final class EditorFindSupport {
     }
 
     public Map<String, Object> createDefaultFindProperties() {
-        HashMap<String, Object> props = new HashMap<String, Object>();
+        HashMap<String, Object> props = new HashMap<>();
         
         props.put(FIND_WHAT, null);
         props.put(FIND_REPLACE_WITH, null);
@@ -277,7 +277,7 @@ public final class EditorFindSupport {
     }
     
     public void setFocusedTextComponent(JTextComponent component) { 
-        focusedTextComponent = new WeakReference<JTextComponent>(component);
+        focusedTextComponent = new WeakReference<>(component);
         firePropertyChange(null, null, null);
     }
     
@@ -723,7 +723,7 @@ public final class EditorFindSupport {
      */
     void replaceAllImpl(Map<String, Object> props, JTextComponent c) {
         props = getValidFindProperties(props);
-        Map<String,Object> localProps = new HashMap<String, Object>(props);
+        Map<String,Object> localProps = new HashMap<>(props);
         String replaceWithOriginal = (String)localProps.get(FIND_REPLACE_WITH);
 
         Object findWhat = localProps.get(FIND_WHAT);
@@ -746,6 +746,7 @@ public final class EditorFindSupport {
         if (wrapSearch){
             localProps.put(FIND_WRAP_SEARCH, Boolean.FALSE);
             localProps.put(FIND_BACKWARD_SEARCH, Boolean.FALSE);
+            backSearch = false;
             firePropertyChange(null, null, null);
         }
 
@@ -861,11 +862,11 @@ public final class EditorFindSupport {
             Map<String, WeakReference<BlockHighlighting>> type2layer = comp2layer.get(component);
 
             if (type2layer == null) {
-                type2layer = new HashMap<String, WeakReference<BlockHighlighting>>();
+                type2layer = new HashMap<>();
                 comp2layer.put(component, type2layer);
             }
 
-            type2layer.put(layer.getLayerTypeId(), new WeakReference<BlockHighlighting>(layer));
+            type2layer.put(layer.getLayerTypeId(), new WeakReference<>(layer));
         }
     }
     
@@ -925,14 +926,14 @@ public final class EditorFindSupport {
     }
 
     public void setHistory(List<SPW> spwList){
-        this.historyList = new ArrayList<SPW>(spwList);
+        this.historyList = new ArrayList<>(spwList);
         if (!spwList.isEmpty())
             setLastSelected(spwList.get(0));
 //        firePropertyChange(FIND_HISTORY_CHANGED_PROP,null,null);
     }
     
     public void setReplaceHistory(List<RP> rpList){
-        this.replaceList = new ArrayList<RP>(rpList);
+        this.replaceList = new ArrayList<>(rpList);
     }
     
     public List<SPW> getHistory(){

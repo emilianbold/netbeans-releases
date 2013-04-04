@@ -265,7 +265,6 @@ public class JavaKit extends NbEditorKit {
             new PrefixMakerAction(makeIsAction, "is", getSetIsPrefixes), // NOI18N
             new ToggleCommentAction("//"), // NOI18N
             new JavaGenerateFoldPopupAction(), // NO_KEYBINDING in super
-            new JavaGoToDeclarationAction(),
             new InstantRenameAction(),
             new InsertSemicolonAction(true),
             new InsertSemicolonAction(false),
@@ -728,6 +727,7 @@ public class JavaKit extends NbEditorKit {
 
 // extends from NbEditorKit
 //    @EditorActionRegistration(name = gotoDeclarationAction, mimeType = JAVA_MIME_TYPE)
+    @Deprecated //unused, to be removed:
     public static class JavaGoToDeclarationAction extends GotoDeclarationAction {
 
         public JavaGoToDeclarationAction() {

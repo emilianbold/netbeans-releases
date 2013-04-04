@@ -1100,8 +1100,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
 
     // PENDING>>
-    public void setRecentViewList(TopComponent[] tcs) {
-        recentViewList.setTopComponents(tcs);
+    public void setRecentViewList(String[] tcIDs) {
+        recentViewList.setTopComponents(tcIDs);
     }
     
     public TopComponent[] getRecentViewList() {

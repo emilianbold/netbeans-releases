@@ -67,8 +67,8 @@ import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableC
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache.IssueAccessor;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache.IssueAccessor;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.util.Exceptions;
@@ -132,7 +132,7 @@ public class QueryTableCellRendererTest {
         IssueProperty property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
         rendererQuery.containsIssue = true;
         boolean selected = false;
-        setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_SEEN, true);
+        setEntryValues(rendererRepository, rendererIssue, IssueCache.Status.ISSUE_STATUS_SEEN, true);
         TableCellStyle defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         TableCellStyle result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
@@ -145,7 +145,7 @@ public class QueryTableCellRendererTest {
         rendererIssue = new RendererIssue(rendererRepository, "");
         property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
         selected = true;
-        setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_SEEN, true);
+        setEntryValues(rendererRepository, rendererIssue, IssueCache.Status.ISSUE_STATUS_SEEN, true);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
@@ -182,7 +182,7 @@ public class QueryTableCellRendererTest {
         selected = false;
         rendererIssue = new RendererIssue(rendererRepository, "changed");
         property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
-        setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_MODIFIED, false);
+        setEntryValues(rendererRepository, rendererIssue, IssueCache.Status.ISSUE_STATUS_MODIFIED, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
@@ -196,7 +196,7 @@ public class QueryTableCellRendererTest {
         selected = true;
         rendererIssue = new RendererIssue(rendererRepository, "changed");
         property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
-        setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_MODIFIED, false);
+        setEntryValues(rendererRepository, rendererIssue, IssueCache.Status.ISSUE_STATUS_MODIFIED, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(modifiedHighlightColor, result.getBackground());
@@ -209,7 +209,7 @@ public class QueryTableCellRendererTest {
         selected = false;
         rendererIssue = new RendererIssue(rendererRepository, "");
         property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
-        setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_NEW, false);
+        setEntryValues(rendererRepository, rendererIssue, IssueCache.Status.ISSUE_STATUS_NEW, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
@@ -223,7 +223,7 @@ public class QueryTableCellRendererTest {
         selected = true;
         rendererIssue = new RendererIssue(rendererRepository, "");
         property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
-        setEntryValues(rendererRepository, rendererIssue, IssueCache.ISSUE_STATUS_NEW, false);
+        setEntryValues(rendererRepository, rendererIssue, IssueCache.Status.ISSUE_STATUS_NEW, false);
         result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(newHighlightColor, result.getBackground());
@@ -471,13 +471,13 @@ public class QueryTableCellRendererTest {
 
         @Override
         public IssueStatusProvider.Status getStatus() {
-            int s = repo.cache.getStatus(getID());
+            IssueCache.Status s = repo.cache.getStatus(getID());
             switch(s) {
-                case IssueCache.ISSUE_STATUS_NEW:
+                case ISSUE_STATUS_NEW:
                     return IssueStatusProvider.Status.NEW;
-                case IssueCache.ISSUE_STATUS_MODIFIED:
+                case ISSUE_STATUS_MODIFIED:
                     return IssueStatusProvider.Status.MODIFIED;
-                case IssueCache.ISSUE_STATUS_SEEN:
+                case ISSUE_STATUS_SEEN:
                     return IssueStatusProvider.Status.SEEN;
             }
             return null;
@@ -495,48 +495,30 @@ public class QueryTableCellRendererTest {
 
     private class RendererRepository extends TestRepository {
         private RepositoryInfo info;
-        private IssueCache<TestIssue, Object> cache;
+        private IssueCache<TestIssue> cache;
         private Lookup lookup;
         public RendererRepository() {
             info = new RepositoryInfo("testrepo", "testconnector", null, null, null, null, null, null, null);
             lookup = Lookups.singleton(getCache());
         }
 
-        public IssueCache<TestIssue, Object> getCache() {
+        public IssueCache<TestIssue> getCache() {
             if(cache == null) {
-                IssueAccessor<TestIssue, Object> issueAccessor = new IssueCache.IssueAccessor<TestIssue, Object>() {
-                    @Override
-                    public String getID(Object issueData) {
-                        return ((RendererIssue)issueData).getID();
-                    }
-                    @Override
-                    public TestIssue createIssue(Object issueData) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-                    @Override
-                    public void setIssueData(TestIssue issue, Object issueData) {
-
-                    }
+                IssueAccessor<TestIssue> issueAccessor = new IssueCache.IssueAccessor<TestIssue>() {
                     @Override
                     public Map<String, String> getAttributes(TestIssue issue) {
                         throw new UnsupportedOperationException("Not supported yet.");
                     }
                     @Override
-                    public String getRecentChanges(TestIssue issue) {
-                        return ((RendererIssue) issue).getRecentChanges();
-                    }
-                    @Override
                     public long getLastModified(TestIssue issue) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        return System.currentTimeMillis() - 10 * 60 * 1000;
                     }
                     @Override
                     public long getCreated(TestIssue issue) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        return System.currentTimeMillis() - 15 * 60 * 1000;
                     }
                 };
-                TestIssueProvider issueProvider = new TestIssueProvider();
-                RepositoryImpl repo = TestKit.getRepository(this);
-                cache = new IssueCache<TestIssue, Object>("test", issueAccessor, issueProvider, repo.getRepository());
+                cache = new IssueCache<TestIssue>("test", issueAccessor);
             }
             return cache;
         }
@@ -594,14 +576,14 @@ public class QueryTableCellRendererTest {
         }
     };
 
-    private void setEntryValues(RendererRepository repository, RendererIssue rendererIssue, int status, boolean seen) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        IssueCache cache = repository.getLookup().lookup(IssueCache.class);
+    private void setEntryValues(RendererRepository repository, RendererIssue rendererIssue, IssueCache.Status status, boolean seen) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        IssueCache cache = repository.getCache();
         try {
-            cache.setIssueData(rendererIssue, rendererIssue); // ensure issue is cached
+            cache.setIssueData(rendererIssue.getID(), rendererIssue); // ensure issue is cached
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        Method m = cache.getClass().getDeclaredMethod("setEntryValues", String.class, int.class, boolean.class);
+        Method m = cache.getClass().getDeclaredMethod("setEntryValues", String.class, IssueCache.Status.class, boolean.class);
         m.setAccessible(true);
         m.invoke(cache, rendererIssue.getID(), status, seen);
     }
