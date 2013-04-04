@@ -116,6 +116,10 @@ public class ValidBasicType extends JPAEntityAttributeCheck {
             //according to annotation it's not basic  type and need to be verified in appropriate validator
             return null;
         }
+        if (Utilities.hasAnnotation(attrib.getJavaElement(), JPAAnnotations.EMBEDDED)) {
+            //@Embedded, see also #167419
+            return null;
+        }
         
         return new ErrorDescription[]{Rule.createProblem(attrib.getJavaElement(),
                 ctx, NbBundle.getMessage(ValidBasicType.class,

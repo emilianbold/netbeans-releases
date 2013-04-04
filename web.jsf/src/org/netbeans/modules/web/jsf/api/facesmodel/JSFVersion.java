@@ -48,8 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -59,8 +57,12 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
@@ -109,12 +111,14 @@ public enum JSFVersion {
      */
     @CheckForNull
     public synchronized static JSFVersion forWebModule(@NonNull final WebModule webModule) {
+        Parameters.notNull("webModule", webModule); //NOI18N
         JSFVersion version = projectVersionCache.get(webModule);
         if (version == null) {
             version = get(webModule, true);
-            Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
-            ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
-            ClassPath compileCP = cpp.findClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+            ClassPath compileCP = getCompileClasspath(webModule);
+            if (compileCP == null) {
+                return version;
+            }
             PropertyChangeListener listener = WeakListeners.propertyChange(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -223,6 +227,7 @@ public enum JSFVersion {
      * @return {@code true} if the current instance is at least of the given version, {@code false} otherwise
      */
     public boolean isAtLeast(@NonNull JSFVersion version) {
+        Parameters.notNull("version", version); //NOI18N
         int thisMajorVersion = Integer.parseInt(this.name().substring(4, 5));
         int thisMinorVersion = Integer.parseInt(this.name().substring(6, 7));
         int compMajorVersion = Integer.parseInt(version.name().substring(4, 5));
@@ -251,6 +256,25 @@ public enum JSFVersion {
             return JSFVersion.JSF_2_0;
         } else if (JSFUtils.isJSF12Plus(webModule, includingPlatformCP)) {
             return JSFVersion.JSF_1_2;
+        }
+        return null;
+    }
+
+    private static ClassPath getCompileClasspath(WebModule webModule) {
+        Project project = FileOwnerQuery.getOwner(JSFUtils.getFileObject(webModule));
+        ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
+        if (webModule.getDocumentBase() != null) {
+            return cpp.findClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+        } else {
+            Sources sources = ProjectUtils.getSources(project);
+            if (sources == null) {
+                return null;
+            }
+
+            SourceGroup[] sourceGroups = sources.getSourceGroups("java"); //NOII18N
+            if (sourceGroups.length > 0) {
+                return cpp.findClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
+            }
         }
         return null;
     }

@@ -143,45 +143,53 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         console.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 180000);
         console.waitText("BUILD SUCCESS");
     }
-    
+
     /**
-     * Cancel Indexing Maven repository or Unpacking index tasks which are
-     * not necessary for tests.
+     * Cancel Indexing Maven repository or Unpacking index tasks which are not
+     * necessary for tests.
      */
     protected void cancelIndexing() {
-        Object lblIndexing = JLabelOperator.findJLabel(
-                (Container) MainWindowOperator.getDefault().getSource(),
-                "repository", false, false);
-        Object lblUnpacking = JLabelOperator.findJLabel(
-                (Container) MainWindowOperator.getDefault().getSource(),
-                "Unpacking", false, false);
-        if (lblIndexing != null || lblUnpacking != null) {
-            JButtonOperator btnCancel = new JButtonOperator(
-                    (JButton) JButtonOperator.waitJComponent(
+        String[] labels = {"Indexing Maven repository", "Transferring Maven repository index", "Unpacking index"};
+        for (String label : labels) {
+            Object lblIndexing = JLabelOperator.findJLabel(
                     (Container) MainWindowOperator.getDefault().getSource(),
-                    "Click to cancel process", true, true));
-            btnCancel.pushNoBlock();
-            try {
-                new NbDialogOperator("Cancel Running Task").yes();
-            } catch (TimeoutExpiredException tee) {
-                // ignore if not opened
+                    label, false, false);
+            if (lblIndexing != null) {
+                JButton cancelJButton = (JButton) JButtonOperator.findJComponent(
+                        (Container) MainWindowOperator.getDefault().getSource(),
+                        "Click to cancel process", true, true);
+                if (cancelJButton != null) {
+                    JButtonOperator btnCancel = new JButtonOperator(cancelJButton);
+                    btnCancel.pushNoBlock();
+                    try {
+                        new NbDialogOperator("Cancel Running Task").yes();
+                    } catch (TimeoutExpiredException tee) {
+                        // ignore if not opened
+                    }
+                }
             }
         }
     }
-    
+
     /**
      * Opens Services tab, go to specified Maven repository, call Update Index
      * and immediately cancel this action.
-     * @param repositoryName 
+     *
+     * @param repositoryName
      */
     protected void runAndCancelUpdateIndex(String repositoryName) {
         RuntimeTabOperator servicesOper = RuntimeTabOperator.invoke();
         Node node = new Node(servicesOper.getRootNode(), "Maven Repositories|" + repositoryName);
         new Action(null, "Update Index").perform(node);
-        JButtonOperator btnCancel = new JButtonOperator(
-                (JButton) JButtonOperator.waitJComponent(
-                (Container) MainWindowOperator.getDefault().getSource(),
-                "Click to cancel process", true, true));
+        try {
+            // wait for task to start
+            JButtonOperator btnCancel = new JButtonOperator(
+                    (JButton) JButtonOperator.waitJComponent(
+                    (Container) MainWindowOperator.getDefault().getSource(),
+                    "Click to cancel process", true, true));
+        } catch (TimeoutExpiredException tee) {
+            // ignore if not opened
+        }
         cancelIndexing();
     }
 }
