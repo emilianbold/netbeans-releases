@@ -1,4 +1,4 @@
-cProt int
-cPub int
-cProtFun() void
-cPubFun() void
+cProt int	$	    ClassC::cProt
+cPub int	$	    ClassC::cPub
+cProtFun() void	$	    ClassC::cProtFun()
+cPubFun() void	$	    ClassC::cPubFun()
