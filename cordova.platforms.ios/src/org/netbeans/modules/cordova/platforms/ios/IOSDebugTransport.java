@@ -44,6 +44,8 @@ package org.netbeans.modules.cordova.platforms.ios;
 import com.dd.plist.Base64;
 import com.dd.plist.BinaryPropertyListParser;
 import com.dd.plist.BinaryPropertyListWriter;
+import com.dd.plist.NSData;
+import com.dd.plist.NSDictionary;
 import com.dd.plist.NSObject;
 import com.dd.plist.XMLPropertyListParser;
 import java.io.ByteArrayInputStream;
@@ -53,16 +55,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
@@ -74,46 +71,31 @@ import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  *
  * @author Jan Becicka
  */
 public class IOSDebugTransport extends MobileDebugTransport implements TransportImplementation {
-
+    
+    private final RequestProcessor RP = new RequestProcessor(IOSDebugTransport.class);
     private Socket socket;
     private ByteArrayOutputStream buf = new ByteArrayOutputStream();
     private final static String LOCALHOST_IPV6 = "::1";
     private final static int port = 27753;
     private RequestProcessor.Task socketListener;
     private volatile boolean keepGoing = true;
-    private static final String SET_CONNECTION_KEY = getCommand("setConnectionKey");
-    private static final String CONNECT_TO_APP = getCommand("connectToApp");
-    private static final String SET_SENDER_KEY = getCommand("setSenderKey");
-    private static final String SEND_JSON_COMMAND = getCommand("sendJSONCommand");
     private ResponseCallback callBack;
-    private static XPathExpression JSON_DATA_PATH;
+    private Tabs tabs;
 
     public IOSDebugTransport() {
-        try {
-            XPathFactory xPathfactory = XPathFactory.newInstance();
-            XPath xpath = xPathfactory.newXPath();
-            JSON_DATA_PATH = xpath.compile("/plist/dict/dict/data");
-        } catch (XPathExpressionException ex) {
-            Exceptions.printStackTrace(ex);
-        }
     }
     
     @Override
     public boolean attach() {
         try {
             init();
-            socketListener = RequestProcessor.getDefault().post(new Runnable() {
+            socketListener = RP.post(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -141,14 +123,14 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
         long started = System.currentTimeMillis();
         do {
             try {
-                Socket socket = new Socket(LOCALHOST_IPV6, port);
-                socket.close();
-                Thread.sleep(1000);
+                //Socket socket = new Socket(LOCALHOST_IPV6, port);
+                //socket.close();
+                Thread.sleep(5000);
                 run.run();
-            } catch (UnknownHostException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            //} catch (UnknownHostException ex) {
+            //    Exceptions.printStackTrace(ex);
+            //} catch (IOException ex) {
+            //    Exceptions.printStackTrace(ex);
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -176,11 +158,11 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
         this.callBack = callback;
     }
 
-    private static String getCommand(String name) {
+    private String getCommand(String name) {
         try {
             Properties props = new Properties();
             props.load(IOSDebugTransport.class.getResourceAsStream("Command.properties"));
-            return props.getProperty(name).replace("$bundleId", "com.apple.mobilesafari");
+            return props.getProperty(name).replace("$bundleId", "com.apple.mobilesafari").replace("$tabIdentifier", tabs.getActive());
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -189,7 +171,7 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
     public String createJSONCommand(JSONObject command) throws IOException {
         String json = command.toString();
         String s = Base64.encodeBytes(json.getBytes());
-        String res = SEND_JSON_COMMAND.replace("$json_encoded", s);
+        String res = getCommand("sendJSONCommand").replace("$json_encoded", s);
         //System.out.println("sending " + res);
         return res;
     }
@@ -200,23 +182,15 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
 
     }
 
-    public String plistBinaryToXml(byte[] binary) throws Exception {
-        try {
-            NSObject object = BinaryPropertyListParser.parse(binary);
-            return object.toXMLPropertyList();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     public void init() throws Exception {
         if (socket != null && (socket.isConnected() || !socket.isClosed())) {
             socket.close();
         }
+        tabs = new Tabs();
         socket = new Socket(LOCALHOST_IPV6, port);
-        sendCommand(SET_CONNECTION_KEY);
-        sendCommand(CONNECT_TO_APP);
-        sendCommand(SET_SENDER_KEY);
+        sendCommand(getCommand("setConnectionKey"));
+        sendCommand(getCommand("connectToApp"));
+        sendCommand(getCommand("setSenderKey"));
     }
 
     public void sendCommand(JSONObject command) throws Exception {
@@ -248,77 +222,40 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
             count += is.read(content, count, size - count);
         }
         assert count == size;
-        String message = plistBinaryToXml(content);
-        //System.out.println("receiving " + message );
-        JSONObject jmessage = extractResponse(message);
+
+        NSObject object = BinaryPropertyListParser.parse(content);
+
+        String message = object.toXMLPropertyList();
+        //System.out.println("receiving " + object.toXMLPropertyList());
+        JSONObject jmessage = extractResponse(object);
         if (jmessage != null) {
             callBack.handleResponse(new Response(jmessage));
+        } else {
+            tabs.update(object);
         }
     }
 
-    private JSONObject extractResponse(String message) throws Exception {
-        Document doc = XMLUtil.parse(new InputSource(fromString(message)), false, false, null, new EntityResolver() {
-            @Override
-            public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                return new InputSource(new ByteArrayInputStream(new byte[0]));
-            }
-        });
-
-        String encoded = (String) JSON_DATA_PATH.evaluate(doc, XPathConstants.STRING);
-        if (encoded != null && !encoded.isEmpty()) {
-            byte[] bytes = Base64.decode(encoded);
-            String s = new String(bytes);
-            JSONObject o = (JSONObject) JSONValue.parseWithException(s);
-            return o;
+    private JSONObject extractResponse(NSObject r) throws Exception {
+        if (r == null) {
+            return null;
         }
-        return null;
-    
-//        final JSONObject[] o = new JSONObject[1];
-//
-//        SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-//        parser.parse(new ByteArrayInputStream(message.getBytes("UTF-8")), new DefaultHandler() {
-//            private String currentPath = "";
-//
-//            @Override
-//            public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-//                addPath(qName);
-//            }
-//
-//            @Override
-//            public void characters(char[] ch, int start, int length) throws SAXException {
-//                if (currentPath.equals("/plist/dict/dict/data")) {
-//                    String encoded = new String(ch, start, length);
-//                    if (encoded != null && !encoded.trim().isEmpty()) {
-//                        String s = null;
-//                        try {
-//                            byte[] bytes = Base64.decode(encoded.trim());
-//                            s = new String(bytes);
-//                            o[0] = (JSONObject) JSONValue.parseWithException(s);
-//                        } catch (ParseException ex) {
-//                            throw new RuntimeException(s, ex);
-//                        } catch (IOException ex) {
-//                            Exceptions.printStackTrace(ex);
-//                        }
-//                    }
-//                }
-//            }
-//
-//            @Override
-//            public void endElement(String uri, String localName, String qName) throws SAXException {
-//                removePath(qName);
-//            }
-//
-//            private void addPath(String qName) {
-//                currentPath += "/" + qName;
-//            }
-//
-//            private void removePath(String qName) {
-//                currentPath = currentPath.substring(0, currentPath.lastIndexOf("/" + qName));
-//            }
-//        });
-//
-//        return o[0];
-}
+        if (!(r instanceof NSDictionary)) {
+            return null;
+        }
+        NSDictionary root = (NSDictionary) r;
+        NSDictionary argument = (NSDictionary) root.objectForKey("__argument");
+        if (argument == null) {
+            return null;
+        }
+        NSData data = (NSData) argument.objectForKey("WIRMessageDataKey");
+        if (data == null) {
+            return null;
+        }
+        byte[] bytes = data.bytes();
+        String s = new String(bytes);
+        JSONObject o = (JSONObject) JSONValue.parseWithException(s);
+        return o;
+    }
 
     public static InputStream fromString(String str) {
         try {
@@ -358,4 +295,88 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
     public WebSocketClient createWebSocket(WebSocketReadHandler handler) throws IOException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    
+    class Tabs {
+
+        private HashMap<String, TabDescriptor> map = new HashMap();
+
+        public void update(NSObject r) throws Exception {
+            if (r ==  null) {
+                return;
+            }
+            if (!(r instanceof NSDictionary)) {
+                return;
+            }
+            NSDictionary root = (NSDictionary) r;
+            NSDictionary argument = (NSDictionary) root.objectForKey("__argument");
+            if (argument == null) {
+                return;
+            }
+            NSDictionary listing = (NSDictionary) argument.objectForKey("WIRListingKey");
+            if (listing == null) {
+                return;
+            }
+            map.clear();
+            for (String s : listing.allKeys()) {
+                NSDictionary o = (NSDictionary) listing.objectForKey(s);
+                NSObject identifier = o.objectForKey("WIRPageIdentifierKey");
+                NSObject url = o.objectForKey("WIRURLKey");
+                NSObject title = o.objectForKey("WIRTitleKey");
+                map.put(s, new TabDescriptor(url.toString(), title.toString(), identifier.toString()));
+            }
+        }
+
+        public TabDescriptor get(String key) {
+            return map.get(key);
+        }
+
+        private CharSequence getActive() {
+            for (Map.Entry<String, TabDescriptor> entry: map.entrySet()) {
+                String urlFromBrowser = entry.getValue().getUrl();
+                int hash = urlFromBrowser.indexOf("#");
+                if (hash != -1) {
+                    urlFromBrowser = urlFromBrowser.substring(0, hash); 
+                }
+                if (urlFromBrowser.endsWith("/")) {
+                    urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length()-1); 
+                }
+                
+                if (getConnectionURL().toString().equals(urlFromBrowser)) {
+                    return entry.getKey();
+                }                        
+            }
+            return "1";
+        }
+
+        public class TabDescriptor {
+
+            String url;
+            String title;
+            String identifier;
+
+            public TabDescriptor(String url, String title, String identifier) {
+                this.url = url;
+                this.title = title;
+                this.identifier = identifier;
+            }
+
+            public String getUrl() {
+                return url;
+            }
+
+            public String getTitle() {
+                return title;
+            }
+
+            public String getIdentifier() {
+                return identifier;
+            }
+
+            @Override
+            public String toString() {
+                return "TabDescriptor{" + "url=" + url + ", title=" + title + ", identifier=" + identifier + '}';
+            }
+        }
+    }
 }
+         
