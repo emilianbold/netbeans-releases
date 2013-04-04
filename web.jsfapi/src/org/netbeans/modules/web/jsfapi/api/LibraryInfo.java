@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.jsfapi.api;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+
 /**
  *
  * @author marekfukala
@@ -48,6 +50,9 @@ package org.netbeans.modules.web.jsfapi.api;
 public interface LibraryInfo {
 
     public String getNamespace();
+
+    @CheckForNull
+    public String getLegacyNamespace();
 
     public String getDefaultPrefix();
 

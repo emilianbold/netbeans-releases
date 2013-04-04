@@ -137,6 +137,7 @@ public abstract class RestSupport {
     public static final String REST_SERVLET_ADAPTOR = "ServletAdaptor";//NOI18N
     public static final String REST_SERVLET_ADAPTOR_CLASS = "com.sun.jersey.spi.container.servlet.ServletContainer"; //NOI18N
     public static final String REST_SERVLET_ADAPTOR_CLASS_OLD = "com.sun.ws.rest.impl.container.servlet.ServletAdaptor";  //NOI18N 
+    public static final String REST_SERVLET_ADAPTOR_CLASS_2_0 = "org.glassfish.jersey.servlet.ServletContainer"; //NOI18N
     public static final String REST_SPRING_SERVLET_ADAPTOR_CLASS = "com.sun.jersey.spi.spring.container.servlet.SpringServlet";    //NOI18N
     public static final String REST_SERVLET_ADAPTOR_MAPPING = "/resources/*";//NOI18N
     public static final String PARAM_WEB_RESOURCE_CLASS = "webresourceclass";//NOI18N
@@ -600,7 +601,8 @@ public abstract class RestSupport {
      * Should be overridden by sub-classes
      */
     public boolean hasSwdpLibrary() {
-        return hasResource(REST_SERVLET_ADAPTOR_CLASS.replace('.', '/')+".class");  // NOI18N
+        return hasResource(REST_SERVLET_ADAPTOR_CLASS.replace('.', '/')+".class") ||
+                hasResource(REST_SERVLET_ADAPTOR_CLASS_2_0.replace('.', '/')+".class");  // NOI18N
     }
 
     public abstract boolean isRestSupportOn();
@@ -809,6 +811,10 @@ public abstract class RestSupport {
     }
 
     protected boolean hasResource(String resource ){
+        return hasResource(project, resource);
+    }
+
+    static boolean hasResource(Project project, String resource ){
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sgs.length < 1) {
