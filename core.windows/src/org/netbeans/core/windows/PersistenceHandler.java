@@ -1157,4 +1157,8 @@ final public class PersistenceHandler implements PersistenceObserver {
         return bounds;
     }
 
+    void finishLazyLoading() {
+        lazyLoader.loadAllNow();
+    }
+
 }
