@@ -89,7 +89,10 @@ public class PropertyUtils {
             return Collections.emptyList();
         }
         for(Declaration d : declarations.getDeclarations()) {
-            pds.add(d.getPropertyDeclaration());
+            PropertyDeclaration propertyDeclaration = d.getPropertyDeclaration();
+            if(propertyDeclaration != null) {
+                pds.add(propertyDeclaration);
+            }
         }
         return pds;
     }
