@@ -63,6 +63,8 @@ public final class SassProcessor {
     private static final String SASS_EXTENSION = "sass"; // NOI18N
     private static final String CSS_EXTENSION = "css"; // NOI18N
 
+    public static volatile boolean warningShown = false;
+
 
     public void process(Project project, FileObject fileObject) {
         if (fileObject.isData()) {
@@ -147,7 +149,10 @@ public final class SassProcessor {
         try {
             return SassExecutable.getDefault();
         } catch (InvalidExternalExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
+            if (!warningShown) {
+                warningShown = true;
+                UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
+            }
         }
         return null;
     }

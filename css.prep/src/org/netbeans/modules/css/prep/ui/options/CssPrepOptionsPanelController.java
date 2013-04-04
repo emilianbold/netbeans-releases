@@ -49,6 +49,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.options.CssPrepOptionsValidator;
+import org.netbeans.modules.css.prep.process.LessProcessor;
+import org.netbeans.modules.css.prep.process.SassProcessor;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -82,6 +84,9 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
     public void applyChanges() {
         getCssPrepOptions().setSassPath(getCssPrepOptionsPanel().getSassPath());
         getCssPrepOptions().setLessPath(getCssPrepOptionsPanel().getLessPath());
+
+        LessProcessor.warningShown = false;
+        SassProcessor.warningShown = false;
 
         changed = false;
     }
