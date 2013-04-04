@@ -467,14 +467,10 @@ public class Reformatter implements ReformatTask {
 
         private Pretty(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit) {
             this(info.getText(), info.getTokenHierarchy().tokenSequence(JavaTokenId.language()),
-                    path, info.getTrees().getSourcePositions(), cs, startOffset, endOffset);
+                    path, info.getTrees().getSourcePositions(), cs, startOffset, endOffset, cs.getRightMargin());
             this.templateEdit = templateEdit;
         }
         
-        private Pretty(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs, int startOffset, int endOffset) {
-            this(text, tokens, path, sp, cs, startOffset, endOffset, cs.getRightMargin());
-        }
-
         private Pretty(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs, int startOffset, int endOffset, int rightMargin) {
             this.fText = text;
             this.sp = sp;
@@ -586,7 +582,10 @@ public class Reformatter implements ReformatTask {
                 }
             }
             try {
-                return endPos < 0 ? false : tokens.offset() <= endPos ? super.scan(tree, p) : true;
+                if (endPos < 0)
+                    return false;
+                Boolean ret = tokens.offset() <= endPos ? super.scan(tree, p) : null;
+                return ret != null ? ret : true;
             }
             finally {
                 endPos = lastEndPos;

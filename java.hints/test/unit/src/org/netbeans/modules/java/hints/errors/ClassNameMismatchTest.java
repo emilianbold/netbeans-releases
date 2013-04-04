@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,49 +34,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.csl.editor.fold;
+package org.netbeans.modules.java.hints.errors;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.logging.Level;
-import org.netbeans.modules.csl.core.AbstractTaskFactory;
-import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 
 /**
- * This file is originally from Retouche, the Java Support 
- * infrastructure in NetBeans. I have modified the file as little
- * as possible to make merging Retouche fixes back as simple as
- * possible. 
  *
- *
- * @author Jan Lahoda
+ * @author lahvac
  */
-public final class GsfFoldManagerTaskFactory extends AbstractTaskFactory {
-
-    /** Creates a new instance of GsfFoldManagerTaskFactory */
-    public GsfFoldManagerTaskFactory() {
-        super(true);
-    }
-
-    @Override
-    protected Collection<? extends SchedulerTask> createTasks(Language l, Snapshot snapshot) {
-        FileObject file = snapshot.getSource().getFileObject();
-        if (file != null) {
-            SchedulerTask t = GsfFoldManager.JavaElementFoldTask.getTask(file);
-            if (GsfFoldManager.LOG.isLoggable(Level.FINER)) {
-                GsfFoldManager.LOG.log(Level.FINER, "Scheduling task for file: {0} -> {1}, Thread: {2}", new Object[] { file, t, Thread.currentThread() });
-            }
-            return Collections.singleton(t);
-        } else {
-            if (GsfFoldManager.LOG.isLoggable(Level.FINE)) {
-                GsfFoldManager.LOG.log(Level.FINE, "FileObject is null: {0}", snapshot.getSource());
-            }
-            return null;
-        }
+public class ClassNameMismatchTest extends ErrorHintsTestBase {
+    
+    public ClassNameMismatchTest(String name) {
+        super(name, ClassNameMismatch.class);
     }
     
+    public void testRenameFile() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Different{\n" +
+                       "}\n",
+                       -1,
+                       Bundle.FIX_ChangeFileName("Different.java"),
+                       "test/Different.java",
+                       ("package test;\n" +
+                        "public class Different{\n" +
+                        "}\n").replaceAll("[ \t\n\r]+", " "));
+    }
 }
