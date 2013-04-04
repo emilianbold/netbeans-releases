@@ -199,7 +199,12 @@ public final class PhpProject implements Project {
     final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<PropertyChangeListener>();
 
-    final CssPreprocessors.Support cssPreprocessorsSupport = new CssPreprocessors.Support();
+    final ChangeListener cssPreprocessorsChangeListener = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            recompileSources();
+        }
+    };
 
 
     public PhpProject(AntProjectHelper helper) {
@@ -238,12 +243,6 @@ public final class PhpProject implements Project {
             }
         };
         frameworks.addChangeListener(WeakListeners.change(frameworksListener, frameworks));
-        cssPreprocessorsSupport.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                recompileSources();
-            }
-        });
     }
 
     @Override
@@ -431,7 +430,7 @@ public final class PhpProject implements Project {
             return;
         }
         // force recompiling
-        cssPreprocessorsSupport.process(this, sourcesDirectory, true);
+        CssPreprocessors.getDefault().process(this, sourcesDirectory, true);
     }
 
     public PhpModule getPhpModule() {
@@ -743,7 +742,7 @@ public final class PhpProject implements Project {
             new ProjectUpgrader(PhpProject.this).upgrade();
 
             addSourceDirListener();
-            cssPreprocessorsSupport.start();
+            CssPreprocessors.getDefault().addChangeListener(cssPreprocessorsChangeListener);
             recompileSources();
 
             testingProviders.projectOpened();
@@ -783,7 +782,7 @@ public final class PhpProject implements Project {
         protected void projectClosed() {
             try {
                 removeSourceDirListener();
-                cssPreprocessorsSupport.stop();
+                CssPreprocessors.getDefault().removeChangeListener(cssPreprocessorsChangeListener);
 
                 testingProviders.projectClosed();
                 frameworks.projectClosed();
@@ -961,7 +960,7 @@ public final class PhpProject implements Project {
         }
 
         private void processChange(FileObject file) {
-            cssPreprocessorsSupport.process(PhpProject.this, file, false);
+            CssPreprocessors.getDefault().process(PhpProject.this, file, true);
         }
 
     }

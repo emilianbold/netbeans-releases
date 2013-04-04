@@ -51,6 +51,7 @@ import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.options.CssPrepOptionsValidator;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -82,6 +83,9 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
     public void applyChanges() {
         getCssPrepOptions().setSassPath(getCssPrepOptionsPanel().getSassPath());
         getCssPrepOptions().setLessPath(getCssPrepOptionsPanel().getLessPath());
+
+        Warnings.resetSassWarning();
+        Warnings.resetLessWarning();
 
         changed = false;
     }

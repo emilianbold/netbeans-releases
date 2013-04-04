@@ -325,6 +325,10 @@ public class MarkOccDetTest extends TestBase {
         performTest("Exception144264", 7, 19);
     }
 
+    public void testException227248() throws Exception {
+        performTest("Exception227248", 7, 25);
+    }
+
     public void testTypeParamMarkOccurrences() throws Exception {
         performTest("TypeParamMarkOccurrences", 3, 14);
         performTest("TypeParamMarkOccurrences", 3, 28);

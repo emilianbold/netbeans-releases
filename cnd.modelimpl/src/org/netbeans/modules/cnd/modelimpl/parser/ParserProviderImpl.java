@@ -449,7 +449,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                         parser.compound_statement(false);
                         break;                        
                     case FUNCTION_DEFINITION_AFTER_DECLARATOR:
-                        parser.function_definition_after_declarator(true, true);
+                        parser.function_definition_after_declarator(false, true, true);
                         break;                        
                 }
             } catch (Throwable ex) {

@@ -50,6 +50,7 @@ import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
+import org.netbeans.modules.css.prep.util.Warnings;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -147,7 +148,9 @@ public final class SassProcessor {
         try {
             return SassExecutable.getDefault();
         } catch (InvalidExternalExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
+            if (Warnings.showSassWarning()) {
+                UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
+            }
         }
         return null;
     }
