@@ -130,8 +130,8 @@ public class APTUtils {
     public static String getAPTTokenName(int type) {
         if (type == APTTokenTypes.IDENT) {
             return "ID"; // NOI18N
-        } else if (type == -1) {
-            return "SKIP"; // NOI18N
+        } else if (type == EOF_TOKEN2.getType()) {
+            return "EOF3"; // NOI18N
         }
         return APTExprParser._tokenNames[type];
     }
@@ -801,6 +801,10 @@ public class APTUtils {
             return this == obj;
         }
 
+        @Override
+        public String toString() {
+            return "<EOF>"; // NOI18N
+        }        
     }
 
 
@@ -865,7 +869,7 @@ public class APTUtils {
 
         @Override
         public String getText() {
-            return "<EOF>"; // NOI18N
+            return "<EOF3>"; // NOI18N
         }
 
         @Override
@@ -891,7 +895,7 @@ public class APTUtils {
 
         @Override
         public String toString() {
-            return "<EOF>"; // NOI18N
+            return "<EOF3>"; // NOI18N
         }
     }
 
