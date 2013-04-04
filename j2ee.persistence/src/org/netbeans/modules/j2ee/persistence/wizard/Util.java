@@ -207,7 +207,7 @@ public class Util {
             return true;
         }
         if (JPAModuleInfo.ModuleType.WEB == moduleInfo.getType()
-                && ("3.0".equals(moduleInfo.getVersion()) || "2.5".equals(moduleInfo.getVersion()))) {
+                && ("3.1".equals(moduleInfo.getVersion()) || "3.0".equals(moduleInfo.getVersion()) || "2.5".equals(moduleInfo.getVersion()))) {
             return true;
         }
         return false;
