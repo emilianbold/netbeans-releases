@@ -41,20 +41,26 @@
  */
 package org.netbeans.modules.web.el.completion;
 
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ELOperatorCompletionItem extends DefaultCompletionProposal {
+public class ELStreamCompletionItem extends DefaultCompletionProposal {
 
-    private final String operator;
+    public static final String STREAM_METHOD = "stream"; //NOI18N
+    private static final String STREAM_CLASS = "Stream"; //NOI18N
 
-    public ELOperatorCompletionItem(String operator) {
-        this.operator = operator;
+    public ELStreamCompletionItem(int anchorOffset) {
+        this.setKind(ElementKind.METHOD);
+        setAnchorOffset(anchorOffset);
     }
 
     @Override
@@ -69,12 +75,22 @@ public class ELOperatorCompletionItem extends DefaultCompletionProposal {
 
     @Override
     public String getName() {
-        return operator + "()";
+        return STREAM_METHOD + "()"; //NOI18N
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        return Collections.singleton(Modifier.PUBLIC);
+    }
+
+    @Override
+    public String getRhsHtml(HtmlFormatter formatter) {
+        return STREAM_CLASS;
     }
 
     @Override
     public String getCustomInsertTemplate() {
-        return operator + "(${cursor})";
+        return STREAM_METHOD + "()"; //NOI18N
     }
 
 }

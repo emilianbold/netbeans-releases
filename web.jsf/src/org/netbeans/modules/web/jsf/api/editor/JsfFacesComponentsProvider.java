@@ -81,7 +81,7 @@ public class JsfFacesComponentsProvider {
      * @return list of libraries with defined component tags.
      */
     public static Collection<? extends Library> getLibraries(Project project) {
-        long start = System.nanoTime();
+        long start = System.currentTimeMillis();
         try {
             MetadataModel<JsfModel> model = JsfModelFactory.getModel(project);
             if (model == null) {
@@ -113,7 +113,7 @@ public class JsfFacesComponentsProvider {
             }
             return Collections.emptyList();
         } finally {
-            LOGGER.log(Level.FINEST, "JsfFacesComponentsProvider parsed for elements for {0}ns.", System.nanoTime() - start);
+            LOGGER.log(Level.FINEST, "JsfFacesComponentsProvider parsed for elements for {0} ms.", System.currentTimeMillis()- start);
         }
     }
 
@@ -178,6 +178,11 @@ public class JsfFacesComponentsProvider {
         @Override
         public String getDisplayName() {
             return namespace;
+        }
+
+        @Override
+        public String getLegacyNamespace() {
+            return null;
         }
     }
 

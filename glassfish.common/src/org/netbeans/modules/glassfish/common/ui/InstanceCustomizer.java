@@ -367,15 +367,15 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         });
 
         targetValueLabel.setLabelFor(targetValueField);
-        org.openide.awt.Mnemonics.setLocalizedText(targetValueLabel, "&Target:");
+        org.openide.awt.Mnemonics.setLocalizedText(targetValueLabel, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "InstanceCustomizer.targetValueLabel")); // NOI18N
 
         targetValueField.setEditable(false);
 
         userNameLabel.setLabelFor(userNameField);
-        org.openide.awt.Mnemonics.setLocalizedText(userNameLabel, "&User Name:");
+        org.openide.awt.Mnemonics.setLocalizedText(userNameLabel, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "InstanceCustomizer.userNameLabel")); // NOI18N
 
         passwordLabel.setLabelFor(passwordField);
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, "Pass&word:");
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "InstanceCustomizer.passwordLabel")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

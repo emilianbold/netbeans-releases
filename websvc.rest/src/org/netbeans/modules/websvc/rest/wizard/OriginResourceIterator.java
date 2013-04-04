@@ -96,6 +96,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 
 
 /**
@@ -266,7 +267,7 @@ public class OriginResourceIterator implements
     private String generateFilter( JavaSource javaSource ) throws IOException
     {
         Project project = Templates.getProject(myWizard);
-        if (isJee7Profile(project)){
+        if (isJee7Profile(project) || WebRestSupport.isJersey2(project)){
             generateJaxRs20Filter(javaSource);
             return null;
         }

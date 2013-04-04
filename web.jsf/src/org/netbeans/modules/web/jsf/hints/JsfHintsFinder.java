@@ -72,7 +72,7 @@ public class JsfHintsFinder implements CancellableTask<CompilationInfo> {
 
     @Override
     public void cancel() {
-        LOG.log(Level.INFO, "JsfHints computation was canceled.");
+        LOG.log(Level.FINE, "JsfHints computation was canceled.");
         cancel.set(true);
     }
 

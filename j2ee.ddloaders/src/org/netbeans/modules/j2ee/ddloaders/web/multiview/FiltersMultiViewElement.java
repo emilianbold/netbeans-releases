@@ -67,7 +67,8 @@ import org.openide.windows.TopComponent;
     iconBase="org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif",
     persistenceType=TopComponent.PERSISTENCE_NEVER,
     preferredID=DDDataObject.DD_MULTIVIEW_PREFIX + DDDataObject.MULTIVIEW_FILTERS,
-    mimeType={DDDataLoader.REQUIRED_MIME_1, DDWeb25DataLoader.REQUIRED_MIME, DDWeb30DataLoader.REQUIRED_MIME, DDWebFragment30DataLoader.REQUIRED_MIME},
+    mimeType={DDDataLoader.REQUIRED_MIME_1, DDWeb25DataLoader.REQUIRED_MIME, DDWeb30DataLoader.REQUIRED_MIME,
+        DDWebFragment30DataLoader.REQUIRED_MIME, DDWeb30DataLoader.REQUIRED_MIME_31, DDWebFragment30DataLoader.REQUIRED_MIME_31},
     position=700
 )
 public class FiltersMultiViewElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener {

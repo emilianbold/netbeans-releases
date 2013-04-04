@@ -107,9 +107,7 @@ CLASS      UnsupportedOperationException              java.lang.UnsupportedOpera
 CLASS      VerifyError                                java.lang.VerifyError
 CLASS      VirtualMachineError                        java.lang.VirtualMachineError
 CLASS      Void                                       java.lang.Void
-KEYWORD    T                                          null
 KEYWORD    and                                        null
-KEYWORD    cat                                        null
 KEYWORD    div                                        null
 KEYWORD    empty                                      null
 KEYWORD    eq                                         null

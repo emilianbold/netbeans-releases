@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.editor.less;
+package org.netbeans.modules.css.prep.less;
 
 import org.netbeans.modules.css.prep.process.LessProcessor;
 import org.netbeans.api.project.Project;
