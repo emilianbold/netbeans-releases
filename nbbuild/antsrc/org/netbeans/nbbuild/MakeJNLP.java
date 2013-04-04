@@ -237,6 +237,7 @@ public class MakeJNLP extends Task {
                 to.getParentFile().mkdirs();
             }
             getSignTask().setSignedjar(to);
+            getSignTask().setDigestAlg("SHA1");
             getSignTask().execute();
         } else if (to != null) {
             Copy copy = (Copy)getProject().createTask("copy");
