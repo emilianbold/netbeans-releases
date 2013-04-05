@@ -50,11 +50,13 @@ import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
 import java.io.File;
 import org.junit.Test;
 import org.netbeans.junit.Manager;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
  * @author Alexander Simon
  */
+@RandomlyFails
 public class QuoteQuoteTestCase extends RecoveryTestCaseBase {
     private static final String SOURCE = "quote.cc";
     public QuoteQuoteTestCase(String testName, Grammar gramma, Diff diff, Golden golden) {

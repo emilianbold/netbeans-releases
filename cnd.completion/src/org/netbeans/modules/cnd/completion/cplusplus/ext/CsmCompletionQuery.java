@@ -1374,12 +1374,7 @@ abstract public class CsmCompletionQuery {
                             } else { // not source-help
                                 res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly && !memberPointer, false, true, this.scopeAccessedClassifier, true, sort); // NOI18N
                             }
-                            CsmResultItem.SubstitutionHint hint = CsmResultItem.SubstitutionHint.NONE;
-                            if (lastParamKind[0] == ExprKind.DOT && lastType.isPointer()) {
-                                hint = CsmResultItem.SubstitutionHint.DOT_TO_ARROW;
-                            } else if (lastParamKind[0] == ExprKind.ARROW && !lastType.isPointer()) {
-                                
-                            }
+                            CsmResultItem.SubstitutionHint hint = getSubstitutionHint(lastParamKind[0], lastType);
                             // Get all fields and methods of the cls
                             result = new CsmCompletionResult(component, getBaseDocument(), res, hint, formatType(lastType, true, true, true),
                                     exp, substPos, 0, 0/*cls.getName().length() + 1*/, isProjectBeeingParsed(), contextElement, instantiateTypes);
@@ -1727,10 +1722,7 @@ abstract public class CsmCompletionQuery {
                                             if (res.isEmpty() && scopeAccessedClassifier && lastNamespace != null) {
                                                 needToCheckNS = true;
                                             } else {
-                                                CsmResultItem.SubstitutionHint hint = CsmResultItem.SubstitutionHint.NONE;
-                                                if ((kind == ExprKind.DOT) && (lastType != null) && lastType.isPointer()) {
-                                                    hint = CsmResultItem.SubstitutionHint.DOT_TO_ARROW;
-                                                }
+                                                CsmResultItem.SubstitutionHint hint = getSubstitutionHint(kind, lastType);
                                                 result = new CsmCompletionResult(
                                                         component, getBaseDocument(),
                                                         //                                                 findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), cls, var, false, staticOnly, false),
@@ -2692,6 +2684,29 @@ abstract public class CsmCompletionQuery {
                 }
             });
             return out.get();
+        }
+
+        private CsmResultItem.SubstitutionHint getSubstitutionHint(ExprKind kind, CsmType type) {
+            CsmResultItem.SubstitutionHint hint = CsmResultItem.SubstitutionHint.NONE;
+            if (type != null) {
+                if (kind == ExprKind.DOT) {
+                    while (type != null) {
+                        if (type.isPointer()) {
+                            hint = CsmResultItem.SubstitutionHint.DOT_TO_ARROW;
+                            break;
+                        } else {
+                            CsmClassifier classifier = type.getClassifier();
+                            type = null;
+                            if (CsmKindUtilities.isTypedef(classifier)) {
+                                type = ((CsmTypedef)classifier).getType();
+                            }
+                        }
+                    }
+                } else if (kind == ExprKind.ARROW && !type.isPointer()) {
+
+                }
+            }
+            return hint;
         }
     }
 
