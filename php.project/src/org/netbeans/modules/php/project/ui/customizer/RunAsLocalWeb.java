@@ -133,7 +133,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     }
 
     @Override
-    public JComboBox getRunAsCombo() {
+    public JComboBox<String> getRunAsCombo() {
         return runAsCombo;
     }
 
@@ -191,7 +191,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private void initComponents() {
 
         runAsLabel = new JLabel();
-        runAsCombo = new JComboBox();
+        runAsCombo = new JComboBox<String>();
         urlLabel = new JLabel();
         urlTextField = new JTextField();
         indexFileLabel = new JLabel();
@@ -212,6 +212,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
 
         indexFileLabel.setLabelFor(indexFileTextField);
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile")); // NOI18N
+
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Browse")); // NOI18N
         indexFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -228,6 +229,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         hintLabel.setBackground(UIManager.getDefaults().getColor("Label.background"));
         hintLabel.setBorder(null);
         hintLabel.setFocusable(false);
+
         Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.advancedButton.text")); // NOI18N
         advancedButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -349,7 +351,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private JButton indexFileBrowseButton;
     private JLabel indexFileLabel;
     private JTextField indexFileTextField;
-    private JComboBox runAsCombo;
+    private JComboBox<String> runAsCombo;
     private JLabel runAsLabel;
     private JLabel urlLabel;
     private JTextField urlTextField;

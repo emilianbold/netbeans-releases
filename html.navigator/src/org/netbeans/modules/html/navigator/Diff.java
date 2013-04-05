@@ -152,8 +152,8 @@ public class Diff {
             return false;
         }
         
-        if("html".equalsIgnoreCase(d1.getName())) {
-            //there is only one <html> tag in document. They are equals.
+        if("html".equalsIgnoreCase(d1.getName()) || "body".equalsIgnoreCase(d1.getName())) {
+            //there is only one <html> or <body> tag in document. They are equals.
             return true;
         }
 
@@ -201,8 +201,8 @@ public class Diff {
 
         hash = 37 * hash + d.getName().hashCode();
         
-        if ("html".equalsIgnoreCase(d.getName())) {
-            //there is only one <html> tag in document. They have the same hash code.
+        if ("html".equalsIgnoreCase(d.getName()) || "body".equalsIgnoreCase(d.getName())) {
+            //there is only one <html> or body tag in document. They have the same hash code.
             return hash;
         }
 

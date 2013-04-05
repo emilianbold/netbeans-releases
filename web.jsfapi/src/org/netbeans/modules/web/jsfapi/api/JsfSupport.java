@@ -68,4 +68,6 @@ public interface JsfSupport {
     public Map<String, ? extends Library> getLibraries();
     
     public Lookup getLookup();
+
+    public boolean isJsf22Plus();
 }

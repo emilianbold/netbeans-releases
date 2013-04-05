@@ -127,6 +127,11 @@ public final class DestructorImpl extends MethodImpl<CsmMethod> {
     }
 
     public static class DestructorBuilder extends MethodBuilder {
+
+        public DestructorBuilder(SimpleDeclarationBuilder builder) {
+            super(builder);
+        }
+        
         @Override
         public DestructorImpl create() {
             CsmClass cls = (CsmClass) getScope();

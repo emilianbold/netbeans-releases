@@ -81,10 +81,11 @@ public class Templates {
      * If the user selects New from {@link org.netbeans.spi.project.ui.support.CommonProjectActions#newFileAction}, this will
      * be the project on which the context menu was invoked.
      * </p>
-     * @param wizardDescriptor a file wizard
+     * @param wizardDescriptor a file wizard, not null.
      * @return the project into which the user has requested this iterator create a file (or null if not set)
      */
     public static Project getProject(WizardDescriptor wizardDescriptor) {
+        assert wizardDescriptor != null;
         Project p = (Project) wizardDescriptor.getProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT);
         if (p != null) {
             return p;

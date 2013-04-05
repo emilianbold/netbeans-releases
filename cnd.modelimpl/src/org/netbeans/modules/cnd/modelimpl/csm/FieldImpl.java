@@ -112,22 +112,15 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
     public static class FieldBuilder extends SimpleDeclarationBuilder implements MemberBuilder {
         
         private CharSequence name;// = CharSequences.empty();
-        private boolean _static = false;
-        private boolean _extern = false;
         private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
         CsmVisibility visibility = CsmVisibility.PUBLIC;
-        private CsmFile file;
         private final FileContent fileContent;
-        private int startOffset;
-        private int endOffset;
-        private CsmObjectBuilder parent;
 
-        private TypeFactory.TypeBuilder typeBuilder;
-        
         private CsmScope scope;
         private FieldImpl instance;
 
-        public FieldBuilder(FileContent fileContent) {
+        public FieldBuilder(SimpleDeclarationBuilder builder, FileContent fileContent) {
+            super(builder);
             assert fileContent != null;
             this.fileContent = fileContent;
         }
@@ -150,34 +143,6 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
             return NameCache.getManager().getString(CharSequences.create(name.toString().replace("::", "."))); //NOI18N
         }
         
-        public void setFile(CsmFile file) {
-            this.file = file;
-        }
-        
-        public void setEndOffset(int endOffset) {
-            this.endOffset = endOffset;
-        }
-
-        public void setStartOffset(int startOffset) {
-            this.startOffset = startOffset;
-        }
-
-        public void setStatic() {
-            this._static = true;
-        }
-
-        public void setExtern() {
-            this._extern = true;
-        }
-
-        public void setParent(CsmObjectBuilder parent) {
-            this.parent = parent;
-        }
-
-        public void setTypeBuilder(TypeFactory.TypeBuilder typeBuilder) {
-            this.typeBuilder = typeBuilder;
-        }
-
         private FieldImpl getVariableInstance() {
             return instance;
         }
@@ -191,11 +156,11 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
             if(scope != null) {
                 return scope;
             }
-            if (parent == null) {
-                scope = (NamespaceImpl) file.getProject().getGlobalNamespace();
+            if (getParent() == null) {
+                scope = (NamespaceImpl) getFile().getProject().getGlobalNamespace();
             } else {
-                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
-                    scope = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespace();
+                if(getParent() instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                    scope = ((NamespaceDefinitionImpl.NamespaceBuilder)getParent()).getNamespace();
                 }
             }
             return scope;
@@ -206,19 +171,19 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
             CsmScope s = getScope();
             if (field == null && s != null && name != null && getScope() != null) {
                 CsmType type = null;
-                if(typeBuilder != null) {
-                    typeBuilder.setScope(s);
-                    type = typeBuilder.create();
+                if(getTypeBuilder() != null) {
+                    getTypeBuilder().setScope(s);
+                    type = getTypeBuilder().create();
                 }
                 if(type == null) {
-                    type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), file, startOffset, endOffset); // NOI18N
+                    type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), getFile(), getStartOffset(), getEndOffset()); // NOI18N
                 }
                 ExpressionBase initializer = null;
                 if(getInitializerBuilder() != null) {
                     getInitializerBuilder().setScope(getScope());
                     initializer = getInitializerBuilder().create();
                 }
-                field = new FieldImpl(type, name, scope, visibility, _static, _extern, initializer, file, startOffset, endOffset);
+                field = new FieldImpl(type, name, scope, visibility, isStatic(), isExtern(), initializer, getFile(), getStartOffset(), getEndOffset());
                 
                 postObjectCreateRegistration(true, field);
                 NameHolder.createName(name).addReference(fileContent, field);;

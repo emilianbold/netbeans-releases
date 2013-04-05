@@ -50,4 +50,5 @@ import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 public abstract class KenaiRepositoryProvider<R, Q, I> extends RepositoryProvider<R, Q, I> {
     public abstract Q getAllIssuesQuery(R repository);
     public abstract Q getMyIssuesQuery(R repository);
+    public abstract KenaiProject getKenaiProject(R repository);
 }

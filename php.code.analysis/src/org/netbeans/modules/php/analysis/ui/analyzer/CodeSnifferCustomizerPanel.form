@@ -41,6 +41,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="standardComboBox">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

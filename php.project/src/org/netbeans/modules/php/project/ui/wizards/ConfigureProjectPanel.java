@@ -136,7 +136,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             case NEW:
             case REMOTE:
                 // sources - we need them first because of free project name
-                MutableComboBoxModel localServers = getLocalServers();
+                MutableComboBoxModel<LocalServer> localServers = getLocalServers();
                 if (localServers != null) {
                     configureProjectPanelVisual.setLocalServerModel(localServers);
                 } else {
@@ -375,8 +375,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return (LocalServer) descriptor.getProperty(SOURCES_FOLDER);
     }
 
-    private MutableComboBoxModel getLocalServers() {
-        return (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
+    @SuppressWarnings("unchecked")
+    private MutableComboBoxModel<LocalServer> getLocalServers() {
+        return (MutableComboBoxModel<LocalServer>) descriptor.getProperty(LOCAL_SERVERS);
     }
 
     private void initLocalServers(List<DocumentRoot> documentRoots) {
@@ -411,7 +412,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         // create & set a new model for document roots
         File projectFolder = FileUtil.normalizeFile(getProjectFolder(projectName));
         LocalServer selected = new LocalServer(projectFolder.getAbsolutePath());
-        MutableComboBoxModel model = new LocalServer.ComboBoxModel(selected);
+        MutableComboBoxModel<LocalServer> model = new LocalServer.ComboBoxModel(selected);
         for (DocumentRoot root : documentRoots) {
             LocalServer ls = new LocalServer(root.getDocumentRoot() + File.separator + projectName);
             ls.setHint(root.getHint());

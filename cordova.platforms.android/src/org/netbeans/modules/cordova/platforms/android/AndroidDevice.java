@@ -140,7 +140,7 @@ public class AndroidDevice implements Device {
     private final String name;
     private boolean emulator;
 
-    private AndroidDevice(String name, Browser browser, boolean emulator) {
+    public AndroidDevice(String name, Browser browser, boolean emulator) {
         this.name = name;
         this.browser = browser;
         this.emulator = emulator;

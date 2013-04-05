@@ -87,7 +87,7 @@ public class SearchCompletion implements CompletionProvider {
             SearchBar searchBar = SearchBar.getInstance();
             searchBar.setPopupMenuWasCanceled(true);
             String queryText = "";
-            results = new HashSet<SearchCompletionItem>();
+            results = new HashSet<>();
             try {
                 queryText = doc.getText(0, doc.getLength());
             } catch (BadLocationException ex) {

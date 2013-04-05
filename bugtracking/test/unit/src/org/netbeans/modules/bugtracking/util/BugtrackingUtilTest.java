@@ -168,11 +168,7 @@ public class BugtrackingUtilTest {
         @Override
         public Collection<TestIssue> simpleSearch(String criteria) { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
-        public Lookup getLookup() { throw new UnsupportedOperationException("Not supported yet."); }
-
-        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) { }
-
         @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {  }
 

@@ -103,13 +103,19 @@ public class FaceletsInputTextTagValueProvider implements InputTextTagValueProvi
                 return null;
             }
 
+            String htmlNs = null;
             if (hresult.getNamespaces().containsKey(DefaultLibraryInfo.HTML.getNamespace())) {
-                String htmlLibPrefix = hresult.getNamespaces().get(DefaultLibraryInfo.HTML.getNamespace());
+                htmlNs = DefaultLibraryInfo.HTML.getNamespace();
+            } else if (hresult.getNamespaces().containsKey(DefaultLibraryInfo.HTML.getLegacyNamespace())) {
+                htmlNs = DefaultLibraryInfo.HTML.getLegacyNamespace();
+            }
+            if (htmlNs != null) {
+                String htmlLibPrefix = hresult.getNamespaces().get(htmlNs);
                 if(htmlLibPrefix == null) {
                     htmlLibPrefix = DefaultLibraryInfo.HTML.getDefaultPrefix();
                 }
                 String tagName = new StringBuilder().append(htmlLibPrefix).append('.').append(INPUT_TEXT_TAG_NAME).toString();
-                Collection<OpenTag> foundNodes = findValue(hresult.root(DefaultLibraryInfo.HTML.getNamespace()).children(), tagName, new ArrayList<OpenTag>());
+                Collection<OpenTag> foundNodes = findValue(hresult.root(htmlNs).children(), tagName, new ArrayList<OpenTag>());
 
                 Map<String, String> map = new HashMap<String, String>();
                 for (OpenTag node : foundNodes) {

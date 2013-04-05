@@ -118,7 +118,7 @@ public class PHPFormatterTest extends PHPFormatterTestBase {
     }
 
     public void testArrays4() throws Exception {
-        HashMap<String, Object> options = new HashMap<String, Object>();
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.INITIAL_INDENT, 4);
         options.put(FmtOptions.ITEMS_IN_ARRAY_DECLARATION_INDENT_SIZE, 6);
         reformatFileContents("testfiles/formatting/arrays4.php", options);
@@ -142,7 +142,7 @@ public class PHPFormatterTest extends PHPFormatterTestBase {
     }
 
     public void testShortArrays4() throws Exception {
-        HashMap<String, Object> options = new HashMap<String, Object>();
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.INITIAL_INDENT, 4);
         options.put(FmtOptions.ITEMS_IN_ARRAY_DECLARATION_INDENT_SIZE, 6);
         reformatFileContents("testfiles/formatting/shortArrays4.php", options);

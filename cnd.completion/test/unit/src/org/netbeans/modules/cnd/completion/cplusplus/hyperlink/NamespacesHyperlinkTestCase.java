@@ -336,6 +336,37 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug220614.cpp", 22, 34, "bug220614.cpp", 13, 5);
     }
     
+    public void testBug226516() throws Exception {
+        // Bug 226516 - Problem with namespace nesting and navigation between them
+        performTest("bug226516.cpp", 13, 42, "bug226516.cpp", 2, 1);
+        performTest("bug226516.cpp", 13, 58, "bug226516.cpp", 3, 1);
+        performTest("bug226516.cpp", 18, 39, "bug226516.cpp", 13, 5);
+        
+        performTest("bug226516.cpp", 18, 39, "bug226516.cpp", 13, 5);
+        performTest("bug226516.cpp", 18, 55, "bug226516.cpp", 5, 9);
+        
+        performTest("bug226516.cpp", 25, 29, "bug226516.cpp", 2, 1);
+        performTest("bug226516.cpp", 25, 46, "bug226516.cpp", 3, 1);
+        
+        performTest("bug226516.cpp", 41, 40, "bug226516.cpp", 23, 1);
+        performTest("bug226516.cpp", 41, 55, "bug226516.cpp", 24, 1);
+        performTest("bug226516.cpp", 41, 55, "bug226516.cpp", 24, 1);
+        
+        performTest("bug226516.cpp", 43, 11, "bug226516.cpp", 11, 1);
+        performTest("bug226516.cpp", 43, 28, "bug226516.cpp", 12, 1);
+        performTest("bug226516.cpp", 43, 42, "bug226516.cpp", 15, 5);        
+        
+        performNullTargetTest("bug226516.cpp", 51, 25);
+
+        performTest("bug226516.cpp", 53, 13, "bug226516.cpp", 32, 1);
+        performTest("bug226516.cpp", 53, 28, "bug226516.cpp", 33, 5);
+    }
+    
+    public void testBug227045() throws Exception {
+        // Bug 226516 - Anonymous namespace class methods not found
+        performTest("bug227045.cpp", 19, 36, "bug227045.cpp", 12, 1);
+    }    
+    
     public void testBug219398() throws Exception {
         // Bug 219398 - "Unable to resolve identifier name" mark happened and source code format is wrong in c++ project
         performTest("typeid.cpp", 39, 61, "typeinfo.h", 21, 5);
@@ -355,6 +386,10 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         public void testClassS2FunInFunS1() throws Exception {
             performTest("file.cc", 56, 20, "file.h", 14, 13); // clsS2pubFun in s2.clsS2pubFun();
         }
+        
+        public void testNestedNamespaceAliases() throws Exception {
+            performTest("nsaliasfail.cpp", 12, 41, "file.h", 3, 5); // clsS2pubFun in s2.clsS2pubFun();
+        }        
         
     }
 }

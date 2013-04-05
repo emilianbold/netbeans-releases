@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -103,7 +104,7 @@ public final class NewRemoteConnectionPanel extends JPanel {
         this.configManager = configManager;
         initComponents();
 
-        connectionTypeComboBox.setModel(new DefaultComboBoxModel(new Vector<String>(RemoteConnections.get().getRemoteConnectionTypes())));
+        connectionTypeComboBox.setModel(new DefaultComboBoxModel<String>(new Vector<String>(RemoteConnections.get().getRemoteConnectionTypes())));
 
         registerListeners();
     }
@@ -225,21 +226,18 @@ public final class NewRemoteConnectionPanel extends JPanel {
         connectionNameLabel = new JLabel();
         connectionNameTextField = new JTextField();
         connectionTypeLabel = new JLabel();
-        connectionTypeComboBox = new JComboBox();
-
-        setFocusTraversalPolicy(null);
+        connectionTypeComboBox = new JComboBox<String>();
 
         connectionNameLabel.setLabelFor(connectionNameTextField);
+        Mnemonics.setLocalizedText(connectionNameLabel, NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionNameLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(connectionNameLabel,NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionNameLabel.text")); // NOI18N
         connectionNameTextField.setText(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionNameTextField.text")); // NOI18N
 
         connectionTypeLabel.setLabelFor(connectionTypeComboBox);
+        Mnemonics.setLocalizedText(connectionTypeLabel, NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionTypeLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(connectionTypeLabel, NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionTypeLabel.text"));
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -250,7 +248,7 @@ public final class NewRemoteConnectionPanel extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.TRAILING)
                     .addComponent(connectionTypeComboBox, 0, 221, Short.MAX_VALUE)
-                    .addComponent(connectionNameTextField, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))
+                    .addComponent(connectionNameTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -259,12 +257,12 @@ public final class NewRemoteConnectionPanel extends JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(connectionNameLabel)
-                    .addComponent(connectionNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(connectionNameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(connectionTypeLabel)
-                    .addComponent(connectionTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(connectionTypeComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         connectionNameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionNameLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -275,6 +273,7 @@ public final class NewRemoteConnectionPanel extends JPanel {
         connectionTypeLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionTypeLabel.AccessibleContext.accessibleDescription")); // NOI18N
         connectionTypeComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionTypeComboBox.AccessibleContext.accessibleName")); // NOI18N
         connectionTypeComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionTypeComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -283,7 +282,7 @@ public final class NewRemoteConnectionPanel extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel connectionNameLabel;
     private JTextField connectionNameTextField;
-    private JComboBox connectionTypeComboBox;
+    private JComboBox<String> connectionTypeComboBox;
     private JLabel connectionTypeLabel;
     // End of variables declaration//GEN-END:variables
 

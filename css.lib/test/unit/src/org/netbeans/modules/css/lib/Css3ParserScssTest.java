@@ -753,9 +753,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
     }
 
-    //the scss_mq_interpolation_expression doesn't want to be extended 
-    //by LPAREN and RPAREN from some reason (endless loop).
-    public void testInterpolationExpressionWithParenMediaQuery_fails() {
+    public void testInterpolationExpressionWithParenMediaQuery() {
         String source = "$media: screen;\n"
                 + "$feature: -webkit-min-device-pixel-ratio;\n"
                 + "$value: 1.5;\n"
@@ -980,8 +978,8 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
         //the "$width: 1000px;" is supposed to be parsed as variable declaration, not property declaration!
-        assertNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration"));
-        assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/cp_variable_declaration"));
+        assertNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration/propertyDeclaration"));
+        assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration/cp_variable_declaration"));
 
     }
 
@@ -1257,6 +1255,10 @@ public class Css3ParserScssTest extends CssTestBase {
         assertParses(".clz { padding-left: #{left($fieldset-header-padding) - 2}; }");
     }
 
+    public void testSimplePropertyValue() {
+        assertParses(".clz { prop: t1 t2; }", true);
+    }
+
     public void testPropertyValue2() {
         assertParses(".clz { padding-left: "
                 + "top($form-error-under-padding) "
@@ -1320,7 +1322,7 @@ public class Css3ParserScssTest extends CssTestBase {
         assertParses(".x { filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=#{$ie-rotation}); }");
     }
 
-    public void testLastItemInBlockDoesntNeedToBeTerminatedWithSemicolon_fails() throws ParseException, BadLocationException {
+    public void testLastItemInBlockDoesntNeedToBeTerminatedWithSemicolon() throws ParseException, BadLocationException {
         assertParses(".x { $image-search-path: '.' !default }"); //doesn't work
         assertParses(".x { $image-search-path: '.' !default; }"); //works
     }
@@ -1344,6 +1346,40 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    }\n"
                 + "}");
     }
+
+    public void testCommaInCPExpression() throws ParseException, BadLocationException {
+        assertParses(".highlighted {\n"
+                + "    @include linear-gradient((#3875d7 20%, #2a62bc 90%));\n"
+                + "    color: #fff;\n"
+                + "}");
+    }
+
+    public void testSassInclude() throws ParseException, BadLocationException {
+        assertParses(".clz { @include extjs-button-ui(\n"
+                + "    $ui: 'default-small',\n"
+                + "\n"
+                + "    $border-radius: $button-small-border-radius,\n"
+                + "    $border-width: $button-small-border-width); }");
+    }
+
+    public void testSassInclude2() throws ParseException, BadLocationException {
+        assertParses(".clz { @include extjs-toolbar-ui(\n"
+                + "    'default',\n"
+                + "    $background-color: $toolbar-background-color,\n"
+                + "    $background-gradient: $toolbar-background-gradient,\n"
+                + "    $border-color: $toolbar-border-color\n"
+                + "); "
+                + "}");
+    }
     
+    public void testNestedRules2() throws ParseException, BadLocationException {
+        assertParses("x { y {} z {} }");
+        assertParses("x { y {} }");
+    }
     
+    public void testNestedIfs() throws ParseException, BadLocationException {
+        assertParses("x { @if true {} }");
+        assertParses("x { @if $a==10 {} }");
+        assertParses("x { @if true {} @if false {} }");
+    }
 }

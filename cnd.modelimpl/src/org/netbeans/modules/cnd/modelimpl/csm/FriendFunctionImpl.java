@@ -152,6 +152,10 @@ public final class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> im
     }
     
     public static class FriendFunctionBuilder extends FunctionBuilder {
+
+        public FriendFunctionBuilder(SimpleDeclarationBuilder builder) {
+            super(builder);
+        }
     
         @Override
         public CsmScope getScope() {

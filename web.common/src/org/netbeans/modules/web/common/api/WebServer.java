@@ -53,14 +53,17 @@ import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
@@ -221,6 +224,7 @@ public final class WebServer {
         private AtomicBoolean stop = new AtomicBoolean(false);
         private ServerSocket sock;
         private int port;
+        private static Map<String, String> mimeTypes = new HashMap<>();
 
         public Server() {
             port = PORT;
@@ -238,6 +242,7 @@ public final class WebServer {
         
         @Override
         public void run() {
+            readMimeTypes();
             ExecutorService pool = new RequestProcessor(WebServer.class.getName(), 10);
             while (!stop.get()) {
                 final Socket s;
@@ -318,6 +323,12 @@ public final class WebServer {
                         out = new DataOutputStream(outputStream);
                         String mime = fo.getMIMEType();
                         if ("content/unknown".equals(mime)) { //NOI18N
+                            String m = guessMimeTypeFromExtension(fo);
+                            if (m != null) {
+                                mime = m;
+                            }
+                        }
+                        if ("content/unknown".equals(mime)) { //NOI18N
                             mime = "text/plain"; //NOI18N
                         }
                         try {
@@ -341,6 +352,29 @@ public final class WebServer {
                     out.close();
                 }
             }
+        }
+
+        private void readMimeTypes() {
+            InputStream is = WebServer.class.getResourceAsStream("mime.types"); // NOI18N
+            Pattern p = Pattern.compile("[ \\t]+");
+            assert is != null;
+            Scanner line = new Scanner(is).useDelimiter("\n");
+            while (line.hasNext()) {
+                Scanner elements = new Scanner(line.next()).useDelimiter(p);
+                String mimeType = null;
+                while (elements.hasNext()) {
+                    String s = elements.next();
+                    if (mimeType == null) {
+                        mimeType = s;
+                    } else {
+                        mimeTypes.put(s, mimeType);
+                    }
+                }
+            }
+        }
+
+        private String guessMimeTypeFromExtension(FileObject fo) {
+            return mimeTypes.get(fo.getExt().toLowerCase());
         }
     
     }

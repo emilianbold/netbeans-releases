@@ -85,8 +85,10 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.taskdefs.ExecTask;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.taskdefs.SignJar;
+import org.apache.tools.ant.types.Commandline;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.ZipFileSet;
@@ -912,19 +914,14 @@ public class MakeNBM extends Task {
                 String pack200Executable = new File(System.getProperty("java.home"),
                         "bin/pack200" + (isWindows() ? ".exe" : "")).getAbsolutePath();
 
-                ProcessBuilder pb = new ProcessBuilder(
-                        pack200Executable,
-                        targetFile.getAbsolutePath(),
-                        sourceFile.getAbsolutePath());
-                
-                pb.directory(sourceFile.getParentFile());
-                int result;
-                Process process = pb.start();
-                result = process.waitFor();
-                process.destroy();
-                return result == 0;
-            } catch (InterruptedException e) {
-                return false;
+                ExecTask et = (ExecTask) getProject().createTask("exec");
+                et.setExecutable(pack200Executable);
+                et.createArg().setFile(targetFile);
+                et.createArg().setFile(sourceFile);
+                et.setTaskName("pack200");
+                et.setDir(sourceFile.getParentFile());
+                et.execute();
+                return true;
             } finally {
                 if (targetFile.exists())  {
                     targetFile.setLastModified(sourceFile.lastModified());

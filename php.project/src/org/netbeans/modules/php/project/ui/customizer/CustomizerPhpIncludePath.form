@@ -95,6 +95,9 @@
               <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="CustomizerPhpIncludePath.includePathList.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;BasePathSupport.Item&gt;"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

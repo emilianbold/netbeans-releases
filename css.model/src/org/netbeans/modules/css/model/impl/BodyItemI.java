@@ -57,33 +57,13 @@ public class BodyItemI extends ModelElement implements BodyItem {
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 
         @Override
-        public void elementAdded(PlainElement plainElement) {
-            element = plainElement;
-        }
-
-        @Override
         public void elementAdded(Rule rule) {
             element = rule;
         }
 
         @Override
-        public void elementAdded(Media media) {
-            element = media;
-        }
-        
-        @Override
-        public void elementAdded(Page page) {
-            element = page;
-        }
-        
-        @Override
-        public void elementAdded(FontFace fontFace) {
-            element = fontFace;
-        }
-
-        @Override
-        public void elementAdded(VendorAtRule var) {
-            element = var;
+        public void elementAdded(AtRule atRule) {
+            element = atRule;
         }
         
     };

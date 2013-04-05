@@ -55,23 +55,31 @@ public class DeviceConfig extends XMLFile {
         super(resource);
     }
 
+    private String root;
     public DeviceConfig(File androidConfigFile) throws IOException {
         super(androidConfigFile);
+        if (getNode("/cordova") != null) {
+            root = "/cordova";
+            //version 2.4
+        } else {
+            root = "/widget";
+            //version 2.5
+        }
     }
 
     public String getAccess() {
-        return getAttributeText("/cordova/access", "origin");
+        return getAttributeText(root + "/access", "origin");
     }
     
     public void setAccess(String access) {
-        setAttributeText("/cordova/access", "origin", access);
+        setAttributeText(root + "/access", "origin", access);
     }
     
     public String getContent() {
-        return getAttributeText("/cordova/content", "src");
+        return getAttributeText(root + "/content", "src");
     }
     
     public void setContent(String src) {
-        setAttributeText("/cordova/content", "src", src);
+        setAttributeText(root + "/content", "src", src);
     }
 }

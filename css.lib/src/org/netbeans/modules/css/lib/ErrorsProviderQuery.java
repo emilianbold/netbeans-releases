@@ -65,7 +65,7 @@ public class ErrorsProviderQuery {
     }
     
     public static List<? extends Error> getExtendedDiagnostics(CssParserResult parserResult) {
-        List<Error> errors = new ArrayList<Error>();
+        List<Error> errors = new ArrayList<>();
         for(ErrorsProvider provider : getProviders()) {
             errors.addAll(provider.getExtendedDiagnostics(parserResult));
         }

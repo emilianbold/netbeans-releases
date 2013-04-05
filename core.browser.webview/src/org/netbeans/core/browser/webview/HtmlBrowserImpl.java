@@ -367,5 +367,10 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
             getEnhancedBrowser().setProjectContext(projectContext);
         }
     }
+
+    @Override
+    public boolean canReloadPage() {
+        return true;
+    }
     
 }

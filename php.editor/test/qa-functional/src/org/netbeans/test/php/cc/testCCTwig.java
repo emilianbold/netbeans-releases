@@ -51,7 +51,7 @@ import org.netbeans.junit.NbModuleSuite;
  * @author Martin Kanak
  */
 public class testCCTwig extends cc {
-    static final String TEST_PHP_NAME = "PhpProject_cc_0003";
+    static final String TEST_PHP_NAME = "PhpProject_cc_twig";
 
     public testCCTwig(String arg0) {
         super(arg0);

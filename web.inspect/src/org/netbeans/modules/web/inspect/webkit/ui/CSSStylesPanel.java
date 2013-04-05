@@ -63,6 +63,7 @@ import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Expression;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Property;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.PropertyValue;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.api.CssStylesTC;
@@ -439,7 +440,8 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                                 if (decls != null) {
                                     List<Declaration> declarations = decls.getDeclarations();
                                     for (int i=declarations.size()-1; i>=0; i--) {
-                                        Declaration declaration = declarations.get(i);
+                                        Declaration declarationElement = declarations.get(i);
+                                        PropertyDeclaration declaration = declarationElement.getPropertyDeclaration();
                                         Property property = declaration.getProperty();
                                         String propertyName = property.getContent().toString().trim();
                                         PropertyValue propertyValue = declaration.getPropertyValue();

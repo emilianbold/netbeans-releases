@@ -42,9 +42,17 @@
 
 package org.netbeans.modules.java.hints.bugs;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LineMap;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -58,6 +66,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.modules.java.hints.ArithmeticUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
@@ -65,18 +74,24 @@ import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.Hint.Options;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author lahvac
  */
+@Messages({
+    "DN_indentation=Confusing indentation",
+    "DESC_indentation=Warns about indentation that suggests possible missing surrounding block",
+    "ERR_indentation=Confusing indentation",
+})
 public class Tiny {
 
     @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Tiny.stringReplaceAllDot", description = "#DESC_org.netbeans.modules.java.hints.bugs.Tiny.stringReplaceAllDot", category="bugs", suppressWarnings="ReplaceAllDot")
@@ -224,4 +239,72 @@ public class Tiny {
             "updateNClob"
     ));
     
+    @Hint(displayName = "#DN_indentation", description = "#DESC_indentation", category="bugs", suppressWarnings="SuspiciousIndentAfterControlStatement", options=Options.QUERY)
+    @TriggerTreeKind({Kind.IF, Kind.WHILE_LOOP, Kind.FOR_LOOP, Kind.ENHANCED_FOR_LOOP})
+    public static ErrorDescription indentation(HintContext ctx) {
+        Tree firstStatement;
+        Tree found = ctx.getPath().getLeaf();
+        
+        switch (found.getKind()) {
+            case IF:
+                IfTree it = (IfTree) found;
+                if (it.getElseStatement() != null) firstStatement = it.getElseStatement();
+                else firstStatement = it.getThenStatement();
+                break;
+            case WHILE_LOOP:
+                firstStatement = ((WhileLoopTree) found).getStatement();
+                break;
+            case FOR_LOOP:
+                firstStatement = ((ForLoopTree) found).getStatement();
+                break;
+            case ENHANCED_FOR_LOOP:
+                firstStatement = ((EnhancedForLoopTree) found).getStatement();
+                break;
+            default:
+                return null;
+        }
+        
+        if (firstStatement != null && firstStatement.getKind() == Kind.BLOCK) {
+            return null;
+        }
+        
+        Tree parent = ctx.getPath().getParentPath().getLeaf();
+        List<? extends Tree> parentStatements;
+        
+        switch (parent.getKind()) {
+            case BLOCK: parentStatements = ((BlockTree) parent).getStatements(); break;
+            case CASE: parentStatements = ((CaseTree) parent).getStatements(); break;
+            default: return null;
+        }
+        
+        int index = parentStatements.indexOf(found);
+        
+        if (index < 0 || index + 1 >= parentStatements.size()) return null;
+        
+        Tree secondStatement = parentStatements.get(index + 1);
+        int firstIndent = indent(ctx, firstStatement);
+        int secondIndent = indent(ctx, secondStatement);
+        
+        if (firstIndent == (-1) || secondIndent == (-1) || firstIndent != secondIndent) return null;
+        
+        return ErrorDescriptionFactory.forTree(ctx, secondStatement, Bundle.ERR_indentation());
+    }
+    
+    private static int indent(HintContext ctx, Tree t) {
+        long start = ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getInfo().getCompilationUnit(), t);
+        LineMap lm = ctx.getInfo().getCompilationUnit().getLineMap();
+        long lineStart = lm.getStartPosition(lm.getLineNumber(start));
+        String text = ctx.getInfo().getText();
+        CodeStyle cs = CodeStyle.getDefault(ctx.getInfo().getFileObject());
+        int indent = 0;
+        
+        while (start-- > lineStart) {
+            char c = text.charAt((int) start);
+            if (c == ' ') indent++;
+            else if (c == '\t') indent += cs.getTabSize();
+            else return -1;
+        }
+        
+        return indent;
+    }
 }

@@ -207,8 +207,10 @@ class AssignComments extends TreeScanner<Void, Void> {
     private boolean isEvil(Tree tree) {
         Tree.Kind kind = tree.getKind();
         switch (kind) {
-            case MODIFIERS:
             case COMPILATION_UNIT:
+                CompilationUnitTree cut = (CompilationUnitTree) tree;
+                return cut.getPackageName() == null;
+            case MODIFIERS:
             case PRIMITIVE_TYPE:
                 return true;
             default: return false;

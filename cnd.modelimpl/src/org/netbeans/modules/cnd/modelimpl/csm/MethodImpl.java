@@ -185,6 +185,13 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         private boolean _explicit = false;
         private CsmVisibility visibility = CsmVisibility.PUBLIC;
 
+        protected MethodBuilder() {
+        }
+        
+        public MethodBuilder(SimpleDeclarationBuilder builder) {
+            super(builder);
+        }
+
         public CsmVisibility getVisibility() {
             return visibility;
         }

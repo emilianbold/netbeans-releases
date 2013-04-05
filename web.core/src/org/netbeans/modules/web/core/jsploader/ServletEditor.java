@@ -480,14 +480,12 @@ public class ServletEditor extends CloneableEditorSupport
         /** Lazy getter for change support.
         */
         private PropertyChangeSupport prop () {
-            if (propSupp == null) {
-                synchronized (this) {
-                    if (propSupp == null) {
-                        propSupp = new PropertyChangeSupport (this);
-                    }
+            synchronized (this) {
+                if (propSupp == null) {
+                    propSupp = new PropertyChangeSupport (this);
                 }
+                return propSupp;
             }
-            return propSupp;
         }
         
         /** Obtains the input stream.

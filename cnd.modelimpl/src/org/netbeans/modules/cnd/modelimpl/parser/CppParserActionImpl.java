@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl.FieldBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendClassImpl.FriendClassBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDDImpl.FriendFunctionDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDefinitionImpl.FriendFunctionDefinitionBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionImpl.FriendFunctionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl.FunctionDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl.FunctionDefinitionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl.FunctionBuilder;
@@ -211,83 +212,91 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
         int index = input.index();
         int scopeLevel = 0;
-        SymTabEntry entry = null;
-
-        if(builderContext.top() instanceof NameBuilder) {
-            NameBuilder nameBuilder = (NameBuilder) builderContext.top();
-            if(!nameBuilder.getNameParts().isEmpty()) {
-                for (int i = 0; i < nameBuilder.getNameParts().size(); i++) {
-                    CharSequence part = nameBuilder.getNameParts().get(i);
-
-                    SymTabEntry classEntry = globalSymTab.lookup(part);
-                    SymTab st = null;
-                    if (classEntry != null) {
-                        st = (SymTab)classEntry.getAttribute(CppAttributes.SYM_TAB);
-                    }
-                    if(st != null) {
-                        globalSymTab.push(st);
-                        scopeLevel++;
-                    }
-                }            
-            }
-        }
         
-        while (true) {
-            APTToken aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
-            if (aToken.getType() == APTTokenTypes.IDENT) {
-                final CharSequence name = aToken.getTextID();
-                entry = globalSymTab.lookup(name);
-                if (entry == null || entry.getAttribute(CppAttributes.TYPE) == null) {
+        try {
+            SymTabEntry entry = null;
+
+            if(builderContext.top() instanceof NameBuilder) {
+                NameBuilder nameBuilder = (NameBuilder) builderContext.top();
+                if(!nameBuilder.getNameParts().isEmpty()) {
+                    for (int i = 0; i < nameBuilder.getNameParts().size(); i++) {
+                        CharSequence part = nameBuilder.getNameParts().get(i);
+
+                        SymTabEntry classEntry = globalSymTab.lookup(part);
+                        SymTab st = null;
+                        if (classEntry != null) {
+                            st = (SymTab)classEntry.getAttribute(CppAttributes.SYM_TAB);
+                        }
+                        if(st != null) {
+                            globalSymTab.push(st);
+                            scopeLevel++;
+                        }
+                    }            
+                }
+            }
+
+            while (true) {
+                int LA = input.LA(1);
+                if (LA == APTTokenTypes.IDENT) {
+                    final CharSequence name = ((APTToken) CXXParserActionImpl.convertToken(input.LT(1))).getTextID();
+                    entry = globalSymTab.lookup(name);
+                    if (entry == null || entry.getAttribute(CppAttributes.TYPE) == null) {
+                        break;
+                    }
+                    input.consume();
+                    LA = input.LA(1);
+                    if (LA == APTTokenTypes.LESSTHAN) {
+                        input.consume();
+                        LA = input.LA(1);
+                        int templateLevel = 0;
+                        while (templateLevel != 0 || LA != APTTokenTypes.GREATERTHAN) {
+                            if(LA == APTTokenTypes.GREATERTHAN) {
+                                templateLevel--;
+                            } else if(LA == APTTokenTypes.LESSTHAN) {
+                                templateLevel++;
+                            }
+                            input.consume();
+                            LA = input.LA(1);
+                            if (LA == CXXParserEx.EOF) {
+                                break;
+                            }
+                        }
+                        input.consume();
+                        LA = input.LA(1);
+                    }
+                    if (LA == APTTokenTypes.SCOPE) {
+                        if (entry.getAttribute(CppAttributes.SYM_TAB) == null) {
+                            entry = null;
+                            break;
+                        }
+                        scopeLevel++;
+                        globalSymTab.push((SymTab) entry.getAttribute(CppAttributes.SYM_TAB));
+                    } else {
+                        break;
+                    }
+                } else if (LA == APTTokenTypes.STAR) {
+                    return true;
+                } else { 
+                    entry = null;
                     break;
                 }
                 input.consume();
-                aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
-                if (aToken.getType() == APTTokenTypes.LESSTHAN) {
-                    input.consume();
-                    aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
-                    int templateLevel = 0;
-                    while (templateLevel != 0 || aToken.getType() != APTTokenTypes.GREATERTHAN) {
-                        if(aToken.getType() == APTTokenTypes.GREATERTHAN) {
-                            templateLevel--;
-                        } else if(aToken.getType() == APTTokenTypes.LESSTHAN) {
-                            templateLevel++;
-                        }
-                        input.consume();
-                        aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
-                    }
-                    input.consume();
-                    aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
-                }
-                if (aToken.getType() == APTTokenTypes.SCOPE) {
-                    if (entry.getAttribute(CppAttributes.SYM_TAB) == null) {
-                        entry = null;
-                        break;
-                    }
-                    scopeLevel++;
-                    globalSymTab.push((SymTab) entry.getAttribute(CppAttributes.SYM_TAB));
-                } else {
-                    break;
-                }
-            } else if (aToken.getType() == APTTokenTypes.STAR) {
-                return true;
-            } else { 
-                entry = null;
-                break;
             }
-            input.consume();
-        }
-        for (int i = 0; i < scopeLevel; i++) {
-            globalSymTab.pop();
-        }
-        input.rewind(index);
-        if(entry != null && entry.getAttribute(CppAttributes.TYPE) != null) {
+            
+            if (entry != null && entry.getAttribute(CppAttributes.TYPE) != null) {
 //            if(entry.toString().startsWith("Entry{name=value_type")) {
 //                int i = 0;
 //                globalSymTab.lookup(((APTToken) CXXParserActionImpl.convertToken(input.LT(1))).getTextID());
 //            }
-            return true;
+                return true;
+            }
+            return false;
+        } finally {
+            for (int i = 0; i < scopeLevel; i++) {
+                globalSymTab.pop();
+            }
+            input.rewind(index);
         }
-        return false;
     }
     
     @Override
@@ -595,7 +604,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                     if(bodyTokenStream != null) {
                         builderContext.push((MethodDDBuilder)memberBuilder);
                         ParserProviderImpl.Antlr3CXXParser parser = new ParserProviderImpl.Antlr3CXXParser(params);
-                        parser.init(null, ((MethodDDBuilder)memberBuilder).getBodyTokenStream(), wrapper);
+                        parser.init(null, bodyTokenStream, wrapper);
                         parser.parse(CsmParserProvider.CsmParser.ConstructionKind.FUNCTION_DEFINITION_AFTER_DECLARATOR);
                         builderContext.pop();
                     }
@@ -721,80 +730,40 @@ public class CppParserActionImpl implements CppParserActionEx {
                 simple_member_declaration(SIMPLE_MEMBER_DECLARATION__SEMICOLON, token);
             } else {
                 SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
+                SimpleDeclarationBuilder builder;
 
                 if(declBuilder.hasTypedefSpecifier()) {
-                    TypedefBuilder builder = new TypedefBuilder();
-
-                    CsmObjectBuilder parent = builderContext.top(1);
-                    builder.setParent(parent);
-                    builder.setFile(currentContext.file);
-
-                    builder.setStartOffset(declBuilder.getStartOffset());
-                    builder.setEndOffset(((APTToken)token).getOffset());
-
-                    builder.setName(declBuilder.getDeclaratorBuilder().getName());
-                    builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                    if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                        builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                        builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                    }        
-
-                    if(parent instanceof DeclarationStatementBuilder) {
-                        ((DeclarationStatementBuilder)parent).addDeclarationBuilder(builder);
-                    } else {
-                        builder.create();                
-                    }
+                    builder = new TypedefBuilder(declBuilder);
                 } else if(declBuilder.isFunction()) {
-                    FunctionBuilder builder = new FunctionBuilder();
-
-                    CsmObjectBuilder parent = builderContext.top(1);
-                    builder.setParent(parent);
-                    builder.setFile(currentContext.file);
-
-                    builder.setStartOffset(declBuilder.getStartOffset());
-                    builder.setEndOffset(((APTToken)token).getOffset());
-
-                    builder.setName(declBuilder.getDeclaratorBuilder().getName());
-                    builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                    if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                        builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                        builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                    }        
-                    builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
-
-                    builder.create();                
+                    builder = new FunctionBuilder(declBuilder);
                 } else {
                     CharSequence name = declBuilder.getDeclaratorBuilder().getName();
-                    VariableBuilder builder;
                     if(name != null && !name.toString().contains("::")) { //NOI18N
-                        builder = new VariableBuilder();
+                        builder = new VariableBuilder(declBuilder);
                     } else {
-                        builder = new VariableDefinitionImpl.VariableDefinitionBuilder();
+                        builder = new VariableDefinitionImpl.VariableDefinitionBuilder(declBuilder);
                     }
-
-                    CsmObjectBuilder parent = builderContext.top(1);
-                    builder.setParent(parent);
-                    builder.setFile(currentContext.file);
-
-                    builder.setStartOffset(declBuilder.getStartOffset());
-                    builder.setEndOffset(((APTToken)token).getOffset());
-
-                    builder.setName(name);
-                    builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                    builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());
-
-                    if(parent instanceof DeclarationStatementBuilder) {
-                        ((DeclarationStatementBuilder)parent).addDeclarationBuilder(builder);
-                    } else if(parent instanceof ForStatementBuilder) {
-                        DeclarationStatementBuilder dsBuilder = new DeclarationStatementBuilder();
-                        dsBuilder.setFile(currentContext.file);
-                        dsBuilder.setStartOffset(builder.getStartOffset());
-                        dsBuilder.setEndOffset(builder.getEndOffset());
-                        dsBuilder.addDeclarationBuilder(builder);
-                        ((ForStatementBuilder)parent).addStatementBuilder(dsBuilder);
-                    } else {
-                        builder.create();
-                    }
+                }
+                CsmObjectBuilder parent = builderContext.top(1);
+                builder.setParent(parent);
+                builder.setFile(currentContext.file);
+                // FIXME: We add 1 because previously we included ; inside
+                builder.setEndOffset(((APTToken)token).getOffset()+1);
+                builder.setName(declBuilder.getDeclaratorBuilder().getName());
+                if(declBuilder.getTemplateDescriptorBuilder() != null) {
+                    builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
+                }        
+                if(parent instanceof DeclarationStatementBuilder) {
+                    ((DeclarationStatementBuilder)parent).addDeclarationBuilder(builder);
+                } else if(parent instanceof ForStatementBuilder) {
+                    DeclarationStatementBuilder dsBuilder = new DeclarationStatementBuilder();
+                    dsBuilder.setFile(currentContext.file);
+                    dsBuilder.setStartOffset(builder.getStartOffset());
+                    dsBuilder.setEndOffset(builder.getEndOffset());
+                    dsBuilder.addDeclarationBuilder(builder);
+                    ((ForStatementBuilder)parent).addStatementBuilder(dsBuilder);
+                } else {
+                    builder.create();
                 }
             }
         }
@@ -1808,9 +1777,42 @@ public class CppParserActionImpl implements CppParserActionEx {
         end_declarator(token);
     }
     @Override public void ptr_operator(Token token) {}
-    @Override public void ptr_operator(int kind, Token token) {}
+    @Override public void ptr_operator(int kind, Token token) {
+        if (builderContext.top(1) instanceof SimpleDeclarationBuilder) {
+            SimpleDeclarationBuilder sdb = (SimpleDeclarationBuilder) builderContext.top(1);
+            TypeBuilder typeBuilder = sdb.getTypeBuilder();
+            if (typeBuilder != null) {
+                switch (kind) {
+                    case PTR_OPERATOR__STAR:
+                        typeBuilder.incPointerDepth();
+                        break;
+                    case PTR_OPERATOR__AMPERSAND:
+                        typeBuilder.setReference();
+                        break;
+                    default:
+                        System.err.println("Unexpected kind " + kind + " for " + sdb + "\n at " + token);
+                }
+            } else {
+                System.err.println("Unexpected declaration without type " + sdb + "\n at " + token);
+            }
+        }
+    }
+    
     @Override public void end_ptr_operator(Token token) {}
-    @Override public void cv_qualifier(int kind, Token token) {}
+    
+    @Override public void cv_qualifier(int kind, Token token) {
+        if (kind == CV_QUALIFIER__CONST) {
+            CsmObjectBuilder builder = builderContext.top();
+            if (builder instanceof TypeBuilder) {
+                TypeBuilder tb = (TypeBuilder)builder;
+                tb.setConst();
+            } else if (builderContext.top(1) instanceof SimpleDeclarationBuilder) {
+                SimpleDeclarationBuilder sdb = (SimpleDeclarationBuilder)builderContext.top(1);
+                sdb.setConst();
+            }
+        }
+    }
+    
     @Override public void ref_qualifier(int kind, Token token) {}
     @Override public void declarator_id(Token token) {
     }
@@ -1957,6 +1959,10 @@ public class CppParserActionImpl implements CppParserActionEx {
             builder.setParent(parent);
             builder.setFile(currentContext.file);
             builder.setStartOffset(declBuilder.getStartOffset());
+            
+            if (declBuilder.isConst()) {
+                builder.setConst();
+            }
 
             builder.setName(name);
             builder.setTypeBuilder(declBuilder.getTypeBuilder());
@@ -1985,13 +1991,17 @@ public class CppParserActionImpl implements CppParserActionEx {
             builder.setFile(currentContext.file);
             builder.setStartOffset(declBuilder.getStartOffset());
             
+            if (declBuilder.isConst()) {
+                builder.setConst();
+            }
+
             builder.setName(name);
-            builder.setTypeBuilder(declBuilder.getTypeBuilder());
+                builder.setTypeBuilder(declBuilder.getTypeBuilder());
             if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
+                    builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
                 builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
             }        
-            builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
+                builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
             builderContext.push(builder);
         }
     }
@@ -2131,75 +2141,36 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void simple_member_declaration(int kind, Token token){
         if(kind == SIMPLE_MEMBER_DECLARATION__SEMICOLON) {
             SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
+            SimpleDeclarationBuilder builder;
             if(declBuilder.hasTypedefSpecifier()) {
-                MemberTypedefBuilder builder = new MemberTypedefBuilder();
-
-                CsmObjectBuilder parent = builderContext.top(1);
-                
-                builder.setParent(parent);
-                builder.setFile(currentContext.file);
-
-                builder.setStartOffset(declBuilder.getStartOffset());
-                builder.setEndOffset(((APTToken)token).getOffset());
-
-                builder.setName(declBuilder.getDeclaratorBuilder().getName());
-                builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                    builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                    builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                }        
-
-                ((ClassBuilder)parent).addMemberBuilder(builder);
+                builder = new MemberTypedefBuilder(declBuilder);
             } else if(declBuilder.isFunction()) {
-                FunctionBuilder builder;
-
-                CharSequence name = declBuilder.getDeclaratorBuilder().getName();
-                
                 if(declBuilder.isConstructor()) {
-                    builder = new ConstructorBuilder();
+                    builder = new ConstructorBuilder(declBuilder);
                 } else if(declBuilder.isDestructor()) {
-                    builder = new DestructorBuilder();
+                    builder = new DestructorBuilder(declBuilder);
+                } else if (declBuilder.isFriend()){
+                    builder = new FriendFunctionBuilder(declBuilder);
                 } else {
-                    builder = new MethodBuilder();
+                    builder = new MethodBuilder(declBuilder);
                 }
-                
-                CsmObjectBuilder parent = builderContext.top(1);
-                
-                builder.setParent(parent);
-                builder.setFile(currentContext.file);
-
-                builder.setStartOffset(declBuilder.getStartOffset());
-                builder.setEndOffset(((APTToken)token).getOffset());
-
-                builder.setName(name);
-                builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                    builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                    builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                }        
-                builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
-
-                ((ClassBuilder)parent).addMemberBuilder((MemberBuilder)builder);
-            } else {            
-                FieldBuilder builder = new FieldBuilder(currentContext.file.getParsingFileContent());
-
-                CsmObjectBuilder parent = builderContext.top(1);
-                
-                builder.setParent(parent);
-                builder.setFile(currentContext.file);
-
-                builder.setStartOffset(declBuilder.getStartOffset());
-                builder.setEndOffset(((APTToken)token).getOffset());
-
-                builder.setName(declBuilder.getDeclaratorBuilder().getName());
-                builder.setTypeBuilder(declBuilder.getTypeBuilder());
-                builder.setInitializerBuilder(declBuilder.getInitializerBuilder());
-                if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                    builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                    builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                }        
-
-                ((ClassBuilder)parent).addMemberBuilder(builder);
+            } else {
+                builder = new FieldBuilder(declBuilder, currentContext.file.getParsingFileContent());
+            }
+            
+            ClassBuilder parent = (ClassBuilder)builderContext.top(1);
+            builder.setParent(parent);
+            builder.setFile(currentContext.file);
+            // FIXME: We add 1 because previously we included ; inside
+            builder.setEndOffset(((APTToken)token).getOffset()+1);
+            builder.setName(declBuilder.getDeclaratorBuilder().getName());
+            if(declBuilder.getTemplateDescriptorBuilder() != null) {
+                builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
+            }
+            if (builder instanceof FriendFunctionBuilder) {
+                parent.addFriendBuilder((FriendFunctionBuilder)builder);
+            } else {
+                parent.addMemberBuilder((MemberBuilder)builder);
             }
         }    
     }

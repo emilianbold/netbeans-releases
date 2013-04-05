@@ -88,6 +88,7 @@ made subject to such option by the copyright holder.
         <file name="ear-1.4.xml" url="ear-1.4.xml"/>
         <file name="ear-5.xml" url="ear-5.xml"/>
         <file name="ear-6.xml" url="ear-6.xml"/>
+        <file name="ear-7.xml" url="ear-7.xml"/>
         <file name="MANIFEST.MF" url="MANIFEST.MF"/>
     </folder>
     

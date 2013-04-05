@@ -62,6 +62,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
@@ -147,6 +148,7 @@ public class InstallerTest extends NbTestCase {
         assertEquals("One", 1, list.size());
     }
     
+    @RandomlyFails // #9267, #9435, #9436, #9437, #9949
     public void testLogsRereadOnStartup() throws Exception {
         Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
         log.warning("Something happened");

@@ -401,7 +401,11 @@ public class ConfigurationMakefileWriter {
             writeBuildTestTargets(makefileWriter, projectDescriptor, conf, bw);
             makefileWriter.writeRunTestTarget(projectDescriptor, conf, bw);
             makefileWriter.writeCleanTarget(projectDescriptor, conf, bw);
-            makefileWriter.writeDependencyChecking(projectDescriptor, conf, bw);
+            //we need to write dependencies only in case they are enabled
+            if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration() && 
+                    !conf.isQmakeConfiguration() && conf.getCompilerSet().getCompilerSet() != null) {
+                makefileWriter.writeDependencyChecking(projectDescriptor, conf, bw);
+            }
         } finally {
             closeWriter(bw);
         }
@@ -1774,6 +1778,7 @@ public class ConfigurationMakefileWriter {
         bw.write("CND_CONF=" + conf.getName() + "\n"); // NOI18N
         bw.write("CND_DISTDIR=" + MakeConfiguration.DIST_FOLDER + "\n"); // NOI18N
         bw.write("CND_BUILDDIR=" + MakeConfiguration.BUILD_FOLDER + "\n"); // NOI18N
+        bw.write("CND_DLIB_EXT=" + conf.getLibraryExtension() + "\n"); // NOI18N
         bw.write("NBTMPDIR=" + tmpdir + "\n"); // NOI18N
         bw.write("TMPDIRNAME=" + tmpDirName + "\n"); // NOI18N
         String projectOutput = conf.getOutputValue();

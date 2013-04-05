@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
@@ -48,23 +49,14 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 
 /**
  *
  * @author Petr Pisl
  */
 public class CompletionContextFinder {
-    
-    public static enum CompletionContext {
-        NONE,       // There shouldn't be any code completion
-        EXPRESSION, // usually, we will offer everything what we know in the context
-        OBJECT_PROPERTY, // object property that are visible outside the object
-        OBJECT_MEMBERS, // usually after this.
-        DOCUMENTATION, // inside documentation blocks
-        GLOBAL
-    } 
    
     private static final List<JsTokenId> WHITESPACES_TOKENS = Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL);
     

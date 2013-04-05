@@ -149,7 +149,8 @@ public class DDDataObject extends  DDMultiViewDataObject
 
     // FIXME this is bit strange as we reference other mime types here
     @MultiViewElement.Registration(
-        mimeType={DDDataLoader.REQUIRED_MIME_1, DDWeb25DataLoader.REQUIRED_MIME, DDWeb30DataLoader.REQUIRED_MIME, DDWebFragment30DataLoader.REQUIRED_MIME},
+        mimeType={DDDataLoader.REQUIRED_MIME_1, DDWeb25DataLoader.REQUIRED_MIME, DDWeb30DataLoader.REQUIRED_MIME,
+            DDWebFragment30DataLoader.REQUIRED_MIME, DDWeb30DataLoader.REQUIRED_MIME_31, DDWebFragment30DataLoader.REQUIRED_MIME_31},
         iconBase="org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif",
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="multiview_xml",

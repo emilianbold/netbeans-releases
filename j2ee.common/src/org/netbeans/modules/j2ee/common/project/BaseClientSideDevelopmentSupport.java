@@ -59,7 +59,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
 import org.netbeans.modules.web.common.api.WebUtils;
@@ -173,7 +173,7 @@ public abstract class BaseClientSideDevelopmentSupport implements
     }
 
     public boolean canReload() {
-        return WebBrowserSupport.isIntegratedBrowser(getBrowserID());
+        return getBrowserSupport().canReload();
     }
     
     protected abstract String getBrowserID();
@@ -181,6 +181,9 @@ public abstract class BaseClientSideDevelopmentSupport implements
     public void reload(FileObject fo) {
         BrowserSupport bs = getBrowserSupport();
         if (bs == null) {
+            return;
+        }
+        if (!bs.canRefreshOnSaveThisFileType(fo)) {
             return;
         }
         URL u = bs.getBrowserURL(fo, true);
@@ -191,8 +194,7 @@ public abstract class BaseClientSideDevelopmentSupport implements
                 u = bs.getBrowserURL(project.getProjectDirectory(), true);
             }
         }
-        if (u != null) {
-            assert bs.canReload(u) : u;
+        if (u != null && bs.canReload(u)) {
             bs.reload(u);
         }
     }
@@ -211,13 +213,16 @@ public abstract class BaseClientSideDevelopmentSupport implements
         }
         browserSupportInitialized = true;
         String selectedBrowser = getBrowserID();
-        WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
-        if (selectedBrowser == null || browser == null) {
+        if (selectedBrowser == null) {
             browserSupport = null;
             return null;
         }
-        boolean integrated = WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
-        browserSupport = BrowserSupport.create(browser, !integrated);
+        WebBrowser browser = BrowserUISupport.getBrowser(selectedBrowser);
+        if (browser == null) {
+            browserSupport = null;
+            return null;
+        }
+        browserSupport = BrowserSupport.create(browser);
         return browserSupport;
     }
 

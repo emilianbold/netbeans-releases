@@ -130,7 +130,7 @@ public class Properties {
     }
 
     public static Collection<PropertyDefinition> getPropertyDefinitions(FileObject context, boolean visibleOnly) {
-        Collection<PropertyDefinition> all = new ArrayList<PropertyDefinition>();
+        Collection<PropertyDefinition> all = new ArrayList<>();
         for (String propName : getPropertyNames(context)) {
             PropertyDefinition propertyDefinition = getPropertyDefinition(propName);
             if (!visibleOnly || isVisibleProperty(propertyDefinition)) {

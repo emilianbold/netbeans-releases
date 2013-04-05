@@ -53,7 +53,11 @@ public class JsonFormatterTest extends JsonTestBase {
     public JsonFormatterTest(String testName) {
         super(testName);
     }
-    
+
+    public void testSimple() throws Exception {
+        reformatFileContents("testfiles/simple.json",new IndentPrefs(4, 4));
+    }
+
     public void testBasic1() throws Exception {
         reformatFileContents("testfiles/formatter/basic1.json",new IndentPrefs(4, 4));
     }

@@ -54,8 +54,6 @@ made subject to such option by the copyright holder.
                 <package>junit.framework</package>
                 <package>junit.runner</package>
                 <package>junit.textui</package>
-                <package>org.hamcrest</package>
-                <package>org.hamcrest.core</package>
                 <package>org.junit</package>
                 <package>org.junit.matchers</package>
                 <package>org.junit.rules</package>
@@ -66,8 +64,8 @@ made subject to such option by the copyright holder.
                 <package>org.junit.runners.model</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/junit-4.11.jar</runtime-relative-path>
-                <binary-origin>external/junit-4.11.jar</binary-origin>
+                <runtime-relative-path>ext/junit-4.10.jar</runtime-relative-path>
+                <binary-origin>external/junit-4.10.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

@@ -44,6 +44,7 @@ package org.netbeans.modules.csl.editor.fold;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
@@ -134,7 +135,6 @@ public class GsfFoldScheduler extends Scheduler {
         for (Scheduler s : Lookup.getDefault().lookupAll(Scheduler.class)) {
             if (s instanceof GsfFoldScheduler) {
                 GsfFoldScheduler gsfScheduler = (GsfFoldScheduler) s;
-
                 gsfScheduler.schedule(new SchedulerEvent(gsfScheduler) {});
             }
         }

@@ -13,6 +13,16 @@
         </folder>
 
     </folder>
+    <folder name="Menu">
+        <folder name="Window">
+            <folder name="Tools">
+                <file name="GsfTestRunnerResultWindowOpenAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-gsf-testrunner-api-ResultWindowOpenAction.instance"/>
+                    <attr name="position" intvalue="250"/>
+                </file>
+            </folder>
+        </folder> <!-- Window -->
+    </folder>
     <folder name="Windows2">
         <folder name="Modes">
             <folder name="output">        <!-- "output" is defined in core/ui -->

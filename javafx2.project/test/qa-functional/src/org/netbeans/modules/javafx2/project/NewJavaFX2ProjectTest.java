@@ -42,54 +42,81 @@
 package org.netbeans.modules.javafx2.project;
 
 import junit.framework.Test;
-
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
  *
  * @author stezeb
  */
 public class NewJavaFX2ProjectTest extends JellyTestCase {
-    
-    private final String TEST_PROJECT_NAME = "TestFXProject";
-    
-    /** Constructor required by JUnit */
+
+    /* Test project names */
+    private final String PLAINAPP_NAME = "FXApp";
+    private final String PRELOADER_NAME = "FXPreloader";
+    private final String FXMLAPP_NAME = "FXMLApp";
+    private final String SWINGAPP_NAME = "FXSwingApp";
+
+    /**
+     * Constructor required by JUnit
+     */
     public NewJavaFX2ProjectTest(String testName) {
         super(testName);
     }
 
-    /** Creates suite from particular test cases. */
+    /**
+     * Creates suite from particular test cases.
+     */
     public static Test suite() {
-        return createModuleTest(NewJavaFX2ProjectTest.class);
+        return createModuleTest(NewJavaFX2ProjectTest.class,
+                "createJavaFX2Application",
+                "createJavaFX2Preloader",
+                "createJavaFX2FXMLApp",
+                "createJavaFX2SwingApp",
+                "closeJavaFX2Application",
+                "closeJavaFX2Preloader",
+                "closeJavaFX2FXMLApp",
+                "closeJavaFX2SwingApp");
+    }
+
+    @Override
+    public void setUp() {
+        System.out.println("########  " + getName() + "  #######");
+    }
+
+    public void createJavaFX2Application() {
+        TestUtils.createJavaFX2Project(TestUtils.JAVAFX_PROJECT_TYPE_PLAIN,
+                PLAINAPP_NAME, getWorkDirPath());
+    }
+
+    public void closeJavaFX2Application() {
+        TestUtils.closeJavaFX2Project(PLAINAPP_NAME);
+    }
+
+    public void createJavaFX2Preloader() {
+        TestUtils.createJavaFX2Project(TestUtils.JAVAFX_PROJECT_TYPE_PRELOADER,
+                PRELOADER_NAME, getWorkDirPath());
+    }
+
+    public void closeJavaFX2Preloader() {
+        TestUtils.closeJavaFX2Project(PRELOADER_NAME);
+    }
+
+    public void createJavaFX2FXMLApp() {
+        TestUtils.createJavaFX2Project(TestUtils.JAVAFX_PROJECT_TYPE_FXMLAPP,
+                FXMLAPP_NAME, getWorkDirPath());
+    }
+
+    public void closeJavaFX2FXMLApp() {
+        TestUtils.closeJavaFX2Project(FXMLAPP_NAME);
+    }
+
+    public void createJavaFX2SwingApp() {
+        TestUtils.createJavaFX2Project(TestUtils.JAVAFX_PROJECT_TYPE_SWINGAPP,
+                SWINGAPP_NAME, getWorkDirPath());
+    }
+
+    public void closeJavaFX2SwingApp() {
+        TestUtils.closeJavaFX2Project(SWINGAPP_NAME);
     }
     
-    public void testNewJavaFX2Project() {
-        NewProjectWizardOperator npwop = NewProjectWizardOperator.invoke();
-        npwop.selectCategory("JavaFX");
-        npwop.selectProject("JavaFX Application");
-        npwop.next();
-        
-        new EventTool().waitNoEvent(2000);
-        
-        JTextFieldOperator projectName = new JTextFieldOperator(npwop, 0);
-        projectName.clearText();
-        projectName.typeText(TEST_PROJECT_NAME);
-        
-        new EventTool().waitNoEvent(2000);
-                
-        npwop.finish();
-        
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        
-        pto.getProjectRootNode(TEST_PROJECT_NAME).select();
-        
-        pto.getProjectRootNode(TEST_PROJECT_NAME).performPopupAction("Close");
-        
-        new EventTool().waitNoEvent(2000);
-    }
 }

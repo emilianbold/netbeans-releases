@@ -45,8 +45,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.Properties;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
@@ -55,8 +57,8 @@ import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.project.ClientProjectConfigurationImpl;
 import org.netbeans.modules.cordova.project.ClientProjectUtilities;
+import org.netbeans.modules.cordova.project.MobileConfigurationImpl;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.api.WebServer;
@@ -95,25 +97,49 @@ public class CordovaPerformer implements BuildPerformer {
     private Lookup networkMonitor;
     private WebKitDebugging webKitDebugging;
     private MobileDebugTransport transport;
-    private final int BUILD_SCRIPT_VERSION = 2;
+    private final int BUILD_SCRIPT_VERSION = 3;
     
-
+    public static CordovaPerformer getDefault() {
+        return Lookup.getDefault().lookup(CordovaPerformer.class);
+    }
+    
+    public void createPlatforms(Project project) {
+        if (PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
+            perform("create-android", project);
+        }
+        if (PlatformManager.getPlatform(PlatformManager.IOS_TYPE).isReady()) {
+            perform("create-ios", project);
+        }
+    }
+    
     @Override
-    public void perform(String target, Project project) {
-        generateBuildScripts(project);
-        FileObject buildFo = project.getProjectDirectory().getFileObject(PATH_BUILD_XML);//NOI18N
-        try {
-            ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
+    public void perform(final String target, final Project project) {
+        if (!CordovaPlatform.getDefault().isReady()) {
+            throw new IllegalStateException();
+        }
+        Runnable run = new Runnable() {
+            @Override
+            public void run() {
+                generateBuildScripts(project);
+                FileObject buildFo = project.getProjectDirectory().getFileObject(PATH_BUILD_XML);//NOI18N
+                try {
+                    ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(run);
+        } else {
+            run.run();
         }
     }
 
     private Properties properties(Project p) {
-        ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
-        ProjectConfiguration  activeConfiguration = provider.getActiveConfiguration();
         Properties props = new Properties();
         final CordovaPlatform phoneGap = CordovaPlatform.getDefault();
         props.put(PROP_CORDOVA_HOME, phoneGap.getSdkLocation());//NOI18N
@@ -138,12 +164,17 @@ public class CordovaPerformer implements BuildPerformer {
         props.put(PROP_DEBUG_ENABLE, debug);//NOI18N
         //workaround for some strange behavior of ant execution in netbeans
         props.put(PROP_ENV_DISPLAY, ":0.0");//NOI18N
-        if (activeConfiguration instanceof ClientProjectConfigurationImpl) {
-            props.put(PROP_CONFIG, ((ClientProjectConfigurationImpl) activeConfiguration).getId());
-            ((ClientProjectConfigurationImpl) activeConfiguration).getDevice().addProperties(props);
+        props.put(PROP_ANDROID_SDK_HOME, PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
+
+        ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
+        if (provider != null) {
+            ProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
+            if (activeConfiguration instanceof MobileConfigurationImpl) {
+                props.put(PROP_CONFIG, ((MobileConfigurationImpl) activeConfiguration).getId());
+                ((MobileConfigurationImpl) activeConfiguration).getDevice().addProperties(props);
+            }
         }
         
-        props.put(PROP_ANDROID_SDK_HOME, PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
         return props;
     }
 
@@ -214,6 +245,11 @@ public class CordovaPerformer implements BuildPerformer {
 
     @Override
     public String getUrl(Project p, Lookup context) {
+        URL url = context.lookup(URL.class);
+        if (url!=null) {
+            //TODO: hack to workaround #221791
+            return url.toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
+        }
         if (org.netbeans.modules.cordova.project.ClientProjectUtilities.isUsingEmbeddedServer(p)) {
             WebServer.getWebserver().start(p, ClientProjectUtilities.getSiteRoot(p), ClientProjectUtilities.getWebContextRoot(p));
         } else {
@@ -238,9 +274,9 @@ public class CordovaPerformer implements BuildPerformer {
     }
 
     @Override
-    public void startDebugging(Device device, Project p) {
+    public void startDebugging(Device device, Project p, Lookup context) {
         transport = device.getPlatform().getDebugTransport();
-        transport.setBaseUrl(getUrl(p));
+        transport.setBaseUrl(getUrl(p, context));
         transport.attach();
         try {
             Thread.sleep(1000);

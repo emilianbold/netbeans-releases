@@ -121,7 +121,7 @@ public final class RefreshDependencyVersions extends Task {
 
         validateInjectedDependencies(injectDeps);
 
-        @SuppressWarnings("unchecked") Map<String,String> properties = getProject().getProperties();
+        Map<String,Object> properties = getProject().getProperties();
         ModuleListParser listParser;
         try {
             listParser = new ModuleListParser(properties, ModuleType.NB_ORG, getProject());

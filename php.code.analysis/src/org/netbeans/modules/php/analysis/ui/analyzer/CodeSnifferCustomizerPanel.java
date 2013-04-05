@@ -96,7 +96,7 @@ public class CodeSnifferCustomizerPanel extends JPanel {
     private void initComponents() {
 
         standardLabel = new JLabel();
-        standardComboBox = new JComboBox();
+        standardComboBox = new JComboBox<String>();
 
         Mnemonics.setLocalizedText(standardLabel, NbBundle.getMessage(CodeSnifferCustomizerPanel.class, "CodeSnifferCustomizerPanel.standardLabel.text")); // NOI18N
 
@@ -118,7 +118,7 @@ public class CodeSnifferCustomizerPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JComboBox standardComboBox;
+    private JComboBox<String> standardComboBox;
     private JLabel standardLabel;
     // End of variables declaration//GEN-END:variables
 

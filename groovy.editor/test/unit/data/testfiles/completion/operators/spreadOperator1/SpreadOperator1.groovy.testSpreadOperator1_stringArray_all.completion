@@ -127,7 +127,7 @@ METHOD     lastIndexOf(String)             [PUBLIC]   int
 METHOD     lastIndexOf(String, int)        [PUBLIC]   int
 METHOD     lastIndexOf(int)                [PUBLIC]   int
 METHOD     lastIndexOf(int, int)           [PUBLIC]   int
-METHOD     leftShift(Object)                          StringBuilder
+METHOD     leftShift(Object)                          StringBuffer
 METHOD     length()                        [PUBLIC]   int
 METHOD     matches(Pattern)                           boolean
 METHOD     matches(String)                 [PUBLIC]   boolean

@@ -444,7 +444,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         
         private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
         private List<MemberBuilder> memberBuilders = new ArrayList<MemberBuilder>();
-        private List<FriendClassBuilder> friendBuilders = new ArrayList<FriendClassBuilder>();
+        private List<SimpleDeclarationBuilder> friendBuilders = new ArrayList<SimpleDeclarationBuilder>();
         private List<InheritanceBuilder> inheritanceBuilders = new ArrayList<InheritanceBuilder>();
         
         private ClassImpl instance;
@@ -471,7 +471,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             this.memberBuilders.add(builder);
         }
 
-        public void addFriendBuilder(FriendClassBuilder builder) {
+        public void addFriendBuilder(SimpleDeclarationBuilder builder) {
             this.friendBuilders.add(builder);
         }        
         
@@ -479,7 +479,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return memberBuilders;
         }
 
-        public List<FriendClassBuilder> getFriendBuilders() {
+        public List<SimpleDeclarationBuilder> getFriendBuilders() {
             return friendBuilders;
         }
         
@@ -537,9 +537,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         cls.addMember(inst, isGlobal());
                     }
                 }                
-                for (FriendClassBuilder builder : getFriendBuilders()) {
+                for (SimpleDeclarationBuilder builder : getFriendBuilders()) {
                     builder.setScope(cls);
-                    FriendClassImpl inst = builder.create();
+                    CsmFriend inst = (CsmFriend)builder.create();
                     if(inst != null) {
                         cls.addFriend(inst, isGlobal());
                     }
@@ -1195,6 +1195,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
 
         public static class MemberTypedefBuilder extends TypedefBuilder implements CsmObjectBuilder, MemberBuilder {
+
+            public MemberTypedefBuilder(SimpleDeclarationBuilder builder) {
+                super(builder);
+            }
         
             @Override
             public MemberTypedef create() {

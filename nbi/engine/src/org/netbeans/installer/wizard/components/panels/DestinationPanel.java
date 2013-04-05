@@ -333,13 +333,7 @@ public class DestinationPanel extends ErrorMessagePanel {
                             file.getPath());
                 }
                 
-                try {
-                    file = file.getCanonicalFile();
-                } catch (IOException e) {
-                    return StringUtils.format(
-                            component.getProperty(ERROR_CANNOT_CANONIZE_PROPERTY),
-                            filePath);
-                }
+                file = FileUtils.getNormalizedPathFile(file);
                 
                 filePath = file.getAbsolutePath();
                 if (filePath.length() > 45) {

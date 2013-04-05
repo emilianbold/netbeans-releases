@@ -764,14 +764,14 @@ scope Declaration;
                     )* 
                     SEMICOLON                                                   {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
                 |
-                    function_definition_after_declarator[false, false]
+                    function_definition_after_declarator[false, false, false]
                 )
         |
             // greedy_declarator starts init_declarator
             greedy_declarator
             (
                 { /*$greedy_declarator.type.is_function()*/ input.LA(1) != ASSIGNEQUAL }?
-                    function_definition_after_declarator[false, false]
+                    function_definition_after_declarator[false, false, false]
             |
                 // this is a continuation of init_declarator_list 
                 // after greedy_declarator
@@ -1669,8 +1669,8 @@ function_definition:
  * Factoring out a sequence that follows declarator, as it helps disambiguating in context when
  * function_definition conflicts because of decl_specifier
  */
-function_definition_after_declarator[boolean class_late_binding, boolean member_declaration]
-@init                                                                           {if(state.backtracking == 0 && (!class_late_binding || !member_declaration)){action.function_definition_after_declarator(input.LT(1));}}
+function_definition_after_declarator[boolean class_late_binding, boolean member_declaration, boolean standalone]
+@init                                                                           {if(state.backtracking == 0 && !standalone && (!class_late_binding || !member_declaration)){action.function_definition_after_declarator(input.LT(1));}}
     :
         (ASSIGNEQUAL) => 
         ASSIGNEQUAL                                                             {action.function_definition_after_declarator(action.FUNCTION_DEFINITION_AFTER_DECLARATOR__ASSIGNEQUAL, input.LT(0));}
@@ -1681,7 +1681,7 @@ function_definition_after_declarator[boolean class_late_binding, boolean member_
         ) 
         SEMICOLON
     |
-        ({!class_late_binding && member_declaration}?
+        ({!standalone && !class_late_binding && member_declaration}?
             ((COLON) => COLON                                                   {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
                 (
                     ~(RCURLY | LCURLY)                                          {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
@@ -1696,7 +1696,7 @@ function_definition_after_declarator[boolean class_late_binding, boolean member_
             )
         )
     ;
-finally                                                                         {if(state.backtracking == 0 && (!class_late_binding || !member_declaration)){action.end_function_definition_after_declarator(input.LT(0));}}
+finally                                                                         {if(state.backtracking == 0 && !standalone && (!class_late_binding || !member_declaration)){action.end_function_definition_after_declarator(input.LT(0));}}
 
 /*
  * We have a baaad conflict caused by declaration w/o decl_specifier,
@@ -1935,13 +1935,13 @@ simple_member_declaration_or_function_definition[decl_kind kind, boolean class_l
                     )* 
                     SEMICOLON                                                   {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
                 |
-                    function_definition_after_declarator[class_late_binding, true]
+                    function_definition_after_declarator[class_late_binding, true, false]
                 )
         |
             declarator
             (
                 { /*$declarator.type.is_function()*/ (input.LA(1) != ASSIGNEQUAL && (input.LA(1) != COLON || input.LA(0) == RPAREN)) }?
-                    function_definition_after_declarator[class_late_binding, true]
+                    function_definition_after_declarator[class_late_binding, true, false]
             |
                 // this was member_declarator_list
                 constant_initializer? 
