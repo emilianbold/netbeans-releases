@@ -632,6 +632,7 @@ public final class TreeViewTest extends NbTestCase {
         doTestPartialNodeSelection(false);
     }
 
+    @RandomlyFails // NB-Core-Build Unstable: #9953, locally passes
     public void testPartialNodeSelectionLazy() throws Exception {
         doTestPartialNodeSelection(true);
     }
