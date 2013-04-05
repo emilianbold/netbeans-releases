@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.indexing.api.CssIndex;
+import org.netbeans.modules.css.prep.editor.CPUtils;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
@@ -54,79 +55,27 @@ import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
- * Process file/folder changes.
- */
-public final class SassProcessor {
+public final class SassProcessor extends BaseProcessor {
 
     private static final Logger LOGGER = Logger.getLogger(SassProcessor.class.getName());
 
-    private static final String SCSS_EXTENSION = "scss"; // NOI18N
-    private static final String SASS_EXTENSION = "sass"; // NOI18N
-    private static final String CSS_EXTENSION = "css"; // NOI18N
 
-
-    public void process(Project project, FileObject fileObject) {
-        if (fileObject.isData()) {
-            processFile(project, fileObject, true);
-        } else {
-            assert fileObject.isFolder() : "Folder expected: " + fileObject;
-            if (!isEnabled(project)) {
-                // not enabled in this project
-                return;
-            }
-            processFolder(project, fileObject);
-        }
-    }
-
-    private void processFolder(Project project, FileObject fileObject) {
-        assert fileObject.isFolder() : "Folder expected: " + fileObject;
-        for (FileObject child : fileObject.getChildren()) {
-            if (child.isData()) {
-                processFile(project, child, false);
-            } else {
-                processFolder(project, child);
-            }
-        }
-    }
-
-    private void processFile(Project project, FileObject fileObject, boolean checkEnabled) {
-        assert fileObject.isData() : "File expected: " + fileObject;
-        if (!isSassFile(fileObject)) {
-            // not sass file
-            return;
-        }
-        if (checkEnabled
-                && !isEnabled(project)) {
-            // not enabled in this project
-            return;
-        }
-        if (fileObject.isValid()) {
-            fileChanged(project, fileObject);
-        } else {
-            // deleted file
-            fileDeleted(project, fileObject);
-        }
-    }
-
-    private boolean isEnabled(Project project) {
-        if (project == null) {
-            return true;
-        }
+    @Override
+    protected boolean isEnabledInternal(Project project) {
         return SassPreferences.isEnabled(project);
     }
 
-    private boolean isSassFile(FileObject fileObject) {
-        // XXX mime type?
-        String extension = fileObject.getExt().toLowerCase();
-        return SASS_EXTENSION.equals(extension)
-                || SCSS_EXTENSION.equals(extension);
+    @Override
+    protected boolean isSupportedFile(FileObject fileObject) {
+        return CPUtils.SCSS_FILE_MIMETYPE.equals(FileUtil.getMIMEType(fileObject, CPUtils.SCSS_FILE_MIMETYPE));
     }
 
-    private void fileChanged(Project project, FileObject fileObject) {
+    @Override
+    protected void fileChanged(Project project, FileObject fileObject) {
         if (!fileObject.getName().startsWith("_")) { // NOI18N
-            compileFile(fileObject);
+            super.fileChanged(project, fileObject);
             return;
         }
         // it is include
@@ -142,32 +91,21 @@ public final class SassProcessor {
                     // file itself, ignore it
                     continue;
                 }
-                assert isSassFile(referring) : "Sass file expected: " + referring;
-                compileFile(referring);
+                assert isSupportedFile(referring) : "Sass file expected: " + referring;
+                super.fileChanged(project, referring);
             }
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
-    private void compileFile(FileObject fileObject) {
+    @Override
+    protected void compile(Project project, FileObject fileObject) {
         SassExecutable sass = getSass();
         if (sass == null) {
             return;
         }
         sass.compile(fileObject);
-    }
-
-    private void fileDeleted(Project project, FileObject fileObject) {
-        FileObject cssFile = fileObject.getParent().getFileObject(fileObject.getName(), CSS_EXTENSION);
-        if (cssFile != null
-                && cssFile.isValid()) {
-            try {
-                cssFile.delete();
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Cannot delete file", ex);
-            }
-        }
     }
 
     @CheckForNull
