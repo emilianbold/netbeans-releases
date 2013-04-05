@@ -76,4 +76,8 @@ public class DotArrowSubstitutionTestCase extends CompletionBaseTestCase {
     public void testDotToArrowAutoFix_6() throws Exception {
         super.performTest("bug97120.cc", 29, 13, "d.ptr().");
     }
+
+    public void testDotToArrowAutoFix_7() throws Exception {
+        super.performTest("bug97120.cc", 29, 13, "(*pA).");
+    }
 }
