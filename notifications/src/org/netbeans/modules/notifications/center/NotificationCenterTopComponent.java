@@ -54,7 +54,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -69,16 +68,13 @@ import javax.swing.table.TableColumnModel;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.notifications.NotificationImpl;
 import org.netbeans.modules.notifications.NotificationSettings;
-import org.netbeans.modules.notifications.Utils;
 import org.netbeans.swing.etable.ETable;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.QuickSearch;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * Top component which displays something.
@@ -92,7 +88,7 @@ import org.openide.windows.WindowManager;
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "output", openAtStartup = false, position = 123)
 @ActionID(category = "Window", id = "org.netbeans.modules.notifications.NotificationCenterTopComponent")
-@ActionReference(path = "Menu/Window/Tools", position = 650)
+@ActionReference(path = "Menu/Window/Tools", position = 648)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_NotificationCenterAction",
         preferredID = "NotificationCenterTopComponent")
