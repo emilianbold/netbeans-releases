@@ -183,6 +183,8 @@ public class FmtOptions {
     public static final String wrapAfterTernaryOps = "wrapAfterTernaryOps"; //NOI18N
     public static final String wrapAssignOps = "wrapAssignOps"; //NOI18N
     
+    public static final String blankLinesInDeclarations = "blankLinesInDeclarations"; //NOI18N
+    public static final String blankLinesInCode = "blankLinesInCode"; //NOI18N
     public static final String blankLinesBeforePackage = "blankLinesBeforePackage"; //NOI18N
     public static final String blankLinesAfterPackage = "blankLinesAfterPackage"; //NOI18N
     public static final String blankLinesBeforeImports = "blankLinesBeforeImports"; //NOI18N
@@ -460,6 +462,8 @@ public class FmtOptions {
             { wrapAfterTernaryOps, FALSE}, //NOI18N
             { wrapAssignOps, WRAP_NEVER}, //NOI18N
 
+            { blankLinesInDeclarations, "1"}, //NOI18N
+            { blankLinesInCode, "1"}, //NOI18N
             { blankLinesBeforePackage, "0"}, //NOI18N
             { blankLinesAfterPackage, "1"}, //NOI18N
             { blankLinesBeforeImports, "1"}, //NOI18N 
