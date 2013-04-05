@@ -163,10 +163,6 @@ public enum NodeType {
      * The namespace prefix
      */
     namespacePrefixName,
-    /**
-     * syntactic predicate
-     */
-    nsPred,
     operator,
     page,
     pseudoPage,
@@ -219,10 +215,6 @@ public enum NodeType {
      * error recovery rule
      */
     syncToDeclarationsRule,
-    /**
-     * error recovery rule
-     */
-    syncTo_IDENT_RBRACKET_LBRACE,
     
     syncTo_RBRACE,
     syncTo_SEMI,
@@ -332,29 +324,15 @@ public enum NodeType {
      * "@color: #4D926F;"
      */
     cp_variable_declaration,
-    
-    /**
-     * color: "(@base-color * 3);"
-     */
-    less_function,
-    
+   
     /**
      * Same as expression, but allows more operators.
      * 
      * color: ("@base-color * 3");
      */
-    cp_expression,
-    
-    cp_additionExp,
-    cp_multiplyExp,
-    cp_atomExp,
-    
-    cp_term,
-    
-    /**
-     * Less functions operators.
-     */
-    less_expression_operator,
+    cp_math_expression,
+    cp_math_expressions,
+    cp_math_expression_atom,
     
     /**
      * ".box-shadow (@x: 0, @y: 0, @blur: 1px, @color: #000)"
@@ -378,14 +356,11 @@ public enum NodeType {
     less_function_in_condition,
     less_fn_name,
     
-    less_rule,
-    
     cp_mixin_call_args,
     cp_mixin_name,
     
     sass_selector_interpolation_expression,
     sass_declaration_interpolation_expression,
-    sass_mq_interpolation_expression,
     
     sass_interpolation_expression_var,
     
@@ -399,37 +374,31 @@ public enum NodeType {
     sass_else,
     sass_for,
     sass_each,
-    sass_each_list,
     sass_while,
     sass_control_block,
     sass_control_expression,
-    
-//    sass_declaration_property_value_interpolation_expression,
     
     sass_function_declaration,
     sass_function_name,
     sass_function_return,
     
-    cp_variable_value,
-    
     sass_content,
     
     cp_mixin_call_arg,
     
-    sass_control_expression_condition,
-    
-    cp_full_expression_atom,
-    cp_full_expression,
-    cp_full_expression_operator,
+    cp_expression_atom,
+    cp_expression,
+    cp_expression_operator,
+    cp_expression_list,
     
     cp_propertyValue,
             
-    cp_expression_list,
+    at_rule,
     
-//    cp_mixin,
-    
-    at_rule
+    propertyDeclaration,
 
+    fnAttributes
+    
     ;
     
     

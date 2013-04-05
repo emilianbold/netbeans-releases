@@ -208,7 +208,8 @@ public class HintMetadata {
     public enum Options {
         NON_GUI,
         QUERY,
-        NO_BATCH;
+        NO_BATCH,
+        HEAVY;
 
         public static Set<Options> fromHintOptions(Hint.Options... options) {
             Set<Options> result = new HashSet<Options>();

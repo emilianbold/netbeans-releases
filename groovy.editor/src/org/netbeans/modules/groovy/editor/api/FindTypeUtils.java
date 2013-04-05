@@ -504,7 +504,7 @@ public final class FindTypeUtils {
             return OffsetRange.NONE;
         }
 
-        OffsetRange range = ASTUtils.getNextIdentifierByName(doc, ElementUtils.getTypeNameWithoutPackage(node), getOffset(node, doc));
+        OffsetRange range = ASTUtils.getNextIdentifierByName(doc, ElementUtils.getTypeName(node), getOffset(node, doc));
         if (range.containsInclusive(cursorOffset)) {
             return range;
         }

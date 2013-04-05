@@ -45,17 +45,11 @@ package org.netbeans.modules.bugtracking.issuetable;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.JComponent;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
-import org.netbeans.modules.bugtracking.QueryImpl;
-import org.netbeans.modules.bugtracking.issuetable.IssueTable.IssueTableProvider;
-import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
@@ -65,11 +59,12 @@ import org.openide.windows.TopComponent;
  * @author Tomas Stupka
  */
 class FindInQuerySupport {
-    private QueryImpl query;
     private final FindInQueryBar bar;
     private final AncestorListener ancestorListener;
+    private final IssueTable issueTable;
 
-    private FindInQuerySupport() {
+    private FindInQuerySupport(IssueTable issueTable) {
+        this.issueTable = issueTable;
         bar = new FindInQueryBar(this);
         bar.setVisible(false);
         
@@ -111,12 +106,8 @@ class FindInQuerySupport {
         };
     }
 
-    static FindInQuerySupport create() {
-        return new FindInQuerySupport();
-    }
-
-    void setQuery(QueryImpl query) {
-        this.query = query;
+    static FindInQuerySupport create(IssueTable issueTable) {
+        return new FindInQuerySupport(issueTable);
     }
 
     FindInQueryBar getFindBar() {
@@ -128,14 +119,12 @@ class FindInQuerySupport {
     }
 
     void reset() {
-        IssueTable issueTable = getIssueTable();
         if(issueTable != null) {
             issueTable.resetFilterBySummary();
         }
     }
 
     protected void updatePattern() {        
-        IssueTable issueTable = getIssueTable();
         if(issueTable != null) {
             issueTable.setFilterBySummary(bar.getText(), bar.getRegularExpression(), bar.getWholeWords(), bar.getMatchCase());
         }
@@ -147,7 +136,6 @@ class FindInQuerySupport {
     }
 
     protected void switchHighlight(boolean on) {
-        IssueTable issueTable = getIssueTable();
         if(issueTable != null) {
             issueTable.switchFilterBySummaryHighlight(on);
         }
@@ -156,7 +144,7 @@ class FindInQuerySupport {
     private class FindAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if(getIssueTable() == null) {
+            if(issueTable == null) {
                 return; 
             }
             if (bar.isVisible()) {
@@ -167,14 +155,6 @@ class FindInQuerySupport {
             }
             bar.requestFocusInWindow();
         }
-    }
-
-    private IssueTable getIssueTable() {
-        QueryController controller = query.getController();
-        if((controller instanceof IssueTableProvider)) {
-            return ((IssueTableProvider)controller).getIssueTable();
-        } 
-        return null;
     }
 
 }

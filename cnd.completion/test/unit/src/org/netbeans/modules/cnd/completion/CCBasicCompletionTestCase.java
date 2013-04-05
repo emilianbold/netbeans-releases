@@ -59,6 +59,12 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         super(testName, true);
     }
 
+    public void test208053() throws Exception {
+        // IZ#208053: Method completion replaces uint64_t as unsigned long int
+        String text = "template <typename T> MyClass<T>::";
+        super.performTest("test208053.cpp", 9, 1, text);
+    }
+    
     public void test142903_1() throws Exception {
         // IZ#142903: Code completion does not work immediately after "{" or "}"
         super.performTest("file.cc", 44, 35);
@@ -91,18 +97,30 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     public void testNoAbbrevInCompletion() throws Exception {
         super.performTest("file.cc", 43, 5, "a.f");
     }
-
-    public void testEmptyDerefCompletion() throws Exception {
+    
+    public void testEmptyDerefCompletion_1() throws Exception {
         super.performTest("file.cc", 39, 5, " &");
+    }
+    
+    public void testEmptyDerefCompletion_2() throws Exception {
         super.performTest("file.cc", 39, 5, "pointer = &");
+    }
+    
+    public void testEmptyDerefCompletion_3() throws Exception {
         super.performTest("file.cc", 39, 5, "foo(&)", -1);
-    }
+    }    
 
-    public void testEmptyPtrCompletion() throws Exception {
+    public void testEmptyPtrCompletion_1() throws Exception {
         super.performTest("file.cc", 39, 5, "*");
-        super.performTest("file.cc", 39, 5, "pointer = *");
-        super.performTest("file.cc", 39, 5, "foo(*)", -1);
     }
+    
+    public void testEmptyPtrCompletion_2() throws Exception {
+        super.performTest("file.cc", 39, 5, "pointer = *");
+    }
+    
+    public void testEmptyPtrCompletion_3() throws Exception {
+        super.performTest("file.cc", 39, 5, "foo(*)", -1);
+    }    
 
     public void testCompletionInEmptyFile() throws Exception {
         super.performTest("empty.cc", 1,1);
@@ -328,11 +346,15 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         performTest("check_macro.cpp", 11, 17);
     }
 
-    public void testIZ159424() throws Exception {
+    public void testIZ159424_1() throws Exception {
         // IZ#159423: Code Completion works wrongly in macros
         performTest("check_macro.cpp", 13, 14);
-        performTest("check_macro.cpp", 13, 18, ".v");
     }
+    
+    public void testIZ159424_2() throws Exception {
+        // IZ#159423: Code Completion works wrongly in macros
+        performTest("check_macro.cpp", 13, 18, ".v");
+    }    
 
     public void testIZ166620() throws Exception {
         // IZ#166620 : Code comlpetion does not show local variable inside for operator

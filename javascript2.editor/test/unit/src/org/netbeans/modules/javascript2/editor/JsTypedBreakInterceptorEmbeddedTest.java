@@ -50,7 +50,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
 
 public class JsTypedBreakInterceptorEmbeddedTest extends JsTestBase {

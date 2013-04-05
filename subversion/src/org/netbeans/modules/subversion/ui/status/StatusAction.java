@@ -73,6 +73,11 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
  * @author Petr Kuzel
  */
 public class StatusAction  extends ContextAction {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/show_changes.png"; //NOI18N
+
+    public StatusAction () {
+        super(ICON_RESOURCE);
+    }
     
     private static final int enabledForStatus = FileInformation.STATUS_MANAGED;
     

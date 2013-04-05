@@ -264,6 +264,7 @@ public class ExplorerPanelTest extends NbTestCase {
         
     }
 
+    @RandomlyFails // NB-Core-Build #9914: Unstable , locally passes
     public void testPasteAction () throws Exception {
         TestNode enabledNode = new TestNode(true, true, true);
         TestNode disabledNode = new TestNode(false, false, false);

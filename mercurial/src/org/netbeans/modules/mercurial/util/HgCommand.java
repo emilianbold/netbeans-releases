@@ -543,6 +543,9 @@ public class HgCommand {
                     throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_MERGE_TEXT"));
                 } else if (isMergeAbortUncommittedMsg(list.get(0))) {
                     throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_COMMIT_TEXT"));
+                } else if (isErrorAbort(list.get(list.size() -1))) {
+                    handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"),
+                            OutputLogger.getLogger(repository.getAbsolutePath()));
                 }
             }
         }

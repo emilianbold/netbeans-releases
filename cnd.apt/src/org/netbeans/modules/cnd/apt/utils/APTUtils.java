@@ -91,6 +91,9 @@ import org.openide.util.CharSequences;
  */
 public class APTUtils {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.apt"); // NOI18N
+    
+    public static final String SCOPE = "::"; // NOI18N
+            
 
     static {
         // command line param has priority for logging
@@ -127,6 +130,8 @@ public class APTUtils {
     public static String getAPTTokenName(int type) {
         if (type == APTTokenTypes.IDENT) {
             return "ID"; // NOI18N
+        } else if (type == EOF_TOKEN2.getType()) {
+            return "EOF3"; // NOI18N
         }
         return APTExprParser._tokenNames[type];
     }
@@ -796,6 +801,10 @@ public class APTUtils {
             return this == obj;
         }
 
+        @Override
+        public String toString() {
+            return "<EOF>"; // NOI18N
+        }        
     }
 
 
@@ -860,7 +869,7 @@ public class APTUtils {
 
         @Override
         public String getText() {
-            return "<EOF>"; // NOI18N
+            return "<EOF3>"; // NOI18N
         }
 
         @Override
@@ -884,6 +893,10 @@ public class APTUtils {
             return this == obj;
         }
 
+        @Override
+        public String toString() {
+            return "<EOF3>"; // NOI18N
+        }
     }
 
 }

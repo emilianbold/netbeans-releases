@@ -65,6 +65,12 @@ import java.io.File;
  */
 public class SearchHistoryAction extends AbstractSystemAction  {
 
+    private static final String ICON_RESOURCE = "org/netbeans/modules/versioning/system/cvss/resources/icons/search_history.png"; //NOI18N
+
+    public SearchHistoryAction () {
+        super(ICON_RESOURCE);
+    }
+    
     protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_SearchHistory"; // NOI18N
     }

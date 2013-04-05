@@ -227,4 +227,30 @@ final class IntMap {
         }
         return sb.toString();
     }
+
+    /**
+     * Decrement keys in the map. Entries with negative keys will be removed.
+     *
+     * @param decrement Value the keys should be decremented by. Must be zero or
+     * higher.
+     */
+    public void decrementKeys(int decrement) {
+
+        if (decrement < 0) {
+            throw new IllegalArgumentException();
+        }
+
+        int shift = Arrays.binarySearch(keys, decrement);
+        if (shift < 0) {
+            shift = -shift - 1;
+        }
+
+        for (int i = shift; i <= last; i++) {
+            keys[i - shift] = keys[i] - decrement;
+            vals[i - shift] = vals[i];
+        }
+
+        Arrays.fill(keys, last - shift + 1, last + 1, Integer.MAX_VALUE);
+        last = last - shift;
+    }
 }

@@ -253,10 +253,6 @@ public class JiraUpdater {
             return Collections.emptyList();
         }
         @Override
-        public Lookup getLookup(Object r) {
-            return Lookup.EMPTY;
-        }
-        @Override
         public void removePropertyChangeListener(Object r, PropertyChangeListener listener) {
             // do nothing
         }

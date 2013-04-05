@@ -65,7 +65,7 @@ public final class FailedFilesPanel extends JPanel {
 
     private static final long serialVersionUID = 146876432354L;
 
-    private final ListModel failedFilesListModel;
+    private final ListModel<String> failedFilesListModel;
 
 
     private FailedFilesPanel(boolean local, List<String> failedFiles) {
@@ -122,7 +122,7 @@ public final class FailedFilesPanel extends JPanel {
 
         titleLabel = new JLabel();
         failedFilesScrollPane = new JScrollPane();
-        failedFilesList = new JList();
+        failedFilesList = new JList<String>();
 
         Mnemonics.setLocalizedText(titleLabel, "TITLE"); // NOI18N
 
@@ -154,14 +154,14 @@ public final class FailedFilesPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JList failedFilesList;
+    private JList<String> failedFilesList;
     private JScrollPane failedFilesScrollPane;
     private JLabel titleLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
 
-    private static final class FailedFilesListModel implements ListModel {
+    private static final class FailedFilesListModel implements ListModel<String> {
 
         private final List<String> failedFiles;
 
@@ -176,7 +176,7 @@ public final class FailedFilesPanel extends JPanel {
         }
 
         @Override
-        public Object getElementAt(int index) {
+        public String getElementAt(int index) {
             return failedFiles.get(index);
         }
 

@@ -96,11 +96,6 @@ public class TestRepositoryProvider extends RepositoryProvider<TestRepository, T
     }
 
     @Override
-    public Lookup getLookup(TestRepository r) {
-        return r.getLookup();
-    }
-
-    @Override
     public Collection<TestIssue> simpleSearch(TestRepository r, String criteria) {
         return (Collection<TestIssue>) r.simpleSearch(criteria);
     }

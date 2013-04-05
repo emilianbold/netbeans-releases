@@ -210,11 +210,6 @@ public class APITestConnector extends BugtrackingConnector {
         }
 
         @Override
-        public Lookup getLookup(APITestRepository r) {
-            return r.getLookup();
-        }
-
-        @Override
         public void removePropertyChangeListener(APITestRepository r, PropertyChangeListener listener) {
             r.removePropertyChangeListener(listener);
         }

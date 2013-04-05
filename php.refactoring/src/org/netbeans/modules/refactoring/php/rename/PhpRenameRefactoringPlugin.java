@@ -172,7 +172,7 @@ public class PhpRenameRefactoringPlugin extends PhpWhereUsedQueryPlugin {
             if (!newName.equals(declarationFileObject.getName()) && renameDeclarationFile.renameDeclarationFile()) {
                 try {
                     FileLock lock = declarationFileObject.lock();
-                    declarationFileObject.rename(lock, newName, declarationFileObject.getExt());
+                    declarationFileObject.rename(lock, renameDeclarationFile.adjustName(newName), declarationFileObject.getExt());
                     lock.releaseLock();
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);

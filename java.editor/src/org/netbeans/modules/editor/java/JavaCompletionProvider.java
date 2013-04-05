@@ -453,7 +453,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     int startPos = lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset;
                     List<Tree> argTypes = getArgumentsUpToPos(env, mi.getArguments(), (int)sourcePositions.getEndPosition(root, mi.getMethodSelect()), startPos, false);
                     if (argTypes != null) {
-                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                        controller.toPhase(Phase.RESOLVED);
                         TypeMirror[] types = new TypeMirror[argTypes.size()];
                         int j = 0;
                         for (Tree t : argTypes)
@@ -532,7 +532,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     int pos = (int)sourcePositions.getEndPosition(root, nc.getIdentifier());
                     List<Tree> argTypes = getArgumentsUpToPos(env, nc.getArguments(), pos, startPos, false);
                     if (argTypes != null) {
-                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                        controller.toPhase(Phase.RESOLVED);
                         TypeMirror[] types = new TypeMirror[argTypes.size()];
                         int j = 0;
                         for (Tree t : argTypes)
@@ -2614,6 +2614,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
             boolean isConst = parent.getKind() == Tree.Kind.VARIABLE && ((VariableTree)parent).getModifiers().getFlags().containsAll(EnumSet.of(FINAL, STATIC));
+            if (et.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+                et = ((AnnotatedTypeTree)et).getUnderlyingType();
+                exPath = new TreePath(exPath, et);
+            }
             if ((parent == null || parent.getKind() != Tree.Kind.PARENTHESIZED) &&
                     (et.getKind() == Tree.Kind.PRIMITIVE_TYPE || et.getKind() == Tree.Kind.ARRAY_TYPE || et.getKind() == Tree.Kind.PARAMETERIZED_TYPE)) {
                 TypeMirror tm = controller.getTrees().getTypeMirror(exPath);
@@ -3483,10 +3487,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                 }                
             } else {
+                String subwordsPattern = null;
+                if (!env.isCamelCasePrefix() && Utilities.isSubwordSensitive()) {
+                    subwordsPattern = Utilities.createSubwordsPattern(prefix);
+                }
                 ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
                     Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
+                    subwordsPattern != null ? ClassIndex.NameKind.REGEXP :
                     Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
-                Set<ElementHandle<TypeElement>> declaredTypes = controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix != null ? prefix : EMPTY, kind, EnumSet.allOf(ClassIndex.SearchScope.class));
+                Set<ElementHandle<TypeElement>> declaredTypes = controller.getClasspathInfo().getClassIndex().getDeclaredTypes(subwordsPattern != null ? subwordsPattern : prefix != null ? prefix : EMPTY, kind, EnumSet.allOf(ClassIndex.SearchScope.class));
                 results.ensureCapacity(results.size() + declaredTypes.size());
                 for(ElementHandle<TypeElement> name : declaredTypes) {
                     if (excludeHandles != null && excludeHandles.contains(name) || isAnnonInner(name))
@@ -3506,10 +3515,15 @@ public class JavaCompletionProvider implements CompletionProvider {
             Trees trees = controller.getTrees();
             Scope scope = env.getScope();
             if (prefix != null && prefix.length() > 2 && baseType.getTypeArguments().isEmpty()) {
+                String subwordsPattern = null;
+                if (!env.isCamelCasePrefix() && Utilities.isSubwordSensitive()) {
+                    subwordsPattern = Utilities.createSubwordsPattern(prefix);
+                }
                 ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
                     Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
+                    subwordsPattern != null ? ClassIndex.NameKind.REGEXP :
                     Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
-                for(ElementHandle<TypeElement> handle : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+                for(ElementHandle<TypeElement> handle : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(subwordsPattern != null ? subwordsPattern : prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
                     TypeElement te = handle.resolve(controller);
                     if (te != null && trees.isAccessible(scope, te) && types.isSubtype(types.getDeclaredType(te), baseType))
                         subtypes.add(types.getDeclaredType(te));
@@ -4297,7 +4311,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 for (TypeMirror smartType : smartTypes) {
                     if (smartType.getKind() == TypeKind.DECLARED) {
                         ExecutableType descriptorType = tu.getDescriptorType((DeclaredType)smartType);
-                        if (descriptorType != null && types.isSubsignature((ExecutableType)type, descriptorType)) {
+                        if (descriptorType != null && types.isSubsignature((ExecutableType)type, descriptorType)
+                                && types.isSubtype(((ExecutableType)type).getReturnType(), descriptorType.getReturnType())) {
                             return true;
                         }
                     }

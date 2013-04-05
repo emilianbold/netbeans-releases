@@ -56,6 +56,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -154,6 +155,7 @@ public class DialogDisplayer128399Test extends NbTestCase {
     /** Tests issue #138024: "Yes" no longer marked as default button on Delete dialog
      * 
      */
+    @RandomlyFails // NB-Core-Build Unstable: #9939, #9953
     public void testNotifyDescriptorConfirmation () {
         final JTextField testComponent = new JTextField ("for-test-only");
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation (

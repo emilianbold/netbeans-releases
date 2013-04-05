@@ -47,6 +47,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.FontMetrics;
 import java.awt.KeyboardFocusManager;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -435,6 +436,17 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel {
         return Math.min(350, maxWidth);
     }
 
+    private static String dispalyNameFor(Category category) {
+            if (null != category.getCommandPrefix()) {
+                return NbBundle.getMessage(AbstractQuickSearchComboBar.class,
+                        "LBL_CategoryAndCommandPrefix", //NOI18N
+                        category.getDisplayName(),
+                        category.getCommandPrefix());
+            } else {
+                return category.getDisplayName();
+            }
+        }
+
     /**
      * Document filter that checks invalid input. See bug 217364.
      */
@@ -543,7 +555,7 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel {
 
         public CategoryCheckBoxMenuItem(final Category category,
                 final Set<Category> evalCats) {
-            super(category.getDisplayName(), evalCats.contains(category));
+            super(dispalyNameFor(category), evalCats.contains(category));
             this.category = category;
             this.evalCats = evalCats;
             setTooltipText();
@@ -611,8 +623,25 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel {
             String bundleKey = selected
                     ? "MSG_RightClickEnablesAllOthers" //NOI18N
                     : "MSG_RightClickDisablesOthers";  //NOI18N
-            setToolTipText(NbBundle.getMessage(
+            StringBuilder tooltip = new StringBuilder("<html>");        //NOI18N
+            tooltip.append(NbBundle.getMessage(
                     AbstractQuickSearchComboBar.class, bundleKey));
+            if (null != category.getCommandPrefix()) {
+                tooltip.append("<br/>");
+                tooltip.append(NbBundle.getMessage(
+                        AbstractQuickSearchComboBar.class,
+                        "LBL_TooltipCommandPrefix", //NOI18N
+                        category.getCommandPrefix()));
+            }
+            tooltip.append("</html>");                                  //NOI18N
+            setToolTipText(tooltip.toString());
+        }
+
+        @Override
+        public Point getToolTipLocation(MouseEvent event) {
+            Point p = new Point(((event.getX() - 25) / 5) * 5, // repaint every
+                    ((event.getY() + 15) / 5) * 5);            // 5 pixels
+            return p;
         }
     }
 

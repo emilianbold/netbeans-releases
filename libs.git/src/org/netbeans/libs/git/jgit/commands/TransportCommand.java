@@ -72,6 +72,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  */
 abstract class TransportCommand extends GitCommand {
     private static final String PROP_ENV_GIT_SSH = "GIT_SSH"; //NOI18N
+    private static final String PROP_GIT_SSH_SYSTEM_CLIENT = "versioning.git.library.useSystemSSHClient"; //NOI18N
     private CredentialsProvider credentialsProvider;
     private final String remote;
     private static final Logger LOG = Logger.getLogger(TransportCommand.class.getName());
@@ -128,6 +129,9 @@ abstract class TransportCommand extends GitCommand {
         SystemReader original = SystemReader.getInstance();
         String externalTool = original.getenv(PROP_ENV_GIT_SSH);
         boolean replace = externalTool != null;
+        if ("true".equals(System.getProperty(PROP_GIT_SSH_SYSTEM_CLIENT, "false"))) { // NOI18N
+            replace = false;
+        }
         try {
             if (replace) {
                 LOG.log(Level.WARNING, "{0} set to {1}, ignoring and using the default implementation via JSch", new Object[] { PROP_ENV_GIT_SSH, externalTool }); //NOI18N

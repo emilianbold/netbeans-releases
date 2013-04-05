@@ -490,7 +490,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
     private void initComponents() {
 
         configScrollPane = new javax.swing.JScrollPane();
-        configList = new javax.swing.JList();
+        configList = new javax.swing.JList<ConfigManager.Configuration>();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         nameLabel = new javax.swing.JLabel();
@@ -604,7 +604,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
-    private javax.swing.JList configList;
+    private javax.swing.JList<ConfigManager.Configuration> configList;
     private javax.swing.JScrollPane configScrollPane;
     private javax.swing.JPanel configurationPanelHolder;
     private javax.swing.JScrollPane configurationPanelScrollPane;
@@ -633,21 +633,22 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         return new HelpCtx("org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel"); // NOI18N
     }
 
-    public static class ConfigListRenderer extends JLabel implements ListCellRenderer, UIResource {
-        private static final long serialVersionUID = 3196531352192214602L;
+    public static class ConfigListRenderer extends JLabel implements ListCellRenderer<ConfigManager.Configuration>, UIResource {
+
+        private static final long serialVersionUID = 468768321568787L;
+
 
         public ConfigListRenderer() {
             setOpaque(true);
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends ConfigManager.Configuration> list, ConfigManager.Configuration value, int index, boolean isSelected, boolean cellHasFocus) {
             setName("ComboBox.listRenderer"); // NOI18N
             Color errorColor = UIManager.getColor("nb.errorForeground"); // NOI18N
             boolean cfgValid = true;
             if (value != null) {
-                assert value instanceof ConfigManager.Configuration;
-                ConfigManager.Configuration cfg = (ConfigManager.Configuration) value;
+                ConfigManager.Configuration cfg = value;
                 setText(cfg.getDisplayName());
                 cfgValid = cfg.isValid();
             }
@@ -669,8 +670,9 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         }
     }
 
-    public static final class ConfigListModel extends AbstractListModel {
-        private static final long serialVersionUID = -1945188556310432557L;
+    public static final class ConfigListModel extends AbstractListModel<Configuration> {
+
+        private static final long serialVersionUID = -546879865427974L;
 
         private final List<Configuration> data = new ArrayList<Configuration>();
 

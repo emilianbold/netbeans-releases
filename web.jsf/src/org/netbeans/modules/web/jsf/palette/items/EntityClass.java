@@ -116,25 +116,28 @@ public abstract class EntityClass {
     }
    
     public boolean handleTransfer(JTextComponent targetComponent) {
-            try {
-                jsfLibrariesSupport = JsfLibrariesSupport.get(targetComponent);
-                jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.HTML, DefaultLibraryInfo.JSF_CORE);
-                Caret caret = targetComponent.getCaret();
-                int position0 = Math.min(caret.getDot(), caret.getMark());
-                int position1 = Math.max(caret.getDot(), caret.getMark());
-                int len = targetComponent.getDocument().getLength() - position1;
-                boolean containsFView = targetComponent.getText(0, position0).contains("<f:view>")
-                        && targetComponent.getText(position1, len).contains("</f:view>");
-                String body = createBody(targetComponent, !containsFView);
-                JSFPaletteUtilities.insert(body, targetComponent);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-                return false;
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
+        try {
+            jsfLibrariesSupport = PaletteUtils.getJsfLibrariesSupport(targetComponent);
+            if (jsfLibrariesSupport == null) {
                 return false;
             }
-        
+            Caret caret = targetComponent.getCaret();
+            int position0 = Math.min(caret.getDot(), caret.getMark());
+            int position1 = Math.max(caret.getDot(), caret.getMark());
+            int len = targetComponent.getDocument().getLength() - position1;
+            boolean containsFView = targetComponent.getText(0, position0).contains("<f:view>")
+                    && targetComponent.getText(position1, len).contains("</f:view>");
+            String body = createBody(targetComponent, !containsFView);
+            JSFPaletteUtilities.insert(body, targetComponent);
+            jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.HTML, DefaultLibraryInfo.JSF_CORE);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+            return false;
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+            return false;
+        }
+
         return true;
     }
     

@@ -114,6 +114,12 @@ class HeapStorage implements Storage {
     public boolean isClosed() {
         return closed;  //To change body of implemented methods use File | Settings | File Templates.
     }
+
+    @Override
+    public synchronized void shiftStart(int byteOffset) {
+        size -= byteOffset;
+        System.arraycopy(bytes, byteOffset, bytes, 0, size);
+    }
  
     private class HeapBufferResource implements BufferResource<ByteBuffer> {
 

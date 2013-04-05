@@ -55,14 +55,15 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -158,7 +159,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                                     highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                                 }
                             }
-                        } else if (object.isDeclared() && !"prototype".equals(object.getName()) && !object.isAnonymous()) {
+                        } else if (object.isDeclared() && !ModelUtils.PROTOTYPE.equals(object.getName()) && !object.isAnonymous()) {
                             if((object.getOccurrences().isEmpty()
                                     || (object.getOccurrences().size() == 1 && object.getOccurrences().get(0).getOffsetRange().equals(object.getDeclarationName().getOffsetRange())))
                                     && object.getModifiers().contains(Modifier.PRIVATE)) {
@@ -204,7 +205,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                                 // some virtual variables (like arguments) doesn't have to be declared, but are in the model
                                 highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.UNUSED_SET);
                             }
-                        } else if (object instanceof JsObjectImpl && !"arguments".equals(object.getName())) {   // NOI18N
+                        } else if (object instanceof JsObjectImpl && !ModelUtils.ARGUMENTS.equals(object.getName())) {   // NOI18N
                             if (object.getOccurrences().size() <= ((JsObjectImpl)object).getCountOfAssignments()) {
                                 // probably is used only on the left site => is unused
                                 if (object.getDeclarationName().getOffsetRange().getLength() > 0) {

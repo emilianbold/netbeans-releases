@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -59,6 +59,7 @@ import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
@@ -116,16 +117,17 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
             serverInstance.addChangeListener(WeakListeners.change(this, serverInstance));
             instanceContent.add(new RefreshModulesCookie() {
                 @Override
-                public void refresh() {
-                    refresh(null, null);
+                public RequestProcessor.Task refresh() {
+                    return refresh(null, null);
                 }
 
                 @Override
-                public void refresh(String expected, String unexpected) {
+                public RequestProcessor.Task refresh(String expected, String unexpected) {
                     Children children = getChildren();
                     if(children instanceof Refreshable) {
                         ((Refreshable) children).updateKeys();
                     }
+                    return null;
                 }
             });
         }

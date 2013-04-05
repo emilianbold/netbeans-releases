@@ -50,7 +50,7 @@ import javax.swing.text.JTextComponent;
 
 public class ListFocusTraversalPolicy extends FocusTraversalPolicy {
 
-    private final List<Component> focusList = new ArrayList<Component>();
+    private final List<Component> focusList = new ArrayList<>();
     public ListFocusTraversalPolicy(List<Component> focusList) {
         this.focusList.addAll(focusList);
     }

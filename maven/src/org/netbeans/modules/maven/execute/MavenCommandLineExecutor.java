@@ -50,6 +50,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -73,6 +74,7 @@ import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.cos.CosChecker;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.cmd.Constructor;
 import org.netbeans.modules.maven.execute.cmd.ShellConstructor;
@@ -101,7 +103,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 
     private static final String KEY_UUID = "NB_EXEC_MAVEN_PROCESS_UUID"; //NOI18N
 
-    private ProgressHandle handle;
+    private final ProgressHandle handle;
     private Process process;
     private String processUUID;
     private Process preProcess;
@@ -183,6 +185,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 //                ioput.getOut().println(key + ":" + env.get(key));
 //            }
             ProcessBuilder builder = constructBuilder(clonedConfig, ioput);
+            printCoSWarning(clonedConfig, ioput);
             processUUID = UUID.randomUUID().toString();
             builder.environment().put(KEY_UUID, processUUID);
             process = builder.start();
@@ -452,11 +455,18 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             //only relevant display when using the non-default maven installation.
             display.append(Utilities.escapeParameters(new String[] {"M2_HOME=" + mavenHome.getAbsolutePath()})).append(' '); // NOI18N
         }
-        
-        List<String> command = builder.command();
+
+        //very hacky here.. have a way to remove
+        List<String> command = new ArrayList<String>(builder.command());
+        for (Iterator<String> it = command.iterator(); it.hasNext();) {
+            String s = it.next();
+            if (s.startsWith("-D" + CosChecker.MAVENEXTCLASSPATH + "=") || s.startsWith("-D" + CosChecker.NETBEANS_PROJECT_MAPPINGS + "=")) {
+                it.remove();
+            }
+        }
         display.append(Utilities.escapeParameters(command.toArray(new String[command.size()])));
         printGray(ioput, display.toString());
-
+        
         return builder;
     }
 
@@ -507,6 +517,17 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             });
         } else {
             ioput.getErr().println(x.getMessage());
+        }
+    }
+
+    private void printCoSWarning(BeanRunConfig clonedConfig, InputOutput ioput) {
+        if (clonedConfig.getProperties().containsKey(CosChecker.NETBEANS_PROJECT_MAPPINGS)) {
+            printGray(ioput, "Running NetBeans Compile On Save execution. Phase execution is skipped and output directories of dependency projects (with Compile on Save turned on) will be used instead of their jar artifacts.");
+            File mvnHome = EmbedderFactory.getEffectiveMavenHome();
+            String version = MavenSettings.getCommandLineMavenVersion(mvnHome);
+            if (version != null && version.startsWith("2")) {
+                printGray(ioput, "WARNING: Using Maven 2.x for execution, NetBeans cannot establish links between current project and output directories of dependency projects with Compile on Save turned on. Only works with Maven 3.0+.");
+            }
         }
     }
 

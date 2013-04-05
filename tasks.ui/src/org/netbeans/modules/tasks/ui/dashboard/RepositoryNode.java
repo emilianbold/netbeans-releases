@@ -144,7 +144,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
             btnSearch.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_SearchInRepo")); //NOI18N
             panel.add(btnSearch, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
 
-            btnAddQuery = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/query.png", true), new CreateQueryAction(this)); //NOI18N
+            btnAddQuery = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_query.png", true), new CreateQueryAction(this)); //NOI18N
             btnAddQuery.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_CreateQuery")); //NOI18N
             panel.add(btnAddQuery, new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
             

@@ -106,7 +106,7 @@ public class PluginPropertyUtils {
      * @param expressionProperty expression property that once defined (and plugin configuration is omited) is used. only value, no ${}
      */
     public static @CheckForNull String getPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal, @NullAllowed String expressionProperty) {
-        NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
+        NbMavenProjectImpl project = prj instanceof NbMavenProjectImpl ? (NbMavenProjectImpl)prj : prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
         return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, simpleProperty(parameter), goal, simpleDefaultProperty(expressionProperty));
     }    
@@ -182,7 +182,7 @@ public class PluginPropertyUtils {
      */
     public static <T> T getPluginPropertyBuildable(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, 
             @NullAllowed String goal, @NonNull ConfigurationBuilder<T> builder) {
-        NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
+        NbMavenProjectImpl project = prj instanceof NbMavenProjectImpl ? (NbMavenProjectImpl)prj : prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
         return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, builder, goal, null);
     }
@@ -205,7 +205,7 @@ public class PluginPropertyUtils {
      * current project and returns it's value if so, otherwise null
      */
     public static @CheckForNull String getReportPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String report) {
-        NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
+        NbMavenProjectImpl project = prj instanceof NbMavenProjectImpl ? (NbMavenProjectImpl)prj : prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
         return getReportPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, simpleProperty(property), report);
     }
@@ -412,7 +412,7 @@ public class PluginPropertyUtils {
      * @param singleproperty - list's single value element (eg. "sourceRoot")
      */
     public static @CheckForNull String[] getPluginPropertyList(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
-        NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
+        NbMavenProjectImpl project = prj instanceof NbMavenProjectImpl ? (NbMavenProjectImpl)prj : prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
         return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, listProperty(multiproperty, singleproperty), goal, null);
     }
@@ -434,7 +434,7 @@ public class PluginPropertyUtils {
      * @param singleproperty - list's single value element (eg. "sourceRoot")
      */
     public static @CheckForNull String[] getReportPluginPropertyList(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
-        NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
+        NbMavenProjectImpl project = prj instanceof NbMavenProjectImpl ? (NbMavenProjectImpl)prj : prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
         return getReportPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, listProperty(multiproperty, singleproperty), goal);
     }
@@ -459,7 +459,7 @@ public class PluginPropertyUtils {
      * @return properties
      */
     public static @CheckForNull Properties getPluginPropertyParameter(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String propertyParameter, @NullAllowed String goal) {
-        NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
+        NbMavenProjectImpl project = prj instanceof NbMavenProjectImpl ? (NbMavenProjectImpl)prj : prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
         return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, propertiesBuilder(propertyParameter), goal, null);
     }
@@ -524,7 +524,7 @@ public class PluginPropertyUtils {
      * @since 2.57
      */
     public static @NonNull ExpressionEvaluator createEvaluator(@NonNull Project project) {
-        NbMavenProjectImpl prj = project.getLookup().lookup(NbMavenProjectImpl.class);
+        NbMavenProjectImpl prj = project instanceof NbMavenProjectImpl ? (NbMavenProjectImpl)project : project.getLookup().lookup(NbMavenProjectImpl.class);
         assert prj != null;
         MavenProject mvnprj = prj.getOriginalMavenProject();
         //the idea here is to tie the lifecycle of the evaluator to the lifecycle of the MavenProject, both

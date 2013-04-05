@@ -286,7 +286,7 @@ public class WrappedTextView extends View implements TabExpander {
             int maxVisibleChars = ((clip.height + charHeight - 1) / charHeight) * charsPerLine;
             
             try {
-                for (int i = firstline; i < lineCount; i++) {
+                for (int i = firstline; i < lines.getLineCount(); i++) {
                     if (y > clip.y + clip.height) {
                         return;
                     }

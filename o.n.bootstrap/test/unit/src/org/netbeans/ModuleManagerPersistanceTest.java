@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.NbBundle;
 
 /**
@@ -95,6 +96,7 @@ public class ModuleManagerPersistanceTest extends NbTestCase {
         Stamps.main("init");
     }
     
+    @RandomlyFails // NB-Core-Build #9913, 9915: Unstable
     public void testModuleManagerStoresIsOSGiInfo() throws Exception {
         ModuleManager snd = createModuleManager();
         assertSame("Is not OSGi, but is computed", Boolean.FALSE, snd.isOSGi(sampleModule));

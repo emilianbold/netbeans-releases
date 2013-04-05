@@ -358,7 +358,7 @@ public class KenaiUtil {
     }
     
     public static KenaiProject getKenaiProject(Repository repository) {
-        return APIAccessor.IMPL.getImpl(repository).getLookup().lookup(KenaiProject.class);
+        return APIAccessor.IMPL.getImpl(repository).getKenaiProject();
     }
 
     public static Query getAllIssuesQuery(Repository repository) {

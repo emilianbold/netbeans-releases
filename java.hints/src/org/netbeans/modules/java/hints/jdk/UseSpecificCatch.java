@@ -49,18 +49,25 @@ import com.sun.source.tree.TryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
-import java.util.EnumSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.prefs.Preferences;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.java.hints.Hint;
@@ -70,63 +77,109 @@ import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.CustomizerProvider;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.UseSpecificCatch", description = "#DESC_org.netbeans.modules.java.hints.jdk.UseSpecificCatch", category="rules15", suppressWarnings="UseSpecificCatch")
-public class UseSpecificCatch {
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.UseSpecificCatch", description = "#DESC_org.netbeans.modules.java.hints.jdk.UseSpecificCatch", 
+        category="rules15", suppressWarnings="UseSpecificCatch", customizerProvider = UseSpecificCatch.class)
+public class UseSpecificCatch implements CustomizerProvider {
+    
+    public static final String OPTION_EXCEPTION_LIST = "specificCatch.exceptions"; // NOI18N
+    static final String DEFAULT_EXCEPTION_LIST = "java.lang.Throwable, java.lang.Exception"; // NOI18N
 
-    @TriggerPatterns({
-        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Throwable $t) {$catch$;}"),
-        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Throwable $t) {$catch$;} finally {$fin$;}"),
-        @TriggerPattern("try {$tryBlock$;} catch (final java.lang.Throwable $t) {$catch$;}"),
-        @TriggerPattern("try {$tryBlock$;} catch (final java.lang.Throwable $t) {$catch$;} finally {$fin$;}")
-    })
-    public static ErrorDescription hint1(HintContext ctx) {
-        return impl(ctx, "java.lang.Throwable");
+    @Override
+    public JComponent getCustomizer(Preferences prefs) {
+        return new UseSpecificCatchCustomizer(prefs);
     }
 
     @TriggerPatterns({
-        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Exception $t) {$catch$;}"),
-        @TriggerPattern("try {$tryBlock$;} catch (java.lang.Exception $t) {$catch$;} finally {$fin$;}"),
-        @TriggerPattern("try {$tryBlock$;} catch (final java.lang.Exception $t) {$catch$;}"),
-        @TriggerPattern("try {$tryBlock$;} catch (final java.lang.Exception $t) {$catch$;} finally {$fin$;}")
+        @TriggerPattern("try {$tryBlock$;} catch $catches$ "),
+        @TriggerPattern("try {$tryBlock$;} catch $catches$ finally {$fin$;}"),
     })
-    public static ErrorDescription hint2(HintContext ctx) {
-        return impl(ctx, "java.lang.Exception");
-    }
-
-    private static ErrorDescription impl(HintContext ctx, String th) {
-        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) return null;
+    public static List<ErrorDescription> hint1(HintContext ctx) {
+        if (ctx.getPath().getLeaf().getKind() != Tree.Kind.TRY) {
+            return null;
+        }
         TryTree tt = (TryTree) ctx.getPath().getLeaf();
         Set<TypeMirror> exceptions = ctx.getInfo().getTreeUtilities().getUncaughtExceptions(new TreePath(ctx.getPath(), tt.getBlock()));
 
         if (exceptions.size() <= 1) return null; //was catching the generic exception intentional?
-
-        TypeElement throwable = ctx.getInfo().getElements().getTypeElement(th);
-
-        if (throwable == null) return null;
-
-        if (exceptions.contains(throwable.asType())) return null;
-
-        if (assignsTo(ctx, ctx.getVariables().get("$t"), ctx.getMultiVariables().get("$catch$"))) return null;
         
-        String displayName = NbBundle.getMessage(UseSpecificCatch.class, "ERR_UseSpecificCatch");
-
-        Set<TypeMirrorHandle<TypeMirror>> exceptionHandles = new LinkedHashSet<TypeMirrorHandle<TypeMirror>>();
-
-        for (TypeMirror tm : exceptions) {
-            exceptionHandles.add(TypeMirrorHandle.create(tm));
+        StringTokenizer tukac = new StringTokenizer(
+            ctx.getPreferences().get(OPTION_EXCEPTION_LIST, DEFAULT_EXCEPTION_LIST), ", " // NOI18N
+        );
+        Collection<TypeMirror> generics = new ArrayList<TypeMirror>(3);
+        while (tukac.hasMoreTokens()) {
+            String th = tukac.nextToken();
+            TypeElement throwable = ctx.getInfo().getElements().getTypeElement(th);
+            if (throwable != null) {
+                generics.add(throwable.asType());
+            }
         }
-
-        return ErrorDescriptionFactory.forName(ctx, tt.getCatches().get(0).getParameter().getType(), displayName, new FixImpl(ctx.getInfo(), new TreePath(ctx.getPath(), tt.getCatches().get(0)), exceptionHandles).toEditorFix());
+        
+        List<ErrorDescription> descs = new ArrayList<ErrorDescription>(2);
+        
+        Collection<? extends TreePath> catchPaths = ctx.getMultiVariables().get("$catches$"); // NOI18N
+        String displayName = NbBundle.getMessage(UseSpecificCatch.class, "ERR_UseSpecificCatch"); // NOI18N
+        for (TreePath p : catchPaths) {
+            if (p.getLeaf().getKind() != Tree.Kind.CATCH) {
+                continue;
+            }
+            CatchTree kec = (CatchTree)p.getLeaf();
+            TypeMirror t = ctx.getInfo().getTrees().getTypeMirror(
+                new TreePath(p, kec.getParameter().getType()));
+            if (exceptions.contains(t)) {
+                continue;
+            }
+            if (generics.contains(t)) {
+                if (assignsTo(
+                        ctx, 
+                        new TreePath(p, kec.getParameter()),
+                        Collections.singletonList(new TreePath(p, kec.getBlock())))) {
+                    // cannot generate multi-catch and even no catch blocks with the assignment
+                    continue;
+                }
+                Set<TypeMirrorHandle<TypeMirror>> exceptionHandles = new LinkedHashSet<TypeMirrorHandle<TypeMirror>>();
+                for (TypeMirror tm : exceptions) {
+                    if (ctx.getInfo().getTypes().isSubtype(tm, t)) {
+                        exceptionHandles.add(TypeMirrorHandle.create(tm));
+                    }
+                }
+                boolean source17 = ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_7) >= 0;
+                descs.add(ErrorDescriptionFactory.forName(
+                        ctx, 
+                        kec.getParameter().getType(), 
+                        displayName, 
+                        source17 ? 
+                            new FixImpl(ctx.getInfo(), 
+                                p,
+                                exceptionHandles
+                            ).toEditorFix()
+                        :
+                            new SplitExceptionInCatches(
+                                ctx.getInfo(),
+                                p,
+                                exceptionHandles
+                            ).toEditorFix()
+                ));
+            }
+        }
+        return descs;
     }
 
-    static boolean assignsTo(final HintContext ctx, TreePath variable, Iterable<? extends TreePath> statements) {
+    /**
+     * Determines whether the catch exception parameter is assigned to.
+     * 
+     * @param ctx HintContext - for CompilationInfo
+     * @param variable the inspected variable
+     * @param statements statements that should be checked for assignment
+     * @return true if 'variable' is assigned to within 'statements'
+     */
+    public static boolean assignsTo(final HintContext ctx, TreePath variable, Iterable<? extends TreePath> statements) {
         final Element tEl = ctx.getInfo().getTrees().getElement(variable);
 
         if (tEl == null || tEl.getKind() != ElementKind.EXCEPTION_PARAMETER) return true;
@@ -146,7 +199,12 @@ public class UseSpecificCatch {
 
         return result[0];
     }
-    private static final class FixImpl extends JavaFix {
+    
+    /**
+     * Fix that generates a multi-catch in place of the original overly broad
+     * catch clause
+     */
+    public static final class FixImpl extends JavaFix {
 
         private final Set<TypeMirrorHandle<TypeMirror>> exceptionHandles;
         
@@ -157,7 +215,7 @@ public class UseSpecificCatch {
 
         @Override
         protected String getText() {
-            return NbBundle.getMessage(UseSpecificCatch.class, "FIX_UseSpecificCatch");
+            return NbBundle.getMessage(UseSpecificCatch.class, "FIX_UseSpecificCatch"); // NOI18N
         }
 
         @Override
@@ -179,5 +237,52 @@ public class UseSpecificCatch {
             wc.rewrite(excVar.getType(), wc.getTreeMaker().UnionType(exceptions));
         }
 
+    }
+    
+    /**
+     * Fix that generates multiple catch handlers in place of the original one.
+     * One catch handler for each real exception. Usable also on Java &lt; 7.
+     */
+    public static class SplitExceptionInCatches extends JavaFix {
+        private Collection<TypeMirrorHandle<TypeMirror>> newTypes;
+
+        public SplitExceptionInCatches(CompilationInfo info, TreePath tp, Collection<TypeMirrorHandle<TypeMirror>> newTypes) {
+            super(info, tp);
+            this.newTypes = newTypes;
+        }
+
+        @Override
+        protected String getText() {
+            return NbBundle.getMessage(UseSpecificCatch.class, "FIX_UseSpecificCatchSplit"); // NOI18N
+        }
+
+        @Override
+        protected void performRewrite(JavaFix.TransformationContext ctx) throws Exception {
+            CatchTree oldTree = (CatchTree)ctx.getPath().getLeaf();
+            TryTree oldTry = (TryTree)ctx.getPath().getParentPath().getLeaf();
+            
+            WorkingCopy wcopy = ctx.getWorkingCopy();
+            GeneratorUtilities gen = GeneratorUtilities.get(wcopy);
+            TreeMaker mk = wcopy.getTreeMaker();
+            int index = oldTry.getCatches().indexOf(oldTree);
+            TryTree result = mk.removeTryCatch(oldTry, index);
+            
+            for (TypeMirrorHandle h : newTypes) {
+                TypeMirror m = h.resolve(wcopy);
+                if (m == null || m.getKind() != TypeKind.DECLARED) {
+                    continue;
+                }
+                CatchTree branch = mk.Catch(
+                    mk.Variable(
+                        oldTree.getParameter().getModifiers(),
+                        oldTree.getParameter().getName(),
+                        mk.Type(m),
+                        oldTree.getParameter().getInitializer()),
+                    oldTree.getBlock());
+                gen.copyComments(oldTree, branch, true);
+                result = mk.insertTryCatch(result, index++, branch);
+            }
+            wcopy.rewrite(oldTry, result);
+        }
     }
 }

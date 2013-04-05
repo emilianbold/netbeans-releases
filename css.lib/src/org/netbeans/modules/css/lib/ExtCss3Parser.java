@@ -50,7 +50,6 @@ import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.RecognizerSharedState;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenStream;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -107,7 +106,7 @@ public class ExtCss3Parser extends Css3Parser {
     public void consumeUntil(IntStream i, BitSet set) {
 //        System.out.println("consumeUntil(" + set.toString(getTokenNames()) + ")");
         Token ttype;
-        List<Token> skipped = new ArrayList<Token>();
+        List<Token> skipped = new ArrayList<>();
         beginResync();
         try {
             while ((ttype = input.LT(1)) != null && ttype.getType() != Token.EOF && !set.member(ttype.getType())) {

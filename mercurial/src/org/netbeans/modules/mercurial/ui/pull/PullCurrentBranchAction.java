@@ -81,7 +81,7 @@ public class PullCurrentBranchAction extends ContextAction {
 
     @Override
     @NbBundle.Messages({
-        "# {0} - branch name", "MSG_PULL_BRANCH_PROGRESS=Pulling to {0}..."
+        "# {0} - branch name", "MSG_PULL_BRANCH_PROGRESS=Pulling {0}"
     })
     protected void performContextAction (Node[] nodes) {
         final VCSContext context = HgUtils.getCurrentContext(nodes);

@@ -145,7 +145,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     }
 
     @Override
-    public JComboBox getRunAsCombo() {
+    public JComboBox<String> getRunAsCombo() {
         return runAsCombo;
     }
 
@@ -205,11 +205,11 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         return copyFilesVisual.getLocalServer();
     }
 
-    public MutableComboBoxModel getLocalServerModel() {
+    public MutableComboBoxModel<LocalServer> getLocalServerModel() {
         return copyFilesVisual.getLocalServerModel();
     }
 
-    public void setLocalServerModel(MutableComboBoxModel localServers) {
+    public void setLocalServerModel(MutableComboBoxModel<LocalServer> localServers) {
         copyFilesVisual.setLocalServerModel(localServers);
     }
 
@@ -243,13 +243,11 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         urlLabel = new JLabel();
         urlTextField = new JTextField();
         runAsLabel = new JLabel();
-        runAsCombo = new JComboBox();
+        runAsCombo = new JComboBox<String>();
         indexFileLabel = new JLabel();
         indexFileTextField = new JTextField();
         indexFileBrowseButton = new JButton();
         copyFilesPanel = new JPanel();
-
-        setFocusTraversalPolicy(null);
 
         urlLabel.setLabelFor(urlTextField);
         Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ProjectUrl")); // NOI18N
@@ -258,8 +256,9 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
 
         indexFileLabel.setLabelFor(indexFileTextField);
-        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile"));
-        Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_BrowseIndex"));
+        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile")); // NOI18N
+
+        Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_BrowseIndex")); // NOI18N
         indexFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 indexFileBrowseButtonActionPerformed(evt);
@@ -275,22 +274,20 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(runAsLabel)
                 .addContainerGap())
-            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                    .addComponent(copyFilesPanel, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
-                    .addGroup(Alignment.LEADING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(urlLabel)
-                            .addComponent(indexFileLabel))
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(runAsCombo, Alignment.TRAILING, 0, 112, Short.MAX_VALUE)
-                            .addComponent(urlTextField, GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(indexFileTextField)
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(indexFileBrowseButton)))))
-                .addGap(0, 0, 0))
+            .addGroup(Alignment.TRAILING, layout.createParallelGroup(Alignment.TRAILING)
+                .addComponent(copyFilesPanel, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(Alignment.LEADING, layout.createSequentialGroup()
+                    .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                        .addComponent(urlLabel)
+                        .addComponent(indexFileLabel))
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                        .addComponent(runAsCombo, Alignment.TRAILING, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(urlTextField)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(indexFileTextField)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(indexFileBrowseButton)))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -347,7 +344,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private JButton indexFileBrowseButton;
     private JLabel indexFileLabel;
     private JTextField indexFileTextField;
-    private JComboBox runAsCombo;
+    private JComboBox<String> runAsCombo;
     private JLabel runAsLabel;
     private JLabel urlLabel;
     private JTextField urlTextField;

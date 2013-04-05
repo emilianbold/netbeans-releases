@@ -73,6 +73,12 @@ import org.openide.LifecycleManager;
  */
 public class GetCleanAction extends AbstractSystemAction {
 
+    private static final String ICON_RESOURCE = "org/netbeans/modules/versioning/system/cvss/resources/icons/get_clean.png"; //NOI18N
+
+    public GetCleanAction () {
+        super(ICON_RESOURCE);
+    }
+    
     protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_GetClean";  // NOI18N
     }
@@ -290,6 +296,6 @@ public class GetCleanAction extends AbstractSystemAction {
     }
     @Override
     protected String iconResource() {
-        return "org/netbeans/modules/versioning/system/cvss/resources/icons/get_clean.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 }

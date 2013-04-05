@@ -812,6 +812,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     public static class FunctionBuilder extends SimpleDeclarationBuilder {
+
+        protected FunctionBuilder() {
+        }
+
+        public FunctionBuilder(SimpleDeclarationBuilder builder) {
+            super(builder);
+        }
     
         @Override
         public FunctionImpl create() {

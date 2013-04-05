@@ -227,6 +227,9 @@
           <ResourceString bundle="org/netbeans/modules/php/project/connections/ftp/Bundle.properties" key="FtpConfigurationPanel.encryptionComboBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;Encryption&gt;"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JCheckBox" name="onlyLoginSecuredCheckBox">
       <Properties>

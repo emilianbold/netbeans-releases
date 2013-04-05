@@ -457,6 +457,9 @@ abstract public class CsmCompletionQuery {
         if (resolver != null) {
             CompletionSupport sup = CompletionSupport.get(doc);
             CsmOffsetableDeclaration context = sup.getDefinition(getCsmFile(), offset, getFileReferencesContext());
+            if (!openingSource && context == null) {
+                instantiateTypes = false;
+            }
             Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort, instantiateTypes);
             ctx.resolveExp(exp, true);
             if (ctx.result != null) {
@@ -1448,6 +1451,7 @@ abstract public class CsmCompletionQuery {
 
                                 // if not "using namespace A::" or "namespace A = B::" then add elements
                                 if (!isInNamespaceOnlyUsage(exp.getTokenOffset(0))) {
+                                    // FIXME: review how can we do not ask for search in nested unnamed namespace?
                                     res.addAll(finder.findNamespaceElements(lastNamespace, "", false, false, false)); // namespace elements //NOI18N
                                 }
                             }
@@ -1751,7 +1755,7 @@ abstract public class CsmCompletionQuery {
                                             lastNamespace = CsmCompletion.getProjectNamespace(getCsmProject(), curNs);
                                             lastType = null;
                                         } else { // package doesn't exist
-                                            res = finder.findNamespaceElements(lastNamespace, var, true, false, true);
+                                            res = finder.findNamespaceElements(lastNamespace, var, true, true, true);
 //                                        if(res.isEmpty()) {
 //                                            res = finder.findStaticNamespaceElements(lastNamespace, endOffset, var, true, false, true);
 //                                        }
@@ -1763,7 +1767,7 @@ abstract public class CsmCompletionQuery {
                                     } else { // last and searching for completion output
                                         if (last) { // get all matching fields/methods/packages
                                             List res = finder.findNestedNamespaces(lastNamespace, var, openingSource, false); // find matching nested namespaces
-                                            res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, false, false)); // matching classes
+                                            res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, true, false)); // matching classes
                                             res.addAll(finder.findStaticNamespaceElements(lastNamespace, var, openingSource)); // matching static elements
                                             result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*', item, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
                                         }

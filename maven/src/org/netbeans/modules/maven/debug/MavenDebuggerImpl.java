@@ -85,8 +85,7 @@ public class MavenDebuggerImpl implements MavenDebugger {
         properties.put("name", name); //NOI18N
         properties.put("jdksources", jdkSourcePath); //NOI18N
         properties.put("baseDir", FileUtil.toFile(nbproject.getProjectDirectory())); // NOI18N
-        boolean appCos = RunUtils.hasApplicationCompileOnSaveEnabled(nbproject);
-        if (appCos) {
+        if (RunUtils.isCompileOnSaveEnabled(nbproject)) {
             properties.put ("listeningCP", "sourcepath"); // NOI18N
         }
 

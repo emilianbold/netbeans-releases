@@ -44,7 +44,7 @@ package org.netbeans.modules.cordova.project;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
-import org.netbeans.modules.cordova.template.CordovaTemplate;
+import org.netbeans.modules.cordova.wizard.CordovaTemplate;
 import org.openide.util.NbBundle;
 
 /**
@@ -102,6 +102,7 @@ public class CordovaPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        phoneGapCheckBox = new javax.swing.JCheckBox();
         packageTextField = new javax.swing.JTextField();
         packageLabel = new javax.swing.JLabel();
         platformSetup = new javax.swing.JButton();
@@ -109,7 +110,13 @@ public class CordovaPanel extends javax.swing.JPanel {
         iosTarget = new javax.swing.JLabel();
         androidTargetCombo = new javax.swing.JComboBox();
         iosTargetCombo = new javax.swing.JComboBox();
-        phoneGapCheckBox = new javax.swing.JCheckBox();
+
+        org.openide.awt.Mnemonics.setLocalizedText(phoneGapCheckBox, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.phoneGapCheckBox.text")); // NOI18N
+        phoneGapCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                phoneGapCheckBoxStateChanged(evt);
+            }
+        });
 
         packageTextField.setText(org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.packageTextField.text")); // NOI18N
 
@@ -130,20 +137,10 @@ public class CordovaPanel extends javax.swing.JPanel {
 
         iosTargetCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "iOS 5.1", "iOS 5.0" }));
 
-        org.openide.awt.Mnemonics.setLocalizedText(phoneGapCheckBox, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.phoneGapCheckBox.text")); // NOI18N
-        phoneGapCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                phoneGapCheckBoxStateChanged(evt);
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(phoneGapCheckBox)
-                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(androidTarget)
@@ -165,8 +162,7 @@ public class CordovaPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(phoneGapCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(packageLabel)
                     .addComponent(packageTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -178,7 +174,7 @@ public class CordovaPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(iosTarget)
                     .addComponent(iosTargetCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 132, Short.MAX_VALUE))
+                .addGap(0, 155, Short.MAX_VALUE))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addContainerGap(226, Short.MAX_VALUE)

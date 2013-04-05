@@ -54,6 +54,7 @@ import org.netbeans.core.windows.*;
 import org.netbeans.core.windows.view.ui.slides.SlideController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.*;
@@ -121,6 +122,11 @@ public abstract class ActionUtils {
             if( Switches.isEditorModeUndockingEnabled() && isEditor )
                 actions.add( new DockModeAction( mode, null ) );
 
+            //move window left
+            actions.add( MoveWindowWithinModeAction.createMoveLeft(tc) );
+            //move window right
+            actions.add( MoveWindowWithinModeAction.createMoveRight(tc));
+
             if( isEditor ) {
                 actions.add( null ); // Separator
 
@@ -178,6 +184,11 @@ public abstract class ActionUtils {
 
             //move window
             actions.add( new MoveWindowAction( tc ) );
+
+            //move window left
+            actions.add( MoveWindowWithinModeAction.createMoveLeft(tc) );
+            //move window right
+            actions.add( MoveWindowWithinModeAction.createMoveRight(tc));
             
             //move group
             actions.add( new MoveModeAction( mode) );
@@ -234,7 +245,7 @@ public abstract class ActionUtils {
             //dock group
             if( Switches.isViewModeUndockingEnabled() || Switches.isModeSlidingEnabled() )
                 actions.add( new DockModeAction( findPreviousMode( tc, mode ), mode) );
-            
+
             actions.add( null ); // Separator
             
             //move window

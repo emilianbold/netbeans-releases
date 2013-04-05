@@ -50,6 +50,7 @@ import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -83,6 +84,7 @@ public final class ShellScriptRunner {
     private LineProcessor errorProcessor;
     private CountDownLatch countdown;
     private NativeProcess shellProcess;
+    private final List<String> args = new ArrayList<String>();
 
     public ShellScriptRunner(ExecutionEnvironment env, String script, LineProcessor outputProcessor) {
         this.env = env;
@@ -138,7 +140,13 @@ public final class ShellScriptRunner {
         }
 
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
-        pb.setExecutable(info.getShell()).setArguments("-s"); // NOI18N
+        List<String> finalArgs = new ArrayList<String>();
+        finalArgs.add("-s"); // NOI18N
+        if (!args.isEmpty()) {
+            finalArgs.add("--"); // NOI18N
+            finalArgs.addAll(args);
+        }
+        pb.setExecutable(info.getShell()).setArguments(finalArgs.<String>toArray(new String[finalArgs.size()]));
 
         shellProcess = pb.call();
 
@@ -150,7 +158,6 @@ public final class ShellScriptRunner {
         countdown = new CountDownLatch(3);
 
         Callable<Integer> scriptWriter = new Callable<Integer>() {
-
             @Override
             public Integer call() throws Exception {
                 BufferedWriter scriptWriter = null;
@@ -250,6 +257,11 @@ public final class ShellScriptRunner {
         return result;
     }
 
+    public void setArguments(String... args) {
+        this.args.clear();
+        this.args.addAll(Arrays.asList(args));
+    }
+
     private class ProcessOutputReader implements Callable<Integer> {
 
         private final LineProcessor lineProcessor;
@@ -326,6 +338,18 @@ public final class ShellScriptRunner {
 
         public List<String> getBuffer() {
             return Collections.unmodifiableList(buffer);
+        }
+        
+        public String getAsString() {
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < buffer.size(); i++) {
+                builder.append(buffer.get(i));
+                //do not append /n at the last line
+                if (i < buffer.size() - 1) {
+                    builder.append('\n');
+                }
+            }
+            return builder.toString();
         }
     }
 }

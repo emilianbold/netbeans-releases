@@ -161,6 +161,8 @@ public class InteceptorTest extends NbTestCase {
 
         suite.addTest(copyViaDataObjectSuite());
         suite.addTest(copyViaFileObjectSuite());
+        
+        suite.addTest(modifySuite());
 
         return suite;
     }
@@ -355,11 +357,11 @@ public class InteceptorTest extends NbTestCase {
         assertTrue(file.exists());
         assertEquals(SVNStatusKind.MODIFIED, getSVNStatus(file).getTextStatus());
 
-        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | FileInformation.STATUS_LOCKED);
+        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY_CONTENT | FileInformation.STATUS_LOCKED);
 
         commit(wc);
 
-        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());
     }
 
     public void getWrongAttribute() throws Exception {
@@ -695,7 +697,7 @@ public class InteceptorTest extends NbTestCase {
         
         TestKit.write(file, "modification");
         FileUtil.refreshFor(file.getParentFile());
-        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY);
+        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY_CONTENT);
         assertEquals(SVNStatusKind.MODIFIED, getSVNStatus(file).getTextStatus());
     }
 

@@ -1,1 +1,1 @@
-f2() void
+f2() void	$	    ((class A *)v)->f2()

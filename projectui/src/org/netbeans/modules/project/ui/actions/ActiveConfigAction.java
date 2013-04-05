@@ -548,13 +548,13 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         ProjectConfigurationProvider<?> _pcp;
         synchronized (this) {
             LOGGER.log(Level.FINER, "activeProjectChanged: {0} -> {1}", new Object[] {currentProject, p});
+            if (currentProject == p) {
+                return;
+            }
             if (currentResult != null) {
                 currentResult.removeLookupListener(looklst);
             }
             currentResult = null;
-            if (currentProject == p) {
-                return;
-            }
             if (pcp != null) {
                 pcp.removePropertyChangeListener(lst);
             }

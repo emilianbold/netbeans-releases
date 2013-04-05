@@ -125,6 +125,7 @@ public class RoleTest extends NbTestCase {
         assertNull( wm.getRole() );
     }
     
+    @RandomlyFails // NB-Core-Build Unstable #9938, #9950, other builds passed
     public void testKeepDocuments() {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
 

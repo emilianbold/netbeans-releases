@@ -279,6 +279,11 @@ public abstract class WebRestSupport extends RestSupport {
                         adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
                     }
                     webApp.write(ddFO);
+                } else if (REST_SERVLET_ADAPTOR_CLASS.equals(adaptorServlet.getServletClass())) {
+                    if (isJersey2()) {
+                        adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS_2_0);
+                        webApp.write(ddFO);
+                    }
                 }
             }
         } catch (IOException ioe) {
@@ -351,7 +356,8 @@ public abstract class WebRestSupport extends RestSupport {
         String servletName = null;
         for (Servlet s : webApp.getServlet()) {
             String servletClass = s.getServletClass();
-            if (REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) || REST_SPRING_SERVLET_ADAPTOR_CLASS.equals(servletClass)) {
+            if (REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) || REST_SPRING_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
+                    REST_SERVLET_ADAPTOR_CLASS_2_0.equals(servletClass)) {
                 servletName = s.getServletName();
                 break;
             }
@@ -517,6 +523,7 @@ public abstract class WebRestSupport extends RestSupport {
                 String servletClass = s.getServletClass();
                 if ( REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
                     REST_SPRING_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
+                    REST_SERVLET_ADAPTOR_CLASS_2_0.equals(servletClass) ||
                     REST_SERVLET_ADAPTOR_CLASS_OLD.equals(servletClass)) {
                     return s;
                 }
@@ -612,7 +619,11 @@ public abstract class WebRestSupport extends RestSupport {
                     initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
                     adaptorServlet.addInitParam(initParam);
                 } else {
-                    adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                    if (isJersey2()) {
+                        adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS_2_0);
+                    } else {
+                        adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                    }
                 }
                 adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
                 webApp.addServlet(adaptorServlet);
@@ -837,6 +848,14 @@ public abstract class WebRestSupport extends RestSupport {
                 }
             }
         }
+    }
+
+    private boolean isJersey2() throws IOException {
+        return isJersey2(project);
+    }
+
+    public static boolean isJersey2(Project p) throws IOException {
+        return hasResource(p, "org/glassfish/jersey/servlet/ServletContainer.class");
     }
 
     @Override

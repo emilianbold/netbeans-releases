@@ -1,8 +1,8 @@
-bPriv int
-bProt int
-bPub int
-dPub int
-bPrivFun() void
-bProtFun() void
-bPubFun() void
-dPubFun() void
+bPriv int	$	    d.bPriv
+bProt int	$	    d.bProt
+bPub int	$	    d.bPub
+dPub int	$	    d.dPub
+bPrivFun() void	$	    d.bPrivFun()
+bProtFun() void	$	    d.bProtFun()
+bPubFun() void	$	    d.bPubFun()
+dPubFun() void	$	    d.dPubFun()
