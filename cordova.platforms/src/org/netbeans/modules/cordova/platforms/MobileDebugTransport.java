@@ -41,60 +41,23 @@
  */
 package org.netbeans.modules.cordova.platforms;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 import java.net.URL;
-import java.nio.channels.SelectionKey;
-import java.nio.charset.Charset;
 import java.util.Enumeration;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.ParseException;
-import org.netbeans.modules.netserver.api.WebSocketClient;
-import org.netbeans.modules.netserver.api.WebSocketReadHandler;
-import org.netbeans.modules.web.webkit.debugging.spi.Command;
-import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author Jan Becicka
  */
-public abstract class MobileDebugTransport implements TransportImplementation, WebSocketReadHandler {
+public abstract class MobileDebugTransport implements TransportImplementation {
 
-    private WebSocketClient webSocket;
-    private ResponseCallback callBack;
+    protected ResponseCallback callBack;
     private String indexHtmlLocation;
     
-    @Override
-    public boolean attach() {
-        try {
-            webSocket = createWebSocket(this);
-            webSocket.start();
-            return true;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return false;
-        }
-    }
-
-    @Override
-    public boolean detach() {
-        webSocket.stop();
-        return true;
-    }
-
-    @Override
-    public void sendCommand(Command command) {
-        String toString = translate(command.toString());
-        webSocket.sendMessage(toString);
-    }
-
     @Override
     public void registerResponseCallback(ResponseCallback callback) {
         this.callBack = callback;
@@ -109,36 +72,13 @@ public abstract class MobileDebugTransport implements TransportImplementation, W
         }
     }
 
-    @Override
-    public void accepted(SelectionKey key) {
-        synchronized(webSocket) {
-            webSocket.notifyAll();
-        }
-    }
 
-    @Override
-    public void read(SelectionKey key, byte[] message, Integer dataType) {
-        final String string;
-        string = new String(message, Charset.forName("UTF-8")).trim(); //NOI18N
-        try {
-            final Object parse = JSONValue.parseWithException(string);
-            callBack.handleResponse(new Response((JSONObject) parse));
-        } catch (ParseException ex) {
-            Exceptions.attachMessage(ex, string);
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    @Override
-    public void closed(SelectionKey key) {
-        Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
-    }
-
-
-    public abstract WebSocketClient createWebSocket(WebSocketReadHandler handler) throws IOException;
-
+    /**
+     * TODO: hack to workaround #221791
+     * @param toString
+     * @return 
+     */
     public String translate(String toString) {
-        //TODO: hack to workaround #221791
         return toString.replaceAll("localhost", getLocalhostInetAddress().getHostAddress());
     }
 

@@ -47,14 +47,15 @@ import com.dd.plist.BinaryPropertyListWriter;
 import com.dd.plist.NSData;
 import com.dd.plist.NSDictionary;
 import com.dd.plist.NSObject;
+import com.dd.plist.NSString;
 import com.dd.plist.XMLPropertyListParser;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
@@ -62,14 +63,14 @@ import java.util.Map;
 import java.util.Properties;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
-import org.netbeans.modules.netserver.api.WebSocketClient;
-import org.netbeans.modules.netserver.api.WebSocketReadHandler;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -80,12 +81,10 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
     
     private final RequestProcessor RP = new RequestProcessor(IOSDebugTransport.class);
     private Socket socket;
-    private ByteArrayOutputStream buf = new ByteArrayOutputStream();
     private final static String LOCALHOST_IPV6 = "::1";
     private final static int port = 27753;
     private RequestProcessor.Task socketListener;
     private volatile boolean keepGoing = true;
-    private ResponseCallback callBack;
     private Tabs tabs;
 
     public IOSDebugTransport() {
@@ -103,9 +102,14 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
                         while (keepGoing) {
                             try {
                                 process(is);
+                            } catch (SocketException e) {
+                                if (socket.isClosed()) {
+                                    return;
+                                }
+                                Exceptions.printStackTrace(e);
                             } catch (Exception exception) {
                                 Exceptions.printStackTrace(exception);
-                            }
+                            } 
                         }
                     } catch (IOException e) {
                         Exceptions.printStackTrace(e);
@@ -127,6 +131,7 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
                 //socket.close();
                 Thread.sleep(5000);
                 run.run();
+                return;
             //} catch (UnknownHostException ex) {
             //    Exceptions.printStackTrace(ex);
             //} catch (IOException ex) {
@@ -169,7 +174,7 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
     }
 
     public String createJSONCommand(JSONObject command) throws IOException {
-        String json = command.toString();
+        String json = translate(command.toString());
         String s = Base64.encodeBytes(json.getBytes());
         String res = getCommand("sendJSONCommand").replace("$json_encoded", s);
         //System.out.println("sending " + res);
@@ -203,6 +208,9 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
     }
 
     private void sendBinaryMessage(byte[] bytes) throws IOException {
+        if (socket.isClosed()) {
+            return;
+        }
         OutputStream os = socket.getOutputStream();
         byte[] lenght = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(bytes.length).array();
         os.write(lenght);
@@ -225,15 +233,53 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
 
         NSObject object = BinaryPropertyListParser.parse(content);
 
-        String message = object.toXMLPropertyList();
         //System.out.println("receiving " + object.toXMLPropertyList());
         JSONObject jmessage = extractResponse(object);
         if (jmessage != null) {
             callBack.handleResponse(new Response(jmessage));
         } else {
-            tabs.update(object);
+            if (!tabs.update(object)) {
+                checkClose(object);
+            }
         }
     }
+    
+    private void checkClose(NSObject r) throws Exception {
+        if (r == null) {
+            return;
+        }
+        if (!(r instanceof NSDictionary)) {
+            return;
+        }
+        NSDictionary root = (NSDictionary) r;
+        NSString selector = (NSString) root.objectForKey("__selector");
+        if (selector != null) {
+            if ("_rpc_reportConnectedApplicationList:".equals(selector.toString())) {
+                NSDictionary argument = (NSDictionary) root.objectForKey("__argument");
+                if (argument == null) {
+                    return;
+                }
+                NSDictionary applications = (NSDictionary) argument.objectForKey("WIRApplicationDictionaryKey");
+                if (applications.count() == 0) {
+                    stop();
+                    Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+                }
+
+            } else if ("rpc_applicationDisconnected:".equals(selector.toString())) {
+                NSDictionary argument = (NSDictionary) root.objectForKey("__argument");
+                if (argument == null) {
+                    return;
+                }
+                NSDictionary applications = (NSDictionary) argument.objectForKey("WIRApplicationIdentifierKey");
+                if (applications.objectForKey("WIRApplicationIdentifierKey").toString().equals("com.apple.mobilesafari")) {
+                    stop();
+                    Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+                }
+            }
+        }
+    }
+    
+    
 
     private JSONObject extractResponse(NSObject r) throws Exception {
         if (r == null) {
@@ -291,30 +337,25 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
         return "1.0";
     }
 
-    @Override
-    public WebSocketClient createWebSocket(WebSocketReadHandler handler) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
     class Tabs {
 
         private HashMap<String, TabDescriptor> map = new HashMap();
 
-        public void update(NSObject r) throws Exception {
+        public boolean update(NSObject r) throws Exception {
             if (r ==  null) {
-                return;
+                return false;
             }
             if (!(r instanceof NSDictionary)) {
-                return;
+                return false;
             }
             NSDictionary root = (NSDictionary) r;
             NSDictionary argument = (NSDictionary) root.objectForKey("__argument");
             if (argument == null) {
-                return;
+                return false;
             }
             NSDictionary listing = (NSDictionary) argument.objectForKey("WIRListingKey");
             if (listing == null) {
-                return;
+                return false;
             }
             map.clear();
             for (String s : listing.allKeys()) {
@@ -324,13 +365,18 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
                 NSObject title = o.objectForKey("WIRTitleKey");
                 map.put(s, new TabDescriptor(url.toString(), title.toString(), identifier.toString()));
             }
+            if (!map.keySet().contains(getActive())) {
+                stop();
+                Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+            }
+            return true;
         }
 
         public TabDescriptor get(String key) {
             return map.get(key);
         }
 
-        private CharSequence getActive() {
+        private String getActive() {
             for (Map.Entry<String, TabDescriptor> entry: map.entrySet()) {
                 String urlFromBrowser = entry.getValue().getUrl();
                 int hash = urlFromBrowser.indexOf("#");
