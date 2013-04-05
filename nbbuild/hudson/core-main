@@ -1,4 +1,5 @@
 #!/bin/sh
+set -x
 
 ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m"
 export ANT_OPTS

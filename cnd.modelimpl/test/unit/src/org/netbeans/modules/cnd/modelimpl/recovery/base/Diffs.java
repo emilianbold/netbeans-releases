@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.recovery;
+package org.netbeans.modules.cnd.modelimpl.recovery.base;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -52,7 +52,6 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Gramma {
-    boolean newGramma() default false;
-    boolean traceAST() default false;
+public @interface Diffs {
+    Diff[] value();
 }

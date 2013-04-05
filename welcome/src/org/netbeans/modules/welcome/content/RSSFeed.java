@@ -808,7 +808,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         }
     }
 
-    private static void initSSL( HttpURLConnection httpCon ) throws IOException {
+    public static void initSSL( HttpURLConnection httpCon ) throws IOException {
         if( httpCon instanceof HttpsURLConnection ) {
             HttpsURLConnection https = ( HttpsURLConnection ) httpCon;
 

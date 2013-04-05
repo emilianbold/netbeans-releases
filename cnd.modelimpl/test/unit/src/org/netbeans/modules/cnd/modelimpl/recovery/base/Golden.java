@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.recovery;
+package org.netbeans.modules.cnd.modelimpl.recovery.base;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

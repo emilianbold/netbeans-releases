@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.recovery;
+package org.netbeans.modules.cnd.modelimpl.recovery.base;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -58,4 +58,5 @@ public @interface  Diff {
     int column() default 1;
     int length() default 0;
     String insert() default "";
+    String type() default "";
 }

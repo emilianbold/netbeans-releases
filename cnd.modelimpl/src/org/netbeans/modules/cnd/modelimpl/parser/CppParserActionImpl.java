@@ -393,6 +393,10 @@ public class CppParserActionImpl implements CppParserActionEx {
         if(token instanceof APTToken) {
             enumBuilder.setStartOffset(((APTToken)token).getOffset());
         }
+        
+        SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder)builderContext.top(1);        
+        declBuilder.setTypeSpecifier();
+        
         builderContext.push(enumBuilder);
     }
 
