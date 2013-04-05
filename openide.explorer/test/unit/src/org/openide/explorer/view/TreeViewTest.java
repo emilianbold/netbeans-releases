@@ -573,6 +573,7 @@ public final class TreeViewTest extends NbTestCase {
         assertGC("should gc children", ref);
     }
 
+    @RandomlyFails // NB-Core-Build Unstable: #9954, locally passes
     public void testSetSelectedNodeIsSynchronizedEager() throws Exception {
         doSetSelectedNodeIsSynchronized(false);
     }
