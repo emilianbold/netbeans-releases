@@ -136,7 +136,27 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
                         return Collections.<CsmReference>emptyList();
                     }
                     ProjectBase basePrj = (ProjectBase) project;
-                    files = basePrj.getAllFileImpls();
+                    if (CndTraceFlags.TEXT_INDEX) {
+                        CharSequence name = "";
+                        if (CsmKindUtilities.isNamedElement(target)) {
+                            name = ((CsmNamedElement)target).getName();
+                        } else if (CsmKindUtilities.isStatement(target)) {
+                            if (target instanceof CsmLabel) {
+                                name = ((CsmLabel)target).getLabel();
+                            } else if (target instanceof CsmGotoStatement){
+                                name = ((CsmGotoStatement)target).getLabel();
+                            }
+                        }
+                        final Collection<CsmFile> relevantFiles = findRelevantFiles(Collections.<CsmProject>singletonList(basePrj), name);
+                        files = new ArrayList<FileImpl>(relevantFiles.size());
+                        for(CsmFile f : relevantFiles) {
+                            if (f instanceof FileImpl) {
+                                files.add((FileImpl)f);
+                            }
+                        }
+                    } else {
+                        files = basePrj.getAllFileImpls();
+                    }
                 }
                 out = new ArrayList<CsmReference>(files.size() * 10);
                 for (FileImpl file : files) {
