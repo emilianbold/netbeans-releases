@@ -73,15 +73,15 @@ import org.openide.windows.OutputWriter;
  * handling of output coming from maven commandline builds
  * @author Milos Kleint
  */
-class CommandLineOutputHandler extends AbstractOutputHandler {
+public class CommandLineOutputHandler extends AbstractOutputHandler {
 
     //8 means 4 paralel builds, one for input, one for output.
     private static final RequestProcessor PROCESSOR = new RequestProcessor("Maven ComandLine Output Redirection", 8); //NOI18N
     private static final Logger LOG = Logger.getLogger(CommandLineOutputHandler.class.getName());
     private InputOutput inputOutput;
     private static final Pattern linePattern = Pattern.compile("\\[(DEBUG|INFO|WARNING|ERROR|FATAL)\\] (.*)"); // NOI18N
-    static final Pattern startPatternM2 = Pattern.compile("\\[INFO\\] \\[([\\w]*):([\\w]*)[ ]?.*\\]"); // NOI18N
-    static final Pattern startPatternM3 = Pattern.compile("\\[INFO\\] --- (\\S+):\\S+:(\\S+)(?: [(]\\S+[)])? @ \\S+ ---"); // ExecutionEventLogger.mojoStarted NOI18N
+    public static final Pattern startPatternM2 = Pattern.compile("\\[INFO\\] \\[([\\w]*):([\\w]*)[ ]?.*\\]"); // NOI18N
+    public static final Pattern startPatternM3 = Pattern.compile("\\[INFO\\] --- (\\S+):\\S+:(\\S+)(?: [(]\\S+[)])? @ \\S+ ---"); // ExecutionEventLogger.mojoStarted NOI18N
     private static final Pattern mavenSomethingPlugin = Pattern.compile("maven-(.+)-plugin"); // NOI18N
     private static final Pattern somethingMavenPlugin = Pattern.compile("(.+)-maven-plugin"); // NOI18N
     /** @see org.apache.maven.cli.ExecutionEventLogger#logReactorSummary */
@@ -263,23 +263,22 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                         currentTag = tag;
                         CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
                         checkSleepiness();
-                    } else {
-                        Matcher match = linePattern.matcher(line);
-                        if (match.matches()) {
-                            String levelS = match.group(1);
-                            Level level = Level.valueOf(levelS);
-                            String text = match.group(2);
-                            processLine(text, stdOut, level);
-                            if (level == Level.INFO && contextImpl == null) { //only perform for maven 2.x now
-                                checkProgress(text);
-                            }
-                        } else {
-                            // oh well..
-                            processLine(line, stdOut, Level.INFO);
+                    }
+                    Matcher match = linePattern.matcher(line);
+                    if (match.matches()) {
+                        String levelS = match.group(1);
+                        Level level = Level.valueOf(levelS);
+                        String text = match.group(2);
+                        processLine(text, stdOut, level);
+                        if (level == Level.INFO && contextImpl == null) { //only perform for maven 2.x now
+                            checkProgress(text);
                         }
+                    } else {
+                        // oh well..
+                        processLine(line, stdOut, Level.INFO);
                     }
                     if (firstFailure == null) {
-                        Matcher match = reactorFailure.matcher(line);
+                        match = reactorFailure.matcher(line);
                         if (match.matches()) {
                             firstFailure = match.group(1);
                         }

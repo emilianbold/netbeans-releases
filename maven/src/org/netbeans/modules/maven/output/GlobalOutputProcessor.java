@@ -54,6 +54,7 @@ import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
+import org.netbeans.modules.maven.execute.CommandLineOutputHandler;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import static org.netbeans.modules.maven.output.Bundle.*;
 import org.netbeans.modules.options.java.api.JavaOptions;
@@ -106,6 +107,11 @@ public class GlobalOutputProcessor implements OutputProcessor {
             visitor.skipLine();
             return;
         }
+        //silly prepend of  [INFO} to reuse the same regexp
+        if (CommandLineOutputHandler.startPatternM3.matcher("[INFO] " + line).matches() || CommandLineOutputHandler.startPatternM2.matcher("[INFO] " + line).matches()) {
+            visitor.setColor(Color.GRAY);
+            return;
+        } 
         if (line.startsWith("BUILD SUCCESS")) { //NOI18N 3.0.4 has build success, some older versions have build successful
             visitor.setColor(Color.GREEN.darker().darker());
             return;
@@ -207,12 +213,6 @@ public class GlobalOutputProcessor implements OutputProcessor {
     }
 
     @Override public void sequenceStart(String sequenceId, OutputVisitor visitor) {
-        if (sequenceId.startsWith(SECTION_SESSION) || sequenceId.startsWith(SECTION_PROJECT)) {
-//            visitor.setLine(sequenceId);
-        } else {
-            visitor.setLine("[" + sequenceId.substring("mojo-execute#".length()) + "]"); //NOI18N
-            visitor.setColor(Color.GRAY);
-        }
     }
 
     @Override public void sequenceEnd(String sequenceId, OutputVisitor visitor) {}
