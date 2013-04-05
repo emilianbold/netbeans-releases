@@ -39,26 +39,19 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.recovery;
+package org.netbeans.modules.cnd.modelimpl.recovery.base;
 
-import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoverySuiteTestBase;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  *
  * @author Alexander Simon
  */
-public class RecoverySuiteTest extends RecoverySuiteTestBase {
-
-    public RecoverySuiteTest() {
-        super("Recovery Test Suite");
-        addTest(QuoteCpu_hTestCase.class);
-        addTest(QuoteQuoteTestCase.class);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new RecoverySuiteTest();
-        return suite;
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Gramas {
+    Grama[] value();
 }
