@@ -151,7 +151,7 @@ java/docs/beansbinding-1.2.1-doc.zip                                  LGPL-2.1
 java/modules/ext/beansbinding-1.2.1.jar                               LGPL-2.1
 java/modules/ext/cglib-2.2.jar                                        Apache-2.0
 java/modules/ext/eclipselink/eclipselink.jar                          EPL-v10 (see also about.html inside this JAR file)
-java/modules/ext/eclipselink/org.eclipse.persistence.jpa.modelgen_2.5.0.v20130312-9664d23.jar  EPL-v10 (see also about.html inside this JAR file)
+java/modules/ext/eclipselink/eclipselink-jpa-modelgen_2.5.0.v20130312-9664d23.jar  EPL-v10 (see also about.html inside this JAR file)
 java/modules/ext/eclipselink/javax.persistence_2.0.108.v201302191928.jar  EPL-v10 (see also about.html inside this JAR file)
 java/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_2.5.0.v20130312-9664d23.jar  EPL-v10 (see also about.html inside this JAR file)
 java/modules/ext/hibernate                                            LGPL-2.1, incl. BSD, Apache-2.0 (see also Hibernate 3.2.5 at http://hibernate.org)
