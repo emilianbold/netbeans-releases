@@ -49,6 +49,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -172,21 +173,31 @@ public class JsIndex {
         if (deepLevel > MAX_FIND_PROPERTIES_RECURSION) {
             return Collections.EMPTY_LIST;
         }
-        resolvedTypes.add(fqn);
-        deepLevel = deepLevel + 1;
-        Collection<? extends IndexResult> results = query(
-                JsIndex.FIELD_FQ_NAME, fqn, QuerySupport.Kind.EXACT, TERMS_PROPERTIES); //NOI18N
         Collection<IndexedElement> result = new ArrayList<IndexedElement>();
-        for (IndexResult indexResult : results) {
-            Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
-            if (!assignments.isEmpty()) {
-                TypeUsage type = assignments.iterator().next();
-                if (!resolvedTypes.contains(type.getType())) {                    
-                    result.addAll(getProperties(type.getType(), deepLevel, resolvedTypes));
+        if (!resolvedTypes.contains(fqn)) {
+            resolvedTypes.add(fqn);
+            deepLevel = deepLevel + 1;
+            Collection<? extends IndexResult> results = query(
+                    JsIndex.FIELD_FQ_NAME, fqn, QuerySupport.Kind.EXACT, TERMS_BASIC_INFO); //NOI18N
+            for (IndexResult indexResult : results) {
+                // find assignment to for the fqn
+                Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
+                if (!assignments.isEmpty()) {
+                    TypeUsage type = assignments.iterator().next();
+                    if (!resolvedTypes.contains(type.getType())) {                    
+                        result.addAll(getProperties(type.getType(), deepLevel, resolvedTypes));
+                    }
                 }
             }
-            for (IndexedElement indexedElement : IndexedElement.createProperties(indexResult, fqn)) {
-                result.add(indexedElement);
+            // find properties of the fqn
+            String pattern = fqn.replace(".", "\\.").replace("$", "\\$").replace("?", "\\?").replace("^", "\\^") + "\\.[^\\.]*"; //NOI18N
+            results = query(
+                    JsIndex.FIELD_FQ_NAME, pattern, QuerySupport.Kind.REGEXP, TERMS_BASIC_INFO); //NOI18N
+            for (IndexResult indexResult : results) {
+                IndexedElement property = IndexedElement.create(indexResult);
+                if (!property.getModifiers().contains(Modifier.PRIVATE)) {
+                    result.add(property);
+                }
             }
         }
         return result;

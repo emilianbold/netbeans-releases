@@ -177,8 +177,10 @@ public final class IfStatementImpl extends StatementBase implements CsmIfStateme
         @Override
         public IfStatementImpl create() {
             IfStatementImpl stmt = new IfStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
-            thenStatement.setScope(stmt);
-            stmt.thenStmt = thenStatement.create();
+            if (thenStatement != null) {
+                thenStatement.setScope(stmt);
+                stmt.thenStmt = thenStatement.create();
+            }
             if(conditionDeclaration != null) {
                 conditionDeclaration.setScope(stmt);
                 stmt.condition = conditionDeclaration.create();

@@ -50,11 +50,13 @@ import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
 import java.io.File;
 import org.junit.Test;
 import org.netbeans.junit.Manager;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
  * @author Alexander Simon
  */
+@RandomlyFails
 public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
 
     private static final String SOURCE = "cpu.h";
@@ -92,7 +94,7 @@ public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
         @Diff(file=SOURCE, line = 46, column = 1, length = 0, insert = "{"),
         @Diff(file=SOURCE, line = 46, column = 1, length = 0, insert = "}"),
         @Diff(file=SOURCE, line = 46, column = 1, length = 0, insert = "+"),
-        @Diff(file=SOURCE, line = 46, column = 1, length = 0, type = "int * a()")
+        @Diff(file=SOURCE, line = 46, column = 1, length = 0, type = "int*a()")
     })
     @Test
     public void beforeClass1() throws Exception {
@@ -108,7 +110,7 @@ public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
         @Diff(file=SOURCE, line = 53, column = 1, length = 0, insert = "ID()"),
         @Diff(file=SOURCE, line = 53, column = 1, length = 0, insert = "ID(SIGNAL)"),
         @Diff(file=SOURCE, line = 53, column = 1, length = 0, insert = "class"),
-        @Diff(file=SOURCE, line = 53, column = 1, length = 0, type = "int * a()")
+        @Diff(file=SOURCE, line = 53, column = 1, length = 0, type = "int*a()")
     })
     @Test
     public void betweenClassMembers1() throws Exception {
@@ -120,10 +122,10 @@ public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
         @Grammar(newGrammar = true)
     })
     @Diffs({
-        @Diff(file=SOURCE, line = 58, column = 36, length = 0, insert = " ID "),
-        @Diff(file=SOURCE, line = 58, column = 36, length = 0, insert = " ID() "),
-        @Diff(file=SOURCE, line = 58, column = 36, length = 0, insert = " ID(E) "), 
-        @Diff(file=SOURCE, line = 58, column = 36, length = 0, type = "  const throw A")
+        @Diff(file=SOURCE, line = 58, column = 36, length = 0, insert = "ID"),
+        @Diff(file=SOURCE, line = 58, column = 36, length = 0, insert = "ID()"),
+        @Diff(file=SOURCE, line = 58, column = 36, length = 0, insert = "ID(E)"), 
+        @Diff(file=SOURCE, line = 58, column = 36, length = 0, type = "const throw A")
     })
     @Test
     public void insideMemberDeclaration1() throws Exception {
@@ -138,7 +140,7 @@ public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
         @Diff(file=SOURCE, line = 58, column = 35, length = 0, insert = "ID(E)"),
         @Diff(file=SOURCE, line = 58, column = 35, length = 0, insert = "class"),
         @Diff(file=SOURCE, line = 58, column = 35, length = 0, insert = "struct"),
-        @Diff(file=SOURCE, line = 58, column = 35, length = 0, type = "int * a")
+        @Diff(file=SOURCE, line = 58, column = 35, length = 0, type = "int*a")
     })
     @Test
     public void insideMemberParameter1() throws Exception {

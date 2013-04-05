@@ -39,27 +39,45 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.recovery;
+package org.netbeans.modules.cnd.completion;
 
-import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoverySuiteTestBase;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
  *
- * @author Alexander Simon
+ * @author Vladimir Voskresensky
  */
-public class RecoverySuiteTest extends RecoverySuiteTestBase {
+public class DotArrowSubstitutionTestCase extends CompletionBaseTestCase {
 
-    public RecoverySuiteTest() {
-        super("Recovery Test Suite");
-        addTest(QuoteCustomerTestCase.class);
-        addTest(QuoteCpu_hTestCase.class);
-        addTest(QuoteQuoteTestCase.class);
+    public DotArrowSubstitutionTestCase(String testName) {
+        super(testName, true);
+    }
+    
+    public void testDotToArrowAutoFix_1() throws Exception {
+        super.performTest("bug97120.cc", 29, 13, "pA.f");
     }
 
-    public static Test suite() {
-        TestSuite suite = new RecoverySuiteTest();
-        return suite;
+    public void testDotToArrowAutoFix_2() throws Exception {
+        super.performTest("bug97120.cc", 29, 13, "c.f");
+    }
+
+    public void testDotToArrowAutoFix_3() throws Exception {
+        super.performTest("bug97120.cc", 29, 13, "c.p");
+    }
+
+    public void testDotToArrowAutoFix_4() throws Exception {
+        super.performTest("bug97120.cc", 29, 13, "ppA.f");
+    }
+
+    public void testDotToArrowAutoFix_5() throws Exception {
+        super.performTest("bug97120.cc", 29, 13, "pppA.f");
+    }
+
+    public void testDotToArrowAutoFix_6() throws Exception {
+        super.performTest("bug97120.cc", 29, 13, "d.ptr().");
+    }
+
+    public void testDotToArrowAutoFix_7() throws Exception {
+        super.performTest("bug97120.cc", 29, 13, "(*pA).");
     }
 }
