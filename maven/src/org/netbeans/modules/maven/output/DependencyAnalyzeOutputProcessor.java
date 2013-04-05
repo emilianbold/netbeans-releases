@@ -64,10 +64,10 @@ public class DependencyAnalyzeOutputProcessor implements OutputProcessor {
     private static final String[] DEPGOALS = new String[] {
         "mojo-execute#dependency:analyze" //NOI18N
     };
-    private Pattern start;
+    private final Pattern start;
     private boolean started;
-    private Pattern dependency;
-    private NbMavenProjectImpl project;
+    private final Pattern dependency;
+    private final NbMavenProjectImpl project;
     
     /** Creates a new instance of JavadocOutputProcessor */
     DependencyAnalyzeOutputProcessor(NbMavenProjectImpl project) {
@@ -120,12 +120,12 @@ public class DependencyAnalyzeOutputProcessor implements OutputProcessor {
     }
     
     private static class Listener implements OutputListener {
-        private String group;
-        private String scope;
-        private String version;
-        private String type;
-        private String artifact;
-        private NbMavenProjectImpl project;
+        private final String group;
+        private final String scope;
+        private final String version;
+        private final String type;
+        private final String artifact;
+        private final NbMavenProjectImpl project;
         
         private Listener(NbMavenProjectImpl prj, String gr, String ar, String type, String ver, String sc) {
             group = gr;
