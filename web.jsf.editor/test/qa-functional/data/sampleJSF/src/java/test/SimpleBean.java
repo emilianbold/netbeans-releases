@@ -39,26 +39,43 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.recovery;
+package test;
 
-import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoverySuiteTestBase;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import javax.faces.bean.RequestScoped;
+import javax.inject.Named;
 
 /**
  *
- * @author Alexander Simon
+ * @author Vladimir Riha
  */
-public class RecoverySuiteTest extends RecoverySuiteTestBase {
+@Named("simplebean")
+@RequestScoped
+public class SimpleBean {
+    
+    public InnerBean ib;
+    private String msg;
 
-    public RecoverySuiteTest() {
-        super("Recovery Test Suite");
-        addTest(QuoteCpu_hTestCase.class);
-        addTest(QuoteQuoteTestCase.class);
+    public String getMsg() {
+        return msg;
     }
 
-    public static Test suite() {
-        TestSuite suite = new RecoverySuiteTest();
-        return suite;
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public InnerBean getIb() {
+        return ib;
+    }
+
+    public void setIb(InnerBean ib) {
+        this.ib = ib;
+    }
+    
+    public String print(){
+        return "print";
+    }
+    
+    private void paint(){
+        
     }
 }

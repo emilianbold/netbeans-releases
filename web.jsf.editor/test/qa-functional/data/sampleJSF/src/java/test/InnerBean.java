@@ -39,23 +39,26 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.recovery;
+package test;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.RequestScoped;
 
 /**
  *
- * @author Alexander Simon
+ * @author Vladimir Riha
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface  Diff {
-    String file() default "";
-    int line() default 1;
-    int column() default 1;
-    int length() default 0;
-    String insert() default "";
+@ManagedBean
+@RequestScoped
+public class InnerBean {
+
+    private String innerMsg;
+
+    public String getInnerMsg() {
+        return innerMsg;
+    }
+
+    public void setInnerMsg(String innerMsg) {
+        this.innerMsg = innerMsg;
+    }
 }

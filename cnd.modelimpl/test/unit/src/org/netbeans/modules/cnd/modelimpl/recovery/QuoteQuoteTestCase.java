@@ -41,6 +41,12 @@
  */
 package org.netbeans.modules.cnd.modelimpl.recovery;
 
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Diff;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammar;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Diffs;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammars;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Golden;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
 import java.io.File;
 import org.junit.Test;
 import org.netbeans.junit.Manager;
@@ -51,8 +57,8 @@ import org.netbeans.junit.Manager;
  */
 public class QuoteQuoteTestCase extends RecoveryTestCaseBase {
     private static final String SOURCE = "quote.cc";
-    public QuoteQuoteTestCase(String testName) {
-        super(testName);
+    public QuoteQuoteTestCase(String testName, Grammar gramma, Diff diff, Golden golden) {
+        super(testName, gramma, diff, golden);
     }
     
     @Override
@@ -60,145 +66,37 @@ public class QuoteQuoteTestCase extends RecoveryTestCaseBase {
         return Manager.normalizeFile(new File(getDataDir(), "common/recovery/quote"));
     }
 
-    @Gramma(newGramma = false)
+    @Grammar(newGrammar = false)
     @Golden
     @Test
     public void A_Golden() throws Exception {
         implTest(SOURCE);
     }
 
-    //<editor-fold defaultstate="collapsed" desc="before namespace">
-    @Gramma(newGramma = true)
+    @Grammar(newGrammar = true)
     @Diff(file=SOURCE)
     @Test
     public void testBeforeNS00n() throws Exception {
         implTest(SOURCE);
     }
 
-    @Gramma(newGramma = false)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "int")
+    @Grammars({
+        @Grammar(newGrammar = false),
+        @Grammar(newGrammar = true)
+    })
+    @Diffs({
+        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "{"),
+        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "}"),
+        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "+"),
+        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "class"),
+        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "*"),
+        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "&"),
+        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "ID"),
+        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "ID()"),
+        @Diff(file=SOURCE, line = 51, column = 1, length = 0, type = "int * a()")
+    })
     @Test
     public void testBeforeNS01() throws Exception {
         implTest(SOURCE);
     }
-
-    @Gramma(newGramma = true)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "int")
-    @Test
-    public void testBeforeNS01n() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = false)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "{")
-    @Test
-    public void testBeforeNS02() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = true)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "{")
-    @Test
-    public void testBeforeNS02n() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = false)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "}")
-    @Test
-    public void testBeforeNS03() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = true)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "}")
-    @Test
-    public void testBeforeNS03n() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = false)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "+")
-    @Test
-    public void testBeforeNS04() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = true)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "+")
-    @Test
-    public void testBeforeNS04n() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = false)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "class")
-    @Test
-    public void testBeforeNS05() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = true)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "class")
-    @Test
-    public void testBeforeNS05n() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = false)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "*")
-    @Test
-    public void testBeforeNS06() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = true)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "*")
-    @Test
-    public void testBeforeNS06n() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = false)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "&")
-    @Test
-    public void testBeforeNS07() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = true)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "&")
-    @Test
-    public void testBeforeNS07n() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = false)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "ID")
-    @Test
-    public void testBeforeNS08() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = true)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "ID")
-    @Test
-    public void testBeforeNS08n() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = false)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "ID()")
-    @Test
-    public void testBeforeNS09() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Gramma(newGramma = true)
-    @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "ID()")
-    @Test
-    public void testBeforeNS09n() throws Exception {
-        implTest(SOURCE);
-    }
-    //</editor-fold>
 }
