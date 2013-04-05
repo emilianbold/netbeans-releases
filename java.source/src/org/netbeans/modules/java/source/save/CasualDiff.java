@@ -2271,6 +2271,8 @@ public class CasualDiff {
               return matchAssignop((JCAssignOp)t1, (JCAssignOp)t2);
           case ANNOTATED_TYPE:
               return matchAnnotatedType((JCAnnotatedType) t1, (JCAnnotatedType) t2);
+          case LAMBDA:
+              return matchLambda((JCLambda)t1, (JCLambda)t2);
           default:
               String msg = ((com.sun.source.tree.Tree)t1).getKind().toString() +
                       " " + t1.getClass().getName();
@@ -3814,6 +3816,10 @@ public class CasualDiff {
         return listsMatch(t1.defs, t2.defs) && treesMatch(t1.expr, t2.expr);
     }
 
+    private boolean matchLambda(JCLambda t1, JCLambda t2) {
+        return listsMatch(t1.params, t2.params) && treesMatch(t1.body, t2.body);
+    }
+    
     private boolean isCommaSeparated(JCVariableDecl oldT) {
         if (getOldPos(oldT) <= 0 || oldT.pos <= 0) {
             return false;
