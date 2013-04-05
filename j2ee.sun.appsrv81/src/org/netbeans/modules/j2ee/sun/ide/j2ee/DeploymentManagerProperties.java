@@ -363,7 +363,7 @@ public class DeploymentManagerProperties {
         if (path == null) {
             ArrayList<URL> list = new ArrayList<URL>();
             try {
-                File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee6-doc-api.zip", null, false); // NOI18N
+                File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee-doc-api.jar", null, false); // NOI18N
                 if (j2eeDoc != null) {
                     list.add(fileToUrl(j2eeDoc));
                 }

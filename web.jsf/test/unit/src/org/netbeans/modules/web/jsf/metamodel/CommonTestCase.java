@@ -57,6 +57,8 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
@@ -82,8 +84,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
-
 
 /**
  * @author ads
@@ -92,12 +94,14 @@ import org.openide.util.test.MockLookup;
 public class CommonTestCase extends JavaSourceTestCase {
 
     private FileObject srcFo, webFo, projectFo;
-    WebModuleProvider webModuleProvider;
+    protected Project project;
+    protected WebModuleProvider webModuleProvider;
+    protected List<FileObject> projects = new LinkedList<FileObject>();
 
-    public CommonTestCase( String testName ) {
+    public CommonTestCase(String testName) {
         super(testName);
     }
-    
+
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -108,12 +112,9 @@ public class CommonTestCase extends JavaSourceTestCase {
         this.webFo = getTestFile("testWebProject/web");
         assertNotNull(webFo);
 
-        List<FileObject> projects = new LinkedList<FileObject>();
-
         //create classpath for web project
         Map<String, ClassPath> cps = new HashMap<String, ClassPath>();
         cps.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[]{srcFo, webFo}));
-
         projects.add(projectFo);
 
         webModuleProvider = new FakeWebModuleProvider(srcFO);
@@ -136,7 +137,7 @@ public class CommonTestCase extends JavaSourceTestCase {
 
         return fo;
     }
-    
+
     public MetadataModel<JsfModel> createJsfModel() throws IOException, InterruptedException {
         IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ModelUnit modelUnit = ModelUnit.create(
@@ -147,12 +148,12 @@ public class CommonTestCase extends JavaSourceTestCase {
         return JsfModelFactory.createMetaModel(modelUnit);
     }
 
-    public String getFileContent( String relativePath ) throws IOException{
+    public String getFileContent(String relativePath) throws IOException {
         return TestUtilities.copyStreamToString(SeveralXmlModelTest.class.
-                getResourceAsStream( relativePath));
+                getResourceAsStream(relativePath));
     }
 
-     protected static class FakeWebModuleProvider implements WebModuleProvider {
+    protected static class FakeWebModuleProvider implements WebModuleProvider {
 
         private FileObject webRoot;
 
@@ -165,7 +166,7 @@ public class CommonTestCase extends JavaSourceTestCase {
         }
     }
 
-       private static class FakeWebModuleImplementation2 implements WebModuleImplementation2 {
+    private static class FakeWebModuleImplementation2 implements WebModuleImplementation2 {
 
         private FileObject webRoot;
 
@@ -212,7 +213,7 @@ public class CommonTestCase extends JavaSourceTestCase {
 
         private List<FileObject> projects;
 
-        public  TestProjectFactory(List<FileObject> projects) {
+        public TestProjectFactory(List<FileObject> projects) {
             this.projects = projects;
         }
 
@@ -260,5 +261,4 @@ public class CommonTestCase extends JavaSourceTestCase {
             return "testproject:" + getProjectDirectory().getNameExt();
         }
     }
-
 }

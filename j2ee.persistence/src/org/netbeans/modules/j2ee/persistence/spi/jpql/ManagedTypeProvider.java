@@ -41,22 +41,20 @@
  */
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.lang.model.util.Elements;
-import org.eclipse.persistence.jpa.jpql.spi.IEntity;
-import org.eclipse.persistence.jpa.jpql.spi.IJPAVersion;
-import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
-import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
-import org.eclipse.persistence.jpa.jpql.spi.IPlatform;
-import org.eclipse.persistence.jpa.jpql.spi.IType;
-import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IEmbeddable;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IEntity;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IManagedType;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IManagedTypeProvider;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IMappedSuperclass;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IType;
+import org.eclipse.persistence.jpa.jpql.tools.spi.ITypeRepository;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
-import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 
 /**
  *
@@ -66,6 +64,9 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
 
     private final Project project;
     private Map<String, IManagedType> managedTypes;
+    private Map<String, IEntity> entities;
+    private Map<String, IMappedSuperclass> mSuperclasses;
+    private Map<String, IEmbeddable> embeddables;
     private ITypeRepository typeRepository;
     private final EntityMappings mappings;
     private boolean valid = true;//used to conrol long tasks, if not valid long tasks should be either terminated or goes short way
@@ -83,17 +84,17 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
         this.elements = elements;
     }
     
-    @Override
-    public Iterable<IEntity> abstractSchemaTypes() {
-        initializeManagedTypes();
-        Collection<IEntity> abstractSchemaTypes;
-        ManagedTypeVisitor visitor = new ManagedTypeVisitor();
-        for (IManagedType managedType : managedTypes.values()) {
-            managedType.accept(visitor);
-        }
-        abstractSchemaTypes = visitor.getEntities();
-        return Collections.unmodifiableCollection(abstractSchemaTypes);
-    }
+//    @Override
+//    public Iterable<IEntity> abstractSchemaTypes() {
+//        initializeManagedTypes();
+//        Collection<IEntity> abstractSchemaTypes;
+//        ManagedTypeVisitor visitor = new ManagedTypeVisitor();
+//        for (IManagedType managedType : managedTypes.values()) {
+//            managedType.accept(visitor);
+//        }
+//        abstractSchemaTypes = visitor.getEntities();
+//        return Collections.unmodifiableCollection(abstractSchemaTypes);
+//    }
 
     @Override
     public IManagedType getManagedType(IType itype) {
@@ -113,27 +114,11 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     }
 
     @Override
-    public IPlatform getPlatform() {
-        return IPlatform.JAVA;//TODO, at first step always java?
-    }
-
-    @Override
     public ITypeRepository getTypeRepository() {
         if (typeRepository == null) {
             typeRepository = new TypeRepository(project, this, elements);
         }
         return typeRepository;
-    }
-
-    @Override
-    public IJPAVersion getVersion() {
-        String version = PersistenceUtils.getJPAVersion(project);
-        if(version == null || version.startsWith("2")) {
-            return IJPAVersion.VERSION_2_0;
-        }
-        else {
-            return IJPAVersion.VERSION_1_0;
-        }
     }
 
     @Override
@@ -159,10 +144,96 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
         }
     }
 
+    @Override
+    public Iterable<IEntity> entities() {
+        initializeManagedTypes();
+        return entities.values();
+    }
+
+    @Override
+    public IEmbeddable getEmbeddable(IType itype) {
+        initializeManagedTypes();
+        return getEmbeddable(itype.getName());
+    }
+
+    @Override
+    public IEmbeddable getEmbeddable(String tName) {
+        initializeManagedTypes();
+        int lst = tName.lastIndexOf('.');
+        String supposeName = lst>-1 ? tName.substring(lst+1) : tName;
+        IEmbeddable ret = embeddables.get(supposeName);
+        if(ret == null) {
+            //name may not match short class name
+            for(IEmbeddable ent:embeddables.values()) {
+                if(tName.equals(ent.getType().getName())) {
+                    ret = ent;
+                    break;
+                }
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public IEntity getEntity(IType itype) {
+        initializeManagedTypes();
+        return getEntity(itype.getName());
+    }
+
+    @Override
+    public IEntity getEntity(String tName) {
+        initializeManagedTypes();
+        int lst = tName.lastIndexOf('.');
+        String supposeName = lst>-1 ? tName.substring(lst+1) : tName;
+        IEntity ret = entities.get(supposeName);
+        if(ret == null) {
+            //name may not match short class name
+            for(IEntity ent:entities.values()) {
+                if(tName.equals(ent.getType().getName())) {
+                    ret = ent;
+                    break;
+                }
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public IEntity getEntityNamed(String name) {
+        initializeManagedTypes();
+        return entities.get(name);
+    }
+
+    @Override
+    public IMappedSuperclass getMappedSuperclass(IType itype) {
+        initializeManagedTypes();
+        return getMappedSuperclass(itype.getName());
+    }
+
+    @Override
+    public IMappedSuperclass getMappedSuperclass(String tName) {
+        initializeManagedTypes();
+        int lst = tName.lastIndexOf('.');
+        String supposeName = lst>-1 ? tName.substring(lst+1) : tName;
+        IMappedSuperclass ret = mSuperclasses.get(supposeName);
+        if(ret == null) {
+            //name may not match short class name
+            for(IMappedSuperclass ent:mSuperclasses.values()) {
+                if(tName.equals(ent.getType().getName())) {
+                    ret = ent;
+                    break;
+                }
+            }
+        }
+        return ret;
+    }
+
     private void initializeManagedTypes() {
         if (managedTypes == null) {
+            entities = new HashMap<String, IEntity>();
+            embeddables = new HashMap<String, IEmbeddable>();
+            mSuperclasses = new HashMap<String, IMappedSuperclass>();
             managedTypes = new HashMap<String, IManagedType>();
-            //TODO: not only entities but mapped superclasses and embeddable?
             for (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity persistentType : mappings.getEntity()) {
 
                 if (persistentType != null) {
@@ -171,8 +242,9 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
                     if (managedTypes.containsKey(name)) {
                         continue;
                     }
-
-                    managedTypes.put(name, new Entity(persistentType, this));
+                    IEntity ent = new Entity(persistentType, this);
+                    managedTypes.put(name, ent);
+                    entities.put(name, ent);
                 }
             }
             for (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable persistentType : mappings.getEmbeddable()) {
@@ -183,8 +255,9 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
                     if (managedTypes.containsKey(name)) {
                         continue;
                     }
-
-                    managedTypes.put(name, new Embeddable(persistentType, this));
+                    IEmbeddable emb = new Embeddable(persistentType, this);
+                    managedTypes.put(name, emb);
+                    embeddables.put(name, emb);
                 }
             }
             for (org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass persistentType : mappings.getMappedSuperclass()) {
@@ -195,8 +268,9 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
                     if (managedTypes.containsKey(name)) {
                         continue;
                     }
-
-                    managedTypes.put(name, new MappedSuperclass(persistentType, this));
+                    IMappedSuperclass msc = new MappedSuperclass(persistentType, this);
+                    managedTypes.put(name, msc);
+                    mSuperclasses.put(name, msc);
                 }
             }
         }

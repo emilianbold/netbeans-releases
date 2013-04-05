@@ -108,10 +108,11 @@ public abstract class Provider {
         boolean ret = cp.findResource(classRelativePath) != null;
         if(ret && version != null)
         {
-            if(Persistence.VERSION_2_0.equals(version)){
+            if(Persistence.VERSION_2_1.equals(version)){
+                ret &= cp.findResource("javax/persistence/criteria/CriteriaUpdate.class") != null;
+            } else if(Persistence.VERSION_2_0.equals(version)){
                 ret &= cp.findResource("javax/persistence/criteria/JoinType.class") != null;
-            }
-            else if(Persistence.VERSION_1_0.equals(version)){
+            } else if(Persistence.VERSION_1_0.equals(version)){
                 ret &= cp.findResource("javax/persistence/Entity.class") != null && cp.findResource("javax/persistence/criteria/JoinType.class") == null;
             }
         }
@@ -153,7 +154,14 @@ public abstract class Provider {
             // provider doesn't support table generation
             return null;
         }
-        Property result = Persistence.VERSION_2_0.equals(version) ? new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Property() : new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property();
+        Property result;
+        if  (Persistence.VERSION_2_1.equals(version)) {
+                result = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.Property();
+        } else if  (Persistence.VERSION_2_0.equals(version)) {
+                result = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.Property();
+        } else {
+                result = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property();
+        }
         result.setName(getTableGenerationPropertyName());
         if (TABLE_GENERATION_CREATE.equals(strategy)){
             result.setValue(getTableGenerationCreateValue());

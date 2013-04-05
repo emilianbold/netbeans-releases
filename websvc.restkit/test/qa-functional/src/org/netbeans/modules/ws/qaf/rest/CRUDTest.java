@@ -150,7 +150,7 @@ public class CRUDTest extends RestTestBase {
             files.addAll(getFiles(getRestPackage() + ".controller")); //NOI18N
             files.addAll(getFiles(getRestPackage() + ".controller.exceptions"));
         }
-        if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion())) {
+        if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion()) || JavaEEVersion.JAVAEE7.equals(getJavaEEversion())) {
             // there are no converters in JAVAEE6
             assertEquals("Some files were not generated", 8, files.size()); //NOI18N
         } else {
@@ -222,7 +222,7 @@ public class CRUDTest extends RestTestBase {
         if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
             files.addAll(getFilesFromCustomPkg("controller", "controller.exceptions", "service", "entity")); //NOI18N
         }
-        if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion())) {
+        if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion()) || JavaEEVersion.JAVAEE7.equals(getJavaEEversion())) {
             assertEquals("Some files were not generated", 3, files.size()); //NOI18N
         } else {
             assertEquals("Some files were not generated", 7, files.size()); //NOI18N
@@ -338,12 +338,14 @@ public class CRUDTest extends RestTestBase {
     protected Set<File> getFiles(String pkg) {
         Set<File> files = new HashSet<File>();
         FileObject fo = getProjectSourceRoot().getFileObject(pkg.replace('.', '/') + "/"); //NOI18N
-        File pkgRoot = FileUtil.toFile(fo);
-        File[] filesAndFolders = pkgRoot.listFiles();
-        if (filesAndFolders != null) {
-            for (int q = 0; q < filesAndFolders.length; q++) {
-                if (!filesAndFolders[q].isDirectory()) {
-                    files.add(filesAndFolders[q]);
+        if (fo != null) {
+            File pkgRoot = FileUtil.toFile(fo);
+            File[] filesAndFolders = pkgRoot.listFiles();
+            if (filesAndFolders != null) {
+                for (int q = 0; q < filesAndFolders.length; q++) {
+                    if (!filesAndFolders[q].isDirectory()) {
+                        files.add(filesAndFolders[q]);
+                    }
                 }
             }
         }

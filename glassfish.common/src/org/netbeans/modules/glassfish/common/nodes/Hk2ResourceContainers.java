@@ -72,7 +72,7 @@ public class Hk2ResourceContainers extends Children.Keys<Object> implements Refr
         Vector<Hk2ItemNode> keys = new Vector<Hk2ItemNode>();
         GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
         if ((commonSupport != null)
-                && (commonSupport.getInstanceProvider().equals(GlassfishInstanceProvider.getEe6()))) {
+                && (commonSupport.getInstanceProvider().equals(GlassfishInstanceProvider.getProvider()))) {
             String[] childTypes = NodeTypes.getChildTypes(NodeTypes.RESOURCES);
             if (childTypes != null) {
                 for (int i = 0; i < childTypes.length; i++) {

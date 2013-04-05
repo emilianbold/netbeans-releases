@@ -332,6 +332,136 @@ class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory {
         return new BehaviorImpl( model );
     }
 
+    @Override
+    public ProtectedViews createProtectedView() {
+        return new ProtectedViewsImpl(model);
+    }
+
+    @Override
+    public UrlPattern createUrlPattern() {
+        return new UrlPatternImpl(model);
+    }
+
+    @Override
+    public ResourceLibraryContracts createResourceLibraryContracts() {
+        return new ResourceLibraryContractsImpl(model);
+    }
+
+    @Override
+    public ContractMapping createContractMapping() {
+        return new ContractMappingImpl(model);
+    }
+
+    @Override
+    public FlashFactory createFlashFactory() {
+        return new FlashFactoryImpl(model);
+    }
+
+    @Override
+    public FlowHandlerFactory createFlowHandlerFactory() {
+        return new FlowHandlerFactoryImpl(model);
+    }
+
+    @Override
+    public FlowDefinition createFlowDefinition() {
+        return new FlowDefinitionImpl(model);
+    }
+
+    @Override
+    public FlowStartNode createStartNode() {
+        return new FlowStartNodeImpl(model);
+    }
+
+    @Override
+    public FlowInitializer createInitializer() {
+        return new FlowInitializerImpl(model);
+    }
+
+    @Override
+    public FlowFinalizer createFinalizer() {
+        return new FlowFinalizerImpl(model);
+    }
+
+    @Override
+    public FlowView createFlowDefinitionView() {
+        return new FlowViewImpl(model);
+    }
+
+    @Override
+    public FlowSwitch createFlowDefinitionSwitch() {
+        return new FlowSwitchImpl(model);
+    }
+
+    @Override
+    public FlowDefaultOutcome createFlowDefinitionDefaultOutcome() {
+        return new FlowDefaultOutcomeImpl(model);
+    }
+
+    @Override
+    public FlowReturn createFlowDefinitionFlowReturn() {
+        return new FlowReturnImpl(model);
+    }
+
+    @Override
+    public FlowCall createFlowDefinitionFlowCall() {
+        return new FlowCallImpl(model);
+    }
+
+    @Override
+    public FlowCallFacesFlowReference createFlowDefinitionFlowCallFacesFlowReference() {
+        return new FlowCallFacesFlowReferenceImpl(model);
+    }
+
+    @Override
+    public FlowCallInboundParameter createFlowDefinitionFlowCallInboundParameter() {
+        return new FlowCallInboundParameterImpl(model);
+    }
+
+    @Override
+    public FlowCallOutboundParameter createFlowDefinitionFlowCallOutboundParameter() {
+        return new FlowCallOutboundParameterImpl(model);
+    }
+
+    @Override
+    public FlowMethodCall createFlowDefinitionFacesMethodCall() {
+        return new FlowMethodCallImpl(model);
+    }
+
+    @Override
+    public FromOutcome createFromOutcome() {
+        return new FromOutcomeImpl(model);
+    }
+
+    @Override
+    public FlowId createFlowId() {
+        return new FlowIdImpl(model);
+    }
+
+    @Override
+    public FlowDocumentId createFlowDocumentId() {
+        return new FlowDocumentIdImpl(model);
+    }
+
+    @Override
+    public Value createValue() {
+        return new ValueImpl(model);
+    }
+
+    @Override
+    public Method createMethod() {
+        return new MethodImpl(model);
+    }
+
+    @Override
+    public FlowCallParameter createFlowDefinitionFlowCallParameter() {
+        return new FlowCallParameterImpl(model);
+    }
+
+    @Override
+    public Clazz createClass() {
+        return new ClazzImpl(model);
+    }
+
     public static boolean areSameQName(JSFConfigQNames jsfqname,Element element) {
         QName qname = AbstractDocumentComponent.getQName(element);
         if (JSFConfigQNames.JSF_1_2_NS.equals(element.getNamespaceURI())){
@@ -342,6 +472,9 @@ class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory {
         }
         else if (JSFConfigQNames.JSF_2_1_NS.equals(element.getNamespaceURI())){
             return jsfqname.getQName(JSFVersion.JSF_2_1).equals(qname);
+        }
+        else if (JSFConfigQNames.JSF_2_2_NS.equals(element.getNamespaceURI())){
+            return jsfqname.getQName(JSFVersion.JSF_2_2).equals(qname);
         }
         return jsfqname.getLocalName().equals(qname.getLocalPart());
     }
@@ -418,6 +551,10 @@ class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory {
             else if (isElementQName(JSFConfigQNames.BEHAVIOR)){
                 created = new BehaviorImpl(
                         myModel, element);
+            } else if (isElementQName(JSFConfigQNames.PROTECTED_VIEWS)) {
+                created = new ProtectedViewsImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.FLOW_DEFINITION)) {
+                created = new FlowDefinitionImpl(myModel, element);
             }
         }
 
@@ -449,6 +586,116 @@ class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory {
                 checkDescriptionGroup(context);
             }
         }
+
+        @Override
+        public void visit(FlowDefinition context) {
+            if (isElementQName(JSFConfigQNames.START_NODE)) {
+                created = new FlowStartNodeImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.INITIALIZER)) {
+                created = new FlowInitializerImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.FINALIZER)) {
+                created = new FlowFinalizerImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.VIEW)) {
+                created = new FlowViewImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.SWITCH)) {
+                created = new FlowSwitchImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.FLOW_CALL)) {
+                created = new FlowCallImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.FLOW_RETURN)) {
+                created = new FlowReturnImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.METHOD_CALL)) {
+                created = new FlowMethodCallImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.INBOUND_PARAMETER)) {
+                created = new FlowCallInboundParameterImpl(myModel, element);
+            } else {
+                checkDescriptionGroup(context);
+            }
+        }
+
+        @Override
+        public void visit(FlowReturn context) {
+            if (isElementQName(JSFConfigQNames.FROM_OUTCOME)) {
+                created = new FromOutcomeImpl(myModel, element);
+            }
+        }
+
+        @Override
+        public void visit(FlowCallParameter context) {
+            if (isElementQName(JSFConfigQNames.CLASS)) {
+                created = new ClazzImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.VALUE)) {
+                created = new ValueImpl(myModel, element);
+            }
+        }
+
+        @Override
+        public void visit(FlowMethodCall context) {
+            if (isElementQName(JSFConfigQNames.METHOD)) {
+                created = new MethodImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.DEFAULT_OUTCOME)) {
+                created = new FlowDefaultOutcomeImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.PARAMETER)) {
+                created = new FlowCallParameterImpl(myModel, element);
+            }
+        }
+
+        @Override
+        public void visit(FlowCallInOutParameter context) {
+            if (isElementQName(JSFConfigQNames.NAME)) {
+                created = new NameImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.VALUE)) {
+                created = new ValueImpl(myModel, element);
+            }
+        }
+
+        @Override
+        public void visit(FlowCallFacesFlowReference context) {
+            if (isElementQName(JSFConfigQNames.FLOW_ID)) {
+                created = new FlowIdImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.FLOW_DOCUMENT_ID)) {
+                created = new FlowDocumentIdImpl(myModel, element);
+            }
+        }
+
+        @Override
+        public void visit(FlowCall context) {
+            if (isElementQName(JSFConfigQNames.FLOW_REFERENCE)) {
+                created = new FlowCallFacesFlowReferenceImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.OUTBOUND_PARAMETER)) {
+                created = new FlowCallOutboundParameterImpl(myModel, element);
+            }
+        }
+
+        @Override
+        public void visit(FlowSwitch context) {
+            if (isElementQName(JSFConfigQNames.NAVIGATION_CASE)) {
+                created = new NavigationCaseImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.DEFAULT_OUTCOME)) {
+                created = new FlowDefaultOutcomeImpl(myModel, element);
+            }
+        }
+
+        @Override
+        public void visit(ProtectedViews context) {
+            if (isElementQName(JSFConfigQNames.URL_PATTERN)) {
+                created = new UrlPatternImpl(myModel, element);
+            }
+        }
+
+        @Override
+        public void visit(ResourceLibraryContracts context) {
+            if (isElementQName(JSFConfigQNames.CONTRACT_MAPPING)) {
+                created = new ContractMappingImpl(myModel, element);
+            }
+        }
+
+        @Override
+        public void visit(ContractMapping context) {
+            if (isElementQName(JSFConfigQNames.URL_PATTERN)) {
+                created = new UrlPatternImpl(myModel, element);
+            }
+        }
+
 
         @Override
         public void visit(NavigationCase caze) {
@@ -589,7 +836,9 @@ class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory {
             else if ( isElementQName( JSFConfigQNames.DEFAULT_VALIDATORS)){
                 created = new DefaultValidatorsImpl( myModel , element );
             }
-
+            else if (isElementQName(JSFConfigQNames.RESOURCE_LIBRARY_CONTRACTS)){
+                created = new ResourceLibraryContractsImpl(myModel, element);
+            }
         }
 
         @Override
@@ -702,6 +951,10 @@ class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory {
             else if (isElementQName(JSFConfigQNames.VISIT_CONTEXT_FACTORY)){
                 created = new VisitContextFactoryImpl(
                         myModel, element);
+            } else if (isElementQName(JSFConfigQNames.FLASH_FACTORY)) {
+                created = new FlashFactoryImpl(myModel, element);
+            } else if (isElementQName(JSFConfigQNames.FLOW_HANDLER_FACTORY)) {
+                created = new FlowHandlerFactoryImpl(myModel, element);
             }
         }
 

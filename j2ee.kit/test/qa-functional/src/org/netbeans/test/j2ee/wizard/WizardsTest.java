@@ -44,24 +44,22 @@
 package org.netbeans.test.j2ee.wizard;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.test.j2ee.wizard.NewProjectWizardsTest.NewProjectWizardsTest4;
 
 /** Tests new file wizard for Java EE 1.4 projects.
  *
  * @author jungi, Jiri Skrivanek
  */
-public class WizardsTest extends J2eeTestCase {
+public class WizardsTest extends NewFileWizardsTest {
 
     public WizardsTest(java.lang.String testName) {
-        super(testName);
+        super(testName, "1.4");
     }
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = emptyConfiguration();
-        conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest4.class, "testEJBModWizard");
+        addServerTests(Server.GLASSFISH, conf);  // register server
         if (isRegistered(Server.GLASSFISH)) {
             conf = conf.addTest(Suite.class);
         }
@@ -73,31 +71,28 @@ public class WizardsTest extends J2eeTestCase {
         public Suite() {
             super();
             // EJB project
-            addTest(new NewFileWizardsTest("testLocalSessionBean", "1.4"));
-            addTest(new NewFileWizardsTest("testRemoteSessionBean", "1.4"));
-            addTest(new NewFileWizardsTest("testLocalRemoteSessionBean", "1.4"));
-            addTest(new NewFileWizardsTest("testLocalStatefulSessionBean", "1.4"));
-            addTest(new NewFileWizardsTest("testRemoteStatefulSessionBean", "1.4"));
-            addTest(new NewFileWizardsTest("testLocalRemoteStatefulSessionBean", "1.4"));
-            addTest(new NewFileWizardsTest("testLocalEntityBean", "1.4"));
-            addTest(new NewFileWizardsTest("testRemoteEntityBean", "1.4"));
-            addTest(new NewFileWizardsTest("testLocalRemoteEntityBean", "1.4"));
-            addTest(new NewFileWizardsTest("testQueueMdbBean", "1.4"));
-            addTest(new NewFileWizardsTest("testTopicMdbBean", "1.4"));
-            addTest(new NewFileWizardsTest("testServiceLocatorInEjb", "1.4"));
-            addTest(new NewFileWizardsTest("testCachingServiceLocatorInEjb", "1.4"));
-            addTest(new NewFileWizardsTest("testBuildDefaultNewEJBMod", "1.4"));
+            addTest(new WizardsTest("testLocalSessionBean"));
+            addTest(new WizardsTest("testRemoteSessionBean"));
+            addTest(new WizardsTest("testLocalRemoteSessionBean"));
+            addTest(new WizardsTest("testLocalStatefulSessionBean"));
+            addTest(new WizardsTest("testRemoteStatefulSessionBean"));
+            addTest(new WizardsTest("testLocalRemoteStatefulSessionBean"));
+            addTest(new WizardsTest("testLocalEntityBean"));
+            addTest(new WizardsTest("testRemoteEntityBean"));
+            addTest(new WizardsTest("testLocalRemoteEntityBean"));
+            addTest(new WizardsTest("testQueueMdbBean"));
+            addTest(new WizardsTest("testTopicMdbBean"));
+            addTest(new WizardsTest("testServiceLocatorInEjb"));
+            addTest(new WizardsTest("testCachingServiceLocatorInEjb"));
+            addTest(new WizardsTest("testBuildDefaultNewEJBMod"));
             // new files are uncompilable
-            addTest(new NewFileWizardsTest("testLocalBeanEntityBean", "1.4"));
-            addTest(new NewFileWizardsTest("testRemoteBeanEntityBean", "1.4"));
-            addTest(new NewFileWizardsTest("testLocalRemoteBeanEntityBean", "1.4"));
+            addTest(new WizardsTest("testLocalBeanEntityBean"));
+            addTest(new WizardsTest("testRemoteBeanEntityBean"));
+            addTest(new WizardsTest("testLocalRemoteBeanEntityBean"));
             // web project
-            addTest(new NewProjectWizardsTest("testWebModWizard", "1.4"));
-            addTest(new NewFileWizardsTest("testServiceLocatorInWeb", "1.4"));
-            addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb", "1.4"));
-            addTest(new NewFileWizardsTest("testBuildDefaultNewWebMod", "1.4"));
-            // EAR project
-            addTest(new NewProjectWizardsTest("testEnterpriseAppWizard", "1.4"));
+            addTest(new WizardsTest("testServiceLocatorInWeb"));
+            addTest(new WizardsTest("testCachingServiceLocatorInWeb"));
+            addTest(new WizardsTest("testBuildDefaultNewWebMod"));
             addTest(new NewProjectWizardsTest("closeProjects", "1.4"));
         }
     }

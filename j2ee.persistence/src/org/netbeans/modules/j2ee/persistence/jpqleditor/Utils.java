@@ -42,9 +42,11 @@
 package org.netbeans.modules.j2ee.persistence.jpqleditor;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -57,12 +59,14 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -113,9 +117,13 @@ public class Utils {
         int sources_count = 0;
         for(URL url:projectURLs) {
             if("file".equals(url.getProtocol())) {
-                if((new java.io.File(url.getFile())).exists()) {
-                    sources_count++;
-                    break;
+                try {
+                    if(new java.io.File(url.toURI().getPath()).exists()) {
+                        sources_count++;
+                        break;
+                    }
+                } catch (URISyntaxException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }
@@ -171,7 +179,8 @@ public class Utils {
                     }
                 }
             } else {
-                problems.add(NbBundle.getMessage(Utils.class, "DatabaseConnectionAbsent"));//NOI18N
+                HashMap<String,String> props = JPAEditorUtil.findDatabaseConnectionProperties(pu, pe.getProject());
+                problems.add(NbBundle.getMessage(Utils.class, "DatabaseConnectionAbsent", props.get(JPAEditorUtil.JDBCURLKEY), props.get(JPAEditorUtil.JDBCDRIVERKEY), props.get(JPAEditorUtil.JDBCUSERKEY)));//NOI18N
             }
         }
         return problems;

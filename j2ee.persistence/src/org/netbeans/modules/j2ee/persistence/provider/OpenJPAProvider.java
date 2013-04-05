@@ -76,7 +76,7 @@ class OpenJPAProvider extends Provider{
 
     @Override
     public String getAnnotationProcessor() {
-        return Persistence.VERSION_2_0.equals(getVersion()) ? "org.apache.openjpa.persistence.meta.AnnotationProcessor6" : super.getAnnotationProcessor();
+        return (getVersion()!=null && !Persistence.VERSION_1_0.equals(getVersion())) ? "org.apache.openjpa.persistence.meta.AnnotationProcessor6" : super.getAnnotationProcessor();
     }
     
     @Override

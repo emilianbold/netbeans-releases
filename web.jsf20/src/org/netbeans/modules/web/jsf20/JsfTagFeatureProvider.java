@@ -51,7 +51,7 @@ import org.netbeans.modules.web.jsfapi.spi.TagFeatureProvider;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * {@link TagFeatureProvider} for JSF 2.1.
+ * {@link TagFeatureProvider} for JSF 2.2.
  * 
  * @author petrpodzimek
  */
@@ -89,9 +89,10 @@ public class JsfTagFeatureProvider implements TagFeatureProvider {
 
     private IterableTag resolveIterableTag(Library library, Tag tag) {
         for (IterableTag iterableTag : IterableTag.values()) {
-            if (library.getNamespace() != null
+            if ((library.getNamespace() != null
                     && iterableTag.getNamespace() != null
-                    && library.getNamespace().equalsIgnoreCase(iterableTag.getNamespace())) {
+                    && library.getNamespace().equalsIgnoreCase(iterableTag.getNamespace()))
+                || (library.getLegacyNamespace() != null && library.getLegacyNamespace().equalsIgnoreCase(iterableTag.getNamespace()))) {
                 return iterableTag;
             }
         }

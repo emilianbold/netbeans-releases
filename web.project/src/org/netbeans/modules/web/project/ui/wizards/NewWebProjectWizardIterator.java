@@ -201,7 +201,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
         if (apiWebModule != null) {
             FileObject dd = apiWebModule.getDeploymentDescriptor();
-            resultSet.addAll(WebProjectUtilities.ensureWelcomePage(webRoot, dd));
+            resultSet.addAll(WebProjectUtilities.ensureWelcomePage(webRoot, dd, createData.getJavaEEProfile()));
         }
         
         handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);

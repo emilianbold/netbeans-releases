@@ -49,7 +49,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.j2ee.jboss4.nodes.*;
+import org.netbeans.modules.j2ee.jboss4.nodes.JBManagerNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;

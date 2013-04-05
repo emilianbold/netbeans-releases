@@ -155,7 +155,7 @@ public final class ELSanitizer {
             // sanitizes cases where the expressions ends with dot and spaces,
             // e.g. #{foo.  }
             if (ELTokenId.DOT == elToken) {
-                return expression + ADDED_SUFFIX + spaces ;
+                return expression + ADDED_SUFFIX + spaces;
             }
 
             // for COLON - e.g. #{foo:

@@ -84,12 +84,14 @@ public class BridgingJpaSupportImpl implements JpaSupportImplementation {
                 || platform.isToolSupported(JPAModuleInfo.JPAVERSIONPREFIX + Persistence.VERSION_1_0);
         boolean jpa2 = !check
                 || platform.isToolSupported(JPAModuleInfo.JPAVERSIONPREFIX + Persistence.VERSION_2_0);
+        boolean jpa21 = !check
+                || platform.isToolSupported(JPAModuleInfo.JPAVERSIONPREFIX + Persistence.VERSION_2_1);
         
         for (Map.Entry<Provider, String> entry : getPossibleContainerProviders().entrySet()) {
             Provider provider = entry.getKey();
             if (platform.isToolSupported(provider.getProviderClass())) {
                 JpaProvider jpaProvider = JpaProviderFactory.createJpaProvider(
-                        provider.getProviderClass(), platform.isToolSupported(entry.getValue()), jpa1, jpa2);
+                        provider.getProviderClass(), platform.isToolSupported(entry.getValue()), jpa1, jpa2, jpa21);
                 result.add(jpaProvider);
             }
         }
@@ -100,12 +102,15 @@ public class BridgingJpaSupportImpl implements JpaSupportImplementation {
         Map<Provider, String> candidates = new HashMap<Provider, String>();
         candidates.put(ProviderUtil.HIBERNATE_PROVIDER, "hibernatePersistenceProviderIsDefault1.0"); // NOI18N
         candidates.put(ProviderUtil.HIBERNATE_PROVIDER2_0, "hibernatePersistenceProviderIsDefault2.0"); // NOI18N
+        candidates.put(ProviderUtil.HIBERNATE_PROVIDER2_1, "hibernatePersistenceProviderIsDefault2.1"); // NOI18N
         candidates.put(ProviderUtil.TOPLINK_PROVIDER1_0, "toplinkPersistenceProviderIsDefault"); // NOI18N
         candidates.put(ProviderUtil.KODO_PROVIDER, "kodoPersistenceProviderIsDefault"); // NOI18N
         candidates.put(ProviderUtil.DATANUCLEUS_PROVIDER, "dataNucleusPersistenceProviderIsDefault"); // NOI18N
         candidates.put(ProviderUtil.OPENJPA_PROVIDER, "openJpaPersistenceProviderIsDefault2.0"); // NOI18N
         candidates.put(ProviderUtil.OPENJPA_PROVIDER1_0, "openJpaPersistenceProviderIsDefault1.0"); // NOI18N
-        candidates.put(ProviderUtil.ECLIPSELINK_PROVIDER, "eclipseLinkPersistenceProviderIsDefault"); // NOI18N
+        candidates.put(ProviderUtil.ECLIPSELINK_PROVIDER1_0, "eclipseLinkPersistenceProviderIsDefault1.0"); // NOI18N
+        candidates.put(ProviderUtil.ECLIPSELINK_PROVIDER2_0, "eclipseLinkPersistenceProviderIsDefault2.0"); // NOI18N
+        candidates.put(ProviderUtil.ECLIPSELINK_PROVIDER, "eclipseLinkPersistenceProviderIsDefault2.1"); // NOI18N
         return candidates;
     }
 }

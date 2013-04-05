@@ -393,7 +393,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
          */
         private static final String ICON = "org/netbeans/modules/j2ee/weblogic9/resources/16x16.gif"; // NOI18N
 
-        private static final String J2EE_API_DOC    = "docs/javaee6-doc-api.zip";    // NOI18N
+        private static final String J2EE_API_DOC    = "docs/javaee-doc-api.jar";    // NOI18N
 
         private final Set<Type> moduleTypes = new HashSet<Type>();
 
@@ -467,7 +467,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
             // shortcut
             if (!"openJpaPersistenceProviderIsDefault1.0".equals(toolName) // NOI18N
-                    && !"eclipseLinkPersistenceProviderIsDefault".equals(toolName) // NOI18N
+                    && !"eclipseLinkPersistenceProviderIsDefault2.0".equals(toolName) // NOI18N
                     && !OPENJPA_JPA_PROVIDER.equals(toolName)
                     && !ECLIPSELINK_JPA_PROVIDER.equals(toolName)) {
                 return false;
@@ -478,7 +478,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             if ("openJpaPersistenceProviderIsDefault1.0".equals(toolName)) { // NOI18N
                 return currentDefaultJpaProvider.equals(OPENJPA_JPA_PROVIDER);
             }
-            if ("eclipseLinkPersistenceProviderIsDefault".equals(toolName)) { // NOI18N
+            if ("eclipseLinkPersistenceProviderIsDefault2.0".equals(toolName)) { // NOI18N
                 return currentDefaultJpaProvider.equals(ECLIPSELINK_JPA_PROVIDER);
             }
 

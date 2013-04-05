@@ -81,10 +81,30 @@ made subject to such option by the copyright holder.
     </file>
     <file>
         <ext name="xml"/>
+        <resolver mime="text/x-dd-servlet3.1">
+            <xml-rule>
+            	<element name="web-app" ns="http://xmlns.jcp.org/xml/ns/javaee">
+                    <attr name="version" text="3.1"/>
+                </element>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <ext name="xml"/>
         <resolver mime="text/x-dd-servlet-fragment3.0">
             <xml-rule>
             	<element name="web-fragment" ns="http://java.sun.com/xml/ns/javaee">
                     <attr name="version" text="3.0"/>
+                </element>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-servlet-fragment3.1">
+            <xml-rule>
+            	<element name="web-fragment" ns="http://xmlns.jcp.org/xml/ns/javaee">
+                    <attr name="version" text="3.1"/>
                 </element>
             </xml-rule>
         </resolver>
@@ -129,6 +149,16 @@ made subject to such option by the copyright holder.
     </file>
     <file>
         <ext name="xml"/>
+        <resolver mime="text/x-dd-ejbjar3.2">
+            <xml-rule>
+            	<element name="ejb-jar" ns="http://xmlns.jcp.org/xml/ns/javaee">
+                    <attr name="version" text="3.2"/>
+                </element>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <ext name="xml"/>
         <resolver mime="text/x-dd-client1.3">
             <xml-rule>
                 <doctype public-id="-//Sun Microsystems, Inc.//DTD J2EE Application Client 1.3//EN"/>
@@ -167,6 +197,16 @@ made subject to such option by the copyright holder.
     </file>
     <file>
         <ext name="xml"/>
+        <resolver mime="text/x-dd-client7.0">
+            <xml-rule>
+                <element name="application-client" ns="http://xmlns.jcp.org/xml/ns/javaee">
+                    <attr name="version" text="7"/>
+                </element>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <ext name="xml"/>
         <resolver mime="text/x-dd-application1.4">
             <xml-rule>
                 <element name="application" ns="http://java.sun.com/xml/ns/j2ee">
@@ -191,6 +231,16 @@ made subject to such option by the copyright holder.
             <xml-rule>
                 <element name="application" ns="http://java.sun.com/xml/ns/javaee">
                     <attr name="version" text="6"/>
+                </element>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-application7.0">
+            <xml-rule>
+                <element name="application" ns="http://xmlns.jcp.org/xml/ns/javaee">
+                    <attr name="version" text="7"/>
                 </element>
             </xml-rule>
         </resolver>

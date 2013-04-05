@@ -41,9 +41,19 @@
  */
 package org.netbeans.modules.web.el.completion;
 
-import com.sun.el.parser.*;
+import com.sun.el.parser.AstDeferredExpression;
+import com.sun.el.parser.AstDotSuffix;
+import com.sun.el.parser.AstDynamicExpression;
+import com.sun.el.parser.AstFunction;
+import com.sun.el.parser.AstIdentifier;
+import com.sun.el.parser.AstListData;
+import com.sun.el.parser.AstMapData;
+import com.sun.el.parser.AstMethodArguments;
+import com.sun.el.parser.AstString;
+import com.sun.el.parser.Node;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +62,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -68,7 +79,14 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.web.el.*;
+import org.netbeans.modules.web.el.AstPath;
+import org.netbeans.modules.web.el.CompilationContext;
+import org.netbeans.modules.web.el.ELElement;
+import org.netbeans.modules.web.el.ELParserResult;
+import org.netbeans.modules.web.el.ELTypeUtilities;
+import org.netbeans.modules.web.el.ELVariableResolvers;
+import org.netbeans.modules.web.el.NodeUtil;
+import org.netbeans.modules.web.el.ResourceBundles;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
@@ -103,7 +121,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
         return keywordFixedTexts;
     }
- 
+
     @Override
     public CodeCompletionResult complete(final CodeCompletionContext context) {
         final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(50);
@@ -112,7 +130,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         if (element == null || !element.isValid()) {
             return CodeCompletionResult.NONE;
         }
-        Node target = getTargetNode(element, context.getCaretOffset());
+        final Node target = getTargetNode(element, context.getCaretOffset());
         if(target == null) {
             //completion called outside of the EL content, resp. inside the
             //delimiters #{ or } area
@@ -137,9 +155,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             }
         }
 
-        Node previous = rootToNode.get(rootToNode.size() - 1);
-        final Node nodeToResolve = getNodeToResolve(target, previous);
-        
+        final Node nodeToResolve = getNodeToResolve(target, rootToNode);
         final FileObject file = context.getParserResult().getSnapshot().getSource().getFileObject();
         JavaSource jsource = JavaSource.create(ClasspathInfo.create(file));
         try {
@@ -149,29 +165,36 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 public void run(CompilationController info) throws Exception {
                     info.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationContext ccontext = CompilationContext.create(file, info);
-                    
-                    Element resolved =
-                            ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve);
-                    
-                    if (ELTypeUtilities.isRawObjectReference(ccontext, nodeToResolve)) {
-                        proposeRawObjectProperties(ccontext, context, prefixMatcher, nodeToResolve, proposals);            
-                    } else if(ELTypeUtilities.isScopeObject(ccontext, nodeToResolve)) {
+                    Element resolved = ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve);
+
+                    if (ELTypeUtilities.isStaticIterableElement(ccontext, nodeToResolve)) {
+                        proposeStream(ccontext, context, prefixMatcher, proposals);
+                    } else if (ELTypeUtilities.isRawObjectReference(ccontext, nodeToResolve)) {
+                        proposeRawObjectProperties(ccontext, context, prefixMatcher, nodeToResolve, proposals);
+                    } else if (ELTypeUtilities.isScopeObject(ccontext, nodeToResolve)) {
                         // seems to be something like "sessionScope.^", so complete beans from the scope
                         proposeBeansFromScope(ccontext, context, prefixMatcher, element, nodeToResolve, proposals);
-                    } else if(ELTypeUtilities.isResourceBundleVar(ccontext, nodeToResolve)) {
+                    } else if (ELTypeUtilities.isResourceBundleVar(ccontext, nodeToResolve)) {
                         proposeBundleKeysInDotNotation(context, prefixMatcher, element, nodeToResolve, proposals);
-                    } else if(resolved == null) {
-                        proposeFunctions(ccontext, context, prefixMatcher, element, proposals);
-                        proposeManagedBeans(ccontext, context, prefixMatcher, element, proposals);
-                        proposeBundles(ccontext, context, prefixMatcher, element, proposals);
-                        proposeVariables(ccontext, context, prefixMatcher, element, proposals);
-                        proposeImpicitObjects(ccontext, context, prefixMatcher, proposals);
-                        proposeKeywords(context, prefixMatcher, proposals);
+                    } else if (resolved == null) {
+                        if (target instanceof AstDotSuffix == false && nodeToResolve instanceof AstFunction == false) {
+                            proposeFunctions(ccontext, context, prefixMatcher, element, proposals);
+                            proposeManagedBeans(ccontext, context, prefixMatcher, element, proposals);
+                            proposeBundles(ccontext, context, prefixMatcher, element, proposals);
+                            proposeVariables(ccontext, context, prefixMatcher, element, proposals);
+                            proposeImpicitObjects(ccontext, context, prefixMatcher, proposals);
+                            proposeKeywords(context, prefixMatcher, proposals);
+                        }
+                        if (ELStreamCompletionItem.STREAM_METHOD.equals(nodeToResolve.getImage())) {
+                            proposeOperators(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode);
+                        }
+                        ELJavaCompletion.propose(ccontext, context, element, target, proposals);
                     } else {
                         proposeMethods(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode);
+                        if (ELTypeUtilities.isIterableElement(ccontext, resolved)) {
+                            proposeStream(ccontext, context, prefixMatcher, proposals);
+                        }
                     }
-                    
-                    
                 }
             }, true);
         } catch (IOException ex) {
@@ -183,16 +206,25 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return proposals.isEmpty() ? CodeCompletionResult.NONE : result;
     }
 
-    private Node getNodeToResolve(Node target, Node previous) {
-        // due to the ast structure in the case of identifiers we need to try to
-        // resolve the type of the identifier, otherwise the type of the preceding
-        // node.
+    private Node getNodeToResolve(Node target, List<Node> rootToNode) {
+        Node previous = rootToNode.get(rootToNode.size() - 1);
+        // due to the ast structure in the case of identifiers we need to try to resolve the type of the identifier,
+        // otherwise the type of the preceding node.
         if (target instanceof AstIdentifier
                 && (previous instanceof AstIdentifier
                 || previous instanceof AstDotSuffix
                 || NodeUtil.isMethodCall(previous))) {
             return target;
         } else {
+            // prvious node was method call
+            if (previous instanceof AstMethodArguments) {
+                return rootToNode.get(rootToNode.size() - 2);
+            }
+            for (int i = rootToNode.size() - 1; i >= 0; i--) {
+                if (rootToNode.get(i) instanceof AstListData || rootToNode.get(i) instanceof AstMapData) {
+                    return rootToNode.get(i);
+                }
+            }
             return previous;
         }
     }
@@ -240,18 +272,31 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return context.getParserResult().getSnapshot().getSource().getFileObject();
     }
 
+    private void proposeOperators(CompilationContext ccontext, CodeCompletionContext context, Element resolved,
+            PrefixMatcher prefixMatcher, ELElement element, List<CompletionProposal> proposals, List<Node> rootToNode) {
+        TypeElement streamElement = ccontext.info().getElements().getTypeElement("com.sun.el.stream.Stream"); //NOI18N
+        if (streamElement != null) {
+            proposeJavaMethodsForElements(ccontext, context, resolved, prefixMatcher, element,
+                    Arrays.<Element>asList(streamElement), proposals);
+        }
+    }
+
     private void proposeMethods(CompilationContext info, CodeCompletionContext context, Element resolved,
             PrefixMatcher prefix, ELElement elElement,List<CompletionProposal> proposals, List<Node> rootToNode) {
-        
         List<Element> allTypes = ELTypeUtilities.getSuperTypesFor(info, resolved, elElement, rootToNode);
-        for(Element element : allTypes) {
+        proposeJavaMethodsForElements(info, context, resolved, prefix, elElement, allTypes, proposals);
+    }
+
+    private void proposeJavaMethodsForElements(CompilationContext info, CodeCompletionContext context, Element resolved,
+            PrefixMatcher prefix, ELElement elElement, List<Element> elements, List<CompletionProposal> proposals) {
+        for(Element element : elements) {
             for (ExecutableElement enclosed : ElementFilter.methodsIn(element.getEnclosedElements())) {
                 //do not propose Object's members
                 if(element.getSimpleName().contentEquals("Object")) { //NOI18N
                     //XXX hmm, not an ideal non-fqn check
                     continue;
                 }
-                
+
                 if (!enclosed.getModifiers().contains(Modifier.PUBLIC) ||
                         enclosed.getModifiers().contains(Modifier.STATIC)) {
                     continue;
@@ -261,9 +306,9 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 if (!prefix.matches(propertyName)) {
                     continue;
                 }
-                
+
                 // Now check methodName or propertyName is EL keyword.
-                if (getKeywordFixedTexts().contains(propertyName) || 
+                if (getKeywordFixedTexts().contains(propertyName) ||
                         getKeywordFixedTexts().contains(methodName) ) {
                     continue;
                 }
@@ -292,7 +337,13 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             }
         }
     }
-    
+
+    private void proposeStream(CompilationContext info, CodeCompletionContext context, PrefixMatcher prefix, List<CompletionProposal> proposals) {
+        if (prefix.matches(ELStreamCompletionItem.STREAM_METHOD)) {
+            proposals.add(new ELStreamCompletionItem(context.getCaretOffset() - prefix.length()));
+        }
+    }
+
     private boolean contains(List<CompletionProposal> completionProposals, String proposalName) {
         if (proposalName == null || proposalName.isEmpty()) {
             return true;

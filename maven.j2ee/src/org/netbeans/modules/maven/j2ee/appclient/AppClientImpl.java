@@ -93,7 +93,7 @@ public class AppClientImpl extends BaseEEModuleImpl {
         if (version != null) {
             return Profile.fromPropertiesString(version);
         }
-        return Profile.JAVA_EE_6_FULL;
+        return Profile.JAVA_EE_7_FULL;
     }
     
     @Override
@@ -109,13 +109,6 @@ public class AppClientImpl extends BaseEEModuleImpl {
                 ErrorManager.getDefault().notify(exc);
             }
         }
-//        //look in pom's config.
-//        String version = PluginPropertyUtils.getPluginProperty(project,
-//                Constants.GROUP_APACHE_PLUGINS, PLUGIN_APPCLIENT,
-//                "????", "????"); //NOI18N
-//        if (version != null) {
-//            return version.trim();
-//        }
 
         return AppClient.VERSION_6_0;
     }

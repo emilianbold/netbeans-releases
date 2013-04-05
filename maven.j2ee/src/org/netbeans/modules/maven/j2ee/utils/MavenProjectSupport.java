@@ -65,7 +65,6 @@ import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
-import org.netbeans.modules.maven.j2ee.Wrapper;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
@@ -235,18 +234,12 @@ public class MavenProjectSupport {
         if (sc != null && sc.getServerInstanceId() != null) {
             return new String[] {sc.getServerInstanceId(), null};
         }
+
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        // XXX should this first look up HINT_DEPLOY_J2EE_SERVER_ID in project (profile, ...) properties? Cf. Wrapper.createComboBoxUpdater.getDefaultValue
-        String val = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
-        if (val != null) {
-            return new String[] {val, null};
-        }
-        String server = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
-        if (server == null) {
-            //try checking for old values..
-            server = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
-        }
-        return new String[]{null, server};
+        String serverID = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
+        String serverType = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
+        
+        return new String[]{serverID, serverType};
     }
     
     /**
@@ -264,7 +257,7 @@ public class MavenProjectSupport {
                 try {
                     return si.getDisplayName();
                 } catch (InstanceRemovedException ex) {
-                    Logger.getLogger(Wrapper.class.getName()).log(Level.FINE, "", ex);
+                    Logger.getLogger(MavenProjectSupport.class.getName()).log(Level.FINE, "", ex);
                 }
             }
         }
@@ -360,12 +353,12 @@ public class MavenProjectSupport {
                 
                 FileObject webXml = webModuleImpl.getDeploymentDescriptor();
                 if (webXml == null) {
-                    AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-                    String j2eeVersion = props.get(MavenJavaEEConstants.HINT_J2EE_VERSION, false);
+                    String j2eeVersion = readJ2eeVersion(project);
                     webXml = DDHelper.createWebXml(Profile.fromPropertiesString(j2eeVersion), webInf);
     
                     // this should never happend if valid j2eeVersion has been parsed - see also issue #214600
-                    assert webXml != null : "DDHelper wasn't able to create deployment descriptor for the J2EE version" + j2eeVersion + ", Profile.fromPropertiesString(j2eeVersion) returns: " + Profile.fromPropertiesString(j2eeVersion);
+                    assert webXml != null : "DDHelper wasn't able to create deployment descriptor for the J2EE version: " + j2eeVersion
+                            + ", Profile.fromPropertiesString(j2eeVersion) returns: " + Profile.fromPropertiesString(j2eeVersion);
                 }
 
             } catch (IOException ex) {
@@ -401,7 +394,7 @@ public class MavenProjectSupport {
      * @return J2EE version
      */
     public static String readJ2eeVersion(Project project)  {
-        return readSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, false);
+        return readSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, true);
     }
     
     private static String readSettings(Project project, String propertyName, boolean shared) {
@@ -411,15 +404,11 @@ public class MavenProjectSupport {
     
     
     public static void setJ2eeVersion(Project project, String value) {
-        setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, false);
+        setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, true);
     }
     
     public static void setServerID(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, value, true);
-    }
-    
-    public static void setOldServerInstanceID(Project project, String value) {
-        setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, value, true);
     }
     
     public static void setServerInstanceID(Project project, String value) {

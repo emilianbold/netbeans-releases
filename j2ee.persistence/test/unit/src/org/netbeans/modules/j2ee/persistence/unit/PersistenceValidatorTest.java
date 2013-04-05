@@ -69,14 +69,16 @@ public class PersistenceValidatorTest extends PersistenceEditorTestBase {
      */
     public void testValidateNameIsUnique() {
         String version=dataObject.getPersistence().getVersion();
-        PersistenceUnit unit1 = Persistence.VERSION_1_0.equals(version) ? 
+        PersistenceUnit unit1 = Persistence.VERSION_1_0.equals(version) ?
             new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit() :
-            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
+            Persistence.VERSION_2_0.equals(version) ? new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit() :
+            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.PersistenceUnit();
         unit1.setName("name1");
         dataObject.addPersistenceUnit(unit1);
         PersistenceUnit unit2 = Persistence.VERSION_1_0.equals(version) ?
             new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit() :
-            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
+            Persistence.VERSION_2_0.equals(version) ? new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit() :
+            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.PersistenceUnit();
         unit2.setName("name1");
         dataObject.addPersistenceUnit(unit2);
         PersistenceValidator validator = new PersistenceValidatorImpl(dataObject, false);
@@ -97,7 +99,8 @@ public class PersistenceValidatorTest extends PersistenceEditorTestBase {
         String version=dataObject.getPersistence().getVersion();
         PersistenceUnit unit1 = Persistence.VERSION_1_0.equals(version) ?
             new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit() :
-            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
+            Persistence.VERSION_2_0.equals(version) ? new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit() :
+            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.PersistenceUnit();
         unit1.setName("unit1");
         unit1.setExcludeUnlistedClasses(true);
         dataObject.addPersistenceUnit(unit1);
@@ -120,7 +123,8 @@ public class PersistenceValidatorTest extends PersistenceEditorTestBase {
         String version=dataObject.getPersistence().getVersion();
         PersistenceUnit unit1 = Persistence.VERSION_1_0.equals(version) ?
             new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit() :
-            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
+            Persistence.VERSION_2_0.equals(version) ? new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit() :
+            new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.PersistenceUnit();
         unit1.setName("unit1");
         unit1.addJarFile("my-jar.jar");
         dataObject.addPersistenceUnit(unit1);

@@ -105,19 +105,19 @@ public final class J2eeProjectCapabilities {
     }
 
     /**
-     * EJB 3.0 functionality is supported in EjbJar project which is targetting
-     * JEE5 or JEE6 platform.
+     * EJB 3.0 functionality is supported in EjbJar project which is targeting
+     * Java EE 5 or Java EE 6 platform.
      */
     public boolean isEjb30Supported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         boolean eeOk = ejbJarProfile != null && (ejbJarProfile.equals(Profile.JAVA_EE_5) ||
-                ejbJarProfile.equals(Profile.JAVA_EE_6_FULL));
+                ejbJarProfile.equals(Profile.JAVA_EE_6_FULL) || ejbJarProfile.equals(Profile.JAVA_EE_7_FULL));
         return J2eeModule.Type.EJB.equals(moduleType) && eeOk;
     }
 
     /**
-     * EJB 3.1 functionality is supported in EjbJar and Web project which is targetting
-     * full JEE6 platform.
+     * EJB 3.1 functionality is supported in EjbJar and Web project which is targeting
+     * full Java EE 6 platform.
      */
     public boolean isEjb31Supported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
@@ -127,13 +127,39 @@ public final class J2eeProjectCapabilities {
     }
 
     /**
-     * EJB 3.1 Lite functionality is supported in Web project targetting JEE6
+     * EJB 3.1 Lite functionality is supported in Web project targeting Java EE 6
      * web profile and wherever full EJB 3.1 is supported.
      */
     public boolean isEjb31LiteSupported() {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         boolean ee6or7Web = ejbJarProfile != null && (ejbJarProfile.equals(Profile.JAVA_EE_6_WEB) || ejbJarProfile.equals(Profile.JAVA_EE_7_WEB));
         return isEjb31Supported() || (J2eeModule.Type.WAR.equals(moduleType) && ee6or7Web);
+    }
+
+    /**
+     * EJB 3.2 functionality is supported in EjbJar and Web project which is targeting
+     * full Java EE 7 platform.
+     *
+     * @return {@code true} if the project is targeting full Java EE 7 platform
+     * @since 1.76
+     */
+    public boolean isEjb32Supported() {
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+        boolean ee7 = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_7_FULL);
+        return ee7 && (J2eeModule.Type.EJB.equals(moduleType) || J2eeModule.Type.WAR.equals(moduleType));
+    }
+
+    /**
+     * EJB 3.2 Lite functionality is supported in Web project targeting Java EE 7
+     * web profile and wherever full EJB 3.2 is supported.
+     *
+     * @return {@code true} if the project is targeting full or web profile Java EE 7 platform
+     * @since 1.76
+     */
+    public boolean isEjb32LiteSupported() {
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+        boolean ee7Web = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_7_WEB);
+        return isEjb32Supported() || (J2eeModule.Type.WAR.equals(moduleType) && ee7Web);
     }
 
     /**

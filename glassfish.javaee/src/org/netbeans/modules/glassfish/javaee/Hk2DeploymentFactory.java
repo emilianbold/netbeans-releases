@@ -74,23 +74,6 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         this.su = su;
     }
 
-
-    /**
-     * 
-     * @return 
-     */
-    public static synchronized DeploymentFactory createPrelude() {
-        if (preludeInstance == null) {
-            // TODO - find way to get uri fragment from GlassfishInstanceProvider
-            ServerUtilities tmp = ServerUtilities.getPreludeUtilities();
-            preludeInstance = new Hk2DeploymentFactory(new String[] { "deployer:gfv3:" }, "0.1",  // NOI18N
-                    NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_PreludeDisplayName")); // NOI18N
-            DeploymentFactoryManager.getInstance().registerDeploymentFactory(preludeInstance);
-            preludeInstance.setServerUtilities(tmp);
-        }
-        return preludeInstance;
-    }
-
     /**
      *
      * @return

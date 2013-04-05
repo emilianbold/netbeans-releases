@@ -100,7 +100,7 @@ public class WebProjectDDTest extends J2eeTestCase {
     private static WebApp webapp;
     private static DDDataObject ddObj;
     private static DDTestUtils utils;
-    private static String[] webprojectddtests = {
+    public static String[] webprojectddtests = {
         "testOpenProject", "testValuesInOverview", "testModificationByApi", "testModificationInDesign",
         "testExistingContextParameters", "testAddContextParameters", "testModifyContextParameter",
         "testDelContextParameter", "testExistingListeners", "testAddListener", "testModifyListener",
@@ -109,7 +109,7 @@ public class WebProjectDDTest extends J2eeTestCase {
         "testAddFilterParam", "testModifyFilterParam", "testDelFilterParam", "testExistingFilterMappings",
         "testAddFilterMapping", "testFilterNameChangePropagation", "testServletNameChangePropagation",
         "testModifyFilterMapping", "testDelFilterMapping"};
-    private static String[] pagesandreferencesddtests = {
+    public static String[] pagesandreferencesddtests = {
         "testOpenProject", "testExistingWelcomePages", "testAddWelcomePage", "testDelWelcomePage",
         "testExistingErrorPages", "testAddErrorPage", "testModifyErrorPage", "testDelErrorPage",
         "testExistingPropertyGroups", "testModifyPropertyGroup", "testDelPropertyGroup",
@@ -121,7 +121,7 @@ public class WebProjectDDTest extends J2eeTestCase {
         "testAddRemoteEJBReference", "testModifyRemoteEJBReference", "testDelRemoteEJBReference",
         "testExistingMsgDstReferences", "testAddMsgDstReference", "testModifyMsgDstReference",
         "testDelMsgDstReference"};
-    private static String[] securityddtests = {
+    public static String[] securityddtests = {
         "testOpenProject", "testExistingLoginConfiguration", "testExistingSecurityRoles",
         "testAddSecurityRole", "testEditSecurityRole", "testDelSecurityRole"};
 

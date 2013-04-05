@@ -106,6 +106,18 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
         Project project = Templates.getProject(myDescriptor);
         WebRestSupport support  = project.getLookup().lookup(WebRestSupport.class);
         if ( support != null ){
+            if ( OriginResourceIterator.isJee7Profile(project)){
+                if ( !support.isRestSupportOn() ){
+                    myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
+                            NbBundle.getMessage(RestFilterPanel.class, 
+                            "ERR_NoRestConfig"));                   // NOI18N 
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }
+            
             Object object  = null;
             try {
                 object = support.getRestServletMapping(support.getWebApp());

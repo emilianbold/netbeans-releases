@@ -315,7 +315,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="deploy-jar">
   <p>
-   docs/javaee6-doc-api.zip, modules/docs/org-netbeans-modules-j2ee-platform.jar
+   docs/javaee-doc-api.jar, modules/docs/org-netbeans-modules-j2ee-platform.jar
   </p>
  </answer>
 

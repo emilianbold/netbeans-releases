@@ -58,6 +58,8 @@ public class PersistenceCfgProperties {
 
     // String[] for selecting one of the values
     private final static String[] TRUE_FALSE = new String[]{"true", "false"}; // NOI18N
+    private final static String[] SCHEMA_GEN_OPTIONS = new String[]{"none", "create", "drop-and-create", "drop"};
+    private final static String[] SCHEMA_GEN_SOURCE_TYPES = new String[]{"metadata", "script", "metadata-then-script", "script-then-metadata"};
     //eclipselink
     private final static String[] EL_CACHE_TYPES = new String[]{"Full", "Weak", "Soft", "SoftWeak", "HardWeak", "NONE"};//NOI18N
     private final static String[] EL_FLUSH_CLEAR_CACHE = new String[]{"Drop", "DropInvalidate", "Merge"};//NOI18N
@@ -82,69 +84,84 @@ public class PersistenceCfgProperties {
         possiblePropertyValues.get(null).put(PersistenceUnitProperties.VALIDATION_GROUP_PRE_PERSIST, null);
         possiblePropertyValues.get(null).put(PersistenceUnitProperties.VALIDATION_GROUP_PRE_UPDATE, null);
         possiblePropertyValues.get(null).put(PersistenceUnitProperties.VALIDATION_GROUP_PRE_REMOVE, null);
+//in current realization jdbc properties are derived from provider properties, commented
+//        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_DRIVER, null);
+//        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_URL, null);
+//        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_USER, null);
+//        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_PASSWORD, null);
+        //2.1 but in the same area as 2.0 for now
+        possiblePropertyValues.get(null).put(PersistenceUnitProperties.SCHEMA_GENERATION_DATABASE_ACTION, SCHEMA_GEN_OPTIONS);
+        possiblePropertyValues.get(null).put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_ACTION, SCHEMA_GEN_OPTIONS);
+        possiblePropertyValues.get(null).put(PersistenceUnitProperties.SCHEMA_GENERATION_CREATE_SOURCE, SCHEMA_GEN_SOURCE_TYPES);
+        possiblePropertyValues.get(null).put(PersistenceUnitProperties.SCHEMA_GENERATION_DROP_SOURCE, SCHEMA_GEN_SOURCE_TYPES);
+        possiblePropertyValues.get(null).put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_CREATE_TARGET, null);
+        possiblePropertyValues.get(null).put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_DROP_TARGET, null);
         //eclipselink 2.0
+        possiblePropertyValues.put(ProviderUtil.ECLIPSELINK_PROVIDER2_0, new HashMap<String, String[]>());
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.TEMPORAL_MUTABLE, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.CACHE_TYPE_DEFAULT, EL_CACHE_TYPES);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.CACHE_SIZE_DEFAULT, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.FLUSH_CLEAR_CACHE, EL_FLUSH_CLEAR_CACHE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.THROW_EXCEPTIONS, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.EXCEPTION_HANDLER_CLASS, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.WEAVING, EL_WEAWING);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.WEAVING_LAZY, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.WEAVING_CHANGE_TRACKING, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.WEAVING_FETCHGROUPS, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.WEAVING_INTERNAL, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.WEAVING_EAGER, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.SESSION_CUSTOMIZER, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.VALIDATION_ONLY_PROPERTY, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.CLASSLOADER, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.PROFILER, EL_PROFILER);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.PERSISTENCE_CONTEXT_REFERENCE_MODE, EL_CONTEXT_REFMODE);//NOI18N
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.JDBC_BIND_PARAMETERS, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.NATIVE_SQL, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.BATCH_WRITING, EL_BATCHWRITER);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.BATCH_WRITING_SIZE, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.CACHE_STATEMENTS, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.CACHE_STATEMENTS_SIZE, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.EXCLUSIVE_CONNECTION_IS_LAZY, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.EXCLUSIVE_CONNECTION_MODE, EL_EXCLUSIVE_CON_MODE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.JDBC_READ_CONNECTIONS_MAX, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.JDBC_READ_CONNECTIONS_MIN, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.JDBC_READ_CONNECTIONS_SHARED, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.JDBC_WRITE_CONNECTIONS_MAX, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.JDBC_WRITE_CONNECTIONS_MIN, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.LOGGING_LOGGER, EL_LOGGER);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.LOGGING_LEVEL, EL_LOGGER_LEVEL);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.LOGGING_TIMESTAMP, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.LOGGING_THREAD, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.LOGGING_SESSION, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.LOGGING_EXCEPTIONS, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.LOGGING_FILE, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.PARTITIONING, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.PARTITIONING_CALLBACK, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.SESSION_NAME, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.SESSIONS_XML, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.SESSION_EVENT_LISTENER_CLASS, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.INCLUDE_DESCRIPTOR_QUERIES, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.TARGET_DATABASE, EL_TARGET_DATABASE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.TARGET_SERVER, EL_TARGET_SERVER);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.APP_LOCATION, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.CREATE_JDBC_DDL_FILE, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.DROP_JDBC_DDL_FILE, null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.DDL_GENERATION_MODE, EL_DDL_GEN_MODE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.WEAVING_CHANGE_TRACKING, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.UPPERCASE_COLUMN_NAMES, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put("eclipselink.canonicalmodel.prefix", null);//NOI18N
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put("eclipselink.canonicalmodel.suffix", null);//NOI18N
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put("eclipselink.canonicalmodel.subpackage", null);//NOI18N
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(ProviderUtil.ECLIPSELINK_PROVIDER2_0.getJdbcUrl(),null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(ProviderUtil.ECLIPSELINK_PROVIDER2_0.getJdbcDriver(),null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(ProviderUtil.ECLIPSELINK_PROVIDER2_0.getJdbcPassword(),null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(ProviderUtil.ECLIPSELINK_PROVIDER2_0.getJdbcUsername(),null);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(ProviderUtil.ECLIPSELINK_PROVIDER2_0.getTableGenerationPropertyName()
+                ,new String[] {ProviderUtil.ECLIPSELINK_PROVIDER2_0.getTableGenerationCreateValue(),ProviderUtil.ECLIPSELINK_PROVIDER2_0.getTableGenerationDropCreateValue(), PersistenceUnitProperties.NONE });
+        //ECLIPSELINK 2.1 (initially just copy of 2.0)
         possiblePropertyValues.put(ProviderUtil.ECLIPSELINK_PROVIDER, new HashMap<String, String[]>());
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.TEMPORAL_MUTABLE, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.CACHE_TYPE_DEFAULT, EL_CACHE_TYPES);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.CACHE_SIZE_DEFAULT, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.FLUSH_CLEAR_CACHE, EL_FLUSH_CLEAR_CACHE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.THROW_EXCEPTIONS, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.EXCEPTION_HANDLER_CLASS, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.WEAVING, EL_WEAWING);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.WEAVING_LAZY, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.WEAVING_CHANGE_TRACKING, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.WEAVING_FETCHGROUPS, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.WEAVING_INTERNAL, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.WEAVING_EAGER, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.SESSION_CUSTOMIZER, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.VALIDATION_ONLY_PROPERTY, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.CLASSLOADER, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.PROFILER, EL_PROFILER);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.PERSISTENCE_CONTEXT_REFERENCE_MODE, EL_CONTEXT_REFMODE);//NOI18N
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.JDBC_BIND_PARAMETERS, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.NATIVE_SQL, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.BATCH_WRITING, EL_BATCHWRITER);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.BATCH_WRITING_SIZE, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.CACHE_STATEMENTS, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.CACHE_STATEMENTS_SIZE, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.EXCLUSIVE_CONNECTION_IS_LAZY, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.EXCLUSIVE_CONNECTION_MODE, EL_EXCLUSIVE_CON_MODE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.JDBC_READ_CONNECTIONS_MAX, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.JDBC_READ_CONNECTIONS_MIN, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.JDBC_READ_CONNECTIONS_SHARED, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.JDBC_WRITE_CONNECTIONS_MAX, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.JDBC_WRITE_CONNECTIONS_MIN, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.LOGGING_LOGGER, EL_LOGGER);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.LOGGING_LEVEL, EL_LOGGER_LEVEL);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.LOGGING_TIMESTAMP, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.LOGGING_THREAD, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.LOGGING_SESSION, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.LOGGING_EXCEPTIONS, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.LOGGING_FILE, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.PARTITIONING, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.PARTITIONING_CALLBACK, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.SESSION_NAME, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.SESSIONS_XML, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.SESSION_EVENT_LISTENER_CLASS, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.INCLUDE_DESCRIPTOR_QUERIES, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.TARGET_DATABASE, EL_TARGET_DATABASE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.TARGET_SERVER, EL_TARGET_SERVER);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.APP_LOCATION, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.CREATE_JDBC_DDL_FILE, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.DROP_JDBC_DDL_FILE, null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.DDL_GENERATION_MODE, EL_DDL_GEN_MODE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.WEAVING_CHANGE_TRACKING, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.UPPERCASE_COLUMN_NAMES, TRUE_FALSE);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put("eclipselink.canonicalmodel.prefix", null);//NOI18N
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put("eclipselink.canonicalmodel.suffix", null);//NOI18N
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put("eclipselink.canonicalmodel.subpackage", null);//NOI18N
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(ProviderUtil.ECLIPSELINK_PROVIDER.getJdbcUrl(),null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(ProviderUtil.ECLIPSELINK_PROVIDER.getJdbcDriver(),null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(ProviderUtil.ECLIPSELINK_PROVIDER.getJdbcPassword(),null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(ProviderUtil.ECLIPSELINK_PROVIDER.getJdbcUsername(),null);
-        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(ProviderUtil.ECLIPSELINK_PROVIDER.getTableGenerationPropertyName()
-                ,new String[] {ProviderUtil.ECLIPSELINK_PROVIDER.getTableGenerationCreateValue(),ProviderUtil.ECLIPSELINK_PROVIDER.getTableGenerationDropCreateValue(), PersistenceUnitProperties.NONE });
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).putAll(possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0));
         //hibernate //TODO? reuse hibernate module?
         possiblePropertyValues.put(ProviderUtil.HIBERNATE_PROVIDER2_0, new HashMap<String, String[]>());
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER2_0).put(ProviderUtil.HIBERNATE_PROVIDER2_0.getTableGenerationPropertyName(), null);
@@ -167,6 +184,9 @@ public class PersistenceCfgProperties {
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER2_0).put(ProviderUtil.HIBERNATE_PROVIDER2_0.getJdbcUsername(),null);
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER2_0).put(ProviderUtil.HIBERNATE_PROVIDER2_0.getTableGenerationPropertyName()
                 ,new String[] {ProviderUtil.HIBERNATE_PROVIDER2_0.getTableGenerationCreateValue(),ProviderUtil.HIBERNATE_PROVIDER2_0.getTableGenerationDropCreateValue(), "validate", "update" });//NOI18N
+        //HIBERNATE 2.1 (initially just copy of 2.0)
+        possiblePropertyValues.put(ProviderUtil.HIBERNATE_PROVIDER2_1, new HashMap<String, String[]>());
+        possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER2_1).putAll(possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER2_0));
         //hibernate jpa 1.0
         possiblePropertyValues.put(ProviderUtil.HIBERNATE_PROVIDER, new HashMap<String, String[]>());
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER).put(ProviderUtil.HIBERNATE_PROVIDER.getJdbcUrl(),null);
@@ -204,7 +224,7 @@ public class PersistenceCfgProperties {
     
     public static Object  getPossiblePropertyValue( Provider provider, String propName ) {
         if(provider == null) {
-            provider = ProviderUtil.ECLIPSELINK_PROVIDER;
+            provider = ProviderUtil.ECLIPSELINK_PROVIDER2_0;
         }//TODO, some logic to add, either search for all providers or some other
         Map<String, String[]> firstMap = possiblePropertyValues.get(provider);
         return firstMap != null ? firstMap.get(propName) : null;
@@ -219,7 +239,8 @@ public class PersistenceCfgProperties {
     public static List<String> getKeys(Provider provider){
         //TODO: cache lists?
         ArrayList<String> ret = new ArrayList<String>();
-        if(provider == null || Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider))) {
+        String ver = provider == null ? null : ProviderUtil.getVersion(provider);
+        if(provider == null || (ver!=null && !Persistence.VERSION_1_0.equals(ver))) {
             ret.addAll(possiblePropertyValues.get(null).keySet());
         }
         if(provider !=null ) {
@@ -240,7 +261,7 @@ public class PersistenceCfgProperties {
      */
     public static List<Provider> getProviders(){
         ArrayList<Provider> ret = new ArrayList<Provider>();
-        ret.add(ProviderUtil.ECLIPSELINK_PROVIDER);
+        ret.add(ProviderUtil.ECLIPSELINK_PROVIDER2_0);
         ret.add(ProviderUtil.HIBERNATE_PROVIDER2_0);
         return ret;
     }

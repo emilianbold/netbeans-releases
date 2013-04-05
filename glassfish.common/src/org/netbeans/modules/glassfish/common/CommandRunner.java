@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import org.netbeans.modules.glassfish.common.utils.Util;
 import java.io.*;
 import java.net.*;
 import java.security.cert.CertificateException;
@@ -675,15 +676,15 @@ public class CommandRunner extends BasicTask<OperationState> {
                             commandSucceeded = serverCmd.processResponse();
                         } else {
                             if (!serverCmd.isSilentFailureAllowed()) {
-                                Logger.getLogger("glassfish").log(Level.WARNING, hconn.toString());
-                                Logger.getLogger("glassfish").log(Level.WARNING, hconn.getContentType());
-                                Logger.getLogger("glassfish").log(Level.WARNING, hconn.getContentEncoding());
+                                Logger.getLogger("glassfish").log(Level.FINE, hconn.toString());
+                                Logger.getLogger("glassfish").log(Level.FINE, hconn.getContentType());
+                                Logger.getLogger("glassfish").log(Level.FINE, hconn.getContentEncoding());
                                 Map<String,List<String>> ms2ls = hconn.getHeaderFields();
-                                Logger.getLogger("glassfish").log(Level.WARNING, "Header Fields");
+                                Logger.getLogger("glassfish").log(Level.FINE, "Header Fields");
                                 for (Entry<String,List<String>> e : ms2ls.entrySet()) {
-                                    Logger.getLogger("glassfish").log(Level.WARNING, e.getKey()+" = ");
+                                    Logger.getLogger("glassfish").log(Level.FINE, e.getKey()+" = ");
                                     for (String v : e.getValue()) {
-                                        Logger.getLogger("glassfish").log(Level.WARNING, "     "+v);
+                                        Logger.getLogger("glassfish").log(Level.FINE, "     "+v);
                                     }
                                 }
                             }

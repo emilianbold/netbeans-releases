@@ -125,7 +125,8 @@ public class ProjectHookImpl extends ProjectOpenedHook {
             copyOnSave.cleanup();
         }
     }
-    
+
+    @NbBundle.Messages("MSG_No_Server=<No Server Selected>")
     private String getServerName() {
         String serverName = MavenProjectSupport.obtainServerName(project);
         if (serverName == null) {

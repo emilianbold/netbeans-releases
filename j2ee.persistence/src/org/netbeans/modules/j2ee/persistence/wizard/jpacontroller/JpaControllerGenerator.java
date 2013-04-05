@@ -350,7 +350,7 @@ public class JpaControllerGenerator {
                     for (String importFq : importFqs) {
                         modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, importFq);
                     }
-                    if(Persistence.VERSION_2_0.equals(version)){//add criteria classes if appropriate
+                    if(version!=null && !Persistence.VERSION_1_0.equals(version)){//add criteria classes if appropriate
                         modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "javax.persistence.criteria.CriteriaQuery");
                         modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "javax.persistence.criteria.Root");
                     }
@@ -810,7 +810,7 @@ public class JpaControllerGenerator {
 
                     bodyText = "EntityManager em = getEntityManager();\n try{\n" +
                         (
-                        Persistence.VERSION_2_0.equals(version) ?
+                        version!=null && !Persistence.VERSION_1_0.equals(version) ?
                             "CriteriaQuery cq = em.getCriteriaBuilder().createQuery();\n"+
                             "cq.select(cq.from("+simpleEntityName+".class));\n"+
                             "Query q = em.createQuery(cq);\n"
@@ -844,7 +844,7 @@ public class JpaControllerGenerator {
 
                     bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
                         (
-                        Persistence.VERSION_2_0.equals(version) ?
+                        version!=null && !Persistence.VERSION_1_0.equals(version) ?
                             "CriteriaQuery cq = em.getCriteriaBuilder().createQuery();\n"+
                             "Root<"+simpleEntityName+"> rt = cq.from("+simpleEntityName+".class); "+
                             "cq.select(em.getCriteriaBuilder().count(rt));\n"+

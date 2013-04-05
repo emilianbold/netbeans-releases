@@ -100,8 +100,12 @@ class JBStartRunnable implements Runnable {
 
     private final static String STARTUP_SH = File.separator + 
             "bin" + File.separator + "run.sh";          // NOI18N
+    private final static String STANDALONE_SH = File.separator + 
+            "bin" + File.separator + "standalone.sh";          // NOI18N
     private final static String STARTUP_BAT = File.separator + 
             "bin" + File.separator + RUN_FILE_NAME;     // NOI18N
+    private final static String STANDALONE_BAT = File.separator + 
+            "bin" + File.separator + "standalone.bat";     // NOI18N
                              
     private final static String CONF_BAT = File.separator + 
             "bin" + File.separator + CONF_FILE_NAME;    // NOI18N
@@ -316,7 +320,7 @@ class JBStartRunnable implements Runnable {
 
         final String instanceName = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
         String args = ("all".equals(instanceName) ? "-b 127.0.0.1 " : "") + "-c " + instanceName; // NOI18N
-        return new NbProcessDescriptor(serverRunFileName, args);
+        return new NbProcessDescriptor(serverRunFileName, isJBoss7()? "" : args);
     }
     
     private String getRunFileName( InstanceProperties ip, String[] envp ){
@@ -359,11 +363,15 @@ class JBStartRunnable implements Runnable {
             Logger.getLogger("global").log(Level.INFO, null, ioe);
 
             final String serverLocation = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
-            final String serverRunFileName = serverLocation + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH);
+            final String serverRunFileName = serverLocation + (isJBoss7() ? Utilities.isWindows() ? STANDALONE_BAT : STANDALONE_SH : Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH);
             fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_PD", serverRunFileName));
 
             return null;
         }
+    }
+    
+    private boolean isJBoss7() {
+        return dm.getProperties().isVersion(JBPluginUtils.JBOSS_7_0_0);
     }
     
     private InputOutput openConsole() {
@@ -422,7 +430,7 @@ class JBStartRunnable implements Runnable {
             String serverLocation = getProperties().getProperty(
                     JBPluginProperties.PROPERTY_ROOT_DIR);
             String serverRunFileName = serverLocation + 
-                (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH);
+                    (isJBoss7() ? Utilities.isWindows() ? STANDALONE_BAT : STANDALONE_SH : Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH);
             if ( needChange ){
                 String contentRun = readFile(serverRunFileName);
                 String contentConf = readFile(serverLocation + CONF_BAT);

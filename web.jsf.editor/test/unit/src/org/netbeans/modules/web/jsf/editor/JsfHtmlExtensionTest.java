@@ -65,22 +65,29 @@ public class JsfHtmlExtensionTest extends TestBaseForTestProject {
     }
     
 
-    public void testAttributeValueCompletion() throws BadLocationException, ParseException {
-        testCC("<h:selectManyCheckbox layout=\"|\"/>", new String[]{"pageDirection", "lineDirection"}, Match.EXACT);
-        testCC("<f:ajax immediate=\"|\"/>", new String[]{"true", "false"}, Match.EXACT);
+    public void testAttributeValueCompletion01() throws BadLocationException, ParseException {
+        // attribute completion for legacy namespaces
+        testCC("testWebProject/web/cctest.xhtml", "<h:selectManyCheckbox layout=\"|\"/>", new String[]{"pageDirection", "lineDirection"}, Match.EXACT);
+        testCC("testWebProject/web/cctest.xhtml", "<f:ajax immediate=\"|\"/>", new String[]{"true", "false"}, Match.EXACT);
     }
-    
-    protected void testCC(String testText, String[] expected, Match matchType) throws BadLocationException, ParseException {
-        testCC(testText, expected, matchType, -1);
+
+    public void testAttributeValueCompletion02() throws BadLocationException, ParseException {
+        // attribute completion for new namespaces
+        testCC("testWebProject/web/cctest_newns.xhtml", "<h:selectManyCheckbox layout=\"|\"/>", new String[]{"pageDirection", "lineDirection"}, Match.EXACT);
+        testCC("testWebProject/web/cctest_newns.xhtml", "<f:ajax immediate=\"|\"/>", new String[]{"true", "false"}, Match.EXACT);
+    }
+
+    protected void testCC(String filePath, String testText, String[] expected, Match matchType) throws BadLocationException, ParseException {
+        testCC(filePath, testText, expected, matchType, -1);
     }
     
     /**
      * The testText will be inserted into the body of testWebProject/web/cctest.xhtml and then the completion will be called.
      * In the case you need more imports, modify the template or make the support generic (no template based)
      */
-    protected void testCC(String testText, String[] expected, Match matchType, int expectedAnchor) throws BadLocationException, ParseException {
+    protected void testCC(String filePath, String testText, String[] expected, Match matchType, int expectedAnchor) throws BadLocationException, ParseException {
         //load the testing template
-        FileObject file = getTestFile("testWebProject/web/cctest.xhtml");
+        FileObject file = getTestFile(filePath);
         Document doc = getDocument(file);
         
         StringBuilder content = new StringBuilder(doc.getText(0, doc.getLength()));

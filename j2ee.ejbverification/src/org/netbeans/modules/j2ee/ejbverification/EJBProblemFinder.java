@@ -102,7 +102,7 @@ public abstract class EJBProblemFinder {
             cancelled = false;
             problemsFound.clear();
 
-            Project prj = FileOwnerQuery.getOwner(file);
+            final Project prj = FileOwnerQuery.getOwner(file);
             //#156889: Add check for null.
             if (prj == null) {
                 return;
@@ -113,7 +113,7 @@ public abstract class EJBProblemFinder {
                 return;
             }
 
-            EjbJar ejbModule = EjbJar.getEjbJar(file);
+            final EjbJar ejbModule = EjbJar.getEjbJar(file);
             if (ejbModule == null) {
                 return;
             }
@@ -136,8 +136,7 @@ public abstract class EJBProblemFinder {
                             
                             Ejb ejb = metadata.findByEjbClass(javaClass.getQualifiedName().toString());
                             
-                            EJBProblemContext ctx = new EJBProblemContext(
-                                    info, file, javaClass, ejb, metadata);
+                            EJBProblemContext ctx = new EJBProblemContext(info, prj, ejbModule, file, javaClass, ejb, metadata);
                             
                             problemsFound.addAll(EJBRulesRegistry.check(ctx));
                             
