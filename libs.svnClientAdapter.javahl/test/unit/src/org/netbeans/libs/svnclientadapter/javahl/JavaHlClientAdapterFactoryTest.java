@@ -58,9 +58,12 @@ public class JavaHlClientAdapterFactoryTest extends NbTestCase {
         super(name);
     }
 
+    @Override
     public void setUp() {
+        System.setProperty("subversion.native.library", "");
     }
 
+    @Override
     public void tearDown() {
     }
 
