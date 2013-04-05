@@ -432,6 +432,7 @@ public class QuickSearch {
         component.revalidate();
         component.repaint();
         searchTextField.requestFocus();
+        searchTextField.selectAll(); // Select an existing text for an easy rewrite
     }
     
     protected void maybeShowPopup(MouseEvent evt, Component comp) {
@@ -688,6 +689,13 @@ public class QuickSearch {
             if (ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 removeSearchField();
                 ke.consume();
+                searchFieldListener.ignoreEvents = true;
+                try {
+                    // Clear the text after ESC
+                    setText("");                                                // NOI18N
+                } finally {
+                    searchFieldListener.ignoreEvents = false;
+                }
                 // bugfix #32909, reqest focus when search field is removed
                 requestOriginalFocusOwner();
                 //fireQuickSearchCanceled();
@@ -730,6 +738,13 @@ public class QuickSearch {
             if (keyCode == KeyEvent.VK_ESCAPE) {
                 removeSearchField();
                 searchTextField.requestOriginalFocusOwner();
+                ignoreEvents = true;
+                try {
+                    // Clear the text after ESC
+                    searchTextField.setText("");                                // NOI18N
+                } finally {
+                    ignoreEvents = false;
+                }
                 //fireQuickSearchCanceled();
                 callback.quickSearchCanceled();
                 e.consume();
