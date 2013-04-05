@@ -52,7 +52,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.tools.ide.data.GlassFishVersion;
-import org.glassfish.tools.ide.server.config.ConfigBuilder;
 import org.glassfish.tools.ide.server.config.JavaEEProfile;
 import org.glassfish.tools.ide.server.config.JavaSEPlatform;
 import org.glassfish.tools.ide.server.config.ModuleType;
@@ -902,7 +901,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
          */
         @Override
         public boolean isBundled( String classFqn ) {
-            List<URL> urls = getJerseyLibraryURLs();
+            List<URL> urls = libraryProvider.getJerseyClassPathURLs();
             for( URL url : urls ){
                 FileObject root = URLMapper.findFileObject(url);
                 if ( FileUtil.isArchiveFile(root)){
@@ -929,22 +928,6 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             Set<Profile> profiles = getSupportedProfiles();
             return profiles.contains(Profile.JAVA_EE_6_FULL) || 
                 profiles.contains(Profile.JAVA_EE_6_WEB) ;
-        }
-        
-        private List<URL> getJerseyLibraryURLs() {
-            Hk2LibraryProvider provider = null;
-            try {
-                provider = Hk2LibraryProvider.getProvider(
-                        dm.getCommonServerSupport().getInstance());
-            } catch (NullPointerException npe) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO,
-                        "Caught NullPointerException in Hk2JavaEEPlatformImpl "
-                        + "while fetching Jersey library", npe);
-
-            }
-            return provider != null
-                    ? provider.getJerseyClassPathURLs()
-                    : Collections.<URL>emptyList();
         }
         
         private void addURL( Collection<URL> urls, File file ){
