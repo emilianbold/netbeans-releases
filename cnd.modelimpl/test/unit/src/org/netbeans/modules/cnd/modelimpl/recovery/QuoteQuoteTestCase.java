@@ -42,9 +42,9 @@
 package org.netbeans.modules.cnd.modelimpl.recovery;
 
 import org.netbeans.modules.cnd.modelimpl.recovery.base.Diff;
-import org.netbeans.modules.cnd.modelimpl.recovery.base.Grama;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammar;
 import org.netbeans.modules.cnd.modelimpl.recovery.base.Diffs;
-import org.netbeans.modules.cnd.modelimpl.recovery.base.Gramas;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammars;
 import org.netbeans.modules.cnd.modelimpl.recovery.base.Golden;
 import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
 import java.io.File;
@@ -57,7 +57,7 @@ import org.netbeans.junit.Manager;
  */
 public class QuoteQuoteTestCase extends RecoveryTestCaseBase {
     private static final String SOURCE = "quote.cc";
-    public QuoteQuoteTestCase(String testName, Grama gramma, Diff diff, Golden golden) {
+    public QuoteQuoteTestCase(String testName, Grammar gramma, Diff diff, Golden golden) {
         super(testName, gramma, diff, golden);
     }
     
@@ -66,23 +66,23 @@ public class QuoteQuoteTestCase extends RecoveryTestCaseBase {
         return Manager.normalizeFile(new File(getDataDir(), "common/recovery/quote"));
     }
 
-    @Grama(newGramma = false)
+    @Grammar(newGrammar = false)
     @Golden
     @Test
     public void A_Golden() throws Exception {
         implTest(SOURCE);
     }
 
-    @Grama(newGramma = true)
+    @Grammar(newGrammar = true)
     @Diff(file=SOURCE)
     @Test
     public void testBeforeNS00n() throws Exception {
         implTest(SOURCE);
     }
 
-    @Gramas({
-        @Grama(newGramma = false),
-        @Grama(newGramma = true)
+    @Grammars({
+        @Grammar(newGrammar = false),
+        @Grammar(newGrammar = true)
     })
     @Diffs({
         @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "{"),

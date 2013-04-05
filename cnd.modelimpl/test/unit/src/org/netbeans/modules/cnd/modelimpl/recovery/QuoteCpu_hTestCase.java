@@ -42,9 +42,9 @@
 package org.netbeans.modules.cnd.modelimpl.recovery;
 
 import org.netbeans.modules.cnd.modelimpl.recovery.base.Diff;
-import org.netbeans.modules.cnd.modelimpl.recovery.base.Grama;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammar;
 import org.netbeans.modules.cnd.modelimpl.recovery.base.Diffs;
-import org.netbeans.modules.cnd.modelimpl.recovery.base.Gramas;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammars;
 import org.netbeans.modules.cnd.modelimpl.recovery.base.Golden;
 import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
 import java.io.File;
@@ -58,7 +58,7 @@ import org.netbeans.junit.Manager;
 public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
 
     private static final String SOURCE = "cpu.h";
-    public QuoteCpu_hTestCase(String testName, Grama gramma, Diff diff, Golden golden) {
+    public QuoteCpu_hTestCase(String testName, Grammar gramma, Diff diff, Golden golden) {
         super(testName, gramma, diff, golden);
     }
     
@@ -67,23 +67,23 @@ public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
         return Manager.normalizeFile(new File(getDataDir(), "common/recovery/cpu_h"));
     }
 
-    @Grama(newGramma = false)
+    @Grammar(newGrammar = false)
     @Golden
     @Test
     public void A_Golden() throws Exception {
         implTest(SOURCE);
     }
 
-    @Grama(newGramma = true)
+    @Grammar(newGrammar = true)
     @Diff(file=SOURCE)
     @Test
     public void beforeClass0() throws Exception {
         implTest(SOURCE);
     }
 
-    @Gramas({
-        @Grama(newGramma = false),
-        @Grama(newGramma = true)
+    @Grammars({
+        @Grammar(newGrammar = false),
+        @Grammar(newGrammar = true)
     })
     @Diffs({
         @Diff(file=SOURCE, line = 46, column = 1, length = 0, insert = "ID()"),
@@ -99,9 +99,9 @@ public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
         implTest(SOURCE);
     }
     
-    @Gramas({
-        @Grama(newGramma = false),
-        @Grama(newGramma = true)
+    @Grammars({
+        @Grammar(newGrammar = false),
+        @Grammar(newGrammar = true)
     })
     @Diffs({
         @Diff(file=SOURCE, line = 53, column = 1, length = 0, insert = "ID"),
@@ -115,9 +115,9 @@ public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
         implTest(SOURCE);
     }
 
-    @Gramas({
-        @Grama(newGramma = false),
-        @Grama(newGramma = true)
+    @Grammars({
+        @Grammar(newGrammar = false),
+        @Grammar(newGrammar = true)
     })
     @Diffs({
         @Diff(file=SOURCE, line = 58, column = 36, length = 0, insert = " ID "),
@@ -130,9 +130,9 @@ public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
         implTest(SOURCE);
     }
 
-    @Gramas({
-        @Grama(newGramma = false),
-        @Grama(newGramma = true)
+    @Grammars({
+        @Grammar(newGrammar = false),
+        @Grammar(newGrammar = true)
     })
     @Diffs({
         @Diff(file=SOURCE, line = 58, column = 35, length = 0, insert = "ID(E)"),
