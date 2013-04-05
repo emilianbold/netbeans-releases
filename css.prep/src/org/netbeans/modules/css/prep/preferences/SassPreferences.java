@@ -65,6 +65,7 @@ public final class SassPreferences {
     }
 
     private static Preferences getPreferences(Project project) {
+        assert project != null;
         return ProjectUtils.getPreferences(project, SassPreferences.class, true);
     }
 
