@@ -544,6 +544,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
     public void focusGained(FocusEvent e) {
         //do nothing
         prepareEditor();
+        showPopup();
     }
 
     /** If the editor loses focus, we're done editing - fire COMMAND_FAILURE */

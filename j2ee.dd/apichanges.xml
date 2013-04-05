@@ -139,7 +139,7 @@ is the proper place.
             <class package="org.netbeans.modules.j2ee.dd.api.client" name="AppClient"/>
             <class package="org.netbeans.modules.j2ee.dd.api.ejb" name="EjbJar"/>
             <class package="org.netbeans.modules.j2ee.dd.api.web" name="WebApp"/>
-            <issue number="######"/>
+            <issue number="228033"/>
         </change>
 
     </changes>

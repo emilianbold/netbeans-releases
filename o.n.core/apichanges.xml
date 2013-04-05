@@ -105,8 +105,6 @@ made subject to such option by the copyright holder.
                   via lookup - in <code>CoreBridgeImpl</code>.
               </p>
           </description>
-          <class package="org.netbeans.core" name="NbProxySelector"/>
-          <class package="org.netbeans.core" name="ProxyAutoConfig"/>
           <issue number="201731"/>
       </change>
   </changes>

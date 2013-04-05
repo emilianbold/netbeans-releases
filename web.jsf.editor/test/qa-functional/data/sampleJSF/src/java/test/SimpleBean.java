@@ -39,34 +39,43 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.preferences;
+package test;
 
-import java.util.prefs.Preferences;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
+import javax.faces.bean.RequestScoped;
+import javax.inject.Named;
 
 /**
- * Sass preferences specific for project.
+ *
+ * @author Vladimir Riha
  */
-public final class SassPreferences {
+@Named("simplebean")
+@RequestScoped
+public class SimpleBean {
+    
+    public InnerBean ib;
+    private String msg;
 
-    private static final String ENABLED = "sass.enabled"; // NOI18N
-
-
-    private SassPreferences() {
+    public String getMsg() {
+        return msg;
     }
 
-    public static boolean isEnabled(Project project) {
-        return getPreferences(project).getBoolean(ENABLED, true);
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 
-    public static void setEnabled(Project project, boolean enabled) {
-        getPreferences(project).putBoolean(ENABLED, enabled);
+    public InnerBean getIb() {
+        return ib;
     }
 
-    private static Preferences getPreferences(Project project) {
-        assert project != null;
-        return ProjectUtils.getPreferences(project, SassPreferences.class, true);
+    public void setIb(InnerBean ib) {
+        this.ib = ib;
     }
-
+    
+    public String print(){
+        return "print";
+    }
+    
+    private void paint(){
+        
+    }
 }
