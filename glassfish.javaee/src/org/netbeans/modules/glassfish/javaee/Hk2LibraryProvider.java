@@ -293,6 +293,15 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
     }
 
     /**
+     * Get {@see List} of class path {@see URL}s for Java EE libraries.
+     * <p/>
+     * @return {@see List} of class path {@see URL}s for Java EE libraries.
+     */
+    public List<URL> getJerseyClassPathURLs() {
+        return getLibraryClassPathURLs(JERSEY_PATTERN);
+    }
+
+    /**
      * Return JAX-RS libraries available in GlassFish.
      * <p/>
      * @return JAX-RS libraries available in GlassFish.
