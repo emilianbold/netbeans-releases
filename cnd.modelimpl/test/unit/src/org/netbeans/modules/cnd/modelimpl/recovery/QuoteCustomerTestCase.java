@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.recovery;
 import java.io.File;
 import org.junit.Test;
 import org.netbeans.junit.Manager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.modelimpl.recovery.base.Diff;
 import org.netbeans.modules.cnd.modelimpl.recovery.base.Diffs;
 import org.netbeans.modules.cnd.modelimpl.recovery.base.Golden;
@@ -55,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
  *
  * @author Alexander Simon
  */
+@RandomlyFails
 public class QuoteCustomerTestCase extends RecoveryTestCaseBase {
 
     private static final String SOURCE = "customer.cc";

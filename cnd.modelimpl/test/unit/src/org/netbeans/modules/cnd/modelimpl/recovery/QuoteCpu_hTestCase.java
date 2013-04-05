@@ -50,11 +50,13 @@ import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
 import java.io.File;
 import org.junit.Test;
 import org.netbeans.junit.Manager;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
  * @author Alexander Simon
  */
+@RandomlyFails
 public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
 
     private static final String SOURCE = "cpu.h";
