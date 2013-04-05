@@ -749,8 +749,9 @@ scope Declaration;
 @init                                                                           {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
     :
         gnu_attribute_specifiers?
-                                                                                            {action.decl_specifiers(input.LT(1));}
-        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
+                                                                                {action.decl_specifiers(input.LT(1));}
+        (decl_specifier gnu_attribute_specifiers?)*                              {action.end_decl_specifiers(input.LT(0));}
+
         (
             SEMICOLON
         |
@@ -833,6 +834,8 @@ function_specifier:
         LITERAL_virtual 
     |
         LITERAL_explicit 
+    |
+        LITERAL___inline   // compiler-specific
     ;
 
 /*
