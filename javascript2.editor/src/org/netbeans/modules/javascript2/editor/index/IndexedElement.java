@@ -120,6 +120,8 @@ public class IndexedElement extends JsElementImpl {
             sb.append(type.getType());
             sb.append(":"); //NOI18N
             sb.append(type.getOffset());
+            sb.append(":"); //NOI18N
+            sb.append(type.isResolved() ? "1" : "0");  //NOI18N
             sb.append("|");
         }
         elementDocument.addPair(JsIndex.FIELD_ASSIGNMENS, sb.toString(), false, true);
@@ -191,17 +193,18 @@ public class IndexedElement extends JsElementImpl {
         if (sAssignments != null) {
             for (StringTokenizer st = new StringTokenizer(sAssignments, "|"); st.hasMoreTokens();) {
                 String token = st.nextToken();
-                int index = token.indexOf(':');
-                if (index > -1) {
-                    String type = token.substring(0, index);
-                    String sOffset = token.substring(index + 1);
+                String[] parts = token.split(":");
+                if (parts.length > 2) {
+                    String type = parts[0];
+                    String sOffset = parts[1];
                     int offset;
                     try {
                         offset = Integer.parseInt(sOffset);
                     } catch (NumberFormatException nfe) {
                         offset = -1;
                     }
-                    result.add(new TypeUsageImpl(type, offset, true));
+                    boolean resolve = parts[2].equals("1");
+                    result.add(new TypeUsageImpl(type, offset, resolve));
                 }
             }
         }
