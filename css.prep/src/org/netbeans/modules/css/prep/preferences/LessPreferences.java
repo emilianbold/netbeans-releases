@@ -65,6 +65,7 @@ public final class LessPreferences {
     }
 
     private static Preferences getPreferences(Project project) {
+        assert project != null;
         return ProjectUtils.getPreferences(project, LessPreferences.class, true);
     }
 
