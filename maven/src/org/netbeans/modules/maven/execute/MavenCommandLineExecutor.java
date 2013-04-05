@@ -84,6 +84,7 @@ import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -161,7 +162,16 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         actionStatesAtStart();
         handle.start();
         processInitialMessage();
-        CommandLineOutputHandler out = new CommandLineOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig);
+        boolean isMaven2 = isMaven2();
+        if (!isMaven2) {
+            injectEventSpy( clonedConfig );
+            if (clonedConfig.getPreExecution() != null) {
+                injectEventSpy( (BeanRunConfig) clonedConfig.getPreExecution());
+            }
+        }
+
+        
+        CommandLineOutputHandler out = new CommandLineOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig, !isMaven2);
         try {
             BuildExecutionSupport.registerRunningItem(item);
 
@@ -523,12 +533,29 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     private void printCoSWarning(BeanRunConfig clonedConfig, InputOutput ioput) {
         if (clonedConfig.getProperties().containsKey(CosChecker.NETBEANS_PROJECT_MAPPINGS)) {
             printGray(ioput, "Running NetBeans Compile On Save execution. Phase execution is skipped and output directories of dependency projects (with Compile on Save turned on) will be used instead of their jar artifacts.");
-            File mvnHome = EmbedderFactory.getEffectiveMavenHome();
-            String version = MavenSettings.getCommandLineMavenVersion(mvnHome);
-            if (version != null && version.startsWith("2")) {
+            if (isMaven2()) {
                 printGray(ioput, "WARNING: Using Maven 2.x for execution, NetBeans cannot establish links between current project and output directories of dependency projects with Compile on Save turned on. Only works with Maven 3.0+.");
             }
         }
+    }
+    
+    boolean isMaven2() {
+        File mvnHome = EmbedderFactory.getEffectiveMavenHome();
+        String version = MavenSettings.getCommandLineMavenVersion(mvnHome);
+        return version != null && version.startsWith("2");
+    }
+
+    private void injectEventSpy(final BeanRunConfig clonedConfig) {
+        //TEMP 
+        String mavenPath = clonedConfig.getProperties().get(CosChecker.MAVENEXTCLASSPATH);
+        if (mavenPath == null) {
+            mavenPath = "";
+        } else {
+            mavenPath = mavenPath + (Utilities.isWindows() ? ";" : ":");
+        }
+        File jar = InstalledFileLocator.getDefault().locate("maven/nblib/netbeans-eventspy.jar", "org.netbeans.modules.maven", false);
+        mavenPath = mavenPath + jar.getAbsolutePath();
+        clonedConfig.setProperty(CosChecker.MAVENEXTCLASSPATH, mavenPath);
     }
 
     private static class FindByName implements ResumeFromFinder {

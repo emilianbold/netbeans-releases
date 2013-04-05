@@ -86,10 +86,10 @@ public abstract class AbstractOutputHandler {
     private RequestProcessor.Task sleepTask;
     private static final int SLEEP_DELAY = 5000;
 
-    protected AbstractOutputHandler(final ProgressHandle hand) {
+    protected AbstractOutputHandler(final ProgressHandle hand, OutputVisitor visitor) {
         processors = new HashMap<String, Set<OutputProcessor>>();
         currentProcessors = new HashSet<OutputProcessor>();
-        visitor = new OutputVisitor();
+        this.visitor = visitor;
         toFinishProcessors = new HashSet<NotifyFinishOutputProcessor>();
         sleepTask = new RequestProcessor(AbstractOutputHandler.class).create(new Runnable() {
             public @Override void run() {

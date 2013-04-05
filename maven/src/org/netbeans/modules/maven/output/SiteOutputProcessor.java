@@ -88,7 +88,13 @@ public class SiteOutputProcessor implements OutputProcessor {
     @Override
     public void sequenceEnd(String sequenceId, OutputVisitor visitor) {
         visitor.setLine("     View Generated Project Site"); //NOI18N shows up in maven output.
-        visitor.setOutputListener(new Listener(project), false);
+        OutputVisitor.Context con = visitor.getContext();
+        if (con != null && con.getCurrentProject() != null) {
+            visitor.setOutputListener(new Listener(con.getCurrentProject()), false);
+        } else {
+            //hope for the best, but generally the root project might not be the right project to use.
+            visitor.setOutputListener(new Listener(project), false);
+        }
     }
     
     @Override

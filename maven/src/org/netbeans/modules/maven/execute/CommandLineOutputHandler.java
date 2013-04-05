@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.execute;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -50,9 +51,16 @@ import java.io.Reader;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.maven.execution.ExecutionEvent;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.maven.api.output.OutputVisitor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -84,14 +92,21 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
     private ProgressHandle handle;
     /** {@link MavenProject#getName} of first project in reactor to fail, if any */
     String firstFailure;
+    private final JSONParser parser;
+    private ContextImpl contextImpl;
 
-    CommandLineOutputHandler(ProgressHandle hand) {
-        super(hand);
+    CommandLineOutputHandler(ProgressHandle hand, boolean createVisitorContext) {
+        super(hand, createVisitorContext ? new OutputVisitor(new ContextImpl()) : new OutputVisitor());
+        if (createVisitorContext) {
+            contextImpl = (ContextImpl) visitor.getContext();
+            assert contextImpl != null;
+        }
+        this.parser = new JSONParser();
         handle = hand;
     }
 
-    public CommandLineOutputHandler(InputOutput io, Project proj, ProgressHandle hand, RunConfig config) {
-        this(hand);
+    public CommandLineOutputHandler(InputOutput io, Project proj, ProgressHandle hand, RunConfig config, boolean createVisitorContext) {
+        this(hand, createVisitorContext);
         inputOutput = io;
         stdOut = inputOutput.getOut();
 //        logger = new Logger();
@@ -137,7 +152,10 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
         }
     }
 
+
+
     private class Output implements Runnable {
+        private static final String INFO_NETBEANS_EXEC_EVENT = "[INFO] NETBEANS-ExecEvent:";
 
         private BufferedReader str;
         private boolean skipLF = false;
@@ -204,11 +222,18 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                         line = readLine();
                         continue;
                     }
+                    if (line.startsWith(INFO_NETBEANS_EXEC_EVENT)) {
+                        parseExecEvent(line);
+                        stdOut.println(line); //XXX temporary
+                        line = readLine();
+                        continue;
+                    }                    
                     if (line.startsWith("[INFO] Final Memory:")) { //NOI18N
                         // previous value [INFO] --------------- is too early, the compilation errors don't get processed in this case.
                         //heuristics..
                         closeCurrentTag();
                     }
+                    
                     String tag = null;
                     Matcher match = startPatternM3.matcher(line);
                     if (match.matches()) {
@@ -268,6 +293,36 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
+            }
+        }
+
+        private void parseExecEvent(String line) {
+            String jsonContent = line.substring(INFO_NETBEANS_EXEC_EVENT.length());
+            try {
+                Object o = parser.parse(jsonContent);
+                System.out.println("o=" + o);
+                if (o instanceof JSONObject) {
+                    JSONObject json = (JSONObject) o;
+                    ExecutionEventObject obj = ExecutionEventObject.create(json);
+                    if (ExecutionEvent.Type.MojoStarted.equals(obj.type)) {
+                    }
+                    if (ExecutionEvent.Type.ProjectStarted.equals(obj.type)) {
+                        if (contextImpl != null) {
+                            File prjLoc = obj.currentProjectLocation;
+                            try {
+                                Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjLoc));
+                                contextImpl.setCurrentProject(project);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (IllegalArgumentException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                }
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+                System.out.println("exc=" + ex);
             }
         }
     }
@@ -384,5 +439,26 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
     private int forkCount;
     private int reactorSize;
     private int projectCount;
+    
+    private static class ContextImpl implements OutputVisitor.Context {
+
+        private Project currentProject;
+
+        public ContextImpl() {
+        }
+
+        @Override
+        public Project getCurrentProject() {
+            return currentProject;
+        }
+        
+        public void setCurrentProject(Project currentProject) {
+            this.currentProject = currentProject;
+        }
+        
+        
+    }    
 
 }
+
+
