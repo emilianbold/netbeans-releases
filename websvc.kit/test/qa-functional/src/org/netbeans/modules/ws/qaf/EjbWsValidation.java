@@ -53,7 +53,6 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase.ProjectType;
 
 /**
@@ -61,7 +60,7 @@ import org.netbeans.modules.ws.qaf.WebServicesTestBase.ProjectType;
  *
  *  Duration of this test suite: aprox. 7min
  *
- * @author lukas.jungmann@sun.com
+ * @author Lukas Jungmann, Jiri Skrivanek
  */
 public class EjbWsValidation extends WsValidation {
 
@@ -103,7 +102,7 @@ public class EjbWsValidation extends WsValidation {
         if (REGISTERED_SERVER.equals(ServerType.GLASSFISH)) {
             suffix = "?Tester"; //NOI18N
         }
-        return "http://localhost:8080/" + getWsName() + "Service" + "/" + getWsName() + suffix; //NOI18N
+        return "http://localhost:8080/" + getWsName() + "/" + getWsName() + suffix; //NOI18N
     }
 
     @Override
@@ -112,8 +111,7 @@ public class EjbWsValidation extends WsValidation {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH,
-                NbModuleSuite.createConfiguration(EjbWsValidation.class),
+        return createAllModulesServerSuite(Server.GLASSFISH, EjbWsValidation.class,
                 "testCreateNewWs",
                 "testAddOperation",
                 "testSetSOAP",
@@ -130,7 +128,7 @@ public class EjbWsValidation extends WsValidation {
                 "testWsClientHandlers",
                 "testDeployWsClientProject",
                 "testUndeployProjects",
-                "testStopServer").enableModules(".*").clusters(".*"));
+                "testStopServer");
     }
 
     public void testWsFromEJBinClientProject() {
@@ -161,7 +159,7 @@ public class EjbWsValidation extends WsValidation {
         Node wsNode = new Node(wsRootNode, wsName); //NOI18N
         wsNode.expand();
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 60000); //NOI18N
-        new Node(wsNode, "myBm"); //NOI18N
+        Node myBmNode = new Node(wsNode, "myBm"); //NOI18N
         assertEquals("Only one operation should be there", 1, wsNode.getChildren().length);
         EditorOperator eo = new EditorOperator(wsName);
         assertTrue(eo.contains("@Stateless"));
