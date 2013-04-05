@@ -749,7 +749,7 @@ scope Declaration;
 @init                                                                           {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
     :
         gnu_attribute_specifiers?
-                                                                                {action.decl_specifiers(input.LT(1));}
+                                                                                            {action.decl_specifiers(input.LT(1));}
         decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
         (
             SEMICOLON
@@ -782,7 +782,7 @@ scope Declaration;
                 )* 
                 SEMICOLON                                                       {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
             )
-        )
+        )    
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_simple_declaration(input.LT(0));}}
 
@@ -1647,8 +1647,8 @@ scope Declaration;
 @init                                                                           {if(state.backtracking == 0){action.parameter_declaration(input.LT(1));}}
     :                                                                           
         attribute_specifiers?
-        decl_specifier
-        decl_specifier*
+        decl_specifier attribute_specifiers?
+        ( decl_specifier attribute_specifiers? )*
         universal_declarator? 
         (
             ASSIGNEQUAL                                                         {action.parameter_declaration(action.PARAMETER_DECLARATION__ASSIGNEQUAL, input.LT(0));}
