@@ -1,4 +1,5 @@
 #!/bin/sh
+set -x
 
 keystore=$SECRET/NBstore
 storepass=`cat $SECRET/storepass`
