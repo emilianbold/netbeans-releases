@@ -49,14 +49,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
@@ -69,6 +64,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.project.support.PreferredProjectPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -78,6 +74,7 @@ import org.openide.awt.HtmlRenderer;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.Union2;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -90,7 +87,6 @@ import org.w3c.dom.NodeList;
 public final class PlatformUiSupport {
 
     private static final SpecificationVersion JDK_1_5 = new SpecificationVersion("1.5"); //NOI18N
-    private static final SpecificationVersion JDK_8 = new SpecificationVersion("1.8");  //NOI18N
     private static final Logger LOGGER = Logger.getLogger(PlatformUiSupport.class.getName());
 
     private PlatformUiSupport() {
@@ -229,7 +225,7 @@ public final class PlatformUiSupport {
                     sourceLevelKey,
                     sourceLevelKey.getClass()));
         }
-        if (profileKey != null && !(profileKey instanceof Profile)) {
+        if (profileKey != null && !(profileKey instanceof Union2)) {
             throw new IllegalArgumentException(String.format(
                     "Unsupported profile key: %s of type: %s", //NOI18N
                     profileKey,
@@ -336,12 +332,18 @@ public final class PlatformUiSupport {
         if (!javacTarget.equals(props.getProperty(javacTargetKey))) {
             props.setProperty(javacTargetKey, javacTarget);
         }
-        
-        final String javacProfile;
+
+        String javacProfile = null;
         if (profileKey != null) {
-            javacProfile = ((Profile)profileKey).getAntName();
-        } else {
-            javacProfile = null;
+            Union2<SourceLevelQuery.Profile,String> tv = (Union2<SourceLevelQuery.Profile,String>) profileKey;
+            if (tv.hasFirst()) {
+                final SourceLevelQuery.Profile profile = tv.first();
+                if (profile != SourceLevelQuery.Profile.DEFAULT) {
+                    javacProfile = profile.getName();
+                }
+            } else {
+                javacProfile = tv.second();
+            }
         }
         if (javacProfile != null) {
             if(!javacProfile.equals(props.getProperty(javacProfileKey))) {
@@ -446,7 +448,7 @@ public final class PlatformUiSupport {
      * state according to the changes. It is possible to define minimal required
      * JRE profile.
      * @param sourceLevelModel the source level model used for listening.
-     * @param initialProfile initial profile, null if unknown.
+     * @param initialProfileName initial profile name, null if unknown.
      * @param minimalProfile minimal JRE profile to be displayed.
      * It can be <code>null</code> if all the JRE profiles should be displayed.
      * @return {@link ComboBoxModel}.
@@ -454,9 +456,9 @@ public final class PlatformUiSupport {
      */
     public static ComboBoxModel createProfileComboBoxModel(
             @NonNull final ComboBoxModel sourceLevelModel,
-            @NullAllowed final String initialProfile,
-            @NullAllowed final String minimalProfile) {
-        return new ProfileComboBoxModel(sourceLevelModel, initialProfile, minimalProfile);
+            @NullAllowed final String initialProfileName,
+            @NullAllowed final SourceLevelQuery.Profile minimalProfile) {
+        return new ProfileComboBoxModel(sourceLevelModel, initialProfileName, minimalProfile);
     }
 
     /**
@@ -938,145 +940,49 @@ public final class PlatformUiSupport {
             return delegate.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
         }
     }
-
-    private interface Profile {
-        @NonNull
-        String getAntName();
-
-        @NonNull
-        String getDisplayName();
-
-        int getRank();
-
-        boolean isSupportedIn(@NonNull final SpecificationVersion sourceLevel);
-    }
-    
-    private enum StandardProfile implements  Profile {
-        COMPACT1(
-                "compact1", //NOI18N
-                NbBundle.getMessage(PlatformUiSupport.class, "TXT_Profile_Compact1"),
-                0,
-                Arrays.asList(JDK_8)),
-        COMPACT2(
-                "compact2", //NOI18N
-                NbBundle.getMessage(PlatformUiSupport.class, "TXT_Profile_Compact2"),
-                1,
-                Arrays.asList(JDK_8)),
-        COMPACT3(
-                "compact3", //NOI18N
-                NbBundle.getMessage(PlatformUiSupport.class, "TXT_Profile_Compact3"),
-                2,
-                Arrays.asList(JDK_8)),
-        DEFAULT(
-                "",  //NOI18N
-                NbBundle.getMessage(PlatformUiSupport.class, "TXT_Profile_Default"),
-                Integer.MAX_VALUE-1,
-                Arrays.asList(JDK_8));
-        
-        private static final Map<String,Profile> profilesByName =
-                new HashMap<String, Profile>();        
-        static {
-            for (Profile p : values()) {
-                profilesByName.put(p.getAntName(), p);
-            }
-        }
-        
-        private final String name;
-        private final String displayName;
-        private final int rank;
-        private final Set<? extends SpecificationVersion> supportedIn;
-        
-        StandardProfile(
-            @NonNull final String name,
-            @NonNull final String displayName,
-            @NonNull final int rank,
-            @NonNull final Collection<? extends SpecificationVersion> supportedIn) {
-            Parameters.notNull("name", name);   //NOI18N
-            Parameters.notNull("displayName", displayName); //NOI18N
-            this.name = name;
-            this.displayName = displayName;
-            this.rank = rank;
-            this.supportedIn = Collections.unmodifiableSet(
-                new HashSet<SpecificationVersion>(supportedIn));
-        }
-        
-        @Override
-        public String getAntName() {
-            return name;
-        }
-        
-        @Override
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        @Override
-        public int getRank() {
-            return rank;
-        }
-
-        @Override
-        public boolean isSupportedIn(SpecificationVersion sourceLevel) {
-            return supportedIn.contains(sourceLevel);
-        }
-        
-        @Override
-        public String toString() {
-            return String.format(
-                "%s (%s)", //NOI18N
-                displayName,
-                name);
-        }
-
-        @CheckForNull
-        static Profile forName(@NonNull final String id) {
-            return profilesByName.get(id);
-        }
-        
-    }
-
+           
     private static final class ProfileComboBoxModel extends AbstractListModel implements ComboBoxModel, ListDataListener {
 
         private final ComboBoxModel sourceLevelModel;
         private final String initialProfileName;
-        private final String minimalProfileName;
+        private final SourceLevelQuery.Profile minimalProfile;
 
-        private Profile[] profiles;
-        private Profile selectedItem;
+        private List<Union2<SourceLevelQuery.Profile,String>> profiles;
+        private Union2<SourceLevelQuery.Profile,String> selectedItem;
 
         ProfileComboBoxModel(
                 @NonNull final ComboBoxModel sourceLevelModel,
                 @NullAllowed final String initialProfileName,
-                @NullAllowed final String minimalProfileName) {
+                @NullAllowed final SourceLevelQuery.Profile minimalProfile) {
             this.sourceLevelModel = sourceLevelModel;
             this.initialProfileName = initialProfileName;
-            this.minimalProfileName = minimalProfileName;
+            this.minimalProfile = minimalProfile;
             this.sourceLevelModel.addListDataListener(this);
         }
 
         @Override
         public int getSize() {
-            final Profile[] p = init();
-            return p.length;
+            final Collection<? extends Union2<SourceLevelQuery.Profile,String>> p = init();
+            return p.size();
         }
 
         @Override
         @CheckForNull
         public Object getElementAt(final int index) {
-            final Profile[] p = init();
-            if (index < 0 || index >= p.length) {
+            final List<? extends Union2<SourceLevelQuery.Profile,String>> p = init();
+            if (index < 0 || index >= p.size()) {
                 throw new IndexOutOfBoundsException(String.format(
                     "Index: %d, Profiles count: %d",    //NOI18N
                     index,
-                    p.length));
+                    p.size()));
             }
-            return p[index];
+            return p.get(index);
         }
 
         @Override
         public void setSelectedItem(@NullAllowed final Object anItem) {
-            assert anItem == null || anItem instanceof Profile;
-            selectedItem = (Profile) anItem;
+            assert anItem == null || anItem instanceof Union2 : anItem;
+            selectedItem = (Union2<SourceLevelQuery.Profile,String>) anItem;
         }
 
         @Override
@@ -1100,27 +1006,9 @@ public final class PlatformUiSupport {
             fireContentsChanged(this, 0, oldSize);
         }
 
-        private Profile[] init() {
-            if (profiles == null) {
-                final Comparator<Profile> c = new Comparator<Profile>() {
-                    @Override
-                    public int compare(
-                            @NonNull final Profile p1,
-                            @NonNull final Profile p2) {
-                        final int r1 = p1.getRank();
-                        final int r2 = p2.getRank();
-                        return r1 < r2 ?
-                            -1 :
-                            r1 == r2 ?
-                                0 :
-                                1;
-                    }
-                };
-                Profile minimalProfile = null;
-                if (minimalProfileName != null) {
-                    minimalProfile = StandardProfile.forName(minimalProfileName);
-                }
-                final Collection<Profile> pc = new TreeSet<Profile>(c);
+        private List<? extends Union2<SourceLevelQuery.Profile,String>> init() {
+            if (profiles == null) {                           
+                final List<Union2<SourceLevelQuery.Profile,String>> pc = new ArrayList<>();
                 final Object slk = sourceLevelModel.getSelectedItem();
                 final SpecificationVersion sl;
                 if (slk instanceof SourceLevelKey) {
@@ -1128,45 +1016,29 @@ public final class PlatformUiSupport {
                 } else {
                     sl = null;
                 }
-                for (StandardProfile p : StandardProfile.values()) {
-                    if (minimalProfile != null &&
-                        c.compare(minimalProfile, selectedItem) > 0) {
+                for (SourceLevelQuery.Profile p : SourceLevelQuery.Profile.values()) {
+                    if (minimalProfile != null && minimalProfile.compareTo(p) > 0) {
                             continue;
                     }
-                    if (sl != null && !p.isSupportedIn(sl)) {
+                    if (sl != null && !p.isSupportedIn(sl.toString())) {
                         continue;
                     }
-                    pc.add(p);
+                    pc.add(Union2.<SourceLevelQuery.Profile,String>createFirst(p));
                 }
                 if (selectedItem == null) {
-                    if (initialProfileName != null && !initialProfileName.isEmpty()) {
-                        selectedItem = StandardProfile.forName(initialProfileName);
-                        if (selectedItem == null) {
-                            selectedItem = new Profile() {
-                                @Override
-                                public String getAntName() {
-                                    return initialProfileName;
-                                }
-                                @Override
-                                public String getDisplayName() {
-                                    return getAntName();
-                                }
-                                @Override
-                                public int getRank() {
-                                    return Integer.MAX_VALUE;
-                                }
-                                @Override
-                                public boolean isSupportedIn(SpecificationVersion sourceLevel) {
-                                    return true;
-                                }
-                            };
+                    if (initialProfileName != null) {
+                        SourceLevelQuery.Profile initialProfile = SourceLevelQuery.Profile.forName(initialProfileName);
+                        if (initialProfile != null) {
+                            selectedItem = Union2.<SourceLevelQuery.Profile,String>createFirst(initialProfile);
+                        } else {
+                            selectedItem = Union2.<SourceLevelQuery.Profile,String>createSecond(initialProfileName);
                             pc.add(selectedItem);
                         }
                     } else {
-                        selectedItem = StandardProfile.DEFAULT;
+                        selectedItem = Union2.<SourceLevelQuery.Profile,String>createFirst(SourceLevelQuery.Profile.DEFAULT);
                     }
                 }
-                this.profiles = pc.toArray(new Profile[pc.size()]);
+                this.profiles = Collections.unmodifiableList(pc);
             }
             return profiles;
         }        
@@ -1187,13 +1059,14 @@ public final class PlatformUiSupport {
                 final int index,
                 final boolean isSelected,
                 final boolean cellHasFocus) {
-            if (value instanceof Profile) {
-                final Profile p = (Profile) value;
-                if (StandardProfile.forName(p.getAntName()) == null) {
-                    value = "<html><font color=\"#A40000\">" + //NOI18N
-                        p.getDisplayName();
+            if (value instanceof Union2) {
+                final Union2<SourceLevelQuery.Profile,String> tv  =
+                        (Union2<SourceLevelQuery.Profile,String>) value;
+                if (tv.hasFirst()) {
+                    value = tv.first().getDisplayName();
                 } else {
-                    value = p.getDisplayName();
+                    value = "<html><font color=\"#A40000\">" + //NOI18N
+                        tv.second();
                 }
             }
             return delegate.getListCellRendererComponent(

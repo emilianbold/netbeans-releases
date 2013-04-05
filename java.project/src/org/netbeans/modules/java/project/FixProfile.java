@@ -66,6 +66,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.queries.SourceLevelQuery.Profile;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,14 +77,14 @@ class FixProfile extends javax.swing.JPanel {
  
     private final JButton okOption;
     private final LibsModel libsModel;
-    private ProfileProblemsProviderImpl.Profile reqProfile;
+    private Profile reqProfile;
 
     /**
      * Creates new form FixProfile
      */
     FixProfile(
             @NonNull final JButton okOption,
-            @NonNull final ProfileProblemsProviderImpl.Profile currentProfile,
+            @NonNull final Profile currentProfile,
             @NonNull final Collection<? extends ProfileProblemsProviderImpl.Reference> state) {
         assert okOption != null;
         assert currentProfile != null;
@@ -136,10 +137,10 @@ class FixProfile extends javax.swing.JPanel {
     }
 
     @CheckForNull
-    ProfileProblemsProviderImpl.Profile getProfile() {
+    Profile getProfile() {
         final Object selObj = profiles.getSelectedItem();
-        if (selObj instanceof ProfileProblemsProviderImpl.Profile) {
-            return (ProfileProblemsProviderImpl.Profile) selObj;
+        if (selObj instanceof Profile) {
+            return (Profile) selObj;
         } else {
             return null;
         }
@@ -152,8 +153,8 @@ class FixProfile extends javax.swing.JPanel {
 
     private void updateProfiles() {
         profiles.removeAllItems();
-        for (ProfileProblemsProviderImpl.Profile profile : ProfileProblemsProviderImpl.StandardProfile.values()) {
-            if (profile.getRank() >= reqProfile.getRank()) {
+        for (Profile profile : Profile.values()) {
+            if (profile.compareTo(reqProfile) >= 0) {
                 profiles.addItem(profile);
             }
         }
@@ -172,8 +173,8 @@ class FixProfile extends javax.swing.JPanel {
                 final int i,
                 final boolean bln,
                 final boolean bln1) {
-            if (o instanceof ProfileProblemsProviderImpl.Profile) {
-                o = ((ProfileProblemsProviderImpl.Profile)o).getDisplayName();
+            if (o instanceof Profile) {
+                o = ((Profile)o).getDisplayName();
             }
             return super.getListCellRendererComponent(jlist, o, i, bln, bln1);
         }
@@ -218,7 +219,8 @@ class FixProfile extends javax.swing.JPanel {
         }
 
         @NbBundle.Messages({
-        "FMT_RootWithProfile={0} ({1})"
+        "FMT_RootWithProfile={0} ({1})",
+        "MSG_InvalidProfile=<Invalid>"
         })
         @Override
         public Component getListCellRendererComponent(
@@ -242,7 +244,14 @@ class FixProfile extends javax.swing.JPanel {
                 final ProfileProblemsProviderImpl.Reference e = (ProfileProblemsProviderImpl.Reference) o;
                 root.setText(e.getDisplayName());
                 root.setIcon(e.getIcon());
-                profile.setText(e.getRequiredProfile().getDisplayName());
+                final Profile requiredProfile = e.getRequiredProfile();
+                if (requiredProfile == null) {
+                    profile.setText(String.format(
+                        "<html><font color=\"#A40000\">%s", //NOI18N
+                        Bundle.MSG_InvalidProfile()));
+                } else {
+                    profile.setText(requiredProfile.getDisplayName());
+                }
                 container.setToolTipText(e.getToolTipText());
             } else {
                 root.setText("");   //NOI18N
@@ -256,14 +265,14 @@ class FixProfile extends javax.swing.JPanel {
 
     private static final class LibsModel extends AbstractListModel {
 
-        private final ProfileProblemsProviderImpl.Profile currentProfile;
+        private final Profile currentProfile;
         private final Collection<? extends ProfileProblemsProviderImpl.Reference> state;
         private final Set<ProfileProblemsProviderImpl.Reference> toRemove;
         private final List<ProfileProblemsProviderImpl.Reference> data;
         private boolean updated;
 
         LibsModel(
-                @NonNull final ProfileProblemsProviderImpl.Profile currentProfile,
+                @NonNull final Profile currentProfile,
                 @NonNull Collection<? extends ProfileProblemsProviderImpl.Reference> state) {
             this.currentProfile = currentProfile;
             this.state = state;
@@ -298,7 +307,7 @@ class FixProfile extends javax.swing.JPanel {
         };
 
         @NonNull
-        ProfileProblemsProviderImpl.Profile requiredProfile() {
+        Profile requiredProfile() {
             return ProfileProblemsProviderImpl.requiredProfile(data, currentProfile);
         }
 
@@ -319,7 +328,7 @@ class FixProfile extends javax.swing.JPanel {
             data.clear();
             for (ProfileProblemsProviderImpl.Reference ref : state) {
                 if (!toRemove.contains(ref) &&
-                    !(updated && ref.getRequiredProfile().isValid())) {
+                    !(updated && ref.getRequiredProfile() != null)) {
                     data.add(ref);
                 }
             }

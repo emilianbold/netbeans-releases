@@ -53,7 +53,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -65,7 +64,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -79,6 +77,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.queries.SourceLevelQuery.Profile;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -109,6 +108,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Union2;
 /**
  *
  * @author Tomas Zezula
@@ -192,19 +192,23 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                     @Override
                     public Collection<? extends ProjectProblem> run() {
                         final SourceLevelQuery.Result mySL = listenenOnProjectMetadata();
-                        final Profile profile = StandardProfile.forName(mySL.getProfile());
-                        if (!profile.isValid() || profile == StandardProfile.DEFAULT) {
+                        final Profile profile = mySL.getProfile();
+                        if (profile == Profile.DEFAULT) {
                             return Collections.<ProjectProblem>emptySet();
                         }
                         final Set<Reference> problems = collectReferencesWithWrongProfile(profile);
                         if (problems.isEmpty()) {
                             return Collections.<ProjectProblem>emptySet();
                         }
-                        final Profile minProfile = requiredProfile(problems, StandardProfile.forName("dummy"));  //NOI18N
+                        Profile minProfile = null;
+                        for (Reference problem : problems) {
+                            final Profile problemProfile = problem.getRequiredProfile();
+                            minProfile = max(minProfile, problemProfile);
+                        }
                         return Collections.<ProjectProblem>singleton(
                                 ProjectProblem.createError(
                                 LBL_InvalidProfile(),
-                                minProfile.isValid()
+                                minProfile != null
                                 ? DESC_InvalidProfile(profile.getDisplayName(), minProfile.getDisplayName())
                                 : DESC_IllegalProfile(),
                                 new ProfileResolver(
@@ -322,8 +326,9 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                     final String libName = rawEntry.substring(LIB_PREFIX.length(),rawEntry.lastIndexOf('.'));
                     final Library lib = refHelper.findLibrary(libName);
                     if (lib != null) {
-                        final Profile minProfile = findProfile(lib.getContent(VOL_CLASSPATH));
-                        if (isBroken(requiredProfile, minProfile)) {
+                        final Union2<Profile,String> minProfileOrName = findProfile(lib.getContent(VOL_CLASSPATH));
+                        final Profile minProfile = minProfileOrName.hasFirst() ? minProfileOrName.first() : null;
+                        if (isBroken(requiredProfile,  minProfile)) {
                             collector.add(new LibraryReference(classPathId, rawEntry, minProfile, lib));
                         }
                     }
@@ -333,7 +338,7 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                         AntArtifact artifact = (AntArtifact)ref[0];
                         final SourceLevelQuery.Result slRes = SourceLevelQuery.getSourceLevel2(artifact.getProject().getProjectDirectory());
                         slResCollector.add(slRes);
-                        final Profile minProfile = StandardProfile.forName(slRes.getProfile());
+                        final Profile minProfile = slRes.getProfile();
                         if (isBroken(requiredProfile, minProfile)) {
                             collector.add(new ProjectReference(classPathId, rawEntry, minProfile, artifact.getProject()));
                         }
@@ -345,7 +350,8 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                         final File file = antProjectHelper.resolveFile(path);
                         final URL root = FileUtil.urlForArchiveOrDir(file);
                         if (root != null) {
-                            final Profile minProfile = findProfile(root);
+                            final Union2<Profile,String> minProfileOrName = findProfile(root);
+                            final Profile minProfile = minProfileOrName.hasFirst() ? minProfileOrName.first() : null;
                             if (isBroken(requiredProfile, minProfile)) {
                                 collector.add(new FileReference(classPathId, rawEntry, minProfile, file));
                             }
@@ -367,7 +373,8 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                     final File file = antProjectHelper.resolveFile(propName);
                     final URL root = FileUtil.urlForArchiveOrDir(file);
                     if (root != null) {
-                        final Profile minProfile = findProfile(root);
+                        final Union2<Profile,String> minProfileOrName = findProfile(root);
+                        final Profile minProfile = minProfileOrName.hasFirst() ? minProfileOrName.first() : null;
                         if (isBroken(requiredProfile, minProfile)) {
                             collector.add(new FileReference(classPathId, rawEntry, minProfile, file));
                         }
@@ -379,12 +386,12 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
 
     private static boolean isBroken(
             @NonNull final Profile requiredProfile,
-            @NonNull final Profile profile) {
-        if (!profile.isValid()) {
+            @NullAllowed final Profile profile) {
+        if (profile == null) {
             return true;
         }
         final Profile max = max(requiredProfile, profile);
-        return !max.equals(StandardProfile.DEFAULT) &&
+        return !max.equals(Profile.DEFAULT) &&
                !max.equals(requiredProfile);
     }
 
@@ -398,23 +405,23 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         return reference;
     }
 
-    @CheckForNull
-    private static Profile findProfile(@NonNull final Iterable<? extends URL> roots) {
-        Profile current = StandardProfile.DEFAULT;
+    @NonNull
+    private static Union2<Profile,String> findProfile(@NonNull final Iterable<? extends URL> roots) {
+        Profile current = Profile.DEFAULT;
         for (URL root : roots) {
-            final Profile rootProfile = findProfile(root);
-            if (!rootProfile.isValid()) {
+            final Union2<Profile,String> rootProfile = findProfile(root);
+            if (!rootProfile.hasFirst()) {
                 //Broken profile - no need to continue
                 return rootProfile;
             }
-            current = max(current, rootProfile);
+            current = max(current, rootProfile.first());
         }
-        return current;
+        return Union2.<Profile,String>createFirst(current);
     }
 
     @NonNull
-    private static Profile findProfile(@NonNull URL root) {        
-        Profile res;
+    private static Union2<Profile,String> findProfile(@NonNull URL root) {
+        Union2<Profile,String> res;
         final ArchiveCache.Key key = ArchiveCache.createKey(root);
         if (key != null) {
             res = ArchiveCache.getProfile(key);
@@ -422,19 +429,16 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                 return res;
             }
         }
-        res = StandardProfile.DEFAULT;
+        String profileName = null;
         final FileObject rootFo = URLMapper.findFileObject(root);
         if (rootFo != null) {
             final FileObject manifestFile = rootFo.getFileObject(RES_MANIFEST);
             if (manifestFile != null) {
                 try {
-                    final InputStream in = manifestFile.getInputStream();
-                    try {
+                    try (InputStream in = manifestFile.getInputStream()) {
                         final Manifest manifest = new Manifest(in);
                         final Attributes attrs = manifest.getMainAttributes();
-                        res = StandardProfile.forName(attrs.getValue(ATTR_PROFILE));
-                    } finally {
-                        in.close();
+                        profileName = attrs.getValue(ATTR_PROFILE);
                     }
                 } catch (IOException ioe) {
                     LOG.log(
@@ -444,6 +448,10 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                 }
             }
         }
+        final Profile profile = Profile.forName(profileName);
+        res = profile != null ?
+                Union2.<Profile,String>createFirst(profile) :
+                Union2.<Profile,String>createSecond(profileName);
         if (key != null) {
             ArchiveCache.putProfile(key, res);
         }
@@ -451,135 +459,30 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
     }
 
 
-    @NonNull
-    static Profile max (@NonNull Profile a, @NonNull Profile b) {        
-        return a.getRank() >= b.getRank() ?
-                a :
-                b;
+    @CheckForNull
+    static Profile max (@NullAllowed Profile a, @NullAllowed Profile b) {
+        if (b == null) {
+            return a;
+        }
+        if (a == null) {
+            return b;
+        }
+        return a.compareTo(b) <= 0 ?
+            b :
+            a;
     }
 
     @NonNull
     static Profile requiredProfile(
             @NonNull final Collection<? extends Reference> state,
-            @NonNull Profile current) {
+            @NonNull Profile initial) {
+        Profile current = initial;
         for (ProfileProblemsProviderImpl.Reference re : state) {
             current = max(current, re.getRequiredProfile());
         }
         return current;
     }
-
-    static interface Profile {
-        @NonNull
-        String getAntName();
-        @NonNull
-        String getDisplayName();
-        boolean isValid();
-        int getRank();
-    }
-
-    @NbBundle.Messages({
-        "NAME_Compact1=Compact 1",
-        "NAME_Compact2=Compact 2",
-        "NAME_Compact3=Compact 3",
-        "NAME_FullJRE=Full JRE"
-    })
-    static enum StandardProfile implements Profile {
-
-        COMPACT1(1, "compact1", Bundle.NAME_Compact1()),
-        COMPACT2(2, "compact2", Bundle.NAME_Compact2()),
-        COMPACT3(3, "compact3", Bundle.NAME_Compact3()),
-        DEFAULT(Integer.MAX_VALUE, "default", Bundle.NAME_FullJRE());
-
-        private static final Map<String,StandardProfile> profilesByName =
-                new HashMap<String, StandardProfile>();
-        static {
-            for (StandardProfile sp : values()) {
-                profilesByName.put(sp.getAntName(), sp);
-            }
-        }
-
-        private final int rank;
-        private final String antName;
-        private final String displayName;
-
-        private StandardProfile(
-                final int rank,
-                @NonNull final String antName,
-                @NonNull final String displayName) {
-            this.rank = rank;
-            this.antName = antName;
-            this.displayName = displayName;
-        }
-
-
-        @Override
-        @NonNull
-        public String getAntName() {
-            return antName;
-        }
-
-        @Override
-        @NonNull
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        @Override
-        public int getRank() {
-            return rank;
-        }
-
-        @Override
-        public boolean isValid() {
-            return true;
-        }
-
-        @NonNull
-        static Profile forName(@NullAllowed String antName) {
-            if (antName == null) {
-                antName = DEFAULT.getAntName();
-            }
-            Profile res = profilesByName.get(antName);
-            if (res == null) {
-                res = new UnknownProfile(antName);
-            }
-            return res;
-        }
-
-
-        private static class UnknownProfile implements Profile {
-
-            private final String antName;
-
-            UnknownProfile(@NonNull final String antName) {
-                Parameters.notEmpty("antName", antName);    //NOI18N
-                this.antName = antName;
-            }
-
-            @Override
-            public String getAntName() {
-                return antName;
-            }
-
-            @Override
-            public String getDisplayName() {
-                return antName;
-            }
-
-            @Override
-            public int getRank() {
-                return Integer.MIN_VALUE;
-            }
-
-            @Override
-            public boolean isValid() {
-                return false;
-            }
-        }
-
-
-    }
-
+    
     abstract static class Reference {
 
         private final String classPathId;
@@ -589,21 +492,24 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         private Reference(
                 @NonNull final String classPathId,
                 @NonNull final String rawId,
-                @NonNull final Profile requiredProfile) {
+                @NullAllowed final Profile requiredProfile) {
             Parameters.notNull("classPathId", classPathId); //NOI18N
             Parameters.notNull("rawId", rawId);             //NOI18N
-            Parameters.notNull("requiredProfile", requiredProfile); //NOI18N
             this.classPathId = classPathId;
             this.rawId = rawId;
             this.requiredProfile = requiredProfile;
         }
 
+        @NonNull
         abstract String getDisplayName();
 
+        @NonNull
         abstract String getToolTipText();
-        
+
+        @NonNull
         abstract Icon getIcon();        
-                        
+
+        @CheckForNull
         final Profile getRequiredProfile() {
             return requiredProfile;
         }
@@ -664,7 +570,7 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         private LibraryReference(
                 @NonNull final String classPathId,
                 @NonNull final String rawId,
-                @NonNull final Profile requiredProfile,
+                @NullAllowed final Profile requiredProfile,
                 @NonNull final Library lib) {
             super(classPathId, rawId, requiredProfile);
             Parameters.notNull("lib", lib); //NOI18N
@@ -693,7 +599,7 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         private ProjectReference(
                 @NonNull final String classPathId,
                 @NonNull final String rawId,
-                @NonNull final Profile requiredProfile,
+                @NullAllowed final Profile requiredProfile,
                 @NonNull final Project prj) {
             super(classPathId, rawId, requiredProfile);
             Parameters.notNull("prj", prj); //NOI18N
@@ -723,7 +629,7 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         private FileReference(
                 @NonNull final String classPathId,
                 @NonNull final String rawId,
-                @NonNull final Profile requiredProfile,
+                @NullAllowed final Profile requiredProfile,
                 @NonNull final File file) {
             super(classPathId, rawId, requiredProfile);
             Parameters.notNull("file", file);   //NOI18N
@@ -806,10 +712,10 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                                         final Profile newProfile = panel.getProfile();
                                         final EditableProperties props = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                         if (newProfile == null ||
-                                            newProfile == StandardProfile.DEFAULT) {
+                                            newProfile == Profile.DEFAULT) {
                                             props.remove(profileProperty);
                                         } else {
-                                            props.put(profileProperty, newProfile.getAntName());
+                                            props.put(profileProperty, newProfile.getName());
                                         }
                                         antProjectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                     }
@@ -848,9 +754,9 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                 "ProfileProblemsProviderImpl.ArchiveCache.size",    //NOI18N
                 1<<10);        
 
-        private static final Map<Key,Profile> cache = new LinkedHashMap<Key, Profile>(16, 0.75f, true) {
+        private static final Map<Key,Union2<Profile,String>> cache = new LinkedHashMap<Key,Union2<Profile,String>>(16, 0.75f, true) {
             @Override
-            protected boolean removeEldestEntry(Map.Entry<Key, Profile> entry) {
+            protected boolean removeEldestEntry(Map.Entry<Key, Union2<Profile,String>> entry) {
                 return size() > MAX_CACHE_SIZE;
             }
         };
@@ -858,29 +764,33 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         private ArchiveCache() {}
 
         @CheckForNull
-        static Profile getProfile(@NonNull final Key key) {
-            final Profile res = cache.get(key);
-            LOG.log(
-                Level.FINER,
-                "cache[{0}]->{1}",  //NOI18N
-                new Object[]{
-                    key,
-                    res
-                });
+        static Union2<Profile,String> getProfile(@NonNull final Key key) {
+            final Union2<Profile,String> res = cache.get(key);
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.log(
+                    Level.FINER,
+                    "cache[{0}]->{1}",  //NOI18N
+                    new Object[]{
+                        key,
+                        res.hasFirst() ? res.first() : res.second()
+                    });
+            }
             return res;
         }
 
         static void putProfile(
             @NonNull final  Key key,
-            @NonNull final Profile profile) {
-            LOG.log(
-                Level.FINER,
-                "cache[{0}]<-{1}",   //NOI18N
-                new Object[]{
-                    key,
-                    profile
-                });
-            cache.put(key, profile);
+            @NonNull final Union2<Profile,String> profile) {
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.log(
+                    Level.FINER,
+                    "cache[{0}]<-{1}",   //NOI18N
+                    new Object[]{
+                        key,
+                        profile.hasFirst() ? profile.first() : profile.second()
+                    });
+            }
+            cache.put(key,profile);
         }
 
         @CheckForNull
