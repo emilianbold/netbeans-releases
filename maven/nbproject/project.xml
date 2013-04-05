@@ -508,8 +508,8 @@ made subject to such option by the copyright holder.
                 <package-root>mavensrc</package-root>
                 <classpath>${antsrc.cp}</classpath>
                 <built-to>build/mavenclasses</built-to>
-                <built-to>${cluster}/maven/nblib/netbeans-cos.jar</built-to>
-                <built-to>${cluster}/maven/nblib/netbeans-eventspy.jar</built-to>
+                <built-to>${cluster}/maven-nblib/netbeans-cos.jar</built-to>
+                <built-to>${cluster}/maven-nblib/netbeans-eventspy.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>
