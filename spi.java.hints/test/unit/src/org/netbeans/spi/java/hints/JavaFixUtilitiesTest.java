@@ -1063,6 +1063,28 @@ public class JavaFixUtilitiesTest extends TestBase {
 		           "}\n");
     }
     
+    public void testSplitIfOr() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t(int i) {\n" +
+                           "        if (i == 0 || i == 1) {\n" +
+                           "            System.err.println();\n" +
+                           "        }\n" +
+                           "    }\n" +
+                           "}\n",
+                           "if ($cond1 || $cond2) $then; => if ($cond1) $then; else if ($cond2) $then;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t(int i) {\n" +
+                           "        if (i == 0) {\n" +
+                           "            System.err.println();\n" +
+                           "        } else if (i == 1) {\n" +
+                           "            System.err.println();\n" +
+                           "        }\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);
 
