@@ -44,7 +44,7 @@ package org.netbeans.modules.java.hints.suggestions;
 import org.junit.Test;
 import org.netbeans.modules.java.hints.test.api.HintTest;
 
-public class InvertIfTest {
+public class IfsTest {
 
     @Test
     public void testComments() throws Exception {
@@ -72,7 +72,7 @@ public class InvertIfTest {
                        "        } //E\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
                 .applyFix()
                 .assertCompilable()
@@ -114,7 +114,7 @@ public class InvertIfTest {
                        "        }\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .assertWarnings();
     }
     
@@ -132,7 +132,7 @@ public class InvertIfTest {
                        "        }\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
                 .applyFix()
                 .assertCompilable()
@@ -162,7 +162,7 @@ public class InvertIfTest {
                        "        }\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
                 .applyFix()
                 .assertCompilable()
@@ -192,7 +192,7 @@ public class InvertIfTest {
                        "        }\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
                 .applyFix()
                 .assertCompilable()
@@ -222,7 +222,7 @@ public class InvertIfTest {
                        "        }\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
                 .applyFix()
                 .assertCompilable()
@@ -252,7 +252,7 @@ public class InvertIfTest {
                        "        }\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
                 .applyFix()
                 .assertCompilable()
@@ -281,7 +281,7 @@ public class InvertIfTest {
                        "        }\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
                 .applyFix()
                 .assertCompilable()
@@ -311,7 +311,7 @@ public class InvertIfTest {
                        "        }\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
                 .applyFix()
                 .assertCompilable()
@@ -341,7 +341,7 @@ public class InvertIfTest {
                        "        }\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
                 .applyFix()
                 .assertCompilable()
@@ -371,7 +371,7 @@ public class InvertIfTest {
                        "        }\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
                 .applyFix()
                 .assertCompilable()
@@ -401,7 +401,7 @@ public class InvertIfTest {
                        "        }\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
                 .applyFix()
                 .assertCompilable()
@@ -431,7 +431,7 @@ public class InvertIfTest {
                        "        }\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
                 .applyFix()
                 .assertCompilable()
@@ -461,7 +461,7 @@ public class InvertIfTest {
                        "        }\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
                 .applyFix()
                 .assertCompilable()
@@ -489,7 +489,7 @@ public class InvertIfTest {
                        "        }\n" +
                        "    }\n" +
                        "}\n")
-                .run(InvertIf.class)
+                .run(Ifs.class)
                 .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
                 .applyFix()
                 .assertCompilable()
@@ -499,6 +499,341 @@ public class InvertIfTest {
                               "        if (args.length < 5) {\n" +
                               "        } else {\n" +
                               "            System.err.println(\"too many\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+//    @Test
+    public void testJoinIfs1() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(int i) {\n" +
+                       "        if (i == 0) {\n" +
+                       "            System.err.println(\"0\");\n" +
+                       "        } el^se {\n" +
+                       "            if (i == 1) {\n" +
+                       "                System.err.println(\"1\");\n" +
+                       "            }\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(Ifs.class)
+                .findWarning("5:12-5:12:verifier:" + Bundle.ERR_JoinElseIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(int i) {\n" +
+                              "        if (i == 0) {\n" +
+                              "            System.err.println(\"0\");\n" +
+                              "        } else if (i == 1) {\n" +
+                              "            System.err.println(\"1\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    @Test
+    public void testJoinIfs2() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(int i) {\n" +
+                       "        if (i == 0) {\n" +
+                       "            System.err.println(\"0\");\n" +
+                       "        } el^se {\n" +
+                       "            if (i == 1) {\n" +
+                       "                System.err.println(\"1\");\n" +
+                       "            }\n" +
+                       "            System.err.println(\"extra\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(Ifs.class)
+                .assertWarnings();
+    }
+
+    @Test
+    public void testJoinIfs3() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(int i) {\n" +
+                       "        if (i == 0) {\n" +
+                       "            System.err.println(\"0\");\n" +
+                       "        } else {^\n" +
+                       "            if (i == 1) {\n" +
+                       "                System.err.println(\"1\");\n" +
+                       "            }\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(Ifs.class)
+                .assertWarnings();
+    }
+    
+    @Test
+    public void testToIfOr1() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(int i) {\n" +
+                       "        if (i == 0) {\n" +
+                       "            System.err.println(\"0\");\n" +
+                       "        } el^se {\n" +
+                       "            if (i == 1) {\n" +
+                       "                System.err.println(\"0\");\n" +
+                       "            }\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(Ifs.class)
+                .findWarning("5:12-5:12:verifier:" + Bundle.ERR_ToOrIf())
+                .applyFix()
+                .assertCompilable()
+                .assertVerbatimOutput("package test;\n" +
+                                      "public class Test {\n" +
+                                      "    public static void main(int i) {\n" +
+                                      "        if (i == 0 || i == 1) {\n" +
+                                      "            System.err.println(\"0\");\n" +
+                                      "        }\n" +
+                                      "    }\n" +
+                                      "}\n");
+    }
+    
+    @Test
+    public void testToIfOr2() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(int i) {\n" +
+                       "        i^f (i == 0) {\n" +
+                       "            System.err.println(\"0\");\n" +
+                       "        } else if (i == 1) {\n" +
+                       "            System.err.println(\"0\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"1\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(Ifs.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_ToOrIf())
+                .applyFix()
+                .assertCompilable()
+                .assertVerbatimOutput("package test;\n" +
+                                      "public class Test {\n" +
+                                      "    public static void main(int i) {\n" +
+                                      "        if (i == 0 || i == 1) {\n" +
+                                      "            System.err.println(\"0\");\n" +
+                                      "        } else {\n" +
+                                      "            System.err.println(\"1\");\n" +
+                                      "        }\n" +
+                                      "    }\n" +
+                                      "}\n");
+    }
+    
+    @Test
+    public void testSplitOrIf1() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(int i) {\n" +
+                       "        if (i == 0 |^| i == 1) {\n" +
+                       "            System.err.println(\"0\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(Ifs.class)
+                .findWarning("3:20-3:20:verifier:" + Bundle.ERR_ToOrIf())
+                .applyFix()
+                .assertCompilable()
+                .assertVerbatimOutput("package test;\n" +
+                                      "public class Test {\n" +
+                                      "    public static void main(int i) {\n" +
+                                      "        if (i == 0) {\n" +
+                                      "            System.err.println(\"0\");\n" +
+                                      "        } else if (i == 1) {\n" +
+                                      "            System.err.println(\"0\");\n" +
+                                      "        }\n" +
+                                      "    }\n" +
+                                      "}\n");
+    }
+    
+    @Test
+    public void testSplitOrIf2() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(int i) {\n" +
+                       "        if (i == 0 |^| i == 1) {\n" +
+                       "            System.err.println(\"0\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"1\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(Ifs.class)
+                .findWarning("3:20-3:20:verifier:" + Bundle.ERR_ToOrIf())
+                .applyFix()
+                .assertCompilable()
+                .assertVerbatimOutput("package test;\n" +
+                                      "public class Test {\n" +
+                                      "    public static void main(int i) {\n" +
+                                      "        if (i == 0) {\n" +
+                                      "            System.err.println(\"0\");\n" +
+                                      "        } else if (i == 1) {\n" +
+                                      "            System.err.println(\"0\");\n" +
+                                      "        } else {\n" +
+                                      "            System.err.println(\"1\");\n" +
+                                      "        }\n" +
+                                      "    }\n" +
+                                      "}\n");
+    }
+    
+    public void testMergeIfs1() throws Exception {
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static void t(int i, int j) {\n" +
+                       "        i|f (i == 0) {\n" +
+                       "            if (j == 0) {\n" +
+                       "                System.err.println(1);\n" +
+                       "            }" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.6")
+                .run(Tiny.class)
+                .findWarning("3:9-3:9:hint:" + Bundle.ERR_org_netbeans_modules_java_hints_suggestions_Tiny_mergeIfs())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private static void t(int i, int j) {\n" +
+                              "        if (i == 0 && j == 0) {\n" +
+                              "            System.err.println(1);\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    public void testMergeIfs2() throws Exception {
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static void t(int i, int j) {\n" +
+                       "        i|f (i == 0 || i == 1) {\n" +
+                       "            if (j == 0 || j == 1) {\n" +
+                       "                System.err.println(1);\n" +
+                       "            }" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.6")
+                .run(Tiny.class)
+                .findWarning("3:9-3:9:hint:" + Bundle.ERR_org_netbeans_modules_java_hints_suggestions_Tiny_mergeIfs())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private static void t(int i, int j) {\n" +
+                              "        if ((i == 0 || i == 1) && (j == 0 || j == 1)) {\n" +
+                              "            System.err.println(1);\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    public void testSplitIf1() throws Exception {
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static void t(int i, int j) {\n" +
+                       "        if (i =|= 0 && j == 0) {\n" +
+                       "            System.err.println(1);\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.6")
+                .run(Tiny.class)
+                .findWarning("3:15-3:15:hint:" + Bundle.ERR_org_netbeans_modules_java_hints_suggestions_Tiny_extractIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private static void t(int i, int j) {\n" +
+                              "        if (i == 0) {\n" +
+                              "            if (j == 0) {\n" +
+                              "                System.err.println(1);\n" +
+                              "            }\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+
+    public void testSplitIf2() throws Exception {
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static void t(int i, int j) {\n" +
+                       "        if ((i =|= 0 || i == 1) && (j == 0 || j == 1)) {\n" +
+                       "            System.err.println(1);\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.6")
+                .run(Tiny.class)
+                .findWarning("3:16-3:16:hint:" + Bundle.ERR_org_netbeans_modules_java_hints_suggestions_Tiny_extractIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private static void t(int i, int j) {\n" +
+                              "        if (i == 0 || i == 1) {\n" +
+                              "            if (j == 0 || j == 1) {\n" +
+                              "                System.err.println(1);\n" +
+                              "            }\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+
+    public void testSplitIf3() throws Exception {
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static void t(int i, int j) {\n" +
+                       "        if (i == 0 && j =|= 0) {\n" +
+                       "            System.err.println(1);\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.6")
+                .run(Tiny.class)
+                .findWarning("3:25-3:25:hint:" + Bundle.ERR_org_netbeans_modules_java_hints_suggestions_Tiny_extractIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private static void t(int i, int j) {\n" +
+                              "        if (i == 0) {\n" +
+                              "            if (j == 0) {\n" +
+                              "                System.err.println(1);\n" +
+                              "            }\n" +
                               "        }\n" +
                               "    }\n" +
                               "}\n");
