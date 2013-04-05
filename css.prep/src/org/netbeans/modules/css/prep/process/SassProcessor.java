@@ -46,11 +46,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.Warnings;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -89,7 +91,6 @@ public final class SassProcessor {
         }
     }
 
-    // XXX handle files starting with "_"
     private void processFile(Project project, FileObject fileObject, boolean checkEnabled) {
         assert fileObject.isData() : "File expected: " + fileObject;
         if (!isSassFile(fileObject)) {
@@ -124,6 +125,32 @@ public final class SassProcessor {
     }
 
     private void fileChanged(Project project, FileObject fileObject) {
+        if (!fileObject.getName().startsWith("_")) { // NOI18N
+            compileFile(fileObject);
+            return;
+        }
+        // it is include
+        if (project == null) {
+            // we need project for dependencies
+            LOGGER.log(Level.FINE, "Cannot compile 'import' file {0}, no project", fileObject);
+            return;
+        }
+        try {
+            DependenciesGraph dependenciesGraph = CssIndex.get(project).getDependencies(fileObject);
+            for (FileObject referring : dependenciesGraph.getAllReferingFiles()) {
+                if (fileObject.equals(referring)) {
+                    // file itself, ignore it
+                    continue;
+                }
+                assert isSassFile(referring) : "Sass file expected: " + referring;
+                compileFile(referring);
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+    }
+
+    private void compileFile(FileObject fileObject) {
         SassExecutable sass = getSass();
         if (sass == null) {
             return;
