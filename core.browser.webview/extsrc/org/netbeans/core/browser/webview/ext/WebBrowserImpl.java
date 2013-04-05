@@ -592,7 +592,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
                 if( null == t1 )
                     return;
                 String location = eng.getLocation();
-                reportInvalidUrl( location );
+                reportInvalidUrl( location, t1 );
             }
         });
         eng.setCreatePopupHandler( new Callback<PopupFeatures, WebEngine>() {
@@ -907,7 +907,10 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     public void close(boolean closeTab) {
     }
 
-    private void reportInvalidUrl( String location ) {
+    private void reportInvalidUrl( String location, Throwable ex ) {
+        if( null != ex ) {
+            Logger.getLogger( WebBrowserImpl.class.getName() ).log( Level.INFO, null, ex );
+        }
         NotifyDescriptor nd = new NotifyDescriptor.Message(
                 NbBundle.getMessage( WebBrowserImpl.class, "Err_InvalidURL", location),
                 NotifyDescriptor.PLAIN_MESSAGE );
