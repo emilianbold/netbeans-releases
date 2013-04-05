@@ -74,7 +74,7 @@ public final class SassProcessor extends BaseProcessor {
 
     @Override
     protected void fileChanged(Project project, FileObject fileObject) {
-        if (!fileObject.getName().startsWith("_")) { // NOI18N
+        if (!isPartial(fileObject)) {
             super.fileChanged(project, fileObject);
             return;
         }
@@ -87,8 +87,8 @@ public final class SassProcessor extends BaseProcessor {
         try {
             DependenciesGraph dependenciesGraph = CssIndex.get(project).getDependencies(fileObject);
             for (FileObject referring : dependenciesGraph.getAllReferingFiles()) {
-                if (fileObject.equals(referring)) {
-                    // file itself, ignore it
+                if (isPartial(referring)) {
+                    // ignore partials
                     continue;
                 }
                 assert isSupportedFile(referring) : "Sass file expected: " + referring;
@@ -118,6 +118,10 @@ public final class SassProcessor extends BaseProcessor {
             }
         }
         return null;
+    }
+
+    private boolean isPartial(FileObject fileObject) {
+        return fileObject.getName().startsWith("_"); // NOI18N
     }
 
 }
