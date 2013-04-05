@@ -937,7 +937,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                 provider = Hk2LibraryProvider.getProvider(
                         dm.getCommonServerSupport().getInstance());
             } catch (NullPointerException npe) {
-                                Logger.getLogger("glassfish-javaee").log(Level.INFO,
+                Logger.getLogger("glassfish-javaee").log(Level.INFO,
                         "Caught NullPointerException in Hk2JavaEEPlatformImpl "
                         + "while fetching Jersey library", npe);
 
