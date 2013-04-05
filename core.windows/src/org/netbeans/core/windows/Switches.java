@@ -281,7 +281,7 @@ public final class Switches {
     public static int getSimpleTabsPlacement() {
         int result = JTabbedPane.TOP;
         try {
-            String resValue = NbBundle.getMessage(Switches.class, "WinSys.TabControl.SimpleTabs.Enabled" ); //NOI18N
+            String resValue = NbBundle.getMessage(Switches.class, "WinSys.TabControl.SimpleTabs.Placement" ); //NOI18N
             if( "bottom".equals( resValue ) )
                 result = JTabbedPane.BOTTOM;
             else if( "right".equals( resValue ) )
