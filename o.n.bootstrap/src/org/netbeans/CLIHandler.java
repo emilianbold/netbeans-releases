@@ -1406,8 +1406,12 @@ public abstract class CLIHandler extends Object {
 
         @Override
         public void close() throws IOException {
-            lock.release();
-            file.close();
+            if (lock != null) {
+                lock.release();
+            }
+            if (file != null) {
+                file.close();
+            }
         }
     } // end of FileAndLock
 }

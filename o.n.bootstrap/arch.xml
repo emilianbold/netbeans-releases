@@ -505,27 +505,24 @@ made subject to such option by the copyright holder.
                 </api>
             </li>
             <li>
-                <api type="export" group="systemproperty" name="netbeans.system_http_proxy" category="devel">
-                    System proxy setting in the format of hostname:port.  The
-                    launcher does its best to detect the OS/desktop HTTP proxy
-                    setting.  There is no guarantee that it succeeds.  The property
-                    may not be set at all or its value may be totally wrong.
-                </api>
-            </li>
-            <li>
-                <api type="export" group="systemproperty" name="netbeans.system_http_non_proxy_hosts" category="devel">
-                    List of addresses that are not accessed through proxy.  The
-                    launcher attempts to detect the OS/desktop HTTP proxy
-                    setting.  There is no guarantee that it succeeds.  The property
-                    may not be set at all or its value may be totally wrong and 
-                    its format is not defined.
-                </api>
-            </li>
-            <li>
                 <api type="export" group="systemproperty" name="netbeans.classpath" category="friend">
                     Classpath to prepend to core loader (normally just
                     <samp>lib/*.jar</samp>). Possibly useful for testing
                     infrastructure etc.
+                </api>
+            </li>
+            <li>
+                <api type="export" group="systemproperty" name="netbeans.systemclassloader.patches" category="devel">
+                    By setting this system property
+                    to a classpath (list of directories and JARs separated by the normal
+                    path separator) you may append to the system class loader.
+                </api>
+            </li>
+            <li>
+                <api type="export" group="systemproperty" name="netbeans.patches.cnb" category="devel">
+                    By setting a system property to <code>"netbeans.patches." + module.getCodeNameBase()</code>
+                    one can influence installed modules without changing the build.
+                    Format is <code>-Dnetbeans.patches.org.nb.mods.foo=/path/to.file.jar:/path/to/dir</code>.
                 </api>
             </li>
             <li>

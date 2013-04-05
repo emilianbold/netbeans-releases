@@ -55,16 +55,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
-import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumn;
@@ -72,11 +69,12 @@ import javax.swing.table.TableColumnModel;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.notifications.NotificationImpl;
 import org.netbeans.modules.notifications.NotificationSettings;
+import org.netbeans.modules.notifications.Utils;
 import org.netbeans.swing.etable.ETable;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.awt.CloseButtonFactory;
 import org.openide.awt.NotificationDisplayer;
+import org.openide.awt.QuickSearch;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -101,32 +99,27 @@ import org.openide.windows.WindowManager;
 public final class NotificationCenterTopComponent extends TopComponent {
 
     private static final int PREVIEW_DETAILS_REFRESH_DELAY = 300;
-    private static final int FILTER_REFRESH_DELAY = 300;
     private static final int TABLE_REFRESH_PERIOD = 60000;
     private final NotificationCenterManager notificationManager;
     private JPanel detailsPanel;
     private NotificationTable notificationTable;
     private Timer previewRefreshTimer;
     private JScrollPane notificationScroll;
-    private SearchField searchField;
-    private final Timer filterTimer;
     private final Timer tableRefreshTimer;
-    private final SearchDocumentListener searchDocumentListener;
     private final KeyListener escSearchKeyListener;
-    private final KeyAdapter searchKeyAdapter;
     private final NotificationTable.ProcessKeyEventListener tableKeyListener;
     private JPanel pnlSearch;
     private JToggleButton btnSearch;
+    private QuickSearch quickSearch;
+    private final QuickSearch.Callback filterCallback;
+    private boolean updateColumnsSize = true;
 
     public NotificationCenterTopComponent() {
         notificationManager = NotificationCenterManager.getInstance();
-        filterTimer = new Timer(FILTER_REFRESH_DELAY, new SearchTimerListener());
-        filterTimer.stop();
+        filterCallback = new QuickFilterCallback();
         tableRefreshTimer = new Timer(TABLE_REFRESH_PERIOD, new RefreshTimerListener());
         tableRefreshTimer.stop();
-        searchDocumentListener = new SearchDocumentListener(filterTimer);
         escSearchKeyListener = new EscKeyListener();
-        searchKeyAdapter = new SearchKeyAdapter();
         tableKeyListener = new TableKeyListener();
         setName(NbBundle.getMessage(NotificationCenterTopComponent.class, "CTL_NotificationCenterTopComponent"));
         setToolTipText(NbBundle.getMessage(NotificationCenterTopComponent.class, "HINT_NotificationCenterTopComponent"));
@@ -143,6 +136,9 @@ public final class NotificationCenterTopComponent extends TopComponent {
         btnSearch.setToolTipText(NbBundle.getMessage(NotificationCenterTopComponent.class, "LBL_SearchToolTip"));
         btnSearch.setFocusable(false);
         btnSearch.setSelected(NotificationSettings.isSearchVisible());
+        //TODO delete 2 lines then quick search API clear text correctly
+        btnSearch.setToolTipText("Disabled due to Quick Search API defects");
+        btnSearch.setEnabled(false);
         btnSearch.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -162,27 +158,14 @@ public final class NotificationCenterTopComponent extends TopComponent {
         notificationScroll = new JScrollPane(notificationTable);
 
         pnlSearch = new JPanel(new GridBagLayout());
-        searchField = new SearchField();
-        pnlSearch.add(searchField, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 6, 3, 3), 0, 0));
-
-        pnlSearch.add(new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(3, 3, 3, 3), 0, 0));
-
-        JButton clearButton = CloseButtonFactory.createCloseButton();
-        clearButton.addActionListener(new CloseSearchAction());
-        pnlSearch.add(clearButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(3, 3, 3, 3), 0, 0));
+        GridBagConstraints searchConstrains = new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
+        quickSearch = QuickSearch.attach(pnlSearch, searchConstrains, filterCallback, true);
+        pnlSearch.add(new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
         setSearchVisible(btnSearch.isSelected());
-        
+
         pnlLeft.add(pnlSearch, new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, GridBagConstraints.SOUTH, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
         pnlLeft.add(notificationScroll, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-            @Override
-            public void run() {
-                splitPane.setLeftComponent(pnlLeft);
-                splitPane.setDividerLocation(0.6);
-                splitPane.validate(); // Have to validate to properly update column sizes
-                updateTableColumnSizes();
-            }
-        });
+        splitPane.setLeftComponent(pnlLeft);
     }
 
     private void initNotificationTable() {
@@ -265,19 +248,14 @@ public final class NotificationCenterTopComponent extends TopComponent {
     }
 
     private void setSearchVisible(boolean visible) {
-        if (!visible) {
-            searchField.clear();
-        }
-        pnlSearch.setVisible(visible);
-        if (visible != btnSearch.isSelected()) {
-            btnSearch.setSelected(visible);
-        }
-        this.revalidate();
-        this.repaint();
-        if (visible) {
-            searchField.requestFocus();
-        }
-        NotificationSettings.setSearchVisible(visible);
+        //TODO uncomment when bugs the quick search API - allow search panel to be toggleable from toolbar
+//        quickSearch.setAlwaysShown(visible);
+//        if (visible != btnSearch.isSelected()) {
+//            btnSearch.setSelected(visible);
+//        }
+//        this.revalidate();
+//        this.repaint();
+//        NotificationSettings.setSearchVisible(visible);
     }
 
     /**
@@ -320,9 +298,6 @@ public final class NotificationCenterTopComponent extends TopComponent {
     public void componentOpened() {
         removeAll();
         init();
-
-        searchField.addDocumentListener(searchDocumentListener);
-        searchField.addSearchKeyListener(escSearchKeyListener);
         notificationTable.addProcessKeyEventListener(tableKeyListener);
         tableRefreshTimer.restart();
     }
@@ -330,10 +305,22 @@ public final class NotificationCenterTopComponent extends TopComponent {
     @Override
     public void componentClosed() {
         NotificationCenterManager.tcClosed();
-        searchField.removeDocumentListener(searchDocumentListener);
-        searchField.removeSearchKeyListener(escSearchKeyListener);
         notificationTable.removeProcessKeyEventListener(tableKeyListener);
         tableRefreshTimer.stop();
+    }
+
+    @Override
+    public void addNotify() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                splitPane.setDividerLocation(0.6);
+                splitPane.validate(); // Have to validate to properly update column sizes
+                updateTableColumnSizes();
+                updateColumnsSize = false;
+            }
+        });
+        super.addNotify();
     }
 
     void writeProperties(java.util.Properties p) {
@@ -352,55 +339,7 @@ public final class NotificationCenterTopComponent extends TopComponent {
 
         @Override
         public void processKeyEvent(KeyEvent e) {
-            if (!isEnabled()) {
-                return;
-            }
-            if (pnlSearch.isVisible()) {
-                searchField.setCaretPosition(searchField.getText().length());
-                searchField.processSearchKeyEvent(e);
-                searchField.requestFocus();
-            } else {
-                switch (e.getID()) {
-                    case KeyEvent.KEY_PRESSED:
-                        searchKeyAdapter.keyPressed(e);
-                        break;
-                    case KeyEvent.KEY_RELEASED:
-                        searchKeyAdapter.keyReleased(e);
-                        break;
-                    case KeyEvent.KEY_TYPED:
-                        searchKeyAdapter.keyTyped(e);
-                        break;
-                }
-            }
-        }
-    }
-
-    private class SearchKeyAdapter extends KeyAdapter {
-
-        @Override
-        public void keyTyped(KeyEvent e) {
-            int modifiers = e.getModifiers();
-            int keyCode = e.getKeyCode();
-            char c = e.getKeyChar();
-
-            //#43617 - don't eat + and -
-            //#98634 - and all its duplicates dont't react to space
-            if ((c == '+') || (c == '-') || (c == ' ')) {
-                return; // NOI18N
-            }
-            if (((modifiers > 0) && (modifiers != KeyEvent.SHIFT_MASK)) || e.isActionKey()) {
-                return;
-            }
-            if (Character.isISOControl(c)
-                    || (keyCode == KeyEvent.VK_SHIFT)
-                    || (keyCode == KeyEvent.VK_ESCAPE)) {
-                return;
-            }
-            setSearchVisible(true);
-
-            final KeyStroke stroke = KeyStroke.getKeyStrokeForEvent(e);
-            searchField.setText(String.valueOf(stroke.getKeyChar()));
-            e.consume();
+            quickSearch.processKeyEvent(e);
         }
     }
 
@@ -418,53 +357,40 @@ public final class NotificationCenterTopComponent extends TopComponent {
         @Override
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == Event.ESCAPE) {
-                if (searchField.isEmpty()) {
+                if (notificationManager.isQuickFilter()) {
                     setSearchVisible(false);
-                } else {
-                    searchField.clear();
                 }
             }
         }
     }
 
-    private class CloseSearchAction implements ActionListener {
+    private class QuickFilterCallback implements QuickSearch.Callback {
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            setSearchVisible(false);
-        }
-    }
-
-    private class SearchTimerListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            notificationManager.setMessageFilter(searchField.getText().trim());
-            filterTimer.stop();
-        }
-    }
-
-    private class SearchDocumentListener implements DocumentListener {
-
-        private final Timer timer;
-
-        public SearchDocumentListener(Timer timer) {
-            this.timer = timer;
+        public void quickSearchUpdate(String searchText) {
+            notificationManager.setMessageFilter(searchText);
+            if (quickSearch != null && !quickSearch.isAlwaysShown()) {
+                setSearchVisible(true);
+            }
         }
 
         @Override
-        public void insertUpdate(DocumentEvent e) {
-            timer.restart();
+        public void showNextSelection(boolean forward) {
+            notificationTable.showNextSelection(forward);
         }
 
         @Override
-        public void removeUpdate(DocumentEvent e) {
-            timer.restart();
+        public String findMaxPrefix(String prefix) {
+            return prefix;
         }
 
         @Override
-        public void changedUpdate(DocumentEvent e) {
-            timer.restart();
+        public void quickSearchConfirmed() {
+        }
+
+        @Override
+        public void quickSearchCanceled() {
+            notificationManager.setMessageFilter(null);
         }
     }
 }

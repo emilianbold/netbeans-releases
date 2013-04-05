@@ -29,35 +29,25 @@
             
     <!-- GlassFish V3 properties   -->   
     <property name="glassfish.v3.build.type"      value=""/>
-    <!-- /java/re/glassfish/3.1.2.2/promoted/b05/bundles/ -->
-    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/3.1.2.2/promoted"/>
+    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/4.0/promoted"/>
     
-    <!--<property name="glassfish.v3.build.number"    value="74b"/>-->
-    
-    
-    <!-- XXX - a hack for 3.1.2 patch2
     <loadresource property="glassfish.v3.build.number">
           <url url="${glassfish.v3.location.prefix}/latest/archive/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="(.*)glassfish-3.1.2-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
+              <replaceregex pattern="(.*)glassfish-4.0-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
             </tokenfilter>
           </filterchain>
-    </loadresource>-->
-    <property name="glassfish.v3.build.number"    value="23"/>
+    </loadresource>
     
-    <property name="glassfish.v3.display.version" value="3.1.2.2"/>
+    <property name="glassfish.v3.display.version" value="4.0"/>
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.id"           value="b${glassfish.v3.build.number}"/>
-    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-3.1.2.2"/>
-    <!--
-        <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.1.2-${glassfish.v3.version}.zip"/>
-        <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.1.2-${glassfish.v3.version}-ml.zip"/>
-    -->
-    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/b05/bundles/glassfish-3.1.2-2-b05.zip"/>
-    <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/b05/bundles/glassfish-3.1.2-2-b05-ml.zip"/>
-    <property name="glassfish.v3.subdir"       value="glassfish3"/>
+    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-4.0"/>
+    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-4.0-${glassfish.v3.version}.zip"/>
+    <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-4.0-${glassfish.v3.version}-ml.zip"/>
+    <property name="glassfish.v3.subdir"       value="glassfish4"/>
     
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 

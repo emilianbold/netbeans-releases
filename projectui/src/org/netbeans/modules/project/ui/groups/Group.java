@@ -325,7 +325,8 @@ public abstract class Group {
     //called when IDE is shutting down, at that point we need to save the current group's
     // opened files. If IDE reopens with --open-group switch, the current group's list would be lost.
     public static void onShutdown(Set<Project> prjs) {
-        String oldGroupName = getActiveGroup().getName();
+        Group active = getActiveGroup();
+        String oldGroupName = active != null ? active.getName() : null;
         Set<Project> stayOpened = new HashSet<Project>(prjs);
         Map<Project, Set<DataObject>> documents = getOpenedDocuments(stayOpened, true);
         for (Project p : stayOpened) {

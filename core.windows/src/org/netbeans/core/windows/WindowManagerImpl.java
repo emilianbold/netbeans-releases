@@ -1890,6 +1890,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         assert null != ws;
         final PersistenceManager pm = PersistenceManager.getDefault();
         
+        PersistenceHandler.getDefault().finishLazyLoading();
+
         //cancel full-screen mode
         MainWindow.getInstance().setFullScreenMode(false);
         

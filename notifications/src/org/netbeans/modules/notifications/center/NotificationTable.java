@@ -118,11 +118,11 @@ public class NotificationTable extends ETable {
                     int modelIndex = table.convertRowIndexToModel(table.getSelectedRow());
                     JPopupMenu popup;
                     if (modelIndex < 0) {
-                        popup =  Utilities.actionsToPopup(Utils.getGlobalNotificationActions(), (NotificationTable) e.getSource());
+                        popup = Utilities.actionsToPopup(Utils.getGlobalNotificationActions(), (NotificationTable) e.getSource());
                     } else {
                         NotificationTableModel model = (NotificationTableModel) getModel();
                         final NotificationImpl notification = model.getEntry(modelIndex);
-                        popup =  Utilities.actionsToPopup(Utils.getNotificationActions(notification), (NotificationTable) e.getSource());
+                        popup = Utilities.actionsToPopup(Utils.getNotificationActions(notification), (NotificationTable) e.getSource());
                     }
                     popup.show(e.getComponent(), e.getX(), e.getY());
                 }
@@ -152,6 +152,24 @@ public class NotificationTable extends ETable {
             l.processKeyEvent(e);
         }
     }
+    
+    void showNextSelection(boolean forward) {
+        int selectedRow = this.getSelectedRow();
+        int lastRowIndex = this.getRowCount() - 1;
+        ListSelectionModel selection = this.getSelectionModel();
+        int toSelect;
+        if (forward) {
+            toSelect = selectedRow + 1;
+        } else {
+            toSelect = selectedRow - 1;
+        }
+        if (toSelect < 0) {
+            toSelect = lastRowIndex;
+        } else if (toSelect > lastRowIndex) {
+            toSelect = 0;
+        }
+        selection.setSelectionInterval(toSelect, toSelect);
+    }
 
     private class NotificationPriorityRenderer extends NotificationRenderer {
 
@@ -159,9 +177,9 @@ public class NotificationTable extends ETable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            setIcon(((NotificationDisplayer.Priority)value).getIcon());
+            setIcon(((NotificationDisplayer.Priority) value).getIcon());
             setText("");
-            setToolTipText(((NotificationDisplayer.Priority)value).name());
+            setToolTipText(((NotificationDisplayer.Priority) value).name());
             return this;
         }
     }
@@ -172,8 +190,8 @@ public class NotificationTable extends ETable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            setText(Utils.getFormatedDate((Calendar)value));
-            setToolTipText(Utils.getFullFormatedDate((Calendar)value));
+            setText(Utils.getFormatedDate((Calendar) value));
+            setToolTipText(Utils.getFullFormatedDate((Calendar) value));
             return this;
         }
     }
