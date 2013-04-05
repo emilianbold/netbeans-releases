@@ -55,12 +55,22 @@ made subject to such option by the copyright holder.
                 <pathelement path="${antsrc.cp}"/>
             </classpath>
         </javac>
-        <copy todir="build/mavenclasses">
-            <fileset dir="mavensrc" excludes="${jar-excludes}"/>
+        <copy overwrite="true" tofile="build/mavenclasses/META-INF/plexus/components.xml" file="mavensrc/org/netbeans/modules/maven/workspace/reader/components.xml">
         </copy>
-        <mkdir dir="${cluster}/maven/nblib"/>
-        <jar jarfile="${cluster}/maven/nblib/netbeans-cos.jar" compress="false">
-            <fileset dir="build/mavenclasses"/>
+        <mkdir dir="${cluster}/maven-nblib"/>
+        <jar jarfile="${cluster}/maven-nblib/netbeans-cos.jar" compress="false">
+            <fileset dir="build/mavenclasses" >
+                <include name="org/netbeans/modules/maven/workspace/reader/**"/>
+                <include name="META-INF/plexus/**"/>
+            </fileset>
+        </jar>
+        <copy overwrite="true" tofile="build/mavenclasses/META-INF/plexus/components.xml" file="mavensrc/org/netbeans/modules/maven/event/components.xml">
+        </copy>
+        <jar jarfile="${cluster}/maven-nblib/netbeans-eventspy.jar" compress="false">
+            <fileset dir="build/mavenclasses" >
+                <include name="org/netbeans/modules/maven/event/**"/>
+                <include name="META-INF/plexus/**"/>
+            </fileset>
         </jar>
     </target>
 
