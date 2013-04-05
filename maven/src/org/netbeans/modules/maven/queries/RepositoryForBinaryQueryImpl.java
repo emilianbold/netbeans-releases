@@ -491,24 +491,29 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             return false;
         }
 
-        private synchronized FileObject[] checkShadedMultiJars() {
+        private void add(List<FileObject> to, FileObject[] add) {
+            for (FileObject a : add) {
+                if (!to.contains(a)) {
+                    to.add(a);
+                }
+            }
+        }
+
+        private @NonNull synchronized FileObject[] getShadedJarSources() {
             try {
                 List<Coordinates> coordinates = getShadedCoordinates(Utilities.toFile(binary.toURI()));
                 File lrf = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
                 List<FileObject> fos = new ArrayList<FileObject>();
                 if (coordinates != null) {
                     for (Coordinates coord : coordinates) {
-                            File sourceJar = new File(lrf, coord.groupId.replace(".", File.separator) + File.separator + coord.artifactId + File.separator + coord.version + File.separator + coord.artifactId + "-" + coord.version + "-sources.jar");
-                            FileObject[] fo = getSourceJarRoot(sourceJar);
-                            if (fo.length == 1) {
-                                fos.add(fo[0]);
-                            }
+                        if (coord.artifactId.equals(artifactId) && coord.groupId.equals(groupId) && coord.version.equals(version)) {
+                            continue; //skip the current jar, we've catered to in other ways.
+                        }
+                        File sourceJar = new File(lrf, coord.groupId.replace(".", File.separator) + File.separator + coord.artifactId + File.separator + coord.version + File.separator + coord.artifactId + "-" + coord.version + "-sources.jar");
+                        fos.addAll(Arrays.asList(getSourceJarRoot(sourceJar)));
                     }
                 }
-                if (fos.size() > 1) {
-                    FileObject[] shaded = fos.toArray(new FileObject[0]);
-                    return shaded;
-                }
+                return fos.toArray(new FileObject[0]);
             } catch (Exception ex) {
                 LOG.log(Level.INFO, "error while examining binary " + binary, ex);
             }
