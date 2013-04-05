@@ -66,8 +66,8 @@ import org.openide.util.Exceptions;
  * @author Alexander Simon
  */
 public class RecoverySuiteTestBase extends NbTestSuite {
-    private final AtomicInteger newGramma = new AtomicInteger(0);
-    private final AtomicInteger oldGramma = new AtomicInteger(0);
+    private final AtomicInteger newGrammar = new AtomicInteger(0);
+    private final AtomicInteger oldGrammar = new AtomicInteger(0);
 
     public RecoverySuiteTestBase(String name) {
         super(name);
@@ -105,32 +105,32 @@ public class RecoverySuiteTestBase extends NbTestSuite {
             if (test instanceof RecoveryTestCaseBase) {
                 if (!((RecoveryTestCaseBase)test).isGolden()) {
                     if (((RecoveryTestCaseBase)test).isNewGramma()) {
-                        newGramma.incrementAndGet();
+                        newGrammar.incrementAndGet();
                     } else {
-                        oldGramma.incrementAndGet();
+                        oldGrammar.incrementAndGet();
                     }
                 }
             }
             if (result.runCount() == this.testCount()) {
                 Enumeration<TestFailure> failures = result.failures();
-                int newGrammaFail = 0;
-                int oldGrammaFail = 0;
+                int newGrammarFail = 0;
+                int oldGrammarFail = 0;
                 while(failures.hasMoreElements()) {
                     TestFailure next = failures.nextElement();
                     Test failedTest = next.failedTest();
                     if (failedTest instanceof RecoveryTestCaseBase) {
                         if (((RecoveryTestCaseBase)failedTest).isNewGramma()) {
-                            newGrammaFail++;
+                            newGrammarFail++;
                         } else {
-                            oldGrammaFail++;
+                            oldGrammarFail++;
                         }
                     }
                 }
-                if (newGramma.get() > 0) {
-                    System.err.println("New Gramma recovery tests "+newGramma.get()+" fail "+newGrammaFail+" ("+(newGrammaFail*100/newGramma.get())+"%)");
+                if (newGrammar.get() > 0) {
+                    System.err.println("New Grammar recovery tests "+newGrammar.get()+" fail "+newGrammarFail+" ("+(newGrammarFail*100/newGrammar.get())+"%)");
                 }
-                if (oldGramma.get() > 0) {
-                    System.err.println("Old Gramma recovery tests "+oldGramma.get()+" fail "+oldGrammaFail+" ("+(oldGrammaFail*100/oldGramma.get())+"%)");
+                if (oldGrammar.get() > 0) {
+                    System.err.println("Old Grammar recovery tests "+oldGrammar.get()+" fail "+oldGrammarFail+" ("+(oldGrammarFail*100/oldGrammar.get())+"%)");
                 }
             }
         }
@@ -138,19 +138,19 @@ public class RecoverySuiteTestBase extends NbTestSuite {
     
     private List<Test> createTests(Constructor<?> ctor, String name, Method method) {
         List<Test> res = new ArrayList<Test>();
-        List<Grama> gList = new ArrayList<Grama>();
+        List<Grammar> gList = new ArrayList<Grammar>();
         List<Diff> dList = new ArrayList<Diff>();
-        Gramas gramas = method.getAnnotation(Gramas.class);
-        if (gramas != null) {
-            gList.addAll(Arrays.asList(gramas.value()));
+        Grammars grammars = method.getAnnotation(Grammars.class);
+        if (grammars != null) {
+            gList.addAll(Arrays.asList(grammars.value()));
         } else {
-            Grama g = method.getAnnotation(Grama.class);
+            Grammar g = method.getAnnotation(Grammar.class);
             if (g != null) {
                 gList.add(g);
             }
         }
         if (gList.isEmpty()) {
-            System.err.println("Empty list of gramas "+name);
+            System.err.println("Empty list of grammars "+name);
             return res;
         }
         Golden golden = method.getAnnotation(Golden.class);
@@ -170,7 +170,7 @@ public class RecoverySuiteTestBase extends NbTestSuite {
             }
         } else {
             if (gList.size() > 1) {
-                System.err.println("Golden test invoked for several grama "+name);
+                System.err.println("Golden test invoked for several grammar "+name);
                 return res;
             }
             if (dList.size() > 1) {
@@ -189,13 +189,13 @@ public class RecoverySuiteTestBase extends NbTestSuite {
                 for(Diff d : dList) {
                     String type = d.type();
                     if (type.isEmpty()) {
-                        for(Grama g : gList) {
+                        for(Grammar g : gList) {
                             res.add((Test) ctor.newInstance(name, g, d, golden));
                         }
                     } else {
                         for(int i = 1; i < type.length(); i++) {
                             Diff current = new MyDiff(d, type.substring(0, i));
-                            for(Grama g : gList) {
+                            for(Grammar g : gList) {
                                 res.add((Test) ctor.newInstance(name, g, current, golden));
                             }
                         }
@@ -242,7 +242,7 @@ public class RecoverySuiteTestBase extends NbTestSuite {
             Class<?>[] parameters = ctor.getParameterTypes();
             if (parameters.length == 4 &&
                 parameters[0].equals(String.class) &&
-                parameters[1].equals(Grama.class) &&
+                parameters[1].equals(Grammar.class) &&
                 parameters[2].equals(Diff.class) &&
                 parameters[3].equals(Golden.class) ) {
                 result.constructor = ctor;

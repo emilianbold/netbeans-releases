@@ -77,13 +77,13 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
     private final boolean isGolden;
     private boolean isNew = false;
     private final Diff annotation;
-    private final Grama grama;
+    private final Grammar grammar;
 
-    public RecoveryTestCaseBase(String testName, Grama gramma, Diff diff, Golden golden) {
+    public RecoveryTestCaseBase(String testName, Grammar gramma, Diff diff, Golden golden) {
         super(testName, true);
         this.annotation = diff;
         isGolden = golden != null;
-        this.grama = gramma;
+        this.grammar = gramma;
     }
 
     @Override
@@ -94,8 +94,8 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
     @Override
     public String getName() {
         StringBuilder buf = new StringBuilder(super.getName());
-        if (grama != null) {
-            if (grama.newGramma()) {
+        if (grammar != null) {
+            if (grammar.newGrammar()) {
                 buf.append("-new");
             } else {
                 buf.append("-old");
@@ -123,13 +123,13 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
                 Exceptions.printStackTrace(ex);
             }
         }
-        if (grama != null) {
-            if (grama.newGramma()) {
+        if (grammar != null) {
+            if (grammar.newGrammar()) {
                 isNew = true;
                 TraceFlags.validate("cnd.modelimpl.cpp.parser.action", true);
                 TraceFlags.validate("cnd.modelimpl.cpp.parser.new.grammar", true);
                 TraceFlags.validate("cnd.modelimpl.parse.headers.with.sources", true);
-                if (grama.traceAST()) {
+                if (grammar.traceAST()) {
                     TraceFlags.validate("cnd.modelimpl.cpp.parser.action.trace", true);
                 } else {
                     TraceFlags.validate("cnd.modelimpl.cpp.parser.action.trace", false);

@@ -52,6 +52,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Gramas {
-    Grama[] value();
+public @interface Grammar {
+    boolean newGrammar() default false;
+    boolean traceAST() default false;
 }
