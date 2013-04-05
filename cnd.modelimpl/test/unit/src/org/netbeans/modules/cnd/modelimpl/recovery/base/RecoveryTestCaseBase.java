@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.recovery;
+package org.netbeans.modules.cnd.modelimpl.recovery.base;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -50,7 +50,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import static junit.framework.Assert.fail;
@@ -73,82 +72,98 @@ import org.openide.util.Exceptions;
  * @author Alexander Simon
  */
 public class RecoveryTestCaseBase extends ProjectBasedTestCase {
-    private static String golden;
-    private boolean isGolden = true;
+
+    private static String goldenModel;
+    private final boolean isGolden;
     private boolean isNew = false;
-    private Diff annotation = null;
-    
-    public RecoveryTestCaseBase(String testName) {
+    private final Diff annotation;
+    private final Grama grama;
+
+    public RecoveryTestCaseBase(String testName, Grama gramma, Diff diff, Golden golden) {
         super(testName, true);
+        this.annotation = diff;
+        isGolden = golden != null;
+        this.grama = gramma;
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
     }
 
     @Override
+    public String getName() {
+        StringBuilder buf = new StringBuilder(super.getName());
+        if (grama != null) {
+            if (grama.newGramma()) {
+                buf.append("-new");
+            } else {
+                buf.append("-old");
+            }
+        }
+        return buf.toString();
+    }
+
+    boolean isNewGramma() {
+        return isNew;
+    }
+    
+    boolean isGolden() {
+        return isGolden;
+    }
+    
+    @Override
     protected File[] changeDefProjectDirBeforeParsingProjectIfNeeded(File projectDir) {
-        String testName = getName();
-        try {
-            Method declaredMethod = this.getClass().getDeclaredMethod(testName);
-            annotation = declaredMethod.getAnnotation(Diff.class);
-            if (annotation != null) {
+        if (annotation != null) {
+            try {
                 applyChanges(annotation);
+            } catch (FileNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            isGolden = declaredMethod.getAnnotation(Golden.class) != null;
-            Gramma gramma = declaredMethod.getAnnotation(Gramma.class);
-            if (gramma != null) {
-                if (gramma.newGramma()) {
-                    isNew = true;
-                    TraceFlags.validate("cnd.modelimpl.cpp.parser.action", true);
-                    TraceFlags.validate("cnd.modelimpl.cpp.parser.new.grammar", true);
-                    TraceFlags.validate("cnd.modelimpl.parse.headers.with.sources", true);
-                    if (gramma.traceAST()) {
-                        TraceFlags.validate("cnd.modelimpl.cpp.parser.action.trace", true);
-                    } else {
-                        TraceFlags.validate("cnd.modelimpl.cpp.parser.action.trace", false);
-                    }
+        }
+        if (grama != null) {
+            if (grama.newGramma()) {
+                isNew = true;
+                TraceFlags.validate("cnd.modelimpl.cpp.parser.action", true);
+                TraceFlags.validate("cnd.modelimpl.cpp.parser.new.grammar", true);
+                TraceFlags.validate("cnd.modelimpl.parse.headers.with.sources", true);
+                if (grama.traceAST()) {
+                    TraceFlags.validate("cnd.modelimpl.cpp.parser.action.trace", true);
                 } else {
-                    isNew = false;
-                    TraceFlags.validate("cnd.modelimpl.cpp.parser.action", false);
-                    TraceFlags.validate("cnd.modelimpl.cpp.parser.new.grammar", false);
-                    TraceFlags.validate("cnd.modelimpl.parse.headers.with.sources", false);
+                    TraceFlags.validate("cnd.modelimpl.cpp.parser.action.trace", false);
                 }
+            } else {
+                isNew = false;
+                TraceFlags.validate("cnd.modelimpl.cpp.parser.action", false);
+                TraceFlags.validate("cnd.modelimpl.cpp.parser.new.grammar", false);
+                TraceFlags.validate("cnd.modelimpl.parse.headers.with.sources", false);
             }
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
         return super.changeDefProjectDirBeforeParsingProjectIfNeeded(projectDir); //To change body of generated methods, choose Tools | Templates.
     }
 
     protected void implTest(String source) throws IOException {
         CsmProject project = getProject();
-        CsmFile quote = null;
-        for(CsmFile file : project.getAllFiles()){
+        CsmFile target = null;
+        for (CsmFile file : project.getAllFiles()) {
             if (file.getAbsolutePath().toString().endsWith(source)) {
-                quote = file;
+                target = file;
             }
         }
-        assertNotNull(quote);
+        assertNotNull(target);
         StringWriter w = new StringWriter();
-        printTree(quote, w, 0);
+        printTree(target, w, 0);
         if (isGolden) {
-            golden = w.toString();
+            goldenModel = w.toString();
             System.err.println("Inited golden content");
         } else {
-            String diff = annotation.file()+"["+annotation.line()+":"+annotation.column()+","+annotation.length()+"]"+annotation.insert();
-            assertModel("Recovery "+(isNew?"new":"old")+" "+source+" "+diff, golden, w.toString());
+            String diff = annotation.file() + "[" + annotation.line() + ":" + annotation.column() + "," + annotation.length() + "]" + annotation.insert();
+            assertModel("Recovery " + (isNew ? "new" : "old") + " " + source + " " + diff, goldenModel, w.toString());
         }
     }
-    
-    
+
     protected void assertModel(String msg, String expectedText, String actualText) {
         if (!actualText.equals(expectedText)) {
             StringBuilder sb = new StringBuilder();
@@ -159,19 +174,19 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
             sb.append(actualText);
             sb.append("\n-----\n");
             int startLine = 1;
-            for (int i = 0; i < actualText.length() && i < expectedText.length(); i++){
+            for (int i = 0; i < actualText.length() && i < expectedText.length(); i++) {
                 if (expectedText.charAt(i) == '\n') {
                     startLine++;
                 }
-                if (expectedText.charAt(i) != actualText.charAt(i)){
+                if (expectedText.charAt(i) != actualText.charAt(i)) {
                     sb.append("Diff starts in line ").append(startLine).append("\n");
                     String context = expectedText.substring(i);
-                    if (context.length()>40){
+                    if (context.length() > 40) {
                         context = context.substring(0, 40);
                     }
                     sb.append("Expected:").append(context).append("\n");
                     context = actualText.substring(i);
-                    if (context.length()>40){
+                    if (context.length() > 40) {
                         context = context.substring(0, 40);
                     }
                     sb.append("   Found:").append(context).append("\n");
@@ -182,12 +197,12 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
             fail(sb.toString());
         }
     }
-    
+
     private void applyChanges(Diff diff) throws FileNotFoundException, IOException {
         File dataFile = getDataFile(diff.file());
         BufferedReader in = new BufferedReader(new FileReader(dataFile));
         List<String> list = new ArrayList<String>();
-        while(true){
+        while (true) {
             String s = in.readLine();
             if (s == null) {
                 break;
@@ -196,10 +211,10 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
         }
         in.close();
         BufferedWriter out = new BufferedWriter(new FileWriter(dataFile));
-        for(int i = 0; i < list.size(); i++) {
+        for (int i = 0; i < list.size(); i++) {
             String s = list.get(i);
             if (diff.line() == i + 1) {
-                s = s.substring(0,diff.column()-1)+diff.insert()+s.substring(diff.column()-1+diff.length());
+                s = s.substring(0, diff.column() - 1) + diff.insert() + s.substring(diff.column() - 1 + diff.length());
             }
             out.write(s);
             out.write("\n");
@@ -207,36 +222,36 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
         out.flush();
         out.close();
     }
-    
+
     private void printTree(CsmFile file, Writer out, int level) throws IOException {
-        for(CsmDeclaration decl : file.getDeclarations()) {
+        for (CsmDeclaration decl : file.getDeclarations()) {
             printTree(decl, out, level);
         }
     }
 
     private void printTree(CsmDeclaration decl, Writer out, int level) throws IOException {
-        out.append(indent(level)+decl.getKind()+" "+decl.getName()).append('\n');
+        out.append(indent(level) + decl.getKind() + " " + decl.getName()).append('\n');
         if (CsmKindUtilities.isNamespaceDefinition(decl)) {
-            printNamespace((CsmNamespaceDefinition)decl, out, level+1);
+            printNamespace((CsmNamespaceDefinition) decl, out, level + 1);
         } else if (CsmKindUtilities.isCompoundClassifier(decl)) {
-            printClassifier((CsmCompoundClassifier)decl, out, level+1);
+            printClassifier((CsmCompoundClassifier) decl, out, level + 1);
         }
     }
 
     private void printNamespace(CsmNamespaceDefinition ns, Writer out, int level) throws IOException {
-        for(CsmOffsetableDeclaration d : ns.getDeclarations()) {
+        for (CsmOffsetableDeclaration d : ns.getDeclarations()) {
             printTree(d, out, level);
         }
     }
 
     private void printClassifier(CsmCompoundClassifier cls, Writer out, int level) throws IOException {
-        for(CsmScopeElement d : cls.getScopeElements()) {
+        for (CsmScopeElement d : cls.getScopeElements()) {
             if (CsmKindUtilities.isCompoundClassifier(d)) {
-                final CsmCompoundClassifier c = (CsmCompoundClassifier)d;
-                out.append(indent(level)+c.getKind()+" "+c.getName()).append('\n');
-                printClassifier(c, out, level+1);
+                final CsmCompoundClassifier c = (CsmCompoundClassifier) d;
+                out.append(indent(level) + c.getKind() + " " + c.getName()).append('\n');
+                printClassifier(c, out, level + 1);
             } else if (CsmKindUtilities.isDeclaration(d)) {
-                printTree((CsmDeclaration)d, out, level);
+                printTree((CsmDeclaration) d, out, level);
             }
         }
         if (CsmKindUtilities.isClass(cls)) {
@@ -246,10 +261,10 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
             }
         }
     }
-    
+
     private String indent(int level) {
         StringBuilder buf = new StringBuilder();
-        for(int i=0; i < level; i++) {
+        for (int i = 0; i < level; i++) {
             buf.append("  ");
         }
         return buf.toString();
