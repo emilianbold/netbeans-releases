@@ -76,6 +76,7 @@ public abstract class AbstractOutputHandler {
     public enum Level {DEBUG, INFO, WARNING, ERROR, FATAL}
 
     protected static final String PRJ_EXECUTE = "project-execute"; //NOI18N
+    protected static final String SESSION_EXECUTE = "session-execute"; //NOI18N
     
     protected HashMap<String, Set<OutputProcessor>> processors;
     protected Set<OutputProcessor> currentProcessors;
@@ -139,9 +140,10 @@ public abstract class AbstractOutputHandler {
 //TODO - replacement?    abstract MavenEmbedderLogger getLogger();
 
     protected final String getEventId(String eventName, String target) {
-        if (PRJ_EXECUTE.equals(eventName)) {
+        if (PRJ_EXECUTE.equals(eventName) || SESSION_EXECUTE.equals(eventName)) {
             return eventName;
         }
+        
         return eventName + "#" + target; //NOI18N
     }
     

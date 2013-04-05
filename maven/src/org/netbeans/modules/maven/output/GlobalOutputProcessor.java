@@ -75,6 +75,7 @@ import org.openide.windows.OutputListener;
  * @author Milos Kleint
  */
 public class GlobalOutputProcessor implements OutputProcessor {
+    private static final String SECTION_SESSION = "session-execute"; //NOI18N
     private static final String SECTION_PROJECT = "project-execute"; //NOI18N
     /*test*/ static final Pattern DOWNLOAD = Pattern.compile("^(\\d+(/\\d*)? ?(M|K|b|KB|B|\\?)\\s*)+$"); //NOI18N
     private static final Pattern LOW_MVN = Pattern.compile("(.*)Error resolving version for (.*): Plugin requires Maven version (.*)"); //NOI18N
@@ -96,7 +97,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
     }
     
     @Override public String[] getRegisteredOutputSequences() {
-        return new String[] {SECTION_PROJECT};
+        return new String[] {SECTION_SESSION};
     }
 
     @Messages("TXT_ChangeSettings=NetBeans: Click here to change your settings.")
@@ -105,7 +106,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
             visitor.skipLine();
             return;
         }
-        if ("BUILD SUCCESSFUL".equals(line)) { //NOI18N
+        if (line.startsWith("BUILD SUCCESS")) { //NOI18N 3.0.4 has build success, some older versions have build successful
             visitor.setColor(Color.GREEN.darker().darker());
             return;
         }
@@ -206,7 +207,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
     }
 
     @Override public void sequenceStart(String sequenceId, OutputVisitor visitor) {
-        if (sequenceId.startsWith(SECTION_PROJECT)) {
+        if (sequenceId.startsWith(SECTION_SESSION) || sequenceId.startsWith(SECTION_PROJECT)) {
 //            visitor.setLine(sequenceId);
         } else {
             visitor.setLine("[" + sequenceId.substring("mojo-execute#".length()) + "]"); //NOI18N

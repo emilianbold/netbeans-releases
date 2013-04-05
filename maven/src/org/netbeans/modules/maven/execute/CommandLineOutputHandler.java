@@ -60,6 +60,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
+import static org.netbeans.modules.maven.execute.AbstractOutputHandler.PRJ_EXECUTE;
+import static org.netbeans.modules.maven.execute.AbstractOutputHandler.SESSION_EXECUTE;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -115,7 +117,9 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
 
     @Override
     protected final void checkSleepiness() {
-        handle.progress(currentProject == null ? "" : currentTag == null ? currentProject : currentProject + " " + currentTag); // NOI18N
+        if (contextImpl == null) { //only perform for maven 2.x now
+            handle.progress(currentProject == null ? "" : currentTag == null ? currentProject : currentProject + " " + currentTag); // NOI18N
+        }
         super.checkSleepiness();
     }
 
@@ -146,6 +150,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
 
     private static final String SEC_MOJO_EXEC = "mojo-execute"; //NOI18N
     private void closeCurrentTag() {
+        assert contextImpl == null;
         if (currentTag != null) {
             CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, currentTag), stdOut);
             currentTag = null;
@@ -157,7 +162,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
     private class Output implements Runnable {
         private static final String INFO_NETBEANS_EXEC_EVENT = "[INFO] NETBEANS-ExecEvent:";
 
-        private BufferedReader str;
+        private final BufferedReader str;
         private boolean skipLF = false;
 
         public Output(InputStream instream) {
@@ -212,7 +217,10 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
         }
 
         public @Override void run() {
-            CommandLineOutputHandler.this.processStart(getEventId(PRJ_EXECUTE,null), stdOut);
+            CommandLineOutputHandler.this.processStart(getEventId(SESSION_EXECUTE, null), stdOut);
+            if (contextImpl == null) {
+                CommandLineOutputHandler.this.processStart(getEventId(PRJ_EXECUTE,null), stdOut);
+            }
             try {
 
                 String line = readLine();
@@ -223,52 +231,46 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                         continue;
                     }
                     if (line.startsWith(INFO_NETBEANS_EXEC_EVENT)) {
-                        parseExecEvent(line);
-                        stdOut.println(line); //XXX temporary
+                        processExecEvent(parseExecEvent(line));
+//                        stdOut.println(line); //XXX temporary
                         line = readLine();
                         continue;
                     }                    
                     if (line.startsWith("[INFO] Final Memory:")) { //NOI18N
                         // previous value [INFO] --------------- is too early, the compilation errors don't get processed in this case.
                         //heuristics..
-                        closeCurrentTag();
+                        if (contextImpl == null) { //only in m2
+                            closeCurrentTag();
+                        }
                     }
                     
                     String tag = null;
-                    Matcher match = startPatternM3.matcher(line);
-                    if (match.matches()) {
-                        String mojoArtifact = match.group(1);
-                        // XXX M3 reports artifactId of mojo whereas M2 reports goalPrefix; do not want to force every OutputProcessor to handle both
-                        // XXX consider searching index on ArtifactInfo.PLUGIN_PREFIX instead
-                        Matcher match2 = mavenSomethingPlugin.matcher(mojoArtifact);
-                        if (match2.matches()) {
-                            mojoArtifact = match2.group(1);
+                    if (contextImpl == null) {
+                        Matcher match = startPatternM3.matcher(line);
+                        if (match.matches()) {
+                            String mojoArtifact = match.group(1);
+                            mojoArtifact = goalPrefixFromArtifactId(mojoArtifact);
+                            tag = mojoArtifact + ':' + match.group(2);
                         } else {
-                            match2 = somethingMavenPlugin.matcher(mojoArtifact);
-                            if (match2.matches()) {
-                                mojoArtifact = match2.group(1);
+                            match = startPatternM2.matcher(line);
+                            if (match.matches()) {
+                                tag = match.group(1) + ':' + match.group(2);
                             }
                         }
-                        tag = mojoArtifact + ':' + match.group(2);
-                    } else {
-                        match = startPatternM2.matcher(line);
-                        if (match.matches()) {
-                            tag = match.group(1) + ':' + match.group(2);
-                        }
                     }
-                    if (tag != null) {
+                    if (tag != null) { //only in m2
                         closeCurrentTag();
                         currentTag = tag;
                         CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
                         checkSleepiness();
                     } else {
-                        match = linePattern.matcher(line);
+                        Matcher match = linePattern.matcher(line);
                         if (match.matches()) {
                             String levelS = match.group(1);
                             Level level = Level.valueOf(levelS);
                             String text = match.group(2);
                             processLine(text, stdOut, level);
-                            if (level == Level.INFO) {
+                            if (level == Level.INFO && contextImpl == null) { //only perform for maven 2.x now
                                 checkProgress(text);
                             }
                         } else {
@@ -277,7 +279,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                         }
                     }
                     if (firstFailure == null) {
-                        match = reactorFailure.matcher(line);
+                        Matcher match = reactorFailure.matcher(line);
                         if (match.matches()) {
                             firstFailure = match.group(1);
                         }
@@ -287,7 +289,10 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
             } catch (IOException ex) {
                 java.util.logging.Logger.getLogger(CommandLineOutputHandler.class.getName()).log(java.util.logging.Level.FINE, null, ex);
             } finally {
-                CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);
+                if (contextImpl == null) {
+                    CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);
+                }
+                CommandLineOutputHandler.this.processEnd(getEventId(SESSION_EXECUTE, null), stdOut);
                 try {
                     str.close();
                 } catch (IOException ex) {
@@ -296,36 +301,82 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
             }
         }
 
-        private void parseExecEvent(String line) {
+        private ExecutionEventObject parseExecEvent(String line) {
             String jsonContent = line.substring(INFO_NETBEANS_EXEC_EVENT.length());
             try {
                 Object o = parser.parse(jsonContent);
-                System.out.println("o=" + o);
+//                System.out.println("o=" + o);
                 if (o instanceof JSONObject) {
                     JSONObject json = (JSONObject) o;
-                    ExecutionEventObject obj = ExecutionEventObject.create(json);
-                    if (ExecutionEvent.Type.MojoStarted.equals(obj.type)) {
-                    }
-                    if (ExecutionEvent.Type.ProjectStarted.equals(obj.type)) {
-                        if (contextImpl != null) {
-                            File prjLoc = obj.currentProjectLocation;
-                            try {
-                                Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjLoc));
-                                contextImpl.setCurrentProject(project);
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            } catch (IllegalArgumentException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                    }
+                    return ExecutionEventObject.create(json);
                 }
             } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
-                System.out.println("exc=" + ex);
+//                System.out.println("exc=" + ex);
+            }
+            return null;
+        }
+        
+        private void processExecEvent(ExecutionEventObject obj) {
+            if (obj == null) {
+                return;
+            }
+            checkProgress(obj);
+            
+            if (ExecutionEvent.Type.MojoStarted.equals(obj.type)) {
+                assert obj.execution != null;
+                String tag = goalPrefixFromArtifactId(obj.execution.plugin.artifactId) + ":" + obj.execution.goal;
+                handle.progress(obj.currentProject.artifactId + " " + tag);
+                CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
+            }
+            if (ExecutionEvent.Type.MojoSucceeded.equals(obj.type)) {
+                assert obj.execution != null;
+                String tag = goalPrefixFromArtifactId(obj.execution.plugin.artifactId) + ":" + obj.execution.goal;
+                CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, tag), stdOut);
+            }
+            else if (ExecutionEvent.Type.MojoFailed.equals(obj.type)) {
+                assert obj.execution != null;
+                String tag = goalPrefixFromArtifactId(obj.execution.plugin.artifactId) + ":" + obj.execution.goal;
+                CommandLineOutputHandler.this.processFail(getEventId(SEC_MOJO_EXEC, tag), stdOut);
+            }
+            else if (ExecutionEvent.Type.ProjectStarted.equals(obj.type)) {
+                if (contextImpl != null) {
+                    File prjLoc = obj.currentProjectLocation;
+                    try {
+                        Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjLoc));
+                        contextImpl.setCurrentProject(project);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    CommandLineOutputHandler.this.processStart(getEventId(PRJ_EXECUTE, null), stdOut);                    
+                }
+            }
+            else if (ExecutionEvent.Type.ProjectSucceeded.equals(obj.type)) {
+                    CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);                    
+            }
+            else if (ExecutionEvent.Type.ProjectFailed.equals(obj.type)) {
+                    CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);                    
             }
         }
+
+        private String goalPrefixFromArtifactId(String mojoArtifact) {
+            // XXX M3 reports artifactId of mojo whereas M2 reports goalPrefix; do not want to force every OutputProcessor to handle both
+            // XXX consider searching index on ArtifactInfo.PLUGIN_PREFIX instead
+            Matcher match2 = mavenSomethingPlugin.matcher(mojoArtifact);
+            if (match2.matches()) {
+                mojoArtifact = match2.group(1);
+            } else {
+                match2 = somethingMavenPlugin.matcher(mojoArtifact);
+                if (match2.matches()) {
+                    mojoArtifact = match2.group(1);
+                }
+            }
+            return mojoArtifact;
+        }
     }
+    
 
     static class Input implements Runnable {
 
@@ -375,11 +426,28 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
             }
         }
     }
+    
+    private void checkProgress(ExecutionEventObject eeo) {
+        if (ExecutionEvent.Type.ProjectDiscoveryStarted.equals(eeo.type)) {
+            handle.switchToIndeterminate();
+        } else if (ExecutionEvent.Type.SessionStarted.equals(eeo.type)) {
+            reactorSize = eeo.projectCount + 1;
+            projectCount = 0;
+            handle.switchToDeterminate(reactorSize);
+        } else if (ExecutionEvent.Type.ProjectStarted.equals(eeo.type)) {
+            handle.progress(eeo.currentProject.artifactId, Math.min(++projectCount, reactorSize));
+        } else if (ExecutionEvent.Type.ProjectSkipped.equals(eeo.type)) {
+            handle.progress(eeo.currentProject.artifactId + " " + eeo.currentProject.version, Math.min(++projectCount, reactorSize));
+        } else if (ExecutionEvent.Type.SessionEnded.equals(eeo.type)) {
+            
+        }
+    }
 
     /**
      * #192200: try to indicate progress esp. in a reactor build.
      * @see org.apache.maven.cli.ExecutionEventLogger
      */
+    //only done for maven 2.x now.
     private void checkProgress(String text) {
         switch (state) {
         case INITIAL:

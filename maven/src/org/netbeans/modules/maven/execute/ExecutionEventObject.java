@@ -105,10 +105,10 @@ public final class ExecutionEventObject {
         File prjFile = null;
         MojoExecution exec = null;
         String excMessage = null;
-        Integer count = (Integer) obj.get("prjcount");
+        Long count = (Long) obj.get("prjcount");
         int prjCount = -1;
         if (count != null) {
-            prjCount = count;
+            prjCount = count.intValue();
         }
         JSONObject prj = (JSONObject) obj.get("prj");
         if (prj != null) {
