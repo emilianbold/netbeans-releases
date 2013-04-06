@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -85,7 +86,18 @@ public enum JSFVersion {
     JSF_2_1("JSF 2.1"),
     JSF_2_2("JSF 2.2");
 
+    private static final LinkedHashMap<JSFVersion, String> SPECIFIC_CLASS_NAMES = new LinkedHashMap<JSFVersion, String>();
+
+    static {
+        SPECIFIC_CLASS_NAMES.put(JSFVersion.JSF_2_2, JSFUtils.JSF_2_2__API_SPECIFIC_CLASS);
+        SPECIFIC_CLASS_NAMES.put(JSFVersion.JSF_2_1, JSFUtils.JSF_2_1__API_SPECIFIC_CLASS);
+        SPECIFIC_CLASS_NAMES.put(JSFVersion.JSF_2_0, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
+        SPECIFIC_CLASS_NAMES.put(JSFVersion.JSF_1_2, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
+        SPECIFIC_CLASS_NAMES.put(JSFVersion.JSF_1_1, JSFUtils.FACES_EXCEPTION);
+    }
+
     private final String shortName;
+
 
     private JSFVersion(String shortName) {
         this.shortName = shortName;
@@ -146,19 +158,9 @@ public enum JSFVersion {
     public static synchronized JSFVersion forClasspath(@NonNull Collection<File> classpath) {
         Parameters.notNull("classpath", classpath); //NOI18N
         try {
-            if (Util.containsClass(classpath, JSFUtils.JSF_2_2__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_2_2;
-            } else if (Util.containsClass(classpath, JSFUtils.JSF_2_1__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_2_1;
-            } else if (Util.containsClass(classpath, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_2_0;
-            } else if (Util.containsClass(classpath, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_1_2;
-            } else if (Util.containsClass(classpath, JSFUtils.FACES_EXCEPTION)) {
-                return JSFVersion.JSF_1_1;
-            }
+            return Util.containsClass(classpath, SPECIFIC_CLASS_NAMES);
         } catch (IOException ex) {
-            LOG.log(Level.INFO, "", ex);
+            LOG.log(Level.INFO, null, ex);
         }
         return null;
     }
@@ -175,19 +177,9 @@ public enum JSFVersion {
     public static JSFVersion forClasspath(@NonNull List<URL> classpath) {
         Parameters.notNull("classpath", classpath); //NOI18N
         try {
-            if (Util.containsClass(classpath, JSFUtils.JSF_2_2__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_2_2;
-            } else if (Util.containsClass(classpath, JSFUtils.JSF_2_1__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_2_1;
-            } else if (Util.containsClass(classpath, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_2_0;
-            } else if (Util.containsClass(classpath, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_1_2;
-            } else if (Util.containsClass(classpath, JSFUtils.FACES_EXCEPTION)) {
-                return JSFVersion.JSF_1_1;
-            }
+            return Util.containsClass(classpath, SPECIFIC_CLASS_NAMES);
         } catch (IOException ex) {
-            LOG.log(Level.INFO, "", ex);
+            LOG.log(Level.INFO, null, ex);
         }
         return null;
     }
