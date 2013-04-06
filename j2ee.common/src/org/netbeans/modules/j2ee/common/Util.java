@@ -591,7 +591,8 @@ public class Util {
      * @since 1.81
      * @see #containsClass(java.util.Collection, java.util.Map) 
      */
-    public static <T> T containsClass(List<URL> classPath, @NonNull Map<T, String> classNames) throws IOException {
+    @CheckForNull
+    public static <T> T containsClass(@NonNull List<URL> classPath, @NonNull Map<T, String> classNames) throws IOException {
         Parameters.notNull("classpath", classPath); // NOI18N
         Parameters.notNull("className", classNames); // NOI18N
         if (classNames.isEmpty()) {
@@ -687,6 +688,8 @@ public class Util {
                             if (i < weight && entryTokens.getValue().equals(entry.getName())) {
                                 token = entryTokens.getKey();
                                 weight = i;
+                            } else if (i > weight) {
+                                break;
                             }
                             i++;
                         }
@@ -703,6 +706,8 @@ public class Util {
                     if (i < weight && new File(file, entryTokens.getValue()).exists()) {
                         token = entryTokens.getKey();
                         weight = i;
+                    } else if (i > weight) {
+                        break;
                     }
                     i++;
                 }
