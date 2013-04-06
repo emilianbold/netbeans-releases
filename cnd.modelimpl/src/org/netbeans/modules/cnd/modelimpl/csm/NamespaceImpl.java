@@ -273,7 +273,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return out;
     }
 
-    private WeakReference<DeclarationContainerNamespace> weakDeclarationContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ?  new WeakReference<DeclarationContainerNamespace>(null) : null;
+    private volatile WeakReference<DeclarationContainerNamespace> weakDeclarationContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ?  new WeakReference<DeclarationContainerNamespace>(null) : null;
     private int preventMultiplyDiagnosticExceptions = 0;
     private DeclarationContainerNamespace getDeclarationsSorage() {
         if (declarationsSorageKey == null) {
