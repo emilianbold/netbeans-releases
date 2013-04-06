@@ -54,6 +54,7 @@ import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
+import org.netbeans.modules.maven.execute.CommandLineOutputHandler;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import static org.netbeans.modules.maven.output.Bundle.*;
 import org.netbeans.modules.options.java.api.JavaOptions;
@@ -75,6 +76,7 @@ import org.openide.windows.OutputListener;
  * @author Milos Kleint
  */
 public class GlobalOutputProcessor implements OutputProcessor {
+    private static final String SECTION_SESSION = "session-execute"; //NOI18N
     private static final String SECTION_PROJECT = "project-execute"; //NOI18N
     /*test*/ static final Pattern DOWNLOAD = Pattern.compile("^(\\d+(/\\d*)? ?(M|K|b|KB|B|\\?)\\s*)+$"); //NOI18N
     private static final Pattern LOW_MVN = Pattern.compile("(.*)Error resolving version for (.*): Plugin requires Maven version (.*)"); //NOI18N
@@ -96,7 +98,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
     }
     
     @Override public String[] getRegisteredOutputSequences() {
-        return new String[] {SECTION_PROJECT};
+        return new String[] {SECTION_SESSION};
     }
 
     @Messages("TXT_ChangeSettings=NetBeans: Click here to change your settings.")
@@ -105,7 +107,12 @@ public class GlobalOutputProcessor implements OutputProcessor {
             visitor.skipLine();
             return;
         }
-        if ("BUILD SUCCESSFUL".equals(line)) { //NOI18N
+        //silly prepend of  [INFO} to reuse the same regexp
+        if (CommandLineOutputHandler.startPatternM3.matcher("[INFO] " + line).matches() || CommandLineOutputHandler.startPatternM2.matcher("[INFO] " + line).matches()) {
+            visitor.setColor(Color.GRAY);
+            return;
+        } 
+        if (line.startsWith("BUILD SUCCESS")) { //NOI18N 3.0.4 has build success, some older versions have build successful
             visitor.setColor(Color.GREEN.darker().darker());
             return;
         }
@@ -206,12 +213,6 @@ public class GlobalOutputProcessor implements OutputProcessor {
     }
 
     @Override public void sequenceStart(String sequenceId, OutputVisitor visitor) {
-        if (sequenceId.startsWith(SECTION_PROJECT)) {
-//            visitor.setLine(sequenceId);
-        } else {
-            visitor.setLine("[" + sequenceId.substring("mojo-execute#".length()) + "]"); //NOI18N
-            visitor.setColor(Color.GRAY);
-        }
     }
 
     @Override public void sequenceEnd(String sequenceId, OutputVisitor visitor) {}

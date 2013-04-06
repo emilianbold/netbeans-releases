@@ -85,12 +85,12 @@ public class TestOutputListenerProvider implements OutputProcessor {
         "mojo-execute#surefire:test",
         "mojo-execute#failsafe:integration-test" 
     };
-    private Pattern failSeparatePattern;
-    private Pattern failWindowsPattern1;
-    private Pattern failWindowsPattern2;
-    private Pattern outDirPattern;
-    private Pattern outDirPattern2;
-    private Pattern runningPattern;
+    private final Pattern failSeparatePattern;
+    private final Pattern failWindowsPattern1;
+    private final Pattern failWindowsPattern2;
+    private final Pattern outDirPattern;
+    private final Pattern outDirPattern2;
+    private final Pattern runningPattern;
     
     private static final Logger LOG = Logger.getLogger(TestOutputListenerProvider.class.getName());
 
@@ -172,9 +172,9 @@ public class TestOutputListenerProvider implements OutputProcessor {
     }
     
     private static class TestOutputListener implements OutputListener {
-        private String testname;
-        private String outputDir;
-        private Pattern testNamePattern = Pattern.compile(".*\\((.*)\\).*<<< (?:FAILURE)?(?:ERROR)?!\\s*"); //NOI18N
+        private final String testname;
+        private final String outputDir;
+        private final Pattern testNamePattern = Pattern.compile(".*\\((.*)\\).*<<< (?:FAILURE)?(?:ERROR)?!\\s*"); //NOI18N
         
         public TestOutputListener(String test, String outDir) {
             testname = test;

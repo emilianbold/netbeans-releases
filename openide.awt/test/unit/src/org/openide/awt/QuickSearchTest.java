@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -82,7 +83,7 @@ public class QuickSearchTest extends NbTestCase {
         QuickSearch qs = QuickSearch.attach(component, constraints, new DummyCallback());
         assertEquals("One added key listener is expected after attach", 1, component.addedKeyListeners.size());
         assertTrue(qs.isEnabled());
-        //assertFalse(qs.isAsynchronous());
+        assertFalse(qs.isAlwaysShown());
         qs.detach();
         assertEquals("No key listener is expected after detach", 0, component.addedKeyListeners.size());
     }
@@ -580,6 +581,73 @@ public class QuickSearchTest extends NbTestCase {
         expResult = "AbC";
         result = QuickSearch.findMaxPrefix(str1, str2, ignoreCase);
         assertEquals(expResult, result);
+    }
+    
+    public void testClearOnESC() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        testClearOnESC();
+                    }
+                });
+            } catch (InterruptedException iex) {
+                fail("interrupted.");
+            } catch (InvocationTargetException itex) {
+                Throwable cause = itex.getCause();
+                if (cause instanceof AssertionError) {
+                    throw (AssertionError) cause;
+                }
+                itex.getCause().printStackTrace();
+                throw new AssertionError(cause);
+            }
+            return;
+        }
+        TestComponent component = new TestComponent();
+        QuickSearch qs = QuickSearch.attach(component, null, new DummyCallback());
+        component.addNotify();
+        KeyEvent ke = new KeyEvent(component, KeyEvent.KEY_TYPED, System.currentTimeMillis(), 0, KeyEvent.VK_UNDEFINED, 'A');
+        component.dispatchEvent(ke);
+        
+        JTextField searchField = qs.getSearchField();
+        
+        assertTrue(searchField.isDisplayable());
+        assertEquals("A", searchField.getText());
+        //assertFalse(canceledPtr[0]);
+        ke = new KeyEvent(searchField, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_ESCAPE, (char) 27);
+        searchField.dispatchEvent(ke);
+        assertTrue(searchField.getText().isEmpty());
+        assertFalse(searchField.isDisplayable());
+        // The search field is dismissed and the search text is cleared.
+
+        assertFalse(qs.isAlwaysShown()); // Was not always shown
+        qs.setAlwaysShown(true); // Force to show
+        assertTrue(searchField.isDisplayable());
+        
+        ke = new KeyEvent(component, KeyEvent.KEY_TYPED, System.currentTimeMillis(), 0, KeyEvent.VK_UNDEFINED, 'B');
+        component.dispatchEvent(ke);
+        assertEquals("B", searchField.getText());
+        
+        ke = new KeyEvent(searchField, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_ESCAPE, (char) 27);
+        searchField.dispatchEvent(ke);
+        assertTrue(searchField.getText().isEmpty());
+        assertTrue(searchField.isDisplayable());
+        // The search field is visible and cleared
+        
+        ke = new KeyEvent(component, KeyEvent.KEY_TYPED, System.currentTimeMillis(), 0, KeyEvent.VK_UNDEFINED, 'B');
+        component.dispatchEvent(ke);
+        assertEquals("B", searchField.getText());
+        qs.setAlwaysShown(false); // Hide
+        assertEquals("B", searchField.getText());
+        assertFalse(searchField.isDisplayable());
+        qs.setAlwaysShown(true); // Show
+        assertEquals("B", searchField.getText()); // B is still there
+        assertTrue(searchField.isDisplayable());
+        
+        ke = new KeyEvent(searchField, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_ESCAPE, (char) 27);
+        searchField.dispatchEvent(ke);
+        assertTrue(searchField.getText().isEmpty());
     }
     
     private static final class TestComponent extends JComponent {
