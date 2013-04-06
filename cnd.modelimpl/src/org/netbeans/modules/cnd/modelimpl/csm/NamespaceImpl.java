@@ -608,18 +608,19 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return _getProject();
     }
     
-    private CsmUID<CsmNamespace> uid = null;
+    private volatile CsmUID<CsmNamespace> uid = null;
     @Override
     public final CsmUID<CsmNamespace> getUID() {
         CsmUID<CsmNamespace> out = uid;
         if (out == null) {
             synchronized (this) {
                 if (uid == null) {
-                    uid = out = createUID();
+                    uid = createUID();
                 }
             }
+            return uid;
         }
-        return uid;
+        return out;
     }   
     
     protected CsmUID<CsmNamespace> createUID() {
