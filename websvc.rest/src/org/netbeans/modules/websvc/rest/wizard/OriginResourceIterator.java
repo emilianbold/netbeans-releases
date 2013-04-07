@@ -241,13 +241,17 @@ public class OriginResourceIterator implements
                 "MSG_GenerateClassFilter"));                                // NOI18N
         JavaSource javaSource = JavaSource.forFileObject(filterClass);
         if (javaSource != null) {
-            String fqn = generateFilter(javaSource);
+            String fqn = generateFilter(javaSource, support.isEE7());
 
             handle.progress(NbBundle.getMessage(OriginResourceIterator.class,
                     "MSG_UpdateDescriptor")); // NOI18N
             if (addResponseFilter) {
                 support.addInitParam(WebRestSupport.CONTAINER_RESPONSE_FILTER,
                         fqn);
+            } else {
+                if (support.isEE7()) {
+                    support.configure();
+                }
             }
         }
         
@@ -264,10 +268,8 @@ public class OriginResourceIterator implements
                         Profile.JAVA_EE_7_FULL.equals(profile);
     }
     
-    private String generateFilter( JavaSource javaSource ) throws IOException
-    {
-        Project project = Templates.getProject(myWizard);
-        if (isJee7Profile(project) || WebRestSupport.isJersey2(project)){
+    private String generateFilter(JavaSource javaSource, boolean jersey2) throws IOException {
+        if (jersey2) {
             generateJaxRs20Filter(javaSource);
             return null;
         }
