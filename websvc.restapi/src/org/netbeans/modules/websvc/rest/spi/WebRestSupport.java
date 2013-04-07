@@ -1303,19 +1303,19 @@ public abstract class WebRestSupport extends RestSupport {
         StringBuilder builder = new StringBuilder();
         if ( addProvider ){
             builder.append("try {");
-            builder.append("Class<?> jacksonProvider = Class.forName(");
+            builder.append("Class<?> jsonProvider = Class.forName(");
             builder.append('"');
             builder.append(JACKSON_JERSEY2_JSON_PROVIDER);
-            builder.append("\");");
-            builder.append("// Class<?> jacksonProvider = Class.forName(");
+            builder.append("\");\n");
+            builder.append("// Class<?> jsonProvider = Class.forName(");
             builder.append('"');
             builder.append("org.glassfish.jersey.moxy.json.MoxyJsonFeature");
-            builder.append("\");");
-            builder.append("// Class<?> jacksonProvider = Class.forName(");
+            builder.append("\");\n");
+            builder.append("// Class<?> jsonProvider = Class.forName(");
             builder.append('"');
             builder.append("org.glassfish.jersey.jettison.JettisonFeature");
-            builder.append("\");");
-            builder.append("resources.add(jacksonProvider);");
+            builder.append("\");\n");
+            builder.append("resources.add(jsonProvider);");
             builder.append("} catch (ClassNotFoundException ex) {");
             builder.append("java.util.logging.Logger.getLogger(getClass().getName())");
             builder.append(".log(java.util.logging.Level.SEVERE, null, ex);}");
