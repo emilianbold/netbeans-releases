@@ -51,9 +51,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.server.config.JavaEEProfile;
 import org.glassfish.tools.ide.server.config.JavaSEPlatform;
 import org.glassfish.tools.ide.server.config.ModuleType;
@@ -903,7 +901,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
          */
         @Override
         public boolean isBundled( String classFqn ) {
-            List<URL> urls = getJerseyLibraryURLs();
+            List<URL> urls = libraryProvider.getJerseyClassPathURLs();
             for( URL url : urls ){
                 FileObject root = URLMapper.findFileObject(url);
                 if ( FileUtil.isArchiveFile(root)){
@@ -930,74 +928,6 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             Set<Profile> profiles = getSupportedProfiles();
             return profiles.contains(Profile.JAVA_EE_6_FULL) || 
                 profiles.contains(Profile.JAVA_EE_6_WEB) ;
-        }
-        
-        private List<URL> getJerseyLibraryURLs() {
-            String version = getGFVersion();
-            String gfRoot = dm.getProperties().getGlassfishRoot();
-            List<URL> urls = new LinkedList<URL>();
-            if ( version == null ){
-                return Collections.emptyList();
-            }
-            else if ( version.startsWith( VERSION_30X )){
-                File jackson = ServerUtilities.getJarName( gfRoot, 
-                        "jackson(|-core-asl).jar");          // NOI18N
-                addURL( urls , jackson);
-                File jerseyBundle = ServerUtilities.getJarName( gfRoot, 
-                        "jersey-gf-bundle.jar");          // NOI18N
-                addURL( urls , jerseyBundle);
-                File jettison = ServerUtilities.getJarName( gfRoot, 
-                        "jettison.jar");          // NOI18N
-                addURL( urls , jettison);
-                File jsr311 = ServerUtilities.getJarName(gfRoot, 
-                        "jsr311-api.jar");          // NOI18N
-                addURL( urls , jsr311);
-                File miltipart = ServerUtilities.getJarName(gfRoot, 
-                        "jersey-multipart.jar");          // NOI18N
-                addURL( urls , miltipart);
-                File mimepull = ServerUtilities.getJarName(gfRoot, 
-                        "mimepull.jar");          // NOI18N
-                addURL( urls , mimepull);
-                File asm = ServerUtilities.getJarName(gfRoot, 
-                        "asm-all-repackaged.jar");          // NOI18N
-                addURL( urls , asm);
-            }
-            else if ( version.startsWith( VERSION_31X )){
-                File jackson = ServerUtilities.getJarName( gfRoot, 
-                        "jackson(-core-asl).jar");          // NOI18N
-                addURL( urls , jackson);
-                File jacksonJaxRs = ServerUtilities.getJarName( gfRoot, 
-                        "jackson-jaxrs.jar");          // NOI18N
-                addURL( urls , jacksonJaxRs);
-                File jacksonMapper = ServerUtilities.getJarName( gfRoot, 
-                        "jackson-mapper(-asl).jar");          // NOI18N
-                addURL( urls , jacksonMapper);
-                File jerseyServer = ServerUtilities.getJarName( gfRoot, 
-                        "jersey-gf-server.jar");          // NOI18N
-                addURL( urls , jerseyServer);
-                File jettison = ServerUtilities.getJarName( gfRoot, 
-                        "jettison.jar");          // NOI18N
-                addURL( urls , jettison);
-                File miltipart = ServerUtilities.getJarName(gfRoot, 
-                        "jersey-multipart.jar");          // NOI18N
-                addURL( urls , miltipart);
-                File mimepull = ServerUtilities.getJarName(gfRoot, 
-                        "mimepull.jar");          // NOI18N
-                addURL( urls , mimepull);
-                File jerseyClient = ServerUtilities.getJarName( gfRoot, 
-                        "jersey-client");          // NOI18N
-                addURL( urls , jerseyClient);
-                File jerseyCore = ServerUtilities.getJarName( gfRoot, 
-                        "jersey-core");          // NOI18N
-                addURL( urls , jerseyCore);
-                File jerseyJson = ServerUtilities.getJarName( gfRoot, 
-                        "jersey-json");          // NOI18N
-                addURL( urls , jerseyJson);
-                File asm = ServerUtilities.getJarName(gfRoot, 
-                    "asm-all-repackaged.jar");          // NOI18N
-                addURL( urls , asm);
-            }
-            return urls;
         }
         
         private void addURL( Collection<URL> urls, File file ){
@@ -1044,36 +974,25 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             return true;
         }
         
+        /**
+         * Get GlassFish version as string.
+         * <p/>
+         * Returns {@see GlassFishVersion#toString()} method output for current
+         * GlassFish server instance.
+         * <p/>
+         * @return GlassFish version as string.
+         */
         private String getGFVersion() {
-            String gfRootStr = dm.getProperties().getGlassfishRoot();
-            File serviceTag = new File(gfRootStr,
-                    "lib/registration/servicetag-registry.xml");
-            if (!serviceTag.exists()) {
-                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).log(
-                        Level.WARNING, "Couldn't recognize GF version",
-                        new Exception());
-                return null;
-            }
-            SAXParserFactory factory = SAXParserFactory.newInstance();
+            GlassFishVersion version = null;
             try {
-                SAXParser saxParser = factory.newSAXParser();
-                RegistrationHandler handler = new RegistrationHandler();
-                saxParser.parse(serviceTag, handler);
-                return handler.getVersion();
+                version = dm
+                        .getCommonServerSupport().getInstance().getVersion();
+            } catch (NullPointerException npe) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO,
+                        "Caught NullPointerException in Hk2JavaEEPlatformImpl "
+                        + "while checking GlassFish version", npe);
             }
-            catch (ParserConfigurationException e) {
-                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).log(
-                        Level.INFO, null, e);
-            }
-            catch (SAXException e) {
-                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).log(
-                        Level.INFO, null, e);
-            }
-            catch (IOException e){
-                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).log(
-                        Level.INFO, null, e);
-            }
-            return "";
+            return version != null ? version.toString() : "";
         }
     }
     

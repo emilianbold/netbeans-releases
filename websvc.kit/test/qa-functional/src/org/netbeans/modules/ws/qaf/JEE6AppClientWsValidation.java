@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.ws.qaf;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
-
 /**
  *
  * @author jp154641
@@ -57,15 +54,5 @@ public class JEE6AppClientWsValidation extends AppClientWsValidation {
     @Override
     protected JavaEEVersion getJavaEEversion() {
         return JavaEEVersion.JAVAEE6;
-    }
-
-    public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(JEE6AppClientWsValidation.class),
-                "testCreateWsClient",
-                "testCallWsOperationInJavaMainClass",
-                "testCallWsOperationInJavaClass",
-                "testWsClientHandlers",
-                "testRunWsClientProject",
-                "testUndeployClientProject").enableModules(".*").clusters(".*"));
     }
 }

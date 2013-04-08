@@ -272,8 +272,9 @@ public class JsfSupportImpl implements JsfSupport {
     @Override
     public boolean isJsf22Plus() {
         if (wm != null) {
+            JSFVersion version = JSFVersion.forWebModule(wm);
             // caching is done inside the method
-            return JSFVersion.forWebModule(wm) != null && JSFVersion.forWebModule(wm).isAtLeast(JSFVersion.JSF_2_2);
+            return version != null && version.isAtLeast(JSFVersion.JSF_2_2);
         }
         // return the latest supported one until somebody will complain about that
         return true;
