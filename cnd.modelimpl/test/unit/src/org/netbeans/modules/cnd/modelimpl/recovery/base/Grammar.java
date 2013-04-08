@@ -55,4 +55,5 @@ import java.lang.annotation.Target;
 public @interface Grammar {
     boolean newGrammar() default false;
     boolean traceAST() default false;
+    boolean traceRules() default false;
 }

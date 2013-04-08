@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 import org.openide.util.Exceptions;
@@ -133,6 +134,11 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
                     TraceFlags.validate("cnd.modelimpl.cpp.parser.action.trace", true);
                 } else {
                     TraceFlags.validate("cnd.modelimpl.cpp.parser.action.trace", false);
+                }
+                if (grammar.traceRules()) {
+                    TraceFlags.validate("cnd.modelimpl.cpp.parser.rules.trace", true);
+                } else {
+                    TraceFlags.validate("cnd.modelimpl.cpp.parser.rules.trace", false);
                 }
             } else {
                 isNew = false;
