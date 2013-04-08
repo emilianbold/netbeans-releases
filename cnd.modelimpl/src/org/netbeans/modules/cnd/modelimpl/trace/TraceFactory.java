@@ -144,7 +144,7 @@ public class TraceFactory {
                 }
                 for (int j = 0; j < token.length; j++) {
                     buf.append(' '); //NOI18N
-                    buf.append(token[j].toString());
+                    buf.append(token[j]);
                 }
             }
             println(buf.toString());
@@ -187,7 +187,7 @@ public class TraceFactory {
                 }
                 for (int j = 0; j < token.length; j++) {
                     buf.append(' '); //NOI18N
-                    buf.append(token[j].toString());
+                    buf.append(token[j]);
                 }
             }
             println(buf.toString());
@@ -224,7 +224,7 @@ public class TraceFactory {
                 }
                 for (int j = 0; j < token.length; j++) {
                     buf.append(' '); //NOI18N
-                    buf.append(token[j].toString());
+                    buf.append(token[j]);
                 }
             }
             println(buf.toString());
@@ -367,7 +367,7 @@ public class TraceFactory {
             
             if (token.length > 0) {
                 buf.append(' '); //NOI18N
-                buf.append(token[0].toString());
+                buf.append(token[0]);
             }
             return buf.toString();
         }
