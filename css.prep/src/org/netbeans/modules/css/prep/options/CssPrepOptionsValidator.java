@@ -57,7 +57,7 @@ public final class CssPrepOptionsValidator {
     public CssPrepOptionsValidator validateSassPath(String sassPath) {
         String warning = SassExecutable.validate(sassPath);
         if (warning != null) {
-            result.addWarning(new ValidationResult.Message("sass.path", warning)); // NOI18N
+            result.addError(new ValidationResult.Message("sass.path", warning)); // NOI18N
         }
         return this;
     }
@@ -65,7 +65,7 @@ public final class CssPrepOptionsValidator {
     public CssPrepOptionsValidator validateLessPath(String lessPath) {
         String warning = LessExecutable.validate(lessPath);
         if (warning != null) {
-            result.addWarning(new ValidationResult.Message("less.path", warning)); // NOI18N
+            result.addError(new ValidationResult.Message("less.path", warning)); // NOI18N
         }
         return this;
     }
