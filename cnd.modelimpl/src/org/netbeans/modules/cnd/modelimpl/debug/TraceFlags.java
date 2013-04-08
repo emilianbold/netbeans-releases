@@ -165,7 +165,7 @@ public class TraceFlags {
     /** 
      * swithces off parsing function bodies
      */
-    private static final String CND_MODELIMPL_EXCL_COMPOUND = "cnd.modelimpl.excl.compound";
+    private static final String CND_MODELIMPL_EXCL_COMPOUND = "cnd.modelimpl.excl.compound"; // NOI18N
     public static boolean EXCLUDE_COMPOUND = DebugUtils.getBoolean(CND_MODELIMPL_EXCL_COMPOUND, true); // NOI18N
     
     private static final String CND_MODELIMPL_CPP_PARSER_ACTION = "cnd.modelimpl.cpp.parser.action"; // NOI18N
