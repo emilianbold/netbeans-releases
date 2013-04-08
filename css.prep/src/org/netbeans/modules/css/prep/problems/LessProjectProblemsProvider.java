@@ -39,50 +39,43 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.less;
+package org.netbeans.modules.css.prep.problems;
 
-import org.netbeans.modules.css.prep.process.LessProcessor;
+import java.util.Collection;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.problems.LessProjectProblemsProvider;
-import org.netbeans.modules.css.prep.ui.customizer.LessCustomizer;
+import org.netbeans.modules.css.prep.less.LessExecutable;
+import org.netbeans.modules.css.prep.preferences.SassPreferences;
+import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
-import org.netbeans.spi.project.ui.ProjectProblemsProvider;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200)
-public final class LessCssPreprocessor implements CssPreprocessorImplementation {
+public final class LessProjectProblemsProvider extends BaseProjectProblemsProvider {
 
-    private static final String IDENTIFIER = "LESS"; // NOI18N
-
-
-    @Override
-    public String getIdentifier() {
-        return IDENTIFIER;
-    }
-
-    @NbBundle.Messages("LessCssPreprocessor.displayName=LESS")
-    @Override
-    public String getDisplayName() {
-        return Bundle.LessCssPreprocessor_displayName();
+    public LessProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support, CssPreprocessorImplementation.Customizer customizer) {
+        super(support, customizer);
     }
 
     @Override
-    public void process(Project project, FileObject fileObject) {
-        new LessProcessor().process(project, fileObject);
+    boolean isEnabled(Project project) {
+        return SassPreferences.isEnabled(project);
     }
 
+    @NbBundle.Messages({
+        "LessProjectProblemsProvider.invalidCompiler.title=Invalid LESS compiler",
+        "LessProjectProblemsProvider.invalidCompiler.description=The provided LESS compiler is not valid.",
+    })
     @Override
-    public Customizer createCustomizer(Project project) {
-        return new LessCustomizer(project);
-    }
-
-    @Override
-    public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        return new LessProjectProblemsProvider(support, createCustomizer(support.getProject()));
+    void checkCompiler(Collection<ProjectProblem> currentProblems) {
+        try {
+            LessExecutable.getDefault();
+        } catch (InvalidExternalExecutableException ex) {
+            ProjectProblem problem = ProjectProblem.createError(
+                    Bundle.LessProjectProblemsProvider_invalidCompiler_title(),
+                    Bundle.LessProjectProblemsProvider_invalidCompiler_description(),
+                    OPTIONS_PROBLEM_RESOLVER);
+            currentProblems.add(problem);
+        }
     }
 
 }

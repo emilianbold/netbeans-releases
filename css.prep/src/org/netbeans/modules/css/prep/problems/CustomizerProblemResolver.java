@@ -39,50 +39,49 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.less;
+package org.netbeans.modules.css.prep.problems;
 
-import org.netbeans.modules.css.prep.process.LessProcessor;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.problems.LessProjectProblemsProvider;
-import org.netbeans.modules.css.prep.ui.customizer.LessCustomizer;
+import java.util.concurrent.Future;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200)
-public final class LessCssPreprocessor implements CssPreprocessorImplementation {
+public class CustomizerProblemResolver implements ProjectProblemResolver {
 
-    private static final String IDENTIFIER = "LESS"; // NOI18N
+    private final CssPreprocessor.ProjectProblemsProviderSupport support;
 
 
-    @Override
-    public String getIdentifier() {
-        return IDENTIFIER;
-    }
-
-    @NbBundle.Messages("LessCssPreprocessor.displayName=LESS")
-    @Override
-    public String getDisplayName() {
-        return Bundle.LessCssPreprocessor_displayName();
+    CustomizerProblemResolver(CssPreprocessor.ProjectProblemsProviderSupport support) {
+        assert support != null;
+        this.support = support;
     }
 
     @Override
-    public void process(Project project, FileObject fileObject) {
-        new LessProcessor().process(project, fileObject);
+    public Future<ProjectProblemsProvider.Result> resolve() {
+        support.openCustomizer();
+        return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
     }
 
     @Override
-    public Customizer createCustomizer(Project project) {
-        return new LessCustomizer(project);
+    public int hashCode() {
+        int hash = 7;
+        hash = 71 * hash + (this.support != null ? this.support.hashCode() : 0);
+        return hash;
     }
 
     @Override
-    public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        return new LessProjectProblemsProvider(support, createCustomizer(support.getProject()));
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CustomizerProblemResolver other = (CustomizerProblemResolver) obj;
+        if (this.support != other.support && (this.support == null || !this.support.equals(other.support))) {
+            return false;
+        }
+        return true;
     }
 
 }

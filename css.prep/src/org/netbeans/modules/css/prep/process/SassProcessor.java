@@ -51,8 +51,8 @@ import org.netbeans.modules.css.prep.editor.CPUtils;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
-import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.Warnings;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -114,7 +114,8 @@ public final class SassProcessor extends BaseProcessor {
             return SassExecutable.getDefault();
         } catch (InvalidExternalExecutableException ex) {
             if (Warnings.showSassWarning()) {
-                UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
+                // refresh project problems
+                CssPreprocessors.getDefault().fireChange();
             }
         }
         return null;
