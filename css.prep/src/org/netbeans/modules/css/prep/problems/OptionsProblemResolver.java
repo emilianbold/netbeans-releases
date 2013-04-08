@@ -39,50 +39,19 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.less;
+package org.netbeans.modules.css.prep.problems;
 
-import org.netbeans.modules.css.prep.process.LessProcessor;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.problems.LessProjectProblemsProvider;
-import org.netbeans.modules.css.prep.ui.customizer.LessCustomizer;
-import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import java.util.concurrent.Future;
+import org.netbeans.modules.css.prep.util.UiUtils;
+import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200)
-public final class LessCssPreprocessor implements CssPreprocessorImplementation {
-
-    private static final String IDENTIFIER = "LESS"; // NOI18N
-
+public class OptionsProblemResolver implements ProjectProblemResolver {
 
     @Override
-    public String getIdentifier() {
-        return IDENTIFIER;
-    }
-
-    @NbBundle.Messages("LessCssPreprocessor.displayName=LESS")
-    @Override
-    public String getDisplayName() {
-        return Bundle.LessCssPreprocessor_displayName();
-    }
-
-    @Override
-    public void process(Project project, FileObject fileObject) {
-        new LessProcessor().process(project, fileObject);
-    }
-
-    @Override
-    public Customizer createCustomizer(Project project) {
-        return new LessCustomizer(project);
-    }
-
-    @Override
-    public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        return new LessProjectProblemsProvider(support, createCustomizer(support.getProject()));
+    public Future<ProjectProblemsProvider.Result> resolve() {
+        UiUtils.showOptions();
+        return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
     }
 
 }
