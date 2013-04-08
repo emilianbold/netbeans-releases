@@ -39,50 +39,30 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.less;
+package org.netbeans.modules.web.common.cssprep;
 
-import org.netbeans.modules.css.prep.process.LessProcessor;
+import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.problems.LessProjectProblemsProvider;
-import org.netbeans.modules.css.prep.ui.customizer.LessCustomizer;
-import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
-import org.netbeans.spi.project.ui.ProjectProblemsProvider;
-import org.openide.filesystems.FileObject;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200)
-public final class LessCssPreprocessor implements CssPreprocessorImplementation {
+public final class CssPreprocessorsCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
 
-    private static final String IDENTIFIER = "LESS"; // NOI18N
-
-
+    @NbBundle.Messages("CssPreprocessorsCustomizer.displayName=CSS Preprocessors")
     @Override
-    public String getIdentifier() {
-        return IDENTIFIER;
-    }
-
-    @NbBundle.Messages("LessCssPreprocessor.displayName=LESS")
-    @Override
-    public String getDisplayName() {
-        return Bundle.LessCssPreprocessor_displayName();
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+        return ProjectCustomizer.Category.create(
+                "CssPreprocessors", // NOI18N
+                Bundle.CssPreprocessorsCustomizer_displayName(),
+                null);
     }
 
     @Override
-    public void process(Project project, FileObject fileObject) {
-        new LessProcessor().process(project, fileObject);
-    }
-
-    @Override
-    public Customizer createCustomizer(Project project) {
-        return new LessCustomizer(project);
-    }
-
-    @Override
-    public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        return new LessProjectProblemsProvider(support, createCustomizer(support.getProject()));
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        Project project = context.lookup(Project.class);
+        assert project != null : "Cannot find project in lookup: " + context;
+        return new CssPreprocessorsCustomizerPanel(category, project);
     }
 
 }

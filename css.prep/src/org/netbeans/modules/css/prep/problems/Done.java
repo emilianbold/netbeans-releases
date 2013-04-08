@@ -39,50 +39,50 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.less;
+package org.netbeans.modules.css.prep.problems;
 
-import org.netbeans.modules.css.prep.process.LessProcessor;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.problems.LessProjectProblemsProvider;
-import org.netbeans.modules.css.prep.ui.customizer.LessCustomizer;
-import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200)
-public final class LessCssPreprocessor implements CssPreprocessorImplementation {
+/**
+ * Simple result for project problems.
+ */
+public class Done implements Future<ProjectProblemsProvider.Result> {
 
-    private static final String IDENTIFIER = "LESS"; // NOI18N
+    private final ProjectProblemsProvider.Result result;
 
 
-    @Override
-    public String getIdentifier() {
-        return IDENTIFIER;
-    }
-
-    @NbBundle.Messages("LessCssPreprocessor.displayName=LESS")
-    @Override
-    public String getDisplayName() {
-        return Bundle.LessCssPreprocessor_displayName();
+    Done(ProjectProblemsProvider.Result result) {
+        assert result != null;
+        this.result = result;
     }
 
     @Override
-    public void process(Project project, FileObject fileObject) {
-        new LessProcessor().process(project, fileObject);
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        return false;
     }
 
     @Override
-    public Customizer createCustomizer(Project project) {
-        return new LessCustomizer(project);
+    public boolean isCancelled() {
+        return false;
     }
 
     @Override
-    public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        return new LessProjectProblemsProvider(support, createCustomizer(support.getProject()));
+    public boolean isDone() {
+        return true;
+    }
+
+    @Override
+    public ProjectProblemsProvider.Result get() throws InterruptedException, ExecutionException {
+        return result;
+    }
+
+    @Override
+    public ProjectProblemsProvider.Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        return get();
     }
 
 }

@@ -49,9 +49,11 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.CssPreprocessorAccessor;
-import org.netbeans.modules.web.common.api.ui.CssPreprocessorsCustomizer;
+import org.netbeans.modules.web.common.cssprep.CssPreprocessorAccessor;
+import org.netbeans.modules.web.common.cssprep.CssPreprocessorsCustomizer;
+import org.netbeans.modules.web.common.cssprep.CssPreprocessorsProblemProvider;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
@@ -75,6 +77,12 @@ public final class CssPreprocessors {
      * Path on SFS for CSS preprocessors registrations.
      */
     public static final String PREPROCESSORS_PATH = "CSS/PreProcessors"; // NOI18N
+    /**
+     * Category name in Project Customizer.
+     * @see #createCustomizer()
+     * @since 1.41
+     */
+    public static final String CUSTOMIZER_IDENT = "CssPreprocessors"; // NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(CssPreprocessors.class.getName(), 2);
     private static final Lookup.Result<CssPreprocessorImplementation> PREPROCESSORS = Lookups.forPath(PREPROCESSORS_PATH).lookupResult(CssPreprocessorImplementation.class);
@@ -118,6 +126,8 @@ public final class CssPreprocessors {
     /**
      * Create project customizer for CSS preprocessors.
      * <p>
+     * Category name is {@link #CUSTOMIZER_IDENT} ({@value #CUSTOMIZER_IDENT}).
+     * <p>
      * Instance of this class can be registered for any project in its project customizer SFS folder.
      * @see ProjectCustomizer.CompositeCategoryProvider.Registration
      * @since 1.40
@@ -127,9 +137,20 @@ public final class CssPreprocessors {
     }
 
     /**
+     * Create provider of CSS preprocessors problems.
+     * @param support support for creating and solving problems
+     * @return provider of CSS preprocessors problems
+     * @since 1.41
+     */
+    public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
+        return CssPreprocessorsProblemProvider.create(support);
+    }
+
+    /**
      * Attach a change listener that is to be notified of changes
-     * in CSS preprocessors.
+     * in CSS preprocessors or in any CSS preprocessor.
      * @param listener a listener, can be {@code null}
+     * @see CssPreprocessor#validate(org.netbeans.api.project.Project)
      * @since 1.40
      */
     public void addChangeListener(@NullAllowed ChangeListener listener) {
@@ -143,6 +164,17 @@ public final class CssPreprocessors {
      */
     public void removeChangeListener(@NullAllowed ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
+    }
+
+    // XXX this method solves these problems:
+    // - cannot create singletons of preprocessors (@ServiceProvider does not allow that)
+    // - avoid memory leaks in change listeners
+    /**
+     * Fire change, supposed to be used by CSS preprocessors implementations (e.g. compiler path change).
+     * @since 1.41
+     */
+    public void fireChange() {
+        changeSupport.fireChange();
     }
 
     /**

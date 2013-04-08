@@ -48,6 +48,8 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.api.CssPreprocessor;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 
@@ -101,6 +103,15 @@ public interface CssPreprocessorImplementation {
     @CheckForNull
     Customizer createCustomizer(@NonNull Project project);
 
+    /**
+     * Create a {@link ProjectProblemsProvider} for this CSS preprocessor.
+     * @param support support needed for proper provider creation and resolving
+     * @return {@link ProjectProblemsProvider} for this CSS preprocessor or {@code null} if not supported
+     * @since 1.41
+     */
+    @CheckForNull
+    ProjectProblemsProvider createProjectProblemsProvider(@NonNull CssPreprocessor.ProjectProblemsProviderSupport support);
+
     //~ Inner classes
 
     /**
@@ -121,16 +132,16 @@ public interface CssPreprocessorImplementation {
         /**
          * Attach a change listener that is to be notified of changes
          * in the customizer (e.g., the result of the {@link #isValid} method
-         * has changed.
-         * @param listener a listener
+         * has changed).
+         * @param listener a listener, can be {@code null}
          */
-        void addChangeListener(@NonNull ChangeListener listener);
+        void addChangeListener(@NullAllowed ChangeListener listener);
 
         /**
          * Removes a change listener.
-         * @param listener a listener
+         * @param listener a listener, can be {@code null}
          */
-        void removeChangeListener(@NonNull ChangeListener listener);
+        void removeChangeListener(@NullAllowed ChangeListener listener);
 
         /**
          * Return a UI component used to allow the user to customize the given project.
