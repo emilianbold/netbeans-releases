@@ -418,6 +418,9 @@ public class TypeFactory {
             } else if (specifierBuilder != null) {
                 CsmClassifier classifier = BuiltinTypes.getBuiltIn(specifierBuilder.toString());
                 type = new TypeImpl(classifier, pointerDepth, reference, arrayDepth, _const, getFile(), getStartOffset(), getEndOffset());
+            } else if (cls != null) {
+                type = new TypeImpl(cls, pointerDepth, reference, arrayDepth, _const, getFile(), getStartOffset(), getEndOffset());
+                type.setTypeOfTypedef();    
             }
             return TemplateUtils.checkTemplateType(type, scope);
         }

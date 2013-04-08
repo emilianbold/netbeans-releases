@@ -494,6 +494,11 @@ public class CppParserActionImpl implements CppParserActionEx {
                             enumeratorEntry.setAttribute(CppAttributes.DEFINITION, csmEnumerator);
                         }
                     }
+                    
+                    CsmObjectBuilder directParent = builderContext.top(1);
+                    if (directParent instanceof TypeBuilder) {
+                        ((TypeBuilder) directParent).setClassifier(e);
+                    }
                 }
             }
             builderContext.pop();
@@ -633,6 +638,11 @@ public class CppParserActionImpl implements CppParserActionEx {
                         classEntry.setAttribute(CppAttributes.DEFINITION, cls);
                     } else {
     //                    System.out.println("classEntry is empty " + cls);
+                    }
+                    
+                    CsmObjectBuilder directParent = builderContext.top(1);
+                    if (directParent instanceof TypeBuilder) {
+                        ((TypeBuilder) directParent).setClassifier(cls);
                     }
                 }
             }
