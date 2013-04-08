@@ -63,7 +63,7 @@ import org.openide.windows.IOPosition;
 
 public class ExecutionEventObject {
 
-    final ExecutionEvent.Type type;
+    public final ExecutionEvent.Type type;
 
     public ExecutionEventObject(ExecutionEvent.Type type) {
         this.type = type;
@@ -110,10 +110,10 @@ public class ExecutionEventObject {
     
     //experimental
     public static class Tree {
-        final ExecutionEventObject startEvent;
-        ExecutionEventObject endEvent;
-        final ExecutionEventObject.Tree parentNode;
-        final List<ExecutionEventObject.Tree> childrenNodes = new ArrayList<ExecutionEventObject.Tree>();
+        public final ExecutionEventObject startEvent;
+        public ExecutionEventObject endEvent;
+        public final ExecutionEventObject.Tree parentNode;
+        public final List<ExecutionEventObject.Tree> childrenNodes = new ArrayList<ExecutionEventObject.Tree>();
         private IOPosition.Position startOffset;
         private IOPosition.Position endOffset;
         

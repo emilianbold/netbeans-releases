@@ -93,7 +93,9 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     private static final Pattern mavenSomethingPlugin = Pattern.compile("maven-(.+)-plugin"); // NOI18N
     private static final Pattern somethingMavenPlugin = Pattern.compile("(.+)-maven-plugin"); // NOI18N
     /** @see org.apache.maven.cli.ExecutionEventLogger#logReactorSummary */
-    private static final Pattern reactorFailure = Pattern.compile("\\[INFO\\] (.+) [.]* FAILURE \\[.+\\]"); // NOI18N
+    static final Pattern reactorFailure = Pattern.compile("\\[INFO\\] (.+) [.]* FAILURE \\[.+\\]"); // NOI18N
+    
+    public static final Pattern reactorSummaryLine = Pattern.compile("(.+) [.]* (FAILURE|SUCCESS) (\\[.+\\])?"); // NOI18N
     private OutputWriter stdOut;
     private String currentProject;
     private String currentTag;
@@ -104,12 +106,18 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     String firstFailure;
     private final JSONParser parser;
     private ContextImpl contextImpl;
+    //the depth is as follows
+    //Session -> Project -> [Fork -> ForkedProject] -> Mojo                
+    private final ExecutionEventObject.Tree executionTree = new ExecutionEventObject.Tree(null, null);
+    private ExecutionEventObject.Tree currentTreeNode = executionTree;
+    
 
     CommandLineOutputHandler(ProgressHandle hand, boolean createVisitorContext) {
         super(hand, createVisitorContext ? new OutputVisitor(new ContextImpl()) : new OutputVisitor());
         if (createVisitorContext) {
             contextImpl = (ContextImpl) visitor.getContext();
             assert contextImpl != null;
+            contextImpl.setExecutionTree(executionTree);
         }
         this.parser = new JSONParser();
         handle = hand;
@@ -362,6 +370,11 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                     CommandLineOutputHandler.this.processStart(getEventId(PRJ_EXECUTE, null), stdOut);                    
                 }
             }
+            else if (ExecutionEvent.Type.ProjectSkipped.equals(obj.type)) {
+                //growTree(obj);
+                //trimTree(obj);
+                //GlobalOutputProcessor currently depens on skipped projects not being added to tree.
+            }
             else if (ExecutionEvent.Type.ProjectSucceeded.equals(obj.type)) {
                 trimTree(obj);
                 CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);                    
@@ -415,11 +428,6 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     }
 
 
-    //the depth is as follows
-    //Session -> Project -> [Fork -> ForkedProject] -> Mojo                
-
-    private final ExecutionEventObject.Tree executionTree = new ExecutionEventObject.Tree(null, null);
-    private ExecutionEventObject.Tree currentTreeNode = executionTree;
 
 
     ResumeFromFinder createResumeFromFinder() {
@@ -623,11 +631,12 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     private int reactorSize;
     private int projectCount;
     
-    private static class ContextImpl implements OutputVisitor.Context {
+   public static class ContextImpl implements OutputVisitor.Context {
 
         private Project currentProject;
+        private ExecutionEventObject.Tree executionTree;
 
-        public ContextImpl() {
+        ContextImpl() {
         }
 
         @Override
@@ -638,7 +647,14 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
         public void setCurrentProject(@NullAllowed Project currentProject) {
             this.currentProject = currentProject;
         }
-        
+
+        private void setExecutionTree(ExecutionEventObject.Tree executionTree) {
+            this.executionTree = executionTree;
+        }
+
+        public ExecutionEventObject.Tree getExecutionTree() {
+            return executionTree;
+        }
         
     }    
 
