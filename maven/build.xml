@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
     
     <target name="nblib" depends="init">
         <mkdir dir="build/mavenclasses"/>
-        <javac srcdir="mavensrc" destdir="build/mavenclasses" debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" source="1.5" includeantruntime="false">
+        <javac srcdir="mavensrc" destdir="build/mavenclasses" debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" source="1.5" target="1.5" includeantruntime="false">
             <classpath>
                 <pathelement path="${antsrc.cp}"/>
             </classpath>

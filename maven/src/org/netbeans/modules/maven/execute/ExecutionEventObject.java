@@ -48,6 +48,7 @@ import java.util.List;
 import org.apache.maven.execution.ExecutionEvent;
 import org.json.simple.JSONObject;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileUtil;
 import org.openide.windows.IOPosition;
 
@@ -61,8 +62,8 @@ public final class ExecutionEventObject {
     final ExecutionEvent.Type type;
     final int projectCount;
     final GAV currentProject;
-    final File currentProjectLocation;
-    final MojoExecution execution;
+    final @NullAllowed File currentProjectLocation;
+    final @NullAllowed MojoExecution execution;
 
     private  ExecutionEventObject(ExecutionEvent.Type type, GAV currentProject, File currentProjectLocation, MojoExecution execution, int projectCount) {
         this.type = type;

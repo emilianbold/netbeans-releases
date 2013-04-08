@@ -105,12 +105,6 @@ public class BugzillaQuery {
         if(initControler) {
             controller = createControler(repository, this, urlParameters);
         }
-        if(repository instanceof KenaiRepository) {
-            boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(getDisplayName());
-            if(autoRefresh) {
-                getRepository().scheduleForRefresh(this);
-            }
-        }
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {

@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.util;
 
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import java.awt.Dimension;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,6 +53,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -83,11 +85,15 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeNotFoundException;
+import org.openide.nodes.NodeOp;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -525,6 +531,21 @@ public class BugtrackingUtil {
             return getFile(dataObj);
         }
         return null;
+    }
+    
+    public static void openTasksDashboard() {
+         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                TopComponent tc = WindowManager.getDefault().findTopComponent("DashboardTopComponent"); // NOI18N
+                if (tc == null) {
+                    BugtrackingManager.LOG.fine("No Tasks Dashboard found"); // NOI18N
+                    return;
+                }
+                tc.open();
+                tc.requestActive();
+            }
+        });
     }
     
     private static File getFile(Project project) {
