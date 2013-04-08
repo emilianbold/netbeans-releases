@@ -63,12 +63,12 @@ public class JsIndex {
 
     private static final Logger LOG = Logger.getLogger(JsIndex.class.getName());
     private final QuerySupport querySupport;
-    private static final JsIndex EMPTY = new JsIndex(null);
+//    private static final JsIndex EMPTY = new JsIndex(null);
 
     public static final String FIELD_IS_GLOBAL = "isglobal"; //NOI18N
     public static final String FIELD_BASE_NAME = "bn"; //NOI18N
     public static final String FIELD_FQ_NAME = "fqn"; //NOI18N
-    public static final String FIELD_PROPERTY = "prop"; //NOI18N
+//    public static final String FIELD_PROPERTY = "prop"; //NOI18N
     public static final String FIELD_OFFSET = "offset"; //NOI18N
     public static final String FIELD_ASSIGNMENS = "assign"; //NOI18N
     public static final String FIELD_RETURN_TYPES = "return"; //NOI18N
@@ -77,8 +77,7 @@ public class JsIndex {
 
     @org.netbeans.api.annotations.common.SuppressWarnings("MS_MUTABLE_ARRAY")
     public static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_OFFSET, FIELD_RETURN_TYPES, FIELD_PARAMETERS, FIELD_FLAG, FIELD_IS_GLOBAL, FIELD_ASSIGNMENS};
-//    static final String[] TERMS_PROPERTIES = new String[] { FIELD_PROPERTY, FIELD_ASSIGNMENS, FIELD_RETURN_TYPES, FIELD_FLAG};
-    
+       
     private JsIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;
     }
