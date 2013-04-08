@@ -169,10 +169,7 @@ public final class OutputVisitor {
 
     public static interface Context {
 
-        
         @CheckForNull Project getCurrentProject();
-        
-        
         
     }
         

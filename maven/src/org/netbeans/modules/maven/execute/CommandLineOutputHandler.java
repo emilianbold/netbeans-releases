@@ -55,6 +55,8 @@ import org.apache.maven.execution.ExecutionEvent;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
@@ -62,6 +64,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import static org.netbeans.modules.maven.execute.AbstractOutputHandler.PRJ_EXECUTE;
 import static org.netbeans.modules.maven.execute.AbstractOutputHandler.SESSION_EXECUTE;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -350,13 +353,18 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 growTree(obj);
                 if (contextImpl != null) {
                     File prjLoc = obj.currentProjectLocation;
-                    try {
-                        Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjLoc));
-                        contextImpl.setCurrentProject(project);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (IllegalArgumentException ex) {
-                        Exceptions.printStackTrace(ex);
+                    if (prjLoc != null) {
+                        try {
+                            FileObject fo = FileUtil.toFileObject(prjLoc);
+                            if (fo != null) {
+                                Project project = ProjectManager.getDefault().findProject(fo);
+                                contextImpl.setCurrentProject(project);
+                            }
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (IllegalArgumentException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                     CommandLineOutputHandler.this.processStart(getEventId(PRJ_EXECUTE, null), stdOut);                    
                 }
@@ -550,11 +558,11 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
         }
 
         @Override
-        public Project getCurrentProject() {
+        public @CheckForNull Project getCurrentProject() {
             return currentProject;
         }
         
-        public void setCurrentProject(Project currentProject) {
+        public void setCurrentProject(@NullAllowed Project currentProject) {
             this.currentProject = currentProject;
         }
         
