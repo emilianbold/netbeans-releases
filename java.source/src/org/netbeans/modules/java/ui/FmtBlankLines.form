@@ -23,38 +23,61 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="bPackageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="aPackageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="bImportsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="aImports" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="bClassLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="aClassLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="aClassHeaderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="anAnonymousClassHeaderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="aClassFooterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="anAnonymousClassFooterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="bFieldsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="aFieldsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="bMethodsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="aMethodsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                  <Component id="bMethodsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="aFieldsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="bFieldsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="anAnonymousClassFooterField" alignment="0" max="32767" attributes="0"/>
-                  <Component id="aClassFooterField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="anAnonymousClassHeaderField" alignment="0" max="32767" attributes="0"/>
-                  <Component id="aClassHeaderField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="aClassField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="bClassField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="aImportsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="bImportsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="aPackageField" alignment="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="bPackageField" alignment="0" max="32767" attributes="0"/>
-                  <Component id="aMethodsField" pref="0" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="bPackageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="aPackageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="bImportsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="aImports" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="bClassLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="aClassLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="aClassHeaderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="anAnonymousClassHeaderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="aClassFooterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="anAnonymousClassFooterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="inCodeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="inDeclarationsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="bFieldsField" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Component id="anAnonymousClassFooterField" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Component id="aFieldsField" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Component id="bMethodsField" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Component id="aMethodsField" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Component id="aClassFooterField" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Component id="anAnonymousClassHeaderField" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Component id="aClassHeaderField" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Component id="aClassField" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Component id="bClassField" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Component id="aImportsField" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Component id="bImportsField" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Component id="aPackageField" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Component id="bPackageField" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="inCodeField" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Component id="inDeclarationsField" min="-2" pref="26" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Component id="aMethodsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="bMethodsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="aFieldsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="bFieldsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="minLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jSeparator2" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="maxLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jSeparator1" max="32767" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -63,39 +86,62 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="bPackageField" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="bPackageLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="maxLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="4" pref="4" max="4" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="inDeclarationsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="inDeclarationsField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="inCodeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="inCodeField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="minLabel" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                      <Component id="jSeparator2" min="-2" pref="9" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="bPackageLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="bPackageField" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="aPackageField" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="aPackageLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="4" pref="4" max="4" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="bImportsField" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="bImportsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="4" pref="4" max="4" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="aImportsField" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="aImports" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="4" pref="4" max="4" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="bClassField" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="bClassLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="4" pref="4" max="4" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="aClassField" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="aClassLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="4" pref="4" max="4" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="aClassHeaderField" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="aClassHeaderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="aClassHeaderField" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -104,8 +150,8 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="aClassFooterField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="aClassFooterLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="aClassFooterField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -120,7 +166,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="aFieldsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="aFieldsField" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="aFieldsField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -138,6 +184,51 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
+    <Component class="javax.swing.JLabel" name="maxLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_blMax" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JSeparator" name="jSeparator1">
+    </Component>
+    <Component class="javax.swing.JLabel" name="inDeclarationsLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="inDeclarationsField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_blInDeclarations" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="inDeclarationsField">
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="inDeclarationsFieldActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="inCodeLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="inCodeField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_blInCode" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="inCodeField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="minLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_blMin" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JSeparator" name="jSeparator2">
+    </Component>
     <Component class="javax.swing.JLabel" name="bPackageLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">

@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.Comparator;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.editor.completion.CompletionItemComparator;
@@ -108,13 +109,14 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
         File output = new File(workDir, goldenFileName);
         PrintStream streamOut = new PrintStream(output);
         
-        CompletionItem[] array = createTestPerformer().test(logWriter, textToInsert, offsetAfterInsertion, false, testFile, lineIndex, colIndex, tooltip); // NOI18N        
+        CompletionTestResultItem[] array = createTestPerformer().test(logWriter, textToInsert, offsetAfterInsertion, false, testFile, lineIndex, colIndex, tooltip); // NOI18N        
 
 	assertNotNull("Result should not be null", array);
-        Arrays.sort(array, CompletionItemComparator.BY_PRIORITY);
+        Arrays.sort(array, new CompletionComparatorWrapper(CompletionItemComparator.BY_PRIORITY));
         for (int i = 0; i < array.length; i++) {
-            CompletionItem completionItem = array[i];
-            streamOut.println(completionItem.toString());
+            streamOut.print(array[i].getCompletionItem().toString());
+            streamOut.print("\t$\t");
+            streamOut.println(array[i].getSubstituted());
         }
         streamOut.close();
         
@@ -132,9 +134,25 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
             showDiff(diffErrorFile, buf);
             fail(buf.toString());
         }
-    }
+    } 
 
     protected CompletionTestPerformer createTestPerformer() {
         return new CompletionTestPerformer();
+    }
+    
+    
+    private static class CompletionComparatorWrapper implements Comparator<CompletionTestResultItem> {
+        
+        private final Comparator<CompletionItem> comparator;
+
+        public CompletionComparatorWrapper(Comparator<CompletionItem> comparator) {
+            this.comparator = comparator;
+        }
+
+        @Override
+        public int compare(CompletionTestResultItem o1, CompletionTestResultItem o2) {
+            return comparator.compare(o1.getCompletionItem(), o2.getCompletionItem());
+        }
+        
     }
 }

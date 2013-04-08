@@ -555,7 +555,7 @@ public final class LibraryManager {
     private final class LibraryEntry {
 
         private final LibraryKey key;
-        private CsmUID<CsmProject> libraryUID;
+        private volatile CsmUID<CsmProject> libraryUID;
         private final ConcurrentMap<CsmUID<CsmProject>, Boolean> dependentProjects;
 
         private LibraryEntry(LibraryKey folder) {

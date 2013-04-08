@@ -98,7 +98,8 @@ final class LazyLoader {
         });
     }
 
-    private void loadAllNow() {
+    void loadAllNow() {
+        isActive = false;
         isLoading = true;
         PersistenceHandler persistenceHandler = PersistenceHandler.getDefault();
         for( LazyMode lazyMode : lazyModes.values() ) {

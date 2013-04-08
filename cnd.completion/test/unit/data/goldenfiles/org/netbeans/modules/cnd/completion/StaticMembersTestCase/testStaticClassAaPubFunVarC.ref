@@ -1,4 +1,4 @@
-cPub int
-cPubSt int
-cPubFun() void
-cPubFunSt() void
+cPub int	$	    c.cPub
+cPubSt int	$	    c.cPubSt
+cPubFun() void	$	    c.cPubFun()
+cPubFunSt() void	$	    c.cPubFunSt()

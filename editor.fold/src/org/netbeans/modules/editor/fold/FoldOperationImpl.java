@@ -718,4 +718,8 @@ public final class FoldOperationImpl {
         }
 
     }
+    
+    public String toString() {
+        return "FoldOp[mgr = " + manager + ", rel = " + released + "]"; // NOI18N
+    }
 }

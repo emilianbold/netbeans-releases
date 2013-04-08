@@ -278,6 +278,9 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
         if (component.getClientProperty(PROP_SIDEBAR_MARK) == null) {
             component.putClientProperty(PROP_SIDEBAR_MARK, Boolean.TRUE);
         } else {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Folding sidebar already present at {0}", component);
+            }
             alreadyPresent = true;
             prefs = null;
             return;
@@ -296,6 +299,10 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
         prefs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component)).lookup(Preferences.class);
         prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs));
         prefsListener.preferenceChange(null);
+        
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Code folding sidebar initialized for: {0}", doc);
+        }
         
         ViewHierarchy.get(component).addViewHierarchyListener(new ViewHierarchyListener() {
 
@@ -958,7 +965,7 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
             int plusGap = (int)Math.round(markSize / 3.8); // distance between mark rectangle vertical side and start/end of minus sign
             int lineX = markX + halfMarkSize; // x position of the centre of mark
 
-            LOG.fine("CFSBar: PAINT START ------\n");
+            LOG.finer("CFSBar: PAINT START ------\n");
             int descent = g.getFontMetrics(defFont).getDescent();
             PaintInfo previousInfo = null;
             Graphics2D g2d = (Graphics2D)g;
@@ -973,8 +980,8 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
 
                 if (previousInfo == null) {
                     if (paintInfo.hasLineIn()) {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("prevInfo=NULL; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
+                        if (LOG.isLoggable(Level.FINER)) {
+                            LOG.finer("prevInfo=NULL; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
                         }
                         drawFoldLine(g2d, paintInfo.lineInActive, lineX, clip.y, lineX, y);
                     }
@@ -982,8 +989,8 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
                     if (previousInfo.hasLineOut() || paintInfo.hasLineIn()) {
                         // Draw middle vertical line
                         int prevY = previousInfo.getPaintY();
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.log(Level.FINE, "prevInfo={0}; y=" + y + ", PI:" + paintInfo + "\n", previousInfo); // NOI18N
+                        if (LOG.isLoggable(Level.FINER)) {
+                            LOG.log(Level.FINER, "prevInfo={0}; y=" + y + ", PI:" + paintInfo + "\n", previousInfo); // NOI18N
                         }
                         drawFoldLine(g2d, previousInfo.lineOutActive || paintInfo.lineInActive, lineX, prevY + previousInfo.getPaintHeight(), lineX, y);
                     }
@@ -994,14 +1001,14 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
                     g.drawLine(plusGap + markX, markY + halfMarkSize, markSize + markX - plusGap, markY + halfMarkSize);
                     String opStr = (paintOperation == PAINT_MARK) ? "PAINT_MARK" : "SINGLE_PAINT_MARK"; // NOI18N
                     if (isFolded) {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine(opStr + ": folded; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
+                        if (LOG.isLoggable(Level.FINER)) {
+                            LOG.finer(opStr + ": folded; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
                         }
                         g.drawLine(lineX, markY + plusGap, lineX, markY + markSize - plusGap);
                     }
                     if (paintOperation != SINGLE_PAINT_MARK) {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine(opStr + ": non-single; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
+                        if (LOG.isLoggable(Level.FINER)) {
+                            LOG.finer(opStr + ": non-single; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
                         }
                     }
                     if (paintInfo.hasLineIn()) { //[PENDING]
@@ -1015,21 +1022,21 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
                     visibleMarks.add(new Mark(markX, markY, markSize, isFolded));
 
                 } else if (paintOperation == PAINT_LINE) {
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("PAINT_LINE: y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer("PAINT_LINE: y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
                     }
                     // FIXME !!
                     drawFoldLine(g2d, paintInfo.signActive, lineX, y, lineX, y + height );
                 } else if (paintOperation == PAINT_END_MARK) {
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("PAINT_END_MARK: y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer("PAINT_END_MARK: y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
                     }
                     if (previousInfo == null || y != previousInfo.getPaintY()) {
                         drawFoldLine(g2d, paintInfo.lineInActive, lineX, y, lineX, y + height / 2);
                         drawFoldLine(g2d, paintInfo.signActive, lineX, y + height / 2, lineX + halfMarkSize, y + height / 2);
                         if (paintInfo.getInnerLevel() > 0) {//[PENDING]
-                            if (LOG.isLoggable(Level.FINE)) {
-                                LOG.fine("  PAINT middle-line\n"); // NOI18N
+                            if (LOG.isLoggable(Level.FINER)) {
+                                LOG.finer("  PAINT middle-line\n"); // NOI18N
                             }
                             drawFoldLine(g2d, paintInfo.lineOutActive, lineX, y + height / 2, lineX, y + height);
                         }
@@ -1050,7 +1057,7 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
         } catch (BadLocationException ble) {
             LOG.log(Level.WARNING, null, ble);
         } finally {
-            LOG.fine("CFSBar: PAINT END ------\n\n");
+            LOG.finer("CFSBar: PAINT END ------\n\n");
             adoc.readUnlock();
         }
     }
@@ -1258,7 +1265,7 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
             boolean lineIn = prevInfo.lineIn;
             boolean lineOut = prevInfo.lineOut;
             
-            LOG.log(Level.FINE, "Merging {0} with {1}: ", new Object[] { this, prevInfo });
+            LOG.log(Level.FINER, "Merging {0} with {1}: ", new Object[] { this, prevInfo });
             if (prevInfo.getPaintOperation() == PAINT_END_MARK) {
                 // merge with start|single -> start mark + line-in
                 lineIn = true;
@@ -1302,7 +1309,7 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
             this.lineInActive |= prevInfo.lineInActive;
             this.lineOutActive |= prevInfo.lineOutActive;
             
-            LOG.log(Level.FINE, "Merged result: {0}", this);
+            LOG.log(Level.FINER, "Merged result: {0}", this);
         }
     }
     
@@ -1497,6 +1504,9 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
             }
             FoldHierarchy fh = FoldHierarchy.get(target);
             if (fh == null || !fh.isActive()) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Fold hierarchy not active for: {0}", target);
+                }
                 return null;
             }
             return new CodeFoldingSideBar(target);

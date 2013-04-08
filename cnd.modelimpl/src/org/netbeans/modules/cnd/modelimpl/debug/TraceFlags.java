@@ -175,6 +175,8 @@ public class TraceFlags {
     public static boolean CPP_PARSER_NEW_GRAMMAR = DebugUtils.getBoolean(CND_MODELIMPL_CPP_PARSER_NEW_GRAMMAR, false);
     private static final String CND_MODELIMPL_PARSE_HEADERS_WITH_SOURCES = "cnd.modelimpl.parse.headers.with.sources"; // NOI18N
     public static boolean PARSE_HEADERS_WITH_SOURCES = DebugUtils.getBoolean(CND_MODELIMPL_PARSE_HEADERS_WITH_SOURCES, false);
+    private static final String CND_MODELIMPL_CPP_PARSER_RULES_TRACE = "cnd.modelimpl.cpp.parser.rules.trace"; // NOI18N
+    public static boolean TRACE_CPP_PARSER_RULES = DebugUtils.getBoolean(CND_MODELIMPL_CPP_PARSER_RULES_TRACE, false);
     
     public static void validate(String flag, boolean value) {
         if (CND_MODELIMPL_CPP_PARSER_ACTION.equals(flag)) {
@@ -189,6 +191,9 @@ public class TraceFlags {
         } else if (CND_MODELIMPL_PARSE_HEADERS_WITH_SOURCES.equals(flag)) {
             System.setProperty(CND_MODELIMPL_PARSE_HEADERS_WITH_SOURCES, Boolean.toString(value));
             PARSE_HEADERS_WITH_SOURCES = value;
+        } else if (CND_MODELIMPL_CPP_PARSER_RULES_TRACE.equals(flag)) {
+            System.setProperty(CND_MODELIMPL_CPP_PARSER_RULES_TRACE, Boolean.toString(value));
+            TRACE_CPP_PARSER_RULES = value;
         } 
     }
 

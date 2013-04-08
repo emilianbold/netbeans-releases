@@ -1454,9 +1454,13 @@ public class Installer extends ModuleInstall implements Runnable {
 
         final String encUTF8 = "utf-8";
         PushbackInputStream pin = new PushbackInputStream(inputStream, 4096);
-        int l = pin.read(arr);
-        pin.unread(arr, 0, l);
-        String enc = findEncoding(arr, l);
+        int len = pin.read(arr);
+        if (len < 0) {
+            // Nothing to read => nothing to copy
+            return ;
+        }
+        pin.unread(arr, 0, len);
+        String enc = findEncoding(arr, len);
         boolean replaceEnc = !enc.equalsIgnoreCase(encUTF8);
         BufferedReader br = new BufferedReader(new InputStreamReader(pin, enc));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os, encUTF8));

@@ -50,6 +50,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -272,6 +274,9 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             if (d == doc) {
                 return;
             }
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Updating root fold. lastDocument = {0}, newDocument = {1}", new Object[] { lastRootDocument, doc });
         }
         try {
             rootFold = ApiPackageAccessor.get().createFold(
@@ -756,6 +761,11 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
      *  but make the new root folds array empty.
      */
     private void rebuildManagers(boolean releaseOnly) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "rebuilding fold managers, release = {0}, document = {1}, component = {2}", new Object[] {
+               releaseOnly, this.lastDocument, Integer.toHexString(System.identityHashCode(this.component))
+            });
+        }
         for (int i = 0; i < operations.length; i++) {
             operations[i].release();
         }
@@ -819,6 +829,11 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             if (!ok) {
                 // TODO - remove folds under root fold
                 operations = EMPTY_FOLD_OPERTAION_IMPL_ARRAY;
+            }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Fold managers initialized. New managers = {0}, status = {1}", new Object[] {
+                    Arrays.asList(operations), ok
+                });
             }
             transaction.commit();
         }

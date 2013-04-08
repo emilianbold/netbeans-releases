@@ -64,6 +64,8 @@ import org.openide.util.RequestProcessor;
  * @author Nam Nguyen
  */
 public abstract class AbstractModelFactory<M extends Model> {
+    private static final Logger LOG = Logger.getLogger(AbstractModelFactory.class.getName()); 
+    
     public AbstractModelFactory() {
         factories.add(new WeakReference<AbstractModelFactory>(this));
         propSupport = new PropertyChangeSupport(this);
@@ -130,6 +132,13 @@ public abstract class AbstractModelFactory<M extends Model> {
             return null;
         }
 	Object key = getKey(source);
+        if (key == null) {
+            LOG.log(Level.WARNING, "Could not get key for the model source {0}. effectiveAP: {1}, lookup contents: {2}",
+                    new Object[] { source, getEffectiveAccessProvider(source), 
+                        source.getLookup().lookupAll(Object.class)
+                    });
+            LOG.log(Level.WARNING, "ModelSource created from:", source.creation);
+        }
 	assert key != null;
         WeakReference<M> modelRef = cachedModels.get(key);
         M model = (modelRef == null ? null : modelRef.get());

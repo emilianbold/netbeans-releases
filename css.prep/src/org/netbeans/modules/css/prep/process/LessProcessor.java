@@ -41,85 +41,31 @@
  */
 package org.netbeans.modules.css.prep.process;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.editor.CPUtils;
 import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
+import org.netbeans.modules.css.prep.util.Warnings;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
- * Process file/folder changes.
- */
-public final class LessProcessor {
+public final class LessProcessor extends BaseProcessor {
 
-    private static final Logger LOGGER = Logger.getLogger(LessProcessor.class.getName());
-
-    private static final String LESS_EXTENSION = "less"; // NOI18N
-    private static final String CSS_EXTENSION = "css"; // NOI18N
-
-
-    public void process(Project project, FileObject fileObject) {
-        if (fileObject.isData()) {
-            processFile(project, fileObject, true);
-        } else {
-            assert fileObject.isFolder() : "Folder expected: " + fileObject;
-            if (!isEnabled(project)) {
-                // not enabled in this project
-                return;
-            }
-            processFolder(project, fileObject);
-        }
-    }
-
-    private void processFolder(Project project, FileObject fileObject) {
-        assert fileObject.isFolder() : "Folder expected: " + fileObject;
-        for (FileObject child : fileObject.getChildren()) {
-            if (child.isData()) {
-                processFile(project, child, false);
-            } else {
-                processFolder(project, child);
-            }
-        }
-    }
-
-    private void processFile(Project project, FileObject fileObject, boolean checkEnabled) {
-        assert fileObject.isData() : "File expected: " + fileObject;
-        if (!isLessFile(fileObject)) {
-            // not less file
-            return;
-        }
-        if (checkEnabled
-                && !isEnabled(project)) {
-            // not enabled in this project
-            return;
-        }
-        if (fileObject.isValid()) {
-            fileChanged(project, fileObject);
-        } else {
-            // deleted file
-            fileDeleted(project, fileObject);
-        }
-    }
-
-    private boolean isEnabled(Project project) {
-        if (project == null) {
-            return true;
-        }
+    @Override
+    protected boolean isEnabledInternal(Project project) {
         return LessPreferences.isEnabled(project);
     }
 
-    private boolean isLessFile(FileObject fileObject) {
-        // XXX mime type?
-        String extension = fileObject.getExt().toLowerCase();
-        return LESS_EXTENSION.equals(extension);
+    @Override
+    protected boolean isSupportedFile(FileObject fileObject) {
+        return CPUtils.LESS_FILE_MIMETYPE.equals(FileUtil.getMIMEType(fileObject, CPUtils.LESS_FILE_MIMETYPE));
     }
 
-    private void fileChanged(Project project, FileObject fileObject) {
+    @Override
+    protected void compile(Project project, FileObject fileObject) {
         LessExecutable less = getLess();
         if (less == null) {
             return;
@@ -127,24 +73,14 @@ public final class LessProcessor {
         less.compile(fileObject);
     }
 
-    private void fileDeleted(Project project, FileObject fileObject) {
-        FileObject cssFile = fileObject.getParent().getFileObject(fileObject.getName(), CSS_EXTENSION);
-        if (cssFile != null
-                && cssFile.isValid()) {
-            try {
-                cssFile.delete();
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Cannot delete file", ex);
-            }
-        }
-    }
-
     @CheckForNull
     private LessExecutable getLess() {
         try {
             return LessExecutable.getDefault();
         } catch (InvalidExternalExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
+            if (Warnings.showLessWarning()) {
+                UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
+            }
         }
         return null;
     }

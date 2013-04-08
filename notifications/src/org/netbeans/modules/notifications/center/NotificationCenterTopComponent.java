@@ -54,7 +54,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -69,16 +68,13 @@ import javax.swing.table.TableColumnModel;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.notifications.NotificationImpl;
 import org.netbeans.modules.notifications.NotificationSettings;
-import org.netbeans.modules.notifications.Utils;
 import org.netbeans.swing.etable.ETable;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.QuickSearch;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * Top component which displays something.
@@ -92,7 +88,7 @@ import org.openide.windows.WindowManager;
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "output", openAtStartup = false, position = 123)
 @ActionID(category = "Window", id = "org.netbeans.modules.notifications.NotificationCenterTopComponent")
-@ActionReference(path = "Menu/Window/Tools", position = 650)
+@ActionReference(path = "Menu/Window/Tools", position = 648)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_NotificationCenterAction",
         preferredID = "NotificationCenterTopComponent")
@@ -299,22 +295,6 @@ public final class NotificationCenterTopComponent extends TopComponent {
         removeAll();
         init();
         notificationTable.addProcessKeyEventListener(tableKeyListener);
-        String dummyText = "<html>The Netbeans IDE has detected that your system is using most of your available system resources. We recommend shutting down other applications and windows.</html>";
-        NotificationDisplayer.getDefault().notify("Test notification aaaaaa ",
-                new ImageIcon(ImageUtilities.loadImage("org/openide/awt/resources/unknown.gif")),
-                new JLabel(dummyText), new JLabel(dummyText),
-                NotificationDisplayer.Priority.NORMAL,
-                NotificationDisplayer.Category.INFO);
-        NotificationDisplayer.getDefault().notify("IMPORTANT Test notification aaaaaa",
-                new ImageIcon(ImageUtilities.loadImage("org/openide/awt/resources/unknown.gif")),
-                new JLabel(dummyText), new JLabel(dummyText),
-                NotificationDisplayer.Priority.HIGH,
-                NotificationDisplayer.Category.WARNING);
-        NotificationDisplayer.getDefault().notify("LESS IMPORTANT Test notification cccc",
-                new ImageIcon(ImageUtilities.loadImage("org/openide/awt/resources/unknown.gif")),
-                new JLabel(dummyText), new JLabel(dummyText),
-                NotificationDisplayer.Priority.HIGH,
-                NotificationDisplayer.Category.INFO);
         tableRefreshTimer.restart();
     }
 

@@ -1,4 +1,4 @@
-ePub int
-ePubSt int
-ePubFun() void
-ePubFunSt() void
+ePub int	$	    e.ePub
+ePubSt int	$	    e.ePubSt
+ePubFun() void	$	    e.ePubFun()
+ePubFunSt() void	$	    e.ePubFunSt()

@@ -102,6 +102,14 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-core-windows-actions-MoveModeAction.instance"/>
             <file name="org-netbeans-core-windows-actions-MoveWindowAction.instance"/>
             <file name="org-netbeans-core-windows-actions-ToolbarsListAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-MoveWindowLeftAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.actions.MoveWindowWithinModeAction.createMoveLeft"/>
+                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+            </file>
+            <file name="org-netbeans-core-windows-actions-MoveWindowRightAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.actions.MoveWindowWithinModeAction.createMoveRight"/>
+                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+            </file>
         </folder>
     </folder>
     
@@ -111,6 +119,12 @@ made subject to such option by the copyright holder.
 	</file>
         <file name="OS-D.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DockWindowAction.instance"/>
+        </file>
+        <file name="SDO-LEFT.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MoveWindowLeftAction.instance"/>
+        </file>
+        <file name="SDO-RIGHT.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MoveWindowRightAction.instance"/>
         </file>
     </folder>
 

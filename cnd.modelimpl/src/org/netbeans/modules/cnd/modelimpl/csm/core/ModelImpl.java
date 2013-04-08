@@ -874,7 +874,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     private final Object lock = new Lock();
     /** maps platform project to project */
     private final Map<Object, CsmUID<CsmProject>> platf2csm = new ConcurrentHashMap<Object, CsmUID<CsmProject>>();
-    private CsmModelState state;
+    private volatile CsmModelState state;
     private double warningThreshold = 0.98;
     //private double fatalThreshold = 0.99;
     private final Set<Object> disabledProjects = Collections.synchronizedSet(new HashSet<Object>());

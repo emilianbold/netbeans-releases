@@ -41,18 +41,29 @@
  */
 package org.netbeans.modules.css.prep.less;
 
+import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.modules.css.live.LiveUpdater;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.util.ExternalExecutable;
 import org.netbeans.modules.css.prep.util.ExternalExecutableValidator;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
+import org.netbeans.modules.css.prep.util.UiUtils;
+import org.netbeans.modules.css.prep.util.Warnings;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 
@@ -60,6 +71,8 @@ import org.openide.windows.IOProvider;
  * Class representing <tt>lessc</tt> command line tool.
  */
 public final class LessExecutable {
+
+    private static final Logger LOGGER = Logger.getLogger(LessExecutable.class.getName());
 
     public static final String EXECUTABLE_NAME = "lessc"; // NOI18N
 
@@ -92,20 +105,39 @@ public final class LessExecutable {
     @NbBundle.Messages("Less.compile=LESS (compile)")
     @CheckForNull
     public void compile(FileObject fileObject) {
+        assert !EventQueue.isDispatchThread();
         assert fileObject.isValid() : "Invalid file given: " + fileObject;
         try {
             File lessFile = FileUtil.toFile(fileObject);
             final File cssFile = getCssFile(lessFile, fileObject.getName());
             getExecutable(Bundle.Less_compile())
                     .additionalParameters(getParameters(lessFile, cssFile))
-                    .run(getDescriptor(new Runnable() {
+                    .runAndWait(getDescriptor(new Runnable() {
                 @Override
                 public void run() {
                     FileUtil.refreshFor(cssFile.getParentFile());
+                    LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
+                    if(liveUpdater != null) {
+                        FileObject fob = FileUtil.toFileObject(cssFile);
+                        if (fob != null) {
+                            try {
+                                DataObject dob = DataObject.find(fob);
+                                EditorCookie cookie = dob.getLookup().lookup(EditorCookie.class);
+                                if (cookie != null) {
+                                    liveUpdater.update(cookie.openDocument());
+                                }
+                            } catch (IOException donfex) {}
+                        }
+                    }
                 }
-            }));
+            }), "Compiling less files..."); // NOI18N
         } catch (CancellationException ex) {
             // cancelled
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            if (Warnings.showLessWarning()) {
+                UiUtils.processExecutionException(ex);
+            }
         }
     }
 
