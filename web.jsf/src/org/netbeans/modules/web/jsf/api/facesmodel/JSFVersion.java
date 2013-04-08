@@ -48,6 +48,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -58,7 +60,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -70,6 +71,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -240,14 +243,41 @@ public enum JSFVersion {
     @CheckForNull
     public static JSFVersion get(@NonNull WebModule webModule, boolean includingPlatformCP) {
         Parameters.notNull("webModule", webModule); //NOI18N
-        if (JSFUtils.isJSF22Plus(webModule, includingPlatformCP)) {
-            return JSFVersion.JSF_2_2;
-        } else if (JSFUtils.isJSF21Plus(webModule, includingPlatformCP)) {
-            return JSFVersion.JSF_2_1;
-        } else if (JSFUtils.isJSF20Plus(webModule, includingPlatformCP)) {
-            return JSFVersion.JSF_2_0;
-        } else if (JSFUtils.isJSF12Plus(webModule, includingPlatformCP)) {
-            return JSFVersion.JSF_1_2;
+        if (webModule.getDocumentBase() == null) {
+            return null;
+        }
+
+        ClassPath compileCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+        if (compileCP == null) {
+            return null;
+        }
+
+        if (includingPlatformCP) {
+            for (Map.Entry<JSFVersion, String> entry : SPECIFIC_CLASS_NAMES.entrySet()) {
+                String className = entry.getValue();
+                if (compileCP.findResource(className.replace('.', '/') + ".class") != null) { //NOI18N
+                    return entry.getKey();
+                }
+            }
+            return null;
+        } else {
+            Project project = FileOwnerQuery.getOwner(JSFUtils.getFileObject(webModule));
+            if (project == null) {
+                return null;
+            }
+            List<File> platformClasspath = Arrays.asList(Util.getJ2eePlatformClasspathEntries(project, Util.getPlatform(project)));
+            List<URL> projectDeps = new ArrayList<URL>();
+            for (ClassPath.Entry entry : compileCP.entries()) {
+                File archiveOrDir = FileUtil.archiveOrDirForURL(entry.getURL());
+                if (archiveOrDir == null || !platformClasspath.contains(archiveOrDir)) {
+                    projectDeps.add(entry.getURL());
+                }
+            }
+            try {
+                return Util.containsClass(projectDeps, SPECIFIC_CLASS_NAMES);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return null;
     }
