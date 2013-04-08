@@ -81,6 +81,14 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/completion07.xhtml", "#{[1, 2].stream().max().^}", false);
     }
 
+    public void testCompletionForContinuosStream() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion08.xhtml", "#{[1, 2, 3, 4, 5].stream().substream(5).distinct().^}", false);
+    }
+
+    public void testCompletionForOptional() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion09.xhtml", "#{[1,2,3].stream().average().^}", false);
+    }
+
     public void testJavaCompletion01() throws Exception {
         checkCompletion("projects/testWebProject/web/completion/java/java_completion01.xhtml", "#{^}", false);
     }

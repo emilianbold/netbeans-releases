@@ -48,8 +48,9 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.CssPreprocessorAccessor;
+import org.netbeans.modules.web.common.cssprep.CssPreprocessorAccessor;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Parameters;
@@ -132,6 +133,18 @@ public final class CssPreprocessor {
         return new Customizer(customizer);
     }
 
+    /**
+     * Create a {@link ProjectProblemsProvider} for this CSS preprocessor.
+     * @param support support needed for proper provider creation and resolving
+     * @return {@link ProjectProblemsProvider} for this CSS preprocessor or {@code null} if not supported
+     * @since 1.41
+     */
+    @CheckForNull
+    public ProjectProblemsProvider createProjectProblemsProvider(@NonNull CssPreprocessor.ProjectProblemsProviderSupport support) {
+        Parameters.notNull("support", support); // NOI18N
+        return delegate.createProjectProblemsProvider(support);
+    }
+
     //~ Inner classes
 
     /**
@@ -164,19 +177,17 @@ public final class CssPreprocessor {
          * Attach a change listener that is to be notified of changes
          * in the customizer (e.g., the result of the {@link #isValid} method
          * has changed.
-         * @param listener a listener
+         * @param listener a listener, can be {@code null}
          */
         public void addChangeListener(@NonNull ChangeListener listener) {
-            Parameters.notNull("listener", listener); // NOI18N
             delegate.addChangeListener(listener);
         }
 
         /**
          * Removes a change listener.
-         * @param listener a listener
+         * @param listener a listener, can be {@code null}
          */
         public void removeChangeListener(@NonNull ChangeListener listener) {
-            Parameters.notNull("listener", listener); // NOI18N
             delegate.removeChangeListener(listener);
         }
 
@@ -253,6 +264,26 @@ public final class CssPreprocessor {
         public void save() throws IOException {
             delegate.save();
         }
+
+    }
+
+    /**
+     * Support class for creating and solving {@link CssPreprocessors#createProjectProblemsProvider(ProjectProblemsProviderSupport) project problems resolver}.
+     * @since 1.41
+     */
+    public interface ProjectProblemsProviderSupport {
+
+        /**
+         * Get actual project for checking problems.
+         * @return actual project, never {@code null}
+         */
+        Project getProject();
+
+        /**
+         * Open project customizer with CSS preprocessors.
+         * @see CssPreprocessors#CUSTOMIZER_IDENT
+         */
+        void openCustomizer();
 
     }
 

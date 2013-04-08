@@ -53,12 +53,13 @@
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
+		<!-- #225794 - bundled twitter web service not working
+		<dependency>
                     <code-name-base>org.netbeans.modules.websvc.saas.services.twitter</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency>-->
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.saas.services.weatherbug</code-name-base>
                     <run-dependency>

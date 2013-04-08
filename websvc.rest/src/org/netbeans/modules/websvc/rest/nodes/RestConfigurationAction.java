@@ -89,7 +89,7 @@ public class RestConfigurationAction extends NodeAction  {
         if ( project== null) {
             return false;
         }
-        if (RestUtils.isJavaEE6(project)){
+        if (RestUtils.isJavaEE6AndHigher(project)){
             return false;
         }
             

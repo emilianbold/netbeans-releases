@@ -43,10 +43,13 @@
 package org.netbeans.modules.maven.execute;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.maven.execution.ExecutionEvent;
 import org.json.simple.JSONObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileUtil;
+import org.openide.windows.IOPosition;
 
 /**
  * a stub to be filled with parsed JSON values, vaguely related to ExecutionEventObject in maven codebase.
@@ -145,6 +148,39 @@ public final class ExecutionEventObject {
 //        }
         
         return new ExecutionEventObject(t, prjGav, prjFile, exec, prjCount);
+    }
+    
+    //experimental
+    public static class Tree {
+        final ExecutionEventObject current;
+        final ExecutionEventObject.Tree parentNode;
+        final List<ExecutionEventObject.Tree> childrenNodes = new ArrayList<ExecutionEventObject.Tree>();
+        private IOPosition.Position startOffset;
+        private IOPosition.Position endOffset;
+
+        public Tree(ExecutionEventObject current, ExecutionEventObject.Tree parent) {
+            this.current = current;
+            this.parentNode = parent;
+        }
+
+        public IOPosition.Position getStartOffset() {
+            return startOffset;
+        }
+
+        public void setStartOffset(IOPosition.Position startOffset) {
+            this.startOffset = startOffset;
+        }
+
+        public IOPosition.Position getEndOffset() {
+            return endOffset;
+        }
+
+        public void setEndOffset(IOPosition.Position endOffset) {
+            this.endOffset = endOffset;
+        }
+        
+        
+        
     }
     
 }

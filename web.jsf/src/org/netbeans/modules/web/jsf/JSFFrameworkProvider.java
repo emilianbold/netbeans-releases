@@ -600,7 +600,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             facesConfigTemplate = JSFCatalog.RES_FACES_CONFIG_1_2;
                         }
                     }
-                    if (!Util.isAtLeastJavaEE6Web(profile) && !jsfVersion.isAtLeast(JSFVersion.JSF_2_0)) {
+                    if (!Util.isAtLeastJavaEE6Web(profile)
+                            && (jsfVersion == null || !jsfVersion.isAtLeast(JSFVersion.JSF_2_0))) {
                         createFacesConfig = true;
                     }
                 }

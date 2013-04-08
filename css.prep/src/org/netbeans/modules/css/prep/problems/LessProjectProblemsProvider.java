@@ -39,30 +39,43 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.common.api.ui;
+package org.netbeans.modules.css.prep.problems;
 
-import javax.swing.JComponent;
+import java.util.Collection;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Lookup;
+import org.netbeans.modules.css.prep.less.LessExecutable;
+import org.netbeans.modules.css.prep.preferences.SassPreferences;
+import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
+import org.netbeans.modules.web.common.api.CssPreprocessor;
+import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.util.NbBundle;
 
-public final class CssPreprocessorsCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+public final class LessProjectProblemsProvider extends BaseProjectProblemsProvider {
 
-    @NbBundle.Messages("CssPreprocessorsCustomizer.displayName=CSS Preprocessors")
-    @Override
-    public ProjectCustomizer.Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                "CssPreprocessors", // NOI18N
-                Bundle.CssPreprocessorsCustomizer_displayName(),
-                null);
+    public LessProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support, CssPreprocessorImplementation.Customizer customizer) {
+        super(support, customizer);
     }
 
     @Override
-    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        Project project = context.lookup(Project.class);
-        assert project != null : "Cannot find project in lookup: " + context;
-        return new CssPreprocessorsCustomizerPanel(category, project);
+    boolean isEnabled(Project project) {
+        return SassPreferences.isEnabled(project);
+    }
+
+    @NbBundle.Messages({
+        "LessProjectProblemsProvider.invalidCompiler.title=Invalid LESS compiler",
+        "LessProjectProblemsProvider.invalidCompiler.description=The provided LESS compiler is not valid.",
+    })
+    @Override
+    void checkCompiler(Collection<ProjectProblem> currentProblems) {
+        try {
+            LessExecutable.getDefault();
+        } catch (InvalidExternalExecutableException ex) {
+            ProjectProblem problem = ProjectProblem.createError(
+                    Bundle.LessProjectProblemsProvider_invalidCompiler_title(),
+                    Bundle.LessProjectProblemsProvider_invalidCompiler_description(),
+                    OPTIONS_PROBLEM_RESOLVER);
+            currentProblems.add(problem);
+        }
     }
 
 }
