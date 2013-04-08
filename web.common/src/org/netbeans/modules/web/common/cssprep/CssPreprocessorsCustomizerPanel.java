@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.common.api.ui;
+package org.netbeans.modules.web.common.cssprep;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -159,6 +159,7 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
                 LOGGER.log(Level.WARNING, "Error while saving CSS preprocessor: " + customizer.getDisplayName(), ex);
             }
         }
+        CssPreprocessors.getDefault().fireChange();
     }
 
     void removeListeners() {

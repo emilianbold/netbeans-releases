@@ -39,38 +39,30 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.common;
+package org.netbeans.modules.web.common.cssprep;
 
-import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
-public abstract class CssPreprocessorAccessor {
+public final class CssPreprocessorsCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
 
-    private static volatile CssPreprocessorAccessor accessor;
-
-
-    public static synchronized CssPreprocessorAccessor getDefault() {
-        if (accessor != null) {
-            return accessor;
-        }
-        Class<?> c = CssPreprocessor.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            assert false : ex;
-        }
-        assert accessor != null;
-        return accessor;
+    @NbBundle.Messages("CssPreprocessorsCustomizer.displayName=CSS Preprocessors")
+    @Override
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+        return ProjectCustomizer.Category.create(
+                "CssPreprocessors", // NOI18N
+                Bundle.CssPreprocessorsCustomizer_displayName(),
+                null);
     }
 
-    public static void setDefault(CssPreprocessorAccessor accessor) {
-        if (CssPreprocessorAccessor.accessor != null) {
-            throw new IllegalStateException("Already initialized accessor");
-        }
-        CssPreprocessorAccessor.accessor = accessor;
+    @Override
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        Project project = context.lookup(Project.class);
+        assert project != null : "Cannot find project in lookup: " + context;
+        return new CssPreprocessorsCustomizerPanel(category, project);
     }
-
-
-    public abstract CssPreprocessor create(CssPreprocessorImplementation cssPreprocessorImplementation);
 
 }
