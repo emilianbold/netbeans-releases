@@ -122,49 +122,6 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         assertFalse(lh.isDone());    // but this one wasn't yet
     }
 
-    @RandomlyFails
-    public void testQueryOpenAndRefresh() throws Throwable {
-        long ts = System.currentTimeMillis();
-        final String summary = "summary" + System.currentTimeMillis();
-
-        final BugzillaRepository repo = QueryTestUtil.getRepository();
-        LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
-
-        String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
-        final BugzillaQuery q = new BugzillaQuery(QUERY_NAME, repo, p, true, false, true);
-        ts = System.currentTimeMillis();
-        h.waitUntilDone();
-        QueryTestUtil.selectTestProject(q);
-        assertEquals(0, q.getIssues().size());
-        q.refresh(); // refresh the query - so it won't be refreshed via first time open
-        
-        Collection<BugzillaIssue> issues = q.getIssues();
-        assertEquals(0, issues.size());
-
-        String id = TestUtil.createIssue(repo, summary);
-        assertNotNull(id);
-
-        BugzillaConfig.getInstance().setQueryAutoRefresh(QUERY_NAME, true);
-        
-        LogHandler refreshHandler = new LogHandler("refresh finish -", LogHandler.Compare.STARTS_WITH, 120);
-        LogHandler schedulingHandler = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH, 120);
-        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
-            public void run() {
-                // init columndescriptors before opening query to prevent some "do not call in awt asserts"
-                BugzillaIssue.getColumnDescriptors(repo);
-                TestKit.openQuery(TestUtil.getQuery(q));
-            }
-        }).waitFinished();
-        schedulingHandler.waitUntilDone();
-        refreshHandler.waitUntilDone();
-
-        assertTrue(schedulingHandler.isDone());
-        assertTrue(refreshHandler.isDone());
-        
-        issues = q.getIssues();
-        assertEquals(1, issues.size());
-    }
-
     public static final class TestLookup extends AbstractLookup {
         public TestLookup() {
             this(new InstanceContent());
