@@ -73,9 +73,6 @@ public class QueryTopComponentViewportLayout extends ViewportLayout {
 	 */
 
 	Dimension vpSize = vp.getSize();
-        if (view instanceof ViewportWidthAwarePanel) {
-            ((ViewportWidthAwarePanel) view).setAvailableWidth(vpSize.width);
-        }
 	Dimension viewPrefSize = view.getPreferredSize();
 	Dimension extentSize = vp.toViewCoordinates(vpSize);
 	Dimension viewSize = new Dimension(viewPrefSize);

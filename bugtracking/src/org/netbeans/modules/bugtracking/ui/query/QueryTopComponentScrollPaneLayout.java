@@ -218,19 +218,12 @@ class QueryTopComponentScrollPaneLayout extends ScrollPaneLayout {
 	 */
 
 	Component view = (viewport != null) ? viewport.getView() : null;
-        ViewportWidthAwarePanel viewportWidthAwareView
-                                = (view instanceof ViewportWidthAwarePanel)
-                                  ? (ViewportWidthAwarePanel) view
-                                  : null;
 	Dimension extentSize = (viewport != null)
                                ? viewport.toViewCoordinates(availR.getSize())
 	                       : new Dimension(0,0);
 
 	Dimension viewPrefSize;
         if (view != null) {
-            if (viewportWidthAwareView != null) {
-                viewportWidthAwareView.setAvailableWidth(extentSize.width);
-            }
             viewPrefSize = view.getPreferredSize();
         } else {
             viewPrefSize = new Dimension(0,0);
@@ -257,11 +250,6 @@ class QueryTopComponentScrollPaneLayout extends ScrollPaneLayout {
 	if ((vsb != null) && vsbNeeded) {
 	    adjustForVSB(availR, vsbR, vpbInsets);
 	    extentSize = viewport.toViewCoordinates(availR.getSize());
-
-            if (viewportWidthAwareView != null) {
-                viewportWidthAwareView.setAvailableWidth(extentSize.width);
-                viewPrefSize = view.getPreferredSize();
-            }
 	}
 
 	/*
@@ -295,11 +283,6 @@ class QueryTopComponentScrollPaneLayout extends ScrollPaneLayout {
 
 		if (vsbNeeded) {
 		    adjustForVSB(availR, vsbR, vpbInsets);
-
-                    if (viewportWidthAwareView != null) {
-                        extentSize = viewport.toViewCoordinates(availR.getSize());
-                        viewportWidthAwareView.setAvailableWidth(extentSize.width);
-                    }
 		}
 	    }
 	}

@@ -235,16 +235,6 @@ public class KenaiUtil {
     }
     
     /**
-     * Refreshes existing openend kenai queries
-     */
-    public static void refreshOpenedQueries() {
-        Set<QueryTopComponent> tcs = QueryTopComponent.getOpenQueries(); // XXX updates also non kenai TC
-        for (QueryTopComponent tc : tcs) {
-            tc.updateSavedQueries();
-        }
-    }
-
-    /**
      * @see KenaiAccessor#isNetbeansKenaiRegistered()
      */
     public static boolean isNetbeansKenaiRegistered() {

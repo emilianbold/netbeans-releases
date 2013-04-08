@@ -65,10 +65,6 @@ public class QueryTopComponentViewport extends JViewport {
 
     @Override
     public void setSize(int width, int height) {
-        Component view = getView();
-        if (view instanceof ViewportWidthAwarePanel) {
-            ((ViewportWidthAwarePanel) view).setAvailableWidth(width);
-        }
         super.setSize(width, height);
     }
 

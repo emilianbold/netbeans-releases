@@ -128,8 +128,6 @@ public final class QueryTopComponent extends TopComponent
     private final JComboBox repositoryComboBox;
     private final JScrollPane scrollPane;
 
-    private QueryImpl[] savedQueries = null;
-    
     private static final String PREFERRED_ID = "QueryTopComponent"; // NOI18N
     private QueryImpl query; // XXX synchronized
     private static final Object LOCK = new Object();
@@ -153,12 +151,7 @@ public final class QueryTopComponent extends TopComponent
 
         repoPanel = new RepoPanel(repositoryComboBox, newButton);
         panel = new PlaceholderPanel();
-        jPanel2 = new ViewportWidthAwarePanel(null) {
-            @Override
-            protected void notifyChildrenOfVisibleWidth() {
-                repoPanel.setAvailableWidth(getAvailableWidth());
-            }
-        };
+        jPanel2 = new JPanel();
         jPanel2.setLayout(new BoxLayout(jPanel2, BoxLayout.Y_AXIS));
         jPanel2.add(createVerticalStrut(null, title));
         jPanel2.add(title);
@@ -400,8 +393,6 @@ public final class QueryTopComponent extends TopComponent
                 // removed
                 closeInAwt();
             }
-        } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
-            updateSavedQueries();
         } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
             if(query != null) {
                 Object cOld = evt.getOldValue();
@@ -540,8 +531,6 @@ public final class QueryTopComponent extends TopComponent
                     }
                     query.addPropertyChangeListener(QueryTopComponent.this);
 
-                    updateSavedQueriesIntern(repo);
-
                     final QueryController addController = getController(query);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
@@ -602,66 +591,9 @@ public final class QueryTopComponent extends TopComponent
         setNameAndTooltip();
     }
 
-    public void updateSavedQueries() {
-        final RepositoryImpl repo = getRepository();
-        if(repo == null) {
-            return;
-        }
-        rp.post(new Runnable() {
-            @Override
-            public void run() {
-                updateSavedQueriesIntern(repo);
-            }
-        });        
-    }
-
-    private void updateSavedQueriesIntern(final RepositoryImpl repo) {
-        if(repo == null) {
-            return;
-        }
-        BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} start", new Object[] {repo.getDisplayName()} );
-        Collection<QueryImpl> cq = repo.getQueries();
-        QueryImpl[] queries = cq != null ? cq.toArray(new QueryImpl[cq.size()]) : new QueryImpl[0];
-        final QueryImpl[] finQueries;
-        synchronized (LOCK) {
-            Arrays.sort(queries, new QueryComparator());
-            savedQueries = queries;
-            finQueries = savedQueries;
-        }
-
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                repoPanel.setQueries(finQueries);
-                if(finQueries == null || finQueries.length == 0) {
-                    BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. No queries.", new Object[] {repo.getDisplayName()} );
-                } else {
-                    BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. {1} saved queries.", new Object[] {repo.getDisplayName(), savedQueries.length} );
-                }
-            }
-        });
-    }
-
     @Override
     public boolean requestFocusInWindow() {
         return jPanel2.requestFocusInWindow();
     }
 
-    private class QueryComparator implements Comparator<QueryImpl> {
-
-        @Override
-        public int compare(QueryImpl q1, QueryImpl q2) {
-            if(q1 == null && q2 == null) {
-                return 0;
-            }
-            if(q1 == null) {
-                return -1;
-            }
-            if(q2 == null) {
-                return 1;
-            }
-            return q1.getDisplayName().compareTo(q2.getDisplayName());
-        }
-        
-    }
 }

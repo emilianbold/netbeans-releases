@@ -50,6 +50,7 @@ import java.awt.Insets;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import static java.lang.Math.max;
+import javax.swing.JPanel;
 import static javax.swing.SwingConstants.EAST;
 import static javax.swing.SwingConstants.WEST;
 import org.netbeans.modules.bugtracking.QueryImpl;
@@ -61,21 +62,16 @@ import org.netbeans.modules.bugtracking.util.UIUtils;
  *
  * @author Marian Petras
  */
-class RepoPanel extends ViewportWidthAwarePanel {
+class RepoPanel extends JPanel {
 
     private static final int MIN_SPACE = 24;
 
     private final RepoSelectorPanel repoSelectorPanel;
-    private final QueriesPanel queriesPanel;
 
     RepoPanel(JComponent repoSelector,
               JComponent newRepoButton) {
         super(null);
         repoSelectorPanel = new RepoSelectorPanel(repoSelector, newRepoButton);
-        queriesPanel      = new QueriesPanel();
-        queriesPanel.setVisible(false);
-
-        queriesPanel.setBackground(UIUtils.getSectionPanelBackground());
 
         LayoutStyle layoutStyle = LayoutStyle.getInstance();
         setBorder(BorderFactory.createEmptyBorder(
@@ -83,7 +79,6 @@ class RepoPanel extends ViewportWidthAwarePanel {
                       0, layoutStyle.getContainerGap(this, EAST, getParent())));
 
         add(repoSelectorPanel);
-        add(queriesPanel);
     }
 
     @Override
@@ -95,25 +90,8 @@ class RepoPanel extends ViewportWidthAwarePanel {
 
         Insets insets = getInsets();
 
-        if (!queriesPanel.isVisible()) {
-            height = repoSelectorPrefSize.height
-                     + insets.top + insets.bottom;
-        } else {
-            Dimension queriesPanelPrefSize = queriesPanel.getPreferredSize();
-
-            int aboveBaseline = getBaseline();
-
-            int belowBaseline1 = repoSelectorPrefSize.height
-                                 - repoSelectorPanel.getBaseline();
-            int belowBaseline2 = queriesPanelPrefSize.height
-                                 - queriesPanel.getBaseline();
-            int belowBaseline = max(belowBaseline1, belowBaseline2);
-
-            width += MIN_SPACE + queriesPanelPrefSize.width;
-            height = aboveBaseline + belowBaseline
-                     + insets.bottom;//top inset is included in the baseline
-        }
-
+        height = repoSelectorPrefSize.height
+                 + insets.top + insets.bottom;
         width += insets.left + insets.right;
 
         return new Dimension(width, height);
@@ -124,40 +102,16 @@ class RepoPanel extends ViewportWidthAwarePanel {
         int baseline = getBaseline();
         Insets insets = getInsets();
 
-        int x;
-        Dimension tmpPrefSize;
-        int availableWidth = getAvailableWidth()
-                             - insets.left
-                             - insets.right;
-
-        x = insets.left;
-        tmpPrefSize = repoSelectorPanel.getPreferredSize();
+        int x = insets.left;
+        Dimension tmpPrefSize = repoSelectorPanel.getPreferredSize();
         repoSelectorPanel.setBounds(x,
                                     baseline - repoSelectorPanel.getBaseline(),
                                     tmpPrefSize.width,
                                     tmpPrefSize.height);
-
-        if (queriesPanel.isVisible()) {
-            availableWidth -= tmpPrefSize.width;
-            x              += tmpPrefSize.width;
-
-            tmpPrefSize = queriesPanel.getPreferredSize();
-            int space = !queriesPanel.isWrapped()
-                        ? max(MIN_SPACE, availableWidth - tmpPrefSize.width)
-                        : MIN_SPACE;
-            x += space;
-            queriesPanel.setBounds(x,
-                                   baseline - queriesPanel.getBaseline(),
-                                   tmpPrefSize.width,
-                                   tmpPrefSize.height);
-        }
     }
 
     public int getBaseline() {
-        int baseline = queriesPanel.isVisible()
-                   ? max(repoSelectorPanel.getBaseline(),
-                         queriesPanel.getBaseline())
-                   : repoSelectorPanel.getBaseline();
+        int baseline = repoSelectorPanel.getBaseline();
         baseline += getInsets().top;
         return baseline;
     }
@@ -165,38 +119,6 @@ class RepoPanel extends ViewportWidthAwarePanel {
     @Override
     public Dimension getMaximumSize() {
         return new Dimension(Short.MAX_VALUE, getPreferredSize().height);
-    }
-
-    void setQueries(QueryImpl[] queries) {
-        assert EventQueue.isDispatchThread();
-
-        if ((queries != null) && (queries.length == 0)) {
-            queries = null;
-        }
-
-        boolean hadQueries = queriesPanel.hasQueries();
-        boolean queriesChanged = hadQueries || (queries != null);
-
-        if (queriesChanged) {
-            if (queries == null) {
-                queriesPanel.setVisible(false);
-            }
-            queriesPanel.setQueries(queries);
-            if (!hadQueries && (queries != null)) {
-                notifyChildrenOfVisibleWidth();
-                queriesPanel.setVisible(true);
-            }
-        }
-    }
-
-    @Override
-    protected void notifyChildrenOfVisibleWidth() {
-        if (queriesPanel.hasQueries()) {
-            int availableWidth = getAvailableWidth();
-            int usedWidth = getInsets().left
-                            + repoSelectorPanel.getPreferredSize().width;
-            queriesPanel.setAvailableWidth(availableWidth - usedWidth - MIN_SPACE);
-        }
     }
 
 }
