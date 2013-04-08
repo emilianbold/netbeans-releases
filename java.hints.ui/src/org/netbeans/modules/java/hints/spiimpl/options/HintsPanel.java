@@ -75,6 +75,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.JCheckBox;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -251,6 +252,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
         
         descriptionTextArea.setContentType("text/html"); // NOI18N
+        descriptionTextArea.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         
         scriptTextArea.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-javahints"));
         scriptTextArea.setEditable(true);
