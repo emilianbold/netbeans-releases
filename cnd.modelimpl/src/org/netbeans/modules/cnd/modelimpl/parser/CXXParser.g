@@ -1592,8 +1592,9 @@ finally                                                                         
  */
 type_id
 @init                                                                           {if(state.backtracking == 0){action.type_id(input.LT(1));}}
-    :                                                                           
-        type_specifier+ 
+    :                                            
+        gnu_attribute_specifiers?
+        (type_specifier gnu_attribute_specifiers?)+ 
         ((abstract_declarator) => abstract_declarator)? // review: predicate to avoid ambiguity around ELLIPSIS
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_type_id(input.LT(0));}}
