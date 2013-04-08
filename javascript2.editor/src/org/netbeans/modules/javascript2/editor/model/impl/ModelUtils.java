@@ -776,17 +776,19 @@ public class ModelUtils {
                 boolean hasAssignments = false;
                 boolean isType = false;
                 for(IndexResult indexResult: indexResults) {
-                    Collection<IndexedElement> properties = IndexedElement.createProperties(indexResult, fqn);
+                    Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
 
                     for (IndexedElement property : properties) {
-                        if (property.isDeclared() || ModelUtils.PROTOTYPE.equals(property.getName())) {
+                        if (property.getFQN().startsWith(fqn) && (property.isDeclared() || ModelUtils.PROTOTYPE.equals(property.getName()))) {
                             isType = true;
                             break;
                         }
                     }
+                    
                     if (isType) {
                         ModelUtils.addUnigueType(resolved, new TypeUsageImpl(fqn, -1, true));
                     }
+                    
                     Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
                     if (!assignments.isEmpty()) {
                         hasAssignments = true;
@@ -796,6 +798,8 @@ public class ModelUtils {
                             }
                         }
                     }
+                    
+                    
                 }
                 if(!hasAssignments) {
                     ModelUtils.addUnigueType(resolved, new TypeUsageImpl(fqn, -1, true));
