@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.bugtracking.ui.query;
 
-import java.awt.Dimension;
 import javax.swing.GroupLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -59,22 +58,17 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 /**
- * Part of the {@code RepoPanel}. Contains the combo-box for selection
- * of a bug-tracking repository, plus accessories
- * (label, button &quot;New&quot).
+ * Part of the {@code QueryTopComponent}. Contains the combo-box for selection
+ * of a bug-tracking repository, plus accessories (label, button &quot;New&quot).
  *
  * @author Marian Petras
  */
 public class RepoSelectorPanel extends JPanel implements FocusListener {
 
-    private final JLabel repoSelectorLabel;
-    private final JComponent repoSelector;
-    private final JComponent newRepoButton;
-
     RepoSelectorPanel(JComponent repoSelector,
                       JComponent newRepoButton) {
         super(null);
-        repoSelectorLabel = new JLabel();
+        JLabel repoSelectorLabel = new JLabel();
 
         repoSelectorLabel.setLabelFor(repoSelector);
         repoSelectorLabel.setFocusCycleRoot(true);
@@ -83,9 +77,6 @@ public class RepoSelectorPanel extends JPanel implements FocusListener {
                repoSelectorLabel,
                NbBundle.getMessage(getClass(),
                                    "QueryTopComponent.repoLabel.text"));//NOI18N
-
-        this.repoSelector = repoSelector;
-        this.newRepoButton = newRepoButton;
 
         setOpaque(false);
 
@@ -108,37 +99,6 @@ public class RepoSelectorPanel extends JPanel implements FocusListener {
                                            DEFAULT_SIZE,
                                            PREFERRED_SIZE)
                         .addComponent(newRepoButton));
-    }
-
-    /*
-     * To make it work correctly with GroupLayout.
-     */
-    @Override
-    public int getBaseline(int width, int height) {
-        return getBaseline();
-    }
-
-    /*
-     * To make it work correctly with GroupLayout.
-     */
-    @Override
-    public BaselineResizeBehavior getBaselineResizeBehavior() {
-        return BaselineResizeBehavior.CONSTANT_ASCENT;
-    }
-
-    int getBaseline() {
-        Dimension lSize = repoSelectorLabel.getPreferredSize();
-        Dimension sSize = repoSelector.getPreferredSize();
-        Dimension bSize = newRepoButton.getPreferredSize();
-        int baseline = max(repoSelectorLabel.getBaseline(lSize.width, lSize.height),
-                           repoSelector.getBaseline(sSize.width, sSize.height),
-                           newRepoButton.getBaseline(bSize.width, bSize.height))
-                       + getInsets().top;
-        return baseline;
-    }
-
-    private static int max(int a, int b, int c) {
-        return Math.max(a, Math.max(b, c));
     }
 
     @Override
