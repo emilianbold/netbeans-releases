@@ -154,8 +154,8 @@ public class DefaultFaceletLibraries {
     protected synchronized static Map<String, Library> getJsf22FaceletPseudoLibraries(FaceletsLibrarySupport support) {
         if (jsf22FaceletPseudoLibraries == null) {
             jsf22FaceletPseudoLibraries = new HashMap<String, Library>(2);
-            jsf22FaceletPseudoLibraries.put(DefaultLibraryInfo.JSF.getNamespace(), new JsfFaceletPseudoLibrary(support, DefaultLibraryInfo.JSF));
-            jsf22FaceletPseudoLibraries.put(DefaultLibraryInfo.PASSTHROUGH.getNamespace(), new JsfFaceletPseudoLibrary(support, DefaultLibraryInfo.PASSTHROUGH));
+            jsf22FaceletPseudoLibraries.put(DefaultLibraryInfo.JSF.getLegacyNamespace(), new JsfFaceletPseudoLibrary(support, DefaultLibraryInfo.JSF));
+            jsf22FaceletPseudoLibraries.put(DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace(), new JsfFaceletPseudoLibrary(support, DefaultLibraryInfo.PASSTHROUGH));
         }
         return jsf22FaceletPseudoLibraries;
     }
