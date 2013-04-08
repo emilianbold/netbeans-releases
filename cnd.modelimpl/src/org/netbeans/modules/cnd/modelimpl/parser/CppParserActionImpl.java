@@ -1261,11 +1261,11 @@ public class CppParserActionImpl implements CppParserActionEx {
         return currentContext.objects;
     }
     
-    CsmFile getCurrentFile() {
+    public CsmFile getCurrentFile() {
         return currentContext.file;
     }
     
-    int getBacktrackingLevel() {
+    public int getBacktrackingLevel() {
         return parser.backtrackingLevel();
     }
 
