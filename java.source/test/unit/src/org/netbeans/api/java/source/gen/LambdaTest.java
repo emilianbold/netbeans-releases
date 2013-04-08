@@ -680,6 +680,92 @@ public class LambdaTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void testLambdaExpressionImplicit2ExplicitParamTypes() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.Collections;\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        Collections.sort(list, (l, r) -> l.compareTo(r));\n" + 
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.Collections;\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        Collections.sort(list, (String l, String r) -> l.compareTo(r));\n" + 
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+                        for (VariableTree par : node.getParameters()) {
+                            workingCopy.rewrite(par.getType(), make.Identifier("String"));
+                        }
+                        return super.visitLambdaExpression(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testLambdaExpressionExplicit2ImplicitParamTypes() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.Collections;\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        Collections.sort(list, (String l, String r) -> l.compareTo(r));\n" + 
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.Collections;\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        Collections.sort(list, (l, r) -> l.compareTo(r));\n" + 
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+                        for (VariableTree par : node.getParameters()) {
+                            workingCopy.rewrite(par, make.Variable(par.getModifiers(), par.getName(), null, par.getInitializer()));
+                        }
+                        return super.visitLambdaExpression(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }

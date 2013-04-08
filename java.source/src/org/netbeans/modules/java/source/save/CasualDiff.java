@@ -829,9 +829,21 @@ public class CasualDiff {
                 }
             }
         }
-        int[] vartypeBounds = getBounds(oldT.vartype);
-        copyTo(localPointer, vartypeBounds[0]);
-        localPointer = diffTree(oldT.vartype, newT.vartype, vartypeBounds);
+        if (diffContext.syntheticTrees.contains(oldT.vartype)) {
+            if (!diffContext.syntheticTrees.contains(newT.vartype)) {
+                copyTo(localPointer, localPointer = oldT.pos);
+                printer.print(newT.vartype);
+                printer.print(" ");
+            }
+        } else {
+            if (newT.vartype == null) {
+                throw new UnsupportedOperationException();
+            } else {
+                int[] vartypeBounds = getBounds(oldT.vartype);
+                copyTo(localPointer, vartypeBounds[0]);
+                localPointer = diffTree(oldT.vartype, newT.vartype, vartypeBounds);
+            }
+        }
         if (nameChanged(oldT.name, newT.name)) {
             boolean isOldError = oldT.name == Names.instance(context).error;
             if (!isOldError) {
