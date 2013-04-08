@@ -77,7 +77,7 @@ public class JsIndex {
 
     @org.netbeans.api.annotations.common.SuppressWarnings("MS_MUTABLE_ARRAY")
     public static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_OFFSET, FIELD_RETURN_TYPES, FIELD_PARAMETERS, FIELD_FLAG, FIELD_IS_GLOBAL, FIELD_ASSIGNMENS};
-    static final String[] TERMS_PROPERTIES = new String[] { FIELD_PROPERTY, FIELD_ASSIGNMENS, FIELD_RETURN_TYPES, FIELD_FLAG};
+//    static final String[] TERMS_PROPERTIES = new String[] { FIELD_PROPERTY, FIELD_ASSIGNMENS, FIELD_RETURN_TYPES, FIELD_FLAG};
     
     private JsIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;
@@ -205,7 +205,7 @@ public class JsIndex {
     
     public Collection<? extends IndexResult> findFQN(String fqn) {
         Collection<? extends IndexResult> results = query(
-                JsIndex.FIELD_FQ_NAME, fqn, QuerySupport.Kind.EXACT, TERMS_PROPERTIES); //NOI18N
+                JsIndex.FIELD_FQ_NAME, fqn, QuerySupport.Kind.EXACT, TERMS_BASIC_INFO); //NOI18N
         
         return results;
     }
