@@ -401,9 +401,7 @@ public final class Utils {
      */
     public static void insert(Preferences prefs, String key, String value, int maxLength) {
         List<String> newValues = getStringList(prefs, key);
-        if(newValues.contains(value)) {
-            newValues.remove(value);
-        }
+        newValues.removeAll(Collections.<String>singleton(value));
         newValues.add(0, value);
         if (maxLength > -1 && newValues.size() > maxLength) {
             newValues.subList(maxLength, newValues.size()).clear();
@@ -433,7 +431,7 @@ public final class Utils {
      */
     public static void removeFromArray(Preferences prefs, String key, String value) {
         List<String> newValues = getStringList(prefs, key);
-        newValues.remove(value);
+        newValues.removeAll(Collections.<String>singleton(value));
         put(prefs, key, newValues);
     }
 

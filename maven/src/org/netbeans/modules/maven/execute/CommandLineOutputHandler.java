@@ -66,6 +66,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.windows.IOPosition;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
@@ -315,6 +316,10 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             }
             return null;
         }
+
+//experimental        
+//        private ExecutionEventObject.Tree executionTree = new ExecutionEventObject.Tree(null, null);
+//        private ExecutionEventObject.Tree currentTreeNode = executionTree;
         
         private void processExecEvent(ExecutionEventObject obj) {
             if (obj == null) {
@@ -324,21 +329,25 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             
             if (ExecutionEvent.Type.MojoStarted.equals(obj.type)) {
                 assert obj.execution != null;
+                growTree(obj);
                 String tag = goalPrefixFromArtifactId(obj.execution.plugin.artifactId) + ":" + obj.execution.goal;
                 handle.progress(obj.currentProject.artifactId + " " + tag);
                 CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }
             if (ExecutionEvent.Type.MojoSucceeded.equals(obj.type)) {
                 assert obj.execution != null;
+                trimTree(obj);
                 String tag = goalPrefixFromArtifactId(obj.execution.plugin.artifactId) + ":" + obj.execution.goal;
                 CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }
             else if (ExecutionEvent.Type.MojoFailed.equals(obj.type)) {
                 assert obj.execution != null;
+                trimTree(obj);
                 String tag = goalPrefixFromArtifactId(obj.execution.plugin.artifactId) + ":" + obj.execution.goal;
                 CommandLineOutputHandler.this.processFail(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }
             else if (ExecutionEvent.Type.ProjectStarted.equals(obj.type)) {
+                growTree(obj);
                 if (contextImpl != null) {
                     File prjLoc = obj.currentProjectLocation;
                     try {
@@ -353,10 +362,20 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 }
             }
             else if (ExecutionEvent.Type.ProjectSucceeded.equals(obj.type)) {
-                    CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);                    
+                trimTree(obj);
+                CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);                    
             }
             else if (ExecutionEvent.Type.ProjectFailed.equals(obj.type)) {
-                    CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);                    
+                trimTree(obj);
+                CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);                    
+            } else if (ExecutionEvent.Type.ForkStarted.equals(obj.type)) {
+                growTree(obj);
+            } else if (ExecutionEvent.Type.ForkedProjectStarted.equals(obj.type)) {
+                growTree(obj);
+            } else if (ExecutionEvent.Type.ForkFailed.equals(obj.type) || ExecutionEvent.Type.ForkSucceeded.equals(obj.type)) {
+                trimTree(obj);
+            } else if (ExecutionEvent.Type.ForkedProjectFailed.equals(obj.type) || ExecutionEvent.Type.ForkedProjectSucceeded.equals(obj.type)) {
+                trimTree(obj);
             }
         }
 
@@ -374,6 +393,22 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             }
             return mojoArtifact;
         }
+
+        //experimental
+        private void growTree(ExecutionEventObject obj) {
+//            ExecutionEventObject.Tree tn = new ExecutionEventObject.Tree(obj, currentTreeNode);
+//            currentTreeNode.childrenNodes.add(tn);
+//            currentTreeNode = tn;
+//            currentTreeNode.setStartOffset(IOPosition.currentPosition(inputOutput));
+        }
+        
+        //experimental
+        private void trimTree(ExecutionEventObject obj) {
+//            currentTreeNode.setEndOffset(IOPosition.currentPosition(inputOutput));
+//            currentTreeNode = currentTreeNode.parentNode;
+            //TODO merge in failure/success
+            
+        }        
     }
     
 

@@ -322,7 +322,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             
             final Set<String> entities = Util.getEntities(project, files);
             
-            if (!RestUtils.hasSpringSupport(project) && RestUtils.isJavaEE6(project)) {
+            if (!RestUtils.hasSpringSupport(project) && RestUtils.isJavaEE6AndHigher(project)) {
                 String targetPackage = null;
                 String resourcePackage = null;
                 String controllerPackage = null;
@@ -536,7 +536,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             String wizardBundleKey = "Templates/WebServices/RestServicesFromDatabase"; // NOI18N
             String wizardTitle = NbBundle.getMessage(EntityResourcesIterator.class, wizardBundleKey); // NOI18N
             Project project = Templates.getProject(wizard);
-            boolean withoutController = RestUtils.isJavaEE6( project ) || 
+            boolean withoutController = RestUtils.isJavaEE6AndHigher( project ) || 
                 RestUtils.hasSpringSupport(project);
             panels = new WizardDescriptor.Panel[]{
                         //new DatabaseResourceWizardPanel1()

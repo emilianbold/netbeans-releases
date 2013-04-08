@@ -61,6 +61,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -366,12 +367,14 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         }
     }
 
-    private void removeUserDefinedLibraries(Vector<String> registeredItems) {
-        for (LibraryItem item : jsfLibraries) {
+    private void removeUserDefinedLibraries() {
+        Iterator<LibraryItem> iterator = jsfLibraries.iterator();
+        while (iterator.hasNext()) {
+            LibraryItem item = iterator.next();
             Map<String, String> properties = item.getLibrary().getProperties();
             if (!properties.containsKey("maven-dependencies") //NOI18N
                     || properties.get("maven-dependencies").trim().isEmpty()) { //NOI18N
-                registeredItems.remove(item.getLibrary().getDisplayName());
+                iterator.remove();
             }
         }
     }
@@ -383,15 +386,15 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         return false;
     }
 
-    private void setRegisteredLibraryModel(Vector<String> items) {
+    private void setRegisteredLibraryModel(String[] items) {
         long time = System.currentTimeMillis();
         cbLibraries.setModel(new DefaultComboBoxModel(items));
-        if (items.size() == 0) {
+        if (items.length == 0) {
             rbRegisteredLibrary.setEnabled(false);
             cbLibraries.setEnabled(false);
             rbNewLibrary.setSelected(true);
             panel.setLibrary((Library) null);
-        } else if (items.size() != 0 &&  panel.getLibraryType() == LibraryType.USED){
+        } else if (items.length != 0 &&  panel.getLibraryType() == LibraryType.USED){
             if (isFrameworkAddition) {
                 rbRegisteredLibrary.setEnabled(true);
                 cbLibraries.setEnabled(true);
@@ -1813,7 +1816,6 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         @Override
         public void run() {
-            final Vector<String> registeredItems = new Vector<String>();
             synchronized (this) {
                 long time = System.currentTimeMillis();
                 List<URL> content;
@@ -1822,9 +1824,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                         continue;
                     }
                     if (library.getName().startsWith("facelets-") && !library.getName().endsWith("el-api") //NOI18N
-                    && !library.getName().endsWith("jsf-ri") && !library.getName().endsWith("myfaces")) { //NOI18N
-                        String displayName = library.getDisplayName();
-                        registeredItems.add(displayName);
+                        && !library.getName().endsWith("jsf-ri") && !library.getName().endsWith("myfaces")) { //NOI18N
                         //TODO XX Add correct version
                         jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_2));
                     }
@@ -1833,7 +1833,6 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                     try {
                         if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION)
                                 && !EXCLUDE_FROM_REGISTERED_LIBS.contains(library.getName())) {
-                            registeredItems.add(library.getDisplayName());
                             JSFVersion jsfVersion = JSFVersion.forClasspath(content);
                             if (jsfVersion != null) {
                                 jsfLibraries.add(new LibraryItem(library, jsfVersion));
@@ -1848,13 +1847,17 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
                 // if maven, exclude user defined libraries
                 if (panel.isMaven()) {
-                    removeUserDefinedLibraries(registeredItems);
+                    removeUserDefinedLibraries();
                 }
 
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        setRegisteredLibraryModel(registeredItems);
+                        List<String> registeredItems = new ArrayList<String>();
+                        for (LibraryItem libraryItem : jsfLibraries) {
+                            registeredItems.add(libraryItem.getLibrary().getDisplayName());
+                        }
+                        setRegisteredLibraryModel(registeredItems.toArray(new String[registeredItems.size()]));
                         updatePreferredLanguages();
                         updateJsfComponents();
                     }

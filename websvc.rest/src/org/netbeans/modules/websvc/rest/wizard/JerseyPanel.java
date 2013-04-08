@@ -52,10 +52,13 @@ import javax.swing.ComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.Project;
 
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.wizard.AbstractPanel.Settings;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.Utilities;
 
@@ -134,6 +137,13 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
             useJersey.setSelected( true );
         }
         
+        Project project = Templates.getProject(wizard);
+        final WebRestSupport restSupport = project.getLookup().
+                lookup(WebRestSupport.class);
+        boolean hideJerseyChoice = restSupport.isEE7();
+        useJersey.setVisible(!hideJerseyChoice);
+        useJersey.setSelected(false);
+
         String appPackage = (String) wizard.getProperty(
                 WizardProperties.APPLICATION_PACKAGE);
         if (appPackage != null) {

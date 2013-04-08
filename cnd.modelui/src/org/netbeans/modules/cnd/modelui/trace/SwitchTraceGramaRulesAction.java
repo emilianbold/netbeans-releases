@@ -43,9 +43,7 @@ package org.netbeans.modules.cnd.modelui.trace;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
-import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -56,12 +54,11 @@ import org.openide.util.actions.NodeAction;
  * @author Alexander Simon
  */
 public final class SwitchTraceGramaRulesAction extends NodeAction {
-    private static final String CND_NEW_PARSER_TRACE_ENABLED_PROPERTY = "cnd.modelimpl.cpp.parser.rules.trace"; // NOI18N
     
-    private JCheckBoxMenuItem presenter;
+    private JMenuItem presenter;
     
     public SwitchTraceGramaRulesAction() {
-        presenter = new JCheckBoxMenuItem(getName());
+        presenter = new JMenuItem(getName());
         presenter.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -92,7 +89,6 @@ public final class SwitchTraceGramaRulesAction extends NodeAction {
     
     private JMenuItem getPresenter() {
         presenter.setEnabled(true);
-        presenter.setSelected(Boolean.getBoolean(CND_NEW_PARSER_TRACE_ENABLED_PROPERTY));
         presenter.setVisible(TestProjectActionBase.TEST_XREF);
         return presenter;
     }
@@ -109,13 +105,7 @@ public final class SwitchTraceGramaRulesAction extends NodeAction {
     /** Actually nobody but us call this since we have a presenter. */
     @Override
     public void performAction(final Node[] activatedNodes) {
-        if (Boolean.getBoolean(CND_NEW_PARSER_TRACE_ENABLED_PROPERTY)) {
-            System.err.println("SWITCH PARSER TRACE OFF"); // NOI18N
-            TraceUtils.updateTraceFlag(CND_NEW_PARSER_TRACE_ENABLED_PROPERTY, false);
-        } else {
-            System.err.println("SWITCH PARSER TRACE ON");
-            TraceUtils.updateTraceFlag(CND_NEW_PARSER_TRACE_ENABLED_PROPERTY, true);
-        }
+        ParserOptions.showDialog();
     }
     
     @Override
