@@ -93,9 +93,10 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     public static int STORAGE_CLASS_SPECIFIER__MUTABLE = 42;
     public static int STORAGE_CLASS_SPECIFIER____THREAD = 43;
     public static int STORAGE_CLASS_SPECIFIER__THREAD_LOCAL = 44;
-    public static int FUNCTION_SPECIFIER__INLINE = 45;
-    public static int FUNCTION_SPECIFIER__VIRTUAL = 46;
-    public static int FUNCTION_SPECIFIER__EXPLICIT = 47;
+    public static int STORAGE_CLASS_SPECIFIER___HIDDEN = 45;
+    public static int FUNCTION_SPECIFIER__INLINE = 60;
+    public static int FUNCTION_SPECIFIER__VIRTUAL = 61;
+    public static int FUNCTION_SPECIFIER__EXPLICIT = 62;
     public static int SIMPLE_TYPE_SPECIFIER__CHAR = 1;
     public static int SIMPLE_TYPE_SPECIFIER__WCHAR_T = 2;
     public static int SIMPLE_TYPE_SPECIFIER__CHAR16_T = 3;

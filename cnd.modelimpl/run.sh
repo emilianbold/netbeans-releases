@@ -53,6 +53,7 @@ DEBUG="-J-Xdebug -J-Djava.compiler=NONE -J-Xrunjdwp:transport=dt_socket,server=y
 PRG=$0
 NB_COPY="${TMP_PREFIX}/${USER}/nb-copy"
 VERBOSE=true
+DRD=""
 
 while [ -h "$PRG" ]; do
     ls=`ls -ld "$PRG"`
@@ -136,8 +137,8 @@ do
                 PROFILE="-J-Dosgi.compatibility.bootdelegation=true -J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE"
 		;;
         --drd|-drd)
-                echo "DataRace check run"
-                PROFILE="-J-Dosgi.compatibility.bootdelegation=true -J-javaagent:${HOME}/devarea/drd/drd0.3/drd_agent.jar"
+                echo "DataRace check run (debugging is OFF)"
+	        DRD="y"	
                 ;;
 	--ypl|-ypl)
 		echo "light profile using YourKit Profiler, save snapshots in ${HOME}/yjp_data/IDE"
@@ -188,6 +189,12 @@ else
 		echo "NBDIST environment variable should point to Netbeans installation"
                 exit 1;
 	fi
+fi
+
+if [ -n "$DRD" ]; then
+    DRDDIR="${HOME}/devarea/drd" 
+    PROFILE="-J-Dosgi.compatibility.bootdelegation=true -J-javaagent:${DRDDIR}/latest/drd_agent.jar -J-Ddrd.settings.file=${DRDDIR}/drd.properties -J-Ddrd.config.dir=${DRDDIR}/config"
+    DEBUG=""
 fi
 
 if [ -n "${DEBUG}" ]; then
