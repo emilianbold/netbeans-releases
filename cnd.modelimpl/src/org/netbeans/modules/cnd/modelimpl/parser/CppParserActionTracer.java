@@ -41,22 +41,22 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.util.LinkedList;
 import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceFactory;
 
 /**
  *
  * @author Alexander Simon
  */
 public class CppParserActionTracer extends CppParserActionImpl implements CppParserActionEx {
-    private final LinkedList<String> stack = new LinkedList<String>();
+    private final TraceFactory.TraceWriter traceWriter;
     
     public CppParserActionTracer(CsmParserProvider.CsmParserParameters params, CXXParserActionEx wrapper) {
         super(params, wrapper);
+        traceWriter = TraceFactory.getTraceWriter(this);
     }
 
     @Override
@@ -1714,94 +1714,15 @@ public class CppParserActionTracer extends CppParserActionImpl implements CppPar
         return super.popFile();
     }
     
-    private int level = 0;
     private void printIn(String message, Token ... token) {
-        stack.addLast(message);
-        StringBuilder buf = new StringBuilder();
-        for(int i = 0; i < level; i++) {
-            buf.append(' ').append(' '); //NOI18N
-        }
-        buf.append('>'); //NOI18N
-        buf.append(message);
-        if (getBacktrackingLevel() != 0) {
-            buf.append(" GUESSING LEVEL = "); //NOI18N
-            buf.append(Integer.toString(getBacktrackingLevel()));
-        }
-        if (token.length > 0) {
-            buf.append(' '); //NOI18N
-            buf.append(getCurrentFile().getAbsolutePath());
-            if (!APTUtils.isEOF(token[0])) {
-                buf.append('['); //NOI18N
-                buf.append(Integer.toString(token[0].getLine()));
-                buf.append(','); //NOI18N
-                buf.append(Integer.toString(token[0].getColumn()));
-                buf.append(']'); //NOI18N
-            }
-            for(int j = 0; j < token.length; j++) {
-                buf.append(' '); //NOI18N
-                buf.append(token[j].toString());
-            }
-        }
-        System.out.println(buf.toString());
-        level++;
+        traceWriter.printIn(message, token);
     }
 
     private void printOut(String message, Token ... token) {
-        String top = stack.removeLast();
-        if (!message.equals(top)) {
-            System.out.println("UNBALANCED exit. Actual "+message+" Expected "+top);//NOI18N
-        }
-        level--;
-        StringBuilder buf = new StringBuilder();
-        for(int i = 0; i < level; i++) {
-            buf.append(' ').append(' '); //NOI18N
-        }
-        buf.append('<'); //NOI18N
-        buf.append(message);
-        if (getBacktrackingLevel() != 0) {
-            buf.append(" GUESSING LEVEL = "); //NOI18N
-            buf.append(Integer.toString(getBacktrackingLevel()));
-        }
-        if (token.length > 0) {
-            buf.append(' '); //NOI18N
-            buf.append(getCurrentFile().getAbsolutePath());
-            if (!APTUtils.isEOF(token[0])) {
-                buf.append('['); //NOI18N
-                buf.append(Integer.toString(token[0].getLine()));
-                buf.append(','); //NOI18N
-                buf.append(Integer.toString(token[0].getColumn()));
-                buf.append(']'); //NOI18N
-                buf.append(' '); //NOI18N
-            }
-            buf.append(token[0].toString());
-        }
-        System.out.println(buf.toString());
+        traceWriter.printOut(message, token);
     }
 
     private void print(String message, Token ... token) {
-        StringBuilder buf = new StringBuilder();
-        for(int i = 0; i < level; i++) {
-            buf.append(' ').append(' '); //NOI18N
-        }
-        buf.append(' '); //NOI18N
-        buf.append(message);
-        if (getBacktrackingLevel() != 0) {
-            buf.append(" GUESSING LEVEL = "); //NOI18N
-            buf.append(Integer.toString(getBacktrackingLevel()));
-        }
-        if (token.length > 0) {
-            buf.append(' '); //NOI18N
-            buf.append(getCurrentFile().getAbsolutePath());
-            if (!APTUtils.isEOF(token[0])) {
-                buf.append('['); //NOI18N
-                buf.append(Integer.toString(token[0].getLine()));
-                buf.append(','); //NOI18N
-                buf.append(Integer.toString(token[0].getColumn()));
-                buf.append(']'); //NOI18N
-                buf.append(' '); //NOI18N
-            }
-            buf.append(token[0].toString());
-        }
-        System.out.println(buf.toString());
+        traceWriter.print(message, token);
     }
 }

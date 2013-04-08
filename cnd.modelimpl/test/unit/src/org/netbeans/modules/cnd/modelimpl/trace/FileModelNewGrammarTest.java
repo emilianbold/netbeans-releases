@@ -39,21 +39,63 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.recovery.base;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package org.netbeans.modules.cnd.modelimpl.trace;
 
 /**
  *
- * @author Alexander Simon
+ * @author petrk
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Grammar {
-    boolean newGrammar() default false;
-    boolean traceAST() default false;
-    boolean traceRules() default false;
+public class FileModelNewGrammarTest extends TraceModelTestBase {
+    
+    public FileModelNewGrammarTest(String testName) {
+        super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
+        System.setProperty("parser.report.errors", "true");
+        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
+        System.setProperty("cnd.language.flavor.cpp11", "true");
+        System.setProperty("cnd.modelimpl.cpp.parser.new.grammar", "true");
+        System.setProperty("cnd.modelimpl.parse.headers.with.sources", "true");
+        super.setUp();
+    }
+
+    @Override
+    protected void postSetUp() {
+        // init flags needed for file model tests
+        getTraceModel().setDumpModel(true);
+        getTraceModel().setDumpPPState(true);
+    }
+
+    @Override
+    protected void postTest(String[] args, Object... params) throws Exception {
+        System.setProperty("cnd.language.flavor.cpp11", "false"); 
+    }
+    
+    public void testTypedefEnum() throws Exception {
+        performTest("typedefEnum.cpp");
+    }
+    
+    public void testDestructor() throws Exception {
+        performTest("destructor.cpp");
+    }
+    
+    public void testConstMethod() throws Exception {
+        performTest("constMethod.cpp");
+    }
+    
+    public void testFriendFunction() throws Exception {
+        performTest("friendFunction.cpp");
+    }
+    
+    public void testParameters() throws Exception {
+        performTest("parameters.cpp");
+    }
+    
+//    public void testMultipleMemberDeclaration() throws Exception {
+//        performTest("typedefEnum.cpp");
+//    } 
+    
 }

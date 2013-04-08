@@ -494,6 +494,11 @@ public class CppParserActionImpl implements CppParserActionEx {
                             enumeratorEntry.setAttribute(CppAttributes.DEFINITION, csmEnumerator);
                         }
                     }
+                    
+                    CsmObjectBuilder directParent = builderContext.top(1);
+                    if (directParent instanceof TypeBuilder) {
+                        ((TypeBuilder) directParent).setClassifier(e);
+                    }
                 }
             }
             builderContext.pop();
@@ -633,6 +638,11 @@ public class CppParserActionImpl implements CppParserActionEx {
                         classEntry.setAttribute(CppAttributes.DEFINITION, cls);
                     } else {
     //                    System.out.println("classEntry is empty " + cls);
+                    }
+                    
+                    CsmObjectBuilder directParent = builderContext.top(1);
+                    if (directParent instanceof TypeBuilder) {
+                        ((TypeBuilder) directParent).setClassifier(cls);
                     }
                 }
             }
@@ -1261,11 +1271,15 @@ public class CppParserActionImpl implements CppParserActionEx {
         return currentContext.objects;
     }
     
-    CsmFile getCurrentFile() {
+    public CsmFile getCurrentFile() {
         return currentContext.file;
     }
     
-    int getBacktrackingLevel() {
+    public CsmFile getMainFile() {
+        return params.getMainFile();
+    }
+    
+    public int getBacktrackingLevel() {
         return parser.backtrackingLevel();
     }
 
@@ -2143,7 +2157,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     @Override public void simple_member_declaration(int kind, Token token){
-        if(kind == SIMPLE_MEMBER_DECLARATION__SEMICOLON) {
+        if(kind == SIMPLE_MEMBER_DECLARATION__COMMA2 || kind == SIMPLE_MEMBER_DECLARATION__SEMICOLON) {
             SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
             SimpleDeclarationBuilder builder;
             if(declBuilder.hasTypedefSpecifier()) {

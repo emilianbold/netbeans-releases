@@ -749,8 +749,9 @@ scope Declaration;
 @init                                                                           {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
     :
         gnu_attribute_specifiers?
-                                                                                            {action.decl_specifiers(input.LT(1));}
-        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
+                                                                                {action.decl_specifiers(input.LT(1));}
+        (decl_specifier gnu_attribute_specifiers?)*                              {action.end_decl_specifiers(input.LT(0));}
+
         (
             SEMICOLON
         |
@@ -833,6 +834,8 @@ function_specifier:
         LITERAL_virtual 
     |
         LITERAL_explicit 
+    |
+        LITERAL___inline   // compiler-specific
     ;
 
 /*
@@ -1589,8 +1592,9 @@ finally                                                                         
  */
 type_id
 @init                                                                           {if(state.backtracking == 0){action.type_id(input.LT(1));}}
-    :                                                                           
-        type_specifier+ 
+    :                                            
+        gnu_attribute_specifiers?
+        (type_specifier gnu_attribute_specifiers?)+ 
         ((abstract_declarator) => abstract_declarator)? // review: predicate to avoid ambiguity around ELLIPSIS
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_type_id(input.LT(0));}}
@@ -1973,7 +1977,7 @@ member_declarator
 @init                                                                           {if(state.backtracking == 0){action.member_declarator(input.LT(1));}}
     :                                                                           
     (
-        declarator virt_specifier* brace_or_equal_initializer
+        declarator virt_specifier* brace_or_equal_initializer?
     |
         member_bitfield_declarator
     )                                                                           
