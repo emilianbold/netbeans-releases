@@ -244,7 +244,7 @@ public class Reformatter implements ReformatTask {
                 continue;
             if (endOffset < start)
                 continue;
-            if (endOffset == start && (text == null || !text.trim().equals("}"))) //NOI18N
+            if (endOffset == start && endOffset < doc.getLength() && (text == null || !text.trim().equals("}"))) //NOI18N
                 continue;
             if (embeddingOffset >= start)
                 continue;
@@ -309,7 +309,7 @@ public class Reformatter implements ReformatTask {
                             if (text != null && t != null)
                                 text = text.length() > t.length() ? text.substring(t.length()) : null;
                         }
-                    } else {
+                    } else if (startOffset > 0) {
                         continue;
                     }
                 }
@@ -530,8 +530,10 @@ public class Reformatter implements ReformatTask {
                 pretty.tokens.moveEnd();
                 pretty.tokens.movePrevious();
                 if (pretty.tokens.token().id() != WHITESPACE) {
-                    String text = info.getText();
-                    pretty.diffs.addFirst(new Diff(text.length(), text.length(), s));
+                    if (!pretty.tokens.token().text().toString().endsWith(s)) {
+                        String text = info.getText();
+                        pretty.diffs.addFirst(new Diff(text.length(), text.length(), s));
+                    }
                 } else if (!s.contentEquals(pretty.tokens.token().text())) {
                     pretty.diffs.addFirst(new Diff(pretty.tokens.offset(), pretty.tokens.offset() + pretty.tokens.token().length(), s));
                 }
