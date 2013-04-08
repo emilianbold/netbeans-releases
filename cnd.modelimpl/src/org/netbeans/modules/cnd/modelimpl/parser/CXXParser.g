@@ -823,6 +823,8 @@ storage_class_specifier:
         LITERAL___thread                                                        {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER____THREAD, $LITERAL___thread);}
     |
         LITERAL_thread_local                                                    {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__THREAD_LOCAL, $LITERAL_thread_local);}
+    |
+        LITERAL___hidden                                                        {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER___HIDDEN, $LITERAL___hidden);}
     ;
 
 function_specifier:
