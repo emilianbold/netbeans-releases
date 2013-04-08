@@ -1455,6 +1455,9 @@ public final class JFXProjectProperties {
                 continue;
             }
             final File f = PropertyUtils.resolveFile(prjDir, p);
+            if (!f.exists()) {
+                continue;
+            }
             if (f.equals(mainFile)) {
                 continue;
             }
