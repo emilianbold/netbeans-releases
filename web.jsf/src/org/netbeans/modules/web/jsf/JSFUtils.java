@@ -258,22 +258,42 @@ public class JSFUtils {
         return (tmpPath != null ? path + tmpPath : null);
     }
 
+    /**
+     * Use {@link JSFVersion#get(org.netbeans.modules.web.api.webmodule.WebModule, boolean) } instead.
+     */
+    @Deprecated
     public static boolean isJSF12Plus(WebModule webModule, boolean includingPlatformCP) {
         return isJSFPlus(webModule, includingPlatformCP, JSF_1_2__API_SPECIFIC_CLASS);
     }
 
+    /**
+     * Use {@link JSFVersion#get(org.netbeans.modules.web.api.webmodule.WebModule, boolean) } instead.
+     */
+    @Deprecated
     public static boolean isJSF20Plus(WebModule webModule, boolean includingPlatformCP) {
         return isJSFPlus(webModule, includingPlatformCP, JSF_2_0__API_SPECIFIC_CLASS);
     }
 
+    /**
+     * Use {@link JSFVersion#get(org.netbeans.modules.web.api.webmodule.WebModule, boolean) } instead.
+     */
+    @Deprecated
     public static boolean isJSF21Plus(WebModule webModule, boolean includingPlatformCP) {
         return isJSFPlus(webModule, includingPlatformCP, JSF_2_1__API_SPECIFIC_CLASS);
     }
 
+    /**
+     * Use {@link JSFVersion#get(org.netbeans.modules.web.api.webmodule.WebModule, boolean) } instead.
+     */
+    @Deprecated
     public static boolean isJSF22Plus(WebModule webModule, boolean includingPlatformCP) {
         return isJSFPlus(webModule, includingPlatformCP, JSF_2_2__API_SPECIFIC_CLASS);
     }
 
+    /**
+     * Use {@link JSFVersion#get(org.netbeans.modules.web.api.webmodule.WebModule, boolean) } instead.
+     */
+    @Deprecated
     private static boolean isJSFPlus(WebModule webModule, boolean includingPlatformCP, String versionSpecificClass) {
         if (webModule == null) {
             return false;

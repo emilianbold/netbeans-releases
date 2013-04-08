@@ -433,7 +433,7 @@ public class RestUtils {
             }
         }
         
-        if (isJavaEE6(project)) {
+        if (isJavaEE6AndHigher(project)) {
             SourceGroup[] sourceGroups = SourceGroupSupport
                     .getJavaSourceGroups(project);
             if (sourceGroups.length > 0) {
@@ -497,7 +497,7 @@ public class RestUtils {
         }).commit();
     }
 
-    public static boolean isJavaEE6(Project project) {
+    public static boolean isJavaEE6AndHigher(Project project) {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if (webModule != null) {
             Profile profile = webModule.getJ2eeProfile();

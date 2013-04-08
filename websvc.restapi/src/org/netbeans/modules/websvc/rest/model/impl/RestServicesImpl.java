@@ -169,6 +169,7 @@ public class RestServicesImpl implements RestServices {
             findAnnotation(RestConstants.POST, EnumSet.of(ElementKind.METHOD), result);
             findAnnotation(RestConstants.PUT, EnumSet.of(ElementKind.METHOD), result);
             findAnnotation(RestConstants.DELETE, EnumSet.of(ElementKind.METHOD), result);
+            findAnnotation(RestConstants.PROVIDER_ANNOTATION, EnumSet.of(ElementKind.CLASS), result);
             
             return new ArrayList<RestServiceDescriptionImpl>(result.values());
         }

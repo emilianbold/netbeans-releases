@@ -57,7 +57,7 @@ public class EntityResourcesGeneratorFactory {
 
         if (RestUtils.hasSpringSupport(project)) {
             return new SpringEntityResourcesGenerator(RestUtils.hasAopAlliance(project));
-        } else if (RestUtils.isJavaEE6(project)) {
+        } else if (RestUtils.isJavaEE6AndHigher(project)) {
             return new JavaEE6EntityResourcesGenerator();
         } else {
             return new J2eeEntityResourcesGenerator();
