@@ -79,11 +79,6 @@ public class TraceFlags {
 
     public static final String TRACE_FILE_NAME = System.getProperty("cnd.modelimpl.trace.file");
 
-    /** 
-     * swithces off parsing function bodies
-     */
-    public static final boolean EXCLUDE_COMPOUND = DebugUtils.getBoolean("cnd.modelimpl.excl.compound", true); // NOI18N
-    
     public static final boolean APT_CHECK_GET_STATE = DebugUtils.getBoolean("apt.check.get.state", false); // NOI18N
  
     public static final int     BUF_SIZE = APTTraceFlags.BUF_SIZE;
@@ -167,6 +162,12 @@ public class TraceFlags {
     public static final boolean EXPRESSION_EVALUATOR_RECURSIVE_CALC = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.recursive.calc", false); // NOI18N
     public static final boolean EXPRESSION_EVALUATOR_EXTRA_SPEC_PARAMS_MATCHING = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.extra.spec.params.matching", false); // NOI18N
 
+    /** 
+     * swithces off parsing function bodies
+     */
+    private static final String CND_MODELIMPL_EXCL_COMPOUND = "cnd.modelimpl.excl.compound";
+    public static boolean EXCLUDE_COMPOUND = DebugUtils.getBoolean(CND_MODELIMPL_EXCL_COMPOUND, true); // NOI18N
+    
     private static final String CND_MODELIMPL_CPP_PARSER_ACTION = "cnd.modelimpl.cpp.parser.action"; // NOI18N
     public static boolean CPP_PARSER_ACTION = DebugUtils.getBoolean(CND_MODELIMPL_CPP_PARSER_ACTION, false);
     private static final String CND_MODELIMPL_CPP_PARSER_ACTION_TRACE = "cnd.modelimpl.cpp.parser.action.trace"; // NOI18N
@@ -177,6 +178,8 @@ public class TraceFlags {
     public static boolean PARSE_HEADERS_WITH_SOURCES = DebugUtils.getBoolean(CND_MODELIMPL_PARSE_HEADERS_WITH_SOURCES, false);
     private static final String CND_MODELIMPL_CPP_PARSER_RULES_TRACE = "cnd.modelimpl.cpp.parser.rules.trace"; // NOI18N
     public static boolean TRACE_CPP_PARSER_RULES = DebugUtils.getBoolean(CND_MODELIMPL_CPP_PARSER_RULES_TRACE, false);
+    private static final String CND_MODELIMPL_CPP_PARSER_SHOW_AST = "cnd.modelimpl.cpp.parser.show.AST"; // NOI18N
+    public static boolean TRACE_CPP_PARSER_SHOW_AST = DebugUtils.getBoolean(CND_MODELIMPL_CPP_PARSER_SHOW_AST, false);
     
     public static void validate(String flag, boolean value) {
         if (CND_MODELIMPL_CPP_PARSER_ACTION.equals(flag)) {
@@ -194,6 +197,12 @@ public class TraceFlags {
         } else if (CND_MODELIMPL_CPP_PARSER_RULES_TRACE.equals(flag)) {
             System.setProperty(CND_MODELIMPL_CPP_PARSER_RULES_TRACE, Boolean.toString(value));
             TRACE_CPP_PARSER_RULES = value;
+        } else if (CND_MODELIMPL_EXCL_COMPOUND.equals(flag)) {
+            System.setProperty(CND_MODELIMPL_EXCL_COMPOUND, Boolean.toString(value));
+            EXCLUDE_COMPOUND = value;
+        } else if (CND_MODELIMPL_CPP_PARSER_SHOW_AST.equals(flag)) {
+            System.setProperty(CND_MODELIMPL_CPP_PARSER_SHOW_AST, Boolean.toString(value));
+            TRACE_CPP_PARSER_SHOW_AST = value;
         } 
     }
 
