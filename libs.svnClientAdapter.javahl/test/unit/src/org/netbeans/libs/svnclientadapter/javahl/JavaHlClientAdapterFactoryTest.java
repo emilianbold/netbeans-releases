@@ -75,13 +75,6 @@ public class JavaHlClientAdapterFactoryTest extends NbTestCase {
         assertNotNull(c);
     }
 
-    public void testNotAvailable() {
-        System.setProperty("subversion.native.library", "/this/shouldnot/work" + System.currentTimeMillis());
-        JavaHlClientAdapterFactory f = getFactory();
-        assertNotNull(f);
-        assertFalse(f.isAvailable());
-    }
-
     public void testProvides() {
         JavaHlClientAdapterFactory f = getFactory();
         assertNotNull(f);
