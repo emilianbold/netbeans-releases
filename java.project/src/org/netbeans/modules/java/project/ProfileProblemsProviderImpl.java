@@ -45,28 +45,22 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -78,6 +72,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery.Profile;
+import org.netbeans.api.java.source.support.ProfileSupport;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -89,7 +84,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -105,10 +99,8 @@ import static org.netbeans.modules.java.project.Bundle.*;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Union2;
 /**
  *
  * @author Tomas Zezula
@@ -326,11 +318,17 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                     final String libName = rawEntry.substring(LIB_PREFIX.length(),rawEntry.lastIndexOf('.'));
                     final Library lib = refHelper.findLibrary(libName);
                     if (lib != null) {
-                        final Union2<Profile,String> minProfileOrName = findProfile(lib.getContent(VOL_CLASSPATH));
-                        final Profile minProfile = minProfileOrName.hasFirst() ? minProfileOrName.first() : null;
-                        if (isBroken(requiredProfile,  minProfile)) {
-                            collector.add(new LibraryReference(classPathId, rawEntry, minProfile, lib));
-                        }
+                        final Collection<? extends ProfileSupport.Violation> res =
+                            ProfileSupport.findProfileViolations(
+                                requiredProfile,
+                                Collections.<URL>emptySet(),
+                                lib.getContent(VOL_CLASSPATH),
+                                Collections.<URL>emptySet(),
+                                EnumSet.of(ProfileSupport.Validation.BINARIES_BY_MANIFEST));
+                            if (!res.isEmpty()) {
+                                final Profile maxProfile = findMaxProfile(res);
+                                collector.add(new LibraryReference(classPathId, rawEntry, maxProfile, lib));
+                            }
                     }
                 } else if (rawEntry.startsWith(PRJ_PREFIX)) {
                     final Object[] ref = refHelper.findArtifactAndLocation(rawEntry);
@@ -350,10 +348,16 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                         final File file = antProjectHelper.resolveFile(path);
                         final URL root = FileUtil.urlForArchiveOrDir(file);
                         if (root != null) {
-                            final Union2<Profile,String> minProfileOrName = findProfile(root);
-                            final Profile minProfile = minProfileOrName.hasFirst() ? minProfileOrName.first() : null;
-                            if (isBroken(requiredProfile, minProfile)) {
-                                collector.add(new FileReference(classPathId, rawEntry, minProfile, file));
+                            final Collection<? extends ProfileSupport.Violation> res =
+                                ProfileSupport.findProfileViolations(
+                                    requiredProfile,
+                                    Collections.<URL>emptySet(),
+                                    Collections.singleton(root),
+                                    Collections.<URL>emptySet(),
+                                    EnumSet.of(ProfileSupport.Validation.BINARIES_BY_MANIFEST));
+                            if (!res.isEmpty()) {
+                                final Profile maxProfile = findMaxProfile(res);
+                                collector.add(new FileReference(classPathId, rawEntry, maxProfile, file));
                             }
                         }
                     }
@@ -373,10 +377,16 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                     final File file = antProjectHelper.resolveFile(propName);
                     final URL root = FileUtil.urlForArchiveOrDir(file);
                     if (root != null) {
-                        final Union2<Profile,String> minProfileOrName = findProfile(root);
-                        final Profile minProfile = minProfileOrName.hasFirst() ? minProfileOrName.first() : null;
-                        if (isBroken(requiredProfile, minProfile)) {
-                            collector.add(new FileReference(classPathId, rawEntry, minProfile, file));
+                        final Collection<? extends ProfileSupport.Violation> res =
+                                ProfileSupport.findProfileViolations(
+                                    requiredProfile,
+                                    Collections.<URL>emptySet(),
+                                    Collections.singleton(root),
+                                    Collections.<URL>emptySet(),
+                                    EnumSet.of(ProfileSupport.Validation.BINARIES_BY_MANIFEST));
+                        if (!res.isEmpty()) {
+                            final Profile maxProfile = findMaxProfile(res);
+                            collector.add(new FileReference(classPathId, rawEntry, maxProfile, file));
                         }
                     }
                 }
@@ -405,60 +415,20 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         return reference;
     }
 
-    @NonNull
-    private static Union2<Profile,String> findProfile(@NonNull final Iterable<? extends URL> roots) {
-        Profile current = Profile.DEFAULT;
-        for (URL root : roots) {
-            final Union2<Profile,String> rootProfile = findProfile(root);
-            if (!rootProfile.hasFirst()) {
+    @CheckForNull
+    private static Profile findMaxProfile(@NonNull final Iterable<? extends ProfileSupport.Violation> violations) {
+        Profile current = null;
+        for (ProfileSupport.Violation violation : violations) {
+            Profile p = violation.getRequiredProfile();
+            if (p == null) {
                 //Broken profile - no need to continue
-                return rootProfile;
+                return null;
             }
-            current = max(current, rootProfile.first());
+            current = max(current, p);
         }
-        return Union2.<Profile,String>createFirst(current);
+        return current;
     }
-
-    @NonNull
-    private static Union2<Profile,String> findProfile(@NonNull URL root) {
-        Union2<Profile,String> res;
-        final ArchiveCache.Key key = ArchiveCache.createKey(root);
-        if (key != null) {
-            res = ArchiveCache.getProfile(key);
-            if (res != null) {
-                return res;
-            }
-        }
-        String profileName = null;
-        final FileObject rootFo = URLMapper.findFileObject(root);
-        if (rootFo != null) {
-            final FileObject manifestFile = rootFo.getFileObject(RES_MANIFEST);
-            if (manifestFile != null) {
-                try {
-                    try (InputStream in = manifestFile.getInputStream()) {
-                        final Manifest manifest = new Manifest(in);
-                        final Attributes attrs = manifest.getMainAttributes();
-                        profileName = attrs.getValue(ATTR_PROFILE);
-                    }
-                } catch (IOException ioe) {
-                    LOG.log(
-                        Level.INFO,
-                        "Cannot read Profile attribute from: {0}", //NOI18N
-                        FileUtil.getFileDisplayName(manifestFile));
-                }
-            }
-        }
-        final Profile profile = Profile.forName(profileName);
-        res = profile != null ?
-                Union2.<Profile,String>createFirst(profile) :
-                Union2.<Profile,String>createSecond(profileName);
-        if (key != null) {
-            ArchiveCache.putProfile(key, res);
-        }
-        return res;
-    }
-
-
+    
     @CheckForNull
     static Profile max (@NullAllowed Profile a, @NullAllowed Profile b) {
         if (b == null) {
@@ -745,118 +715,5 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
             res.run();
             return res;
         }
-    }
-
-
-    private static final class ArchiveCache {
-
-        private static final int MAX_CACHE_SIZE = Integer.getInteger(
-                "ProfileProblemsProviderImpl.ArchiveCache.size",    //NOI18N
-                1<<10);        
-
-        private static final Map<Key,Union2<Profile,String>> cache = new LinkedHashMap<Key,Union2<Profile,String>>(16, 0.75f, true) {
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<Key, Union2<Profile,String>> entry) {
-                return size() > MAX_CACHE_SIZE;
-            }
-        };
-
-        private ArchiveCache() {}
-
-        @CheckForNull
-        static Union2<Profile,String> getProfile(@NonNull final Key key) {
-            final Union2<Profile,String> res = cache.get(key);
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.log(
-                    Level.FINER,
-                    "cache[{0}]->{1}",  //NOI18N
-                    new Object[]{
-                        key,
-                        res.hasFirst() ? res.first() : res.second()
-                    });
-            }
-            return res;
-        }
-
-        static void putProfile(
-            @NonNull final  Key key,
-            @NonNull final Union2<Profile,String> profile) {
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.log(
-                    Level.FINER,
-                    "cache[{0}]<-{1}",   //NOI18N
-                    new Object[]{
-                        key,
-                        profile.hasFirst() ? profile.first() : profile.second()
-                    });
-            }
-            cache.put(key,profile);
-        }
-
-        @CheckForNull
-        static Key createKey(@NonNull final URL rootURL) {
-            final URL fileURL = FileUtil.getArchiveFile(rootURL);
-            if (fileURL == null) {
-                //Not an archive
-                return null;
-            }
-            final FileObject fileFo = URLMapper.findFileObject(fileURL);
-            if (fileFo == null) {
-                return null;
-            }
-            return new Key(
-                fileFo.toURI(),
-                fileFo.lastModified().getTime(),
-                fileFo.getSize());
-        }
-
-        private static final class Key {
-
-            private final URI root;
-            private final long mtime;
-            private final long size;
-
-            Key(
-                    @NonNull final URI root,
-                    final long mtime,
-                    final long size) {
-                this.root = root;
-                this.mtime = mtime;
-                this.size = size;
-            }
-
-            @Override
-            public int hashCode() {
-                int hash = 17;
-                hash = 31 * hash + (this.root != null ? this.root.hashCode() : 0);
-                hash = 31 * hash + (int) (this.mtime ^ (this.mtime >>> 32));
-                hash = 31 * hash + (int) (this.size ^ (this.size >>> 32));
-                return hash;
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-                if (obj == this) {
-                    return true;
-                }
-                if (!(obj instanceof Key)) {
-                    return false;
-                }
-                final Key other = (Key) obj;
-                return this.root.equals(other.root) &&
-                    this.mtime == other.mtime &&
-                    this.size == other.size;
-
-            }
-
-            @Override
-            public String toString() {
-                return String.format(
-                    "Key{root: %s, mtime: %d, size: %d}",   //NOI18N
-                    root,
-                    mtime,
-                    size);
-            }
-        }
-    }
+    }    
 }
