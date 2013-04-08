@@ -91,8 +91,8 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
         customizers.addAll(getCustomizers());
 
         initComponents();
-
         init();
+        validateCustomizers();
     }
 
     private void init() {
