@@ -44,11 +44,15 @@ package org.netbeans.modules.maven.execute;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.maven.execution.ExecutionEvent;
 import org.json.simple.JSONObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.maven.execute.cmd.ExecMojo;
+import org.netbeans.modules.maven.execute.cmd.ExecProject;
+import org.netbeans.modules.maven.execute.cmd.ExecSession;
 import org.openide.filesystems.FileUtil;
 import org.openide.windows.IOPosition;
 
@@ -57,44 +61,21 @@ import org.openide.windows.IOPosition;
  * @author mkleint
  */
 
-public final class ExecutionEventObject {
+public class ExecutionEventObject {
 
     final ExecutionEvent.Type type;
-    final int projectCount;
-    final GAV currentProject;
-    final @NullAllowed File currentProjectLocation;
-    final @NullAllowed MojoExecution execution;
 
-    private  ExecutionEventObject(ExecutionEvent.Type type, GAV currentProject, File currentProjectLocation, MojoExecution execution, int projectCount) {
+    public ExecutionEventObject(ExecutionEvent.Type type) {
         this.type = type;
-        this.currentProject = currentProject;
-        this.currentProjectLocation = currentProjectLocation;
-        this.execution = execution;
-        this.projectCount = projectCount;
     }
 
-    public static class MojoExecution {
-
-        final String goal;
-        final GAV plugin;
-        final String phase;
-        final String executionId;
-
-        private MojoExecution(String goal, @NonNull GAV plugin, String phase, String executionId) {
-            this.goal = goal;
-            this.plugin = plugin;
-            this.phase = phase;
-            this.executionId = executionId;
-        }
-        
-    }
     
     public static class GAV {
         final String groupId;
         final String artifactId;
         final String version;
 
-        private GAV(@NonNull String groupId, @NonNull String artifactId, @NonNull String version) {
+        public GAV(@NonNull String groupId, @NonNull String artifactId, @NonNull String version) {
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.version = version;
@@ -102,65 +83,43 @@ public final class ExecutionEventObject {
         
     }
     
+    private static final List<ExecutionEvent.Type> mojo_types = Arrays.asList(new ExecutionEvent.Type[] {
+        ExecutionEvent.Type.MojoStarted, ExecutionEvent.Type.MojoFailed, ExecutionEvent.Type.MojoSucceeded, ExecutionEvent.Type.MojoSkipped
+    });
+    private static final List<ExecutionEvent.Type> project_types = Arrays.asList(new ExecutionEvent.Type[] {
+        ExecutionEvent.Type.ProjectStarted, ExecutionEvent.Type.ProjectFailed, ExecutionEvent.Type.ProjectSucceeded, ExecutionEvent.Type.ProjectSkipped
+    });
+    private static final List<ExecutionEvent.Type> session_types = Arrays.asList(new ExecutionEvent.Type[] {
+        ExecutionEvent.Type.SessionStarted, ExecutionEvent.Type.SessionEnded
+    });
+    
     public static ExecutionEventObject create(JSONObject obj) {
         String s = (String) obj.get("type");
         ExecutionEvent.Type t = ExecutionEvent.Type.valueOf(s);
-        GAV prjGav = null;
-        File prjFile = null;
-        MojoExecution exec = null;
-        String excMessage = null;
-        Long count = (Long) obj.get("prjcount");
-        int prjCount = -1;
-        if (count != null) {
-            prjCount = count.intValue();
+        if (mojo_types.contains(t)) {
+            return ExecMojo.create(obj, t);
         }
-        JSONObject prj = (JSONObject) obj.get("prj");
-        if (prj != null) {
-            String id = (String) prj.get("id");
-            String[] ids = id.split(":");
-            prjGav = new GAV(ids[0], ids[1], ids[2]);
-            String file = (String) prj.get("file");
-            if (file != null) {
-                prjFile = FileUtil.normalizeFile(new File(file));
-            }
+        if (project_types.contains(t)) {
+            return ExecProject.create(obj, t);
         }
-        JSONObject mojo = (JSONObject) obj.get("mojo");
-        if (mojo != null) {
-            String id = (String) mojo.get("id");
-            String[] ids = id.split(":");
-            GAV mojoGav = new GAV(ids[0], ids[1], ids[2]);
-            String goal = (String) mojo.get("goal");
-            String execId = (String) mojo.get("execId");
-            String phase = (String) mojo.get("phase");
-            exec = new MojoExecution(goal, mojoGav, phase, execId);
+        if (session_types.contains(t)) {
+            return ExecSession.create(obj, t);
         }
-//        JSONObject exc = (JSONObject) obj.get("exc");
-//        if (exc != null) {
-//            String message = (String) exc.get("msg");
-//            if (message != null) {
-//                try {
-//                    byte[] bytes = Base64.decodeBase64(message.getBytes("UTF-8"));
-//                    excMessage = new String(bytes, "UTF-8");
-//                    System.out.println("exc message=" + excMessage);
-//                } catch (UnsupportedEncodingException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//            }
-//        }
-        
-        return new ExecutionEventObject(t, prjGav, prjFile, exec, prjCount);
+        return new ExecutionEventObject(t);
     }
     
     //experimental
     public static class Tree {
-        final ExecutionEventObject current;
+        final ExecutionEventObject startEvent;
+        ExecutionEventObject endEvent;
         final ExecutionEventObject.Tree parentNode;
         final List<ExecutionEventObject.Tree> childrenNodes = new ArrayList<ExecutionEventObject.Tree>();
         private IOPosition.Position startOffset;
         private IOPosition.Position endOffset;
+        
 
         public Tree(ExecutionEventObject current, ExecutionEventObject.Tree parent) {
-            this.current = current;
+            this.startEvent = current;
             this.parentNode = parent;
         }
 
@@ -179,8 +138,25 @@ public final class ExecutionEventObject {
         public void setEndOffset(IOPosition.Position endOffset) {
             this.endOffset = endOffset;
         }
+
+        public void setEndEvent(ExecutionEventObject endEvent) {
+            this.endEvent = endEvent;
+            assert endEvent != null && endEvent.getClass().equals(startEvent.getClass());
+        }
         
-        
+        public ExecutionEventObject.Tree findParentNodeOfType(ExecutionEvent.Type startType) {
+            if (parentNode == null) {
+                return null;
+            }
+            ExecutionEventObject event = parentNode.startEvent;
+            if (event == null) {
+                return null;
+            }
+            if (startType.equals(event.type)) {
+                return parentNode;
+            }
+            return parentNode.findParentNodeOfType(startType);
+        }
         
     }
     

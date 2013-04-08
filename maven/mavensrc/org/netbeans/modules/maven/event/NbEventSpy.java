@@ -86,22 +86,40 @@ public class NbEventSpy extends AbstractEventSpy {
             sb.append("{");
             {
                 sb.append("\"type\":\"").append(ex.getType().name()).append("\"");
-                //TODO only in Project* related event types?
-                if (ex.getProject() != null) { // && not superpom
+
+                //the depth is as follows
+                //Session -> Project -> [Fork -> ForkedProject] -> Mojo                
+                
+                if (ex.getProject() != null && 
+                        (ExecutionEvent.Type.ProjectStarted.equals(ex.getType()) ||
+                         ExecutionEvent.Type.ProjectFailed.equals(ex.getType()) ||
+                         ExecutionEvent.Type.ProjectSkipped.equals(ex.getType()) ||
+                         ExecutionEvent.Type.ProjectSucceeded.equals(ex.getType())
+                        )) { // && not superpom
+                    //only in Project* related event types
+                    //project skipped called without ProjectStarted
                     MavenProject mp = ex.getProject();
                     sb.append(" \"prj\":{");
                     {
                         sb.append("\"id\": \"").append(mp.getId()).append("\" ");
-                        if (mp.getFile() != null) {
+                        if (mp.getFile() != null) { //file is null in superpom
                             sb.append("\"file\":\"").append(mp.getFile().getParentFile().getAbsolutePath()).append("\"");
                         }
                     }
                     sb.append("}");
                 }
-                if (ExecutionEvent.Type.SessionStarted.equals(ex.getType())) {
+                if (ExecutionEvent.Type.SessionStarted.equals(ex.getType()) || ExecutionEvent.Type.SessionEnded.equals(ex.getType())) {
+                    //only in session events
                     sb.append(" \"prjcount\":").append(ex.getSession().getProjects().size());
                 }
-                if (ex.getMojoExecution() != null) {
+                if (ex.getMojoExecution() != null && 
+                        (ExecutionEvent.Type.MojoStarted.equals(ex.getType()) ||
+                         ExecutionEvent.Type.MojoFailed.equals(ex.getType()) ||
+                         ExecutionEvent.Type.MojoSkipped.equals(ex.getType()) || 
+                         ExecutionEvent.Type.MojoSucceeded.equals(ex.getType())
+                        )) {
+                    //only in mojo events
+                    //MojoSkipped .. only if requires online but build was offline, called without MojoStarted
                     MojoExecution me = ex.getMojoExecution();
                     sb.append(" \"mojo\": {");
                     {
