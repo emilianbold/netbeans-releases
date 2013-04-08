@@ -47,8 +47,8 @@ import org.netbeans.modules.css.prep.editor.CPUtils;
 import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
-import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.Warnings;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -79,7 +79,8 @@ public final class LessProcessor extends BaseProcessor {
             return LessExecutable.getDefault();
         } catch (InvalidExternalExecutableException ex) {
             if (Warnings.showLessWarning()) {
-                UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
+                // refresh project problems
+                CssPreprocessors.getDefault().fireChange();
             }
         }
         return null;

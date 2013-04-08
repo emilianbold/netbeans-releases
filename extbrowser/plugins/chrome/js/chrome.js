@@ -82,6 +82,7 @@ NetBeans.browserAttachDebugger = function(tabId) {
             NetBeans.debuggedTab = tabId;
             chrome.tabs.get(tabId, function(tab) {
                 NetBeans.windowWithDebuggedTab = tab.windowId;
+                NetBeans.createContextMenu(tabId, tab.url);
             });
             // detect viewport
             NetBeans.detectViewPort();
@@ -109,6 +110,9 @@ NetBeans.hidePageIcon = function(tabId) {
 
 // Creates the Select Mode context menu
 NetBeans.createContextMenu = function(tabId, url) {
+    if (NetBeans.debuggedTab !== tabId) {
+        return; // The tab is managed but not debugged
+    }
     var baseUrl = function(url) {
         // Remove anchor
         var index = url.indexOf('#');

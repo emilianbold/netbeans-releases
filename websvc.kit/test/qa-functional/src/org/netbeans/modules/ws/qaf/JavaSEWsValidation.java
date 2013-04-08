@@ -42,10 +42,7 @@
 package org.netbeans.modules.ws.qaf;
 
 import java.io.IOException;
-import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase.ProjectType;
 
 /**
@@ -77,32 +74,17 @@ public class JavaSEWsValidation extends WsValidation {
         return "WsClientInJavaSE"; //NOI18N
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JavaSEWsValidation.class),
-                "testCreateWsClient",
-                "testCallWsOperationInJavaMainClass",
-                "testWsClientHandlers",
-                //"testRefreshClient",
-                "testRunWsClientProject"
-                ).enableModules(".*").clusters(".*"));
-    }
-
     public void testCallWsOperationInJavaMainClass() {
         final EditorOperator eo = new EditorOperator("Main.java"); //NOI18N
         eo.select("// TODO code application logic here"); //NOI18N
-        callWsOperation(eo, "myIntMethod", 18); //NOI18N
-        assertTrue("Web service lookup class has not been found", eo.contains(getWsClientLookupCall())); //NOI18N
-        assertFalse("@WebServiceRef present", eo.contains("@WebServiceRef")); //NOI18N
+        callWsOperation(eo, "myIntMethod", eo.getLineNumber()); //NOI18N
     }
 
     /**
-     * Since there's not Deploy action for Java Projects, it's Run insteda and output checked
+     * Since there's not Deploy action for Java Projects, it's Run instead and output checked
      * @throws java.io.IOException
      */
     public void testRunWsClientProject() throws IOException {
         runProject(getProjectName());
-        OutputTabOperator oto = new OutputTabOperator(getProjectName());
-        assertTrue(oto.getText().indexOf("Result = []") > -1); //NOI18N
-        assertTrue(oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
     }
 }
