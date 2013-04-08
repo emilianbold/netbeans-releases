@@ -368,6 +368,14 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             else if (ExecutionEvent.Type.ProjectFailed.equals(obj.type)) {
                 trimTree(obj);
                 CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);                    
+            } else if (ExecutionEvent.Type.ForkStarted.equals(obj.type)) {
+                growTree(obj);
+            } else if (ExecutionEvent.Type.ForkedProjectStarted.equals(obj.type)) {
+                growTree(obj);
+            } else if (ExecutionEvent.Type.ForkFailed.equals(obj.type) || ExecutionEvent.Type.ForkSucceeded.equals(obj.type)) {
+                trimTree(obj);
+            } else if (ExecutionEvent.Type.ForkedProjectFailed.equals(obj.type) || ExecutionEvent.Type.ForkedProjectSucceeded.equals(obj.type)) {
+                trimTree(obj);
             }
         }
 
