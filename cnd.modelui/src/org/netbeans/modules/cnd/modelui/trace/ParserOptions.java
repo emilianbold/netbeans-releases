@@ -109,6 +109,7 @@ public class ParserOptions extends javax.swing.JPanel {
         traceParserRule = new javax.swing.JCheckBox();
         traceParserAction = new javax.swing.JCheckBox();
         showAST = new javax.swing.JCheckBox();
+        oldOnly = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(newGrammar, org.openide.util.NbBundle.getMessage(ParserOptions.class, "ParserOptions.newGrammar.text")); // NOI18N
 
@@ -124,6 +125,8 @@ public class ParserOptions extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(showAST, org.openide.util.NbBundle.getMessage(ParserOptions.class, "ParserOptions.showAST.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(oldOnly, org.openide.util.NbBundle.getMessage(ParserOptions.class, "ParserOptions.oldOnly.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -131,39 +134,44 @@ public class ParserOptions extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(newGrammar)
-                    .addComponent(parseHeadersWithSources)
                     .addComponent(cppParserAction)
+                    .addComponent(newGrammar)
                     .addComponent(excludeCompound)
                     .addComponent(traceParserRule)
                     .addComponent(traceParserAction)
-                    .addComponent(showAST))
-                .addContainerGap(75, Short.MAX_VALUE))
+                    .addComponent(showAST)
+                    .addComponent(oldOnly)
+                    .addComponent(parseHeadersWithSources))
+                .addContainerGap(31, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(newGrammar)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(parseHeadersWithSources)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cppParserAction)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(excludeCompound)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(traceParserRule)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(traceParserAction)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(showAST)
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(oldOnly)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(parseHeadersWithSources)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cppParserAction)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cppParserAction;
     private javax.swing.JCheckBox excludeCompound;
     private javax.swing.JCheckBox newGrammar;
+    private javax.swing.JLabel oldOnly;
     private javax.swing.JCheckBox parseHeadersWithSources;
     private javax.swing.JCheckBox showAST;
     private javax.swing.JCheckBox traceParserAction;
