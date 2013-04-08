@@ -2147,7 +2147,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     @Override public void simple_member_declaration(int kind, Token token){
-        if(kind == SIMPLE_MEMBER_DECLARATION__SEMICOLON) {
+        if(kind == SIMPLE_MEMBER_DECLARATION__COMMA2 || kind == SIMPLE_MEMBER_DECLARATION__SEMICOLON) {
             SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
             SimpleDeclarationBuilder builder;
             if(declBuilder.hasTypedefSpecifier()) {

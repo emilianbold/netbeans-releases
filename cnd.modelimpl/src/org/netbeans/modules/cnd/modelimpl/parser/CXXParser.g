@@ -1976,7 +1976,7 @@ member_declarator
 @init                                                                           {if(state.backtracking == 0){action.member_declarator(input.LT(1));}}
     :                                                                           
     (
-        declarator virt_specifier* brace_or_equal_initializer
+        declarator virt_specifier* brace_or_equal_initializer?
     |
         member_bitfield_declarator
     )                                                                           
