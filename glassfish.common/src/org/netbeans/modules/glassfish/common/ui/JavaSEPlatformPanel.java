@@ -109,7 +109,7 @@ public class JavaSEPlatformPanel extends JPanel {
         }
     }
 
-            /**
+    /**
      * Display GlassFish Java SE selector to allow switch Java SE used
      * to run GlassFish.
      * <p/>
@@ -193,6 +193,7 @@ public class JavaSEPlatformPanel extends JPanel {
      *                   for supported platforms.
      * @param message    Warning text.
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     public JavaSEPlatformPanel(NotifyDescriptor descriptor,
             GlassfishInstance instance, String message) {
         this.descriptor = descriptor;
