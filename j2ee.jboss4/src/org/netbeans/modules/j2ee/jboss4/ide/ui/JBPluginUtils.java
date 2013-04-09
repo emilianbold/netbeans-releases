@@ -61,6 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.openide.filesystems.JarFileSystem;
@@ -101,7 +102,10 @@ public class JBPluginUtils {
 
     public static final String LIB = "lib" + File.separator;
 
-    public static final String MODULES = "modules" + File.separator;
+    public static final String MODULES_BASE = "modules" + File.separator;
+
+    public static final String MODULES_BASE_7 = "modules" + File.separator + "system"
+            + File.separator + "layers" + File.separator + "base" + File.separator;
 
     public static final String CLIENT = "client" + File.separator;
 
@@ -279,6 +283,15 @@ public class JBPluginUtils {
                     "jboss-modules.jar"); // NOI18N
         }
         return serverRequirements7x;
+    }
+
+    @NonNull
+    public static String getModulesBase(String serverRoot) {
+        File file = new File(serverRoot, MODULES_BASE_7);
+        if (file.isDirectory()) {
+            return MODULES_BASE_7;
+        }
+        return MODULES_BASE;
     }
 
     //------------  getting exists servers---------------------------
@@ -737,7 +750,7 @@ public class JBPluginUtils {
         Version version = getVersion(systemJarFile);
         if (version == null) {
             // check for JBoss AS 7
-            File serverDir = new File(serverPath, "modules/org/jboss/as/server/main");
+            File serverDir = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org/jboss/as/server/main");
             File[] files = serverDir.listFiles(new JarFileFilter());
             if (files != null) {
                 for (File jarFile : files) {

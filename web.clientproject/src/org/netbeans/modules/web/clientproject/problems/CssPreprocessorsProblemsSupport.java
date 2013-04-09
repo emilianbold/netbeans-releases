@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.web.clientproject.problems;
 
-import org.netbeans.spi.project.ui.ProjectProblemsProvider;
-import org.openide.filesystems.FileObject;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.web.common.api.CssPreprocessor;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 
-/**
- * Validator for PHP projects.
- */
-public final class PhpProjectValidator {
+public class CssPreprocessorsProblemsSupport implements CssPreprocessor.ProjectProblemsProviderSupport {
 
-    private PhpProjectValidator() {
+    private final ClientSideProject project;
+
+
+    public CssPreprocessorsProblemsSupport(ClientSideProject project) {
+        assert project != null;
+        this.project = project;
     }
 
-    /**
-     * Is the given project fatally broken?
-     *
-     * Currently, it means that its source directory is not set or is invalid (deleted).
-     * @param project project to be checked
-     * @return {@code true} if the project is fatally broken
-     */
-    public static boolean isFatallyBroken(PhpProject project) {
-        FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
-        return sources == null || !sources.isValid();
+    @Override
+    public Project getProject() {
+        return project;
     }
 
-    /**
-     * Is the given project broken?
-     *
-     * Currently, it means that the given project has any {@link ProjectProblemsProvider#getProblems() problem}.
-     * @param project project to be checked
-     * @return {@code true} if the project is broken
-     */
-    public static boolean isBroken(PhpProject project) {
-        return !project.getLookup().lookup(ProjectProblemsProvider.class).getProblems().isEmpty();
+    @Override
+    public void openCustomizer() {
+        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CssPreprocessors.CUSTOMIZER_IDENT);
     }
 
 }

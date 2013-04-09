@@ -59,6 +59,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -106,10 +107,12 @@ import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
+import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -200,10 +203,18 @@ public final class PhpProject implements Project {
     final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<PropertyChangeListener>();
 
+    // css preprocessors
+    final List<CssPreprocessor> cssPreprocessors = new CopyOnWriteArrayList<CssPreprocessor>();
+    final ChangeListener cssPreprocessorChangeListener = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            recompileSources((CssPreprocessor) e.getSource());
+        }
+    };
     final ChangeListener cssPreprocessorsChangeListener = new ChangeListener() {
         @Override
         public void stateChanged(ChangeEvent e) {
-            recompileSources();
+            reinitCssPreprocessors();
         }
     };
 
@@ -425,13 +436,34 @@ public final class PhpProject implements Project {
         }
     }
 
-    void recompileSources() {
+    void initCssPreprocessors() {
+        assert cssPreprocessors.isEmpty() : "Empty preprocessors expected: " + cssPreprocessors;
+        cssPreprocessors.addAll(CssPreprocessors.getDefault().getPreprocessors());
+        for (CssPreprocessor preprocessor : cssPreprocessors) {
+            preprocessor.addChangeListener(cssPreprocessorChangeListener);
+        }
+    }
+
+    void clearCssPreprocessors() {
+        for (CssPreprocessor preprocessor : cssPreprocessors) {
+            preprocessor.removeChangeListener(cssPreprocessorChangeListener);
+        }
+        cssPreprocessors.clear();
+    }
+
+    void reinitCssPreprocessors() {
+        clearCssPreprocessors();
+        initCssPreprocessors();
+    }
+
+    void recompileSources(CssPreprocessor cssPreprocessor) {
+        assert cssPreprocessor != null;
         FileObject sourcesDirectory = getSourcesDirectory();
         if (sourcesDirectory == null) {
             return;
         }
         // force recompiling
-        CssPreprocessors.getDefault().process(this, sourcesDirectory, true);
+        CssPreprocessors.getDefault().process(cssPreprocessor, this, sourcesDirectory);
     }
 
     public PhpModule getPhpModule() {
@@ -648,7 +680,7 @@ public final class PhpProject implements Project {
 
     private Lookup createLookup(AuxiliaryConfiguration configuration, PhpModule phpModule) {
         PhpProjectEncodingQueryImpl phpProjectEncodingQueryImpl = new PhpProjectEncodingQueryImpl(getEvaluator());
-        return Lookups.fixed(new Object[] {
+        Lookup base = Lookups.fixed(new Object[] {
                 this,
                 CopySupport.getInstance(this),
                 new SeleniumProvider(),
@@ -686,6 +718,7 @@ public final class PhpProject implements Project {
                 ProjectBrowserProviderImpl.create(this),
                 // ?? getRefHelper()
         });
+        return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-php-project/Lookup"); // NOI18N
     }
 
     public ReferenceHelper getRefHelper() {
@@ -745,7 +778,7 @@ public final class PhpProject implements Project {
 
             addSourceDirListener();
             CssPreprocessors.getDefault().addChangeListener(cssPreprocessorsChangeListener);
-            recompileSources();
+            initCssPreprocessors();
 
             testingProviders.projectOpened();
             frameworks.projectOpened();
@@ -785,6 +818,7 @@ public final class PhpProject implements Project {
             try {
                 removeSourceDirListener();
                 CssPreprocessors.getDefault().removeChangeListener(cssPreprocessorsChangeListener);
+                clearCssPreprocessors();
 
                 testingProviders.projectClosed();
                 frameworks.projectClosed();
@@ -962,7 +996,7 @@ public final class PhpProject implements Project {
         }
 
         private void processChange(FileObject file) {
-            CssPreprocessors.getDefault().process(PhpProject.this, file, true);
+            CssPreprocessors.getDefault().process(PhpProject.this, file);
         }
 
     }

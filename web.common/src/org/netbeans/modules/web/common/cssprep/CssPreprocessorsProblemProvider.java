@@ -90,7 +90,7 @@ public final class CssPreprocessorsProblemProvider implements ProjectProblemsPro
             public Collection<ProjectProblemsProvider.ProjectProblem> collectProblems() {
                 Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<>();
                 for (CssPreprocessor preprocessor : CssPreprocessors.getDefault().getPreprocessors()) {
-                    ProjectProblemsProvider problemsProvider = preprocessor.createProjectProblemsProvider(support);
+                    ProjectProblemsProvider problemsProvider = CssPreprocessorAccessor.getDefault().createProjectProblemsProvider(preprocessor, support);
                     if (problemsProvider != null) {
                         currentProblems.addAll(problemsProvider.getProblems());
                     }
