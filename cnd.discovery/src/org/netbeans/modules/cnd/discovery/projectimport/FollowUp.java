@@ -216,21 +216,25 @@ public class FollowUp extends JPanel {
         };
         String title;
         ImageIcon icon;
+        NotificationDisplayer.Category category;
         if (hasBrokenIncludes(project)) {
             title = getString("Configure_Fail"); // NOI18N
             icon  = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/discovery/wizard/resources/info.png", false); // NOI18N
+            category = NotificationDisplayer.Category.ERROR;
         } else {
             State stateMake = importer.getImportResult().get(Step.Make);
             if (stateMake == State.Fail) {
                 title = getString("Configure_Info"); // NOI18N
                 icon  = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/discovery/wizard/resources/info.png", false); // NOI18N
+                category = NotificationDisplayer.Category.WARNING;
             } else {
                 title = getString("Configure_Success"); // NOI18N
                 icon  = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/discovery/wizard/resources/check.png", false); // NOI18N
+                category = NotificationDisplayer.Category.INFO;
             }
         }
         final Notification notification = NotificationDisplayer.getDefault().notify(title, icon,
-                getString("Dialog_Action"), onClickAction, NotificationDisplayer.Priority.HIGH); // NOI18N
+                getString("Dialog_Action"), onClickAction, NotificationDisplayer.Priority.HIGH, category); // NOI18N
         RP.post(new Runnable() {
             @Override
             public void run() {
