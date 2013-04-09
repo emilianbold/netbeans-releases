@@ -94,6 +94,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
     private static final String ENCODING = "UTF-8"; //NOI18N
     private static String TEMPLATE_XHTML = "template.template"; //NOI18N
     private static String TEMPLATE_XHTML2 = "template-jsf2.template"; //NOI18N
+    private static String TEMPLATE_XHTML22 = "template-jsf22.template"; //NOI18N
     private static String FL_RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/facelets/resources/templates/"; //NOI18N
 
     /** Creates a new instance of TemplateIterator */
@@ -114,7 +115,9 @@ public class TemplateIterator implements TemplateWizard.Iterator {
 
             JSFVersion version = JSFVersion.forWebModule(wm);
             String templateFile = TEMPLATE_XHTML;
-            if (version != null && version.isAtLeast(JSFVersion.JSF_2_0)) {
+            if (version != null && version.isAtLeast(JSFVersion.JSF_2_2)) {
+                templateFile = TEMPLATE_XHTML22;
+            } else if (version != null && version.isAtLeast(JSFVersion.JSF_2_2)) {
                 templateFile = TEMPLATE_XHTML2;
             }
             String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(FL_RESOURCE_FOLDER + templateFile), ENCODING);
