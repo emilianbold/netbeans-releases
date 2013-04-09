@@ -76,7 +76,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author Denis Anisimov
  */
-class JsxWsPoliciesSupportImpl implements JaxWsPoliciesSupportImplementation {
+class JaxWsPoliciesSupportImpl implements JaxWsPoliciesSupportImplementation {
     private static final String ORACLE = "oracle";                                  // NOI18N
 
     private static final String ORACLE_COMMON_MODULES = "oracle_common/modules/"; // NOI18N
@@ -84,7 +84,7 @@ class JsxWsPoliciesSupportImpl implements JaxWsPoliciesSupportImplementation {
     private static final String ORACLE_WEBSERVICES_STANDALONE_CLIENT = ORACLE_WEBSERVICES + ".standalone.client"; // NOI18N
     private static final String JAR = "jar"; // NOI18N
 
-    JsxWsPoliciesSupportImpl(WLJ2eePlatformFactory.J2eePlatformImplImpl platformImpl) {
+    JaxWsPoliciesSupportImpl(WLJ2eePlatformFactory.J2eePlatformImplImpl platformImpl) {
         this.platformImpl = platformImpl;
     }
 
