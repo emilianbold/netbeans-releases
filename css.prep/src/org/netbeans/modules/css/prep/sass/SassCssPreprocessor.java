@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.prep.sass;
 
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.problems.SassProjectProblemsProvider;
 import org.netbeans.modules.css.prep.process.SassProcessor;
@@ -50,6 +51,7 @@ import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -57,6 +59,8 @@ import org.openide.util.lookup.ServiceProvider;
 public final class SassCssPreprocessor implements CssPreprocessorImplementation {
 
     private static final String IDENTIFIER = "SASS"; // NOI18N
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
     @Override
@@ -72,17 +76,31 @@ public final class SassCssPreprocessor implements CssPreprocessorImplementation 
 
     @Override
     public void process(Project project, FileObject fileObject) {
-        new SassProcessor().process(project, fileObject);
+        new SassProcessor(this).process(project, fileObject);
     }
 
     @Override
     public Customizer createCustomizer(Project project) {
-        return new SassCustomizer(project);
+        return new SassCustomizer(this, project);
     }
 
     @Override
     public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
         return new SassProjectProblemsProvider(support, createCustomizer(support.getProject()));
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    public void fireChange() {
+        changeSupport.fireChange();
     }
 
 }
