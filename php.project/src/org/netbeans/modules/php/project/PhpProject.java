@@ -112,6 +112,7 @@ import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -679,7 +680,7 @@ public final class PhpProject implements Project {
 
     private Lookup createLookup(AuxiliaryConfiguration configuration, PhpModule phpModule) {
         PhpProjectEncodingQueryImpl phpProjectEncodingQueryImpl = new PhpProjectEncodingQueryImpl(getEvaluator());
-        return Lookups.fixed(new Object[] {
+        Lookup base = Lookups.fixed(new Object[] {
                 this,
                 CopySupport.getInstance(this),
                 new SeleniumProvider(),
@@ -717,6 +718,7 @@ public final class PhpProject implements Project {
                 ProjectBrowserProviderImpl.create(this),
                 // ?? getRefHelper()
         });
+        return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-php-project/Lookup"); // NOI18N
     }
 
     public ReferenceHelper getRefHelper() {
