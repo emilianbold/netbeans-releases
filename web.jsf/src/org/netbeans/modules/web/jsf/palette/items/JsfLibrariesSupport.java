@@ -129,6 +129,9 @@ public class JsfLibrariesSupport {
             libraryimport.lib = lib;
 
             Collection<String> prefixes = ns2prefixes.get(libraryInfo.getNamespace());
+            if (prefixes == null && libraryInfo.getLegacyNamespace() != null) {
+                prefixes = ns2prefixes.get(libraryInfo.getLegacyNamespace());
+            }
             if (libraryInfo.getLegacyNamespace() != null && ns2prefixes.get(libraryInfo.getLegacyNamespace()) != null) {
                 prefixes.addAll(ns2prefixes.get(libraryInfo.getLegacyNamespace()));
             }
