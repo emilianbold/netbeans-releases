@@ -233,11 +233,12 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 handle.finish();
                 ioput.getOut().close();
                 ioput.getErr().close();
-                actionStatesAtFinish(out.firstFailure != null ? new FindByName(out.firstFailure) : null);
+                actionStatesAtFinish(out.createResumeFromFinder());
                 markFreeTab();
                 RP.post(new Runnable() { //#103460
                     @Override
                     public void run() {
+                        //TODO we eventually know the coordinates of all built projects via EventSpy.
                         if (clonedConfig.getProject() != null) {
                             NbMavenProject.fireMavenProjectReload(clonedConfig.getProject());
                         }
@@ -558,36 +559,6 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         clonedConfig.setProperty(CosChecker.MAVENEXTCLASSPATH, mavenPath);
     }
 
-    private static class FindByName implements ResumeFromFinder {
-
-        private final @NonNull String firstFailure;
-
-        /**
-         * @param firstFailure {@link MavenProject#getName}
-         */
-        FindByName(@NonNull String firstFailure) {
-            this.firstFailure = firstFailure;
-        }
-
-        @Override public @CheckForNull NbMavenProject find(@NonNull Project root) {
-            // XXX EventSpy (#194090) would make this more reliable and efficient
-            //mkleint: usage of subprojectprovider is correct here
-            for (Project module : root.getLookup().lookup(SubprojectProvider.class).getSubprojects()) {
-                if (Thread.interrupted()) {
-                    break;
-                }
-                NbMavenProject nbmp = module.getLookup().lookup(NbMavenProject.class);
-                if (nbmp == null) {
-                    continue;
-                }
-                MavenProject mp = nbmp.getMavenProject();
-                if (firstFailure.equals(mp.getName())) {
-                    return nbmp;
-                }
-            }
-            return null;
-        }
-
-    }
+    
     
 }

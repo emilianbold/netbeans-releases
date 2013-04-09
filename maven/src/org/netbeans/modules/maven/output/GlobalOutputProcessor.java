@@ -45,16 +45,19 @@ import java.awt.Color;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.maven.execution.ExecutionEvent;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.modules.maven.execute.CommandLineOutputHandler;
+import org.netbeans.modules.maven.execute.ExecutionEventObject;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import static org.netbeans.modules.maven.output.Bundle.*;
 import org.netbeans.modules.options.java.api.JavaOptions;
@@ -68,6 +71,8 @@ import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -93,6 +98,9 @@ public class GlobalOutputProcessor implements OutputProcessor {
 
     private final RunConfig config;
     
+    private boolean processReactorSummary = false;
+    private Iterator<ExecutionEventObject.Tree> projectIterator;
+    
     GlobalOutputProcessor(RunConfig config) {
         this.config = config;
     }
@@ -116,6 +124,53 @@ public class GlobalOutputProcessor implements OutputProcessor {
             visitor.setColor(Color.GREEN.darker().darker());
             return;
         }
+        
+        //reactor summary processing ---- 
+        if (line.startsWith("Reactor Summary:")) {
+            processReactorSummary = true;
+            CommandLineOutputHandler.ContextImpl context = (CommandLineOutputHandler.ContextImpl) visitor.getContext();
+            if (context != null) {
+                projectIterator = context.getExecutionTree().childrenNodes.iterator();
+            }
+            return;
+        }
+        if (processReactorSummary && projectIterator != null) {
+            if (CommandLineOutputHandler.reactorSummaryLine.matcher(line).matches() && projectIterator.hasNext()) {
+                final ExecutionEventObject.Tree next = projectIterator.next();
+                boolean projectFailed = ExecutionEvent.Type.ProjectFailed.equals(next.endEvent.type);
+                boolean lineFailed = line.contains(" FAILURE ");
+                if (lineFailed != projectFailed) {
+                    LOG.log(Level.INFO, "Maven Project Reactor summary out of sync for:" + line);
+                } else if (projectFailed) {
+                    //visitor.setColor(Color.RED);
+                    visitor.setOutputListener(new OutputListener() {
+
+                        @Override
+                        public void outputLineSelected(OutputEvent ev) {
+                        }
+
+                        @Override
+                        public void outputLineAction(OutputEvent ev) {
+                            RequestProcessor.getDefault().post(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    next.getEndOffset().scrollTo();
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void outputLineCleared(OutputEvent ev) {
+                        }
+                    });
+                }
+            }
+        }
+        //reactor summary processing ----end 
+        
+        
+        
         if (LOW_MVN.matcher(line).matches()) {
             visitor.setLine(line + '\n' + TXT_ChangeSettings());
             visitor.setColor(Color.RED);
