@@ -99,7 +99,7 @@ public class MergeAction extends ContextAction {
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
         if (root == null) {
-            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+            OutputLogger logger = Mercurial.getInstance().getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
             logger.outputInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE")); // NOI18N
             logger.outputInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE_SEP")); // NOI18N
             logger.outputInRed(

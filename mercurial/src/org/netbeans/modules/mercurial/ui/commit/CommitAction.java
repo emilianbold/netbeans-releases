@@ -148,7 +148,7 @@ public class CommitAction extends ContextAction {
         VCSContext context = HgUtils.getCurrentContext(nodes);
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
-            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+            OutputLogger logger = Mercurial.getInstance().getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
             logger.outputInRed( NbBundle.getMessage(CommitAction.class,"MSG_COMMIT_TITLE")); // NOI18N
             logger.outputInRed( NbBundle.getMessage(CommitAction.class,"MSG_COMMIT_TITLE_SEP")); // NOI18N
             logger.outputInRed(
