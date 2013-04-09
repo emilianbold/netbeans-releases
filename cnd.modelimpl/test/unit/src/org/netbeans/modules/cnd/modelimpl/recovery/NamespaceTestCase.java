@@ -41,32 +41,31 @@
  */
 package org.netbeans.modules.cnd.modelimpl.recovery;
 
-import org.netbeans.modules.cnd.modelimpl.recovery.base.Diff;
-import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammar;
-import org.netbeans.modules.cnd.modelimpl.recovery.base.Diffs;
-import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammars;
-import org.netbeans.modules.cnd.modelimpl.recovery.base.Golden;
-import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
 import java.io.File;
 import org.junit.Test;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Diff;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Diffs;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Golden;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammar;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammars;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
 
 /**
  *
  * @author Alexander Simon
  */
 @RandomlyFails
-public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
-
-    private static final String SOURCE = "cpu.h";
-    public QuoteCpu_hTestCase(String testName, Grammar gramma, Diff diff, Golden golden) {
+public class NamespaceTestCase extends RecoveryTestCaseBase {
+    private static final String SOURCE = "namespace.cc";
+    public NamespaceTestCase(String testName, Grammar gramma, Diff diff, Golden golden) {
         super(testName, gramma, diff, golden);
     }
     
     @Override
     protected File getTestCaseDataDir() {
-        return Manager.normalizeFile(new File(getDataDir(), "common/recovery/cpu_h"));
+        return Manager.normalizeFile(new File(getDataDir(), "common/recovery/namespace"));
     }
 
     @Grammar(newGrammar = false)
@@ -79,7 +78,7 @@ public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
     @Grammar(newGrammar = true)
     @Diff(file=SOURCE)
     @Test
-    public void beforeClass0() throws Exception {
+    public void beforeNS0() throws Exception {
         implTest(SOURCE);
     }
 
@@ -88,32 +87,18 @@ public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
         @Grammar(newGrammar = true)
     })
     @Diffs({
-        @Diff(file=SOURCE, line = 46, column = 1, length = 0, insert = "ID()"),
-        @Diff(file=SOURCE, line = 46, column = 1, length = 0, insert = "*"),
-        @Diff(file=SOURCE, line = 46, column = 1, length = 0, insert = "&"),
-        @Diff(file=SOURCE, line = 46, column = 1, length = 0, insert = "{"),
-        @Diff(file=SOURCE, line = 46, column = 1, length = 0, insert = "}"),
-        @Diff(file=SOURCE, line = 46, column = 1, length = 0, insert = "+"),
-        @Diff(file=SOURCE, line = 46, column = 1, length = 0, type = "int*a()")
+        @Diff(file=SOURCE, line = 4, column = 1, length = 0, insert = "{"),
+        @Diff(file=SOURCE, line = 4, column = 1, length = 0, insert = "}"),
+        @Diff(file=SOURCE, line = 4, column = 1, length = 0, insert = "+"),
+        @Diff(file=SOURCE, line = 4, column = 1, length = 0, insert = "class"),
+        @Diff(file=SOURCE, line = 4, column = 1, length = 0, insert = "*"),
+        @Diff(file=SOURCE, line = 4, column = 1, length = 0, insert = "&"),
+        @Diff(file=SOURCE, line = 4, column = 1, length = 0, insert = "ID"),
+        @Diff(file=SOURCE, line = 4, column = 1, length = 0, insert = "ID()"),
+        //@Diff(file=SOURCE, line = 4, column = 1, length = 0, type = "int*a()"),
     })
     @Test
-    public void beforeClass1() throws Exception {
-        implTest(SOURCE);
-    }
-    
-    @Grammars({
-        @Grammar(newGrammar = false),
-        @Grammar(newGrammar = true)
-    })
-    @Diffs({
-        @Diff(file=SOURCE, line = 53, column = 1, length = 0, insert = "ID"),
-        @Diff(file=SOURCE, line = 53, column = 1, length = 0, insert = "ID()"),
-        @Diff(file=SOURCE, line = 53, column = 1, length = 0, insert = "ID(SIGNAL)"),
-        @Diff(file=SOURCE, line = 53, column = 1, length = 0, insert = "class"),
-        @Diff(file=SOURCE, line = 53, column = 1, length = 0, type = "int*a()")
-    })
-    @Test
-    public void betweenClassMembers1() throws Exception {
+    public void beforeNS1() throws Exception {
         implTest(SOURCE);
     }
 
@@ -122,13 +107,10 @@ public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
         @Grammar(newGrammar = true)
     })
     @Diffs({
-        @Diff(file=SOURCE, line = 58, column = 36, length = 0, insert = "ID"),
-        @Diff(file=SOURCE, line = 58, column = 36, length = 0, insert = "ID()"),
-        @Diff(file=SOURCE, line = 58, column = 36, length = 0, insert = "ID(E)"), 
-        @Diff(file=SOURCE, line = 58, column = 36, length = 0, type = "const throw A")
+        @Diff(file=SOURCE, line = 8, column = 13, length = 3, insert = "string"),
     })
     @Test
-    public void insideMemberDeclaration1() throws Exception {
+    public void undefinedParameterTypeNS1() throws Exception {
         implTest(SOURCE);
     }
 
@@ -137,13 +119,13 @@ public class QuoteCpu_hTestCase extends RecoveryTestCaseBase {
         @Grammar(newGrammar = true)
     })
     @Diffs({
-        @Diff(file=SOURCE, line = 58, column = 35, length = 0, insert = "ID(E)"),
-        @Diff(file=SOURCE, line = 58, column = 35, length = 0, insert = "class"),
-        @Diff(file=SOURCE, line = 58, column = 35, length = 0, insert = "struct"),
-        @Diff(file=SOURCE, line = 58, column = 35, length = 0, type = "int*a")
+        @Diff(file=SOURCE, line = 7, column = 1, length = 0, insert = "*"),
+        @Diff(file=SOURCE, line = 7, column = 1, length = 0, insert = "&"),
+        //@Diff(file=SOURCE, line = 7, column = 1, length = 0, insert = "ID"),
+        //@Diff(file=SOURCE, line = 7, column = 1, length = 0, insert = "ID()"),
     })
     @Test
-    public void insideMemberParameter1() throws Exception {
+    public void betweenMembersNS1() throws Exception {
         implTest(SOURCE);
     }
 }

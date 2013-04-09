@@ -57,16 +57,16 @@ import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
  * @author Alexander Simon
  */
 @RandomlyFails
-public class QuoteCustomerTestCase extends RecoveryTestCaseBase {
+public class ClassTestCase extends RecoveryTestCaseBase {
 
-    private static final String SOURCE = "customer.cc";
-    public QuoteCustomerTestCase(String testName, Grammar gramma, Diff diff, Golden golden) {
+    private static final String SOURCE = "class.cc";
+    public ClassTestCase(String testName, Grammar gramma, Diff diff, Golden golden) {
         super(testName, gramma, diff, golden);
     }
     
     @Override
     protected File getTestCaseDataDir() {
-        return Manager.normalizeFile(new File(getDataDir(), "common/recovery/customer"));
+        return Manager.normalizeFile(new File(getDataDir(), "common/recovery/class"));
     }
 
     @Grammar(newGrammar = false)
@@ -79,7 +79,7 @@ public class QuoteCustomerTestCase extends RecoveryTestCaseBase {
     @Grammar(newGrammar = true)
     @Diff(file=SOURCE)
     @Test
-    public void beforeMethod0() throws Exception {
+    public void beforeClass0() throws Exception {
         implTest(SOURCE);
     }
 
@@ -88,16 +88,17 @@ public class QuoteCustomerTestCase extends RecoveryTestCaseBase {
         @Grammar(newGrammar = true)
     })
     @Diffs({
-        @Diff(file=SOURCE, line = 48, column = 1, length = 0, insert = "ID()"),
-        @Diff(file=SOURCE, line = 48, column = 1, length = 0, insert = "*"),
-        @Diff(file=SOURCE, line = 48, column = 1, length = 0, insert = "&"),
-        @Diff(file=SOURCE, line = 48, column = 1, length = 0, insert = "{"),
-        @Diff(file=SOURCE, line = 48, column = 1, length = 0, insert = "}"),
-        @Diff(file=SOURCE, line = 48, column = 1, length = 0, insert = "+"),
-        @Diff(file=SOURCE, line = 48, column = 1, length = 0, type = "int * a()")
+        @Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "ID()"),
+        //@Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "ID<E>"),
+        @Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "*"),
+        @Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "&"),
+        @Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "{"),
+        @Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "}"),
+        @Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "+"),
+        //@Diff(file=SOURCE, line = 1, column = 1, length = 0, type = "int*a()"),
     })
     @Test
-    public void beforeMethod1() throws Exception {
+    public void beforeClass1() throws Exception {
         implTest(SOURCE);
     }
     
@@ -106,15 +107,48 @@ public class QuoteCustomerTestCase extends RecoveryTestCaseBase {
         @Grammar(newGrammar = true)
     })
     @Diffs({
-        @Diff(file=SOURCE, line = 50, column = 5, length = 16, type = "int a=5"),
-        @Diff(file=SOURCE, line = 50, column = 5, length = 16, type = "if(a==0){}"),
-        @Diff(file=SOURCE, line = 50, column = 5, length = 16, type = "for(i=0;i<5;i++){}"),
-        @Diff(file=SOURCE, line = 50, column = 5, length = 16, type = "switch(i){case 5:return;}"),
-        @Diff(file=SOURCE, line = 50, column = 5, length = 16, type = "while(1){}"),
-        @Diff(file=SOURCE, line = 50, column = 5, length = 16, type = "a+=5")
+        @Diff(file=SOURCE, line = 6, column = 1, length = 0, insert = "ID"),
+        @Diff(file=SOURCE, line = 6, column = 1, length = 0, insert = "ID()"),
+        @Diff(file=SOURCE, line = 6, column = 1, length = 0, insert = "ID<E>"),
+        //@Diff(file=SOURCE, line = 6, column = 1, length = 0, insert = "ID(SIGNAL)"),
+        //@Diff(file=SOURCE, line = 6, column = 1, length = 0, insert = "class"),
+        //@Diff(file=SOURCE, line = 6, column = 1, length = 0, type = "int*a()"),
     })
     @Test
-    public void insideMethod1() throws Exception {
+    public void betweenClassMembers1() throws Exception {
+        implTest(SOURCE);
+    }
+
+    @Grammars({
+        @Grammar(newGrammar = false),
+        @Grammar(newGrammar = true)
+    })
+    @Diffs({
+        //@Diff(file=SOURCE, line = 7, column = 14, length = 0, insert = "ID"),
+        //@Diff(file=SOURCE, line = 7, column = 14, length = 0, insert = "ID()"),
+        //@Diff(file=SOURCE, line = 7, column = 14, length = 0, insert = "ID(E)"), 
+        //@Diff(file=SOURCE, line = 7, column = 14, length = 0, type = "const throw(A)"),
+        @Diff(file=SOURCE, line = 7, column = 14, length = 0, insert = "throw(A)"),
+        @Diff(file=SOURCE, line = 7, column = 14, length = 0, insert = "const throw(A)"),
+    })
+    @Test
+    public void insideMemberDeclaration1() throws Exception {
+        implTest(SOURCE);
+    }
+
+    @Grammars({
+        @Grammar(newGrammar = false),
+        @Grammar(newGrammar = true)
+    })
+    @Diffs({
+        @Diff(file=SOURCE, line = 7, column = 13, length = 0, insert = "ID(E)"),
+        @Diff(file=SOURCE, line = 7, column = 13, length = 0, insert = "ID<E>"),
+        //@Diff(file=SOURCE, line = 7, column = 13, length = 0, insert = "class"),
+        //@Diff(file=SOURCE, line = 7, column = 13, length = 0, insert = "struct"),
+        //@Diff(file=SOURCE, line = 7, column = 13, length = 0, type = "ID int*a"),
+    })
+    @Test
+    public void insideMemberParameter1() throws Exception {
         implTest(SOURCE);
     }
 }
