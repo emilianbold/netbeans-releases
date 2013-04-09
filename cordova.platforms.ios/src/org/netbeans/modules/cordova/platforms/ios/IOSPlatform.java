@@ -42,6 +42,7 @@
 package org.netbeans.modules.cordova.platforms.ios;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,6 +57,7 @@ import org.netbeans.modules.cordova.platforms.SDK;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -66,6 +68,10 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=MobilePlatform.class)
 public class IOSPlatform implements MobilePlatform {
+    
+    private static String IOS_SIGN_IDENTITY_PREF = "ios.sign.identity"; //NOI18N
+    private static String IOS_PROVISIONING_PROFILE_PREF = "ios.provisioning.profile"; //NOI18N
+    
 
     private transient final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
     private String sdkLocation;
@@ -194,6 +200,42 @@ public class IOSPlatform implements MobilePlatform {
     @Override
     public Collection<? extends Device> getVirtualDevices() throws IOException {
         return EnumSet.allOf(IOSDevice.class);
+    }
+
+    @Override
+    public String getCodeSignIdentity() {
+        return NbPreferences.forModule(IOSPlatform.class).get(IOS_SIGN_IDENTITY_PREF, "iPhone Developer");
+    }
+
+    @Override
+    public String getProvisioningProfilePath() {
+        String def = null;
+        File f = new File(System.getProperty("user.home") + "/Library/MobileDevice/Provisioning Profiles/");
+        if (f.exists() && f.isDirectory()) {
+            File[] listFiles = f.listFiles(new FilenameFilter() {
+
+                                   @Override
+                                   public boolean accept(File dir, String name) {
+                                       return name.endsWith(".mobileprovision");
+                                   }
+                               });
+            if (listFiles.length > 0) {
+                def = listFiles[0].getAbsolutePath();
+            }
+        }
+        return NbPreferences.forModule(IOSPlatform.class).get(IOS_PROVISIONING_PROFILE_PREF, def);
+    }
+
+    @Override
+    public void setCodeSignIdentity(String identity) {
+        NbPreferences.forModule(IOSPlatform.class).put(IOS_SIGN_IDENTITY_PREF, identity);
+        propertyChangeSupport.firePropertyChange("SIGN_IDENTITY", null, identity);//NOI18N
+    }
+
+    @Override
+    public void setProvisioningProfilePath(String path) {
+        NbPreferences.forModule(IOSPlatform.class).put(IOS_PROVISIONING_PROFILE_PREF, path);
+        propertyChangeSupport.firePropertyChange("PROVISIONING_PROFILE", null, path);//NOI18N
     }
 }
 

@@ -137,6 +137,14 @@ public interface MobilePlatform {
      * @return 
      */
     public MobileDebugTransport getDebugTransport();
+    
+    String getCodeSignIdentity();
+    
+    String getProvisioningProfilePath();
+
+    void setCodeSignIdentity(String identity);
+    
+    void setProvisioningProfilePath(String path);
 
     void removePropertyChangeListener(PropertyChangeListener listener);
     

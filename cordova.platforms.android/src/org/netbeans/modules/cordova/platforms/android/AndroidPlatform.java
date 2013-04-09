@@ -323,7 +323,25 @@ public class AndroidPlatform implements MobilePlatform {
     public Device getDevice(String name, EditableProperties props) {
         return AndroidDevice.get(name, props);
     }
-    
-    
+
+    @Override
+    public String getCodeSignIdentity() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String getProvisioningProfilePath() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setCodeSignIdentity(String identity) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setProvisioningProfilePath(String path) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }
 

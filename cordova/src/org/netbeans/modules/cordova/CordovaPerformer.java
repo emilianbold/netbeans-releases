@@ -74,6 +74,7 @@ import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.cordova.PropertyNames.*;
+import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
 import org.openide.loaders.DataObject;
@@ -91,13 +92,15 @@ public class CordovaPerformer implements BuildPerformer {
     public static final String DEFAULT_PACKAGE_NAME = "com.company";
     public static final String DEFAULT_DESCRIPTION = "PhoneGap Application";
     public static final String PROP_BUILD_SCRIPT_VERSION = "cordova_build_script_version";
+    public static final String PROP_PROVISIONING_PROFILE = "ios.provisioning.profile";
+    public static final String PROP_CERTIFICATE_NAME = "ios.certificate.name";
 
     private Session debuggerSession;
     private Lookup consoleLogger;
     private Lookup networkMonitor;
     private WebKitDebugging webKitDebugging;
     private MobileDebugTransport transport;
-    private final int BUILD_SCRIPT_VERSION = 3;
+    private final int BUILD_SCRIPT_VERSION = 4;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
@@ -155,7 +158,10 @@ public class CordovaPerformer implements BuildPerformer {
         props.put(PROP_UPDATE_TASK_JAR, antTaskJar.getAbsolutePath());
         final String name = getConfig(p).getName();
         props.put(PROP_ANDROID_PROJECT_ACTIVITY, name);//NOI18N
+        final MobilePlatform iosPlatform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
         
+        props.put(PROP_PROVISIONING_PROFILE, iosPlatform.getProvisioningProfilePath());
+        props.put(PROP_CERTIFICATE_NAME, iosPlatform.getCodeSignIdentity());
 
         String debug = ClientProjectUtilities.getProperty(p, PROP_DEBUG_ENABLE);//NOI18N
         if (debug == null) {
