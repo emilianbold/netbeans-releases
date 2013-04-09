@@ -58,9 +58,10 @@ public class CompilationUnitStab implements CompilationUnitInterface {
     private final String compileDir;
     private final String objectFile;
     private final boolean hasMain;
+    private final int mainLine;
     private final int desc;
     
-    public CompilationUnitStab(String sourceName, String line, String objectFile, boolean hasMain, int desc) {
+    public CompilationUnitStab(String sourceName, String line, String objectFile, boolean hasMain, int mainLine, int desc) {
         this.sourceName = sourceName;
         int i = line.indexOf(';');
         if (i > 0) {
@@ -72,6 +73,7 @@ public class CompilationUnitStab implements CompilationUnitInterface {
         }
         this.objectFile = objectFile;
         this.hasMain = hasMain;
+        this.mainLine = mainLine;
         this.desc = desc;
     }
     
@@ -93,6 +95,10 @@ public class CompilationUnitStab implements CompilationUnitInterface {
 
     public boolean hasMain() throws IOException {
         return hasMain;
+    }
+
+    public int getMainLine() throws IOException {
+        return mainLine;
     }
 
     public String getSourceFileAbsolutePath() throws IOException {

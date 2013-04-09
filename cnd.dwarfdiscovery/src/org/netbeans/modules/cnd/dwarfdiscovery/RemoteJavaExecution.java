@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
  */
-package org.netbeans.modules.cnd.dwarfdiscovery.provider;
+package org.netbeans.modules.cnd.dwarfdiscovery;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.LddService;
@@ -58,10 +59,14 @@ public class RemoteJavaExecution {
     }
     
     public List<SourceFile> getCompileLines(String executable) {
+        return getCompileLines(executable, true);
+    }
+
+    public List<SourceFile> getCompileLines(String executable, boolean preferExistingProjectCreator) {
         NativeProcess process = null;
         Task errorTask = null;
         try {
-            process = getJavaProcess(CompileLineService.class, env, new String[]{"-file", executable}); //NOI18N
+            process = getJavaProcess(CompileLineService.class, env, new String[]{"-file", executable}, preferExistingProjectCreator); //NOI18N
             if (process == null) {
                 return null;
             }
@@ -112,10 +117,14 @@ public class RemoteJavaExecution {
     }
     
     public SharedLibraries getDlls(String executable) {
+        return getDlls(executable, true);
+    }
+
+    public SharedLibraries getDlls(String executable, boolean preferExistingProjectCreator) {
         NativeProcess process = null;
         Task errorTask = null;
         try {
-            process = getJavaProcess(LddService.class, env, new String[]{executable});
+            process = getJavaProcess(LddService.class, env, new String[]{executable}, preferExistingProjectCreator);
             if (process == null) {
                 return null;
             }
@@ -165,13 +174,15 @@ public class RemoteJavaExecution {
         return null;
     }
 
-    private FileObject findProjectCreator() {
-        for(CompilerSet set : CompilerSetManager.get(env).getCompilerSets()) {
-            if (set.getCompilerFlavor().isSunStudioCompiler()) {
-                String directory = set.getDirectory();
-                FileObject dwarfDump = fileSystem.findResource(directory+"/../lib/netbeans/cnd/modules/org-netbeans-modules-cnd-dwarfdump.jar");
-                if (dwarfDump != null && dwarfDump.isValid()) {
-                    return dwarfDump;
+    private FileObject findProjectCreator(boolean preferExisting) {
+        if (preferExisting) {
+            for(CompilerSet set : CompilerSetManager.get(env).getCompilerSets()) {
+                if (set.getCompilerFlavor().isSunStudioCompiler()) {
+                    String directory = set.getDirectory();
+                    FileObject dwarfDump = fileSystem.findResource(directory+"/../lib/netbeans/cnd/modules/org-netbeans-modules-cnd-dwarfdump.jar");
+                    if (dwarfDump != null && dwarfDump.isValid()) {
+                        return dwarfDump;
+                    }
                 }
             }
         }
@@ -206,8 +217,8 @@ public class RemoteJavaExecution {
     }
 
     
-    private NativeProcess getJavaProcess(Class<?> clazz, ExecutionEnvironment env, String[] arguments) throws IOException{
-        FileObject dwarfDump = findProjectCreator();
+    private NativeProcess getJavaProcess(Class<?> clazz, ExecutionEnvironment env, String[] arguments, boolean preferExisting) throws IOException{
+        FileObject dwarfDump = findProjectCreator(preferExisting);
         if (dwarfDump == null) {
             return null;
         }
@@ -226,11 +237,8 @@ public class RemoteJavaExecution {
     public String getSourceRoot(List<SourceFile> compileLines) {
         TreeMap<String,AtomicInteger> realRoots = new TreeMap<String,AtomicInteger>();
         for(SourceFile file : compileLines) {
-            List<String> userIncludes = new ArrayList<String>();
-            Map<String, String> userMacros = new HashMap<String, String>();
-            List<String> undefinedMacros = new ArrayList<String>();
-            List<String> languageArtifacts = new ArrayList<String>();
-            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(file.getCompileLine(), DiscoveryUtils.LogOrigin.DwarfCompileLine, userIncludes, userMacros, undefinedMacros, null, languageArtifacts, null, true);
+            Artifacts artifacts = new Artifacts();
+            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(file.getCompileLine(), DiscoveryUtils.LogOrigin.DwarfCompileLine, artifacts, null, true);
             for(String what : sourcesList) {
                 if (what == null){
                     continue;

@@ -100,14 +100,14 @@ import org.openide.util.lookup.Lookups;
  */
 final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
-    private static final RequestProcessor RP = new RequestProcessor("LogicalFolderNode", 1); //NOI18N
     private static final MessageFormat FOLDER_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd-folder; class=org.netbeans.modules.cnd.makeproject.ui.LogicalFolderNode; mask={0}"); // NOI18N
     private final Folder folder;
     private final MakeLogicalViewProvider provider;
     private final String pathPostfix;
+    private RequestProcessor.Task updateTask;
 
     public LogicalFolderNode(Node folderNode, Folder folder, MakeLogicalViewProvider provider) {
-        super(new LogicalViewChildren(folder, provider), createLFNLookup(folderNode, folder, provider), MakeLogicalViewProvider.ANNOTATION_RP);
+        super(new LogicalViewChildren(folder, provider), createLFNLookup(folderNode, folder, provider), provider.getAnnotationRP());
         this.folder = folder;
         this.provider = provider;
         String postfix = "";
@@ -155,7 +155,10 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
     }
 
     private void updateAnnotationFiles() {
-        MakeLogicalViewProvider.ANNOTATION_RP.post(new FileAnnotationUpdater(this));
+        if (updateTask == null) {
+            updateTask = provider.getAnnotationRP().create(new FileAnnotationUpdater(this));
+        }
+        updateTask.schedule(BaseMakeViewChildren.WAIT_DELAY); // batch by 50 ms
     }
 
     private final class FileAnnotationUpdater implements Runnable {
@@ -187,6 +190,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
             while (iter.hasNext()) {
                 iter.next().addChangeListener(logicalFolderNode);
             }
+            EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
         }
     }
 
@@ -205,9 +209,6 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
     @Override
     public void stateChanged(ChangeEvent e) {
         updateAnnotationFiles();
-        EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
-//            fireIconChange(); // LogicalFolderNode
-//            fireOpenedIconChange();
     }
 
     public Folder getFolder() {
@@ -286,7 +287,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     @Override
     public void setName(final String newName) {
-        RP.post(new Runnable() {
+        provider.getAnnotationRP().post(new Runnable() {
 
             @Override
             public void run() {
@@ -372,7 +373,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     @Override
     public void destroy() throws IOException {
-        RP.post(new Runnable() {
+        provider.getAnnotationRP().post(new Runnable() {
 
             @Override
             public void run() {

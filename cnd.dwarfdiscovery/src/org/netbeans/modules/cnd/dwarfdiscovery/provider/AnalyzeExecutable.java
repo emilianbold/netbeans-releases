@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
+import org.netbeans.modules.cnd.dwarfdiscovery.RemoteJavaExecution;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -312,6 +313,11 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                     }
                     return new ArrayList<String>(myDependencies);
                 }
+
+                @Override
+                public List<String> getBuildArtifacts() {
+                    return null;
+                }
                 
                 @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
@@ -321,12 +327,12 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                         if (set != null && set.length() > 0) {
                             String[] add = (String[])getProperty(LIBRARIES_KEY).getValue();
                             if (add == null || add.length==0) {
-                                myFileProperties = getSourceFileProperties(new String[]{set},null, project, myDependencies, new CompileLineStorage());
+                                myFileProperties = getSourceFileProperties(new String[]{set},null, project, myDependencies, null, new CompileLineStorage());
                             } else {
                                 String[] all = new String[add.length+1];
                                 all[0] = set;
                                 System.arraycopy(add, 0, all, 1, add.length);
-                                myFileProperties = getSourceFileProperties(all,null, project, myDependencies, new CompileLineStorage());
+                                myFileProperties = getSourceFileProperties(all,null, project, myDependencies, null, new CompileLineStorage());
                             }
                         }
                     }

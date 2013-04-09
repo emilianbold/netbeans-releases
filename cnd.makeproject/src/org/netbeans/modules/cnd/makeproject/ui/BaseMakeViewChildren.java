@@ -61,9 +61,8 @@ import org.openide.util.RequestProcessor;
 abstract class BaseMakeViewChildren extends Children.Keys<Object>
         implements ChangeListener, RefreshableItemsContainer {
 
-    private final static RequestProcessor LOAD_NODES_RP = new RequestProcessor("MakeLogicalViewProvider.LoadingNodes", 1); // NOI18N
     private final RequestProcessor.Task refreshKeysTask;
-    private static final int WAIT_DELAY = 50;
+    static final int WAIT_DELAY = 50;
 
     private Folder folder;
     protected final MakeLogicalViewProvider provider;
@@ -71,17 +70,13 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
     public BaseMakeViewChildren(Folder folder, MakeLogicalViewProvider provider) {
         this.folder = folder;
         this.provider = provider;
-        this.refreshKeysTask = LOAD_NODES_RP.create(new Runnable() {
+        this.refreshKeysTask = provider.getAnnotationRP().create(new Runnable() {
             @Override
             public void run() {
 //                System.err.println("resetKeys on " + getFolder());
                 resetKeys(getKeys());
             }
         }, true);
-    }
-
-    static void postSetVisibleAction(Runnable r) {
-        LOAD_NODES_RP.post(r, WAIT_DELAY);
     }
 
     protected final MakeProject getProject() {
@@ -107,7 +102,7 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
             if (SwingUtilities.isEventDispatchThread()) {
                 super.addNotify();
                 resetKeys(Collections.singleton(getWaitNode()));
-                LOAD_NODES_RP.post(getAddNotifyRunnable(), WAIT_DELAY);
+                provider.getAnnotationRP().post(getAddNotifyRunnable(), WAIT_DELAY);
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
 
@@ -169,7 +164,6 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        Runnable todo = null;
         if (e.getSource() instanceof Item) {
             // update single item (it may be broken)
             Item[] items = getFolder().getItemsAsArray();
@@ -177,14 +171,14 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
                 if (e.getSource() == item) {
                     // refreshItem() acquires Children.MUTEX; make sure
                     // it's not under ProjectManager.mutex() (IZ#175996)
-                    todo = new Runnable() {
+                    Runnable todo = new Runnable() {
 
                         @Override
                         public void run() {
                             refreshItem(item);
                         }
                     };
-                    LOAD_NODES_RP.post(todo);
+                    provider.getAnnotationRP().post(todo);
                     break;
                 }
             }
