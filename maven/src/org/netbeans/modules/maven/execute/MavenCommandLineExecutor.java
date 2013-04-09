@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.execute;
 
 import java.awt.Color;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -58,14 +59,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
@@ -79,7 +78,6 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.cmd.Constructor;
 import org.netbeans.modules.maven.execute.cmd.ShellConstructor;
 import org.netbeans.modules.maven.options.MavenSettings;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -103,8 +101,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     static final String ENV_JAVAHOME = "Env.JAVA_HOME"; //NOI18N
 
     private static final String KEY_UUID = "NB_EXEC_MAVEN_PROCESS_UUID"; //NOI18N
-
-    private final ProgressHandle handle;
+    
     private Process process;
     private String processUUID;
     private Process preProcess;
@@ -116,8 +113,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     
     @SuppressWarnings("LeakingThisInConstructor")
     public MavenCommandLineExecutor(RunConfig conf) {
-        super(conf);
-        handle = ProgressHandleFactory.createHandle(conf.getTaskDisplayName(), this);
+        super(conf);       
     }
     
     /**
@@ -140,7 +136,15 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             clonedConfig.setPreExecution(new BeanRunConfig(clonedConfig.getPreExecution()));
         }
         int executionresult = -10;
-        InputOutput ioput = getInputOutput();
+        final InputOutput ioput = getInputOutput();
+        
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(clonedConfig.getTaskDisplayName(), this, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ioput.select();
+            }
+        });
         ExecutionContext exCon = ActionToGoalUtils.ACCESSOR.createContext(ioput, handle);
         // check the prerequisites
         if (clonedConfig.getProject() != null) {
