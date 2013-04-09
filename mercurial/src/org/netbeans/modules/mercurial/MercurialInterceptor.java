@@ -216,7 +216,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             return;
         }
         // no need to do rename after in a background thread, code requiring the bg thread (see #125673) no more exists
-        OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
+        OutputLogger logger = OutputLogger.getLogger(root);
         try {
             if (root.equals(dstRoot) && !HgUtils.isIgnored(dstFile, false)) {
                 // target does not lie under ignored folder and is in the same repo as src
@@ -283,7 +283,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             // target lies under ignored folder, do not add it
             return;
         }
-        OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
+        OutputLogger logger = OutputLogger.getLogger(root);
         try {
             if (root.equals(dstRoot)) {
                 HgCommand.doCopy(root, from, to, true, logger);

@@ -186,6 +186,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         listener = new ActionListenerImpl();
         comIndex.addActionListener(listener);
         completer = new TextValueCompleter(getGlobalOptions(), txtOptions, " "); //NOI18N
+        cbProjectNodeNameMode.addActionListener(listener);
+        txtProjectNodeNameCustomPattern.setVisible(false);
     }
 
     /** XXX update for M3 from {@link org.apache.maven.cli.CLIManager#CLIManager} */
@@ -322,6 +324,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         lblIndex = new javax.swing.JLabel();
         comIndex = new javax.swing.JComboBox();
         btnIndex = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        cbProjectNodeNameMode = new javax.swing.JComboBox();
+        txtProjectNodeNameCustomPattern = new javax.swing.JTextField();
 
         org.openide.awt.Mnemonics.setLocalizedText(lblCommandLine, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblCommandLine.text")); // NOI18N
 
@@ -368,6 +374,25 @@ public class SettingsPanel extends javax.swing.JPanel {
                 btnIndexActionPerformed(evt);
             }
         });
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel2.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel4.text")); // NOI18N
+
+        cbProjectNodeNameMode.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Default", "${project.artifactId}", "${project.artifactId}-TRUNK", "${project.artifactId}-${project.version}", "${project.groupId}.${project.artifactId}", "${project.groupId}.${project.artifactId}-${project.version}", "Custom..." }));
+        cbProjectNodeNameMode.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cbProjectNodeNameModeItemStateChanged(evt);
+            }
+        });
+        cbProjectNodeNameMode.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbProjectNodeNameModeActionPerformed(evt);
+            }
+        });
+
+        txtProjectNodeNameCustomPattern.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.txtProjectNodeNameCustomPattern.text")); // NOI18N
+        txtProjectNodeNameCustomPattern.setToolTipText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.txtProjectNodeNameCustomPattern.toolTipText")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -420,7 +445,18 @@ public class SettingsPanel extends javax.swing.JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(cbSkipTests)
                                 .addGap(0, 0, Short.MAX_VALUE)))
-                        .addContainerGap())))
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(0, 0, Short.MAX_VALUE))))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(30, 30, 30)
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtProjectNodeNameCustomPattern)
+                    .addComponent(cbProjectNodeNameMode, 0, 1, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnIndex, btnOptions});
@@ -466,7 +502,15 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(btnIndex)
                     .addComponent(lblIndex)
                     .addComponent(comIndex, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(cbProjectNodeNameMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtProjectNodeNameCustomPattern, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(29, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -516,12 +560,20 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
 
     }//GEN-LAST:event_btnOptionsActionPerformed
+
+    private void cbProjectNodeNameModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbProjectNodeNameModeActionPerformed
+        txtProjectNodeNameCustomPattern.setVisible(cbProjectNodeNameMode.getSelectedIndex()==cbProjectNodeNameMode.getItemCount()-1);
+    }//GEN-LAST:event_cbProjectNodeNameModeActionPerformed
+
+    private void cbProjectNodeNameModeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbProjectNodeNameModeItemStateChanged
+    }//GEN-LAST:event_cbProjectNodeNameModeItemStateChanged
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnGoals;
     private javax.swing.JButton btnIndex;
     private javax.swing.JButton btnOptions;
+    private javax.swing.JComboBox cbProjectNodeNameMode;
     private javax.swing.JCheckBox cbSkipTests;
     private javax.swing.JComboBox comBinaries;
     private javax.swing.JComboBox comIndex;
@@ -529,7 +581,9 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox comMavenHome;
     private javax.swing.JComboBox comSource;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel lblBinaries;
     private javax.swing.JLabel lblCommandLine;
     private javax.swing.JLabel lblExternalVersion;
@@ -538,6 +592,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblOptions;
     private javax.swing.JLabel lblSource;
     private javax.swing.JTextField txtOptions;
+    private javax.swing.JTextField txtProjectNodeNameCustomPattern;
     // End of variables declaration//GEN-END:variables
     
     private void browseAddNewRuntime() {
@@ -624,6 +679,33 @@ public class SettingsPanel extends javax.swing.JPanel {
         comSource.setSelectedItem(MavenSettings.getDefault().getSourceDownloadStrategy());
         cbSkipTests.setSelected(MavenSettings.getDefault().isSkipTests());
 
+        final String pattern = MavenSettings.getDefault().getProjectNodeNamePattern();
+        txtProjectNodeNameCustomPattern.setText("");
+        if (null == pattern || pattern.isEmpty()) {
+            //default
+            cbProjectNodeNameMode.setSelectedIndex(0);
+        } else {
+            //ignore the "default" entry
+            //ignore the "custom..." entry
+            final int start = 1;
+            final int end = cbProjectNodeNameMode.getItemCount() - 1;
+        
+            boolean foundPredefinedPattern = false;
+            for (int i = start; i < end; i++) {
+                final Object itemAt = cbProjectNodeNameMode.getItemAt(i);
+                if (pattern.equals(itemAt)) {
+                    cbProjectNodeNameMode.setSelectedIndex(i);
+                    foundPredefinedPattern = true;
+                    break;
+                }
+            }
+            if (!foundPredefinedPattern) {
+                //set mode to custom
+                cbProjectNodeNameMode.setSelectedIndex(cbProjectNodeNameMode.getItemCount() - 1);
+                txtProjectNodeNameCustomPattern.setText(pattern);
+            }
+        }
+
         changed = false;  //#163955 - do not fire change events on load
     }
     
@@ -657,6 +739,16 @@ public class SettingsPanel extends javax.swing.JPanel {
         MavenSettings.getDefault().setJavadocDownloadStrategy((MavenSettings.DownloadStrategy) comJavadoc.getSelectedItem());
         MavenSettings.getDefault().setSourceDownloadStrategy((MavenSettings.DownloadStrategy) comSource.getSelectedItem());
         MavenSettings.getDefault().setSkipTests(cbSkipTests.isSelected());
+        if (0 == cbProjectNodeNameMode.getSelectedIndex()) {
+            //selected "default" entry
+            MavenSettings.getDefault().setProjectNodeNamePattern(null);
+        } else if (cbProjectNodeNameMode.getSelectedIndex() == cbProjectNodeNameMode.getItemCount() - 1) {
+            //selected "custom..." entry
+            MavenSettings.getDefault().setProjectNodeNamePattern(txtProjectNodeNameCustomPattern.getText());
+        } else {
+            //a predefined pattern entry was selected
+            MavenSettings.getDefault().setProjectNodeNamePattern(cbProjectNodeNameMode.getSelectedItem().toString());
+        } 
         changed = false;
     }
     

@@ -715,7 +715,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
 
             restartNotification = NotificationDisplayer.getDefault().notify(tooltip,
                     ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/restart.png", false),
-                    getBundle("RestartNeeded_Details"), onClickAction, NotificationDisplayer.Priority.HIGH);
+                    getBundle("RestartNeeded_Details"), onClickAction, NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.WARNING);
         }
     }
 
@@ -732,7 +732,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         String description = getBundle ("InstallSupport_InBackground_NetworkError_Details");
         NotificationDisplayer.getDefault().notify(title, 
                 ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/error.png", false), 
-                description, onMouseClickAction, NotificationDisplayer.Priority.HIGH);
+                description, onMouseClickAction, NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.ERROR);
     }
 
     @Messages({
@@ -752,7 +752,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         String description = inBackground_WritePermission_Details();
         NotificationDisplayer.getDefault().notify(title,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/error.png", false), // NOI18N
-                description, onMouseClickAction, NotificationDisplayer.Priority.HIGH);
+                description, onMouseClickAction, NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.ERROR);
     }
 
     @Override

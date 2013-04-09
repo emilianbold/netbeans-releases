@@ -102,7 +102,7 @@ public class HistoryRegistry {
                     false, // get parents
                     -1,    // limit 
                     Collections.<String>emptyList(),                          // branch names
-                    OutputLogger.getLogger(repository.getAbsolutePath()), // logger
+                    OutputLogger.getLogger(repository), // logger
                     false); // asc order
         if(history.length > 0) {
             for (File f : files) {
@@ -121,7 +121,7 @@ public class HistoryRegistry {
                 }
             }
         }
-        HgLogMessage[] history = HgCommand.getRevisionInfo(repository, Collections.singletonList(changesetId), OutputLogger.getLogger(repository.getAbsolutePath()));
+        HgLogMessage[] history = HgCommand.getRevisionInfo(repository, Collections.singletonList(changesetId), OutputLogger.getLogger(repository));
         return history == null || history.length == 0 ? null : history[0];
     }
     
@@ -172,7 +172,7 @@ public class HistoryRegistry {
             support.getProgressHandle().progress(NbBundle.getMessage(HistoryRegistry.class, "LBL_LookingUpAtRevision", originalFile.getName(), historyRevision), i); // NOI18N
             List<HgLogMessageChangedPath> changePaths = lm.getChangedPaths().length == 0 ? 
                     initializeChangePaths(repository, new DefaultChangePathCollector(
-                    repository, OutputLogger.getLogger(repository.getAbsolutePath()), lm.getCSetShortID()), lm, dryTry)
+                    repository, OutputLogger.getLogger(repository), lm.getCSetShortID()), lm, dryTry)
                     : Arrays.asList(lm.getChangedPaths());
             if(changePaths != null) {
                 for (HgLogMessageChangedPath cp : changePaths) {

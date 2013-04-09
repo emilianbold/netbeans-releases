@@ -101,7 +101,7 @@ public class FixCodeAssistancePanel extends javax.swing.JPanel {
         ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/toolchain/compilerset/exclamation.gif", false); // NOI18N
         NotificationDisplayer.getDefault().notify(title, icon,
                 NbBundle.getMessage(FixCodeAssistancePanel.class, "FixCodeAssistancePanel.action.text"), // NOI18N
-                onClickAction, NotificationDisplayer.Priority.HIGH); // NOI18N
+                onClickAction, NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.WARNING); // NOI18N
     }
 
     /** This method is called from within the constructor to

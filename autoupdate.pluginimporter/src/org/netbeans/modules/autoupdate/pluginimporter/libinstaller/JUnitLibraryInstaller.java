@@ -207,7 +207,7 @@ public class JUnitLibraryInstaller {
         String description = showDetails();
         NotificationDisplayer.getDefault().notify(title,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/pluginimporter/resources/warning.gif", false), // NOI18N
-                description, onMouseClickAction, NotificationDisplayer.Priority.HIGH);
+                description, onMouseClickAction, NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.WARNING);
     }
     
     @Messages({"cancel=Cancel", "installAnyway=Install anyway", "warning=Write permission problem",
