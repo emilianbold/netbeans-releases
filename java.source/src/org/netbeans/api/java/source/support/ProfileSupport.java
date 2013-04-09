@@ -352,7 +352,11 @@ public class ProfileSupport {
             assert factory != null;
             assert validations != null;
             this.archiveCache = ArchiveCache.getInstance();
-            this.typeCache =  TypeCache.newInstance(bootClassPath);
+            this.typeCache =
+                    !bootClassPath.iterator().hasNext() &&
+                    (validations.isEmpty() || validations.equals(EnumSet.of(Validation.BINARIES_BY_MANIFEST))) ?
+                    null :
+                    TypeCache.newInstance(bootClassPath);
             this.profileToCheck = profileToCheck;
             this.factory = factory;
             this.validations = EnumSet.copyOf(validations);
@@ -365,6 +369,9 @@ public class ProfileSupport {
 
         @NonNull
         TypeCache getTypeCache() {
+            if (typeCache == null) {
+                throw new IllegalArgumentException("No type cache");            //NOI18N
+            }
             return typeCache;
         }
 
