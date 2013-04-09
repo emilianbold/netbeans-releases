@@ -1089,8 +1089,8 @@ public class WizardDescriptor extends DialogDescriptor {
         // only enlarge if needed, don't shrink
         if ((curSize.width > prevSize.width) || (curSize.height > prevSize.height)) {
             Rectangle origBounds = parentWindow.getBounds();
-            int newWidth = Math.max(origBounds.width + (curSize.width - prevSize.width), origBounds.width);
-            int newHeight = Math.max(origBounds.height + (curSize.height - prevSize.height), origBounds.height);
+            int newWidth = origBounds.width;
+            int newHeight = origBounds.height;
             Rectangle screenBounds = Utilities.getUsableScreenBounds();
             Rectangle newBounds;
 
