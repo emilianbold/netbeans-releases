@@ -121,16 +121,16 @@ METHOD     with(Closure)                              Object
 METHOD     withInputStream(Closure)                   Object
 METHOD     withReader(Closure)                        Object
 METHOD     withReader(String, Closure)                Object
-FIELD      URLStreamHandlerFactory                    URLStreamHandlerFactory
-FIELD      authority                                  String
-FIELD      class                                      Class
-FIELD      content                                    Object
-FIELD      defaultPort                                int
-FIELD      file                                       String
-FIELD      host                                       String
-FIELD      path                                       String
-FIELD      port                                       int
-FIELD      protocol                                   String
-FIELD      query                                      String
-FIELD      ref                                        String
-FIELD      userInfo                                   String
+FIELD      URLStreamHandlerFactory         [STATIC,   URLStreamHandlerFactory
+FIELD      authority                       [PUBLIC]   String
+FIELD      class                           [PUBLIC]   Class
+FIELD      content                         [PUBLIC]   Object
+FIELD      defaultPort                     [PUBLIC]   int
+FIELD      file                            [PUBLIC]   String
+FIELD      host                            [PUBLIC]   String
+FIELD      path                            [PUBLIC]   String
+FIELD      port                            [PUBLIC]   int
+FIELD      protocol                        [PUBLIC]   String
+FIELD      query                           [PUBLIC]   String
+FIELD      ref                             [PUBLIC]   String
+FIELD      userInfo                        [PUBLIC]   String

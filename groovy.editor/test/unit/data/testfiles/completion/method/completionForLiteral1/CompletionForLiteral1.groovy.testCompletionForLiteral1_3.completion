@@ -26,4 +26,4 @@ METHOD     copyValueOf(char[], int, int)   [STATIC,   String
 METHOD     count(CharSequence)                        int
 METHOD     count(String)                              int
 FIELD      CASE_INSENSITIVE_ORDER          [STATIC,   Comparator<String>
-FIELD      class                                      Class
+FIELD      class                           [PUBLIC]   Class
