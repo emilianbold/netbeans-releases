@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.execute;
+package org.netbeans.modules.maven.execute.cmd;
 
-import java.util.regex.Matcher;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import java.io.File;
+import org.apache.maven.execution.ExecutionEvent;
+import org.json.simple.JSONObject;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.maven.execute.ExecutionEventObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author mkleint
  */
-public class CommandLineOutputHandlerTest {
+public class ExecMojo extends ExecutionEventObject {
+        public final String goal;
+        public final GAV plugin;
+        public final String phase;
+        public final String executionId;
 
-    public CommandLineOutputHandlerTest() {
+    public ExecMojo(String goal, GAV plugin, String phase, String executionId, ExecutionEvent.Type type) {
+        super(type);
+        this.goal = goal;
+        this.plugin = plugin;
+        this.phase = phase;
+        this.executionId = executionId;
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
+    
+    public static ExecMojo create(JSONObject obj, ExecutionEvent.Type t) {
+        JSONObject mojo = (JSONObject) obj.get("mojo");
+        String id = (String) mojo.get("id");
+        String[] ids = id.split(":");
+        GAV mojoGav = new GAV(ids[0], ids[1], ids[2]);
+        String goal = (String) mojo.get("goal");
+        String execId = (String) mojo.get("execId");
+        String phase = (String) mojo.get("phase");
+        return new ExecMojo(goal, mojoGav, phase, execId, t);
+//        JSONObject exc = (JSONObject) obj.get("exc");
+//        if (exc != null) {
+//            String message = (String) exc.get("msg");
+//            if (message != null) {
+//                try {
+//                    byte[] bytes = Base64.decodeBase64(message.getBytes("UTF-8"));
+//                    excMessage = new String(bytes, "UTF-8");
+//                    System.out.println("exc message=" + excMessage);
+//                } catch (UnsupportedEncodingException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
+//        }
     }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Test
-    public void testRegExp() throws Exception {
-        Matcher m = CommandLineOutputHandler.startPatternM2.matcher("[INFO] [surefire:test]");
-        assertTrue(m.matches());
-        assertEquals("surefire", m.group(1));
-        assertEquals("test", m.group(2));
-        m = CommandLineOutputHandler.startPatternM2.matcher("[INFO] [compiler:testCompile {execution: default-testCompile}]");
-        assertTrue(m.matches());
-        assertEquals("compiler", m.group(1));
-        assertEquals("testCompile", m.group(2));
-        m = CommandLineOutputHandler.startPatternM3.matcher("[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ mavenproject3 ---");
-        assertTrue(m.matches());
-        assertEquals("maven-compiler-plugin", m.group(1));
-        assertEquals("compile", m.group(2));
-    }
-
-    @Test
-    public void testReactorLine() throws Exception {
-        //the non event matching..
-        Matcher m = CommandLineOutputHandler.reactorFailure.matcher("[INFO] Maven Core ........................................ FAILURE [1.480s]");
-        assertTrue(m.matches());
-        
-        //
-        m = CommandLineOutputHandler.reactorSummaryLine.matcher("Maven Core ........................................ FAILURE [1.480s]");
-        assertTrue(m.matches());
-        
-        m = CommandLineOutputHandler.reactorSummaryLine.matcher("Maven Aether Provider ............................. SUCCESS [1.014s]");
-        assertTrue(m.matches());
-
-    }
+    
 }

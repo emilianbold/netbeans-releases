@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.execute;
+package org.netbeans.modules.maven.execute.cmd;
 
-import java.util.regex.Matcher;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.apache.maven.execution.ExecutionEvent;
+import org.json.simple.JSONObject;
+import org.netbeans.modules.maven.execute.ExecutionEventObject;
 
 /**
  *
  * @author mkleint
  */
-public class CommandLineOutputHandlerTest {
+public class ExecSession extends ExecutionEventObject {
 
-    public CommandLineOutputHandlerTest() {
+    public final int projectCount;
+
+    public ExecSession(int projectCount, ExecutionEvent.Type type) {
+        super(type);
+        this.projectCount = projectCount;
     }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
+    
+    public static ExecutionEventObject create(JSONObject obj, ExecutionEvent.Type t) {
+        Long count = (Long) obj.get("prjcount");
+        int prjCount = -1;
+        if (count != null) {
+            prjCount = count.intValue();
+        }
+        return new ExecSession(prjCount, t);
     }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Test
-    public void testRegExp() throws Exception {
-        Matcher m = CommandLineOutputHandler.startPatternM2.matcher("[INFO] [surefire:test]");
-        assertTrue(m.matches());
-        assertEquals("surefire", m.group(1));
-        assertEquals("test", m.group(2));
-        m = CommandLineOutputHandler.startPatternM2.matcher("[INFO] [compiler:testCompile {execution: default-testCompile}]");
-        assertTrue(m.matches());
-        assertEquals("compiler", m.group(1));
-        assertEquals("testCompile", m.group(2));
-        m = CommandLineOutputHandler.startPatternM3.matcher("[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ mavenproject3 ---");
-        assertTrue(m.matches());
-        assertEquals("maven-compiler-plugin", m.group(1));
-        assertEquals("compile", m.group(2));
-    }
-
-    @Test
-    public void testReactorLine() throws Exception {
-        //the non event matching..
-        Matcher m = CommandLineOutputHandler.reactorFailure.matcher("[INFO] Maven Core ........................................ FAILURE [1.480s]");
-        assertTrue(m.matches());
-        
-        //
-        m = CommandLineOutputHandler.reactorSummaryLine.matcher("Maven Core ........................................ FAILURE [1.480s]");
-        assertTrue(m.matches());
-        
-        m = CommandLineOutputHandler.reactorSummaryLine.matcher("Maven Aether Provider ............................. SUCCESS [1.014s]");
-        assertTrue(m.matches());
-
-    }
+    
 }

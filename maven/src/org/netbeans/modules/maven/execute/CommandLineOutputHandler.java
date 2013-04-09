@@ -42,7 +42,6 @@
 package org.netbeans.modules.maven.execute;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -52,20 +51,25 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.maven.execution.ExecutionEvent;
+import org.apache.maven.project.MavenProject;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
+import org.netbeans.modules.maven.execute.AbstractMavenExecutor.ResumeFromFinder;
 import static org.netbeans.modules.maven.execute.AbstractOutputHandler.PRJ_EXECUTE;
 import static org.netbeans.modules.maven.execute.AbstractOutputHandler.SESSION_EXECUTE;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.maven.execute.cmd.ExecMojo;
+import org.netbeans.modules.maven.execute.cmd.ExecProject;
+import org.netbeans.modules.maven.execute.cmd.ExecSession;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -89,7 +93,9 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     private static final Pattern mavenSomethingPlugin = Pattern.compile("maven-(.+)-plugin"); // NOI18N
     private static final Pattern somethingMavenPlugin = Pattern.compile("(.+)-maven-plugin"); // NOI18N
     /** @see org.apache.maven.cli.ExecutionEventLogger#logReactorSummary */
-    private static final Pattern reactorFailure = Pattern.compile("\\[INFO\\] (.+) [.]* FAILURE \\[.+\\]"); // NOI18N
+    static final Pattern reactorFailure = Pattern.compile("\\[INFO\\] (.+) [.]* FAILURE \\[.+\\]"); // NOI18N
+    
+    public static final Pattern reactorSummaryLine = Pattern.compile("(.+) [.]* (FAILURE|SUCCESS) (\\[.+\\])?"); // NOI18N
     private OutputWriter stdOut;
     private String currentProject;
     private String currentTag;
@@ -100,12 +106,18 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     String firstFailure;
     private final JSONParser parser;
     private ContextImpl contextImpl;
+    //the depth is as follows
+    //Session -> Project -> [Fork -> ForkedProject] -> Mojo                
+    private final ExecutionEventObject.Tree executionTree = new ExecutionEventObject.Tree(null, null);
+    private ExecutionEventObject.Tree currentTreeNode = executionTree;
+    
 
     CommandLineOutputHandler(ProgressHandle hand, boolean createVisitorContext) {
         super(hand, createVisitorContext ? new OutputVisitor(new ContextImpl()) : new OutputVisitor());
         if (createVisitorContext) {
             contextImpl = (ContextImpl) visitor.getContext();
             assert contextImpl != null;
+            contextImpl.setExecutionTree(executionTree);
         }
         this.parser = new JSONParser();
         handle = hand;
@@ -281,7 +293,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                         // oh well..
                         processLine(line, stdOut, Level.INFO);
                     }
-                    if (firstFailure == null) {
+                    if (contextImpl == null && firstFailure == null) {
                         match = reactorFailure.matcher(line);
                         if (match.matches()) {
                             firstFailure = match.group(1);
@@ -320,9 +332,6 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             return null;
         }
 
-//experimental        
-//        private ExecutionEventObject.Tree executionTree = new ExecutionEventObject.Tree(null, null);
-//        private ExecutionEventObject.Tree currentTreeNode = executionTree;
         
         private void processExecEvent(ExecutionEventObject obj) {
             if (obj == null) {
@@ -331,43 +340,40 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             checkProgress(obj);
             
             if (ExecutionEvent.Type.MojoStarted.equals(obj.type)) {
-                assert obj.execution != null;
                 growTree(obj);
-                String tag = goalPrefixFromArtifactId(obj.execution.plugin.artifactId) + ":" + obj.execution.goal;
-                handle.progress(obj.currentProject.artifactId + " " + tag);
+                ExecMojo exec = (ExecMojo) obj;
+                String tag = goalPrefixFromArtifactId(exec.plugin.artifactId) + ":" + exec.goal;
+                ExecutionEventObject.Tree prjNode = currentTreeNode.findParentNodeOfType(ExecutionEvent.Type.ProjectStarted);
+                assert prjNode != null;
+                ExecProject p = (ExecProject) prjNode.startEvent;
+                handle.progress(p.gav.artifactId + " " + tag);
                 CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }
             if (ExecutionEvent.Type.MojoSucceeded.equals(obj.type)) {
-                assert obj.execution != null;
                 trimTree(obj);
-                String tag = goalPrefixFromArtifactId(obj.execution.plugin.artifactId) + ":" + obj.execution.goal;
+                ExecMojo exec = (ExecMojo) obj;
+                String tag = goalPrefixFromArtifactId(exec.plugin.artifactId) + ":" + exec.goal;
                 CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }
             else if (ExecutionEvent.Type.MojoFailed.equals(obj.type)) {
-                assert obj.execution != null;
                 trimTree(obj);
-                String tag = goalPrefixFromArtifactId(obj.execution.plugin.artifactId) + ":" + obj.execution.goal;
+                ExecMojo exec = (ExecMojo) obj;
+                String tag = goalPrefixFromArtifactId(exec.plugin.artifactId) + ":" + exec.goal;
                 CommandLineOutputHandler.this.processFail(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }
             else if (ExecutionEvent.Type.ProjectStarted.equals(obj.type)) {
                 growTree(obj);
                 if (contextImpl != null) {
-                    File prjLoc = obj.currentProjectLocation;
-                    if (prjLoc != null) {
-                        try {
-                            FileObject fo = FileUtil.toFileObject(prjLoc);
-                            if (fo != null) {
-                                Project project = ProjectManager.getDefault().findProject(fo);
-                                contextImpl.setCurrentProject(project);
-                            }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (IllegalArgumentException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
+                    ExecProject pr = (ExecProject)obj;
+                    Project project = pr.findProject();
+                    contextImpl.setCurrentProject(project);
                     CommandLineOutputHandler.this.processStart(getEventId(PRJ_EXECUTE, null), stdOut);                    
                 }
+            }
+            else if (ExecutionEvent.Type.ProjectSkipped.equals(obj.type)) {
+                //growTree(obj);
+                //trimTree(obj);
+                //GlobalOutputProcessor currently depens on skipped projects not being added to tree.
             }
             else if (ExecutionEvent.Type.ProjectSucceeded.equals(obj.type)) {
                 trimTree(obj);
@@ -402,21 +408,96 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             return mojoArtifact;
         }
 
-        //experimental
-        private void growTree(ExecutionEventObject obj) {
-//            ExecutionEventObject.Tree tn = new ExecutionEventObject.Tree(obj, currentTreeNode);
-//            currentTreeNode.childrenNodes.add(tn);
-//            currentTreeNode = tn;
-//            currentTreeNode.setStartOffset(IOPosition.currentPosition(inputOutput));
+        
+        
+        
+    }
+    //experimental
+    private void growTree(ExecutionEventObject obj) {
+        ExecutionEventObject.Tree tn = new ExecutionEventObject.Tree(obj, currentTreeNode);
+        currentTreeNode.childrenNodes.add(tn);
+        currentTreeNode = tn;
+        currentTreeNode.setStartOffset(IOPosition.currentPosition(inputOutput));
+    }
+
+    //experimental
+    private void trimTree(ExecutionEventObject obj) {
+        currentTreeNode.setEndOffset(IOPosition.currentPosition(inputOutput));
+        currentTreeNode.setEndEvent(obj);
+        currentTreeNode = currentTreeNode.parentNode;
+    }
+
+
+
+
+    ResumeFromFinder createResumeFromFinder() {
+        if (contextImpl == null) {
+            if (firstFailure != null) {
+                return new FindByName(firstFailure);
+            }
+            return null;
+        }
+        for (ExecutionEventObject.Tree prj : executionTree.childrenNodes) {
+            if (prj.endEvent != null && ExecutionEvent.Type.ProjectFailed.equals(prj.endEvent.type)) {
+                    //our first failure
+                return new FindByEvents( (ExecProject) prj.startEvent);
+            }
+        }
+        return null;
+    }
+    
+    
+    //old school instance relying on output only.. currently only used in maven 2.x
+    private static class FindByName implements ResumeFromFinder {
+
+        private final @NonNull String firstFailure;
+
+        /**
+         * @param firstFailure {@link MavenProject#getName}
+         */
+        private FindByName(@NonNull String firstFailure) {
+            this.firstFailure = firstFailure;
+        }
+
+        @Override public @CheckForNull NbMavenProject find(@NonNull Project root) {
+            // XXX EventSpy (#194090) would make this more reliable and efficient
+            //mkleint: usage of subprojectprovider is correct here
+            for (Project module : root.getLookup().lookup(SubprojectProvider.class).getSubprojects()) {
+                if (Thread.interrupted()) {
+                    break;
+                }
+                NbMavenProject nbmp = module.getLookup().lookup(NbMavenProject.class);
+                if (nbmp == null) {
+                    continue;
+                }
+                MavenProject mp = nbmp.getMavenProject();
+                if (firstFailure.equals(mp.getName())) {
+                    return nbmp;
+                }
+            }
+            return null;
+        }
+
+    }    
+    
+    private static class FindByEvents implements ResumeFromFinder {
+        private final ExecProject execProject;
+
+        private FindByEvents(ExecProject execProject) {
+            this.execProject = execProject;
         }
         
-        //experimental
-        private void trimTree(ExecutionEventObject obj) {
-//            currentTreeNode.setEndOffset(IOPosition.currentPosition(inputOutput));
-//            currentTreeNode = currentTreeNode.parentNode;
-            //TODO merge in failure/success
-            
-        }        
+
+        @Override
+        public @CheckForNull NbMavenProject find(@NonNull Project root) {
+            //we don't need the parameter, we have the exec tree
+            Project project = execProject.findProject();
+            if (project != null) {
+                return  project.getLookup().lookup(NbMavenProject.class);
+            }
+            return null;
+        }
+        
     }
     
 
@@ -473,13 +554,13 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
         if (ExecutionEvent.Type.ProjectDiscoveryStarted.equals(eeo.type)) {
             handle.switchToIndeterminate();
         } else if (ExecutionEvent.Type.SessionStarted.equals(eeo.type)) {
-            reactorSize = eeo.projectCount + 1;
+            reactorSize = ((ExecSession)eeo).projectCount + 1;
             projectCount = 0;
             handle.switchToDeterminate(reactorSize);
         } else if (ExecutionEvent.Type.ProjectStarted.equals(eeo.type)) {
-            handle.progress(eeo.currentProject.artifactId, Math.min(++projectCount, reactorSize));
+            handle.progress(((ExecProject)eeo).gav.artifactId, Math.min(++projectCount, reactorSize));
         } else if (ExecutionEvent.Type.ProjectSkipped.equals(eeo.type)) {
-            handle.progress(eeo.currentProject.artifactId + " " + eeo.currentProject.version, Math.min(++projectCount, reactorSize));
+            handle.progress(((ExecProject)eeo).gav.artifactId + " " + ((ExecProject)eeo).gav.version, Math.min(++projectCount, reactorSize));
         } else if (ExecutionEvent.Type.SessionEnded.equals(eeo.type)) {
             
         }
@@ -550,11 +631,12 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     private int reactorSize;
     private int projectCount;
     
-    private static class ContextImpl implements OutputVisitor.Context {
+   public static class ContextImpl implements OutputVisitor.Context {
 
         private Project currentProject;
+        private ExecutionEventObject.Tree executionTree;
 
-        public ContextImpl() {
+        ContextImpl() {
         }
 
         @Override
@@ -565,7 +647,14 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
         public void setCurrentProject(@NullAllowed Project currentProject) {
             this.currentProject = currentProject;
         }
-        
+
+        private void setExecutionTree(ExecutionEventObject.Tree executionTree) {
+            this.executionTree = executionTree;
+        }
+
+        public ExecutionEventObject.Tree getExecutionTree() {
+            return executionTree;
+        }
         
     }    
 
