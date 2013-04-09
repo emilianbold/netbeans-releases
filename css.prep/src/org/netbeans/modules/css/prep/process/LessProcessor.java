@@ -44,15 +44,22 @@ package org.netbeans.modules.css.prep.process;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.editor.CPUtils;
+import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
 import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.Warnings;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 public final class LessProcessor extends BaseProcessor {
+
+    private final LessCssPreprocessor lessCssPreprocessor;
+
+
+    public LessProcessor(LessCssPreprocessor lessCssPreprocessor) {
+        this.lessCssPreprocessor = lessCssPreprocessor;
+    }
 
     @Override
     protected boolean isEnabledInternal(Project project) {
@@ -80,7 +87,7 @@ public final class LessProcessor extends BaseProcessor {
         } catch (InvalidExternalExecutableException ex) {
             if (Warnings.showLessWarning()) {
                 // refresh project problems
-                CssPreprocessors.getDefault().fireChange();
+                lessCssPreprocessor.fireChange();
             }
         }
         return null;
