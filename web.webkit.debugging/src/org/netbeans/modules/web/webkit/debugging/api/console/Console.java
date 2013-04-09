@@ -48,6 +48,8 @@ import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
@@ -60,14 +62,17 @@ public final class Console {
     
     private static final Logger LOGGER = Logger.getLogger(Console.class.getName());
     
-    private TransportHelper transport;
+    private final TransportHelper transport;
+    private final WebKitDebugging webKit;
     private boolean enabled;
-    private Callback callback;
+    private final Callback callback;
     private int numberOfClients = 0;
-    private List<Console.Listener> listeners = new CopyOnWriteArrayList<Console.Listener>();
+    private final List<Console.Listener> listeners = new CopyOnWriteArrayList<Console.Listener>();
+    private final InputCallback input = new InputCallback();
     
     public Console(TransportHelper transport, WebKitDebugging webKit) {
         this.transport = transport;
+        this.webKit = webKit;
         this.callback = new Callback();
         this.transport.addListener(callback);
     }
@@ -189,6 +194,15 @@ public final class Console {
     }
     
     /**
+     * Get the console input callback.
+     * Use this to provide an input to the console.
+     * @return the input callback.
+     */
+    public InputCallback getInput() {
+        return input;
+    }
+    
+    /**
      * Console listener.
      */
     public interface Listener extends EventListener {
@@ -210,6 +224,29 @@ public final class Console {
          */
         void messageRepeatCountUpdated(int count);
         
+    }
+    
+    /**
+     * Use this to provide an input to the console.
+     */
+    public final class InputCallback {
+        
+        /**
+         * A line added to a console input.
+         * @param line The line without the ending newline character.
+         */
+        public void line(String line) {
+            RemoteObject result;
+            CallFrame frame = webKit.getDebugger().getCurrentCallFrame();
+            if (frame != null) {
+                result = frame.evaluate(line);
+            } else {
+                result = webKit.getRuntime().evaluate(line);
+            }
+            ConsoleMessage msg = new RemoteObjectMessage(webKit, result);
+            notifyConsoleMessage(msg);
+        }
+
     }
     
 }
