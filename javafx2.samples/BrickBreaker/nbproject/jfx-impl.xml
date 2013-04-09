@@ -1010,6 +1010,12 @@
                 <equals arg1="${javafx.rebase.libs}" arg2="true" trim="true"/>
             </and>
         </condition>
+        <condition property="use-blob-signing">
+            <and>
+                <isset property="javafx.signing.blob"/>
+                <equals arg1="${javafx.signing.blob}" arg2="true" trim="true"/>
+            </and>
+        </condition>
         <echo message="main-class-available = ${main-class-available}" level="verbose"/>
         <echo message="vmargs-available = ${vmargs-available}" level="verbose"/>
         <echo message="preloader-available = ${preloader-available}" level="verbose"/>
@@ -1028,6 +1034,7 @@
         <echo message="permissions-elevated = ${permissions-elevated}" level="verbose"/>
         <echo message="binary-encode-css = ${binary-encode-css}" level="verbose"/>
         <echo message="rebase-lib-jars = ${rebase-lib-jars}" level="verbose"/>
+        <echo message="use-blob-signing = ${use-blob-signing}" level="verbose"/>
     </target>
 
     <target name="-swing-api-check" depends="-check-project,-check-jfx-deployment" if="fx-in-swing-app">
@@ -1466,6 +1473,12 @@
         -deploy-app-sign-preloader-template,
         -deploy-app-sign-nopreloader-notemplate-swing,
         -deploy-app-sign-nopreloader-template-swing,
+        -deploy-app-sign-blob-nopreloader-notemplate,
+        -deploy-app-sign-blob-preloader-notemplate,
+        -deploy-app-sign-blob-nopreloader-template,
+        -deploy-app-sign-blob-preloader-template,
+        -deploy-app-sign-blob-nopreloader-notemplate-swing,
+        -deploy-app-sign-blob-nopreloader-template-swing,
         -deploy-app-nosign-nopreloader-notemplate,
         -deploy-app-nosign-preloader-notemplate,
         -deploy-app-nosign-nopreloader-template,
@@ -1486,6 +1499,12 @@
         -fallback-deploy-app-sign-preloader-template,
         -fallback-deploy-app-sign-nopreloader-notemplate-swing,
         -fallback-deploy-app-sign-nopreloader-template-swing,
+        -fallback-deploy-app-sign-blob-nopreloader-notemplate,
+        -fallback-deploy-app-sign-blob-preloader-notemplate,
+        -fallback-deploy-app-sign-blob-nopreloader-template,
+        -fallback-deploy-app-sign-blob-preloader-template,
+        -fallback-deploy-app-sign-blob-nopreloader-notemplate-swing,
+        -fallback-deploy-app-sign-blob-nopreloader-template-swing,
         -fallback-deploy-app-nosign-nopreloader-notemplate,
         -fallback-deploy-app-nosign-preloader-notemplate,
         -fallback-deploy-app-nosign-nopreloader-template,
@@ -1869,6 +1888,25 @@
         </sequential>
     </macrodef>
 
+    <macrodef name="deploy-sign-blob">
+        <sequential>
+            <echo message="keystore=${javafx.signjar.keystore}" level="verbose"/>
+            <echo message="storepass=${javafx.signjar.storepass}" level="verbose"/>
+            <echo message="alias=${javafx.signjar.alias}" level="verbose"/>
+            <echo message="keypass=${javafx.signjar.keypass}" level="verbose"/>
+            <echo message="Launching &lt;fx:signjar&gt; task from ${ant-javafx.jar.location}" level="info"/>
+            <fx:signjar keystore="${javafx.signjar.keystore}"
+                storepass="${javafx.signjar.storepass}"
+                alias="${javafx.signjar.alias}"
+                keypass="${javafx.signjar.keypass}">
+                <fileset dir="${jfx.deployment.dir}">
+                    <include name="${jfx.deployment.jar}"/>
+                    <include name="lib${file.separator}*.jar"/>
+                </fileset>
+            </fx:signjar>
+        </sequential>
+    </macrodef>
+
     <macrodef name="deploy-sign-preloader">
         <sequential>
             <echo message="keystore=${javafx.signjar.keystore}" level="verbose"/>
@@ -1893,6 +1931,34 @@
                     <exclude name="lib${file.separator}${javafx.preloader.jar.filename}"/>
                 </fileset>
             </signjar>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="deploy-sign-blob-preloader">
+        <sequential>
+            <echo message="keystore=${javafx.signjar.keystore}" level="verbose"/>
+            <echo message="storepass=${javafx.signjar.storepass}" level="verbose"/>
+            <echo message="alias=${javafx.signjar.alias}" level="verbose"/>
+            <echo message="keypass=${javafx.signjar.keypass}" level="verbose"/>
+            <signjar keystore="${javafx.signjar.keystore}"
+                storepass="${javafx.signjar.storepass}"
+                alias="${javafx.signjar.alias}"
+                keypass="${javafx.signjar.keypass}">
+                <fileset dir="${jfx.deployment.dir}">
+                    <include name="lib${file.separator}${javafx.preloader.jar.filename}"/>
+                </fileset>
+            </signjar>
+            <echo message="Launching &lt;fx:signjar&gt; task from ${ant-javafx.jar.location}" level="info"/>
+            <fx:signjar keystore="${javafx.signjar.keystore}"
+                storepass="${javafx.signjar.storepass}"
+                alias="${javafx.signjar.alias}"
+                keypass="${javafx.signjar.keypass}">
+                <fileset dir="${jfx.deployment.dir}">
+                    <include name="${jfx.deployment.jar}"/>
+                    <include name="lib${file.separator}*.jar"/>
+                    <exclude name="lib${file.separator}${javafx.preloader.jar.filename}"/>
+                </fileset>
+            </fx:signjar>
         </sequential>
     </macrodef>
 
@@ -2661,6 +2727,7 @@
                 <isset property="app-without-preloader"/>
                 <not><isset property="html-template-available"/></not>
                 <not><isset property="fx-in-swing-app-workaround"/></not>
+                <not><isset property="use-blob-signing"/></not>
             </and>
         </condition>
         <condition property="sign-preloader-notemplate">
@@ -2668,6 +2735,7 @@
                 <isset property="app-with-preloader"/>
                 <not><isset property="html-template-available"/></not>
                 <not><isset property="fx-in-swing-app-workaround"/></not>
+                <not><isset property="use-blob-signing"/></not>
             </and>
         </condition>
         <condition property="sign-nopreloader-template">
@@ -2675,6 +2743,7 @@
                 <isset property="app-without-preloader"/>
                 <isset property="html-template-available"/>
                 <not><isset property="fx-in-swing-app-workaround"/></not>
+                <not><isset property="use-blob-signing"/></not>
             </and>
         </condition>
         <condition property="sign-preloader-template">
@@ -2682,6 +2751,7 @@
                 <isset property="app-with-preloader"/>
                 <isset property="html-template-available"/>
                 <not><isset property="fx-in-swing-app-workaround"/></not>
+                <not><isset property="use-blob-signing"/></not>
             </and>
         </condition>
         <condition property="sign-nopreloader-notemplate-swing">
@@ -2689,6 +2759,7 @@
                 <isset property="app-without-preloader"/>
                 <not><isset property="html-template-available"/></not>
                 <isset property="fx-in-swing-app-workaround"/>
+                <not><isset property="use-blob-signing"/></not>
             </and>
         </condition>
         <condition property="sign-nopreloader-template-swing">
@@ -2696,6 +2767,55 @@
                 <isset property="app-without-preloader"/>
                 <isset property="html-template-available"/>
                 <isset property="fx-in-swing-app-workaround"/>
+                <not><isset property="use-blob-signing"/></not>
+            </and>
+        </condition>
+        <condition property="sign-blob-nopreloader-notemplate">
+            <and>
+                <isset property="app-without-preloader"/>
+                <not><isset property="html-template-available"/></not>
+                <not><isset property="fx-in-swing-app-workaround"/></not>
+                <isset property="use-blob-signing"/>
+            </and>
+        </condition>
+        <condition property="sign-blob-preloader-notemplate">
+            <and>
+                <isset property="app-with-preloader"/>
+                <not><isset property="html-template-available"/></not>
+                <not><isset property="fx-in-swing-app-workaround"/></not>
+                <isset property="use-blob-signing"/>
+            </and>
+        </condition>
+        <condition property="sign-blob-nopreloader-template">
+            <and>
+                <isset property="app-without-preloader"/>
+                <isset property="html-template-available"/>
+                <not><isset property="fx-in-swing-app-workaround"/></not>
+                <isset property="use-blob-signing"/>
+            </and>
+        </condition>
+        <condition property="sign-blob-preloader-template">
+            <and>
+                <isset property="app-with-preloader"/>
+                <isset property="html-template-available"/>
+                <not><isset property="fx-in-swing-app-workaround"/></not>
+                <isset property="use-blob-signing"/>
+            </and>
+        </condition>
+        <condition property="sign-blob-nopreloader-notemplate-swing">
+            <and>
+                <isset property="app-without-preloader"/>
+                <not><isset property="html-template-available"/></not>
+                <isset property="fx-in-swing-app-workaround"/>
+                <isset property="use-blob-signing"/>
+            </and>
+        </condition>
+        <condition property="sign-blob-nopreloader-template-swing">
+            <and>
+                <isset property="app-without-preloader"/>
+                <isset property="html-template-available"/>
+                <isset property="fx-in-swing-app-workaround"/>
+                <isset property="use-blob-signing"/>
             </and>
         </condition>
     </target>
@@ -2763,6 +2883,14 @@
         <deploy-sign/>
         <deploy-deploy/>
     </target>
+    <target name="-deploy-app-sign-blob-nopreloader-notemplate" depends="-check-sign" if="sign-blob-nopreloader-notemplate" unless="preloader-app">
+        <echo message="-deploy-app-sign-blob-nopreloader-notemplate" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-sign-blob/>
+        <deploy-deploy/>
+    </target>
 
     <!-- project with preloader -->
     <!-- no html template -->
@@ -2774,6 +2902,14 @@
         <deploy-sign-preloader/>
         <deploy-deploy/>
     </target>
+    <target name="-deploy-app-sign-blob-preloader-notemplate" depends="-check-sign" if="sign-blob-preloader-notemplate" unless="preloader-app">
+        <echo message="-deploy-app-sign-blob-preloader-notemplate" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-sign-blob-preloader/>
+        <deploy-deploy/>
+    </target>
 
     <!-- project without preloader -->
     <!-- html template -->
@@ -2783,6 +2919,15 @@
         <deploy-preprocess/>
         <deploy-jar/>
         <deploy-sign/>
+        <deploy-process-template/>
+        <deploy-deploy/>
+    </target>
+    <target name="-deploy-app-sign-blob-nopreloader-template" depends="-check-sign" if="sign-blob-nopreloader-template" unless="preloader-app">
+        <echo message="-deploy-app-sign-blob-nopreloader-template" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-sign-blob/>
         <deploy-process-template/>
         <deploy-deploy/>
     </target>
@@ -2798,6 +2943,15 @@
         <deploy-process-template/>
         <deploy-deploy/>
     </target>
+    <target name="-deploy-app-sign-blob-preloader-template" depends="-check-sign" if="sign-blob-preloader-template" unless="preloader-app">
+        <echo message="-deploy-app-sign-blob-preloader-template" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-sign-blob-preloader/>
+        <deploy-process-template/>
+        <deploy-deploy/>
+    </target>
 
     <!-- project without preloader -->
     <!-- no html template -->
@@ -2810,6 +2964,14 @@
         <deploy-sign/>
         <deploy-deploy-swing/>
     </target>
+    <target name="-deploy-app-sign-blob-nopreloader-notemplate-swing" depends="-check-sign" if="sign-blob-nopreloader-notemplate-swing" unless="preloader-app-no-workaround">
+        <echo message="-deploy-app-sign-blob-nopreloader-notemplate-swing" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-sign-blob/>
+        <deploy-deploy-swing/>
+    </target>
 
     <!-- project without preloader -->
     <!-- html template -->
@@ -2820,6 +2982,15 @@
         <deploy-preprocess/>
         <deploy-jar/>
         <deploy-sign/>
+        <deploy-process-template/>
+        <deploy-deploy-swing/>
+    </target>
+    <target name="-deploy-app-sign-blob-nopreloader-template-swing" depends="-check-sign" if="sign-blob-nopreloader-template-swing" unless="preloader-app-no-workaround">
+        <echo message="-deploy-app-sign-blob-nopreloader-template-swing" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-sign-blob/>
         <deploy-process-template/>
         <deploy-deploy-swing/>
     </target>
@@ -2922,6 +3093,16 @@
         <deploy-sign/>
         <fallback-deploy-deploy/>
     </target>
+    <target name="-fallback-deploy-app-sign-blob-nopreloader-notemplate" depends="-check-sign" if="sign-blob-nopreloader-notemplate" unless="preloader-app">
+        <echo message="-fallback-deploy-app-sign-blob-nopreloader-notemplate" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <fallback-deploy-application-def/>
+        <fallback-deploy-resources/>
+        <fallback-deploy-jar/>
+        <deploy-sign-blob/>
+        <fallback-deploy-deploy/>
+    </target>
 
     <!-- FALLBACK project with preloader -->
     <!-- FALLBACK no html template -->
@@ -2933,6 +3114,16 @@
         <fallback-deploy-resources-preloader/>
         <fallback-deploy-jar/>
         <deploy-sign-preloader/>
+        <fallback-deploy-deploy/>
+    </target>
+    <target name="-fallback-deploy-app-sign-blob-preloader-notemplate" depends="-check-sign" if="sign-blob-preloader-notemplate" unless="preloader-app">
+        <echo message="-fallback-deploy-app-sign-blob-preloader-notemplate" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <fallback-deploy-application-def-preloader/>
+        <fallback-deploy-resources-preloader/>
+        <fallback-deploy-jar/>
+        <deploy-sign-blob-preloader/>
         <fallback-deploy-deploy/>
     </target>
 
@@ -2948,6 +3139,16 @@
         <deploy-sign/>
         <fallback-deploy-deploy-template/>
     </target>
+    <target name="-fallback-deploy-app-sign-blob-nopreloader-template" depends="-check-sign" if="sign-blob-nopreloader-template" unless="preloader-app">
+        <echo message="-fallback-deploy-app-sign-blob-nopreloader-template" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <fallback-deploy-application-def/>
+        <fallback-deploy-resources/>
+        <fallback-deploy-jar/>
+        <deploy-sign-blob/>
+        <fallback-deploy-deploy-template/>
+    </target>
 
     <!-- FALLBACK project with preloader -->
     <!-- FALLBACK html template -->
@@ -2959,6 +3160,16 @@
         <fallback-deploy-resources-preloader/>
         <fallback-deploy-jar/>
         <deploy-sign-preloader/>
+        <fallback-deploy-deploy-template/>
+    </target>
+    <target name="-fallback-deploy-app-sign-blob-preloader-template" depends="-check-sign" if="sign-blob-preloader-template" unless="preloader-app">
+        <echo message="-fallback-deploy-app-sign-blob-preloader-template" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <fallback-deploy-application-def-preloader/>
+        <fallback-deploy-resources-preloader/>
+        <fallback-deploy-jar/>
+        <deploy-sign-blob-preloader/>
         <fallback-deploy-deploy-template/>
     </target>
 
@@ -2975,6 +3186,16 @@
         <deploy-sign/>
         <fallback-deploy-deploy/>
     </target>
+    <target name="-fallback-deploy-app-sign-blob-nopreloader-notemplate-swing" depends="-check-fallback-sign-deploy-swing-possible" if="sign-nopreloader-notemplate-swing" unless="preloader-app-no-workaround">
+        <echo message="-fallback-deploy-app-sign-blob-nopreloader-notemplate-swing" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <fallback-deploy-application-def-swing/>
+        <fallback-deploy-resources/>
+        <fallback-deploy-jar/>
+        <deploy-sign-blob/>
+        <fallback-deploy-deploy/>
+    </target>
 
     <!-- FALLBACK project without preloader -->
     <!-- FALLBACK html template -->
@@ -2987,6 +3208,16 @@
         <fallback-deploy-resources/>
         <fallback-deploy-jar/>
         <deploy-sign/>
+        <fallback-deploy-deploy-template/>
+    </target>
+    <target name="-fallback-deploy-app-sign-blob-nopreloader-template-swing" depends="-check-fallback-sign-deploy-swing-possible" if="sign-nopreloader-template-swing" unless="preloader-app-no-workaround">
+        <echo message="-fallback-deploy-app-sign-blob-nopreloader-template-swing" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <fallback-deploy-application-def-swing/>
+        <fallback-deploy-resources/>
+        <fallback-deploy-jar/>
+        <deploy-sign-blob/>
         <fallback-deploy-deploy-template/>
     </target>
 
