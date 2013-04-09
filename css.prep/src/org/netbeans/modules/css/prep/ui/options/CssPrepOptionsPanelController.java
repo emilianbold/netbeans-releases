@@ -85,8 +85,7 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
         getCssPrepOptions().setSassPath(getCssPrepOptionsPanel().getSassPath());
         getCssPrepOptions().setLessPath(getCssPrepOptionsPanel().getLessPath());
 
-        // refresh project problems
-        CssPreprocessors.getDefault().fireChange();
+        // XXX refresh project problems
 
         Warnings.resetSassWarning();
         Warnings.resetLessWarning();

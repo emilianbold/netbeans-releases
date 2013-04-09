@@ -112,6 +112,21 @@ public interface CssPreprocessorImplementation {
     @CheckForNull
     ProjectProblemsProvider createProjectProblemsProvider(@NonNull CssPreprocessor.ProjectProblemsProviderSupport support);
 
+    /**
+     * Attach a change listener that is to be notified of changes
+     * in this CSS peprocessor.
+     * @param listener a listener, can be {@code null}
+     * @since 1.42
+     */
+    void addChangeListener(@NullAllowed ChangeListener listener);
+
+    /**
+     * Removes a change listener.
+     * @param listener a listener, can be {@code null}
+     * @since 1.42
+     */
+    void removeChangeListener(@NullAllowed ChangeListener listener);
+
     //~ Inner classes
 
     /**
