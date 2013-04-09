@@ -159,7 +159,6 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
                 LOGGER.log(Level.WARNING, "Error while saving CSS preprocessor: " + customizer.getDisplayName(), ex);
             }
         }
-        CssPreprocessors.getDefault().fireChange();
     }
 
     void removeListeners() {

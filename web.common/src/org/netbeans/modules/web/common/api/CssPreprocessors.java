@@ -43,6 +43,7 @@ package org.netbeans.modules.web.common.api;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeListener;
@@ -166,45 +167,42 @@ public final class CssPreprocessors {
         changeSupport.removeChangeListener(listener);
     }
 
-    // XXX this method solves these problems:
-    // - cannot create singletons of preprocessors (@ServiceProvider does not allow that)
-    // - avoid memory leaks in change listeners
-    /**
-     * Fire change, supposed to be used by CSS preprocessors implementations (e.g. compiler path change).
-     * @since 1.41
-     */
-    public void fireChange() {
-        changeSupport.fireChange();
-    }
-
     /**
      * Process given file (can be a folder as well) by {@link #getPreprocessors() all CSS preprocessors}.
      * <p>
-     * For detailed information see {@link CssPreprocessor#process(Project, FileObject)}.
+     * For detailed information see {@link CssPreprocessorImplementation#process(Project, FileObject)}.
      * @param project project where the file belongs, can be {@code null} for file without a project
      * @param fileObject valid or even invalid file (or folder) to be processed
-     * @param async {@code true} for running in a separate background thread
-     * @since 1.40
+     * @since 1.42
      */
-    public void process(@NullAllowed final Project project, @NonNull final FileObject fileObject, boolean async) {
-        Parameters.notNull("fileObject", fileObject); // NOI18N
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                processInternal(project, fileObject);
-            }
-        };
-        if (async) {
-            RP.post(task);
-        } else {
-            task.run();
-        }
+    public void process(@NullAllowed final Project project, @NonNull final FileObject fileObject) {
+        processInternal(getPreprocessors(), project, fileObject);
     }
 
-    void processInternal(Project project, FileObject fileObject) {
-        for (CssPreprocessor cssPreprocessor : getPreprocessors()) {
-            cssPreprocessor.process(project, fileObject);
-        }
+    /**
+     * Process given file (can be a folder as well) by the given CSS preprocessor.
+     * <p>
+     * For detailed information see {@link CssPreprocessorImplementation#process(Project, FileObject)}.
+     * @param cssPreprocessor CSS preprocesor
+     * @param project project where the file belongs, can be {@code null} for file without a project
+     * @param fileObject valid or even invalid file (or folder) to be processed
+     * @since 1.42
+     */
+    public void process(@NonNull CssPreprocessor cssPreprocessor, @NullAllowed final Project project, @NonNull final FileObject fileObject) {
+        Parameters.notNull("cssPreprocessor", cssPreprocessor); // NOI18N
+        Parameters.notNull("fileObject", fileObject); // NOI18N
+        processInternal(Collections.singletonList(cssPreprocessor), project, fileObject);
+    }
+
+    void processInternal(final List<CssPreprocessor> preprocessors, final Project project, final FileObject fileObject) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                for (CssPreprocessor cssPreprocessor : preprocessors) {
+                    cssPreprocessor.getDelegate().process(project, fileObject);
+                }
+            }
+        });
     }
 
     private void initProcessors() {

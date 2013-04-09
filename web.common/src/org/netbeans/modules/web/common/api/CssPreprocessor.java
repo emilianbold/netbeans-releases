@@ -43,6 +43,7 @@ package org.netbeans.modules.web.common.api;
 
 import java.io.IOException;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -52,6 +53,7 @@ import org.netbeans.modules.web.common.cssprep.CssPreprocessorAccessor;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Parameters;
 
@@ -62,19 +64,34 @@ import org.openide.util.Parameters;
 public final class CssPreprocessor {
 
     private final CssPreprocessorImplementation delegate;
+    final ChangeSupport changeSupport = new ChangeSupport(this);
+    final ChangeListener changeListener = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            changeSupport.fireChange();
+        }
+    };
 
 
     static {
         CssPreprocessorAccessor.setDefault(new CssPreprocessorAccessor() {
             @Override
             public CssPreprocessor create(CssPreprocessorImplementation cssPreprocessorImplementation) {
-                return new CssPreprocessor(cssPreprocessorImplementation);
+                CssPreprocessor cssPreprocessor = new CssPreprocessor(cssPreprocessorImplementation);
+                // no need to remove listener since CssPreprocessor should not ever be root
+                cssPreprocessorImplementation.addChangeListener(cssPreprocessor.changeListener);
+                return cssPreprocessor;
             }
         });
     }
 
     private CssPreprocessor(CssPreprocessorImplementation delegate) {
         this.delegate = delegate;
+    }
+
+    // package private!
+    CssPreprocessorImplementation getDelegate() {
+        return delegate;
     }
 
     /**
@@ -98,22 +115,6 @@ public final class CssPreprocessor {
         String displayName = delegate.getDisplayName();
         Parameters.notNull("displayName", displayName); // NOI18N
         return displayName;
-    }
-
-    /**
-     * Process given file (can be a folder as well).
-     * <p>
-     * For folder, it usually means that all children should be processed.
-     * <p>
-     * <b>Warning:</b> The given file can be {@link FileObject#isValid() invalid}, it means deleted.
-     * <p>
-     * It usually means that if the given file can be processed by this CSS preprocessor, some action is done
-     * (usually compiling).
-     * @param project project where the file belongs, can be {@code null} for file without a project
-     * @param fileObject valid or even invalid file (or folder) to be processed
-     */
-    public void process(@NullAllowed Project project, @NonNull FileObject fileObject) {
-        delegate.process(project, fileObject);
     }
 
     /**
@@ -143,6 +144,25 @@ public final class CssPreprocessor {
     public ProjectProblemsProvider createProjectProblemsProvider(@NonNull CssPreprocessor.ProjectProblemsProviderSupport support) {
         Parameters.notNull("support", support); // NOI18N
         return delegate.createProjectProblemsProvider(support);
+    }
+
+    /**
+     * Attach a change listener that is to be notified of changes
+     * in this CSS peprocessor.
+     * @param listener a listener, can be {@code null}
+     * @since 1.42
+     */
+    public void addChangeListener(@NullAllowed ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    /**
+     * Removes a change listener.
+     * @param listener a listener, can be {@code null}
+     * @since 1.42
+     */
+    public void removeChangeListener(@NullAllowed ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     //~ Inner classes
