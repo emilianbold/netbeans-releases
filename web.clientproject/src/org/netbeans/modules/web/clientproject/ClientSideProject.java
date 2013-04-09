@@ -499,10 +499,6 @@ public class ClientSideProject implements Project {
             if (wb != null) {
                 browserId = wb.getId();
             }
-            FileObject sources = project.getSiteRootFolder();
-            if (sources != null) {
-                CssPreprocessors.getDefault().process(project, sources, true);
-            }
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
                     new Object[] { browserId,
                     project.getTestsFolder() != null && project.getTestsFolder().getChildren().length > 0 ? "YES" : "NO"}); // NOI18N
@@ -605,7 +601,7 @@ public class ClientSideProject implements Project {
         }
 
         private void checkPreprocessors(FileObject file) {
-            CssPreprocessors.getDefault().process(p, file, true);
+            CssPreprocessors.getDefault().process(p, file);
         }
     }
 
