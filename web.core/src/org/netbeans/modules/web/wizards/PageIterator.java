@@ -207,11 +207,15 @@ public class PageIterator implements TemplateWizard.Iterator {
                     Templates.createSimpleTargetChooser(project, sourceGroups)
                 };
     }
+
     private static boolean isJSF20(WebModule wm) {
         ClassPath classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
-        boolean isJSF20 = classpath != null
-                && classpath.findResource("javax/faces/application/ProjectStage.class") != null; //NOI18N
-        return isJSF20;
+        return classpath != null && classpath.findResource("javax/faces/application/ProjectStage.class") != null; //NOI18N
+    }
+
+    private static boolean isJSF22(WebModule wm) {
+        ClassPath classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        return classpath != null && classpath.findResource("javax/faces/flow/Flow.class") != null; //NOI18N
     }
 
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
@@ -246,8 +250,12 @@ public class PageIterator implements TemplateWizard.Iterator {
                 if (isFacelets(wiz)) {
                     template = templateParent.getFileObject("JSP", "xhtml"); //NOI18N
                     WebModule wm = WebModule.getWebModule(df.getPrimaryFile());
-                    if (wm != null && isJSF20(wm)) {
-                        wizardProps.put("isJSF20", Boolean.TRUE);
+                    if (wm != null) {
+                        if (isJSF22(wm)) {
+                            wizardProps.put("isJSF22", Boolean.TRUE);
+                        } else if (isJSF20(wm)) {
+                            wizardProps.put("isJSF20", Boolean.TRUE);
+                        }
                     }
                 }
             }

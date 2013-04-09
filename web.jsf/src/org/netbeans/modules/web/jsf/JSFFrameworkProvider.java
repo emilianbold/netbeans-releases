@@ -704,8 +704,12 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     FileObject target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_XHTML);
                     FileObject template = FileUtil.getConfigRoot().getFileObject(WELCOME_XHTML_TEMPLATE);
                     HashMap<String, Object> params = new HashMap<String, Object>();
-                    if (jsfVersion != null && jsfVersion.isAtLeast(JSFVersion.JSF_2_0)) {
-                        params.put("isJSF20", Boolean.TRUE);    //NOI18N
+                    if (jsfVersion != null) {
+                        if (jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
+                            params.put("isJSF22", Boolean.TRUE);    //NOI18N
+                        } else {
+                            params.put("isJSF20", Boolean.TRUE);    //NOI18N
+                        }
                     }
                     JSFPaletteUtilities.expandJSFTemplate(template, params, target);
                 }
