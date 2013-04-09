@@ -452,8 +452,10 @@ public final class PhpProject implements Project {
     }
 
     void reinitCssPreprocessors() {
-        clearCssPreprocessors();
-        initCssPreprocessors();
+        synchronized (cssPreprocessors) {
+            clearCssPreprocessors();
+            initCssPreprocessors();
+        }
     }
 
     void recompileSources(CssPreprocessor cssPreprocessor) {
