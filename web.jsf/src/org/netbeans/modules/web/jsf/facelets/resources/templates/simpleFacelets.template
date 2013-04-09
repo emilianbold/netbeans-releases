@@ -9,7 +9,7 @@
 <#elseif isJSF20??>
       xmlns:h="http://java.sun.com/jsf/html">
 </#if>
-<#if isJSF20??>
+<#if isJSF20?? || isJSF22??>
     <h:head>
         <title>Facelet Title</title>
     </h:head>

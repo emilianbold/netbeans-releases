@@ -127,8 +127,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static String WELCOME_JSF = "welcomeJSF.jsp";   //NOI18N
     private static String WELCOME_XHTML = "index.xhtml"; //NOI18N
     private static String WELCOME_XHTML_TEMPLATE = "/Templates/JSP_Servlet/JSP.xhtml"; //NOI18N
-    private static String TEMPLATE_XHTML = "template.xhtml"; //NOI18N
-    private static String TEMPLATE_XHTML2 = "template-jsf2.xhtml"; //NOI18N
     private static String CSS_FOLDER = "css"; //NOI18N
     private static String CSS_FOLDER2 = "resources/css"; //NOI18N
     private static String DEFAULT_CSS = "default.css"; //NOI18N

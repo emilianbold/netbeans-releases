@@ -81,6 +81,8 @@ import org.openide.util.NbBundle;
  */
 public class TemplateIterator implements TemplateWizard.Iterator {
 
+    private static final long serialVersionUID = 458897855L;
+
     private int index;
     private transient WizardDescriptor.Panel[] panels;
 
@@ -90,8 +92,8 @@ public class TemplateIterator implements TemplateWizard.Iterator {
     private static final String CSS_EXT = "css"; //NOI18N
     private static final String XHTML_EXT = "xhtml";    //NOI18N
     private static final String ENCODING = "UTF-8"; //NOI18N
-    private static String TEMPLATE_XHTML = "template.xhtml"; //NOI18N
-    private static String TEMPLATE_XHTML2 = "template-jsf2.xhtml"; //NOI18N
+    private static String TEMPLATE_XHTML = "template.template"; //NOI18N
+    private static String TEMPLATE_XHTML2 = "template-jsf2.template"; //NOI18N
     private static String FL_RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/facelets/resources/templates/"; //NOI18N
 
     /** Creates a new instance of TemplateIterator */
@@ -143,7 +145,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                     @Override
                     public void run() throws IOException {
                         InputStream is;
-                        FileObject target = df.getPrimaryFile().createData(targetName, XHTML_EXT);
+                        FileObject target = df.getPrimaryFile().createData(targetName, "template"); //NOI18N
 
                         String folderName = jsfVersion.isAtLeast(JSFVersion.JSF_2_0) ? CSS_FOLDER2 : CSS_FOLDER;
                         FileObject cssFolder = docBase.getFileObject(folderName);
