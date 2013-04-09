@@ -52,11 +52,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -72,6 +75,7 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
+import org.netbeans.modules.web.clientproject.problems.CssPreprocessorsProblemsSupport;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
@@ -82,6 +86,7 @@ import org.netbeans.modules.web.clientproject.ui.action.ProjectOperations;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -137,6 +142,22 @@ public class ClientSideProject implements Project {
     private RemoteFiles remoteFiles;
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
     private WebBrowser projectWebBrowser;
+
+    // css preprocessors
+    final List<CssPreprocessor> cssPreprocessors = new CopyOnWriteArrayList<CssPreprocessor>();
+    final ChangeListener cssPreprocessorChangeListener = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            recompileSources((CssPreprocessor) e.getSource());
+        }
+    };
+    final ChangeListener cssPreprocessorsChangeListener = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            reinitCssPreprocessors();
+        }
+    };
+
 
     public ClientSideProject(AntProjectHelper helper) {
         this.projectHelper = helper;
@@ -364,6 +385,7 @@ public class ClientSideProject implements Project {
                new ClientSideProjectSources(this, projectHelper, eval),
                new ClientSideModuleImpl(this),
                ProjectPropertiesProblemProvider.createForProject(this),
+               CssPreprocessors.getDefault().createProjectProblemsProvider(new CssPreprocessorsProblemsSupport(this)),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
                     ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
@@ -371,6 +393,38 @@ public class ClientSideProject implements Project {
        });
        return new DynamicProjectLookup(this,
                LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup"));
+    }
+
+    void initCssPreprocessors() {
+        assert cssPreprocessors.isEmpty() : "Empty preprocessors expected: " + cssPreprocessors;
+        cssPreprocessors.addAll(CssPreprocessors.getDefault().getPreprocessors());
+        for (CssPreprocessor preprocessor : cssPreprocessors) {
+            preprocessor.addChangeListener(cssPreprocessorChangeListener);
+        }
+    }
+
+    void clearCssPreprocessors() {
+        for (CssPreprocessor preprocessor : cssPreprocessors) {
+            preprocessor.removeChangeListener(cssPreprocessorChangeListener);
+        }
+        cssPreprocessors.clear();
+    }
+
+    void reinitCssPreprocessors() {
+        synchronized (cssPreprocessors) {
+            clearCssPreprocessors();
+            initCssPreprocessors();
+        }
+    }
+
+    void recompileSources(CssPreprocessor cssPreprocessor) {
+        assert cssPreprocessor != null;
+        FileObject siteRootFolder = getSiteRootFolder();
+        if (siteRootFolder == null) {
+            return;
+        }
+        // force recompiling
+        CssPreprocessors.getDefault().process(cssPreprocessor, this, siteRootFolder);
     }
 
     private static class DynamicProjectLookup extends ProxyLookup {
@@ -499,10 +553,8 @@ public class ClientSideProject implements Project {
             if (wb != null) {
                 browserId = wb.getId();
             }
-            FileObject sources = project.getSiteRootFolder();
-            if (sources != null) {
-                CssPreprocessors.getDefault().process(project, sources, true);
-            }
+            CssPreprocessors.getDefault().addChangeListener(project.cssPreprocessorsChangeListener);
+            project.initCssPreprocessors();
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
                     new Object[] { browserId,
                     project.getTestsFolder() != null && project.getTestsFolder().getChildren().length > 0 ? "YES" : "NO"}); // NOI18N
@@ -513,6 +565,8 @@ public class ClientSideProject implements Project {
             project.getEvaluator().removePropertyChangeListener(this);
             removeSiteRootListener();
             GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
+            CssPreprocessors.getDefault().removeChangeListener(project.cssPreprocessorsChangeListener);
+            project.clearCssPreprocessors();
         }
 
         private synchronized void addSiteRootListener() {
@@ -605,7 +659,7 @@ public class ClientSideProject implements Project {
         }
 
         private void checkPreprocessors(FileObject file) {
-            CssPreprocessors.getDefault().process(p, file, true);
+            CssPreprocessors.getDefault().process(p, file);
         }
     }
 

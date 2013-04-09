@@ -49,10 +49,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.prep.editor.CPUtils;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
+import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.Warnings;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -61,6 +61,12 @@ public final class SassProcessor extends BaseProcessor {
 
     private static final Logger LOGGER = Logger.getLogger(SassProcessor.class.getName());
 
+    private final SassCssPreprocessor sassCssPreprocessor;
+
+
+    public SassProcessor(SassCssPreprocessor sassCssPreprocessor) {
+        this.sassCssPreprocessor = sassCssPreprocessor;
+    }
 
     @Override
     protected boolean isEnabledInternal(Project project) {
@@ -115,7 +121,7 @@ public final class SassProcessor extends BaseProcessor {
         } catch (InvalidExternalExecutableException ex) {
             if (Warnings.showSassWarning()) {
                 // refresh project problems
-                CssPreprocessors.getDefault().fireChange();
+                sassCssPreprocessor.fireChange();
             }
         }
         return null;
