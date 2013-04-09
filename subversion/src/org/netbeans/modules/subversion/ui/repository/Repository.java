@@ -81,6 +81,7 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -147,16 +148,22 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         refreshUrlHistory();
     }
     
-    public void selectUrl(SVNUrl url, boolean force) {
-        DefaultComboBoxModel dcbm = (DefaultComboBoxModel) repositoryPanel.urlComboBox.getModel();
-        int idx = dcbm.getIndexOf(url.toString());
-        if(idx > -1) {
-            dcbm.setSelectedItem(url.toString());    
-        } else if(force) {
-            RepositoryConnection rc = new RepositoryConnection(url.toString());
-            dcbm.addElement(rc);
-            dcbm.setSelectedItem(rc);
-        }                        
+    public void selectUrl (final SVNUrl url, final boolean force) {
+        Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
+            @Override
+            public Void run () {
+                DefaultComboBoxModel dcbm = (DefaultComboBoxModel) repositoryPanel.urlComboBox.getModel();
+                int idx = dcbm.getIndexOf(url.toString());
+                if(idx > -1) {
+                    dcbm.setSelectedItem(url.toString());    
+                } else if(force) {
+                    RepositoryConnection rc = new RepositoryConnection(url.toString());
+                    dcbm.addElement(rc);
+                    dcbm.setSelectedItem(rc);
+                }
+                return null;
+            }
+        });
     }
     
     @Override
