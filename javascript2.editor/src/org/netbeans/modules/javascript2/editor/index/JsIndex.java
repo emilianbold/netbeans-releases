@@ -77,6 +77,7 @@ public class JsIndex {
 
     @org.netbeans.api.annotations.common.SuppressWarnings("MS_MUTABLE_ARRAY")
     public static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_OFFSET, FIELD_RETURN_TYPES, FIELD_PARAMETERS, FIELD_FLAG, FIELD_IS_GLOBAL, FIELD_ASSIGNMENS};
+    
        
     private JsIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;
@@ -126,16 +127,21 @@ public class JsIndex {
         if (isIndexChanged.get()) {
             synchronized(LOCK) {
                 if (isIndexChanged.get()) {
+                    long start = System.currentTimeMillis();
                     ArrayList<IndexedElement> globals = new ArrayList<IndexedElement>();
                     Collection<? extends IndexResult> globalObjects = query(
                             JsIndex.FIELD_IS_GLOBAL, "1", QuerySupport.Kind.EXACT, TERMS_BASIC_INFO); //NOI18N
                     for (IndexResult indexResult : globalObjects) {
                         IndexedElement indexedElement = IndexedElement.create(indexResult);
-                        globals.add(indexedElement);
+                        if (!indexedElement.isAnonymous()) {
+                            globals.add(indexedElement);
+                        }
                     }
                     allGlobalItems.clear();
                     allGlobalItems.addAll(globals);
                     isIndexChanged.set(false);
+                    long end = System.currentTimeMillis();
+                    LOG.log(Level.FINE, "Obtaining globals from the index took: {0}", (end - start)); //NOI18N
                 }
             }
         }
