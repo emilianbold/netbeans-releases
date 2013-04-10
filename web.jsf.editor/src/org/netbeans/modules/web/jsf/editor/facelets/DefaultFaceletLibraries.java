@@ -74,9 +74,6 @@ public class DefaultFaceletLibraries {
     private Map<String, FaceletsLibraryDescriptor> librariesDescriptors;
     private static Map<String, Library> jsf22FaceletPseudoLibraries;
 
-    public static final String JSF_NS = "http://java.sun.com/jsf"; //NOI18N
-    public static final String JSF_PASSTHROUGH_NS = "http://java.sun.com/jsf/passthrough"; //NOI18N
-
     public static synchronized DefaultFaceletLibraries getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new DefaultFaceletLibraries();

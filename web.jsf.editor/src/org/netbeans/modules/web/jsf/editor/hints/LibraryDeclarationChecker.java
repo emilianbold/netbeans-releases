@@ -127,8 +127,10 @@ public class LibraryDeclarationChecker extends HintsProvider {
         final Map<String, Attribute> namespace2Attribute = new HashMap<String, Attribute>();
         Node root = result.root();
         final CharSequence docText = getSourceText(snapshot.getSource());
-        final String jsfNsPrefix = result.getNamespaces().get(DefaultFaceletLibraries.JSF_NS);
-        final String passthroughNsPrefix = result.getNamespaces().get(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS);
+        final String jsfNsPrefix = result.getNamespaces().get(DefaultLibraryInfo.JSF.getNamespace()) != null ?
+                result.getNamespaces().get(DefaultLibraryInfo.JSF.getNamespace()) : result.getNamespaces().get(DefaultLibraryInfo.JSF.getLegacyNamespace());
+        final String passthroughNsPrefix = result.getNamespaces().get(DefaultLibraryInfo.PASSTHROUGH.getNamespace()) != null ?
+                result.getNamespaces().get(DefaultLibraryInfo.PASSTHROUGH.getNamespace()) : result.getNamespaces().get(DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace());
         final boolean[] jsfUsage = new boolean[1];
         final List<Named> wrongJsfNsUsages = new ArrayList<Named>();
 
@@ -221,7 +223,8 @@ public class LibraryDeclarationChecker extends HintsProvider {
             }
             if (lib != null) {
                 // http://java.sun.com/jsf/passthrough usage needs to be resolved on base of all declared libraries
-                if (!DefaultFaceletLibraries.JSF_PASSTHROUGH_NS.equals(lib.getNamespace())) {
+                if (!(DefaultLibraryInfo.PASSTHROUGH.getNamespace().equals(lib.getNamespace())
+                        || DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace().equals(lib.getNamespace()))) {
                     declaredLibraries.add(lib);
                 }
             } else {
@@ -240,8 +243,10 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         //2. find for unused declarations
-        final boolean declaredPassthroughOrJsf = declaredNamespaces.contains(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS)
-                || declaredNamespaces.contains(DefaultFaceletLibraries.JSF_NS);
+        final boolean declaredPassthroughOrJsf = declaredNamespaces.contains(DefaultLibraryInfo.PASSTHROUGH.getNamespace())
+                || declaredNamespaces.contains(DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace())
+                || declaredNamespaces.contains(DefaultLibraryInfo.JSF.getNamespace())
+                || declaredNamespaces.contains(DefaultLibraryInfo.JSF.getLegacyNamespace());
         final boolean[] passthroughUsage = new boolean[1];
         final Collection<OffsetRange> ranges = new ArrayList<OffsetRange>();
         for (Library lib : declaredLibraries) {
@@ -282,7 +287,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
             usages[0] += isFunctionLibraryPrefixUsedInEL(context, lib, docText) ? 1 : 0;
 
             // http://java.sun.com/jsf namespace handling
-            usages[0] += DefaultFaceletLibraries.JSF_NS.equals(lib.getNamespace()) && jsfUsage[0] ? 1 : 0;
+            usages[0] += (DefaultLibraryInfo.JSF.getNamespace().equals(lib.getNamespace()) || DefaultLibraryInfo.JSF.getLegacyNamespace().equals(lib.getNamespace())) && jsfUsage[0] ? 1 : 0;
 
             if (usages[0] == 0) {
                 //unused declaration
@@ -291,10 +296,11 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         //2b. find for unused declaration of http://java.sun.com/jsf/passthrough
-        if (declaredNamespaces.contains(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS) && !passthroughUsage[0]) {
+        if ((declaredNamespaces.contains(DefaultLibraryInfo.PASSTHROUGH.getNamespace()) || declaredNamespaces.contains(DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace()))
+                && !passthroughUsage[0]) {
             addUnusedLibrary(ranges,
                     namespace2Attribute,
-                    libs.get(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS),
+                    libs.get(DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace()),
                     snapshot,
                     docText);
         }
