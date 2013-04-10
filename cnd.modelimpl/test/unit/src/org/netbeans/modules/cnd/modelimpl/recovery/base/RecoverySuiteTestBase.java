@@ -193,8 +193,8 @@ public class RecoverySuiteTestBase extends NbTestSuite {
                             res.add((Test) ctor.newInstance(name, g, d, golden));
                         }
                     } else {
-                        for(int i = 1; i < type.length(); i++) {
-                            Diff current = new MyDiff(d, type.substring(0, i));
+                        for(String s:balancedType(type)) {
+                            Diff current = new MyDiff(d, s);
                             for(Grammar g : gList) {
                                 res.add((Test) ctor.newInstance(name, g, current, golden));
                             }
@@ -213,6 +213,31 @@ public class RecoverySuiteTestBase extends NbTestSuite {
             Exceptions.printStackTrace(ex);
         }
         return Collections.<Test>emptyList();
+    }
+    
+    private List<String> balancedType(String type) {
+        List<String> res = new ArrayList<String>();
+        for(int i = 1; i < type.length(); i++) {
+            String beg = type.substring(0, i);
+            String rest = type.substring(i);
+            if (beg.indexOf('{')>=0 && rest.indexOf('}')>=0) {
+                res.add(beg+"}");
+            } else {
+                if ("}".equals(rest) && beg.indexOf('{')>=0) {
+                } else {
+                    res.add(beg);
+                }
+            }
+        }
+        return res;
+    }
+
+    private List<String> simpleType(String type) {
+        List<String> res = new ArrayList<String>();
+        for(int i = 1; i < type.length(); i++) {
+            res.add(type.substring(0, i));
+        }
+        return res;
     }
 
     private TestClassData findTestData(Class<?> testClass) {

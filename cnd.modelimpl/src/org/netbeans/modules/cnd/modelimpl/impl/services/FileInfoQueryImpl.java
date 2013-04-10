@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.Exceptions;
 
 /**
  * CsmFileInfoQuery implementation
@@ -498,4 +499,24 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         }
         return 0;
     }
+
+    @Override
+    public int getLineCount(CsmFile file) {
+        if (file instanceof FileImpl) {
+            try {
+                return ((FileImpl) file).getBuffer().getLineCount();
+            } catch (IOException ex) {
+                CndUtils.assertTrueInConsole(false, ex.getMessage());
+            }
+        }
+        return 0;
+    }   
+
+    @Override
+    public int[] getLineColumnByOffset(CsmFile file, int offset) {
+        if (file instanceof FileImpl) {
+            return ((FileImpl)file).getLineColumn(offset);
+        }
+        return new int[]{0, 0};
+    }        
 }

@@ -52,8 +52,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.modelui.impl.services;
+package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import org.netbeans.modules.cnd.modelimpl.impl.services.MacroExpansionDocProviderImpl;
 import java.io.File;
 import java.io.PrintStream;
 import javax.swing.text.Document;
@@ -62,28 +63,28 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 
 /**
- * Class for MacroExpansionDocProviderImpl tests for transformation tables
+ * Class for MacroExpansionDocProviderImpl tests for offsets transformations
  *
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public class MacroExpansionTablesTestCase extends MacroExpansionDocProviderImplBaseTestCase {
+public class MacroExpansionOffsetsTestCase extends MacroExpansionDocProviderImplBaseTestCase {
 
-    public MacroExpansionTablesTestCase(String testName) {
+    public MacroExpansionOffsetsTestCase(String testName) {
         super(testName);
     }
 
-    // Dump tables
+    // Find offset in expanded view by original or vice versa
     // Format:
-    // performExpandFileTest("file name"); // NOI18N
+    // performGetOutOffsetTest("file name, line, column); // NOI18N
     // or
-    // performExpandFileTest("file name, start_line, start_column, end_line, end_column); // NOI18N
+    // performGetInOffsetTest("file name, line, column); // NOI18N
 
     public void testFile1() throws Exception {
-        performDumpTablesTest("file1.cc"); // NOI18N
+        performGetOutOffsetTest("file1.cc", 11, 5); // NOI18N
     }
 
     public void testFile1_2() throws Exception {
-        performDumpTablesTest("file1.cc", 10, 1, 15, 1); // NOI18N
+        performGetInOffsetTest("file1.cc", 9, 5); // NOI18N
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -96,8 +97,7 @@ public class MacroExpansionTablesTestCase extends MacroExpansionDocProviderImplB
 
         assertNotNull("Csm file was not found for " + path, currentFile); // NOI18N
 
-        if (params.length == 0) {
-            // Dump tables
+        if (params.length == 3) {
 
             MacroExpansionDocProviderImpl mp = new MacroExpansionDocProviderImpl();
 
@@ -108,53 +108,38 @@ public class MacroExpansionTablesTestCase extends MacroExpansionDocProviderImplB
 
             mp.expand(doc, 0, 0);
 
-            String res = mp.dumpTables(doc);
-            assertNotNull(res);
-            streamOut.println(res);
+            int line = (Integer) params[0];
+            int column = (Integer) params[1];
 
-        } else if (params.length == 4) {
-            // Dump tables
-
-            MacroExpansionDocProviderImpl mp = new MacroExpansionDocProviderImpl();
-
-            String objectSource = currentFile.getName().toString();
-
-            BaseDocument doc = getBaseDocument(getDataFile(objectSource));
-            assertNotNull(doc);
-
-            mp.expand(doc, 0, 0);
-
-            String res = mp.dumpTables(doc);
-            assertNotNull(res);
-            streamOut.println(res);
-
-            int startLine = (Integer) params[0];
-            int startColumn = (Integer) params[1];
-
-            int endLine = (Integer) params[2];
-            int endColumn = (Integer) params[3];
-
-            int startOffset = CndCoreTestUtils.getDocumentOffset(doc, startLine, startColumn);
-            int endOffset = CndCoreTestUtils.getDocumentOffset(doc, endLine, endColumn);
+            boolean originalToExpanded = (Boolean) params[2];
 
             Document doc2 = createExpandedContextDocument(doc, currentFile);
             assertNotNull(doc2);
-            mp.expand(doc, startOffset, endOffset, doc2);
-            res = mp.dumpTables(doc2);
-            streamOut.println(res);
+            mp.expand(doc, 0, doc.getLength(), doc2);
+
+            int res = 0;
+            if(originalToExpanded) {
+                int offset = CndCoreTestUtils.getDocumentOffset(doc, line, column);
+                res = mp.getOffsetInExpandedText(doc2, offset);
+                assertNotNull(res);
+                streamOut.println("Offset: line " + getLine((BaseDocument)doc2, res) + " column " + getColumn((BaseDocument)doc2, res)); // NOI18N
+            } else {
+                int offset = CndCoreTestUtils.getDocumentOffset((BaseDocument)doc2, line, column);
+                res = mp.getOffsetInOriginalText(doc2, offset);
+                assertNotNull(res);
+                streamOut.println("Offset: line " + getLine(doc, res) + " column " + getColumn(doc, res)); // NOI18N
+            }
 
         } else {
             assert true; // Bad test params
         }
     }
 
-    private void performDumpTablesTest(String source) throws Exception {
-        super.performTest(source, getName(), null);
+    private void performGetOutOffsetTest(String source, int originalLine, int originalColumn) throws Exception {
+        super.performTest(source, getName(), null, originalLine, originalColumn, true);
     }
-
-    private void performDumpTablesTest(String source, int startLine, int startColumn, int endLine, int endColumn) throws Exception {
-        super.performTest(source, getName(), null, startLine, startColumn, endLine, endColumn);
+    
+    private void performGetInOffsetTest(String source, int expandedLine, int expandedColumn) throws Exception {
+        super.performTest(source, getName(), null, expandedLine, expandedColumn, false);
     }
-
-
 }

@@ -99,11 +99,30 @@ public interface CsmModel {
      * @param absPath absolute file path
      * @since 1.13.2
      */
-    public abstract CsmFile findFile(FSPath absPath, boolean createIfPossible, boolean snapShot);
-    public abstract CsmFile[] findFiles(FSPath absPath, boolean createIfPossible, boolean snapShot);
+    CsmFile findFile(FSPath absPath, boolean createIfPossible, boolean snapShot);
+    CsmFile[] findFiles(FSPath absPath, boolean createIfPossible, boolean snapShot);
     
     /**
      * Returns the state of the model
      */
     CsmModelState getState();
+
+    /**
+     * @param id NativeProject instance
+     * @return Boolean.TRUE if the project is enabled Boolean.FALSE if the
+     * project is disabled null if the project is being created
+     */    
+    Boolean isProjectEnabled(Object id);
+
+    /**
+     * 
+     * @param p NativeProject instance
+     */
+    public void disableProject(Object p);
+
+    /**
+     * 
+     * @param p NativeProject instance
+     */
+    public void enableProject(Object p);
 }

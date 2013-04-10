@@ -583,6 +583,8 @@ unqualified_or_qualified_id
             (simple_template_id_or_IDENT SCOPE) =>
             nested_name_specifier LITERAL_template? unqualified_id
         |
+            operator_function_id
+        |
             (LITERAL_OPERATOR STRING_LITERAL IDENT) =>
             literal_operator_id
         |
@@ -826,6 +828,10 @@ storage_class_specifier:
         LITERAL_thread_local                                                    {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__THREAD_LOCAL, $LITERAL_thread_local);}
     |
         LITERAL___hidden                                                        {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER___HIDDEN, $LITERAL___hidden);}
+    |
+        LITERAL___global                                                        {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER___GLOBAL, $LITERAL___global);}
+    |
+        LITERAL___symbolic                                                      {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER___SYMBOLIC, $LITERAL___symbolic);}
     ;
 
 function_specifier:
@@ -1552,7 +1558,7 @@ ptr_operator returns [ declarator_type_t type ]
 finally                                                                         {if(state.backtracking == 0){action.end_ptr_operator(input.LT(0));}}
 
 cv_qualifier returns [ qualifier_t qual ]:
-        literal_const                                                           {action.cv_qualifier(action.CV_QUALIFIER__CONST, input.LT(0));}
+        LITERAL_const                                                           {action.cv_qualifier(action.CV_QUALIFIER__CONST, input.LT(0));}
         //{{ qual = LITERAL_const; }}
     |
         LITERAL_volatile                                                        {action.cv_qualifier(action.CV_QUALIFIER__VOLATILE, input.LT(0));}
@@ -2174,7 +2180,7 @@ finally                                                                         
 // [gram.over] 
 operator_function_id
 @init                                                                           {if(state.backtracking == 0){action.mem_operator_function_id(input.LT(1));}}
-        :                                                                       
+        :
         LITERAL_OPERATOR 
         operator_id 
         ( { operator_is_template() }?=> 

@@ -70,6 +70,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -87,18 +89,15 @@ public final class NativeProjectProvider {
 	    List<String> sysIncludes, List<String> usrIncludes,
 	    List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros, boolean pathsRelCurFile) throws IOException {
 
-        return createProject(projectRoot, files, libProjectsPaths, sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros, pathsRelCurFile, null);
-    }
-    
-    public static NativeProject createProject(String projectRoot, List<File> files,
-            List<String> libProjectsPaths,
-	    List<String> sysIncludes, List<String> usrIncludes,
-	    List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros, boolean pathsRelCurFile,
-            Lookup lookup) throws IOException {
-	
+        InstanceContent ic = new InstanceContent();
         NativeProjectImpl project = new NativeProjectImpl(projectRoot, libProjectsPaths,
-		sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros, pathsRelCurFile, lookup);
-	
+		sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros, pathsRelCurFile, ic);
+
+        TraceProjectLookupProvider lkp = Lookup.getDefault().lookup(TraceProjectLookupProvider.class);
+        if (lkp != null) {
+            lkp.createLookup(ic, project);
+        }
+
 	project.addFiles(files);
 	
         return project;
@@ -190,19 +189,11 @@ public final class NativeProjectProvider {
         
         private final Lookup lookup;
 
-	public NativeProjectImpl(String projectRoot,
+	private NativeProjectImpl(String projectRoot,
                 List<String> libProjectsPaths,
 		List<String> sysIncludes, List<String> usrIncludes, 
 		List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros,
-		boolean pathsRelCurFile) {
-            this(projectRoot, libProjectsPaths, sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros, pathsRelCurFile, null);
-        }
-        
-	public NativeProjectImpl(String projectRoot,
-                List<String> libProjectsPaths,
-		List<String> sysIncludes, List<String> usrIncludes, 
-		List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros,
-		boolean pathsRelCurFile, Lookup lookup) {
+		boolean pathsRelCurFile, InstanceContent ic) {
 
 	    this.projectRoot = projectRoot;
             List<NativeProject> libs = new ArrayList<NativeProject>();
@@ -230,7 +221,7 @@ public final class NativeProjectProvider {
 	    this.sysMacros = new ArrayList<String>(sysMacros);
 	    this.usrMacros = new ArrayList<String>(usrMacros);
             this.name = initName(projectRoot);
-            this.lookup = (lookup == null) ? Lookups.fixed() : lookup;
+            this.lookup = (ic == null) ? Lookups.fixed() : new AbstractLookup(ic);
         }
         
         private String initName(String projectRoot) {

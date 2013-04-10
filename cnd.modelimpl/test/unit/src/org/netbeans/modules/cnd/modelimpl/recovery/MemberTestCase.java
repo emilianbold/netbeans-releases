@@ -41,31 +41,33 @@
  */
 package org.netbeans.modules.cnd.modelimpl.recovery;
 
-import org.netbeans.modules.cnd.modelimpl.recovery.base.Diff;
-import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammar;
-import org.netbeans.modules.cnd.modelimpl.recovery.base.Diffs;
-import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammars;
-import org.netbeans.modules.cnd.modelimpl.recovery.base.Golden;
-import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
 import java.io.File;
 import org.junit.Test;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Diff;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Diffs;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Golden;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammar;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammars;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
 
 /**
  *
  * @author Alexander Simon
  */
 @RandomlyFails
-public class QuoteQuoteTestCase extends RecoveryTestCaseBase {
-    private static final String SOURCE = "quote.cc";
-    public QuoteQuoteTestCase(String testName, Grammar gramma, Diff diff, Golden golden) {
+public class MemberTestCase extends RecoveryTestCaseBase {
+
+    private static final String SOURCE = "customer.cc";
+    private static final String HEADER = "customer.h";
+    public MemberTestCase(String testName, Grammar gramma, Diff diff, Golden golden) {
         super(testName, gramma, diff, golden);
     }
     
     @Override
     protected File getTestCaseDataDir() {
-        return Manager.normalizeFile(new File(getDataDir(), "common/recovery/quote"));
+        return Manager.normalizeFile(new File(getDataDir(), "common/recovery/member"));
     }
 
     @Grammar(newGrammar = false)
@@ -78,7 +80,7 @@ public class QuoteQuoteTestCase extends RecoveryTestCaseBase {
     @Grammar(newGrammar = true)
     @Diff(file=SOURCE)
     @Test
-    public void beforeNS0() throws Exception {
+    public void beforeMethod0() throws Exception {
         implTest(SOURCE);
     }
 
@@ -87,18 +89,47 @@ public class QuoteQuoteTestCase extends RecoveryTestCaseBase {
         @Grammar(newGrammar = true)
     })
     @Diffs({
-        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "{"),
-        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "}"),
-        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "+"),
-        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "class"),
-        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "*"),
-        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "&"),
-        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "ID"),
-        @Diff(file=SOURCE, line = 51, column = 1, length = 0, insert = "ID()"),
-        @Diff(file=SOURCE, line = 51, column = 1, length = 0, type = "int*a()")
+        @Diff(file=SOURCE, line = 18, column = 1, length = 0, insert = "ID()"),
+        @Diff(file=SOURCE, line = 18, column = 1, length = 0, insert = "*"),
+        @Diff(file=SOURCE, line = 18, column = 1, length = 0, insert = "&"),
+        @Diff(file=SOURCE, line = 18, column = 1, length = 0, insert = "{"),
+        @Diff(file=SOURCE, line = 18, column = 1, length = 0, insert = "}"),
+        @Diff(file=SOURCE, line = 18, column = 1, length = 0, insert = "+"),
+        //@Diff(file=SOURCE, line = 18, column = 1, length = 0, type = "int * a()"),
+        @Diff(file=SOURCE, line = 18, column = 1, length = 0, insert = "int"),
     })
     @Test
-    public void beforeNS1() throws Exception {
+    public void beforeMethod1() throws Exception {
+        implTest(SOURCE);
+    }
+    
+    @Grammars({
+        @Grammar(newGrammar = false),
+        @Grammar(newGrammar = true)
+    })
+    @Diffs({
+        @Diff(file=SOURCE, line = 20, column = 5, length = 12, type = "int a=5"),
+        @Diff(file=SOURCE, line = 20, column = 5, length = 12, type = "if(a==0){}"),
+        @Diff(file=SOURCE, line = 20, column = 5, length = 12, type = "for(i=0;i<5;i++){}"),
+        @Diff(file=SOURCE, line = 20, column = 5, length = 12, type = "switch(i){case 5:return;}"),
+        @Diff(file=SOURCE, line = 20, column = 5, length = 12, type = "while(1){}"),
+        @Diff(file=SOURCE, line = 20, column = 5, length = 12, type = "a+=5")
+    })
+    @Test
+    public void insideMethod1() throws Exception {
+        implTest(SOURCE);
+    }
+
+    @Grammars({
+        @Grammar(newGrammar = false),
+        @Grammar(newGrammar = true)
+    })
+    @Diffs({
+        @Diff(file=HEADER, line = 1, column = 1, length = 0, insert = "//"),
+        @Diff(file=HEADER, line = 2, column = 1, length = 0, insert = "//"),
+    })
+    @Test
+    public void undefinedType1() throws Exception {
         implTest(SOURCE);
     }
 }
