@@ -109,12 +109,12 @@ public class IndexedElement extends JsElementImpl {
         elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
         elementDocument.addPair(JsIndex.FIELD_FLAG, Integer.toString(Flag.getFlag(object)), false, true);
         StringBuilder sb = new StringBuilder();
-        for (JsObject property : object.getProperties().values()) {
-            if (!property.getModifiers().contains(Modifier.PRIVATE)) {
-                sb.append(codeProperty(property)).append("#@#");
-            }
-        }
-        elementDocument.addPair(JsIndex.FIELD_PROPERTY, sb.toString(), false, true);
+//        for (JsObject property : object.getProperties().values()) {
+//            if (!property.getModifiers().contains(Modifier.PRIVATE)) {
+//                sb.append(codeProperty(property)).append("#@#");
+//            }
+//        }
+//        elementDocument.addPair(JsIndex.FIELD_PROPERTY, sb.toString(), false, true);
         sb = new StringBuilder();
         for (TypeUsage type : object.getAssignments()) {
             sb.append(type.getType());
@@ -169,20 +169,20 @@ public class IndexedElement extends JsElementImpl {
         return result;
     }
     
-    public static Collection<IndexedElement> createProperties(IndexResult indexResult, String fqn) {
-        Collection<IndexedElement> result = new ArrayList<IndexedElement>();
-        FileObject fo = indexResult.getFile();
-        for(String sProperties : indexResult.getValues(JsIndex.FIELD_PROPERTY)) {
-            String[] split = sProperties.split("#@#");
-            for (int i = 0; i < split.length; i++) {
-                if  (!split[i].isEmpty()) {
-                    result.add(decodeProperty(split[i], fo, fqn));
-                }
-            }
-            
-        }
-        return result;
-    }
+//    public static Collection<IndexedElement> createProperties(IndexResult indexResult, String fqn) {
+//        Collection<IndexedElement> result = new ArrayList<IndexedElement>();
+//        FileObject fo = indexResult.getFile();
+//        for(String sProperties : indexResult.getValues(JsIndex.FIELD_PROPERTY)) {
+//            String[] split = sProperties.split("#@#");
+//            for (int i = 0; i < split.length; i++) {
+//                if  (!split[i].isEmpty()) {
+//                    result.add(decodeProperty(split[i], fo, fqn));
+//                }
+//            }
+//            
+//        }
+//        return result;
+//    }
     
     public static Collection<TypeUsage> getAssignments(IndexResult indexResult) {
         return getAssignments(indexResult.getValue(JsIndex.FIELD_ASSIGNMENS));
@@ -302,29 +302,29 @@ public class IndexedElement extends JsElementImpl {
         return parameters;
     }
     
-    private static IndexedElement decodeProperty(String text, FileObject fo, String fqn) {
-        String[] parts = text.split(";");
-        String name = parts[0];
-        JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(parts[1]));
-        int flag = Integer.parseInt(parts[2]);
-        String fqnOfProperty = fqn + "." + name;
-        Collection<TypeUsage> assignments = (parts.length > 3) ? getAssignments(parts[3]) : Collections.EMPTY_LIST;
-        if (parts.length > 4) {
-            if (jsKind.isFunction()) {
-                String paramsText = parts[4];
-                LinkedHashMap<String, Collection<String>> parameters = decodeParameters(paramsText);
-                Collection<String> returnTypes = new ArrayList();
-                if (parts.length > 5) {
-                    String returnTypesText = parts[5];
-                    for (StringTokenizer stringTokenizer = new StringTokenizer(returnTypesText, ","); stringTokenizer.hasMoreTokens();) {
-                        returnTypes.add(stringTokenizer.nextToken());
-                    }
-                }
-                return new FunctionIndexedElement(fo, name, fqnOfProperty, OffsetRange.NONE, flag, parameters, returnTypes, assignments);
-            }
-        }
-        return new IndexedElement(fo, name, fqnOfProperty, Flag.isDeclared(flag), Flag.isAnonymous(flag), jsKind,OffsetRange.NONE, Flag.getModifiers(flag), assignments, Flag.isPlatform(flag));
-    }
+//    private static IndexedElement decodeProperty(String text, FileObject fo, String fqn) {
+//        String[] parts = text.split(";");
+//        String name = parts[0];
+//        JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(parts[1]));
+//        int flag = Integer.parseInt(parts[2]);
+//        String fqnOfProperty = fqn + "." + name;
+//        Collection<TypeUsage> assignments = (parts.length > 3) ? getAssignments(parts[3]) : Collections.EMPTY_LIST;
+//        if (parts.length > 4) {
+//            if (jsKind.isFunction()) {
+//                String paramsText = parts[4];
+//                LinkedHashMap<String, Collection<String>> parameters = decodeParameters(paramsText);
+//                Collection<String> returnTypes = new ArrayList();
+//                if (parts.length > 5) {
+//                    String returnTypesText = parts[5];
+//                    for (StringTokenizer stringTokenizer = new StringTokenizer(returnTypesText, ","); stringTokenizer.hasMoreTokens();) {
+//                        returnTypes.add(stringTokenizer.nextToken());
+//                    }
+//                }
+//                return new FunctionIndexedElement(fo, name, fqnOfProperty, OffsetRange.NONE, flag, parameters, returnTypes, assignments);
+//            }
+//        }
+//        return new IndexedElement(fo, name, fqnOfProperty, Flag.isDeclared(flag), Flag.isAnonymous(flag), jsKind,OffsetRange.NONE, Flag.getModifiers(flag), assignments, Flag.isPlatform(flag));
+//    }
     
     public static class FunctionIndexedElement extends IndexedElement {
         private final LinkedHashMap<String, Collection<String>> parameters;
