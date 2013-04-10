@@ -120,7 +120,7 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
         boolean enabled = getComponent().isLessEnabled();
         LessPreferences.setEnabled(project, enabled);
         if (enabled != originalEnabled) {
-            lessCssPreprocessor.fireChange();
+            lessCssPreprocessor.firePropertyChange(CssPreprocessorImplementation.CUSTOMIZER_PROPERTY, null, project);
         }
     }
 

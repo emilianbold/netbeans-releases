@@ -107,7 +107,7 @@ METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
 METHOD     withFormat(Closure)             [PROTECTE  Object
 FIELD      allowedMethods                  [STATIC,   
-FIELD      class                                      Class
+FIELD      class                           [PUBLIC]   Class
 FIELD      create                          [PRIVATE]  
 FIELD      delete                          [PRIVATE]  
 FIELD      edit                            [PRIVATE]  

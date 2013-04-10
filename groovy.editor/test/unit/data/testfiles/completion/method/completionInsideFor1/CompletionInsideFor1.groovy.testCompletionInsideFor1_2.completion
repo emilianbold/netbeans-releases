@@ -122,4 +122,4 @@ METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
 METHOD     withDefault(Closure)                       Map
-FIELD      empty                                      boolean
+FIELD      empty                           [PUBLIC]   boolean

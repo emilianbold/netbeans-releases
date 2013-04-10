@@ -120,7 +120,7 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
         boolean enabled = getComponent().isSassEnabled();
         SassPreferences.setEnabled(project, enabled);
         if (enabled != originalEnabled) {
-            sassCssPreprocessor.fireChange();
+            sassCssPreprocessor.firePropertyChange(CssPreprocessorImplementation.CUSTOMIZER_PROPERTY, null, project);
         }
     }
 

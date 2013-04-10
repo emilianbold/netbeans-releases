@@ -250,6 +250,6 @@ METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
 FIELD      CASE_INSENSITIVE_ORDER          [STATIC,   Comparator<String>
-FIELD      bytes                                      byte[]
-FIELD      class                                      Class
-FIELD      empty                                      boolean
+FIELD      bytes                           [PUBLIC]   byte[]
+FIELD      class                           [PUBLIC]   Class
+FIELD      empty                           [PUBLIC]   boolean

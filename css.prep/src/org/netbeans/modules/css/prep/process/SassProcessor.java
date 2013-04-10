@@ -54,6 +54,7 @@ import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
+import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -107,7 +108,7 @@ public final class SassProcessor extends BaseProcessor {
 
     @Override
     protected void compile(Project project, FileObject fileObject) {
-        SassExecutable sass = getSass();
+        SassExecutable sass = getSass(project);
         if (sass == null) {
             return;
         }
@@ -115,13 +116,13 @@ public final class SassProcessor extends BaseProcessor {
     }
 
     @CheckForNull
-    private SassExecutable getSass() {
+    private SassExecutable getSass(Project project) {
         try {
             return SassExecutable.getDefault();
         } catch (InvalidExternalExecutableException ex) {
             if (Warnings.showSassWarning()) {
                 // refresh project problems
-                sassCssPreprocessor.fireChange();
+                sassCssPreprocessor.firePropertyChange(CssPreprocessorImplementation.CUSTOMIZER_PROPERTY, project, project);
             }
         }
         return null;

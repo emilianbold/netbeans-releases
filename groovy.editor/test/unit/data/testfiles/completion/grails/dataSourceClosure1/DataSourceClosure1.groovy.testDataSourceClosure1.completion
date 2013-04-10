@@ -115,11 +115,11 @@ FIELD      OWNER_FIRST                     [STATIC,   int
 FIELD      OWNER_ONLY                      [STATIC,   int
 FIELD      SKIP                            [STATIC,   int
 FIELD      TO_SELF                         [STATIC,   int
-FIELD      class                                      Class
-FIELD      delegate                                   Object
-FIELD      directive                                  int
-FIELD      maximumNumberOfParameters                  int
-FIELD      owner                                      Object
-FIELD      parameterTypes                             Class[]
-FIELD      resolveStrategy                            int
-FIELD      thisObject                                 Object
+FIELD      class                           [PUBLIC]   Class
+FIELD      delegate                        [PUBLIC]   Object
+FIELD      directive                       [PUBLIC]   int
+FIELD      maximumNumberOfParameters       [PUBLIC]   int
+FIELD      owner                           [PUBLIC]   Object
+FIELD      parameterTypes                  [PUBLIC]   Class[]
+FIELD      resolveStrategy                 [PUBLIC]   int
+FIELD      thisObject                      [PUBLIC]   Object

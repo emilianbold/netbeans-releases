@@ -14,6 +14,7 @@ PACKAGE    sun                                        null
 PACKAGE    sunw                                       null
 CLASS      AdaptingMetaClass                          null
 CLASS      Appendable                                 null
+CLASS      AutoCloseable                              null
 CLASS      Buildable                                  null
 CLASS      CharSequence                               null
 CLASS      Cloneable                                  null
@@ -62,6 +63,7 @@ CLASS      ObjectOutput                               null
 CLASS      ObjectStreamConstants                      null
 CLASS      Observer                                   null
 CLASS      PropertyAccessInterceptor                  null
+CLASS      ProtocolFamily                             null
 CLASS      Queue                                      null
 CLASS      RandomAccess                               null
 CLASS      Range                                      null
@@ -71,6 +73,7 @@ CLASS      Runnable                                   null
 CLASS      Serializable                               null
 CLASS      Set                                        null
 CLASS      SocketImplFactory                          null
+CLASS      SocketOption                               null
 CLASS      SocketOptions                              null
 CLASS      SortedMap                                  null
 CLASS      SortedSet                                  null
