@@ -50,6 +50,8 @@ import java.lang.annotation.Target;
  *
  * @author Petr Hejl
  */
+@org.netbeans.api.annotations.common.SuppressWarnings(value = "NM_SAME_SIMPLE_NAME_AS_INTERFACE",
+        justification = "Own SPI mathcing and extending the original one")
 public interface DeclarationFinder extends org.netbeans.modules.csl.api.DeclarationFinder {
 
     @Retention(RetentionPolicy.SOURCE)
