@@ -74,7 +74,7 @@ public final class ProjectBrowserProviderImpl implements ProjectBrowserProvider,
 
     @Override
     public Collection<WebBrowser> getBrowsers() {
-        return WebBrowsers.getInstance().getAll(false, true, true, true);
+        return WebBrowsers.getInstance().getAll(false, true, true);
     }
 
     @Override
