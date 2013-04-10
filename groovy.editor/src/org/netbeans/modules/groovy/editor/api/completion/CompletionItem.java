@@ -147,20 +147,20 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         return hash;
     }
 
-    public static CompletionItem forJavaMethod(String className, String simpleName, String parameterString,
+    public static CompletionItem forJavaMethod(String className, String simpleName, List<String> parameters,
             TypeMirror returnType, Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset,
             boolean emphasise, boolean nameOnly) {
-        return new JavaMethodItem(className, simpleName, parameterString, returnType, modifiers, anchorOffset, emphasise, nameOnly);
+        return new JavaMethodItem(className, simpleName, parameters, returnType, modifiers, anchorOffset, emphasise, nameOnly);
     }
 
-    public static CompletionItem forJavaMethod(String className, String simpleName, String parameterString,
+    public static CompletionItem forJavaMethod(String className, String simpleName, List<String> parameters,
             String returnType, Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset,
             boolean emphasise, boolean nameOnly) {
-        return new JavaMethodItem(className, simpleName, parameterString, returnType, modifiers, anchorOffset, emphasise, nameOnly);
+        return new JavaMethodItem(className, simpleName, parameters, returnType, modifiers, anchorOffset, emphasise, nameOnly);
     }
 
-    public static CompletionItem forDynamicMethod(int anchorOffset, String name, String[] parameters, String returnType, boolean nameOnly, boolean prefix) {
-        return new DynamicMethodItem(anchorOffset, name, parameters, returnType, nameOnly, prefix);
+    public static CompletionItem forDynamicMethod(int anchorOffset, String name, String[] parameters, String returnType, boolean prefix) {
+        return new DynamicMethodItem(anchorOffset, name, parameters, returnType, prefix);
     }
 
     public static CompletionItem forDynamicField(int anchorOffset, String name, String type) {
@@ -171,31 +171,31 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         private final String className;
         private final String simpleName;
-        private final String parameterString;
+        private final List<String> parameters;
         private final String returnType;
         private final Set<javax.lang.model.element.Modifier> modifiers;
         private final boolean emphasise;
         private final boolean nameOnly;
 
         
-        public JavaMethodItem(String className, String simpleName, String parameterString, TypeMirror returnType,
+        public JavaMethodItem(String className, String simpleName, List<String> parameters, TypeMirror returnType,
                 Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise, boolean nameOnly) {
-            this(className, simpleName, parameterString,
+            this(className, simpleName, parameters,
                     Utilities.getTypeName(returnType, false).toString(), modifiers, anchorOffset, emphasise, nameOnly);
         }
 
-        public JavaMethodItem(String className, String simpleName, String parameterString, String returnType,
+        public JavaMethodItem(String className, String simpleName, List<String> parameters, String returnType,
                 Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise, boolean nameOnly) {
             super(null, anchorOffset);
             this.className = className;
             this.simpleName = simpleName;
-            this.parameterString = parameterString;
+            this.parameters = parameters;
             this.returnType = GroovyUtils.stripPackage(returnType);
             this.modifiers = modifiers;
             this.emphasise = emphasise;
             this.nameOnly = nameOnly;
         }
-
+        
         @Override
         public String getName() {
             return simpleName + "()";
@@ -211,11 +211,22 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             if (emphasise) {
                 formatter.emphasis(true);
             }
-            formatter.appendText(simpleName + "(" + parameterString + ")");
+            formatter.appendText(simpleName + "(" + getParameters() + ")");
             if (emphasise) {
                 formatter.emphasis(false);
             }
             return formatter.getText();
+        }
+        
+        private String getParameters() {
+            StringBuilder sb = new StringBuilder();
+            for (String string : parameters) {
+                if (sb.length() > 0) {
+                    sb.append(", ");
+                }
+                sb.append(GroovyUtils.stripPackage(string));
+            }
+            return sb.toString();
         }
 
         @Override
@@ -315,17 +326,14 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         private final String name;
         private final String[] parameters;
         private final String returnType;
-        private final boolean nameOnly;
         private final boolean prefix;
         
 
-        public DynamicMethodItem(int anchorOffset, String name, String[] parameters, String returnType,
-                boolean nameOnly, boolean prefix) {
+        public DynamicMethodItem(int anchorOffset, String name, String[] parameters, String returnType, boolean prefix) {
             super(null, anchorOffset);
             this.name = name;
             this.parameters = parameters;
             this.returnType = returnType;
-            this.nameOnly = nameOnly;
             this.prefix = prefix;
         }
 
@@ -407,10 +415,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public String getCustomInsertTemplate() {
-            if (nameOnly) {
-                return name;
-            }
-            return super.getCustomInsertTemplate();
+            return name;
         }
 
     }

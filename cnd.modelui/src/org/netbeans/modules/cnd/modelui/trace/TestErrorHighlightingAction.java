@@ -60,10 +60,10 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
@@ -223,15 +223,6 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         }
     }
 
-    private static int getLineCount(CsmFile file) {
-        try {
-            char[] charBuffer = ((FileImpl) file).getBuffer().getCharBuffer();
-            return ((FileImpl) file).getBuffer().getLineColumnByOffset(charBuffer.length)[0];
-        } catch (IOException ex) {
-            return 1;
-        }
-    }
-
     private static class OutputAdapter implements OutputListener {
         @Override
         public void outputLineAction(OutputEvent ev) {}
@@ -329,12 +320,8 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         }
 
         public LineColumn getLineColumn(int offset) {
-            try {
-                int[] lineColumnByOffset = ((FileImpl) file).getBuffer().getLineColumnByOffset(offset);
-                return new LineColumn(lineColumnByOffset[0], lineColumnByOffset[1]);
-            } catch (IOException ex) {
-                return new LineColumn(1,1);
-            }
+            int[] lineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, offset);
+            return new LineColumn(lineColumnByOffset[0], lineColumnByOffset[1]);
         }
     }
 
@@ -468,11 +455,11 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
 
         private class FileElement extends Element {
 
-            private int lineCount;
+            private final int lineCount;
 
             public FileElement(CsmFile file) {
                 super(file);
-                lineCount = getLineCount(file);
+                lineCount = CsmFileInfoQuery.getDefault().getLineCount(file);
                 totalLineCount += lineCount;
             }
 

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.modelui.parsing;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -50,7 +49,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.spi.model.services.CodeModelProblemResolver.ParsingProblemDetector;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.NbBundle;
@@ -171,14 +170,7 @@ public class ParsingProblemDetectorImpl implements ParsingProblemDetector {
         int usedMemory = (int) ((runtime.totalMemory() - runtime.freeMemory()) / Mb);
         long delta = System.currentTimeMillis() - startTime;
         if (TIMING) {
-            int lines = 0;
-            if (file instanceof FileImpl) {
-                try {
-                    lines = ((FileImpl) file).getBuffer().getLineCount();
-                } catch (IOException ex) {
-                }
-            }
-            lineCount += lines;
+            lineCount += CsmFileInfoQuery.getDefault().getLineCount(file);
             synchronized(measures) {
                 measures.add(new Measure(lineCount, (int)delta, usedMemory));
             }

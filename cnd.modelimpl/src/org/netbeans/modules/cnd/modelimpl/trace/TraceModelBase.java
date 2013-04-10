@@ -30,6 +30,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
@@ -243,6 +244,7 @@ public class TraceModelBase {
             closeProject(aProject, cleanRepository);
         }
         projectUID = null;
+        files.clear();
     //getProject();
     }
 

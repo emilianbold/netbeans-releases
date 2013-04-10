@@ -109,7 +109,23 @@ public final class CsmModelAccessor {
         @Override
         public void scheduleReparse(Collection<CsmProject> projects) {
         }
+
+        @Override
+        public Boolean isProjectEnabled(Object id) {
+            return null;
+        }
+
+        @Override
+        public void disableProject(Object p) {
+            
+        }
+
+        @Override
+        public void enableProject(Object p) {
+            
+        }
     }
+    
     private static final Cancellable cancellableStub = new Cancellable() {
 
         @Override

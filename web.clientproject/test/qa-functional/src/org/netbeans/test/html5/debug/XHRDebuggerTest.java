@@ -97,6 +97,7 @@ public class XHRDebuggerTest extends JavaScriptDebugger {
         LineDebuggerTest.current_project = "simpleProject";
         openProject("simpleProject");
         setRunConfiguration("Chrome with NetBeans Integration", true, true);
+        setProxy();
         endTest();
     }
 
@@ -106,6 +107,7 @@ public class XHRDebuggerTest extends JavaScriptDebugger {
         LineDebuggerTest.current_project = "simpleProject";
         openProject("simpleProject");
         setRunConfiguration("Embedded WebKit Browser", true, true);
+        setProxy();
         endTest();
     }
 
