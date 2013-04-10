@@ -41,15 +41,15 @@
  */
 package org.netbeans.modules.web.common.api;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.cssprep.CssPreprocessorAccessor;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
-import org.openide.util.ChangeSupport;
 import org.openide.util.Parameters;
 
 /**
@@ -58,12 +58,33 @@ import org.openide.util.Parameters;
  */
 public final class CssPreprocessor {
 
+    /**
+     * Property for changes in project customizer. <b>New value
+     * contains the relevant project!</b>
+     * @since 1.43
+     */
+    public static final String CUSTOMIZER_PROPERTY = CssPreprocessorImplementation.CUSTOMIZER_PROPERTY;
+    /**
+     * Property for changes in general configuration.
+     * @since 1.43
+     */
+    public static final String OPTIONS_PROPERTY = CssPreprocessorImplementation.OPTIONS_PROPERTY;
+
+
     private final CssPreprocessorImplementation delegate;
-    final ChangeSupport changeSupport = new ChangeSupport(this);
-    final ChangeListener changeListener = new ChangeListener() {
+    final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    final PropertyChangeListener propertyChangeListener = new PropertyChangeListener() {
         @Override
-        public void stateChanged(ChangeEvent e) {
-            changeSupport.fireChange();
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propertyName = evt.getPropertyName();
+            Object oldValue = evt.getOldValue();
+            Object newValue = evt.getNewValue();
+            if (CUSTOMIZER_PROPERTY.equals(propertyName)) {
+                if (!(newValue instanceof Project)) {
+                    throw new IllegalArgumentException("Project for newValue expected for property " + CUSTOMIZER_PROPERTY);
+                }
+            }
+            propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
         }
     };
 
@@ -74,12 +95,17 @@ public final class CssPreprocessor {
             public CssPreprocessor create(CssPreprocessorImplementation cssPreprocessorImplementation) {
                 CssPreprocessor cssPreprocessor = new CssPreprocessor(cssPreprocessorImplementation);
                 // no need to remove listener since CssPreprocessor should not ever be root
-                cssPreprocessorImplementation.addChangeListener(cssPreprocessor.changeListener);
+                cssPreprocessorImplementation.addPropertyChangeListener(cssPreprocessor.propertyChangeListener);
                 return cssPreprocessor;
             }
             @Override
             public CssPreprocessorImplementation.Customizer createCustomizer(CssPreprocessor cssPreprocessor, Project project) {
                 return cssPreprocessor.createCustomizer(project);
+            }
+
+            @Override
+            public CssPreprocessorImplementation.Options createOptions(CssPreprocessor cssPreprocessor) {
+                return cssPreprocessor.createOptions();
             }
             @Override
             public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor cssPreprocessor, ProjectProblemsProviderSupport support) {
@@ -99,6 +125,10 @@ public final class CssPreprocessor {
 
     CssPreprocessorImplementation.Customizer createCustomizer(@NonNull Project project) {
         return delegate.createCustomizer(project);
+    }
+
+    CssPreprocessorImplementation.Options createOptions() {
+        return delegate.createOptions();
     }
 
     ProjectProblemsProvider createProjectProblemsProvider(@NonNull CssPreprocessor.ProjectProblemsProviderSupport support) {
@@ -130,22 +160,27 @@ public final class CssPreprocessor {
     }
 
     /**
-     * Attach a change listener that is to be notified of changes
-     * in this CSS peprocessor.
+     * Attach a property change listener that is to be notified of changes
+     * in this CSS peprocessor. Possible properties are:
+     * <ul>
+     *   <li>{@link #CUSTOMIZER_PROPERTY} - property for changes in project customizer. <b>New value
+     *       contains the relevant project!</b></li>
+     *   <li>{@link #OPTIONS_PROPERTY} - property for changes in general configuration</li>
+     * </ul>
      * @param listener a listener, can be {@code null}
-     * @since 1.42
+     * @since 1.43
      */
-    public void addChangeListener(@NullAllowed ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+    public void addPropertyChangeListener(@NullAllowed PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
     /**
-     * Removes a change listener.
+     * Removes a property change listener.
      * @param listener a listener, can be {@code null}
-     * @since 1.42
+     * @since 1.43
      */
-    public void removeChangeListener(@NullAllowed ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
+    public void removePropertyChangeListener(@NullAllowed PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
     //~ Inner classes

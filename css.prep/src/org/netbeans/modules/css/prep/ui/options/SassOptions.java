@@ -39,36 +39,35 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.ui.customizer;
+package org.netbeans.modules.css.prep.ui.options;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
-import org.netbeans.modules.css.prep.preferences.LessPreferences;
+import org.netbeans.modules.css.prep.options.CssPrepOptions;
+import org.netbeans.modules.css.prep.options.CssPrepOptionsValidator;
+import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
+import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public final class LessCustomizer implements CssPreprocessorImplementation.Customizer {
+public class SassOptions implements CssPreprocessorImplementation.Options {
 
-    private final LessCssPreprocessor lessCssPreprocessor;
-    private final Project project;
+    private final SassCssPreprocessor sassCssPreprocessor;
 
-    private volatile LessCustomizerPanel customizerPanel = null;
+    // @GuardedBy("EDT")
+    private SassOptionsPanel panel = null;
 
 
-    public LessCustomizer(LessCssPreprocessor lessCssPreprocessor, Project project) {
-        assert lessCssPreprocessor != null;
-        assert project != null;
-        this.lessCssPreprocessor = lessCssPreprocessor;
-        this.project = project;
+    public SassOptions(SassCssPreprocessor sassCssPreprocessor) {
+        this.sassCssPreprocessor = sassCssPreprocessor;
     }
 
-    @NbBundle.Messages("LessCustomizer.displayName=LESS")
+    @NbBundle.Messages("SassOptions.displayName=Sass")
     @Override
     public String getDisplayName() {
-        return Bundle.LessCustomizer_displayName();
+        return Bundle.SassOptions_displayName();
     }
 
     @Override
@@ -82,46 +81,57 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
     }
 
     @Override
-    public synchronized LessCustomizerPanel getComponent() {
-        if (customizerPanel == null) {
-           customizerPanel = new LessCustomizerPanel();
-           customizerPanel.setLessEnabled(LessPreferences.isEnabled(project));
+    public SassOptionsPanel getComponent() {
+        assert EventQueue.isDispatchThread();
+        if (panel == null) {
+            panel = new SassOptionsPanel();
         }
-        assert customizerPanel != null;
-        return customizerPanel;
+        return panel;
     }
 
     @Override
-    public HelpCtx getHelp() {
-        return new HelpCtx("org.netbeans.modules.css.prep.ui.customizer.LessCustomizer"); // NOI18N
+    public void update() {
+        getComponent().setSassPath(CssPrepOptions.getInstance().getSassPath());
     }
 
     @Override
     public boolean isValid() {
-        // always valid
-        return true;
+        return getValidationResult().isFaultless();
     }
 
     @Override
     public String getErrorMessage() {
-        // always valid
+        ValidationResult validationResult = getValidationResult();
+        if (validationResult.hasErrors()) {
+            return validationResult.getErrors().get(0).getMessage();
+        }
         return null;
     }
 
     @Override
     public String getWarningMessage() {
-        // always valid
+        ValidationResult validationResult = getValidationResult();
+        if (validationResult.hasWarnings()) {
+            return validationResult.getWarnings().get(0).getMessage();
+        }
         return null;
     }
 
     @Override
     public void save() throws IOException {
-        boolean originalEnabled = LessPreferences.isEnabled(project);
-        boolean enabled = getComponent().isLessEnabled();
-        LessPreferences.setEnabled(project, enabled);
-        if (enabled != originalEnabled) {
-            lessCssPreprocessor.firePropertyChange(CssPreprocessorImplementation.CUSTOMIZER_PROPERTY, null, project);
+        Warnings.resetSassWarning();
+        String originalPath = CssPrepOptions.getInstance().getSassPath();
+        String path = getComponent().getSassPath();
+        CssPrepOptions.getInstance().setSassPath(path);
+        if (!originalPath.equals(path)) {
+            sassCssPreprocessor.firePropertyChange(CssPreprocessorImplementation.OPTIONS_PROPERTY, null, null);
         }
+    }
+
+    private ValidationResult getValidationResult() {
+        return new CssPrepOptionsValidator()
+                .validateSassPath(getComponent().getSassPath())
+                .getResult();
     }
 
 }

@@ -41,17 +41,18 @@
  */
 package org.netbeans.modules.css.prep.sass;
 
-import javax.swing.event.ChangeListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.problems.SassProjectProblemsProvider;
 import org.netbeans.modules.css.prep.process.SassProcessor;
 import org.netbeans.modules.css.prep.ui.customizer.SassCustomizer;
+import org.netbeans.modules.css.prep.ui.options.SassOptions;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -60,7 +61,7 @@ public final class SassCssPreprocessor implements CssPreprocessorImplementation 
 
     private static final String IDENTIFIER = "SASS"; // NOI18N
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
 
     @Override
@@ -90,17 +91,22 @@ public final class SassCssPreprocessor implements CssPreprocessorImplementation 
     }
 
     @Override
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+    public Options createOptions() {
+        return new SassOptions(this);
     }
 
     @Override
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
-    public void fireChange() {
-        changeSupport.fireChange();
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
+    public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
 }
