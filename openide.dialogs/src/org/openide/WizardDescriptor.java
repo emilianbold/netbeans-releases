@@ -1089,8 +1089,8 @@ public class WizardDescriptor extends DialogDescriptor {
         // only enlarge if needed, don't shrink
         if ((curSize.width > prevSize.width) || (curSize.height > prevSize.height)) {
             Rectangle origBounds = parentWindow.getBounds();
-            int newWidth = Math.max(origBounds.width + (curSize.width - prevSize.width), origBounds.width);
-            int newHeight = Math.max(origBounds.height + (curSize.height - prevSize.height), origBounds.height);
+            int newWidth = origBounds.width;
+            int newHeight = origBounds.height;
             Rectangle screenBounds = Utilities.getUsableScreenBounds();
             Rectangle newBounds;
 
@@ -1474,23 +1474,19 @@ public class WizardDescriptor extends DialogDescriptor {
                             }
                         });
                     }
-                } catch (WizardValidationException wve) {
+                } catch (final WizardValidationException wve) {
 
                     validationRuns = false;
                     err.log (Level.FINE, "validation failed", wve); // NOI18N
                     if( FINISH_OPTION.equals( getValue() ) )
                         setValue( getDefaultValue() );
-                    _updateState ();
-                    // cannot continue, notify user
-                    if (wizardPanel != null) {
-                        wizardPanel.setMessage(WizardPanel.MSG_TYPE_ERROR, wve.getLocalizedMessage());
-                    }
 
-                    // focus source of this problem
-                    final JComponent comp = wve.getSource();
-                    if (comp != null && comp.isFocusable()) {
-                        comp.requestFocus();
-                    }
+                    SwingUtilities.invokeLater( new Runnable() {
+                        @Override
+                        public void run() {
+                            onValidationFailed( wve );
+                        }
+                    });
                 }
 
             }
@@ -1512,6 +1508,31 @@ public class WizardDescriptor extends DialogDescriptor {
             onValidPerformer.run();
         }
 
+    }
+
+    private void onValidationFailed( final WizardValidationException wve ) {
+        assert SwingUtilities.isEventDispatchThread();
+        _updateState ();
+
+        //delay the display of error message as isValid() is called in _updateState() above
+        //and the clients may set their own error/warning messages which are actually invokedLater()
+        //(otherwise the validation message just flashes briefly and is replaced with
+        //whatever is provided by the current panel's validation)
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                // cannot continue, notify user
+                if (wizardPanel != null) {
+                    wizardPanel.setMessage(WizardPanel.MSG_TYPE_ERROR, wve.getLocalizedMessage());
+                }
+            }
+        });
+
+        // focus source of this problem
+        JComponent srcComp = wve.getSource();
+        if (srcComp != null && srcComp.isFocusable()) {
+            srcComp.requestFocus();
+        }
     }
 
     // helper methods which call to InstantiatingIterator
