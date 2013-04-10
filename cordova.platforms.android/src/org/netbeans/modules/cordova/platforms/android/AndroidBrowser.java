@@ -79,15 +79,6 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
     private Lookup context;
 
     @Override
-    public boolean hasEnhancedMode() {
-        return false;
-    }
-
-    @Override
-    public void setEnhancedMode(boolean mode) {
-    }
-
-    @Override
     public void disablePageInspector() {
     }
 

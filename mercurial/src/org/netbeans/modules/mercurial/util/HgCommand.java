@@ -518,6 +518,11 @@ public class HgCommand {
      * @return hg update output
      * @throws org.netbeans.modules.mercurial.HgException
      */
+    @NbBundle.Messages({
+        "MSG_WARN_UPDATE_MERGE_TEXT=Cannot update because it would end on a different head - \"Merge\" or \"Rebase\" is needed.",
+        "MSG_WARN_UPDATE_COMMIT_TEXT=Merge has been done, invoke \"Commit\" menu item\n "
+            + "to commit these changes before doing an \"Update\""
+    })
     public static List<String> doUpdateAll(File repository, boolean bForce, String revision, boolean bThrowException) throws HgException {
         if (repository == null ) return null;
         List<String> command = new ArrayList<String>();
@@ -540,12 +545,14 @@ public class HgCommand {
         if (bThrowException) {
             if (!list.isEmpty()) {
                 if  (isErrorUpdateSpansBranches(list.get(0))) {
-                    throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_MERGE_TEXT"));
+                    handleError(command, list, Bundle.MSG_WARN_UPDATE_MERGE_TEXT(),
+                            OutputLogger.getLogger(repository));
                 } else if (isMergeAbortUncommittedMsg(list.get(0))) {
-                    throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_COMMIT_TEXT"));
+                    handleError(command, list, Bundle.MSG_WARN_UPDATE_COMMIT_TEXT(),
+                            OutputLogger.getLogger(repository));
                 } else if (isErrorAbort(list.get(list.size() -1))) {
                     handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"),
-                            OutputLogger.getLogger(repository.getAbsolutePath()));
+                            OutputLogger.getLogger(repository));
                 }
             }
         }
@@ -973,7 +980,7 @@ public class HgCommand {
                 throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_NO_VIEW_TEXT"));
              }
             else if (isErrorHgkNotFound(list.get(0)) || isErrorNoSuchFile(list.get(0))) {
-                OutputLogger.getLogger(repository.getAbsolutePath()).outputInRed(list.toString());
+                OutputLogger.getLogger(repository).outputInRed(list.toString());
                 throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_HGK_NOT_FOUND_TEXT"));
             } else if (isErrorAbort(list.get(list.size() -1))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
@@ -3487,7 +3494,7 @@ public class HgCommand {
             finalCommand.addAll(attributes);
             List<String> list = exec(finalCommand);
             if (!list.isEmpty() && isErrorNoRepository(list.get(0))) {
-                OutputLogger logger = OutputLogger.getLogger(repository.getAbsolutePath());
+                OutputLogger logger = OutputLogger.getLogger(repository);
                 try {
                     handleError(finalCommand, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
                 } finally {
@@ -4864,7 +4871,7 @@ public class HgCommand {
         List<String> list = exec(command);
         List<String> changedFiles = new ArrayList<String>(list.size());
         if (!list.isEmpty() && isErrorNoRepository(list.get(0))) {
-            OutputLogger logger = OutputLogger.getLogger(repository.getAbsolutePath());
+            OutputLogger logger = OutputLogger.getLogger(repository);
             try {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
             } finally {

@@ -218,7 +218,7 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     
     private static List<TableRow> createModel() {
         List<TableRow> model = new ArrayList<TableRow>();
-        for (WebBrowser browser : WebBrowsers.getInstance().getAll(false, true, false, false, true)) {
+        for (WebBrowser browser : WebBrowsers.getInstance().getAll(false, false, false, true)) {
             if (browser.isEmbedded()) {
                 continue;
             }

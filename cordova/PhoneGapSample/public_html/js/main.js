@@ -349,7 +349,9 @@ function MyApplication() {
     }
 
     this.address = function() {
-        var mapHandler = new MapCtrl();
+        var mapHandler = new MapCtrl(function(error){
+            window.console.error(error.message);
+        });
         var address = getParmFromHash(window.location.href, "ad");
         mapHandler.address = decodeURIComponent(address);
         mapHandler.mapContainter = "addressMap";

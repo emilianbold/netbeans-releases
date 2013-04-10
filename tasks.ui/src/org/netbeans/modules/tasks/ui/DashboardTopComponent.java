@@ -91,7 +91,7 @@ persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_DashboardAction",
 preferredID = "DashboardTopComponent")
 @NbBundle.Messages({
-    "CTL_DashboardAction=Task Dashboard",
+    "CTL_DashboardAction=Tas&k Dashboard",
     "CTL_DashboardTopComponent=Task Dashboard",
     "HINT_DashboardTopComponent=This is a Task Dashboard"
 })

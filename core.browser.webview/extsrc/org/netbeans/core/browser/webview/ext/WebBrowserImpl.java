@@ -886,16 +886,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     }
 
     @Override
-    public boolean hasEnhancedMode() {
-        return enhancedMode;
-    }
-
-    @Override
-    public void setEnhancedMode(boolean mode) {
-        enhancedMode = mode;
-    }
-
-    @Override
     public void disablePageInspector() {
     }
 

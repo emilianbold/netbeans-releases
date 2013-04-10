@@ -45,6 +45,7 @@
 package org.netbeans.modules.mercurial;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.List;
@@ -52,6 +53,7 @@ import java.net.URL;
 import java.util.HashSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -78,9 +80,17 @@ public class OutputLogger {
     private static final HashSet<String> openedWindows = new HashSet<String>(5);
 
 
-    public static OutputLogger getLogger(String repositoryRoot) {
+    static OutputLogger getLogger(String repositoryRoot) {
         if (repositoryRoot != null) {
             return new OutputLogger(repositoryRoot);
+        } else {
+            return new NullLogger();
+        }
+    }
+
+    public static OutputLogger getLogger (File repository) {
+        if (repository != null) {
+            return getLogger(new HgURL(repository).toHgCommandUrlStringWithoutUserInfo());
         } else {
             return new NullLogger();
         }
