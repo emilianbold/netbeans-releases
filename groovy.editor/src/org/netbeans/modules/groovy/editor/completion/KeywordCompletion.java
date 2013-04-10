@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion.impl;
+package org.netbeans.modules.groovy.editor.completion;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -52,10 +52,10 @@ import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.GroovyKeyword;
 import org.netbeans.modules.groovy.editor.api.completion.KeywordCategory;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionSurrounding;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 
 /**
  * Complete Groovy or Java Keywords.
@@ -66,15 +66,15 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 class KeywordCompletion extends BaseCompletion {
 
     private EnumSet<GroovyKeyword> keywords;
-    private CompletionRequest request;
+    private CompletionContext request;
 
 
     @Override
-    public boolean complete(List<CompletionProposal> proposals, CompletionRequest request, int anchor) {
+    public boolean complete(List<CompletionProposal> proposals, CompletionContext request, int anchor) {
         this.request = request;
 
         LOG.log(Level.FINEST, "-> completeKeywords"); // NOI18N
-        String prefix = request.prefix;
+        String prefix = request.getPrefix();
 
         if (request.location == CaretLocation.INSIDE_PARAMETERS) {
             return false;
@@ -87,8 +87,8 @@ class KeywordCompletion extends BaseCompletion {
         }
 
         // We are after either implements or extends keyword
-        if ((request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_implements) ||
-            (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_extends)) {
+        if ((request.context.beforeLiteral != null && request.context.beforeLiteral.id() == GroovyTokenId.LITERAL_implements) ||
+            (request.context.beforeLiteral != null && request.context.beforeLiteral.id() == GroovyTokenId.LITERAL_extends)) {
             return false;
         }
 
@@ -106,21 +106,21 @@ class KeywordCompletion extends BaseCompletion {
         filterPackageStatement(havePackage);
         filterPrefix(prefix);
         filterLocation(request.location);
-        filterClassInterfaceOrdering(request.ctx);
-        filterMethodDefinitions(request.ctx);
-        filterKeywordsNextToEachOther(request.ctx);
+        filterClassInterfaceOrdering(request.context);
+        filterMethodDefinitions(request.context);
+        filterKeywordsNextToEachOther(request.context);
 
         // add the remaining keywords to the result
 
         for (GroovyKeyword groovyKeyword : keywords) {
             LOG.log(Level.FINEST, "Adding keyword proposal : {0}", groovyKeyword.getName()); // NOI18N
-            proposals.add(new CompletionItem.KeywordItem(groovyKeyword.getName(), null, anchor, request.info, groovyKeyword.isGroovyKeyword()));
+            proposals.add(new CompletionItem.KeywordItem(groovyKeyword.getName(), null, anchor, request.getParserResult(), groovyKeyword.isGroovyKeyword()));
         }
 
         return true;
     }
 
-    boolean checkForPackageStatement(final CompletionRequest request) {
+    boolean checkForPackageStatement(final CompletionContext request) {
         TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(request.doc, 1);
 
         if (ts != null) {
@@ -164,7 +164,7 @@ class KeywordCompletion extends BaseCompletion {
     }
 
     // Filter right Keyword ordering
-    void filterClassInterfaceOrdering(CompletionContext ctx) {
+    void filterClassInterfaceOrdering(CompletionSurrounding ctx) {
         if (ctx == null || ctx.beforeLiteral == null) {
             return;
         }
@@ -186,7 +186,7 @@ class KeywordCompletion extends BaseCompletion {
     }
 
     // Filter-out modifier/datatype ordering in method definitions
-    void filterMethodDefinitions(CompletionContext ctx) {
+    void filterMethodDefinitions(CompletionSurrounding ctx) {
         if (ctx == null || ctx.afterLiteral == null) {
             return;
         }
@@ -208,7 +208,7 @@ class KeywordCompletion extends BaseCompletion {
 
     // Filter-out keywords, if we are surrounded by others.
     // This can only be an approximation.
-    void filterKeywordsNextToEachOther(CompletionContext ctx) {
+    void filterKeywordsNextToEachOther(CompletionSurrounding ctx) {
         if (ctx == null) {
             return;
         }

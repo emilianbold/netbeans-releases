@@ -37,88 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.editor.spi.completion;
 
-import java.util.Collections;
-import java.util.List;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
+import java.util.Map;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
+import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
+import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 
 /**
- *
+ * Provides additional code completion items for the given {@link CompletionContext}.
+ * 
  * @author Petr Hejl
+ * @author Martin Janicek
  */
-public final class CompletionContext {
+public interface CompletionProvider {
 
-    private final int anchor;
+    Map<MethodSignature, CompletionItem> getMethods(CompletionContext context);
+    
+    Map<MethodSignature, CompletionItem> getStaticMethods(CompletionContext context);
 
-    private final FileObject sourceFile;
-
-    private final String sourceClassName;
-
-    private final String className;
-
-    private final boolean staticContext;
-
-    private final List<String> properties;
-
-    private final String prefix;
-
-    private final boolean leaf;
-
-    private final boolean nameOnly;
-
-    // FIXME - accessor
-    public CompletionContext(int anchor, FileObject sourceFile, String sourceClassName, String className,
-            String prefix, boolean staticContext, List<String> properties, boolean leaf, boolean nameOnly) {
-
-        this.sourceFile = sourceFile;
-        this.sourceClassName = sourceClassName;
-        this.className = className;
-        this.prefix = prefix;
-        this.staticContext = staticContext;
-        this.properties = properties;
-        this.leaf = leaf;
-        this.nameOnly = nameOnly;
-        this.anchor = anchor;
-    }
-
-    public int getAnchor() {
-        return anchor;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public FileObject getSourceFile() {
-        return sourceFile;
-    }
-
-    public List<String> getProperties() {
-        return Collections.unmodifiableList(properties);
-    }
-
-    public String getSourceClassName() {
-        return sourceClassName;
-    }
-
-    public boolean isStaticContext() {
-        return staticContext;
-    }
-
-    public String getPrefix() {
-        return prefix;
-    }
-
-    public boolean isLeaf() {
-        return leaf;
-    }
-
-    public boolean isNameOnly() {
-        return nameOnly;
-    }
+    Map<FieldSignature, CompletionItem> getFields(CompletionContext context);
+    
+    Map<FieldSignature, CompletionItem> getStaticFields(CompletionContext context);
 
 }

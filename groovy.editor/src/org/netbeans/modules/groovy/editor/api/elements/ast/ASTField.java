@@ -48,6 +48,7 @@ import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 
 public class ASTField extends ASTElement {
 
+    private String type;
     private boolean property;
 
     public ASTField(GroovyParserResult info, ASTNode node) {
@@ -68,10 +69,17 @@ public class ASTField extends ASTElement {
 
         return name;
     }
-
+    
     @Override
     public ElementKind getKind() {
         return ElementKind.FIELD;
+    }
+    
+    public String getType() {
+        if (type == null) {
+            type = ((FieldNode) node).getType().getNameWithoutPackage();
+        }
+        return type;
     }
 
     public boolean isProperty() {

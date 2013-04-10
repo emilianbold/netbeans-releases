@@ -40,10 +40,11 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.completion;
+package org.netbeans.modules.groovy.editor.completion.provider;
 
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -70,9 +71,11 @@ import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
+import org.netbeans.modules.groovy.editor.completion.AccessLevel;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -81,7 +84,7 @@ import org.openide.filesystems.FileObject;
  */
 public final class JavaElementHandler {
 
-    private static final Logger LOG = Logger.getLogger(GroovyElementHandler.class.getName());
+    private static final Logger LOG = Logger.getLogger(GroovyElementsProvider.class.getName());
 
     private final ParserResult info;
 
@@ -206,50 +209,72 @@ public final class JavaElementHandler {
             this.nameOnly = nameOnly;
         }
 
+        @Override
         public void run(CompilationController info) throws Exception {
-
             Elements elements = info.getElements();
-            if (elements != null) {
-                ElementAcceptor acceptor = new ElementAcceptor() {
+            ElementAcceptor acceptor = new ElementAcceptor() {
 
-                    public boolean accept(Element e, TypeMirror type) {
-                        if (e.getKind() != ElementKind.METHOD) {
-                            return false;
-                        }
-                        for (AccessLevel level : levels) {
-                            if (level.getJavaAcceptor().accept(e, type)) {
-                                return true;
-                            }
-                        }
+                public boolean accept(Element e, TypeMirror type) {
+                    if (e.getKind() != ElementKind.METHOD) {
                         return false;
                     }
-                };
-
-                TypeElement te = elements.getTypeElement(className);
-                if (te != null) {
-                    for (ExecutableElement element : ElementFilter.methodsIn(te.getEnclosedElements())) {
-                        if (!acceptor.accept(element, te.asType())) {
-                            continue;
+                    for (AccessLevel level : levels) {
+                        if (level.getJavaAcceptor().accept(e, type)) {
+                            return true;
                         }
+                    }
+                    return false;
+                }
+            };
 
-                        String simpleName = element.getSimpleName().toString();
-                        String parameterString = CompletionHandler.getParameterListForMethod(element);
-                        // FIXME this should be more accurate
-                        TypeMirror returnType = element.getReturnType();
+            TypeElement te = elements.getTypeElement(className);
+            if (te != null) {
+                for (ExecutableElement element : ElementFilter.methodsIn(te.getEnclosedElements())) {
+                    if (!acceptor.accept(element, te.asType())) {
+                        continue;
+                    }
 
-                        if (simpleName.toUpperCase(Locale.ENGLISH).startsWith(prefix.toUpperCase(Locale.ENGLISH))) {
-                            if (LOG.isLoggable(Level.FINEST)) {
-                                LOG.log(Level.FINEST, simpleName + " " + parameterString + " " + returnType.toString());
-                            }
+                    String simpleName = element.getSimpleName().toString();
+                    List<String> params = getParameterListForMethod(element);
+                    // FIXME this should be more accurate
+                    TypeMirror returnType = element.getReturnType();
 
-                            proposals.put(getSignature(te, element, typeParameters, info.getTypes()), CompletionItem.forJavaMethod(
-                                    className, simpleName, parameterString, returnType, element.getModifiers(), anchor, emphasise, nameOnly));
-                        }
+                    if (simpleName.toUpperCase(Locale.ENGLISH).startsWith(prefix.toUpperCase(Locale.ENGLISH)) &&
+                        !simpleName.contains("$")) {
+                        
+                        proposals.put(getSignature(te, element, typeParameters, info.getTypes()), CompletionItem.forJavaMethod(
+                                className, simpleName, params, returnType, element.getModifiers(), anchor, emphasise, nameOnly));
                     }
                 }
             }
 
             cnt.countDown();
+        }
+        
+        private List<String> getParameterListForMethod(ExecutableElement exe) {
+            List<String> parameters = new ArrayList<String>();
+
+            if (exe != null) {
+                // generate a list of parameters
+                // unfortunately, we have to work around # 139695 in an ugly fashion
+
+                try {
+                    List<? extends VariableElement> params = exe.getParameters(); // this can cause NPE's
+
+                    for (VariableElement variableElement : params) {
+                        TypeMirror tm = variableElement.asType();
+
+                        if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY) {
+                            parameters.add(GroovyUtils.stripPackage(tm.toString()));
+                        } else {
+                            parameters.add(tm.toString());
+                        }
+                    }
+                } catch (NullPointerException e) {
+                    // simply do nothing.
+                }
+            }
+            return parameters;
         }
 
         private MethodSignature getSignature(TypeElement classElement, ExecutableElement element, String[] typeParameters, Types types) {

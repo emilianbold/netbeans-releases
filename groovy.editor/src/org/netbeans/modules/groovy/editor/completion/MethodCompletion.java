@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion.impl;
+package org.netbeans.modules.groovy.editor.completion;
 
 import java.io.IOException;
 import java.util.*;
@@ -61,10 +61,10 @@ import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.ConstructorItem;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.ParameterDescriptor;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
-import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
+import org.netbeans.modules.groovy.editor.completion.provider.CompleteElementHandler;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 
 /**
  * Complete the methods invokable on a class.
@@ -75,7 +75,7 @@ public class MethodCompletion extends BaseCompletion {
 
     // There attributes should be initiated after each complete() method call
     private List<CompletionProposal> proposals;
-    private CompletionRequest request;
+    private CompletionContext context;
     private int anchor;
 
 
@@ -84,18 +84,18 @@ public class MethodCompletion extends BaseCompletion {
 
 
     @Override
-    public boolean complete(final List<CompletionProposal> proposals, final CompletionRequest request, final int anchor) {
+    public boolean complete(final List<CompletionProposal> proposals, final CompletionContext context, final int anchor) {
         LOG.log(Level.FINEST, "-> completeMethods"); // NOI18N
 
         this.proposals = proposals;
-        this.request = request;
+        this.context = context;
         this.anchor = anchor;
 
-        if (request == null || request.ctx == null || request.location == CaretLocation.INSIDE_PARAMETERS) {
+        if (context == null || context.context == null || context.location == CaretLocation.INSIDE_PARAMETERS) {
             return false;
         }
         
-        if (request.dotContext != null && request.dotContext.isFieldsOnly()) {
+        if (context.dotContext != null && context.dotContext.isFieldsOnly()) {
             return false;
         }
 
@@ -110,16 +110,16 @@ public class MethodCompletion extends BaseCompletion {
 
 
         // 1.) Test if this is a Constructor-call?
-        if (ContextHelper.isConstructorCall(request)) {
+        if (ContextHelper.isConstructorCall(context)) {
             return completeConstructor();
         }
 
         // 2.2  static/instance method on class or object
-        if (!request.isBehindDot() && request.ctx.before1 != null) {
+        if (!context.isBehindDot() && context.context.before1 != null) {
             return false;
         }
 
-        if (request.declaringClass == null) {
+        if (context.declaringClass == null) {
             LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
             return false;
         }
@@ -137,10 +137,10 @@ public class MethodCompletion extends BaseCompletion {
             package.
          */
 
-        PackageCompletionRequest packageRequest = getPackageRequest(request);
+        PackageCompletionRequest packageRequest = getPackageRequest(context);
 
         if (packageRequest.basePackage.length() > 0) {
-            ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
+            ClasspathInfo pathInfo = getClasspathInfoFromRequest(context);
 
             if (isValidPackage(pathInfo, packageRequest.basePackage)) {
                 LOG.log(Level.FINEST, "The string before the dot seems to be a valid package"); // NOI18N
@@ -148,10 +148,7 @@ public class MethodCompletion extends BaseCompletion {
             }
         }
 
-        Map<MethodSignature, CompletionItem> result = CompleteElementHandler
-                .forCompilationInfo(request.info)
-                    .getMethods(ContextHelper.getSurroundingClassNode(request), request.declaringClass, request.prefix, anchor,
-                    request.dotContext != null && request.dotContext.isMethodsOnly());
+        Map<MethodSignature, CompletionItem> result = new CompleteElementHandler(context).getMethods();
         proposals.addAll(result.values());
 
         return true;
@@ -182,7 +179,7 @@ public class MethodCompletion extends BaseCompletion {
                         }
                         LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
 
-                        if (exactConstructorExists(typelist, request.prefix)) {
+                        if (exactConstructorExists(typelist, context.getPrefix())) {
                             // if we are in situation like "String s = new String|" we want to
                             // show only String constructors (not StringBuffer constructors etc.)
                             addExactProposals(typelist);
@@ -211,7 +208,7 @@ public class MethodCompletion extends BaseCompletion {
     private List<String> getImportedTypes() {
         List<String> importedTypes = new ArrayList<String>();
 
-        ModuleNode moduleNode = ContextHelper.getSurroundingModuleNode(request);
+        ModuleNode moduleNode = ContextHelper.getSurroundingModuleNode(context);
         if (moduleNode != null) {
             // this gets the list of full-qualified names of imports.
             for (ImportNode importNode : moduleNode.getImports()) {
@@ -227,9 +224,9 @@ public class MethodCompletion extends BaseCompletion {
     }
 
     private List<String> getTypesInSamePackage() {
-        ModuleNode moduleNode = ContextHelper.getSurroundingModuleNode(request);
+        ModuleNode moduleNode = ContextHelper.getSurroundingModuleNode(context);
         if (moduleNode != null) {
-            String packageName = ContextHelper.getSurroundingModuleNode(request).getPackageName();
+            String packageName = ContextHelper.getSurroundingModuleNode(context).getPackageName();
             if (packageName != null) {
                 packageName = packageName.substring(0, packageName.length() - 1); // Removing last '.' char
 
@@ -241,7 +238,7 @@ public class MethodCompletion extends BaseCompletion {
 
     private List<String> getTypesInSameFile() {
         List<String> declaredClassNames = new ArrayList<String>();
-        List<ClassNode> declaredClasses = ContextHelper.getDeclaredClasses(request);
+        List<ClassNode> declaredClasses = ContextHelper.getDeclaredClasses(context);
 
         for (ClassNode declaredClass : declaredClasses) {
             declaredClassNames.add(declaredClass.getName());
@@ -275,7 +272,7 @@ public class MethodCompletion extends BaseCompletion {
                         // all the constructors are named <init>.
                         String constructorName = element.getSimpleName().toString();
 
-                        if (constructorName.toUpperCase().equals(request.prefix.toUpperCase())) {
+                        if (constructorName.toUpperCase().equals(context.getPrefix().toUpperCase())) {
                             addConstructorProposal(constructorName, (ExecutableElement) encl);
                         }
                     }
@@ -295,7 +292,7 @@ public class MethodCompletion extends BaseCompletion {
     }
 
     private void addConstructorProposalsForDeclaredClasses() {
-        for (ClassNode declaredClass : ContextHelper.getDeclaredClasses(request)) {
+        for (ClassNode declaredClass : ContextHelper.getDeclaredClasses(context)) {
             addConstructorProposal(declaredClass);
         }
     }
@@ -303,7 +300,7 @@ public class MethodCompletion extends BaseCompletion {
     private void addConstructorProposal(ClassNode classNode) {
         String constructorName = classNode.getNameWithoutPackage();
 
-        if (isPrefixed(request, constructorName)) {
+        if (isPrefixed(context, constructorName)) {
             for (ConstructorNode constructor : classNode.getDeclaredConstructors()) {
                 Parameter[] parameters = constructor.getParameters();
                 String paramListString = getParameterListStringForMethod(parameters);
@@ -315,7 +312,7 @@ public class MethodCompletion extends BaseCompletion {
     }
 
     private JavaSource getJavaSourceFromRequest() {
-        ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
+        ClasspathInfo pathInfo = getClasspathInfoFromRequest(context);
         assert pathInfo != null;
 
         JavaSource javaSource = JavaSource.create(pathInfo);

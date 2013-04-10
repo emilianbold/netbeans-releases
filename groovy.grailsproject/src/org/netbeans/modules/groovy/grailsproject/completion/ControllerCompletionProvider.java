@@ -50,19 +50,18 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
-import org.netbeans.modules.groovy.editor.spi.completion.CompletionContext;
-import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
+import org.netbeans.modules.groovy.editor.spi.completion.CompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Petr Hejl
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider.class)
-public class ControllerCompletionProvider extends DynamicCompletionProvider {
-
-    private static final String[] NO_PARAMETERS = new String[] {};
+@ServiceProvider(service = CompletionProvider.class)
+public class ControllerCompletionProvider implements CompletionProvider {
 
     private static final Map<MethodSignature, String> INSTANCE_METHODS = new HashMap<MethodSignature, String>();
 
@@ -96,16 +95,6 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
                 new String[] {"java.util.Map", "groovy.lang.Closure"}), "java.lang.Object"); // NOI18N // return value always null
         INSTANCE_METHODS.put(new MethodSignature("withFormat",
                 new String[] {"groovy.lang.Closure"}), "java.lang.Object"); // NOI18N
-
-//        FIELDS.put(new FieldSignature("actionName"), "java.lang.String"); // NOI18N
-//        FIELDS.put(new FieldSignature("controllerName"), "java.lang.String"); // NOI18N
-//        FIELDS.put(new FieldSignature("flash"), "java.util.Map"); // NOI18N
-//        FIELDS.put(new FieldSignature("grailsApplication"), "org.codehaus.groovy.grails.commons.GrailsApplication"); // NOI18N
-//        FIELDS.put(new FieldSignature("params"), "java.util.Map"); // NOI18N
-//        FIELDS.put(new FieldSignature("request"), "javax.servlet.http.HttpServletRequest"); // NOI18N
-//        FIELDS.put(new FieldSignature("response"), "javax.servlet.http.HttpServletResponse"); // NOI18N
-//        FIELDS.put(new FieldSignature("servletContext"), "javax.servlet.ServletContext"); // NOI18N
-//        FIELDS.put(new FieldSignature("session"), "javax.servlet.HttpSession"); // NOI18N
     }
 
     @Override
@@ -114,29 +103,41 @@ public class ControllerCompletionProvider extends DynamicCompletionProvider {
     }
 
     @Override
+    public Map<FieldSignature, CompletionItem> getStaticFields(CompletionContext context) {
+        return Collections.emptyMap();
+    }
+
+    @Override
     public Map<MethodSignature, CompletionItem> getMethods(CompletionContext context) {
+       Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
+        if (isInControllerFolder(context)) {
+            for (Map.Entry<MethodSignature, String> entry : INSTANCE_METHODS.entrySet()) {
+                result.put(entry.getKey(), CompletionItem.forDynamicMethod(
+                        context.getAnchor(), entry.getKey().getName(), entry.getKey().getParameters(),
+                                entry.getValue(), false));
+            }
+        }
+        return result;
+    }
+    
+    @Override
+    public Map<MethodSignature, CompletionItem> getStaticMethods(CompletionContext context) {
+        return Collections.emptyMap();
+    }
+    
+    private boolean isInControllerFolder(CompletionContext context) {
         if (context.getSourceFile() == null) {
-            return Collections.emptyMap();
+            return false;
         }
 
         Project project = FileOwnerQuery.getOwner(context.getSourceFile());
-        if (project != null && context.isLeaf() && project.getLookup().lookup(ControllerCompletionProvider.class) != null) {
+        if (project != null) {
 
             if (isController(context.getSourceFile(), project)) {
-                Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
-
-                // instance methods
-                if (!context.isStaticContext()) {
-                    for (Map.Entry<MethodSignature, String> entry : INSTANCE_METHODS.entrySet()) {
-                        result.put(entry.getKey(), CompletionItem.forDynamicMethod(
-                                context.getAnchor(), entry.getKey().getName(), entry.getKey().getParameters(),
-                                        entry.getValue(), context.isNameOnly(), false));
-                    }
-                }
-                return result;
+                return true;
             }
         }
-        return Collections.emptyMap();
+        return false;
     }
 
     private boolean isController(FileObject source, Project project) {

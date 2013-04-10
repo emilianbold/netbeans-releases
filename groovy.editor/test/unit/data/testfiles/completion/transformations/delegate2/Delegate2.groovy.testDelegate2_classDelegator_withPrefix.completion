@@ -15,5 +15,5 @@ METHOD     findLastIndexOf(int, Closure)              int
 METHOD     findResult(Closure)                        Object
 METHOD     findResult(Object, Closure)                Object
 FIELD      fieldDelegatedShowMe            [PUBLIC]   String
-FIELD      fieldDelegation                 [PUBLIC]   
-FIELD      fieldNormal                     [PUBLIC]   
+FIELD      fieldDelegation                 [PUBLIC]   Delegation2
+FIELD      fieldNormal                     [PUBLIC]   String

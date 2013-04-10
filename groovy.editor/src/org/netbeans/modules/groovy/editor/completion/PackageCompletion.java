@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion.impl;
+package org.netbeans.modules.groovy.editor.completion;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -51,7 +51,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 
 /**
  * Here we complete package-names like java.lan to java.lang ...
@@ -61,7 +61,7 @@ import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 public class PackageCompletion extends BaseCompletion {
 
     @Override
-    public boolean complete(List<CompletionProposal> proposals, CompletionRequest request, int anchor) {
+    public boolean complete(List<CompletionProposal> proposals, CompletionContext request, int anchor) {
         LOG.log(Level.FINEST, "-> completePackages"); // NOI18N
 
         // this can happen for ?. or similar constructs
@@ -75,8 +75,8 @@ public class PackageCompletion extends BaseCompletion {
         ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
         assert pathInfo != null : "Can not get ClasspathInfo";
 
-        if (request.ctx.before1 != null
-                && CharSequenceUtilities.textEquals(request.ctx.before1.text(), "*")
+        if (request.context.before1 != null
+                && CharSequenceUtilities.textEquals(request.context.before1.text(), "*")
                 && request.behindImport) {
             return false;
         }
@@ -95,7 +95,7 @@ public class PackageCompletion extends BaseCompletion {
             }
 
             if (singlePackage.startsWith(packageRequest.prefix) && singlePackage.length() > 0) {
-                CompletionItem.PackageItem item = new CompletionItem.PackageItem(singlePackage, anchor, request.info);
+                CompletionItem.PackageItem item = new CompletionItem.PackageItem(singlePackage, anchor, request.getParserResult());
 
                 if (request.behindImport) {
                     item.setSmart(true);

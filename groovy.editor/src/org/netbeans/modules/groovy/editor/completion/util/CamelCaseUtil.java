@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion.util;
+package org.netbeans.modules.groovy.editor.completion.util;
 
 import java.util.ArrayList;
 import java.util.List;
