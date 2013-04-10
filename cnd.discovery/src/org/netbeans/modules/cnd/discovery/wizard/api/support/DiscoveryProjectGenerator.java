@@ -61,6 +61,8 @@ import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
@@ -72,9 +74,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -100,7 +99,7 @@ public final class DiscoveryProjectGenerator {
             }
         }
         CsmModel model = CsmModelAccessor.getModel();
-        if (!(model instanceof ModelImpl && makeProject != null)) {
+        if (!(model != null && makeProject != null)) {
             if (logger != null) {
                 logger.log(Level.INFO, "Failed fixing of excluded header files for project {0}", makeProject); // NOI18N
             }
@@ -148,23 +147,19 @@ public final class DiscoveryProjectGenerator {
             handle.start();
             try {
                 Map<String, Item> normalizedItems = DiscoveryProjectGenerator.initNormalizedNames(makeProject);
-                for (CsmFile file : p.getAllFiles()) {
+                for (CsmFile impl : p.getAllFiles()) {
                     if (interrupter.get()) {
                         return false;
                     }
-                    if (file instanceof FileImpl) {
-                        FileImpl impl = (FileImpl) file;
-                        NativeFileItem item = impl.getNativeFileItem();
+                    if (impl != null) {
+                        NativeFileItem item = CsmFileInfoQuery.getDefault().getNativeFileItem(impl);
                         if (item == null) {
                             String path = impl.getAbsolutePath().toString();
                             item = normalizedItems.get(path);
                         }
                         boolean isLineDirective = false;
-                        if (item != null
-                                && item.getLanguage() == NativeFileItem.Language.C_HEADER
-                                && (p instanceof ProjectBase)) {
-                            ProjectBase pb = (ProjectBase) p;
-                            Set<CsmFile> parentFiles = pb.getParentFiles(file);
+                        if (item != null && item.getLanguage() == NativeFileItem.Language.C_HEADER) {
+                            Collection<CsmFile> parentFiles = CsmIncludeHierarchyResolver.getDefault().getFiles(impl);
                             if (parentFiles.isEmpty()) {
                                 isLineDirective = true;
                             }
@@ -179,7 +174,7 @@ public final class DiscoveryProjectGenerator {
                                 }
                                 ProjectBridge.setHeaderTool((Item) item);
                                 isChanged = true;
-                                if (file.isHeaderFile()) {
+                                if (impl.isHeaderFile()) {
                                     needCheck.add(item.getAbsolutePath());
                                 }
                             }
@@ -193,7 +188,7 @@ public final class DiscoveryProjectGenerator {
                             }
                         } else if (item == null) {
                             // It should be in project?
-                            if (file.isHeaderFile()) {
+                            if (impl.isHeaderFile()) {
                                 String path = impl.getAbsolutePath().toString();
                                 needAdd.add(path);
                             }

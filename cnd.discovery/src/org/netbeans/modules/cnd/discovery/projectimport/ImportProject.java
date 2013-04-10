@@ -119,7 +119,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.remote.api.RfsListener;
 import org.netbeans.modules.cnd.remote.api.RfsListenerSupport;
 import org.netbeans.modules.cnd.support.Interrupter;
@@ -1167,7 +1166,7 @@ public class ImportProject implements PropertyChangeListener {
             return;
         }
         CsmModel model = CsmModelAccessor.getModel();
-        if (model instanceof ModelImpl && makeProject != null) {
+        if (model != null && makeProject != null) {
             final NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             final CsmProject p = model.getProject(np);
             if (p == null) {
@@ -1316,18 +1315,18 @@ public class ImportProject implements PropertyChangeListener {
 
     private void switchModel(boolean state) {
         CsmModel model = CsmModelAccessor.getModel();
-        if (model instanceof ModelImpl && makeProject != null) {
+        if (model != null && makeProject != null) {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             if (state) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#enable model for {0}", np.getProjectDisplayName()); // NOI18N
                 }
-                ((ModelImpl) model).enableProject(np);
+                model.enableProject(np);
             } else {
                 if (TRACE) {
                     logger.log(Level.INFO, "#disable model for {0}", np.getProjectDisplayName()); // NOI18N
                 }
-                ((ModelImpl) model).disableProject(np);
+                model.disableProject(np);
             }
         }
     }

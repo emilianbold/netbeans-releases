@@ -52,7 +52,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.modelui.impl.services;
+package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.io.IOException;
 import javax.swing.text.BadLocationException;

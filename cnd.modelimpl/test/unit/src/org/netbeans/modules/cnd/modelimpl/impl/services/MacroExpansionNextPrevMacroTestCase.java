@@ -52,31 +52,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.modelui.impl.services;
+package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import org.netbeans.modules.cnd.modelimpl.impl.services.MacroExpansionDocProviderImpl;
 import java.io.File;
 import java.io.PrintStream;
+import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 
 /**
- * Class for MacroExpansionDocProviderImpl tests for span of macro detection
+ * Class for MacroExpansionDocProviderImpl tests for finding next and previous macro
  *
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public class MacroExpansionSpanTestCase extends MacroExpansionDocProviderImplBaseTestCase {
+public class MacroExpansionNextPrevMacroTestCase extends MacroExpansionDocProviderImplBaseTestCase {
 
-    public MacroExpansionSpanTestCase(String testName) {
+    public MacroExpansionNextPrevMacroTestCase(String testName) {
         super(testName);
     }
 
-    // Find span of macro on specified offset
+    // Find next or previous macro for specified offset
     // Format:
-    // performExpandFileTest("file name, line, column); // NOI18N
+    // performNextMacroTest("file name, line, column); // NOI18N
+    // performPrevMacroTest("file name, line, column); // NOI18N
 
     public void testFile1() throws Exception {
-        performTest("file1.cc", 18, 7); // NOI18N
+        performNextMacroTest("file1.cc", 9, 1); // NOI18N
+    }
+
+    public void testFile1_2() throws Exception {
+        performPrevMacroTest("file1.cc", 9, 1); // NOI18N
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -89,7 +96,7 @@ public class MacroExpansionSpanTestCase extends MacroExpansionDocProviderImplBas
 
         assertNotNull("Csm file was not found for " + path, currentFile); // NOI18N
 
-        if (params.length == 2) {
+        if (params.length == 3) {
 
             MacroExpansionDocProviderImpl mp = new MacroExpansionDocProviderImpl();
 
@@ -103,21 +110,34 @@ public class MacroExpansionSpanTestCase extends MacroExpansionDocProviderImplBas
             int line = (Integer) params[0];
             int column = (Integer) params[1];
 
-            int offset = CndCoreTestUtils.getDocumentOffset(doc, line, column);
+            boolean findNext = (Boolean) params[2];
 
-            int[] res = mp.getMacroExpansionSpan(doc, offset, false);
+            Document doc2 = createExpandedContextDocument(doc, currentFile);
+            assertNotNull(doc2);
+            mp.expand(doc, 0, doc.getLength(), doc2);
+
+            int offset = CndCoreTestUtils.getDocumentOffset((BaseDocument)doc2, line, column);
+
+            int res;
+            if(findNext) {
+                res = mp.getNextMacroExpansionStartOffset(doc2, offset);
+            } else {
+                res = mp.getPrevMacroExpansionStartOffset(doc2, offset);
+            }
             assertNotNull(res);
-            streamOut.println("Span: "); // NOI18N
-            streamOut.print("start offset: line " + getLine(doc, res[0]) + " column " + getColumn(doc, res[0])); // NOI18N
-            streamOut.println(" - end offset: line " + getLine(doc, res[1]) + " column " + getColumn(doc, res[1])); // NOI18N
+            streamOut.println("Offset: line " + getLine((BaseDocument)doc2, res) + " column " + getColumn((BaseDocument)doc2, res)); // NOI18N
 
         } else {
             assert true; // Bad test params
         }
     }
 
-    private void performTest(String source, int line, int column) throws Exception {
-        super.performTest(source, getName(), null, line, column);
+    private void performNextMacroTest(String source, int line, int column) throws Exception {
+        super.performTest(source, getName(), null, line, column, true);
     }
 
+    private void performPrevMacroTest(String source, int line, int column) throws Exception {
+        super.performTest(source, getName(), null, line, column, false);
+    }
+    
 }

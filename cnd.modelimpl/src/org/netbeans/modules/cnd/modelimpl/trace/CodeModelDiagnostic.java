@@ -62,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -69,6 +70,17 @@ import org.openide.util.lookup.ServiceProvider;
  */
 
 public final class CodeModelDiagnostic {
+    public static void dumpProjectContainers(PrintStream ps, CsmProject prj, boolean dumpFiles) {
+        ProjectBase.dumpProjectContainers(ps, prj, dumpFiles);
+    }
+
+    public static void dumpFileContainer(CsmProject project, OutputWriter out) {
+        ProjectBase.dumpFileContainer(project, out);
+    }
+
+    public static void dumpProjectGrapthContainer(CsmProject project, OutputWriter out) {
+        ProjectBase.dumpProjectGrapthContainer(project, out);
+    }
 
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1000)
     public final static class StandAloneProviderTrace implements CndDiagnosticProvider {
@@ -336,7 +348,7 @@ public final class CodeModelDiagnostic {
             PrintStream ps = CsmTracer.toPrintStream(printOut);
             for (CsmProject prj : projects) {
                 if (prj instanceof ProjectBase) {
-                    ProjectBase.dumpProjectContainers(ps, prj, false);
+                    dumpProjectContainers(ps, prj, false);
                 }
             }
         }
