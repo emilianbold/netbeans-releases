@@ -60,6 +60,7 @@ import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.JsfUtils;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.modules.web.jsfapi.spi.InputTextTagValueProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -103,12 +104,7 @@ public class FaceletsInputTextTagValueProvider implements InputTextTagValueProvi
                 return null;
             }
 
-            String htmlNs = null;
-            if (hresult.getNamespaces().containsKey(DefaultLibraryInfo.HTML.getNamespace())) {
-                htmlNs = DefaultLibraryInfo.HTML.getNamespace();
-            } else if (hresult.getNamespaces().containsKey(DefaultLibraryInfo.HTML.getLegacyNamespace())) {
-                htmlNs = DefaultLibraryInfo.HTML.getLegacyNamespace();
-            }
+            String htmlNs = NamespaceUtils.getForNs(hresult.getNamespaces(), DefaultLibraryInfo.HTML.getNamespace());
             if (htmlNs != null) {
                 String htmlLibPrefix = hresult.getNamespaces().get(htmlNs);
                 if(htmlLibPrefix == null) {

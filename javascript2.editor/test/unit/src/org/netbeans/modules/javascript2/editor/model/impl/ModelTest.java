@@ -150,6 +150,10 @@ public class ModelTest extends ModelTestBase {
     public void testAnonymousFunction() throws Exception {
         checkModel("testfiles/model/anonymousFunction.js");
     }
+    
+    public void testAnonymousFunction2() throws Exception {
+        checkModel("testfiles/model/anonymousFunction2.js");
+    }
 
     public void testCzechChars() throws Exception {
         checkModel("testfiles/coloring/czechChars.js");

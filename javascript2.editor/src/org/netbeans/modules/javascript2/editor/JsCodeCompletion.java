@@ -182,11 +182,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         addPropertyToMap(request, addedProperties, indexElement);
                     }
 
-                    for (List<JsElement> elements : addedProperties.values()) {
-                        for (JsElement element: elements) {
-                            resultList.add(JsCompletionItem.Factory.create(element, request));
-                        }
-                    }
+                    createCompletionItems(request, resultList, addedProperties);
                     break;
                 case EXPRESSION:
                     completeKeywords(request, resultList);
@@ -418,21 +414,21 @@ class JsCodeCompletion implements CodeCompletionHandler {
     }
 
     private void completeExpression(CompletionRequest request, List<CompletionProposal> resultList) {
-        HashMap <String, List<JsElement>> foundObjects = new HashMap<String, List<JsElement>>();
+        HashMap <String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
         
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-        foundObjects.putAll(getDomCompletionResults(request));
+        addedProperties.putAll(getDomCompletionResults(request));
         // from index
         JsIndex index = JsIndex.get(fo);
         Collection<IndexedElement> fromIndex = index.getGlobalVar(request.prefix);
         for (IndexedElement indexedElement : fromIndex) {
-            addPropertyToMap(request, foundObjects, indexedElement);
+            addPropertyToMap(request, addedProperties, indexedElement);
         }
         
         // from libraries
         for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
             for (JsObject object : libGlobal.getProperties().values()) {
-                addPropertyToMap(request, foundObjects, object);
+                addPropertyToMap(request, addedProperties, object);
             }
         }
         
@@ -440,15 +436,11 @@ class JsCodeCompletion implements CodeCompletionHandler {
         //int offset = request.info.getSnapshot().getEmbeddedOffset(request.anchor);
         for(JsObject object : request.result.getModel().getVariables(request.anchor)) {
             if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())) {
-                addPropertyToMap(request, foundObjects, object);
+                addPropertyToMap(request, addedProperties, object);
             }
         }
 
-        for(List<JsElement> elements: foundObjects.values()) {
-            for (JsElement element: elements) {
-                resultList.add(JsCompletionItem.Factory.create(element, request));
-            }
-        }
+        createCompletionItems(request, resultList, addedProperties);
     }
 
     private int checkRecursion;
@@ -458,11 +450,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         Map<String, List<JsElement>> results = getCompletionFromExpressionChain(request, expChain);
 
         // create code completion results
-        for (List<JsElement> elements : results.values()) {
-            for(JsElement element: elements) {
-                resultList.add(JsCompletionItem.Factory.create(element, request));
-            }
-        }
+        createCompletionItems(request, resultList, results);
     }
 
     private Map<String, List<JsElement>> getCompletionFromExpressionChain(CompletionRequest request, List<String> expChain) {
@@ -787,6 +775,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
     }
     
 
+    private void createCompletionItems(JsCompletionItem.CompletionRequest request, List<CompletionProposal> resultList, Map<String, List<JsElement>> addedProperties) {
+        for (List<JsElement> elements : addedProperties.values()) {
+            for (JsElement element : elements) {
+                resultList.add(JsCompletionItem.Factory.create(element, request));
+            }
+        }
+    }
+    
     private Map<String, List<JsElement>> getDomCompletionResults(CompletionRequest request) {
         Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);
         // default window object

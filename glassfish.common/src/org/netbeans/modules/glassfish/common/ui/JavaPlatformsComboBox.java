@@ -294,8 +294,8 @@ public class JavaPlatformsComboBox extends JComboBox {
      * @param addEmpty Add an empty platform representing no selection
      *                 at the beginning of the list.
      */
-    public JavaPlatformsComboBox(final JavaPlatform[] platforms
-            , boolean addEmpty) {
+    public JavaPlatformsComboBox(final JavaPlatform[] platforms,
+            boolean addEmpty) {
         super(new DefaultComboBoxModel(toPlatform(platforms, addEmpty)));
     }
     
