@@ -300,11 +300,6 @@ public abstract class CsmResultItem implements CompletionItem {
                     completion.hideCompletion();
                     completion.hideDocumentation();
                     break;
-                case '.':
-                    if (defaultAction((JTextComponent) evt.getSource(), Character.toString(evt.getKeyChar()))) {
-                        evt.consume();
-                        break;
-                    }
             }
         }
     }
@@ -370,7 +365,7 @@ public abstract class CsmResultItem implements CompletionItem {
                     // Bug 186954 - Included files are chaotically inserted
                     if (!CsmClassifierResolver.getDefault().isForwardClassifier((CsmObject) ob)) {
                         CsmFile currentFile = CsmUtilities.getCsmFile(doc, false, false);
-                        if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
+                        if (currentFile != null && !inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
                             String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
                             if (include.length() != 0 && !isForwardDeclaration(component) && !isAlreadyIncluded(component, include)) {
                                 insertInclude(component, currentFile, include, include.charAt(include.length() - 1) == '>');
@@ -1483,7 +1478,7 @@ public abstract class CsmResultItem implements CompletionItem {
 
         @Override
         protected String getReplaceText() {
-            String text = cls.getName().toString();
+            String text = getName();
             if (classDisplayOffset > 0 && classDisplayOffset < text.length()) { // Only the last name for inner classes
                 text = text.substring(classDisplayOffset);
             }

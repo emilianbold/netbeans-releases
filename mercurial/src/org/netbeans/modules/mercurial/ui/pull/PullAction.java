@@ -390,10 +390,10 @@ public class PullAction extends ContextAction {
         "MSG_PullAction.pushingPatches=Pushing patches",
         "# Capitalized letters used intentionally to emphasize the words in "
             + "an output window, should be translated",
-        "MSG_PULL_MERGE_DO=INFO MERGE: Performing Merge with pulled changes",
+        "MSG_PULL_MERGE_DO=INFO: Performing Merge with pulled changes",
         "# Capitalized letters used intentionally to emphasize the words in "
-            + "an output window, should be translated",
-        "MSG_PULL_REBASE_DO=INFO MERGE: Performing Rebase of local commits "
+            + "the output window, should be translated",
+        "MSG_PULL_REBASE_DO=INFO: Performing Rebase of local commits "
             + "onto pulled changes"
     })
     private static class PullImpl implements Callable<Void> {

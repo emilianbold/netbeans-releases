@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.lib2.view;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -162,6 +163,10 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
             }
         }
         viewFactories = factoryList.toArray(new EditorViewFactory[factoryList.size()]);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "ViewUpdates initializing for {0}, factories: {1}", 
+                    new Object[] { docView.getTextComponent(), Arrays.asList(viewFactories) });
+        }
     }
 
     /**
@@ -239,8 +244,8 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                 assert (doc == evt.getDocument()) : "Invalid document";
                 int insertOffset = evt.getOffset();
                 int insertLength = evt.getLength();
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("\nDOCUMENT-INSERT-evt: offset=" + insertOffset + ", length=" + insertLength + // NOI18N
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.finer("\nDOCUMENT-INSERT-evt: offset=" + insertOffset + ", length=" + insertLength + // NOI18N
                             ", cRegion=" + charRebuildRegion + // NOI18N
                             ", current-docViewEndOffset=" + (evt.getDocument().getLength()+1) + '\n'); // NOI18N
                 }
@@ -269,8 +274,8 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                 assert (doc == evt.getDocument()) : "Invalid document";
                 int removeOffset = evt.getOffset();
                 int removeLength = evt.getLength();
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("\nDOCUMENT-REMOVE-evt: offset=" + removeOffset + ", length=" + removeLength + // NOI18N
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.finer("\nDOCUMENT-REMOVE-evt: offset=" + removeOffset + ", length=" + removeLength + // NOI18N
                             ", cRegion=" + charRebuildRegion + // NOI18N
                             ", current-docViewEndOffset=" + (evt.getDocument().getLength()+1) + '\n'); // NOI18N
                 }

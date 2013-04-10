@@ -50,6 +50,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -66,6 +68,8 @@ import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -237,6 +241,25 @@ public class MakeJNLP extends Task {
                 to.getParentFile().mkdirs();
             }
             getSignTask().setSignedjar(to);
+            // use reflection for calling getSignTask().setDigestAlg("SHA1");
+            try {
+                Class sjClass = Class.forName("org.apache.tools.ant.taskdefs.SignJar");
+                Method sdaMethod = sjClass.getDeclaredMethod("setDigestAlg", String.class);
+                sdaMethod.invoke(getSignTask(), "SHA1");
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(MakeJNLP.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NoSuchMethodException ex) {
+                Logger.getLogger(MakeJNLP.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SecurityException ex) {
+                Logger.getLogger(MakeJNLP.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(MakeJNLP.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(MakeJNLP.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvocationTargetException ex) {
+                Logger.getLogger(MakeJNLP.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            // end of getSignTask().setDigestAlg("SHA1");
             getSignTask().execute();
         } else if (to != null) {
             Copy copy = (Copy)getProject().createTask("copy");

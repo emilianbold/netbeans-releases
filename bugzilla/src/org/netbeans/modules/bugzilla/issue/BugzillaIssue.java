@@ -87,7 +87,7 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
@@ -445,10 +445,10 @@ public class BugzillaIssue {
         if(wasSeen()) {
             return "";                                                          // NOI18N
         }
-        int status = repository.getIssueCache().getStatus(getID());
-        if(status == IssueCache.ISSUE_STATUS_NEW) {
+        IssueCache.Status status = repository.getIssueCache().getStatus(getID());
+        if(status == IssueCache.Status.ISSUE_STATUS_NEW) {
             return NbBundle.getMessage(BugzillaIssue.class, "LBL_NEW_STATUS");
-        } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
+        } else if(status == IssueCache.Status.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             assert getSeenAttributes() != null;
             for (IssueField f : getRepository().getConfiguration().getFields()) {
@@ -1015,7 +1015,8 @@ public class BugzillaIssue {
             if(td == null) {
                 return false;
             }
-            getRepository().getIssueCache().setIssueData(this, td); // XXX
+            setTaskData(td);
+            getRepository().getIssueCache().setIssueData(td.getTaskId(), this); // XXX
             getRepository().ensureConfigurationUptodate(this);
             refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
@@ -1089,13 +1090,13 @@ public class BugzillaIssue {
     }
 
     public IssueStatusProvider.Status getStatus() {
-        int status = getRepository().getIssueCache().getStatus(getID());
+        IssueCache.Status status = getRepository().getIssueCache().getStatus(getID());
         switch(status) {
-            case IssueCache.ISSUE_STATUS_NEW:
+            case ISSUE_STATUS_NEW:
                 return IssueStatusProvider.Status.NEW;
-            case IssueCache.ISSUE_STATUS_MODIFIED:
+            case ISSUE_STATUS_MODIFIED:
                 return IssueStatusProvider.Status.MODIFIED;
-            case IssueCache.ISSUE_STATUS_SEEN:
+            case ISSUE_STATUS_SEEN:
                 return IssueStatusProvider.Status.SEEN;
         }
         return null;
@@ -1103,7 +1104,7 @@ public class BugzillaIssue {
 
     public void setUpToDate(boolean seen) {
         try {
-            final IssueCache<BugzillaIssue, TaskData> issueCache = getRepository().getIssueCache();
+            final IssueCache<BugzillaIssue> issueCache = getRepository().getIssueCache();
             boolean wasSeen = issueCache.wasSeen(getID());
             if(seen != wasSeen) {
                 issueCache.setSeen(getID(), seen);

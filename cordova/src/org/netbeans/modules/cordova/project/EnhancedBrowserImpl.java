@@ -99,8 +99,7 @@ public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplemen
 
     @Override
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        final MobileConfigurationImpl activeConfiguration = configsProvider.getActiveConfiguration();
-        return activeConfiguration.getDevice().getProjectConfigurationCustomizer(project, activeConfiguration);
+        return null;
     }
 
     @Override

@@ -1,9 +1,9 @@
-t1 T1<1>
-DataSource<class T>
-Person
-T1<int i>
-T2<class C>
-T3<int k,class C>
-T4<class T>
-main() int
-select<class T>() DataSource<T>
+t1 T1<1>	$	    t1
+DataSource<class T>	$	    DataSource<class T>
+Person	$	    Person
+T1<int i>	$	    T1<int i>
+T2<class C>	$	    T2<class C>
+T3<int k,class C>	$	    T3<int k,class C>
+T4<class T>	$	    T4<class T>
+main() int	$	    main()
+select<class T>() DataSource<T>	$	    select()

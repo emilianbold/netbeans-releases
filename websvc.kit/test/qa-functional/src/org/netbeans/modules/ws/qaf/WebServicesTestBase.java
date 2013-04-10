@@ -133,8 +133,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         public String getProjectTypeName() {
             switch (this) {
                 case JAVASE_APPLICATION:
-                    //Java Application
-                    return Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard/emptyJ2SE.xml");
+                    return "Java Application";
                 case WEB:
                     //Web Application
                     return Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", "Templates/Project/Web/emptyWeb.xml");

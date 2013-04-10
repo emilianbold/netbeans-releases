@@ -53,14 +53,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
 import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
+import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
+import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.util.Lookup;
@@ -133,6 +137,7 @@ public class WebKitPageModel extends PageModel {
         // Register DOM domain listener
         domListener = createDOMListener();
         DOM dom = webKit.getDOM();
+        dom.setClassForHover(CSSUtils.HOVER_CLASS);
         dom.addListener(domListener);
         
         // Register CSS domain listener
@@ -642,6 +647,7 @@ public class WebKitPageModel extends PageModel {
                 return;
             }
             this.selectionMode = selectionMode;
+            webKit.getCSS().setClassForHover(selectionMode ? CSSUtils.HOVER_CLASS : null);
         }
         firePropertyChange(PROP_SELECTION_MODE, !selectionMode, selectionMode);
         // Reset highlighted nodes
@@ -911,10 +917,30 @@ public class WebKitPageModel extends PageModel {
         private synchronized void updateSelectionMode() {
             boolean selectionMode = isSelectionMode();
             
-            // PENDING notify Chrome extension that the selection mode has changed
-
             // Activate/deactivate (observation of mouse events over) canvas
             invokeInAllDocuments("NetBeans.setSelectionMode("+selectionMode+")"); // NOI18N
+
+            performHoverRelatedStyleSheetUpdate();
+        }
+
+        /**
+         * Performs the replacement of {@code :hover} pseudo-class
+         * by the class used to simulate hovering (and vice versa).
+         */
+        private void performHoverRelatedStyleSheetUpdate() {
+            CSS css = webKit.getCSS();
+            for (StyleSheetHeader header : css.getAllStyleSheets()) {
+                String styleSheetId = header.getStyleSheetId();
+                StyleSheetBody body = css.getStyleSheet(styleSheetId);
+                String styleSheetText = body.getText();
+                if (selectionMode) {
+                    // Replacement of :hover is done in setStyleSheetText()
+                    css.setStyleSheetText(styleSheetId, styleSheetText);
+                } else {
+                    styleSheetText = Pattern.compile(Pattern.quote("." + CSSUtils.HOVER_CLASS)).matcher(styleSheetText).replaceAll(":hover"); // NOI18N
+                    css.setStyleSheetText(styleSheetId, styleSheetText);
+                }
+            }            
         }
 
     }

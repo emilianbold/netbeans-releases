@@ -66,21 +66,21 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("@| h1 { }", AT_RULES, Match.CONTAINS);
         checkCC("@pa| h1 { }", new String[]{"@page"}, Match.CONTAINS);
     }
-    
+
     public void testAtRules2() throws ParseException {
         checkCC("@charset| ", new String[]{"@font-face"}, Match.DOES_NOT_CONTAIN);
         checkCC("@charset| div { }", new String[]{"@font-face"}, Match.DOES_NOT_CONTAIN);
-        
+
         checkCC("@fon| div { }", new String[]{"@font-face"}, Match.EXACT);
-        
+
         checkCC("@media| div { }", new String[]{"@media"}, Match.EXACT);
-        
+
         checkCC("@page| div { }", new String[]{"@page"}, Match.EXACT);
     }
 
     public void testPropertyNames() throws ParseException {
         //empty rule
-        checkCC("h1 { | }", arr("azimuth"), Match.CONTAINS);
+//        checkCC("h1 { | }", arr("azimuth"), Match.CONTAINS);
         checkCC("h1 { az| }", arr("azimuth"), Match.CONTAINS);
         checkCC("h1 { azimuth| }", arr("azimuth"), Match.CONTAINS);
 
@@ -134,16 +134,23 @@ public class CssCompletionTest extends CssModuleTestBase {
 
     public void testHtmlSelectorsCompletionAfterIdSelector() throws ParseException, BadLocationException {
         checkCC("#myid |", arr("html"), Match.CONTAINS);
+        checkCC("#myid | { }", arr("html"), Match.CONTAINS);
+        checkCC("#myid | body { }", arr("html"), Match.CONTAINS);
+
         checkCC("#myid h|", arr("html"), Match.CONTAINS);
         assertComplete("#myid b| { }", "#myid body| { }", "body");
         assertComplete("#myid | { }", "#myid body| { }", "body");
     }
-    
+
     public void testHtmlSelectorsCompletionAfterClassSelector() throws ParseException, BadLocationException {
         checkCC(".aclass |", arr("html"), Match.CONTAINS);
         checkCC(".aclass h|", arr("html"), Match.CONTAINS);
         assertComplete(".aclass b| { }", ".aclass body| { }", "body");
         assertComplete(".aclass | { }", ".aclass body| { }", "body");
+    }
+
+    public void testCompleteSelectorAfterSelector() throws ParseException {
+        checkCC("html | { }", arr("body"), Match.CONTAINS);
     }
 
     public void testCompleteSelectors() throws ParseException, BadLocationException {
@@ -211,7 +218,7 @@ public class CssCompletionTest extends CssModuleTestBase {
                 + "\n"
                 + "   }\n";
 
-        checkCC(code, arr("#aabbcc"), Match.CONTAINS);        
+        checkCC(code, arr("#aabbcc"), Match.CONTAINS);
     }
 
     //Bug 204129 - CC doesn't work after *|
@@ -219,11 +226,11 @@ public class CssCompletionTest extends CssModuleTestBase {
         //complete name selectors and universal selector in empty file        
         checkCC("|", arr("h1"), Match.CONTAINS);
         checkCC("|", arr("*"), Match.CONTAINS);
-        
+
         //complete after named selector
         checkCC("a |", arr("h1"), Match.CONTAINS);
         checkCC("a |", arr("*"), Match.CONTAINS);
-        
+
         //complete after universal selector
         checkCC("* |", arr("h1"), Match.CONTAINS);
         checkCC("* |", arr("*"), Match.CONTAINS);
@@ -231,67 +238,68 @@ public class CssCompletionTest extends CssModuleTestBase {
 
 
     }
-    
+
     public void testPropertyValueWithPrefix() throws ParseException {
-        checkCC("div { font: italic la| }", arr("large"), Match.CONTAINS);        
+        checkCC("div { font: italic la| }", arr("large"), Match.CONTAINS);
         checkCC("div { font: italic la|rge }", arr("large"), Match.CONTAINS);
     }
-    
+
     //Bug 205893 - font-family completion issue
     public void testPropertyValueFontFamily() throws ParseException {
-        checkCC("div { font-family: fa| }", arr("fantasy"), Match.EXACT);        
+        checkCC("div { font-family: fa| }", arr("fantasy"), Match.EXACT);
         checkCC("div { font-family: fantasy,|}", arr("monospace"), Match.CONTAINS);
         checkCC("div { font-family: fantasy, |}", arr("monospace"), Match.CONTAINS);
         checkCC("div { font-family: fantasy, mo|}", arr("monospace"), Match.EXACT);
-        
-        checkCC("div { font-family: fa| \n}", arr("fantasy"), Match.EXACT);        
+
+        checkCC("div { font-family: fa| \n}", arr("fantasy"), Match.EXACT);
         checkCC("div { font-family: fantasy,| \n}", arr("monospace"), Match.CONTAINS);
         checkCC("div { font-family: fantasy, | \n}", arr("monospace"), Match.CONTAINS);
         checkCC("div { font-family: fantasy, mo| \n}", arr("monospace"), Match.EXACT);
     }
-    
+
     public void testPropertyValueFontFamilyProblem2() throws ParseException {
         //completion doesn't offer items that can immediatelly follow
         //a valid token
         checkCC("div { font-family: fantasy|}", arr(",", "!identifier"), Match.EXACT);
 //        checkCC("div { font-family: fantasy |}", arr(",", "!identifier"), Match.EXACT);
     }
-    
+
     public void testPropertyValueJustAfterRGB() throws ParseException {
         checkCC("div { color: rgb|}", arr("("), Match.EXACT);
     }
-    
+
     public void testPropertyValueOfferItemsJustAfterUnit() throws ParseException {
         checkCC("div { animation: cubic-bezier(20| }", arr(","), Match.EXACT);
     }
-    
+
     //Bug 204821 - Incorrect completion for vendor specific properties
     public void testVendorSpecificProperties() throws ParseException, BadLocationException {
         checkCC("div { -| }", arr("-moz-animation"), Match.CONTAINS);
         checkCC("div { -| }", arr("adding"), Match.DOES_NOT_CONTAIN);
-        
+
         assertComplete("div { -| }", "div { -moz-animation: | }", "-moz-animation");
-        
-        
+
+
     }
     //Bug 212664 - No CC for inline CSS style (without prefix)
+
     public void testCompletionBeforeSemicolon() throws ParseException, BadLocationException {
         checkCC("div { background: | ; }", arr("red"), Match.CONTAINS);
         checkCC("div { background: |; }", arr("red"), Match.CONTAINS);
     }
-    
+
     //Bug 217457 - Broken code completion inside identifier for values
     public void test217457() throws ParseException, BadLocationException {
         checkCC("div { transform: sca|leZ ; }", arr("scaleZ"), Match.CONTAINS);
         checkCC("div { transform: sca|leZ(0.3); }", arr("scaleZ"), Match.CONTAINS);
     }
-    
+
     //http://netbeans.org/bugzilla/show_bug.cgi?id=221349
     public void testNoCompletionAfterImport() throws ParseException, BadLocationException {
         checkCC("@import \"s1.css\"; |  root { display: block;}", arr("body"), Match.CONTAINS_ONCE);
-        
+
     }
-    
+
     //http://netbeans.org/bugzilla/show_bug.cgi?id=221461
     //doubled items between rule w/o prefix
     public void testDoubledItemsBetweenRulesWithoutPrefix() throws ParseException, BadLocationException {
@@ -299,14 +307,68 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("root { } bo| .x {  }", arr("body"), Match.CONTAINS_ONCE);
         //this doesn't
         checkCC("root { } | .x {  }", arr("body"), Match.CONTAINS_ONCE);
-        
+
     }
-    
+
     public void testInheritInColor() throws ParseException {
         checkCC("div { color:|  }", arr("inherit"), Match.CONTAINS_ONCE);
     }
-    
+
     public void testURICompletion() throws ParseException {
         checkCC("div { background-image: | } ", arr("url"), Match.CONTAINS);
     }
+
+    public void testClassCompletion() throws ParseException {
+        CssCompletion.TEST_CLASSES = new String[]{"clz"};
+        try {
+            checkCC(".|", arr("clz"), Match.EXACT);
+            checkCC(".c|", arr("clz"), Match.EXACT);
+
+            checkCC(".c| ", arr("clz"), Match.EXACT);
+            checkCC(".| ", arr("clz"), Match.EXACT);
+
+            checkCC(".c| {}", arr("clz"), Match.EXACT);
+            checkCC(".| {}", arr("clz"), Match.EXACT);
+
+            checkCC(".my{} .c| ", arr("clz"), Match.EXACT);
+            checkCC(".my{} .| ", arr("clz"), Match.EXACT);
+
+            checkCC(".pre{} .c| .post{}", arr("clz"), Match.EXACT);
+            checkCC(".pre{} .| .post{}", arr("clz"), Match.EXACT);
+
+            checkCC(".c| .post{}", arr("clz"), Match.EXACT);
+            checkCC(".| .post{}", arr("clz"), Match.EXACT);
+
+            checkCC("a{} .c| .post{}", arr("clz"), Match.EXACT);
+            checkCC("a{} .| .post{}", arr("clz"), Match.EXACT);
+
+            checkCC("a{} .c| b{}", arr("clz"), Match.EXACT);
+            checkCC("a{} .| b{}", arr("clz"), Match.EXACT);
+
+
+        } finally {
+            CssCompletion.TEST_CLASSES = null;
+        }
+    }
+
+    public void testDoNotOfferSelectorsInRule() throws ParseException {
+        checkCC("div { color: red; | }", arr("html"), Match.DOES_NOT_CONTAIN);
+        checkCC("div { | color: red; }", arr("html"), Match.DOES_NOT_CONTAIN);
+        checkCC("div { | }", arr("html"), Match.DOES_NOT_CONTAIN);
+    }
+    
+    public void testDoNotOfferPropertyValuesAfterClosedPropertyDeclaration() throws ParseException {
+        checkCC("div { color: red;| }", arr("blue"), Match.DOES_NOT_CONTAIN);
+        checkCC("div { color: red; | }", arr("blue"), Match.DOES_NOT_CONTAIN);
+    }
+    
+    public void testDoNotOfferPropertiesAfterUnclosedPropertyValue() throws ParseException {
+        checkCC("div { font: bold | }", arr("azimuth"), Match.DOES_NOT_CONTAIN);
+        checkCC("div { font: bold | }", arr("100"), Match.CONTAINS);
+    }
+    
+    public void testWrongInsertPositionInPropertyName() throws ParseException, BadLocationException {
+        assertComplete("div { co| }",  "div { color: | }", "color");
+    }
+    
 }

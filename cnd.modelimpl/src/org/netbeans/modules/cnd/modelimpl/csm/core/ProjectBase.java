@@ -579,7 +579,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 sb.append(parent.getNameForUnnamedElement());
             }
             if (!parent.isGlobal()) {
-                sb.insert(0, "::"); // NOI18N
+                sb.insert(0, APTUtils.SCOPE);
                 sb.insert(0, parent.getQualifiedName());
             }
         }

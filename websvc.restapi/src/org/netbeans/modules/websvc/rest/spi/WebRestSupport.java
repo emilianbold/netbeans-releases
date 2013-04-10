@@ -108,15 +108,20 @@ public abstract class WebRestSupport extends RestSupport {
             "com.sun.jersey.api.json.POJOMappingFeature";                   // NOI18N
     private static final String JACKSON_JSON_PROVIDER = 
             "org.codehaus.jackson.jaxrs.JacksonJsonProvider";               // NOI18N
+    private static final String JACKSON_JERSEY2_JSON_PROVIDER =
+            "org.glassfish.jersey.jackson.JacksonFeature";               // NOI18N
     private static final String GET_REST_RESOURCE_CLASSES = "getRestResourceClasses";//NOI18N
     private static final String GET_CLASSES = "getClasses";                         //NOI18N
     
     public static final String PROP_REST_RESOURCES_PATH = "rest.resources.path";//NOI18N
     public static final String PROP_REST_CONFIG_TYPE = "rest.config.type"; //NOI18N
     public static final String PROP_REST_JERSEY = "rest.jersey.type";      //NOI18N
-    
+
+    // IDE generates Application subclass
     public static final String CONFIG_TYPE_IDE = "ide"; //NOI18N
+    // user does everything manually
     public static final String CONFIG_TYPE_USER= "user"; //NOI18N
+    // Jersey servlet is registered in deployment descriptor
     public static final String CONFIG_TYPE_DD= "dd"; //NOI18N
     
     public static final String JERSEY_CONFIG_IDE="ide";         //NOI18N
@@ -279,6 +284,14 @@ public abstract class WebRestSupport extends RestSupport {
                         adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
                     }
                     webApp.write(ddFO);
+                } else if (REST_SERVLET_ADAPTOR_CLASS.equals(adaptorServlet.getServletClass())) {
+                    if (isJersey2()) {
+                        // upgrading from Jersey 1.x to 2.x is too complicated to handle it here;
+                        // user will likely need to create subclass of Application and use
+                        // it instead of web.xml parameters
+                        //adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS_2_0);
+                        //webApp.write(ddFO);
+                    }
                 }
             }
         } catch (IOException ioe) {
@@ -351,7 +364,8 @@ public abstract class WebRestSupport extends RestSupport {
         String servletName = null;
         for (Servlet s : webApp.getServlet()) {
             String servletClass = s.getServletClass();
-            if (REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) || REST_SPRING_SERVLET_ADAPTOR_CLASS.equals(servletClass)) {
+            if (REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) || REST_SPRING_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
+                    REST_SERVLET_ADAPTOR_CLASS_2_0.equals(servletClass)) {
                 servletName = s.getServletName();
                 break;
             }
@@ -511,12 +525,23 @@ public abstract class WebRestSupport extends RestSupport {
         }
     }
 
+    public boolean isEE7(){
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if ( webModule == null ){
+            return false;
+        }
+        Profile profile = webModule.getJ2eeProfile();
+        return Profile.JAVA_EE_7_WEB.equals(profile) ||
+                        Profile.JAVA_EE_7_FULL.equals(profile);
+    }
+
     public Servlet getRestServletAdaptor(WebApp webApp) {
         if (webApp != null) {
             for (Servlet s : webApp.getServlet()) {
                 String servletClass = s.getServletClass();
                 if ( REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
                     REST_SPRING_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
+                    REST_SERVLET_ADAPTOR_CLASS_2_0.equals(servletClass) ||
                     REST_SERVLET_ADAPTOR_CLASS_OLD.equals(servletClass)) {
                     return s;
                 }
@@ -612,7 +637,12 @@ public abstract class WebRestSupport extends RestSupport {
                     initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
                     adaptorServlet.addInitParam(initParam);
                 } else {
-                    adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                    if (isJersey2()) {
+                        throw new IllegalStateException("this should not be needed!"); // 
+                        //adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS_2_0);
+                    } else {
+                        adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                    }
                 }
                 adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
                 webApp.addServlet(adaptorServlet);
@@ -839,6 +869,14 @@ public abstract class WebRestSupport extends RestSupport {
         }
     }
 
+    public boolean isJersey2() {
+        JaxRsStackSupport support = getJaxRsStackSupport();
+        if (support != null){
+            return support.isBundled("org.glassfish.jersey.servlet.ServletContainer");
+        }
+        return false;
+    }
+
     @Override
     public int getProjectType() {
         return PROJECT_TYPE_WEB;
@@ -885,8 +923,10 @@ public abstract class WebRestSupport extends RestSupport {
     }
 
     public static enum RestConfig {
+        // Application subclass registration:
         IDE,
         USER,
+        // web.xml deployment descriptor registration
         DD;
 
         private String resourcePath;
@@ -981,6 +1021,8 @@ public abstract class WebRestSupport extends RestSupport {
                         }
                         TreeMaker maker = workingCopy.getTreeMaker();
                         ClassTree modified = classTree;
+                        // TODO: redesign method which is always regenerated so
+                        // that use can customize some parts of generated code:
                         modified = removeResourcesMethod( restResources,
                                 maker, modified);
                         modified = createMethods(getClasses, 
@@ -1202,7 +1244,11 @@ public abstract class WebRestSupport extends RestSupport {
                         builder.append( className );
                         builder.append(".class);");             // NOI18N
                     }
-                    builder.append(getJacksonProviderSnippet());
+                    if (isJersey2()) {
+                        builder.append(getJersey2JSONFeature());
+                    } else {
+                        builder.append(getJacksonProviderSnippet());
+                    }
                     return null;
                 }
 
@@ -1244,4 +1290,40 @@ public abstract class WebRestSupport extends RestSupport {
             return builder.toString();
         }
     }
+
+    private String getJersey2JSONFeature(){
+        boolean addProvider = hasResource(
+                "org/glassfish/jersey/jackson/JacksonFeature.class");    // NOI18N
+        if( !addProvider) {
+            JaxRsStackSupport support = getJaxRsStackSupport();
+            if (support != null){
+                addProvider = support.isBundled(JACKSON_JERSEY2_JSON_PROVIDER);
+            }
+        }
+        StringBuilder builder = new StringBuilder();
+        if ( addProvider ){
+            builder.append("try {");
+            builder.append("Class<?> jsonProvider = Class.forName(");
+            builder.append('"');
+            builder.append(JACKSON_JERSEY2_JSON_PROVIDER);
+            builder.append("\");\n");
+            builder.append("// Class<?> jsonProvider = Class.forName(");
+            builder.append('"');
+            builder.append("org.glassfish.jersey.moxy.json.MoxyJsonFeature");
+            builder.append("\");\n");
+            builder.append("// Class<?> jsonProvider = Class.forName(");
+            builder.append('"');
+            builder.append("org.glassfish.jersey.jettison.JettisonFeature");
+            builder.append("\");\n");
+            builder.append("resources.add(jsonProvider);");
+            builder.append("} catch (ClassNotFoundException ex) {");
+            builder.append("java.util.logging.Logger.getLogger(getClass().getName())");
+            builder.append(".log(java.util.logging.Level.SEVERE, null, ex);}");
+            return builder.toString();
+        }
+        else {
+            return builder.toString();
+        }
+    }
+
 }

@@ -122,8 +122,8 @@ public class ReleaseFilesLicense extends Task {
                     }
                 }
                 Map<File,Set<String>> inferredLicenses = new TreeMap<File,Set<String>>();
-                RELEASE_FILE: for (Map.Entry<?,?> entry : ((Map<?,?>) getProject().getProperties()).entrySet()) {
-                    String k = (String) entry.getKey();
+                RELEASE_FILE: for (Map.Entry<String,Object> entry : ((Map<String,Object>) getProject().getProperties()).entrySet()) {
+                    String k = entry.getKey();
                     // XXX this does not work for release.../external/*; need to maybe match ^release\.(.+/)?external/
                     if (k.startsWith("release.external/")) {
                         String binary = k.substring("release.external/".length()).replaceFirst("!/.+$", "");

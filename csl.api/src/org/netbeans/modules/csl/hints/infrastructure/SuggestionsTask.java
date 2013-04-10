@@ -54,6 +54,7 @@ import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -109,7 +110,7 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
         if (pos == -1 || isCancelled()) {
             return;
         }
-
+        
         try {
             ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
                 public @Override void run(ResultIterator resultIterator) throws Exception {
@@ -137,6 +138,7 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
                     List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
                     List<Hint> hints = new ArrayList<Hint>();
 
+                    OffsetRange linerange = findLineBoundaries(resultIterator.getSnapshot().getText(), pos);
                     provider.computeSuggestions(manager, ruleContext, hints, pos);
 
                     for (int i = 0; i < hints.size(); i++) {
@@ -144,7 +146,10 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
                         if (isCancelled()) {
                             return;
                         }
-
+                        // #224654 - suggestions may be returned for text unrelated to caret position
+                        if (linerange != OffsetRange.NONE && !hint.getRange().overlaps(linerange)) {
+                            continue;
+                        }
                         ErrorDescription desc = manager.createDescription(hint, ruleContext, false, i == hints.size()-1);
                         descriptions.add(desc);
                     }
@@ -159,6 +164,26 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
         } catch (ParseException e) {
             LOG.log(Level.WARNING, null, e);
         }
+    }
+    
+    private static OffsetRange findLineBoundaries(CharSequence s, int position) {
+        int l = s.length();
+        if (position == -1 || position > l) {
+            return OffsetRange.NONE;
+        }
+        // the position is at the end of file, after a newline.
+        if (position == l && l >= 1 && s.charAt(l - 1) == '\n') {
+            return new OffsetRange(l -1, l);
+        }
+        int min = position;
+        while (min > 1 && s.charAt(min - 1) != '\n') {
+            min--;
+        }
+        int max = position;
+        while (max < l && s.charAt(max) != '\n') {
+            max++;
+        }
+        return new OffsetRange(min, max);
     }
 
     public @Override int getPriority() {

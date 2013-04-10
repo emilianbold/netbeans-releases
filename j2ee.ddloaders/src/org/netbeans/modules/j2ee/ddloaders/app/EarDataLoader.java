@@ -67,6 +67,8 @@ public class EarDataLoader extends UniFileLoader {
 
     private static final String REQUIRED_MIME_PREFIX_3 = "text/x-dd-application6.0"; // NOI18N
 
+    private static final String REQUIRED_MIME_PREFIX_4 = "text/x-dd-application7.0"; // NOI18N
+
     public EarDataLoader () {
         super ("org.netbeans.modules.j2ee.ddloaders.app.EarDataObject");  // NOI18N
     }
@@ -85,6 +87,7 @@ public class EarDataLoader extends UniFileLoader {
          getExtensions().addMimeType(REQUIRED_MIME_PREFIX_1);
          getExtensions().addMimeType(REQUIRED_MIME_PREFIX_2);
          getExtensions().addMimeType(REQUIRED_MIME_PREFIX_3);
+         getExtensions().addMimeType(REQUIRED_MIME_PREFIX_4);
      }
 
     protected MultiDataObject createMultiObject (FileObject primaryFile)

@@ -103,7 +103,7 @@ import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListC
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.project.UpdateProjectImpl;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -287,7 +287,7 @@ final public class WebProjectProperties {
     ButtonModel DISPLAY_BROWSER_MODEL;
     JToggleButton.ToggleButtonModel DEPLOY_ON_SAVE_MODEL; 
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL; 
-    WebBrowserSupport.BrowserComboBoxModel BROWSERS_MODEL;
+    BrowserUISupport.BrowserComboBoxModel BROWSERS_MODEL;
     Document RUNMAIN_JVM_MODEL;
     
     // for ui logging added frameworks
@@ -491,10 +491,7 @@ final public class WebProjectProperties {
             //ignore
         }
         String selectedBrowser = projectProperties.get(SELECTED_BROWSER);
-        if (selectedBrowser == null) {
-            selectedBrowser = WebBrowserSupport.getDefaultBrowserId();
-        }
-        BROWSERS_MODEL = WebBrowserSupport.createBrowserModel(selectedBrowser, true);
+        BROWSERS_MODEL = BrowserUISupport.createBrowserModel(selectedBrowser, true);
         loadingFrameworksTask = RP.post(new Runnable() {
                 public void run() {
                     loadCurrentFrameworks();

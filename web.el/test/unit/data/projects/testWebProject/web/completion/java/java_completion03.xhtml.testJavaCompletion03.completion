@@ -2,6 +2,7 @@ Code completion result for source line:
 #{T(Boolean).|}
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+METHOD     compare                                    Boolean
 METHOD     getBoolean                                 Boolean
 METHOD     parseBoolean                               Boolean
 METHOD     toString                                   Boolean

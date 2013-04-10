@@ -64,6 +64,7 @@ import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.log.RepositoryRevision.Kind;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -147,14 +148,22 @@ class SearchExecutor extends HgProgressSupport {
             return Collections.<RepositoryRevision>emptyList();
         }
         
-        HgLogMessage[] messages;
-        if (master.isIncomingSearch()) {
-            messages = HgCommand.getIncomingMessages(root, toRevision, branchName, includeMerges, false, includeMerges, limitRevisions, logger);
-        } else if (master.isOutSearch()) {
-            messages = HgCommand.getOutMessages(root, toRevision, branchName, includeMerges, includeMerges, limitRevisions, logger);
-        } else {
-            List<String> branchNames = branchName.isEmpty() ? Collections.<String>emptyList() : Collections.singletonList(branchName);
-            messages = HgCommand.getLogMessages(root, files, fromRevision, toRevision, includeMerges, false, includeMerges, limitRevisions, branchNames, logger, true);
+        HgLogMessage[] messages = new HgLogMessage[0];
+        try {
+            if (master.isIncomingSearch()) {
+                messages = HgCommand.getIncomingMessages(root, toRevision, branchName.isEmpty() ? null : branchName,
+                        includeMerges, false, includeMerges, limitRevisions, logger);
+            } else if (master.isOutSearch()) {
+                messages = HgCommand.getOutMessages(root, toRevision, branchName.isEmpty() ? null : branchName,
+                        includeMerges, includeMerges, limitRevisions, logger);
+            } else {
+                List<String> branchNames = branchName.isEmpty() ? Collections.<String>emptyList() : Collections.singletonList(branchName);
+                messages = HgCommand.getLogMessages(root, files, fromRevision, toRevision, includeMerges, false, includeMerges, limitRevisions, branchNames, logger, true);
+            }
+        } catch (HgException.HgCommandCanceledException ex) {
+            // do not take any action
+        } catch (HgException ex) {
+            HgUtils.notifyException(ex);
         }
         return appendResults(root, messages);
     }

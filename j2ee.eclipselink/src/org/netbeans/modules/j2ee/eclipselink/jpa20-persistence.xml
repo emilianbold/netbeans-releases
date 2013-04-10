@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.j2ee.eclipselink.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.j2ee.eclipselink/modules/ext/eclipselink/javax.persistence_2.0.108.v201302191928.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2ee.eclipselink/modules/ext/eclipselink/javax.persistence_2.0.111.v201304031339.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
-            <value>org.eclipse.persistence:javax.persistence:2.0.108.v201302191928:jar</value>
+            <value>org.eclipse.persistence:javax.persistence:2.1.0-SNAPSHOT:jar</value>
         </property>
         <property>
             <name>maven-repositories</name>

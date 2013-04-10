@@ -73,6 +73,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class FindUsagesTest extends NbTestCase {
     private FileObject projectDir;
+    private FileObject childProjectDir;
     private static final Logger LOG = Logger.getLogger(FindUsagesTest.class.getName());
 
     public FindUsagesTest(String name) {
@@ -88,6 +89,7 @@ public class FindUsagesTest extends NbTestCase {
         String work = getWorkDirPath();
         System.setProperty("netbeans.user", work);
         projectDir = Utilities.openProject("SimpleJ2SEApp", getDataDir());
+        childProjectDir = Utilities.openProject("SimpleJ2SEAppChild", getDataDir());
         SourceUtils.waitScanFinished();
     }
     
@@ -108,7 +110,7 @@ public class FindUsagesTest extends NbTestCase {
         }, false).get();
         setParameters(wuq, true, false, false, false, false, false);
         
-        doRefactoring("FindUsagesTest", wuq, 7);
+        doRefactoring("FindUsagesTest", wuq, 9);
     }
     
     public void testFindCurrentPackage() throws IOException, InterruptedException, ExecutionException {
@@ -217,8 +219,6 @@ public class FindUsagesTest extends NbTestCase {
     }
     
     public void test200230() throws IOException, InterruptedException, ExecutionException {
-        Utilities.openProject("SimpleJ2SEAppChild", getDataDir());
-        SourceUtils.waitScanFinished();
         FileObject testFile = projectDir.getFileObject("/src/simplej2seapp/Main.java");
         JavaSource src = JavaSource.forFileObject(testFile);
         final WhereUsedQuery[] wuq = new WhereUsedQuery[1];
@@ -240,8 +240,6 @@ public class FindUsagesTest extends NbTestCase {
     }
     
     public void test200843() throws IOException, InterruptedException, ExecutionException {
-        Utilities.openProject("SimpleJ2SEAppChild", getDataDir());
-        SourceUtils.waitScanFinished();
         FileObject testFile = projectDir.getFileObject("/src/simplej2seapp/D.java");
         JavaSource src = JavaSource.forFileObject(testFile);
         final WhereUsedQuery[] wuq = new WhereUsedQuery[1];
@@ -266,8 +264,6 @@ public class FindUsagesTest extends NbTestCase {
     }
     
     public void test204305() throws Exception { // #204305 - Find Usages: Search from Base doesn´t work 
-        Utilities.openProject("SimpleJ2SEAppChild", getDataDir());
-        SourceUtils.waitScanFinished();
         FileObject testFile = projectDir.getFileObject("/src/simplej2seapp/D.java");
         JavaSource src = JavaSource.forFileObject(testFile);
         final WhereUsedQuery[] wuq = new WhereUsedQuery[1];
@@ -313,8 +309,6 @@ public class FindUsagesTest extends NbTestCase {
     
         
     public void test204519() throws Exception {
-        Utilities.openProject("SimpleJ2SEAppChild", getDataDir());
-        SourceUtils.waitScanFinished();
         FileObject testFile = projectDir.getFileObject("/src/simplej2seapp/D.java");
         JavaSource src = JavaSource.forFileObject(testFile);
         final WhereUsedQuery[] wuq = new WhereUsedQuery[1];
@@ -361,8 +355,6 @@ public class FindUsagesTest extends NbTestCase {
     }
 
     public void test202412() throws IOException, InterruptedException, ExecutionException { // #202412 NullPointerException at org.netbeans.modules.refactoring.java.RefactoringUtils.getFileObject
-        Utilities.openProject("SimpleJ2SEAppChild", getDataDir());
-        SourceUtils.waitScanFinished();
         FileObject testFile = projectDir.getFileObject("/src/simplej2seapp/I.java");
         JavaSource src = JavaSource.forFileObject(testFile);
         final WhereUsedQuery[] wuq = new WhereUsedQuery[1];

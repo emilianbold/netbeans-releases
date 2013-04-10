@@ -69,7 +69,6 @@ import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -355,8 +354,8 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     }
 
     private static void persistServer(Project project, final String iID, final String sID, final Project targetPrj) {
-        project.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, iID, false);
-        MavenProjectSupport.storeSettingsToPom(targetPrj, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, sID);
+        MavenProjectSupport.setServerInstanceID(project, iID);
+        MavenProjectSupport.setServerID(project, sID);
 
         // We want to initiate context path to default value if there isn't related deployment descriptor yet
         MavenProjectSupport.changeServer(project, true);

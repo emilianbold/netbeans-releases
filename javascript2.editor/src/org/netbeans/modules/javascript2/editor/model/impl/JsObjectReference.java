@@ -41,13 +41,17 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
  *
@@ -55,11 +59,17 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
  */
 public class JsObjectReference extends JsObjectImpl {
  
-    private final JsObjectImpl original;
+    private final JsObject original;
     
-    public JsObjectReference(JsObject parent, Identifier declarationName, JsObjectImpl original, boolean isDeclared) {
-        super(parent, declarationName, declarationName.getOffsetRange(), isDeclared);
+    private final Set<Modifier> modifiers;
+
+    public JsObjectReference(JsObject parent, Identifier declarationName,
+            JsObject original, boolean isDeclared, Set<Modifier> modifiers) {
+        super(parent, declarationName, declarationName.getOffsetRange(), isDeclared,
+                modifiers == null ? EnumSet.noneOf(Modifier.class) : modifiers);
+        assert original != null;
         this.original = original;
+        this.modifiers = modifiers;
     }
 
     @Override
@@ -79,12 +89,16 @@ public class JsObjectReference extends JsObjectImpl {
 
     @Override
     public boolean isAnonymous() {
-        return original.isAnonymous();
+        return false;
     }
 
     @Override
     public Kind getJSKind() {
-        return original.getJSKind();
+        Kind kind = original.getJSKind();
+        if (kind == JsElement.Kind.ANONYMOUS_OBJECT) {
+            kind = JsElement.Kind.OBJECT_LITERAL;
+        }
+        return kind;
     }
 
     @Override
@@ -94,6 +108,9 @@ public class JsObjectReference extends JsObjectImpl {
 
     @Override
     public Set<Modifier> getModifiers() {
+        if (modifiers != null) {
+            return modifiers;
+        }
         return original.getModifiers();
     }
     
@@ -102,9 +119,23 @@ public class JsObjectReference extends JsObjectImpl {
     }
 
     @Override
+    public Collection<? extends TypeUsage> getAssignmentForOffset(int offset) {
+        return original.getAssignmentForOffset(offset);
+    }
+
+    @Override
+    public Collection<? extends TypeUsage> getAssignments() {
+        return original.getAssignments();
+    }
+
+    @Override
     public void resolveTypes(JsDocumentationHolder docHolder) {
         // do nothing
     }
 
-    
+    @Override
+    public String getDocumentation() {
+        return original.getDocumentation(); 
+    }
+
 }

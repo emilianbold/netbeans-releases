@@ -292,7 +292,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
     
     protected final void checkLayer(Project project, String fqname, RefactoringElementsBag refactoringElements) {
         LayerHandle handle = LayerHandle.forProject(project);
-        FileSystem fs = handle.layer(false);
+        FileSystem fs = handle.explicitLayer(false);
         if (fs != null) {
             checkFileObject(fs.getRoot(), fqname, refactoringElements, handle);
         }
@@ -300,31 +300,65 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
     
     
     private void checkFileObject(FileObject fo, String fqname, RefactoringElementsBag refactoringElements, LayerHandle handle) {
-        if (fo.isFolder()) {
-            FileObject[] childs = fo.getChildren();
-            for (int i =0; i < childs.length; i++) {
-                checkFileObject(childs[i], fqname, refactoringElements, handle);
-            }
-            Enumeration en = fo.getAttributes();
-            // check ordering attributes?
-            while (en.hasMoreElements()) {
-                String attrKey = (String)en.nextElement();
-                Matcher match = orderingLayerAttrPattern.matcher(attrKey);
-                if (match.matches()) {
-                    String first = match.group(1);
-                    if (first.endsWith(".instance")) { //NOI18N
-                        String name = first.substring(0, first.length() - ".instance".length()).replace('-', '.'); //NOI18N
-                        if (name.equals(fqname)) {
-                            RefactoringElementImplementation elem = createLayerRefactoring(fqname, handle, fo, attrKey);
-                            if (elem != null) {
-                                refactoringElements.add(refactoring, elem);
+        if(fo != null)
+        {
+            if (fo.isFolder()) {
+                FileObject[] childs = fo.getChildren();
+                for (int i =0; i < childs.length; i++) {
+                    checkFileObject(childs[i], fqname, refactoringElements, handle);
+                }
+                Enumeration en = fo.getAttributes();
+                // check ordering attributes?
+                while (en.hasMoreElements()) {
+                    String attrKey = (String)en.nextElement();
+                    Matcher match = orderingLayerAttrPattern.matcher(attrKey);
+                    if (match.matches()) {
+                        String first = match.group(1);
+                        if (first.endsWith(".instance")) { //NOI18N
+                            String name = first.substring(0, first.length() - ".instance".length()).replace('-', '.'); //NOI18N
+                            if (name.equals(fqname)) {
+                                RefactoringElementImplementation elem = createLayerRefactoring(fqname, handle, fo, attrKey);
+                                if (elem != null) {
+                                    refactoringElements.add(refactoring, elem);
+                                }
+                            }
+                        }
+                        String second = match.group(2);
+                        if (second.endsWith(".instance")) { //NOI18N
+                            String name = second.substring(0, second.length() - ".instance".length()).replace('-', '.'); //NOI18N
+                            if (name.equals(fqname)) {
+                                RefactoringElementImplementation elem = createLayerRefactoring(fqname, handle, fo, attrKey);
+                                if (elem != null) {
+                                    refactoringElements.add(refactoring, elem);
+                                }
                             }
                         }
                     }
-                    String second = match.group(2);
-                    if (second.endsWith(".instance")) { //NOI18N
-                        String name = second.substring(0, second.length() - ".instance".length()).replace('-', '.'); //NOI18N
-                        if (name.equals(fqname)) {
+                }
+            } else if (fo.isData()) {
+
+                Enumeration en = fo.getAttributes();
+                // check just a few specific attributes or iterate all?
+                while (en.hasMoreElements()) {
+                    String attrKey = (String)en.nextElement();
+                    Object val = fo.getAttribute("literal:" + attrKey); //NOI18N
+                    if (val instanceof String) {
+                        String attrValue = (String)val;
+                        String value = attrValue;
+                        if (attrValue.startsWith("new:")) { //NOI18N
+                            value = attrValue.substring("new:".length()); //NOI18N
+                        }
+                        if (attrValue.startsWith("method:")) { //NOI18N
+                            value = attrValue.substring("method:".length()); //NOI18N
+                            int index = value.lastIndexOf('.');
+                            if (index > 0) {
+                                value = value.substring(0, index);
+                            }
+                        }
+                        String pattern1 = fqname.replaceAll("\\.", "\\."); //NOI18N
+                        String pattern2 = "[a-zA-Z0-9/-]*" + fqname.replaceAll("\\.", "-") + "\\.instance"; //NOI18N
+
+                        if (value.matches(pattern1) || value.matches(pattern2)) {
                             RefactoringElementImplementation elem = createLayerRefactoring(fqname, handle, fo, attrKey);
                             if (elem != null) {
                                 refactoringElements.add(refactoring, elem);
@@ -332,52 +366,21 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
                         }
                     }
                 }
-            }
-        } else if (fo.isData()) {
-            
-            Enumeration en = fo.getAttributes();
-            // check just a few specific attributes or iterate all?
-            while (en.hasMoreElements()) {
-                String attrKey = (String)en.nextElement();
-                Object val = fo.getAttribute("literal:" + attrKey); //NOI18N
-                if (val instanceof String) {
-                    String attrValue = (String)val;
-                    String value = attrValue;
-                    if (attrValue.startsWith("new:")) { //NOI18N
-                        value = attrValue.substring("new:".length()); //NOI18N
-                    }
-                    if (attrValue.startsWith("method:")) { //NOI18N
-                        value = attrValue.substring("method:".length()); //NOI18N
-                        int index = value.lastIndexOf('.');
-                        if (index > 0) {
-                            value = value.substring(0, index);
-                        }
-                    }
-                    String pattern1 = fqname.replaceAll("\\.", "\\."); //NOI18N
-                    String pattern2 = "[a-zA-Z0-9/-]*" + fqname.replaceAll("\\.", "-") + "\\.instance"; //NOI18N
-
-                    if (value.matches(pattern1) || value.matches(pattern2)) {
-                        RefactoringElementImplementation elem = createLayerRefactoring(fqname, handle, fo, attrKey);
+                // the actual fileobject is checked after the attributes, so that both can be performed.
+                if ("instance".equals(fo.getExt())) { // NOI18N
+                    String name = fo.getName().replace('-', '.');
+                    if (name.equals(fqname)) {
+                        RefactoringElementImplementation elem = createLayerRefactoring(fqname, handle, fo, null);
                         if (elem != null) {
                             refactoringElements.add(refactoring, elem);
                         }
                     }
                 }
-            }
-            // the actual fileobject is checked after the attributes, so that both can be performed.
-            if ("instance".equals(fo.getExt())) { // NOI18N
-                String name = fo.getName().replace('-', '.');
-                if (name.equals(fqname)) {
-                    RefactoringElementImplementation elem = createLayerRefactoring(fqname, handle, fo, null);
-                    if (elem != null) {
-                        refactoringElements.add(refactoring, elem);
-                    }
+                if ("settings".equals(fo.getExt())) { // NOI18N
+                    //TODO check also content of settings files for matches?
                 }
+
             }
-            if ("settings".equals(fo.getExt())) { // NOI18N
-                //TODO check also content of settings files for matches?
-            }
-            
         }
         
     }

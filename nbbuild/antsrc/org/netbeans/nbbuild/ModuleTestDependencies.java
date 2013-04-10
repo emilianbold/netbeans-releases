@@ -90,12 +90,11 @@ public class ModuleTestDependencies extends Task {
      */
     public @Override void execute() throws BuildException {
         try {
-            @SuppressWarnings("unchecked")
-            Hashtable<String,String> props = getProject().getProperties();
+            Hashtable<String,Object> props = getProject().getProperties();
             ModuleListParser mlp = new ModuleListParser(props, ModuleType.NB_ORG, getProject());
             SortedMap<String,SortedSet<String>> deps = new TreeMap<String,SortedSet<String>>();
             SortedMap<String,SortedSet<String>> reverseDeps = reverseOutput != null ? new TreeMap<String,SortedSet<String>>() : null;
-            File nball = new File(props.get("nb_all"));
+            File nball = new File((String) props.get("nb_all"));
             for (ModuleListParser.Entry entry : mlp.findAll()) {
                 String myCnb = entry.getCnb();
                 String myCluster = entry.getClusterName();

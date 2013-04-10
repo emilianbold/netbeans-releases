@@ -330,6 +330,7 @@ public class RequestProcessorTest extends NbTestCase {
     /**
      * A test that check that priorities are handled well.
      */
+    @RandomlyFails // NB-Core-Build #9914: Unstable , locally passes
     public void testPriorityQueue() throws Exception {
         
         final Runnable[] arr = new Runnable[5];

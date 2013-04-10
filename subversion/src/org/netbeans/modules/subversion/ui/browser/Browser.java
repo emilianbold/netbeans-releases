@@ -66,7 +66,6 @@ import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
@@ -95,6 +94,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
     public final static String BROWSER_HELP_ID_SWITCH_TO        = "org.netbeans.modules.subversion.ui.browser.switchto";      // NOI18N
     public final static String BROWSER_HELP_ID_COPY             = "org.netbeans.modules.subversion.ui.browser.copy";          // NOI18N
     public final static String BROWSER_HELP_ID_IMPORT           = "org.netbeans.modules.subversion.ui.browser.import";        // NOI18N
+    public final static String BROWSER_HELP_ID_SELECT_DIFF_TREE = "org.netbeans.modules.subversion.ui.browser.selectdifftree"; // NOI18N
 
     private final int mode;
 

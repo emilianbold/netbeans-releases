@@ -75,7 +75,7 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
@@ -107,7 +107,7 @@ public class BugzillaRepository {
     private TaskRepository taskRepository;
     private BugzillaRepositoryController controller;
     private Set<BugzillaQuery> queries = null;
-    private IssueCache<BugzillaIssue, TaskData> cache;
+    private IssueCache<BugzillaIssue> cache;
     private BugzillaExecutor executor;
     private Image icon;
     private BugzillaConfiguration bc;
@@ -121,6 +121,8 @@ public class BugzillaRepository {
     private PropertyChangeSupport support;
     
     private Lookup lookup;
+    
+    private final Object RC_LOCK = new Object();
 
     public BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -268,7 +270,8 @@ public class BugzillaRepository {
             public void accept(TaskData taskData) {
                 String id = BugzillaIssue.getID(taskData);
                 try {
-                    BugzillaIssue issue = (BugzillaIssue) getIssueCache().setIssueData(id, taskData);
+                    BugzillaIssue issue = getIssueCache().getIssue(id);
+                    issue = (BugzillaIssue) getIssueCache().setIssueData(id, issue != null ? issue : new BugzillaIssue(taskData, BugzillaRepository.this));
                     if(issue != null) {
                         ret.add(issue);
                     }
@@ -295,7 +298,8 @@ public class BugzillaRepository {
             return null;
         }
         try {
-            BugzillaIssue issue = (BugzillaIssue) getIssueCache().setIssueData(id, taskData);
+            BugzillaIssue issue = getIssueCache().getIssue(id);
+            issue = (BugzillaIssue) getIssueCache().setIssueData(id, issue != null ? issue : new BugzillaIssue(taskData, this));
             ensureConfigurationUptodate(issue);
             return issue;
         } catch (IOException ex) {
@@ -387,7 +391,7 @@ public class BugzillaRepository {
         return getQueriesIntern();
     }
 
-    public IssueCache<BugzillaIssue, TaskData> getIssueCache() {
+    public IssueCache<BugzillaIssue> getIssueCache() {
         if(cache == null) {
             cache = new Cache();
         }
@@ -411,11 +415,11 @@ public class BugzillaRepository {
         fireQueryListChanged();
     }
 
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
     
@@ -550,29 +554,33 @@ public class BugzillaRepository {
      * 
      * @return
      */
-    public synchronized BugzillaConfiguration getConfiguration() {
-        if(bc == null) {
-            bc = createConfiguration(false);
-        } else if(!bc.isValid()) {
-            // there was already an attempt to get the configuration
-            // yet it happend to be invalid, so try one more time as it 
-            // might have been just a networking glitch  
-            bc = createConfiguration(false);
+    public BugzillaConfiguration getConfiguration() {
+        synchronized(RC_LOCK) {
+            if(bc == null) {
+                bc = createConfiguration(false);
+            } else if(!bc.isValid()) {
+                // there was already an attempt to get the configuration
+                // yet it happend to be invalid, so try one more time as it 
+                // might have been just a networking glitch  
+                bc = createConfiguration(false);
+            }
+            return bc;
         }
-        return bc;
     }
 
     public synchronized void refreshConfiguration() {
-        BugzillaConfiguration conf = createConfiguration(true);
-        if(conf.isValid()) {
-            bc = conf;
-        } else {
-            // Hard to say at this point why the attempt to refresh the 
-            // configuration failed - could be just a temporary networking issue.
-            // This is called only from ensureConfigurationUptodate(), so even if
-            // the metadata might not be uptodate anymore, they still may be 
-            // sufficient for what the user plans to do. So let's cross the 
-            // fingers and keep bc the way it is.
+        synchronized(RC_LOCK) {
+            BugzillaConfiguration conf = createConfiguration(true);
+            if(conf.isValid()) {
+                bc = conf;
+            } else {
+                // Hard to say at this point why the attempt to refresh the 
+                // configuration failed - could be just a temporary networking issue.
+                // This is called only from ensureConfigurationUptodate(), so even if
+                // the metadata might not be uptodate anymore, they still may be 
+                // sufficient for what the user plans to do. So let's cross the 
+                // fingers and keep bc the way it is.
+            }
         }
     }
 
@@ -751,7 +759,8 @@ public class BugzillaRepository {
             String id = BugzillaIssue.getID(taskData);
             Bugzilla.LOG.log(Level.FINE, "refreshed issue {0} - {1}", new Object[] {getDisplayName(), id}); // NOI18N
             try {
-                getIssueCache().setIssueData(id, taskData);
+                BugzillaIssue issue = getIssueCache().getIssue(id);
+                getIssueCache().setIssueData(id, issue != null ? issue : new BugzillaIssue(taskData, BugzillaRepository.this));
             } catch (IOException ex) {
                 Bugzilla.LOG.log(Level.SEVERE, null, ex);
             }
@@ -774,33 +783,13 @@ public class BugzillaRepository {
         return new QueryParameter[] {};
     }
 
-    private class Cache extends IssueCache<BugzillaIssue, TaskData> {
+    private class Cache extends IssueCache<BugzillaIssue> {
         Cache() {
-            super(
-                BugzillaRepository.this.getUrl(), 
-                new IssueAccessorImpl(), 
-                Bugzilla.getInstance().getIssueProvider(), 
-                BugzillaUtil.getRepository(BugzillaRepository.this));
+            super(BugzillaRepository.this.getUrl(), new IssueAccessorImpl());
         }
     }
 
-    private class IssueAccessorImpl implements IssueCache.IssueAccessor<BugzillaIssue, TaskData> {
-        @Override
-        public BugzillaIssue createIssue(TaskData taskData) {
-            BugzillaIssue issue = new BugzillaIssue(taskData, BugzillaRepository.this);
-            org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider.getInstance().notifyIssueCreated(issue);
-            return issue;
-        }
-        @Override
-        public void setIssueData(BugzillaIssue issue, TaskData taskData) {
-            assert issue != null && taskData != null;
-            ((BugzillaIssue)issue).setTaskData(taskData);
-        }
-        @Override
-        public String getRecentChanges(BugzillaIssue issue) {
-            assert issue != null;
-            return ((BugzillaIssue)issue).getRecentChanges();
-        }
+    private class IssueAccessorImpl implements IssueCache.IssueAccessor<BugzillaIssue> {
         @Override
         public long getLastModified(BugzillaIssue issue) {
             assert issue != null;
@@ -810,11 +799,6 @@ public class BugzillaRepository {
         public long getCreated(BugzillaIssue issue) {
             assert issue != null;
             return ((BugzillaIssue)issue).getCreated();
-        }
-        @Override
-        public String getID(TaskData issueData) {
-            assert issueData != null;
-            return BugzillaIssue.getID(issueData);
         }
         @Override
         public Map<String, String> getAttributes(BugzillaIssue issue) {

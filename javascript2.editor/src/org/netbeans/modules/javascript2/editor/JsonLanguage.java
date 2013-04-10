@@ -40,11 +40,12 @@ package org.netbeans.modules.javascript2.editor;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.parser.JsonParser;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
@@ -100,15 +101,15 @@ public class JsonLanguage extends DefaultLanguageConfig {
         return new JsonParser();
     }
 
-//    @Override
-//    public boolean hasStructureScanner() {
-//        return true;
-//    }
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
 
-//    @Override
-//    public StructureScanner getStructureScanner() {
-//        return new JsStructureScanner();
-//    }
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new JsStructureScanner(JsTokenId.jsonLanguage());
+    }
 
 //    @Override
 //    public SemanticAnalyzer getSemanticAnalyzer() {

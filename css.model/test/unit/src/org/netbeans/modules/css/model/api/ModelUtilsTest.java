@@ -56,7 +56,7 @@ public class ModelUtilsTest extends ModelTestBase {
     
     public void testFindMatchingMedia() {
         final Model m1 = createModel("@media screen { div {} } @media xxx { div {} } @media print { } ");
-        final AtomicReference<Media> mr = new AtomicReference<Media>();
+        final AtomicReference<Media> mr = new AtomicReference<>();
         ModelVisitor visitor = new ModelVisitor.Adapter() {
 
             @Override

@@ -50,11 +50,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
-import org.netbeans.editor.ActionFactory;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
-import org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
@@ -280,62 +278,65 @@ public class InterceptorTest extends NbTestCase {
      * @throws IOException
      */
     public void testTestInterceptorComplete() throws IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        setupTestStore();
-        
-        Set<String> testInterceptorMethods = new HashSet<String>();
-        Method[]  methods = LocalHistoryVCSInterceptor.class.getDeclaredMethods();
-        for (Method method : methods) {
-            if((method.getModifiers() & Modifier.PUBLIC) != 0) {
-                
-                System.out.println(" tested interceptor method: " + method.getName());
-                
-                if(INTERCEPTOR_COMPLETE_WHITELIST.contains(method.getName())) {
-                    fail("method " + method.getName() + " is on whitelist but also iplemented in LocalHistoryVCSInterceptor");
-                }
-                        
-                testInterceptorMethods.add(method.getName());
-                
-                LocalHistoryVCSInterceptor i = new LocalHistoryVCSInterceptor();
-                Class<?>[] params = method.getParameterTypes();
-                if(params.length == 1 && params[0] == File.class) {
-                    method.invoke(i, new File(method.getName()));
-                } else if(params.length == 2 && params[0] == File.class && params[1] == File.class) {
-                    method.invoke(i, new File(method.getName()), new File(method.getName() + ".2"));
-                } else if(params.length == 2 && params[0] == File.class && params[1] == String.class) {
-                    method.invoke(i, new File(method.getName()), "");
-                } else if(params.length == 2 && params[0] == File.class && params[1] == boolean.class) {
-                    method.invoke(i, new File(method.getName()), false);
-                } else if(params.length == 3 && params[0] == File.class && params[1] == long.class && params[2] == List.class) {
-                    method.invoke(i, new File(method.getName()), -1, Collections.EMPTY_LIST);
-                } else {
-                    fail("not yet handled method " + method.getName() + " with parameters: " + Arrays.asList(params));
-                }
-            }
-        }
-        
-        methods = VCSInterceptor.class.getDeclaredMethods();
-        for (Method method : methods) {
-            if((method.getModifiers() & Modifier.PUBLIC) != 0) {
-                System.out.println(" vcsinterceptor method: " + method.getName());
-                if(!INTERCEPTOR_COMPLETE_WHITELIST.contains(method.getName()) && 
-                   !testInterceptorMethods.contains(method.getName())) 
-                {
-                    fail("" + LocalHistoryVCSInterceptor.class.getName() + " should override method " + method.getName());
-                }
-                
-                if(!INTERCEPTOR_COMPLETE_WHITELIST.contains(method.getName()) &&
-                   !WAIT_FOR_STORING_WHITELIST.contains(method.getName()) && 
-                   !TestLocalHistoryStore.instance.didWaitFor.contains(method.getName())) 
-                {
-                    fail(" interceptor method " + method.getName() + " DID NOT call waitForProcessedStoring !!! Either implement it or add it to the whitelist.");
+        LocalHistoryStore original = setupTestStore(new TestLocalHistoryStore());
+        try {
+            Set<String> testInterceptorMethods = new HashSet<String>();
+            Method[]  methods = LocalHistoryVCSInterceptor.class.getDeclaredMethods();
+            for (Method method : methods) {
+                if((method.getModifiers() & Modifier.PUBLIC) != 0) {
+
+                    System.out.println(" tested interceptor method: " + method.getName());
+
+                    if(INTERCEPTOR_COMPLETE_WHITELIST.contains(method.getName())) {
+                        fail("method " + method.getName() + " is on whitelist but also iplemented in LocalHistoryVCSInterceptor");
+                    }
+
+                    testInterceptorMethods.add(method.getName());
+
+                    LocalHistoryVCSInterceptor i = new LocalHistoryVCSInterceptor();
+                    Class<?>[] params = method.getParameterTypes();
+                    if(params.length == 1 && params[0] == File.class) {
+                        method.invoke(i, new File(method.getName()));
+                    } else if(params.length == 2 && params[0] == File.class && params[1] == File.class) {
+                        method.invoke(i, new File(method.getName()), new File(method.getName() + ".2"));
+                    } else if(params.length == 2 && params[0] == File.class && params[1] == String.class) {
+                        method.invoke(i, new File(method.getName()), "");
+                    } else if(params.length == 2 && params[0] == File.class && params[1] == boolean.class) {
+                        method.invoke(i, new File(method.getName()), false);
+                    } else if(params.length == 3 && params[0] == File.class && params[1] == long.class && params[2] == List.class) {
+                        method.invoke(i, new File(method.getName()), -1, Collections.EMPTY_LIST);
+                    } else {
+                        fail("not yet handled method " + method.getName() + " with parameters: " + Arrays.asList(params));
+                    }
                 }
             }
-        }
-        
-        for(String m : WAIT_FOR_STORING_WHITELIST) {
-            if(TestLocalHistoryStore.instance.didWaitFor.contains(m)) {
-                fail("method " + m + " is in whitelist but it blocked anyway. Fix either the whitelist or the method implementation.");
+
+            methods = VCSInterceptor.class.getDeclaredMethods();
+            for (Method method : methods) {
+                if((method.getModifiers() & Modifier.PUBLIC) != 0) {
+                    System.out.println(" vcsinterceptor method: " + method.getName());
+                    if(!INTERCEPTOR_COMPLETE_WHITELIST.contains(method.getName()) && 
+                       !testInterceptorMethods.contains(method.getName())) 
+                    {
+                        fail("" + LocalHistoryVCSInterceptor.class.getName() + " should override method " + method.getName());
+                    }
+
+                    if(!INTERCEPTOR_COMPLETE_WHITELIST.contains(method.getName()) &&
+                       !WAIT_FOR_STORING_WHITELIST.contains(method.getName()) && 
+                       !TestLocalHistoryStore.instance.didWaitFor.contains(method.getName())) 
+                    {
+                        fail(" interceptor method " + method.getName() + " DID NOT call waitForProcessedStoring !!! Either implement it or add it to the whitelist.");
+                    }
+                }
             }
+
+            for(String m : WAIT_FOR_STORING_WHITELIST) {
+                if(TestLocalHistoryStore.instance.didWaitFor.contains(m)) {
+                    fail("method " + m + " is in whitelist but it blocked anyway. Fix either the whitelist or the method implementation.");
+                }
+            }
+        } finally {
+            setupTestStore(original);
         }
     }  
     
@@ -389,11 +390,13 @@ public class InterceptorTest extends NbTestCase {
         assertEquals(txt, sb.toString());
     }
 
-    private void setupTestStore() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    private LocalHistoryStore setupTestStore (LocalHistoryStore newStore) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         Class<LocalHistory> c = LocalHistory.class;
         Field f = c.getDeclaredField("store");
         f.setAccessible(true);
-        f.set(LocalHistory.getInstance(), new TestLocalHistoryStore());
+        LocalHistoryStore original = (LocalHistoryStore) f.get(LocalHistory.getInstance());
+        f.set(LocalHistory.getInstance(), newStore);
+        return original;
     }
     
     private static class TestLocalHistoryStore implements LocalHistoryStore {

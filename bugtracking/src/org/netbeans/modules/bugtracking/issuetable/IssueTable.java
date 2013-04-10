@@ -132,10 +132,6 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
     private static final String CONFIG_DELIMITER = "<=>";                       // NOI18N
     private final FindInQuerySupport findInQuerySupport;
-
-    public interface IssueTableProvider {
-        public IssueTable getIssueTable();
-    }
     
     private static final Comparator<IssueProperty> nodeComparator = new Comparator<IssueProperty>() {
         @Override
@@ -203,9 +199,8 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         tableScrollPane.setCorner(JScrollPane.UPPER_RIGHT_CORNER, colsButton);
 
         /* find bar */
-        findInQuerySupport = FindInQuerySupport.create();
+        findInQuerySupport = FindInQuerySupport.create(this);
         FindInQueryBar findBar = findInQuerySupport.getFindBar();
-        findInQuerySupport.setQuery(query);
         
         initComponents(tableScrollPane, findBar);       
         

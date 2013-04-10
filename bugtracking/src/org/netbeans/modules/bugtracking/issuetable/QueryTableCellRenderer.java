@@ -45,7 +45,6 @@
 package org.netbeans.modules.bugtracking.issuetable;
 
 import java.util.regex.Matcher;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FontMetrics;
@@ -356,7 +355,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                         case MODIFIED :
                             sb.append("<br>").append(issueModifiedFormat.format(new Object[] { labelModified }, new StringBuffer(), null)); // NOI18N
                             sb.append(msgModified);
-                            sb.append(IssueCacheUtils.getRecentChanges(issue));
+                            sb.append(p.getRecentChanges());
                             break;
                     }
                 }

@@ -750,7 +750,8 @@ scope Declaration;
     :
         gnu_attribute_specifiers?
                                                                                 {action.decl_specifiers(input.LT(1));}
-        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
+        (decl_specifier gnu_attribute_specifiers?)*                              {action.end_decl_specifiers(input.LT(0));}
+
         (
             SEMICOLON
         |
@@ -764,14 +765,14 @@ scope Declaration;
                     )* 
                     SEMICOLON                                                   {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
                 |
-                    function_definition_after_declarator[false, false]
+                    function_definition_after_declarator[false, false, false]
                 )
         |
             // greedy_declarator starts init_declarator
             greedy_declarator
             (
                 { /*$greedy_declarator.type.is_function()*/ input.LA(1) != ASSIGNEQUAL }?
-                    function_definition_after_declarator[false, false]
+                    function_definition_after_declarator[false, false, false]
             |
                 // this is a continuation of init_declarator_list 
                 // after greedy_declarator
@@ -782,7 +783,7 @@ scope Declaration;
                 )* 
                 SEMICOLON                                                       {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
             )
-        )
+        )    
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_simple_declaration(input.LT(0));}}
 
@@ -823,6 +824,8 @@ storage_class_specifier:
         LITERAL___thread                                                        {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER____THREAD, $LITERAL___thread);}
     |
         LITERAL_thread_local                                                    {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__THREAD_LOCAL, $LITERAL_thread_local);}
+    |
+        LITERAL___hidden                                                        {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER___HIDDEN, $LITERAL___hidden);}
     ;
 
 function_specifier:
@@ -831,6 +834,8 @@ function_specifier:
         LITERAL_virtual 
     |
         LITERAL_explicit 
+    |
+        LITERAL___inline   // compiler-specific
     ;
 
 /*
@@ -1587,8 +1592,9 @@ finally                                                                         
  */
 type_id
 @init                                                                           {if(state.backtracking == 0){action.type_id(input.LT(1));}}
-    :                                                                           
-        type_specifier+ 
+    :                                            
+        gnu_attribute_specifiers?
+        (type_specifier gnu_attribute_specifiers?)+ 
         ((abstract_declarator) => abstract_declarator)? // review: predicate to avoid ambiguity around ELLIPSIS
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_type_id(input.LT(0));}}
@@ -1647,8 +1653,8 @@ scope Declaration;
 @init                                                                           {if(state.backtracking == 0){action.parameter_declaration(input.LT(1));}}
     :                                                                           
         attribute_specifiers?
-        decl_specifier
-        decl_specifier*
+        decl_specifier attribute_specifiers?
+        ( decl_specifier attribute_specifiers? )*
         universal_declarator? 
         (
             ASSIGNEQUAL                                                         {action.parameter_declaration(action.PARAMETER_DECLARATION__ASSIGNEQUAL, input.LT(0));}
@@ -1669,8 +1675,8 @@ function_definition:
  * Factoring out a sequence that follows declarator, as it helps disambiguating in context when
  * function_definition conflicts because of decl_specifier
  */
-function_definition_after_declarator[boolean class_late_binding, boolean member_declaration]
-@init                                                                           {if(state.backtracking == 0 && (!class_late_binding || !member_declaration)){action.function_definition_after_declarator(input.LT(1));}}
+function_definition_after_declarator[boolean class_late_binding, boolean member_declaration, boolean standalone]
+@init                                                                           {if(state.backtracking == 0 && !standalone && (!class_late_binding || !member_declaration)){action.function_definition_after_declarator(input.LT(1));}}
     :
         (ASSIGNEQUAL) => 
         ASSIGNEQUAL                                                             {action.function_definition_after_declarator(action.FUNCTION_DEFINITION_AFTER_DECLARATOR__ASSIGNEQUAL, input.LT(0));}
@@ -1681,7 +1687,7 @@ function_definition_after_declarator[boolean class_late_binding, boolean member_
         ) 
         SEMICOLON
     |
-        ({!class_late_binding && member_declaration}?
+        ({!standalone && !class_late_binding && member_declaration}?
             ((COLON) => COLON                                                   {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
                 (
                     ~(RCURLY | LCURLY)                                          {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
@@ -1696,7 +1702,7 @@ function_definition_after_declarator[boolean class_late_binding, boolean member_
             )
         )
     ;
-finally                                                                         {if(state.backtracking == 0 && (!class_late_binding || !member_declaration)){action.end_function_definition_after_declarator(input.LT(0));}}
+finally                                                                         {if(state.backtracking == 0 && !standalone && (!class_late_binding || !member_declaration)){action.end_function_definition_after_declarator(input.LT(0));}}
 
 /*
  * We have a baaad conflict caused by declaration w/o decl_specifier,
@@ -1935,13 +1941,13 @@ simple_member_declaration_or_function_definition[decl_kind kind, boolean class_l
                     )* 
                     SEMICOLON                                                   {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
                 |
-                    function_definition_after_declarator[class_late_binding, true]
+                    function_definition_after_declarator[class_late_binding, true, false]
                 )
         |
             declarator
             (
                 { /*$declarator.type.is_function()*/ (input.LA(1) != ASSIGNEQUAL && (input.LA(1) != COLON || input.LA(0) == RPAREN)) }?
-                    function_definition_after_declarator[class_late_binding, true]
+                    function_definition_after_declarator[class_late_binding, true, false]
             |
                 // this was member_declarator_list
                 constant_initializer? 
@@ -1971,7 +1977,7 @@ member_declarator
 @init                                                                           {if(state.backtracking == 0){action.member_declarator(input.LT(1));}}
     :                                                                           
     (
-        declarator virt_specifier* brace_or_equal_initializer
+        declarator virt_specifier* brace_or_equal_initializer?
     |
         member_bitfield_declarator
     )                                                                           

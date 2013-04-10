@@ -67,7 +67,7 @@ public class JavaOutputListenerProvider implements OutputProcessor {
         "mojo-execute#compiler:compile", //NOI18N
         "mojo-execute#compiler:testCompile" //NOI18N
     };
-    private Pattern failPattern;
+    private final Pattern failPattern;
     private String windowsDrive; // #197381
     /** @see org.codehaus.plexus.compiler.javac.JavacCompiler#compile */
     private static final Pattern windowsDriveInfoPattern = Pattern.compile("Compiling \\d+ source files? to ([A-Za-z]:)\\\\.+");

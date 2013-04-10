@@ -1,7 +1,7 @@
-D
-E
-F
-a a
-i int
-j int
-main(int argc, char** argv) int
+D	$	   D
+E	$	   E
+F	$	   F
+a a	$	   a
+i int	$	   i
+j int	$	   j
+main(int argc, char** argv) int	$	   main(int argc, char** argv)

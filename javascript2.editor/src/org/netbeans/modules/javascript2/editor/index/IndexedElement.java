@@ -100,10 +100,10 @@ public class IndexedElement extends JsElementImpl {
         return isPlatform;
     }
 
-    public static IndexDocument createDocument(JsObject object, IndexingSupport support, Indexable indexable) {
+    protected static IndexDocument createDocument(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
         IndexDocument elementDocument = support.createDocument(indexable);
         elementDocument.addPair(JsIndex.FIELD_BASE_NAME, object.getName(), true, true);
-        elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  ModelUtils.createFQN(object), true, true);
+        elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  fqn, true, true);
         boolean isGlobal = object.getParent() != null ? ModelUtils.isGlobal(object.getParent()) : ModelUtils.isGlobal(object);
         elementDocument.addPair(JsIndex.FIELD_IS_GLOBAL, (isGlobal ? "1" : "0"), true, true);
         elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
@@ -120,6 +120,8 @@ public class IndexedElement extends JsElementImpl {
             sb.append(type.getType());
             sb.append(":"); //NOI18N
             sb.append(type.getOffset());
+            sb.append(":"); //NOI18N
+            sb.append(type.isResolved() ? "1" : "0");  //NOI18N
             sb.append("|");
         }
         elementDocument.addPair(JsIndex.FIELD_ASSIGNMENS, sb.toString(), false, true);
@@ -191,17 +193,18 @@ public class IndexedElement extends JsElementImpl {
         if (sAssignments != null) {
             for (StringTokenizer st = new StringTokenizer(sAssignments, "|"); st.hasMoreTokens();) {
                 String token = st.nextToken();
-                int index = token.indexOf(':');
-                if (index > -1) {
-                    String type = token.substring(0, index);
-                    String sOffset = token.substring(index + 1);
+                String[] parts = token.split(":");
+                if (parts.length > 2) {
+                    String type = parts[0];
+                    String sOffset = parts[1];
                     int offset;
                     try {
                         offset = Integer.parseInt(sOffset);
                     } catch (NumberFormatException nfe) {
                         offset = -1;
                     }
-                    result.add(new TypeUsageImpl(type, offset, true));
+                    boolean resolve = parts[2].equals("1");
+                    result.add(new TypeUsageImpl(type, offset, resolve));
                 }
             }
         }

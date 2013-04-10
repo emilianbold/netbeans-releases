@@ -61,16 +61,8 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Logger.getLogger(PathFinderVisitor.class.getName()).setLevel(Level.FINEST);
+        Logger.getLogger(GroovyOccurencesFinderTest.class.getName()).setLevel(Level.FINEST);
     }
-
-    // uncomment this to have logging from GroovyLexer
-//    protected Level logLevel() {
-//        // enabling logging
-//        return Level.INFO;
-//        // we are only interested in a single logger, so we set its level in setUp(),
-//        // as returning Level.FINEST here would log from all loggers
-//    }
 
     public void testParams() throws Exception {
         String caretLine = "        par^ams.each {";

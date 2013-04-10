@@ -526,10 +526,10 @@ public final class EarProjectGenerator {
             } else if (Profile.JAVA_EE_5.equals(j2eeProfile)) {
                 template = FileUtil.getConfigFile(
                         "org-netbeans-modules-j2ee-earproject/ear-5.xml"); // NOI18N
-            } else if (Profile.JAVA_EE_6_FULL.equals(j2eeProfile) || Profile.JAVA_EE_6_WEB.equals(j2eeProfile) ||
-                    Profile.JAVA_EE_7_FULL.equals(j2eeProfile) || Profile.JAVA_EE_7_WEB.equals(j2eeProfile)) {
-                template = FileUtil.getConfigFile(
-                        "org-netbeans-modules-j2ee-earproject/ear-6.xml"); // NOI18N
+            } else if (Util.isAtLeastJavaEE7Web(j2eeProfile)) {
+                template = FileUtil.getConfigFile("org-netbeans-modules-j2ee-earproject/ear-7.xml"); // NOI18N
+            } else if (Util.isAtLeastJavaEE6Web(j2eeProfile)) {
+                template = FileUtil.getConfigFile("org-netbeans-modules-j2ee-earproject/ear-6.xml"); // NOI18N
             } else {
                 assert false : "Unknown j2eeProfile: " + j2eeProfile;
             }

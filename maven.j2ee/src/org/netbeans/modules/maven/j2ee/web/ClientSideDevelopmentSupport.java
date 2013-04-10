@@ -41,9 +41,14 @@
  */
 package org.netbeans.modules.maven.j2ee.web;
 
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.common.project.BaseClientSideDevelopmentSupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
@@ -66,8 +71,18 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 )
 public final class ClientSideDevelopmentSupport extends BaseClientSideDevelopmentSupport {
 
-    public ClientSideDevelopmentSupport(Project project) {
+    public ClientSideDevelopmentSupport(final Project project) {
         super(project);
+        Preferences preferences = ProjectUtils.getPreferences(project, MavenProjectSupport.class, false);
+        preferences.addPreferenceChangeListener(new PreferenceChangeListener() {
+
+            @Override
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                if (MavenJavaEEConstants.SELECTED_BROWSER.equals(evt.getKey())) {
+                    resetBrowserSupport();
+                }
+            }
+        });
     }
 
     @Override

@@ -76,6 +76,12 @@ public class CacheTest extends NbTestCase {
         TestUtil.setup(this);
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        getJspParser().parseSupports.clear();
+        super.tearDown();
+    }
+
     public void testJspParserImpl() throws Exception {
         JspParserAPI jspParser = JspParserFactory.getJspParser();
         assertTrue(jspParser instanceof JspParserImpl);

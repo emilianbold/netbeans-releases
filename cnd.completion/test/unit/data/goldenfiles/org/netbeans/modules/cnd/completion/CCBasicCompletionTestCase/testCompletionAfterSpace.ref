@@ -1,2 +1,2 @@
-f() void
-f2() void
+f() void	$	    A::                 f()
+f2() void	$	    A::                 f2()

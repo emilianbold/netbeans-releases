@@ -44,7 +44,6 @@ package org.netbeans.modules.web.browser.api;
 import java.awt.Image;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 
 /**
  * Single browser registered in the IDE.
@@ -52,12 +51,9 @@ import org.openide.util.NbBundle;
 public final class WebBrowser {
 
     private WebBrowserFactoryDescriptor factoryDesc;
-    private boolean withNetBeansIntegration;
-    static final String INTEGRATED = ".INTEGRATED"; // NOI18N
 
-    WebBrowser(WebBrowserFactoryDescriptor factoryDesc, boolean withNetBeansIntegration) {
+    WebBrowser(WebBrowserFactoryDescriptor factoryDesc) {
         this.factoryDesc = factoryDesc;
-        this.withNetBeansIntegration = withNetBeansIntegration;
     }
     
     /**
@@ -65,11 +61,11 @@ public final class WebBrowser {
      * user's browser choice.
      */
     public String getId() {
-        return factoryDesc.getId() + (withNetBeansIntegration ? INTEGRATED : "");
+        return factoryDesc.getId();
     }
 
     public boolean hasNetBeansIntegration() {
-        return withNetBeansIntegration;
+        return factoryDesc.hasNetBeansIntegration();
     }
 
     /**
@@ -77,16 +73,8 @@ public final class WebBrowser {
      *
      * @return
      */
-    @NbBundle.Messages({
-        "# {0} - web browser",
-        "WebBrowser.name={0} with NetBeans Integration"
-    })
     public String getName() {
-        if (withNetBeansIntegration && getBrowserFamily() != BrowserFamilyId.JAVAFX_WEBVIEW) {
-            return Bundle.WebBrowser_name(factoryDesc.getName());
-        } else {
         return factoryDesc.getName();
-    }
     }
 
     public Image getIconImage() {
@@ -94,7 +82,7 @@ public final class WebBrowser {
         if (im == null) {
             im = ImageUtilities.loadImage(getIconFile(getBrowserFamily()));
         }
-        if (withNetBeansIntegration) {
+        if (hasNetBeansIntegration() && factoryDesc.getBrowserFamily() != BrowserFamilyId.JAVAFX_WEBVIEW) {
             im = ImageUtilities.mergeImages(
                 im,
                 ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/nb-badge.png"),
@@ -126,7 +114,7 @@ public final class WebBrowser {
      * URLs in the single tab.
      */
     public WebBrowserPane createNewBrowserPane() {
-        return createNewBrowserPane(true, false);
+        return createNewBrowserPane(true);
     }
     
     /**
@@ -138,9 +126,8 @@ public final class WebBrowser {
      * in case when HTML file editor has multiview and one of its tabs is "Preview"
      * showing rendered view of the HTML document.
      */
-    public WebBrowserPane createNewBrowserPane(boolean wrapEmbeddedBrowserInTopComponent,
-            boolean disableNetBeansIntegration) {
-        return new WebBrowserPane( factoryDesc, wrapEmbeddedBrowserInTopComponent, disableNetBeansIntegration);
+    public WebBrowserPane createNewBrowserPane(boolean wrapEmbeddedBrowserInTopComponent) {
+        return new WebBrowserPane(factoryDesc, wrapEmbeddedBrowserInTopComponent);
     }
 
     /**

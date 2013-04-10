@@ -187,7 +187,7 @@ public class DictionaryProviderImpl implements DictionaryProvider {
             file = InstalledFileLocator.getDefault().locate("modules/dict/dictionary" + currentSuffix + ".description", cnb, false);
 
             if (file != null && InstalledFileLocator.getDefault().locate("modules/dict/dictionary" + currentSuffix + ".description_hidden", null, false) == null) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
 
                 try {
                     String line;

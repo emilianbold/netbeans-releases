@@ -1085,7 +1085,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 client = git.getClient(repository);
                 Map<File, GitStatus> statuses = client.getStatus(context.getRootFiles().toArray(new File[context.getRootFiles().size()]),
                         revisionLeft.getRevision(), GitUtils.NULL_PROGRESS_MONITOR);
-                final Map<File, Setup> localSetups = new HashMap<File, Setup>();
+                statuses.keySet().retainAll(Utils.flattenFiles(context.getRootFiles().toArray(
+                        new File[context.getRootFiles().size()]), statuses.keySet()));
+                final Map<File, Setup> localSetups = new HashMap<File, Setup>(statuses.size());
                 for (Map.Entry<File, GitStatus> e : statuses.entrySet()) {
                     File f = e.getKey();
                     GitStatus status = e.getValue();

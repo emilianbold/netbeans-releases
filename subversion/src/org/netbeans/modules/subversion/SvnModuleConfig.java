@@ -104,6 +104,7 @@ public class SvnModuleConfig {
     private static final String KEY_SORTING = "sortingStatus."; //NOI18N
     private static final String PROP_FORCE_COMMANDLINE = "forcedCommandline"; //NOI18N
     private static final String PROP_PREFERRED_FACTORY = "preferredFactory"; //NOI18N
+    private static final String PROP_FILTER_PROPERTIES_ENABLED = "filterProperties.enabled"; //NOI18N
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
         
@@ -436,6 +437,14 @@ public class SvnModuleConfig {
 
     public void setAutoLock (boolean flag) {
         getPreferences().putBoolean(PROP_AUTO_LOCK, flag);
+    }
+
+    public boolean isFilterPropertiesEnabled () {
+        return getPreferences().getBoolean(PROP_FILTER_PROPERTIES_ENABLED, true);
+    }
+
+    public void setFilterPropertiesEnabled (boolean enabled) {
+        getPreferences().putBoolean(PROP_FILTER_PROPERTIES_ENABLED, enabled);
     }
 
     // private methods ~~~~~~~~~~~~~~~~~~

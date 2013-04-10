@@ -55,6 +55,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -976,7 +977,8 @@ public final class WebProject implements Project {
                     catch (InstanceRemovedException ire) {
                         // do nothing
                     }
-                    Utils.logUsage(WebProject.class, "USG_PROJECT_OPEN_WEB", new Object[] { serverName }); // NOI18N
+                    Profile profile = WebProject.this.getWebModule().getJ2eeProfile();
+                    Utils.logUsage(WebProject.class, "USG_PROJECT_OPEN_WEB", new Object[] { serverName, profile }); // NOI18N
                 }
                 
             } catch (IOException e) {

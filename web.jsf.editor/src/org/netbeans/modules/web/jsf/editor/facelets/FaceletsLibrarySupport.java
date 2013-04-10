@@ -400,16 +400,16 @@ public class FaceletsLibrarySupport {
         
         Map<String, Library> libsMap = new HashMap<String, Library>();
         for (Library lib : processor.compiler.libraries) {
-            libsMap.put(lib.getNamespace(), lib);
+            if (lib.getLegacyNamespace() != null) {
+                libsMap.put(lib.getLegacyNamespace(), lib);
+            } else {
+                libsMap.put(lib.getNamespace(), lib);
+            }
         }
 
         //4. in case of JSF2.2 include pseudo-libraries (http://java.sun.com/jsf/passthrough, http://java.sun.com/jsf)
         // right now, we have no idea whether such libraries will be included into the JSF bundle or not
-        List<URL> cp = new ArrayList<URL>();
-        for (ClassPath.Entry cpEntry : jsfSupport.getClassPath().entries()) {
-            cp.add(cpEntry.getURL());
-        }
-        JSFVersion jsfVersion = JSFVersion.forClasspath(cp);
+        JSFVersion jsfVersion = JSFVersion.forWebModule(webModule);
         if (jsfVersion != null && jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
             libsMap.putAll(DefaultFaceletLibraries.getJsf22FaceletPseudoLibraries(this));
         }

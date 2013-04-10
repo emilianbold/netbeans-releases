@@ -42,16 +42,9 @@
 package org.netbeans.modules.css.model.impl;
 
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.model.api.Declaration;
-import org.netbeans.modules.css.model.api.Expression;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.Model;
-import org.netbeans.modules.css.model.api.Prio;
-import org.netbeans.modules.css.model.api.Property;
-import org.netbeans.modules.css.model.api.PropertyValue;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -59,39 +52,23 @@ import org.openide.filesystems.FileObject;
  */
 public class DeclarationI extends ModelElement implements Declaration {
 
-    private Property property;
-    private PropertyValue propertyValue;
-    private Prio prio;
-    private ResolvedProperty resolvedProperty;
+    private PropertyDeclaration propertyDeclaration;
+    
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
-
         @Override
-        public void elementAdded(PropertyValue value) {
-            propertyValue = value;
+        public void elementAdded(PropertyDeclaration declaration) {
+            propertyDeclaration = declaration;
         }
 
         @Override
-        public void elementAdded(Property value) {
-            property = value;
-        }
-
-        @Override
-        public void elementAdded(Prio value) {
-            prio = value;
+        public void elementRemoved(PropertyDeclaration declaration) {
+            assert declaration == propertyDeclaration;
+            propertyDeclaration = null;
         }
     };
 
     public DeclarationI(Model model) {
         super(model);
-         
-        //default elements
-        addTextElement(getIndent()); //not acc. to the grammar!
-
-        addEmptyElement(Property.class);
-        addTextElement(":");
-        addTextElement(" ");
-        addEmptyElement(PropertyValue.class);
-        addEmptyElement(Prio.class);
     }
 
     public DeclarationI(Model model, Node node) {
@@ -100,33 +77,8 @@ public class DeclarationI extends ModelElement implements Declaration {
     }
 
     @Override
-    public Property getProperty() {
-        return property;
-    }
-
-    @Override
-    public void setProperty(Property property) {
-        setElement(property);
-    }
-
-    @Override
-    public PropertyValue getPropertyValue() {
-        return propertyValue;
-    }
-
-    @Override
-    public void setPropertyValue(PropertyValue value) {
-        setElement(value);
-    }
-
-    @Override
-    public Prio getPrio() {
-        return prio;
-    }
-
-    @Override
-    public void setPrio(Prio prio) {
-        setElement(prio);
+    public PropertyDeclaration getPropertyDeclaration() {
+        return propertyDeclaration;
     }
 
     @Override
@@ -135,38 +87,12 @@ public class DeclarationI extends ModelElement implements Declaration {
     }
 
     @Override
+    public void setPropertyDeclaration(PropertyDeclaration propertyDeclaration) {
+        setElement(propertyDeclaration);
+    }
+
+    @Override
     protected Class getModelClass() {
         return Declaration.class;
-    }
-
-    @Override
-    public synchronized ResolvedProperty getResolvedProperty() {
-        FileObject file = getModel().getLookup().lookup(FileObject.class);
-        if (resolvedProperty == null) {
-            PropertyDefinition pmodel = Properties.getPropertyDefinition(getProperty().getContent().toString().trim());
-            if (pmodel != null) {
-                Expression expression = getPropertyValue().getExpression();
-                CharSequence content = expression != null ? expression.getContent() : "";
-                resolvedProperty = ResolvedProperty.resolve(file, pmodel, content);
-            }
-        }
-        return resolvedProperty;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder b = new StringBuilder();
-        b.append(getClass().getSimpleName());
-        b.append("(");
-        Property p = getProperty();
-        b.append(p == null ? "null" : p.getContent());
-        PropertyValue pv = getPropertyValue();
-        b.append(":");
-        Expression e = pv == null ? null : pv.getExpression();
-        b.append(e == null ? "null" : e.getContent());
-        b.append(getPrio() == null ? "" : "!");
-        b.append(")");
-
-        return b.toString();
     }
 }

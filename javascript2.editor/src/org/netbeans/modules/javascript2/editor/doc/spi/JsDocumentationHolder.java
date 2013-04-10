@@ -54,8 +54,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.parsing.api.Snapshot;
 

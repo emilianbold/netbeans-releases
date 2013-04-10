@@ -42,9 +42,8 @@
 package org.netbeans.modules.cnd.modelimpl.parser;
 
 import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.RecognizerSharedState;
 import org.antlr.runtime.TokenStream;
-import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CXXParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
@@ -55,10 +54,12 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 public class CXXParserEx extends CXXParser {
     
     private final CXXParserActionEx action;
+    private final boolean trace;
     
     public CXXParserEx(TokenStream input, CXXParserActionEx action) {
         super(input, action);
         this.action = action;
+        this.trace = TraceFlags.TRACE_CPP_PARSER_RULES;
     }
     
     private CsmParserProvider.ParserErrorDelegate errorDelegate;
@@ -77,4 +78,32 @@ public class CXXParserEx extends CXXParser {
     public int backtrackingLevel() {
         return state.backtracking;
     }        
+    
+    // indentation based trace
+    private int level = 0;
+
+    @Override
+    public void traceIn(String ruleName, int ruleIndex) {
+        if (trace) {
+            StringBuilder buf = new StringBuilder();
+            for (int i = 0; i < level; i++) {
+                buf.append(' ').append(' '); //NOI18N
+            }
+            super.traceIn(buf.toString() + ruleName, ruleIndex);
+            level++;
+        }
+    }
+
+    @Override
+    public void traceOut(String ruleName, int ruleIndex) {
+        if (trace) {
+            level--;
+            StringBuilder buf = new StringBuilder();
+            for (int i = 0; i < level; i++) {
+                buf.append(' ').append(' '); //NOI18N
+            }
+            buf.append(' '); //NOI18N
+            super.traceOut(buf.toString() + ruleName, ruleIndex);
+        }
+    }    
 }

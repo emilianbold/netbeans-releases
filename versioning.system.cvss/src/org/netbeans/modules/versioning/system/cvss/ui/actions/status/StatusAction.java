@@ -51,9 +51,6 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemActi
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
 import org.openide.nodes.Node;
 
-import java.awt.event.ActionEvent;
-import java.awt.*;
-
 /**
  * Opens the Versioning window.
  * 
@@ -62,6 +59,11 @@ import java.awt.*;
 public class StatusAction extends AbstractSystemAction {
     
     private static final int enabledForStatus = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;  
+    private static final String ICON_RESOURCE = "org/netbeans/modules/versioning/system/cvss/resources/icons/show_changes.png"; //NOI18N
+
+    public StatusAction () {
+        super(ICON_RESOURCE);
+    }
     
     protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_Status";  // NOI18N

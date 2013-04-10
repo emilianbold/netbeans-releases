@@ -359,6 +359,18 @@ public class TypeFactory {
         public void setTypedef() {
             this.typedef = true;
         }
+
+        public void setConst() {
+            this._const = true;
+        }
+        
+        public void incPointerDepth() {
+            this.pointerDepth++;
+        }
+        
+        public void setReference() {
+            this.reference = true;
+        }
         
         public void setSimpleTypeSpecifier(CharSequence specifier) {
             if(specifierBuilder == null) {
@@ -406,6 +418,9 @@ public class TypeFactory {
             } else if (specifierBuilder != null) {
                 CsmClassifier classifier = BuiltinTypes.getBuiltIn(specifierBuilder.toString());
                 type = new TypeImpl(classifier, pointerDepth, reference, arrayDepth, _const, getFile(), getStartOffset(), getEndOffset());
+            } else if (cls != null) {
+                type = new TypeImpl(cls, pointerDepth, reference, arrayDepth, _const, getFile(), getStartOffset(), getEndOffset());
+                type.setTypeOfTypedef();    
             }
             return TemplateUtils.checkTemplateType(type, scope);
         }

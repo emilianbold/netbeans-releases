@@ -548,6 +548,20 @@ public final class CodeStyle {
 
     // Blank lines -------------------------------------------------------------
     
+    /**
+     * @since 0.118
+     */
+    public int getMaximumBlankLinesInDeclarations() {
+        return preferences.getInt(blankLinesInDeclarations, getDefaultAsInt(blankLinesInDeclarations));
+    }
+
+    /**
+     * @since 0.118
+     */
+    public int getMaximumBlankLinesInCode() {
+        return preferences.getInt(blankLinesInCode, getDefaultAsInt(blankLinesInCode));
+    }
+
     public int getBlankLinesBeforePackage() {
         return preferences.getInt(blankLinesBeforePackage, getDefaultAsInt(blankLinesBeforePackage));
     }

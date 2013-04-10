@@ -48,14 +48,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.versioning.util.common.FileTreeView;
 import org.netbeans.swing.outline.RenderDataProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -71,11 +76,13 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
     
     private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; //NOI18N
     private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; //NOI18N
+    private final static String PATH_SEPARATOR_REGEXP = File.separator.replace("\\", "\\\\"); //NOI18N
     
     /**
      * Defines labels for Diff view table columns.
      */ 
     private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
+    private static Image FOLDER_ICON;
     private final MultiDiffPanel master;
 
     {
@@ -162,9 +169,9 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
             @Override
             public void run() {
                 int width = view.getWidth();
-                view.getOutline().getColumnModel().getColumn(0).setPreferredWidth(width * 20 / 100);
+                view.getOutline().getColumnModel().getColumn(0).setPreferredWidth(width * 40 / 100);
                 view.getOutline().getColumnModel().getColumn(1).setPreferredWidth(width * 20 / 100);
-                view.getOutline().getColumnModel().getColumn(2).setPreferredWidth(width * 60 / 100);
+                view.getOutline().getColumnModel().getColumn(2).setPreferredWidth(width * 40 / 100);
             }
         });
     }
@@ -209,7 +216,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
         }
 
         private RepositoryRootNode (File repository, DiffNode[] nestedNodes) {
-            super(new NodeChildren(new NodeData(repository, getCommonPrefix(nestedNodes), nestedNodes), true), Lookups.fixed(repository));
+            super(new NodeChildren(new NodeData(new File(repository, getCommonPrefix(nestedNodes)), getCommonPrefix(nestedNodes), nestedNodes), true), Lookups.fixed(repository));
             this.repo = repository;
         }
         
@@ -228,7 +235,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
         String prefix = "";
         if (nodes.length > 0) {
             prefix = nodes[0].getLocation();
-            int index = prefix.lastIndexOf("/");
+            int index = prefix.lastIndexOf(File.separator);
             if (index == -1) {
                 prefix = "";
             } else {
@@ -240,7 +247,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
             String location = n.getLocation();
             while (!location.startsWith(prefix)) {
                 slashNeeded = false;
-                int index = prefix.lastIndexOf("/");
+                int index = prefix.lastIndexOf(File.separator);
                 if (index == -1) {
                     prefix = "";
                 } else {
@@ -248,7 +255,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
                 }
             }
         }
-        return slashNeeded ? prefix + "/" : prefix;
+        return slashNeeded ? prefix + File.separator : prefix;
     }
     
     private static class NodeChildren extends DiffTreeViewChildren {
@@ -272,26 +279,26 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
             for (DiffNode n : nestedNodes) {
                 String location = n.getLocation();
                 if (prefix == null) {
-                    prefix = path + location.substring(path.length()).split("/", 0)[0];
+                    prefix = path + location.substring(path.length()).split(PATH_SEPARATOR_REGEXP, 0)[0];
                 }
                 if (location.equals(prefix)) {
                     if (!subNodes.isEmpty()) {
-                        data.add(new NodeData(new File(file, prefix), prefix, subNodes.toArray(new DiffNode[subNodes.size()])));
+                        data.add(new NodeData(getFile(prefix), prefix, subNodes.toArray(new DiffNode[subNodes.size()])));
                         subNodes.clear();
                     }
-                    data.add(new NodeData(new File(file, prefix), prefix, new DiffNode[] { n }));
+                    data.add(new NodeData(getFile(prefix), prefix, new DiffNode[] { n }));
                     prefix = null;
                 } else if (location.startsWith(prefix)) {
                     subNodes.add(n);
                 } else {
-                    data.add(new NodeData(new File(file, prefix), prefix, subNodes.toArray(new DiffNode[subNodes.size()])));
+                    data.add(new NodeData(getFile(prefix), prefix, subNodes.toArray(new DiffNode[subNodes.size()])));
                     subNodes.clear();
-                    prefix = path + location.substring(path.length()).split("/", 0)[0];
+                    prefix = path + location.substring(path.length()).split(PATH_SEPARATOR_REGEXP, 0)[0];
                     subNodes.add(n);
                 }
             }
             if (!subNodes.isEmpty()) {
-                data.add(new NodeData(new File(file, prefix), prefix, subNodes.toArray(new DiffNode[subNodes.size()])));
+                data.add(new NodeData(getFile(prefix), prefix, subNodes.toArray(new DiffNode[subNodes.size()])));
             }
             
             add(createNodes(data));
@@ -310,10 +317,11 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
                     if (top) {
                         name = key.path;
                     } else {
-                        String[] segments = key.path.split("/");
+                        String[] segments = key.path.split(PATH_SEPARATOR_REGEXP);
                         name = segments[segments.length - 1];
                     }
-                    NodeChildren ch = new NodeChildren(new NodeData(key.file, key.path + "/", key.nestedNodes), false);
+                    final Image icon = getFolderIcon(key.file);
+                    NodeChildren ch = new NodeChildren(new NodeData(key.file, key.path + File.separator, key.nestedNodes), false);
                     node = new AbstractNode(ch, Lookups.fixed(key.file)) {
                         @Override
                         public String getName () {
@@ -322,7 +330,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
 
                         @Override
                         public Image getIcon (int type) {
-                            return getFolderIcon();
+                            return icon;
                         }
                     };
                     ch.buildSubNodes();
@@ -330,6 +338,30 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
                 toCreate.add(node);
             }
             return toCreate.toArray(new Node[toCreate.size()]);
+        }
+
+        private Image getFolderIcon (File file) {
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            Icon icon = null;
+            if (fo != null) {
+                try {
+                    ProjectManager.Result res = ProjectManager.getDefault().isProject2(fo);
+                    if (res != null) {
+                        icon = res.getIcon();
+                    }
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(DiffFileTreeImpl.class.getName()).log(Level.INFO, null, ex);
+                }
+            }
+            return icon == null ? DiffFileTreeImpl.getFolderIcon() : ImageUtilities.icon2Image(icon);
+        }
+
+        private File getFile (String prefix) {
+            String p = prefix;
+            if (prefix.startsWith(path)) {
+                p = prefix.substring(path.length());
+            }
+            return new File(file, p);
         }
     }
     
@@ -346,17 +378,20 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
     }
 
     private static Image getFolderIcon () {
-        Icon baseIcon = UIManager.getIcon(ICON_KEY_UIMANAGER);
-        Image base;
-        if (baseIcon != null) {
-            base = ImageUtilities.icon2Image(baseIcon);
-        } else {
-            base = (Image) UIManager.get(ICON_KEY_UIMANAGER_NB);
-            if (base == null) { // fallback to our owns
-                base = ImageUtilities.loadImage("org/openide/loaders/defaultFolder.gif"); //NOI18N
+        if (FOLDER_ICON == null) {
+            Icon baseIcon = UIManager.getIcon(ICON_KEY_UIMANAGER);
+            Image base;
+            if (baseIcon != null) {
+                base = ImageUtilities.icon2Image(baseIcon);
+            } else {
+                base = (Image) UIManager.get(ICON_KEY_UIMANAGER_NB);
+                if (base == null) { // fallback to our owns
+                    base = ImageUtilities.loadImage("org/openide/loaders/defaultFolder.gif"); //NOI18N
+                }
             }
+            FOLDER_ICON = base;
         }
-        return base;
+        return FOLDER_ICON;
     }
     
 }

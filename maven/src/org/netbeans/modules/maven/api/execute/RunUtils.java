@@ -108,7 +108,7 @@ public final class RunUtils {
         ExecutorTask task = executeMavenImpl(config.getTaskDisplayName(), exec);
         // fire project change on when finishing maven execution, to update the classpath etc. -MEVENIDE-83
         task.addTaskListener(new TaskListener() {
-            @Override public void taskFinished(Task _) {
+            @Override public void taskFinished(Task t) {
                 // fireMavenProjectReload is done in executors
                 MavenProject mp = config.getMavenProject();
                 if (mp == null) {
@@ -153,11 +153,34 @@ public final class RunUtils {
         return new BeanRunConfig(original);
     }
 
+    
+    public static boolean isCompileOnSaveEnabled(Project prj) {
+        AuxiliaryProperties auxprops = prj.getLookup().lookup(AuxiliaryProperties.class);
+        if (auxprops == null) {
+            // Cannot use ProjectUtils.getPreferences due to compatibility.
+            return false;
+        }
+        String cos = auxprops.get(Constants.HINT_COMPILE_ON_SAVE, true);
+        if (cos == null) {
+            cos = "all";
+        }
+        return !"none".equalsIgnoreCase(cos);    
+    }
+    
+    public static boolean isCompileOnSaveEnabled(RunConfig config) {
+        Project prj = config.getProject();
+        if (prj != null) {
+            return isCompileOnSaveEnabled(prj);
+        }
+        return false;
+    }
+    
     /**
      *
      * @param project
      * @return true if compile on save is allowed for running the application.
      */
+    @Deprecated
     public static boolean hasApplicationCompileOnSaveEnabled(Project prj) {
         AuxiliaryProperties auxprops = prj.getLookup().lookup(AuxiliaryProperties.class);
         if (auxprops == null) {
@@ -166,12 +189,13 @@ public final class RunUtils {
         }
         String cos = auxprops.get(Constants.HINT_COMPILE_ON_SAVE, true);
         if (cos == null) {
-            String packaging = prj.getLookup().lookup(NbMavenProject.class).getPackagingType();
-            if ("war".equals(packaging) || "ejb".equals(packaging) || "ear".equals(packaging)) {
-                cos = "app";
-            } else {
-                cos = "none";
-            }
+            cos = "all";
+//            String packaging = prj.getLookup().lookup(NbMavenProject.class).getPackagingType();
+//            if ("war".equals(packaging) || "ejb".equals(packaging) || "ear".equals(packaging)) {
+//                cos = "app";
+//            } else {
+//                cos = "none";
+//            }
         }
         return "all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos);
     }
@@ -181,6 +205,7 @@ public final class RunUtils {
      * @param config
      * @return true if compile on save is allowed for running the application.
      */
+    @Deprecated 
     public static boolean hasApplicationCompileOnSaveEnabled(RunConfig config) {
         Project prj = config.getProject();
         if (prj != null) {
@@ -194,6 +219,7 @@ public final class RunUtils {
      * @param project
      * @return true if compile on save is allowed for running tests.
      */
+    @Deprecated
     public static boolean hasTestCompileOnSaveEnabled(Project prj) {
         AuxiliaryProperties auxprops = prj.getLookup().lookup(AuxiliaryProperties.class);
         if (auxprops == null) {
@@ -202,12 +228,14 @@ public final class RunUtils {
         }
         String cos = auxprops.get(Constants.HINT_COMPILE_ON_SAVE, true);
         if (cos == null) {
-            String packaging = prj.getLookup().lookup(NbMavenProject.class).getPackagingType();
-            if ("war".equals(packaging) || "ejb".equals(packaging) || "ear".equals(packaging)) {
-                cos = "app";
-            } else {
-                cos = "none";
-            }
+            cos = "all";
+
+//            String packaging = prj.getLookup().lookup(NbMavenProject.class).getPackagingType();
+//            if ("war".equals(packaging) || "ejb".equals(packaging) || "ear".equals(packaging)) {
+//                cos = "app";
+//            } else {
+//                cos = "none";
+//            }
         }
         return "all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos);
     }
@@ -216,6 +244,7 @@ public final class RunUtils {
      * @param config
      * @return true if compile on save is allowed for running tests.
      */
+    @Deprecated
     public static boolean hasTestCompileOnSaveEnabled(RunConfig config) {
         Project prj = config.getProject();
         if (prj != null) {

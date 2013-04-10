@@ -196,7 +196,7 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         WizardDescriptor.Panel<?> thirdPanel =new EntityResourcesSetupPanel(
                 NbBundle.getMessage(EntityResourcesIterator.class,
                 "LBL_RestResourcesAndClasses"), wizard,         // NOI18N
-                RestUtils.isJavaEE6(Templates.getProject(wizard)) ||
+                RestUtils.isJavaEE6AndHigher(Templates.getProject(wizard)) ||
                         RestUtils.hasSpringSupport(Templates.getProject(wizard)));
         panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel };
         String names[] = new String[] {

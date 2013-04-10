@@ -38,12 +38,10 @@
 package org.netbeans.modules.xml.schema.model.visitor;
 
 import java.util.Set;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import static org.junit.matchers.JUnitMatchers.hasItem;
 import org.junit.rules.TestRule;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.TestCatalogModel;
@@ -91,11 +89,11 @@ public class FindSubstitutionsVisitorTest {
         Set<GlobalElement> possibleSubstitutionsOne = FindSubstitutions.resolveSubstitutions(childModelOne, substitutionGroupHead);
         Set<GlobalElement> possibleSubstitutionsTwo = FindSubstitutions.resolveSubstitutions(childModelTwo, substitutionGroupHead);
 
-        assertThat(possibleSubstitutionsOne.size(), is(1));
-        assertThat(possibleSubstitutionsOne, hasItem(expectedSubstitutionOne));
+        assertEquals(1, possibleSubstitutionsOne.size());
+        assertSame("invalid substitution", expectedSubstitutionOne, possibleSubstitutionsOne.iterator().next());
         
-        assertThat(possibleSubstitutionsTwo.size(), is(1));
-        assertThat(possibleSubstitutionsTwo, hasItem(expectedSubstitutionTwo)); //Should used cached substitution group head
+        assertEquals(1, possibleSubstitutionsTwo.size());
+        assertSame("invalid substitution", expectedSubstitutionTwo, possibleSubstitutionsTwo.iterator().next());
     }
         
     private static GlobalElement getCachedElement(SchemaModelImpl model, String localName) {

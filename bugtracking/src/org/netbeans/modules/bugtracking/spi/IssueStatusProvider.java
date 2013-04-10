@@ -43,6 +43,7 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 
 /**

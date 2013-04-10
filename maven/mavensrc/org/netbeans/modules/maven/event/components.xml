@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component-set>
+  <components>
+    <component>
+      <role>org.apache.maven.eventspy.EventSpy</role>
+      <role-hint>ide</role-hint>
+      <implementation>org.netbeans.modules.maven.event.NbEventSpy</implementation>
+      <description />
+      <isolated-realm>false</isolated-realm>
+      <requirements>
+        <requirement>
+          <role>org.codehaus.plexus.logging.Logger</role>
+          <role-hint />
+          <field-name>logger</field-name>
+        </requirement>
+      </requirements>
+    </component>    
+  </components>
+</component-set>

@@ -1268,6 +1268,7 @@ public class CasualDiff {
         int[] partBounds = new int[] { localPointer, endPos(oldT.thenpart) };
         localPointer = diffTree(oldT.thenpart, newT.thenpart, partBounds, oldT.getKind());
         if (oldT.elsepart == null && newT.elsepart != null) {
+            copyTo(localPointer, localPointer = partBounds[1]);
             printer.printElse(newT, newT.thenpart.getKind() == Kind.BLOCK);
         } else if (oldT.elsepart != null && newT.elsepart == null) {
             // remove else part

@@ -145,8 +145,10 @@ public final class SwitchStatementImpl extends StatementBase implements CsmSwitc
         @Override
         public SwitchStatementImpl create() {
             SwitchStatementImpl stmt = new SwitchStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
-            body.setScope(stmt);
-            stmt.body = body.create();
+            if (body != null) {
+                body.setScope(stmt);
+                stmt.body = body.create();
+            }
             if(conditionDeclaration != null) {
                 conditionDeclaration.setScope(stmt);
                 stmt.condition = conditionDeclaration.create();

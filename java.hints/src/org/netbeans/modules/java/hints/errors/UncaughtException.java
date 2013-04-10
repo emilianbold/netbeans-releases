@@ -136,8 +136,12 @@ public final class UncaughtException implements ErrorRule<Void> {
                     for (CatchTree c : tt.getCatches()) {
                         TreePath catchPath = new TreePath(new TreePath(path, c), c.getParameter());
                         VariableElement variable = (VariableElement) info.getTrees().getElement(catchPath);
-
-                        result.remove(variable.asType());
+                        TypeMirror variableType = variable.asType();
+                        if (variableType.getKind() == TypeKind.UNION) {
+                            result.removeAll(((UnionType)variableType).getAlternatives());
+                        } else {
+                            result.remove(variableType);
+                        }
                     }
                 }
             }
