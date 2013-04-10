@@ -55,10 +55,11 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.JSFUtils;
-import org.netbeans.modules.web.jsf.JsfConstants;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsf.wizards.TemplateClientPanel.TemplateEntry;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -77,6 +78,8 @@ import org.openide.util.NbBundle;
  */
 
 public class TemplateClientIterator implements TemplateWizard.Iterator {
+
+    private static final long serialVersionUID = 1L;
     
     private int index;
     private transient WizardDescriptor.Panel[] panels;
@@ -90,13 +93,15 @@ public class TemplateClientIterator implements TemplateWizard.Iterator {
     public TemplateClientIterator() {
     }
     
-    public Set instantiate(TemplateWizard wiz) throws IOException {
+    @Override
+    public Set instantiate(final TemplateWizard wiz) throws IOException {
         final org.openide.filesystems.FileObject dir = Templates.getTargetFolder( wiz );
         final String targetName =  Templates.getTargetName(wiz);
         final DataFolder df = DataFolder.findFolder( dir );
         
         df.getPrimaryFile().getFileSystem().runAtomicAction(new FileSystem.AtomicAction(){
-            
+
+            @Override
             public void run() throws IOException {
                 InputStream is = templateClientPanel.getTemplateClient();
                 String content = JSFFrameworkProvider.readResource(is, ENCODING);
@@ -105,10 +110,16 @@ public class TemplateClientIterator implements TemplateWizard.Iterator {
                 String relativePath = getTemplatePath(target, templateEntry);
                 String definedTags = createDefineTags(templateClientPanel.getTemplateData(),
                         ((content.indexOf("<html") == -1)?1:3));    //NOI18N
-                
+
+                Project project = Templates.getProject(wiz);
+                WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+                final JSFVersion jsfVersion = webModule != null ? JSFVersion.forWebModule(webModule) : null;
+                String namespaceLocation = jsfVersion != null && jsfVersion.isAtLeast(JSFVersion.JSF_2_2)
+                        ? "http://xmlns.jcp.org" : "http://java.sun.com"; // NOI18N
                 HashMap args = new HashMap();
                 args.put("TEMPLATE", relativePath); //NOI18N
                 args.put("DEFINE_TAGS", definedTags);   //NOI18N
+                args.put("NS_LOCATION", namespaceLocation);   //NOI18N
                 
                 MapFormat formater = new MapFormat(args);
                 formater.setLeftBrace("__");    //NOI18N
@@ -138,7 +149,8 @@ public class TemplateClientIterator implements TemplateWizard.Iterator {
             return TemplateClientPanelVisual.getRelativePathInsideResourceLibrary(fullpath);
         }
     }
-    
+
+    @Override
     public void initialize(TemplateWizard wiz) {
         index = 0;
         Project project = Templates.getProject( wiz );
@@ -169,41 +181,50 @@ public class TemplateClientIterator implements TemplateWizard.Iterator {
             }
         }
     }
-    
+
+    @Override
     public void uninitialize(TemplateWizard wiz) {
         panels = null;
     }
-    
+
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
-    
+
+    @Override
     public String name() {
         return NbBundle.getMessage(TemplateIterator.class, "TITLE_x_of_y",
                 new Integer(index + 1), new Integer(panels.length));
     }
-    
+
+    @Override
     public void previousPanel() {
         if (! hasPrevious()) throw new NoSuchElementException();
         index--;
     }
-    
+
+    @Override
     public void nextPanel() {
         if (! hasNext()) throw new NoSuchElementException();
         index++;
     }
-    
+
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
-    
+
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
-    
+
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
-    
+
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
     

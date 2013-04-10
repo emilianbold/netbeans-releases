@@ -649,4 +649,12 @@ public class ELLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.STRING_LITERAL, "'b'");
     }
 
+    public void testIssue228357() throws Exception {
+        String text = "'a' +";
+        TokenSequence ts = TokenHierarchy.create(text, ELTokenId.language()).tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.STRING_LITERAL, "'a'");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.PLUS, "+");
+    }
+
 }

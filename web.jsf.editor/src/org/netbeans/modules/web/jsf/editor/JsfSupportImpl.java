@@ -67,6 +67,7 @@ import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -224,11 +225,7 @@ public class JsfSupportImpl implements JsfSupport {
 
     @Override
     public Library getLibrary(String namespace) {
-        Library library = faceletsLibrarySupport.getLibraries().get(namespace);
-        if (library == null) {
-            library = faceletsLibrarySupport.getLibraries().get(DefaultLibraryInfo.NS_MAPPING.get(namespace));
-        }
-        return library;
+        return NamespaceUtils.getForNs(faceletsLibrarySupport.getLibraries(), namespace);
     }
 
     /** Library's uri to library map 

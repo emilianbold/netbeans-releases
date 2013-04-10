@@ -129,6 +129,9 @@ public class JsfLibrariesSupport {
             libraryimport.lib = lib;
 
             Collection<String> prefixes = ns2prefixes.get(libraryInfo.getNamespace());
+            if (prefixes == null && libraryInfo.getLegacyNamespace() != null) {
+                prefixes = ns2prefixes.get(libraryInfo.getLegacyNamespace());
+            }
             if (libraryInfo.getLegacyNamespace() != null && ns2prefixes.get(libraryInfo.getLegacyNamespace()) != null) {
                 prefixes.addAll(ns2prefixes.get(libraryInfo.getLegacyNamespace()));
             }
@@ -160,6 +163,10 @@ public class JsfLibrariesSupport {
             return li.getDefaultPrefix();
         }
         return limport.declaredPrefix != null ? limport.declaredPrefix : limport.lib.getDefaultPrefix();
+    }
+
+    public boolean isJsf22Plus() {
+        return jsfs.isJsf22Plus();
     }
 
     private static class LibraryImport {
