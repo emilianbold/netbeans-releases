@@ -436,35 +436,66 @@ public class StructureAnalyzer implements StructureScanner {
 
         @Override
         public String getHtml(HtmlFormatter formatter) {
-            formatter.appendText(node.getName());
-
-            if ((kind == ElementKind.METHOD) || (kind == ElementKind.CONSTRUCTOR)) {
-                // Append parameters
-                ASTMethod jn = (ASTMethod) node;
-
-                Collection<String> parameters = jn.getParameters();
-
-                if ((parameters != null) && (parameters.size() > 0)) {
-                    formatter.appendHtml("(");
-                    formatter.parameters(true);
-
-                    for (Iterator<String> it = parameters.iterator(); it.hasNext();) {
-                        String ve = it.next();
-                        // TODO - if I know types, list the type here instead. For now, just use the parameter name instead
-                        formatter.appendText(ve);
-
-                        if (it.hasNext()) {
-                            formatter.appendHtml(", ");
-                        }
-                    }
-
-                    formatter.parameters(false);
-                    formatter.appendHtml(")");
-                } else {
-                    formatter.appendHtml("()");
-                }
+            if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
+                return getMethodHTML(formatter, (ASTMethod) node);
+            }
+            if (kind == ElementKind.FIELD) {
+                return getFieldHTML(formatter, (ASTField) node);
             }
 
+            formatter.appendText(node.getName());
+            return formatter.getText();
+        }
+        
+        private String getMethodHTML(HtmlFormatter formatter, ASTMethod method) {
+            appendMethodName(formatter, method);
+            appendParameters(formatter, method.getParameters());
+            appendReturnType(formatter, method.getReturnType());
+            
+            return formatter.getText();
+        }
+        
+        private void appendMethodName(HtmlFormatter formatter, ASTMethod method) {
+            formatter.appendHtml(method.getName());
+        }
+        
+        private void appendParameters(HtmlFormatter formatter, Collection<String> params) {
+            if (!params.isEmpty()) {
+                formatter.appendHtml("(");
+                formatter.parameters(true);
+
+                for (Iterator<String> it = params.iterator(); it.hasNext();) {
+                    String ve = it.next();
+                    formatter.appendText(ve);
+
+                    if (it.hasNext()) {
+                        formatter.appendHtml(", ");
+                    }
+                }
+
+                formatter.parameters(false);
+                formatter.appendHtml(")");
+            } else {
+                formatter.appendHtml("()");
+            }
+        }
+        
+        private void appendReturnType(HtmlFormatter formatter, String returnType) {
+            if (returnType != null) {
+                formatter.appendHtml(" : ");
+                formatter.parameters(true);
+                formatter.appendHtml(returnType);
+                formatter.parameters(false);
+            }
+        }
+        
+        private String getFieldHTML(HtmlFormatter formatter, ASTField field) {
+            formatter.appendText(field.getName());
+            formatter.appendText(" : ");
+            formatter.parameters(true);
+            formatter.appendText(field.getType());
+            formatter.parameters(false);
+            
             return formatter.getText();
         }
 
