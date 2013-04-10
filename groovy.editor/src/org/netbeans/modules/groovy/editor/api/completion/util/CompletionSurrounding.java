@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,88 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.spi.completion;
+package org.netbeans.modules.groovy.editor.api.completion.util;
 
-import java.util.Collections;
-import java.util.List;
-import org.openide.filesystems.FileObject;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 
 /**
+ * Holder class for the context of a given completion.
+ * This means the two surrounding Lexer-tokens before and after the completion point are stored here.
  *
- * @author Petr Hejl
+ * @author Martin Janicek
  */
-public final class CompletionContext {
+public class CompletionSurrounding {
 
-    private final int anchor;
+    // b2    b1      |       a1        a2
+    // class MyClass extends BaseClass {
+    public Token<GroovyTokenId> beforeLiteral;
+    public Token<GroovyTokenId> before2;
+    public Token<GroovyTokenId> before1;
+    public Token<GroovyTokenId> active;
+    public Token<GroovyTokenId> after1;
+    public Token<GroovyTokenId> after2;
+    public Token<GroovyTokenId> afterLiteral;
+    public TokenSequence<GroovyTokenId> ts; // we keep the sequence with us.
 
-    private final FileObject sourceFile;
+    
+    public CompletionSurrounding(
+        Token<GroovyTokenId> beforeLiteral,
+        Token<GroovyTokenId> before2,
+        Token<GroovyTokenId> before1,
+        Token<GroovyTokenId> active,
+        Token<GroovyTokenId> after1,
+        Token<GroovyTokenId> after2,
+        Token<GroovyTokenId> afterLiteral,
+        TokenSequence<GroovyTokenId> ts) {
 
-    private final String sourceClassName;
-
-    private final String className;
-
-    private final boolean staticContext;
-
-    private final List<String> properties;
-
-    private final String prefix;
-
-    private final boolean leaf;
-
-    private final boolean nameOnly;
-
-    // FIXME - accessor
-    public CompletionContext(int anchor, FileObject sourceFile, String sourceClassName, String className,
-            String prefix, boolean staticContext, List<String> properties, boolean leaf, boolean nameOnly) {
-
-        this.sourceFile = sourceFile;
-        this.sourceClassName = sourceClassName;
-        this.className = className;
-        this.prefix = prefix;
-        this.staticContext = staticContext;
-        this.properties = properties;
-        this.leaf = leaf;
-        this.nameOnly = nameOnly;
-        this.anchor = anchor;
+        this.beforeLiteral = beforeLiteral;
+        this.before2 = before2;
+        this.before1 = before1;
+        this.active = active;
+        this.after1 = after1;
+        this.after2 = after2;
+        this.afterLiteral = afterLiteral;
+        this.ts = ts;
     }
-
-    public int getAnchor() {
-        return anchor;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public FileObject getSourceFile() {
-        return sourceFile;
-    }
-
-    public List<String> getProperties() {
-        return Collections.unmodifiableList(properties);
-    }
-
-    public String getSourceClassName() {
-        return sourceClassName;
-    }
-
-    public boolean isStaticContext() {
-        return staticContext;
-    }
-
-    public String getPrefix() {
-        return prefix;
-    }
-
-    public boolean isLeaf() {
-        return leaf;
-    }
-
-    public boolean isNameOnly() {
-        return nameOnly;
-    }
-
 }

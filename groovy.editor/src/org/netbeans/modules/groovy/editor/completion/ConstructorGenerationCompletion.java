@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion.impl;
+package org.netbeans.modules.groovy.editor.completion;
 
 import java.util.Collections;
 import java.util.List;
@@ -50,11 +50,11 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.api.completion.util.CamelCaseUtil;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
+import org.netbeans.modules.groovy.editor.completion.util.CamelCaseUtil;
 import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 
 /**
  * This should complete constructor generation.
@@ -68,7 +68,7 @@ import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 public class ConstructorGenerationCompletion extends BaseCompletion {
 
     @Override
-    public boolean complete(List<CompletionProposal> proposals, CompletionRequest request, int anchor) {
+    public boolean complete(List<CompletionProposal> proposals, CompletionContext request, int anchor) {
         LOG.log(Level.FINEST, "-> constructor generation completion"); // NOI18N
 
         if (!isValidLocation(request)) {
@@ -82,7 +82,7 @@ public class ConstructorGenerationCompletion extends BaseCompletion {
         }
         String className = GroovyUtils.stripPackage(requestedClass.getName());
 
-        boolean camelCaseMatch = CamelCaseUtil.compareCamelCase(className, request.prefix);
+        boolean camelCaseMatch = CamelCaseUtil.compareCamelCase(className, request.getPrefix());
         if (camelCaseMatch) {
             LOG.log(Level.FINEST, "Prefix matches Class's CamelCase signature. Adding."); // NOI18N
             proposals.add(new CompletionItem.ConstructorItem(className, "", Collections.EMPTY_LIST, anchor, true));
@@ -91,31 +91,31 @@ public class ConstructorGenerationCompletion extends BaseCompletion {
         return camelCaseMatch;
     }
 
-    private boolean isValidLocation(CompletionRequest request) {
+    private boolean isValidLocation(CompletionContext request) {
         if (!(request.location == CaretLocation.INSIDE_CLASS)) {
             LOG.log(Level.FINEST, "Not inside a class"); // NOI18N
             return false;
         }
 
         // We don't want to offer costructor generation when creating new instance
-        if (request.ctx.before1 != null && request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
+        if (request.context.before1 != null && request.context.before1.text().toString().equals("new") && request.getPrefix().length() > 0) {
             return false;
         }
 
         // We are after either implements or extends keyword
-        if ((request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_implements) ||
-            (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_extends)) {
+        if ((request.context.beforeLiteral != null && request.context.beforeLiteral.id() == GroovyTokenId.LITERAL_implements) ||
+            (request.context.beforeLiteral != null && request.context.beforeLiteral.id() == GroovyTokenId.LITERAL_extends)) {
             return false;
         }
 
-        if (request.prefix == null || request.prefix.length() < 0) {
+        if (request.getPrefix() == null || request.getPrefix().length() < 0) {
             return false;
         }
 
         // We can be either in 'String ^' or in 'NoSE^' situation
-        if (request.ctx.before1 != null && request.ctx.before1.id() == GroovyTokenId.IDENTIFIER) {
-            request.ctx.ts.movePrevious();
-            Token<?> caretToken = request.ctx.ts.token();
+        if (request.context.before1 != null && request.context.before1.id() == GroovyTokenId.IDENTIFIER) {
+            request.context.ts.movePrevious();
+            Token<?> caretToken = request.context.ts.token();
 
             if (" ".equals(caretToken.text().toString())) {
                 // 'String ^' situation --> No constructor generation proposals
@@ -124,7 +124,7 @@ public class ConstructorGenerationCompletion extends BaseCompletion {
         }
 
         // We are after class definition
-        if (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_class) {
+        if (request.context.beforeLiteral != null && request.context.beforeLiteral.id() == GroovyTokenId.LITERAL_class) {
             return false;
         }
 

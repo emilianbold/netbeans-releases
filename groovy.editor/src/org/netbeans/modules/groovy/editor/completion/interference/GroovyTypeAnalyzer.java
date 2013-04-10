@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion.util;
+package org.netbeans.modules.groovy.editor.completion.interference;
 
 import java.util.Collections;
 import java.util.Set;
@@ -50,7 +50,7 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.completion.TypeInferenceVisitor;
+import org.netbeans.modules.groovy.editor.completion.interference.TypeInferenceVisitor;
 
 /**
  *

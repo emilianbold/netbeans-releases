@@ -40,12 +40,12 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion.impl;
+package org.netbeans.modules.groovy.editor.completion;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 
 /**
  * ProposalsCollector is responsible for collecting code completion proposals.
@@ -58,7 +58,7 @@ import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 public class ProposalsCollector {
 
     private List<CompletionProposal> proposals;
-    private int anchor;
+    private CompletionContext context;
 
     private BaseCompletion typesCompletion;
     private BaseCompletion fieldCompletion;
@@ -70,8 +70,8 @@ public class ProposalsCollector {
     private BaseCompletion camelCaseCompletion;
 
 
-    public ProposalsCollector(int anchor) {
-        this.anchor = anchor;
+    public ProposalsCollector(CompletionContext context) {
+        this.context = context;
         
         proposals = new ArrayList<CompletionProposal>();
         typesCompletion = new TypesCompletion();
@@ -84,36 +84,36 @@ public class ProposalsCollector {
         camelCaseCompletion = new ConstructorGenerationCompletion();
     }
 
-    public void completeKeywords(CompletionRequest completionRequest) {
-        keywordCompletion.complete(proposals, completionRequest, anchor);
+    public void completeKeywords(CompletionContext completionRequest) {
+        keywordCompletion.complete(proposals, completionRequest, context.getAnchor());
     }
 
-    public void completeMethods(CompletionRequest completionRequest) {
-        methodCompletion.complete(proposals, completionRequest, anchor);
+    public void completeMethods(CompletionContext completionRequest) {
+        methodCompletion.complete(proposals, completionRequest, context.getAnchor());
     }
 
-    public void completeFields(CompletionRequest completionRequest) {
-        fieldCompletion.complete(proposals, completionRequest, anchor);
+    public void completeFields(CompletionContext completionRequest) {
+        fieldCompletion.complete(proposals, completionRequest, context.getAnchor());
     }
 
-    public void completeCamelCase(CompletionRequest request) {
-        camelCaseCompletion.complete(proposals, request, anchor);
+    public void completeCamelCase(CompletionContext request) {
+        camelCaseCompletion.complete(proposals, request, context.getAnchor());
     }
 
-    public void completeTypes(CompletionRequest request) {
-        typesCompletion.complete(proposals, request, anchor);
+    public void completeTypes(CompletionContext request) {
+        typesCompletion.complete(proposals, request, context.getAnchor());
     }
 
-    public void completePackages(CompletionRequest request) {
-        packageCompletion.complete(proposals, request, anchor);
+    public void completePackages(CompletionContext request) {
+        packageCompletion.complete(proposals, request, context.getAnchor());
     }
 
-    public void completeLocalVars(CompletionRequest request) {
-        localVarCompletion.complete(proposals, request, anchor);
+    public void completeLocalVars(CompletionContext request) {
+        localVarCompletion.complete(proposals, request, context.getAnchor());
     }
 
-    public void completeNewVars(CompletionRequest request) {
-        newVarCompletion.complete(proposals, request, anchor);
+    public void completeNewVars(CompletionContext request) {
+        newVarCompletion.complete(proposals, request, context.getAnchor());
     }
 
     public List<CompletionProposal> getCollectedProposals() {

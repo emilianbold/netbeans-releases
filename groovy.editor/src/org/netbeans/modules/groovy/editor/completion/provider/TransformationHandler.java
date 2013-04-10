@@ -39,9 +39,10 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.editor.completion;
+package org.netbeans.modules.groovy.editor.completion.provider;
 
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.codehaus.groovy.ast.AnnotationNode;
@@ -128,7 +129,15 @@ public final class TransformationHandler {
             
             if (SINGLETON_ANNOTATION.equals(annotationName)) {
                 final MethodSignature signature = new MethodSignature(SINGLETON_METHOD_NAME, new String[0]);
-                final CompletionItem proposal = CompletionItem.forJavaMethod(typeNode.getNameWithoutPackage(), SINGLETON_METHOD_NAME, "", typeNode.getNameWithoutPackage(), Utilities.reflectionModifiersToModel(Modifier.STATIC), anchorOffset, true, false);
+                final CompletionItem proposal = CompletionItem.forJavaMethod(
+                        typeNode.getNameWithoutPackage(),
+                        SINGLETON_METHOD_NAME,
+                        Collections.<String>emptyList(),
+                        typeNode.getNameWithoutPackage(),
+                        Utilities.reflectionModifiersToModel(Modifier.STATIC),
+                        anchorOffset,
+                        true,
+                        false);
                 
                 if (signature.getName().startsWith(prefix)) {
                     result.put(signature, proposal);
@@ -174,7 +183,7 @@ public final class TransformationHandler {
         final String[] methodParams = getMethodParams(method);
         final String returnType = method.getReturnType().getName();
 
-        return CompletionItem.forDynamicMethod(anchorOffset, methodName, methodParams, returnType, true, prefixed);
+        return CompletionItem.forDynamicMethod(anchorOffset, methodName, methodParams, returnType, prefixed);
     }
     
     private static String[] getMethodParams(MethodNode method) {

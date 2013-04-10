@@ -40,21 +40,20 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion.impl;
+package org.netbeans.modules.groovy.editor.completion;
 
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
+import org.netbeans.modules.groovy.editor.completion.provider.CompleteElementHandler;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 
 /**
  * Complete the fields for a class. There are two principal completions for fields:
@@ -67,67 +66,55 @@ import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
 public class FieldCompletion extends BaseCompletion {
 
     @Override
-    public boolean complete(List<CompletionProposal> proposals, CompletionRequest request, int anchor) {
+    public boolean complete(List<CompletionProposal> proposals, CompletionContext context, int anchor) {
         LOG.log(Level.FINEST, "-> completeFields"); // NOI18N
 
-        if (request.location == CaretLocation.INSIDE_PARAMETERS && request.isBehindDot() == false) {
+        if (context.location == CaretLocation.INSIDE_PARAMETERS && context.isBehindDot() == false) {
             LOG.log(Level.FINEST, "no fields completion inside of parameters-list"); // NOI18N
             return false;
         }
 
-        if (request.dotContext != null && request.dotContext.isMethodsOnly()) {
+        if (context.dotContext != null && context.dotContext.isMethodsOnly()) {
             return false;
         }
 
         // We are after either implements or extends keyword
-        if ((request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_implements) ||
-            (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_extends)) {
+        if ((context.context.beforeLiteral != null && context.context.beforeLiteral.id() == GroovyTokenId.LITERAL_implements) ||
+            (context.context.beforeLiteral != null && context.context.beforeLiteral.id() == GroovyTokenId.LITERAL_extends)) {
             return false;
         }
         
-        if (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_class) {
+        if (context.context.beforeLiteral != null && context.context.beforeLiteral.id() == GroovyTokenId.LITERAL_class) {
             return false;
         }
 
-        ClassNode declaringClass;
-        if (request.isBehindDot()) {
+        if (context.isBehindDot()) {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
 
-            PackageCompletionRequest packageRequest = getPackageRequest(request);
+            PackageCompletionRequest packageRequest = getPackageRequest(context);
 
             if (packageRequest.basePackage.length() > 0) {
-                ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
+                ClasspathInfo pathInfo = getClasspathInfoFromRequest(context);
 
                 if (isValidPackage(pathInfo, packageRequest.basePackage)) {
                     LOG.log(Level.FINEST, "The string before the dot seems to be a valid package"); // NOI18N
                     return false;
                 }
             }
-            declaringClass = request.declaringClass;
         } else {
-            declaringClass = ContextHelper.getSurroundingClassNode(request);
-        }
-
-        if (declaringClass == null) {
-            LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
-            return false;
+            context.declaringClass = ContextHelper.getSurroundingClassNode(context);
         }
 
         // If we are dealing with GStrings, the prefix is prefixed ;-)
         // ... with the dollar sign $ See # 143295
-        int anchorShift = 0;
-        String fieldName = request.prefix;
-
-        if (request.prefix.startsWith("$")) {
-            fieldName = request.prefix.substring(1);
-            anchorShift = 1;
+        if (context.getPrefix().startsWith("$")) {
+            context.setPrefix(context.getPrefix().substring(1)); // Remove $ from prefix
+            context.setAnchor(context.getAnchor() + 1);          // Add 1 for anchor position
         }
 
-        Map<FieldSignature, ? extends CompletionItem> result = CompleteElementHandler
-                .forCompilationInfo(request.info)
-                    .getFields(ContextHelper.getSurroundingClassNode(request), declaringClass, fieldName, anchor + anchorShift);
+        Map<FieldSignature, CompletionItem> result = new CompleteElementHandler(context).getFields();
         
-        FieldSignature prefixFieldSignature = new FieldSignature(request.prefix);
+        FieldSignature prefixFieldSignature = new FieldSignature(context.getPrefix());
         if (result.containsKey(prefixFieldSignature)) {
             result.remove(prefixFieldSignature);
         }

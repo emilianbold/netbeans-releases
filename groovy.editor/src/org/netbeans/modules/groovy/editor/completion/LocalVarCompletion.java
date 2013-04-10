@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion.impl;
+package org.netbeans.modules.groovy.editor.completion;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -49,9 +49,8 @@ import org.codehaus.groovy.ast.Variable;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.editor.completion.VariableFinderVisitor;
+import org.netbeans.modules.groovy.editor.completion.interference.VariableFinderVisitor;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 
 /**
  *
@@ -60,12 +59,12 @@ import org.netbeans.modules.groovy.editor.completion.VariableFinderVisitor;
 public class LocalVarCompletion extends BaseCompletion {
 
     @Override
-    public boolean complete(List<CompletionProposal> proposals, CompletionRequest request, int anchor) {
+    public boolean complete(List<CompletionProposal> proposals, CompletionContext request, int anchor) {
         LOG.log(Level.FINEST, "-> completeLocalVars"); // NOI18N
 
         if (!(request.location == CaretLocation.INSIDE_CLOSURE || request.location == CaretLocation.INSIDE_METHOD)
                 // handle $someprefix in string
-                && !(request.location == CaretLocation.INSIDE_STRING && request.prefix.matches("\\$[^\\{].*"))) {
+                && !(request.location == CaretLocation.INSIDE_STRING && request.getPrefix().matches("\\$[^\\{].*"))) {
             LOG.log(Level.FINEST, "Not inside method, closure or in-string variable, bail out."); // NOI18N
             return false;
         }
@@ -85,10 +84,10 @@ public class LocalVarCompletion extends BaseCompletion {
         // If we are dealing with GStrings, the prefix is prefixed ;-)
         // ... with the dollar sign $ See # 143295
         int anchorShift = 0;
-        String varPrefix = request.prefix;
+        String varPrefix = request.getPrefix();
 
-        if (request.prefix.startsWith("$")) {
-            varPrefix = request.prefix.substring(1);
+        if (request.getPrefix().startsWith("$")) {
+            varPrefix = request.getPrefix().substring(1);
             anchorShift = 1;
         }
 

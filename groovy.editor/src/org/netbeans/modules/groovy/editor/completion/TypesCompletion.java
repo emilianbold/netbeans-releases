@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion.impl;
+package org.netbeans.modules.groovy.editor.completion;
 
 import java.io.IOException;
 import java.util.*;
@@ -63,12 +63,12 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.api.completion.util.CamelCaseUtil;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
+import org.netbeans.modules.groovy.editor.completion.util.CamelCaseUtil;
 import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
@@ -103,13 +103,13 @@ public class TypesCompletion extends BaseCompletion {
 
     // There attributes should be initiated for each complete() method call
     private List<CompletionProposal> proposals;
-    private CompletionRequest request;
+    private CompletionContext request;
     private int anchor;
     private boolean constructorCompletion;
 
     
     @Override
-    public boolean complete(List<CompletionProposal> proposals, CompletionRequest request, int anchor) {
+    public boolean complete(List<CompletionProposal> proposals, CompletionContext request, int anchor) {
         LOG.log(Level.FINEST, "-> completeTypes"); // NOI18N
 
         this.proposals = proposals;
@@ -145,7 +145,7 @@ public class TypesCompletion extends BaseCompletion {
 
         boolean onlyInterfaces = false;
 
-        Token<? extends GroovyTokenId> literal = request.ctx.beforeLiteral;
+        Token<? extends GroovyTokenId> literal = request.context.beforeLiteral;
         if (literal != null) {
             
             // We don't need to complete Types after class definition
@@ -195,7 +195,7 @@ public class TypesCompletion extends BaseCompletion {
 
             // FIXME parsing API
             GroovyIndex index = null;
-            FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+            FileObject fo = request.getSourceFile();
             if (fo != null) {
                 index = GroovyIndex.get(QuerySupport.findRoots(fo,
                         Collections.singleton(ClassPath.SOURCE),
@@ -204,7 +204,7 @@ public class TypesCompletion extends BaseCompletion {
             }
 
             if (index != null) {
-                String camelCaseFirstWord = CamelCaseUtil.getCamelCaseFirstWord(request.prefix);
+                String camelCaseFirstWord = CamelCaseUtil.getCamelCaseFirstWord(request.getPrefix());
                 Set<IndexedClass> classes = index.getClasses(camelCaseFirstWord, QuerySupport.Kind.PREFIX, true, false, false);
 
                 if (classes.isEmpty()) {
@@ -339,7 +339,7 @@ public class TypesCompletion extends BaseCompletion {
         // If we are in situation: "String s = new String|" we don't want to show
         // String type as a option - we want to show String constructors + types
         // prefixed with String (e.g. StringBuffer)
-        if (constructorCompletion && typeName.toUpperCase().equals(request.prefix.toUpperCase())) {
+        if (constructorCompletion && typeName.toUpperCase().equals(request.getPrefix().toUpperCase())) {
             return;
         }
 
@@ -350,7 +350,7 @@ public class TypesCompletion extends BaseCompletion {
         }
 
         // We are dealing with CamelCase completion for some class type
-        if (CamelCaseUtil.compareCamelCase(typeName, request.prefix)) {
+        if (CamelCaseUtil.compareCamelCase(typeName, request.getPrefix())) {
             CompletionItem.TypeItem camelCaseProposal = new CompletionItem.TypeItem(typeName, anchor, ElementKind.CLASS);
             
             if (!proposals.contains(camelCaseProposal)) {

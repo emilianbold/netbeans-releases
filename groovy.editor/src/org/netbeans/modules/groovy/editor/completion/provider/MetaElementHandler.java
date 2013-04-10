@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.completion;
+package org.netbeans.modules.groovy.editor.completion.provider;
 
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import groovy.lang.GroovySystem;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grailsproject.completion;
+package org.netbeans.modules.groovy.editor.spi.completion;
 
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.util.Set;
 
 /**
- *
- * @author Petr Hejl
+ * Provides additional default imports.
+ * 
+ * @author Martin Janicek
  */
-public class ControllerCompletionProviderTest extends GroovyTestBase {
+public interface DefaultImportsProvider {
 
-    String TEST_BASE = "projects/completion/grails-app/controllers/";
-
-
-    public ControllerCompletionProviderTest(String name) {
-        super(name);
-    }
+    Set<String> getDefaultImportPackages();
     
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        indexFile("projects/completion/grails-app/controllers/TestDomainController.groovy");
-    }
+    Set<String> getDefaultImportClasses();
 
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        Map<String, ClassPath> map = super.createClassPathsForTest();
-
-        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-            FileUtil.toFileObject(getDataFile("/projects/completion/grails-app/domain")),
-            FileUtil.toFileObject(getDataFile("/projects/completion/grails-app/controllers"))}));
-        return map;
-    }
-
-    public void testControllerMethods1() throws Exception {
-        checkCompletion(TEST_BASE + "TestDomainController.groovy", "        this.^", true);
-    }
 }

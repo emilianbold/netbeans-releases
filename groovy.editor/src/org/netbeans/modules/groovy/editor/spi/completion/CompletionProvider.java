@@ -37,48 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grailsproject.completion;
+package org.netbeans.modules.groovy.editor.spi.completion;
 
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
+import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
+import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 
 /**
- *
+ * Provides additional code completion items for the given {@link CompletionContext}.
+ * 
  * @author Petr Hejl
+ * @author Martin Janicek
  */
-public class ControllerCompletionProviderTest extends GroovyTestBase {
+public interface CompletionProvider {
 
-    String TEST_BASE = "projects/completion/grails-app/controllers/";
-
-
-    public ControllerCompletionProviderTest(String name) {
-        super(name);
-    }
+    Map<MethodSignature, CompletionItem> getMethods(CompletionContext context);
     
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        indexFile("projects/completion/grails-app/controllers/TestDomainController.groovy");
-    }
+    Map<MethodSignature, CompletionItem> getStaticMethods(CompletionContext context);
 
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        Map<String, ClassPath> map = super.createClassPathsForTest();
+    Map<FieldSignature, CompletionItem> getFields(CompletionContext context);
+    
+    Map<FieldSignature, CompletionItem> getStaticFields(CompletionContext context);
 
-        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-            FileUtil.toFileObject(getDataFile("/projects/completion/grails-app/domain")),
-            FileUtil.toFileObject(getDataFile("/projects/completion/grails-app/controllers"))}));
-        return map;
-    }
-
-    public void testControllerMethods1() throws Exception {
-        checkCompletion(TEST_BASE + "TestDomainController.groovy", "        this.^", true);
-    }
 }
