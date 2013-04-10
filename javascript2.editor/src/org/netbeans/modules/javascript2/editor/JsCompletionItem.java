@@ -191,8 +191,6 @@ public class JsCompletionItem implements CompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            long start = System.currentTimeMillis();
-            System.out.print("Function getLhsHtml " + getName());
             formatter.emphasis(true);
             formatter.appendText(getName());
             formatter.emphasis(false);
@@ -200,7 +198,6 @@ public class JsCompletionItem implements CompletionProposal {
             appendParamsStr(formatter);
             formatter.appendText(")");
             appendReturnTypes(formatter);
-            System.out.println(" took: " + (System.currentTimeMillis() - start));
             return formatter.getText();
         }
 
@@ -381,8 +378,6 @@ public class JsCompletionItem implements CompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            long start = System.currentTimeMillis();
-            System.out.print("Property getLhsHtml " + getName());
             formatter.appendText(getName());
             if (resolvedTypes == null) {
                 resolvedTypes = new ArrayList<String>();
@@ -413,7 +408,6 @@ public class JsCompletionItem implements CompletionProposal {
                 }
                 formatter.type(false);
             }
-            System.out.println(" took: " + (System.currentTimeMillis() - start));
             return formatter.getText();
         }
     }
