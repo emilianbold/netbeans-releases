@@ -83,7 +83,7 @@ public class FindSelectionAction extends AbstractEditorAction {
             boolean revert = false;
             Boolean originalValue = null;
             Map revertMap = (Map) props.get(EditorFindSupport.REVERT_MAP);
-            Boolean revertValue = (Boolean) revertMap.get(EditorFindSupport.FIND_WHOLE_WORDS);
+            Boolean revertValue = revertMap != null ? (Boolean) revertMap.get(EditorFindSupport.FIND_WHOLE_WORDS) : null;
             if (Utilities.isSelectionShowing(caret)) {
                 // valid selection
                 searchWord = target.getSelectedText();
