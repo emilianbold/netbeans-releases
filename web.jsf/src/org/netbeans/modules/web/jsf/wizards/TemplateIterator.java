@@ -55,8 +55,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
@@ -64,6 +62,7 @@ import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -148,7 +147,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                     @Override
                     public void run() throws IOException {
                         InputStream is;
-                        FileObject target = df.getPrimaryFile().createData(targetName, "template"); //NOI18N
+                        FileObject target = df.getPrimaryFile().createData(targetName, XHTML_EXT); //NOI18N
 
                         String folderName = jsfVersion.isAtLeast(JSFVersion.JSF_2_0) ? CSS_FOLDER2 : CSS_FOLDER;
                         FileObject cssFolder = docBase.getFileObject(folderName);
@@ -176,7 +175,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                         if (!jsfVersion.isAtLeast(JSFVersion.JSF_2_0)) {
                             content = content.replaceAll("h:head", "head").replaceAll("h:body", "body"); //NOI18N
                         }
-                        String namespaceLocation = jsfVersion.isAtLeast(JSFVersion.JSF_2_2) ? "http://xmlns.jcp.org" : "http://java.sun.com";
+                        String namespaceLocation = jsfVersion.isAtLeast(JSFVersion.JSF_2_2) ? NamespaceUtils.JCP_ORG_LOCATION : NamespaceUtils.SUN_COM_LOCATION;
 
                         HashMap args = new HashMap();
                         args.put("LAYOUT_CSS_PATH", layoutPath);    //NOI18N

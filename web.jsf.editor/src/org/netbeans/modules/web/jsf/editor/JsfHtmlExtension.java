@@ -163,10 +163,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         // add hint for missing library
 
         for (String namespace : nss.keySet()) {
-
             Node root = result.root(namespace);
             if (root != null) {
-                final Library tldl = NamespaceUtils.getLibraryForNs(libs, namespace);
+                final Library tldl = NamespaceUtils.getForNs(libs, namespace);
                 ElementUtils.visitChildren(root, new ElementVisitor() {
                     @Override
                     public void visit(Element element) {
@@ -232,10 +231,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             //editing namespace or tag w/o ns
             //offer all tags
             for (Library lib : librariesSet) {
-                String declaredPrefix = declaredNS.get(lib.getNamespace());
-                if (declaredPrefix == null && lib.getLegacyNamespace() != null) {
-                    declaredPrefix = declaredNS.get(lib.getLegacyNamespace());
-                }
+                String declaredPrefix = NamespaceUtils.getForNs(declaredNS, lib.getNamespace());
                 if (declaredPrefix == null) {
                     //undeclared prefix, try to match with default library prefix
                     if (lib.getDefaultPrefix() != null && lib.getDefaultPrefix().startsWith(context.getPrefix())) {
@@ -261,7 +257,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
             } else {
                 //query only associated lib
-                Library lib = NamespaceUtils.getLibraryForNs(libs, namespace);
+                Library lib = NamespaceUtils.getForNs(libs, namespace);
                 if (lib == null) {
                     //no such lib, exit
                     return Collections.emptyList();
@@ -329,7 +325,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         String tagName = ot.unqualifiedName().toString();
 
         String namespace = getUriForPrefix(nsPrefix.toString(), declaredNS);
-        Library flib = NamespaceUtils.getLibraryForNs(libs, namespace);
+        Library flib = NamespaceUtils.getForNs(libs, namespace);
         if (flib == null) {
             //The facelets library not found. This happens if one declares
             //a namespace which is not matched to any existing library

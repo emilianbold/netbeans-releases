@@ -128,10 +128,8 @@ public class LibraryDeclarationChecker extends HintsProvider {
         final Map<String, Attribute> namespace2Attribute = new HashMap<String, Attribute>();
         Node root = result.root();
         final CharSequence docText = getSourceText(snapshot.getSource());
-        final String jsfNsPrefix = result.getNamespaces().get(DefaultLibraryInfo.JSF.getNamespace()) != null ?
-                result.getNamespaces().get(DefaultLibraryInfo.JSF.getNamespace()) : result.getNamespaces().get(DefaultLibraryInfo.JSF.getLegacyNamespace());
-        final String passthroughNsPrefix = result.getNamespaces().get(DefaultLibraryInfo.PASSTHROUGH.getNamespace()) != null ?
-                result.getNamespaces().get(DefaultLibraryInfo.PASSTHROUGH.getNamespace()) : result.getNamespaces().get(DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace());
+        final String jsfNsPrefix = NamespaceUtils.getForNs(result.getNamespaces(), DefaultLibraryInfo.JSF.getNamespace());
+        final String passthroughNsPrefix = NamespaceUtils.getForNs(result.getNamespaces(), DefaultLibraryInfo.PASSTHROUGH.getNamespace());
         final boolean[] jsfUsage = new boolean[1];
         final List<Named> wrongJsfNsUsages = new ArrayList<Named>();
 
@@ -218,7 +216,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         for (String namespace : declaredNamespaces) {
-            Library lib = NamespaceUtils.getLibraryForNs(libs, namespace);
+            Library lib = NamespaceUtils.getForNs(libs, namespace);
             if (lib != null) {
                 // http://java.sun.com/jsf/passthrough usage needs to be resolved on base of all declared libraries
                 if (!(DefaultLibraryInfo.PASSTHROUGH.getNamespace().equals(lib.getNamespace())
@@ -241,10 +239,8 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         //2. find for unused declarations
-        final boolean declaredPassthroughOrJsf = declaredNamespaces.contains(DefaultLibraryInfo.PASSTHROUGH.getNamespace())
-                || declaredNamespaces.contains(DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace())
-                || declaredNamespaces.contains(DefaultLibraryInfo.JSF.getNamespace())
-                || declaredNamespaces.contains(DefaultLibraryInfo.JSF.getLegacyNamespace());
+        final boolean declaredPassthroughOrJsf = NamespaceUtils.containsNsOf(declaredNamespaces, DefaultLibraryInfo.JSF)
+                || NamespaceUtils.containsNsOf(declaredNamespaces, DefaultLibraryInfo.PASSTHROUGH);
         final boolean[] passthroughUsage = new boolean[1];
         final Collection<OffsetRange> ranges = new ArrayList<OffsetRange>();
         for (Library lib : declaredLibraries) {
@@ -294,8 +290,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         //2b. find for unused declaration of http://java.sun.com/jsf/passthrough
-        if ((declaredNamespaces.contains(DefaultLibraryInfo.PASSTHROUGH.getNamespace()) || declaredNamespaces.contains(DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace()))
-                && !passthroughUsage[0]) {
+        if (NamespaceUtils.containsNsOf(declaredNamespaces, DefaultLibraryInfo.PASSTHROUGH) && !passthroughUsage[0]) {
             addUnusedLibrary(ranges,
                     namespace2Attribute,
                     libs.get(DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace()),
@@ -416,8 +411,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
     //find all embedded EL token sequences in the source code and check if the
     //prefix is used in any of them
     private static boolean isFunctionLibraryPrefixUsedInEL(RuleContext context, Library lib, CharSequence sourceText) {
-        String libraryPrefix = ((HtmlParserResult)context.parserResult).getNamespaces().get(lib.getNamespace());
-
+        String libraryPrefix = NamespaceUtils.getForNs(((HtmlParserResult)context.parserResult).getNamespaces(), lib.getNamespace());
         TokenHierarchy<CharSequence> th = TokenHierarchy.create(sourceText, Language.find("text/xhtml"));
         TokenSequence<?> ts = th.tokenSequence();
         ts.moveStart();

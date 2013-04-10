@@ -215,7 +215,7 @@ public class JsfSupportImpl implements JsfSupport {
 
     @Override
     public Library getLibrary(String namespace) {
-        return NamespaceUtils.getLibraryForNs(faceletsLibrarySupport.getLibraries(), namespace);
+        return NamespaceUtils.getForNs(faceletsLibrarySupport.getLibraries(), namespace);
     }
 
     /** Library's uri to library map 

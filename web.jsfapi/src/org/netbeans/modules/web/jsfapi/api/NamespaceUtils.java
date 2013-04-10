@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.jsfapi.api;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -76,17 +77,33 @@ public final class NamespaceUtils {
 
     /**
      * Takes map of libraries and namespace and return library for the namespace or its legacy version.
-     * @param libraries map of libraries
+     * @param map map of libraries
      * @param ns namespace to examine
      * @return library for the given or its legacy namespace, {@code null} if no such library was found
      */
     @CheckForNull
-    public static Library getLibraryForNs(Map<String, ? extends Library> libraries, String ns) {
-        Library result = libraries.get(ns);
+    public static <T> T getForNs(Map<String, T> map, String ns) {
+        T result = map.get(ns);
         if (result == null && NS_MAPPING.containsKey(ns)) {
-            result = libraries.get(NS_MAPPING.get(ns));
+            result = map.get(NS_MAPPING.get(ns));
         }
         return result;
+    }
+
+    /**
+     * Says whether given namespaces collection contains namespace of the library.
+     * @param collection collection of namespaces
+     * @param library library to check
+     * @return {@code true} if the collection contains new or legacy library namespace, {@code false} otherwise
+     */
+    public static boolean containsNsOf(Collection<String> collection, DefaultLibraryInfo library) {
+        if (collection.contains(library.getNamespace())) {
+            return true;
+        }
+        if (library.getLegacyNamespace() != null) {
+            return collection.contains(library.getLegacyNamespace());
+        }
+        return false;
     }
 
     public static Set<String> getAvailableNss(Map<String, ? extends Library> libraries, boolean jsf22plus) {
