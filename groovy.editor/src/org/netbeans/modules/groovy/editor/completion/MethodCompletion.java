@@ -226,7 +226,7 @@ public class MethodCompletion extends BaseCompletion {
     private List<String> getTypesInSamePackage() {
         ModuleNode moduleNode = ContextHelper.getSurroundingModuleNode(context);
         if (moduleNode != null) {
-            String packageName = ContextHelper.getSurroundingModuleNode(context).getPackageName();
+            String packageName = moduleNode.getPackageName();
             if (packageName != null) {
                 packageName = packageName.substring(0, packageName.length() - 1); // Removing last '.' char
 
