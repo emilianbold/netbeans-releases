@@ -1747,7 +1747,23 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
     }
     
-    @Override public void end_labeled_statement(Token token) {
+    @Override 
+    public void end_labeled_statement(Token token) {
+        try {
+            end_labeled_statement_impl(token);
+        } catch (Exception ex) {
+            regesterException(ex);
+        }
+    }
+    
+    private void end_labeled_statement_impl(Token token) {
+        CsmObjectBuilder top = builderContext.top();
+        if (top instanceof CaseStatementBuilder) {
+            // remove unfinished case
+            CaseStatementBuilder builder = (CaseStatementBuilder)builderContext.top();
+            builderContext.pop();
+            builder.setEndOffset(((APTToken)token).getEndOffset());
+        }
     }
     
     @Override 
