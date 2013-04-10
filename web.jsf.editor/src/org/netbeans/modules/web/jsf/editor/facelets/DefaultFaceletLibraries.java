@@ -56,6 +56,7 @@ import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.LibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -206,7 +207,7 @@ public class DefaultFaceletLibraries {
 
         @Override
         public String getLegacyNamespace() {
-            return DefaultLibraryInfo.NS_MAPPING.get(namespace);
+            return NamespaceUtils.NS_MAPPING.get(namespace);
         }
 
     }

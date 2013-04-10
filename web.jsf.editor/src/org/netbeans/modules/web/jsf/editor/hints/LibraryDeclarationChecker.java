@@ -81,6 +81,7 @@ import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.DefaultFaceletLibraries;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -217,10 +218,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         for (String namespace : declaredNamespaces) {
-            Library lib = libs.get(namespace);
-            if (lib == null && DefaultLibraryInfo.NS_MAPPING.containsKey(namespace)) {
-                lib = libs.get(DefaultLibraryInfo.NS_MAPPING.get(namespace));
-            }
+            Library lib = NamespaceUtils.getLibraryForNs(libs, namespace);
             if (lib != null) {
                 // http://java.sun.com/jsf/passthrough usage needs to be resolved on base of all declared libraries
                 if (!(DefaultLibraryInfo.PASSTHROUGH.getNamespace().equals(lib.getNamespace())
