@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -181,8 +182,11 @@ public class JsCompletionItem implements CompletionProposal {
     
     public static class JsFunctionCompletionItem extends JsCompletionItem {
         
+        private List<String> returnTypes;
+        
         JsFunctionCompletionItem(ElementHandle element, CompletionRequest request) {
             super(element, request);
+            returnTypes = null;
         }
 
         @Override
@@ -239,14 +243,17 @@ public class JsCompletionItem implements CompletionProposal {
         }
 
         private void appendReturnTypes(HtmlFormatter formatter) {
-            Collection<String> returnTypes = new ArrayList<String>();
+            if (returnTypes == null) {
+                returnTypes = new ArrayList<String>();
 
-            ElementHandle element = getElement();
-            if (element instanceof JsFunction) {
-                returnTypes.addAll(Utils.getDisplayNames(((JsFunction) element).getReturnTypes()));
-            } else if (element instanceof IndexedElement.FunctionIndexedElement) {
-                returnTypes.addAll(Utils.getDisplayNamesFromStrings(((IndexedElement.FunctionIndexedElement) element).getReturnTypes()));
+                ElementHandle element = getElement();
+                if (element instanceof JsFunction) {
+                    returnTypes.addAll(Utils.getDisplayNames(((JsFunction) element).getReturnTypes()));
+                } else if (element instanceof IndexedElement.FunctionIndexedElement) {
+                    returnTypes.addAll(Utils.getDisplayNamesFromStrings(((IndexedElement.FunctionIndexedElement) element).getReturnTypes()));
+                }
             }
+            
             if (!returnTypes.isEmpty()) {
                 formatter.appendText(": "); //NOI18N
                 formatter.type(true);
@@ -365,8 +372,11 @@ public class JsCompletionItem implements CompletionProposal {
 
     public static class JsPropertyCompletionItem extends JsCompletionItem {
 
+        private List<String> resolvedTypes;
+        
         JsPropertyCompletionItem(ElementHandle element, CompletionRequest request) {
             super(element, request);
+            resolvedTypes = null;
         }
 
         @Override
@@ -374,31 +384,34 @@ public class JsCompletionItem implements CompletionProposal {
             long start = System.currentTimeMillis();
             System.out.print("Property getLhsHtml " + getName());
             formatter.appendText(getName());
-            Collection<? extends TypeUsage> assignment = null;
-            ElementHandle element = getElement();
-            if (element instanceof JsObject) {
-                JsObject jsObject = (JsObject) element;
-                assignment = jsObject.getAssignmentForOffset(request.anchor);
-            } else if (element instanceof IndexedElement) {
-                IndexedElement iElement = (IndexedElement) element;
-                assignment = iElement.getAssignments();
-            }
-            if (assignment != null) {
-                if (!assignment.isEmpty()) {
+            if (resolvedTypes == null) {
+                resolvedTypes = new ArrayList<String>();
+                Collection<? extends TypeUsage> assignment = null;
+                ElementHandle element = getElement();
+                if (element instanceof JsObject) {
+                    JsObject jsObject = (JsObject) element;
+                    assignment = jsObject.getAssignmentForOffset(request.anchor);
+                } else if (element instanceof IndexedElement) {
+                    IndexedElement iElement = (IndexedElement) element;
+                    assignment = iElement.getAssignments();
+                }
+                if (assignment != null && !assignment.isEmpty()) {
                     Collection<TypeUsage> resolved = new ArrayList<TypeUsage>(assignment);
-                    resolved = ModelUtils.resolveTypes(resolved, request.result);
-                    if (!resolved.isEmpty()) {
-                        formatter.type(true);
-                        formatter.appendText(": ");  //NOI18N
-                        for (Iterator<? extends TypeUsage> it = resolved.iterator(); it.hasNext();) {
-                            formatter.appendText(it.next().getType());
-                            if (it.hasNext()) {
-                                formatter.appendText("|");   //NOI18N
-                            }
-                        }
-                        formatter.type(false);
+                    resolved = ModelUtils.resolveTypes(resolved, request.result);    
+                    resolvedTypes.addAll(Utils.getDisplayNames(resolved));
+                    
+                }
+            }
+            if (!resolvedTypes.isEmpty()) {
+                formatter.type(true);
+                formatter.appendText(": ");  //NOI18N
+                for (Iterator<String> it = resolvedTypes.iterator(); it.hasNext();) {
+                    formatter.appendText(it.next());
+                    if (it.hasNext()) {
+                        formatter.appendText("|");   //NOI18N
                     }
                 }
+                formatter.type(false);
             }
             System.out.println(" took: " + (System.currentTimeMillis() - start));
             return formatter.getText();
