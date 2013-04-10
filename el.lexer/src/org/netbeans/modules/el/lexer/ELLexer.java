@@ -798,6 +798,9 @@ public class ELLexer implements Lexer<ELTokenId> {
             case ISA_MINUS:
                 lexerState = INIT;
                 return token(ELTokenId.MINUS);
+            case ISA_PLUS:
+                lexerState = INIT;
+                return token(ELTokenId.PLUS);
             case ISA_GT:
                 lexerState = INIT;
                 return token(ELTokenId.GT);
@@ -826,6 +829,9 @@ public class ELLexer implements Lexer<ELTokenId> {
             case ISI_BRACKET_ISA_MINUS:
                 lexerState = ISI_BRACKET;
                 return token(ELTokenId.MINUS);
+            case ISI_BRACKET_ISA_PLUS:
+                lexerState = ISI_BRACKET;
+                return token(ELTokenId.PLUS);
             case ISI_BRACKET_ISA_GT:
                 lexerState = ISI_BRACKET;
                 return token(ELTokenId.GT_EQ);
