@@ -79,6 +79,7 @@ import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -154,7 +155,6 @@ public class JsfHtmlExtension extends HtmlExtension {
             return;
         }
         Map<String, Library> libs = jsfs.getLibraries();
-
         Map<String, String> nss = result.getNamespaces();
 
         //1. resolve which declared libraries are available on classpath
@@ -163,10 +163,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         // add hint for missing library
 
         for (String namespace : nss.keySet()) {
-
             Node root = result.root(namespace);
             if (root != null) {
-                final Library tldl = libs.get(namespace) != null ? libs.get(namespace) : libs.get(DefaultLibraryInfo.NS_MAPPING.get(namespace));
+                final Library tldl = NamespaceUtils.getForNs(libs, namespace);
                 ElementUtils.visitChildren(root, new ElementVisitor() {
                     @Override
                     public void visit(Element element) {
@@ -232,10 +231,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             //editing namespace or tag w/o ns
             //offer all tags
             for (Library lib : librariesSet) {
-                String declaredPrefix = declaredNS.get(lib.getNamespace());
-                if (declaredPrefix == null && lib.getLegacyNamespace() != null) {
-                    declaredPrefix = declaredNS.get(lib.getLegacyNamespace());
-                }
+                String declaredPrefix = NamespaceUtils.getForNs(declaredNS, lib.getNamespace());
                 if (declaredPrefix == null) {
                     //undeclared prefix, try to match with default library prefix
                     if (lib.getDefaultPrefix() != null && lib.getDefaultPrefix().startsWith(context.getPrefix())) {
@@ -261,10 +257,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
             } else {
                 //query only associated lib
-                Library lib = libs.get(namespace);
-                if (lib == null && DefaultLibraryInfo.NS_MAPPING.containsKey(namespace)) {
-                    lib = libs.get(DefaultLibraryInfo.NS_MAPPING.get(namespace));
-                }
+                Library lib = NamespaceUtils.getForNs(libs, namespace);
                 if (lib == null) {
                     //no such lib, exit
                     return Collections.emptyList();
@@ -332,10 +325,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         String tagName = ot.unqualifiedName().toString();
 
         String namespace = getUriForPrefix(nsPrefix.toString(), declaredNS);
-        Library flib = libs.get(namespace);
-        if (flib == null && DefaultLibraryInfo.NS_MAPPING.containsKey(namespace)) {
-            flib = libs.get(DefaultLibraryInfo.NS_MAPPING.get(namespace));
-        }
+        Library flib = NamespaceUtils.getForNs(libs, namespace);
         if (flib == null) {
             //The facelets library not found. This happens if one declares
             //a namespace which is not matched to any existing library
@@ -501,17 +491,8 @@ public class JsfHtmlExtension extends HtmlExtension {
     private void completeXMLNSAttribute(CompletionContext context, List<CompletionItem> items, JsfSupportImpl jsfs) {
         if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) { //NOI18N
             //xml namespace completion for facelets namespaces
-            Set<String> nss = new HashSet<String>();
-            for (Entry<String, Library> entry : jsfs.getLibraries().entrySet()) {
-                nss.add(entry.getKey());
-                if (jsfs.isJsf22Plus()) {
-                    nss.add(entry.getValue().getNamespace());
-                    //add also JSF, PASS legacy namespaces
-                    if (DefaultLibraryInfo.NS_MAPPING.containsKey(entry.getValue().getNamespace())) {
-                        nss.add(DefaultLibraryInfo.NS_MAPPING.get(entry.getValue().getNamespace()));
-                    }
-                }
-            }
+            Set<String> nss = NamespaceUtils.getAvailableNss(jsfs.getLibraries(), jsfs.isJsf22Plus());
+
             //add also xhtml ns to the completion
             nss.add(LibraryUtils.XHTML_NS);
             for (String namespace : nss) {
