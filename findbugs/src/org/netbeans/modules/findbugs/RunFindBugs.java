@@ -266,6 +266,17 @@ public class RunFindBugs {
                 for (BugInstance b : e.getValue()) {
                     SourceLineAnnotation sourceLine = b.getPrimarySourceLineAnnotation();
 
+                    if ("UPM_UNCALLED_PRIVATE_METHOD".equals(b.getBugPattern().getType())) {
+                        if (js == null) {
+                            js = JavaSource.forFileObject(sourceFile);
+                        }
+                        int[] span = spanForEnclosingMethod(info, js, sourceLine.getStartLine());
+                        if (span != null && span[0] != (-1)) {
+                            LazyFixList fixes = prepareFixes(b, inEditor, sourceFile, -1, span);
+                            result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getBugPattern().getDetailHTML(), fixes, sourceFile, span[0], span[1]));
+                            continue;
+                        }
+                    }
                     if (sourceLine.getStartLine() >= 0) {
                         LazyFixList fixes = prepareFixes(b, inEditor, sourceFile, sourceLine.getStartLine(), null);
                         
@@ -410,26 +421,55 @@ public class RunFindBugs {
             }
         };
         
-        final TaskImpl convertor = new TaskImpl();
+        runInJavac(info, js, new TaskImpl());
 
+        return result;
+    }
+
+    private static int[] spanForEnclosingMethod(CompilationInfo info, JavaSource js, final int startLine) {
+        final int[] result = new int[] {-1, -1};
+        class TaskImpl implements Task<CompilationInfo> {
+            @Override public void run(final CompilationInfo parameter) {
+                long pos = parameter.getCompilationUnit().getLineMap().getStartPosition(startLine);
+                for (Tree t : parameter.getTreeUtilities().pathFor((int) pos - 1)) {
+                    if (t.getKind() == Kind.METHOD) {
+                        int[] span = parameter.getTreeUtilities().findNameSpan((MethodTree) t);
+
+                        if (span != null && span[0] < pos) {
+                            result[0] = span[0];
+                            result[1] = span[1];
+                        }
+                    }
+                }
+            }
+        };
+        
+        runInJavac(info, js, new TaskImpl());
+
+        return result;
+    }
+    
+    private static void runInJavac(CompilationInfo info, JavaSource js, final Task<CompilationInfo> task) {
         if (info != null) {
-            convertor.run(info);
+            try {
+                task.run(info);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         } else {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
                     @Override public void run(CompilationController parameter) throws Exception {
                         parameter.toPhase(Phase.RESOLVED); //XXX: ENTER should be enough in most cases, but not for anonymous innerclasses.
-                        convertor.run(parameter);
+                        task.run(parameter);
                     }
                 }, true);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-
-        return result;
     }
-
+    
     private static LazyFixList prepareFixes(BugInstance b, boolean globalPreferences, FileObject sourceFile, int line, int[] span) {
         List<Fix> fixes;
 
