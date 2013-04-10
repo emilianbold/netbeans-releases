@@ -67,14 +67,10 @@ public class ClientSideProjectBrowserProvider implements ProjectBrowserProvider 
 
     public ClientSideProjectBrowserProvider(ClientSideProject project) {
         this.project = project;
-        project.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(ClientSideProjectConstants.PROJECT_SELECTED_BROWSER)) {
-                    pcs.firePropertyChange(PROP_BROWSER_ACTIVE, null, null);
-                }
-            }
-        });
+    }
+
+    void activeBrowserHasChanged() {
+        pcs.firePropertyChange(PROP_BROWSER_ACTIVE, null, null);
     }
 
     @Override

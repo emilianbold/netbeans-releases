@@ -142,6 +142,7 @@ public class ClientSideProject implements Project {
     private RemoteFiles remoteFiles;
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
     private WebBrowser projectWebBrowser;
+    private ClientSideProjectBrowserProvider projectBrowserProvider;
 
     // css preprocessors
     final List<CssPreprocessor> cssPreprocessors = new CopyOnWriteArrayList<CssPreprocessor>();
@@ -164,6 +165,7 @@ public class ClientSideProject implements Project {
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
         eval = createEvaluator();
         referenceHelper = new ReferenceHelper(helper, configuration, eval);
+        projectBrowserProvider = new ClientSideProjectBrowserProvider(this);
         lookup = createLookup(configuration);
         ClientProjectEnhancedBrowserImplementation ebi = getEnhancedBrowserImpl();
         if (ebi != null) {
@@ -191,6 +193,7 @@ public class ClientSideProject implements Project {
                     if (ebi != null) {
                         lookup.setConfigurationProvider(ebi.getProjectConfigurationProvider());
                     }
+                    projectBrowserProvider.activeBrowserHasChanged();
                 }
             }
         });
@@ -389,7 +392,7 @@ public class ClientSideProject implements Project {
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
                     ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
-               new ClientSideProjectBrowserProvider(this),
+               projectBrowserProvider,
        });
        return new DynamicProjectLookup(this,
                LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup"));
