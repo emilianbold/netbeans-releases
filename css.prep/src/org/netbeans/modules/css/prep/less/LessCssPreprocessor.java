@@ -41,7 +41,8 @@
  */
 package org.netbeans.modules.css.prep.less;
 
-import javax.swing.event.ChangeListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.css.prep.process.LessProcessor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.problems.LessProjectProblemsProvider;
@@ -52,7 +53,6 @@ import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -61,7 +61,7 @@ public final class LessCssPreprocessor implements CssPreprocessorImplementation 
 
     private static final String IDENTIFIER = "LESS"; // NOI18N
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
 
     @Override
@@ -96,17 +96,17 @@ public final class LessCssPreprocessor implements CssPreprocessorImplementation 
     }
 
     @Override
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
     @Override
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-    public void fireChange() {
-        changeSupport.fireChange();
+    public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
 }

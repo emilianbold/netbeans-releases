@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.common.spi;
 
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -62,6 +63,18 @@ import org.openide.util.HelpCtx;
  * @since 1.39
  */
 public interface CssPreprocessorImplementation {
+
+    /**
+     * Property for changes in project customizer. <b>New value
+     * contains the relevant project!</b>
+     * @since 1.43
+     */
+    String CUSTOMIZER_PROPERTY = "CUSTOMIZER_PROPERTY"; // NOI18N
+    /**
+     * Property for changes in general configuration.
+     * @since 1.43
+     */
+    String OPTIONS_PROPERTY = "OPTIONS_PROPERTY"; // NOI18N
 
     /**
      * Return the <b>non-localized (usually english)</b> identifier of this CSS preprocessor.
@@ -120,19 +133,24 @@ public interface CssPreprocessorImplementation {
     ProjectProblemsProvider createProjectProblemsProvider(@NonNull CssPreprocessor.ProjectProblemsProviderSupport support);
 
     /**
-     * Attach a change listener that is to be notified of changes
-     * in this CSS peprocessor.
+     * Attach a property change listener that is to be notified of changes
+     * in this CSS peprocessor. Possible properties are:
+     * <ul>
+     *   <li>{@link #CUSTOMIZER_PROPERTY} - property for changes in project customizer. <b>New value
+     *       contains the relevant project!</b></li>
+     *   <li>{@link #OPTIONS_PROPERTY} - property for changes in general configuration</li>
+     * </ul>
      * @param listener a listener, can be {@code null}
-     * @since 1.42
+     * @since 1.43
      */
-    void addChangeListener(@NullAllowed ChangeListener listener);
+    void addPropertyChangeListener(@NullAllowed PropertyChangeListener listener);
 
     /**
-     * Removes a change listener.
+     * Removes a property change listener.
      * @param listener a listener, can be {@code null}
-     * @since 1.42
+     * @since 1.43
      */
-    void removeChangeListener(@NullAllowed ChangeListener listener);
+    void removePropertyChangeListener(@NullAllowed PropertyChangeListener listener);
 
     //~ Inner classes
 

@@ -205,10 +205,23 @@ public final class PhpProject implements Project {
 
     // css preprocessors
     final List<CssPreprocessor> cssPreprocessors = new CopyOnWriteArrayList<CssPreprocessor>();
-    final ChangeListener cssPreprocessorChangeListener = new ChangeListener() {
+    final PropertyChangeListener cssPreprocessorPropertyChangeListener = new PropertyChangeListener() {
         @Override
-        public void stateChanged(ChangeEvent e) {
-            recompileSources((CssPreprocessor) e.getSource());
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propertyName = evt.getPropertyName();
+            CssPreprocessor cssPreprocessor = (CssPreprocessor) evt.getSource();
+            switch (propertyName) {
+                case CssPreprocessor.OPTIONS_PROPERTY:
+                    recompileSources(cssPreprocessor);
+                    break;
+                case CssPreprocessor.CUSTOMIZER_PROPERTY:
+                    if (evt.getNewValue().equals(PhpProject.this)) {
+                        recompileSources(cssPreprocessor);
+                    }
+                    break;
+                default:
+                    assert false : "Unknown property: " + propertyName;
+            }
         }
     };
     final ChangeListener cssPreprocessorsChangeListener = new ChangeListener() {
@@ -440,13 +453,13 @@ public final class PhpProject implements Project {
         assert cssPreprocessors.isEmpty() : "Empty preprocessors expected: " + cssPreprocessors;
         cssPreprocessors.addAll(CssPreprocessors.getDefault().getPreprocessors());
         for (CssPreprocessor preprocessor : cssPreprocessors) {
-            preprocessor.addChangeListener(cssPreprocessorChangeListener);
+            preprocessor.addPropertyChangeListener(cssPreprocessorPropertyChangeListener);
         }
     }
 
     void clearCssPreprocessors() {
         for (CssPreprocessor preprocessor : cssPreprocessors) {
-            preprocessor.removeChangeListener(cssPreprocessorChangeListener);
+            preprocessor.removePropertyChangeListener(cssPreprocessorPropertyChangeListener);
         }
         cssPreprocessors.clear();
     }
