@@ -204,11 +204,7 @@ public final class CompleteElementHandler {
         CompletionProviderHandler providerHandler = new CompletionProviderHandler();
         fillSuggestions(providerHandler.getMethods(context), result);
         fillSuggestions(providerHandler.getStaticMethods(context), result);
-        
-        // FIXME not sure about order of the meta methods, perhaps interface
-        // methods take precedence
-        fillSuggestions(MetaElementHandler.forCompilationInfo(info).getMethods(typeName, prefix, anchor, nameOnly), result);
-        
+
         if (typeNode.getSuperClass() != null) {
             fillSuggestions(getMethodsInner(source, typeNode.getSuperClass(), prefix, anchor, level + 1, modifiedAccess, nameOnly), result);
         } else if (leaf) {
@@ -241,10 +237,6 @@ public final class CompleteElementHandler {
         Map<FieldSignature, CompletionItem> result = new HashMap<FieldSignature, CompletionItem>();
 
         fillSuggestions(JavaElementHandler.forCompilationInfo(info).getFields(typeNode.getName(), prefix, anchor, leaf), result);
-
-        // FIXME not sure about order of the meta methods, perhaps interface
-        // methods take precedence
-        fillSuggestions(MetaElementHandler.forCompilationInfo(info).getFields(typeNode.getName(), prefix, anchor), result);
 
         CompletionProviderHandler providerHandler = new CompletionProviderHandler();
         fillSuggestions(providerHandler.getFields(context), result);

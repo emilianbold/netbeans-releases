@@ -85,7 +85,6 @@ public final class GroovyElementsProvider implements CompletionProvider {
 
             for (IndexedMethod indexedMethod : methods) {
                 if (accept(context.access, indexedMethod)) {
-                    boolean nameOnly = context.dotContext != null && context.dotContext.isMethodsOnly();
                     result.put(getMethodSignature(indexedMethod), CompletionItem.forJavaMethod(
                             context.getTypeName(),
                             indexedMethod.getName(),
@@ -94,7 +93,7 @@ public final class GroovyElementsProvider implements CompletionProvider {
                             Utilities.gsfModifiersToModel(indexedMethod.getModifiers(), Modifier.PUBLIC),
                             context.getAnchor(),
                             false,
-                            nameOnly));
+                            context.isNameOnly()));
                 }
             }
         }
