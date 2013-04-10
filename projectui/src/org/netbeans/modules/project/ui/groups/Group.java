@@ -220,6 +220,11 @@ public abstract class Group {
                             }
                         }
                     }
+                    //see GroupOptionProcessor
+                    String val = System.getProperty("group.supresses.lazy.loading");
+                    if (val != null) {
+                        System.setProperty("nb.core.windows.no.lazy.loading", val);
+                    }
                     WindowManager.getDefault().removeWindowSystemListener(this);
                     RequestProcessor.getDefault().post(new Runnable() {
                         @Override
