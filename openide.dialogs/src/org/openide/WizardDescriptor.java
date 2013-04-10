@@ -1852,11 +1852,11 @@ public class WizardDescriptor extends DialogDescriptor {
      * A special interface for panels that need to do additional
      * asynchronous validation when Next or Finish button is clicked.
      *
-     * <p>During backround validation is Next or Finish button
+     * <p>During background validation is Next or Finish button
      * disabled. On validation success wizard automatically
      * progress to next panel or finishes.
      *
-     * <p>During backround validation Cancel button is hooked
+     * <p>During background validation Cancel button is hooked
      * to signal the validation thread using interrupt().
      *
      * @since 6.2 (16 May 2005)
