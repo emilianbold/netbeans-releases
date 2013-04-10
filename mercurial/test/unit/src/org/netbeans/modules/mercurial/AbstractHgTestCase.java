@@ -65,7 +65,7 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class AbstractHgTestCase extends NbTestCase {
 
-    protected static final OutputLogger NULL_LOGGER = OutputLogger.getLogger(null);
+    protected static final OutputLogger NULL_LOGGER = Mercurial.getInstance().getLogger(null);
 
     public FileStatusCache getCache() {
         return cache;

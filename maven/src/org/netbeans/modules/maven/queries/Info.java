@@ -47,6 +47,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import org.apache.maven.project.MavenProject;
@@ -58,6 +60,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.options.MavenSettings;
 import static org.netbeans.modules.maven.queries.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -74,8 +77,10 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
     private static final RequestProcessor RP = new RequestProcessor(Info.class.getName(), 10);
     private static final Logger LOG = Logger.getLogger(Info.class.getName());
 
+
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final Project project;
+    private PreferenceChangeListener preferenceChangeListener;
 
     public Info(final Project project) {
         this.project = project;
@@ -115,7 +120,7 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
         }
         String custom = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_DISPLAY_NAME, true);
         if (custom == null) {
-            custom = NbPreferences.forModule(Info.class).get("project.displayName", null);
+            custom = NbPreferences.forModule(Info.class).get(MavenSettings.PROP_PROJECTNODE_NAME_PATTERN, null);
         }
         if (custom != null) {
             //we evaluate because of global property and property in nb-configuration.xml file. The pom.xml originating value should be already resolved.
@@ -171,6 +176,16 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
     @Override public void addPropertyChangeListener(PropertyChangeListener listener) {
         if (!pcs.hasListeners(null)) {
             project.getLookup().lookup(NbMavenProject.class).addPropertyChangeListener(this);
+            preferenceChangeListener = new PreferenceChangeListener() {
+                @Override
+                public void preferenceChange(PreferenceChangeEvent evt) {
+                    if (MavenSettings.PROP_PROJECTNODE_NAME_PATTERN.equals(evt.getKey())) {
+                        pcs.firePropertyChange(ProjectInformation.PROP_NAME, null, null);
+                        pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, null);
+                    }
+                }
+            };
+            NbPreferences.forModule(Info.class).addPreferenceChangeListener(preferenceChangeListener);
         }
         pcs.addPropertyChangeListener(listener);
     }
@@ -179,6 +194,7 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
         pcs.removePropertyChangeListener(listener);
         if (!pcs.hasListeners(null)) {
             project.getLookup().lookup(NbMavenProject.class).removePropertyChangeListener(this);
+            NbPreferences.forModule(Info.class).removePreferenceChangeListener(preferenceChangeListener);
         }
     }
 

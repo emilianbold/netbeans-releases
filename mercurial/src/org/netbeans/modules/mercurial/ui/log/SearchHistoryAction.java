@@ -52,7 +52,6 @@ import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
-import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.nodes.Node;
@@ -97,8 +96,7 @@ public abstract class SearchHistoryAction extends ContextAction {
     }
 
     private static OutputLogger openLogger (File repositoryRoot, String title) {
-        String loggerId = (repositoryRoot != null) ? new HgURL(repositoryRoot).toHgCommandUrlStringWithoutUserInfo() : null;
-        OutputLogger logger = OutputLogger.getLogger(loggerId);
+        OutputLogger logger = OutputLogger.getLogger(repositoryRoot);
         logger.outputInRed(
                 NbBundle.getMessage(SearchHistoryAction.class,
                 title));

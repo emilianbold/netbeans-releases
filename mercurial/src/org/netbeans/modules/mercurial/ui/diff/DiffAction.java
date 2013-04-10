@@ -101,7 +101,7 @@ public class DiffAction extends ContextAction {
         boolean bNotManaged = !HgUtils.isFromHgRepository(context) || ( files == null || files.length == 0);
 
         if (bNotManaged) {
-            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+            OutputLogger logger = Mercurial.getInstance().getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
             logger.outputInRed( NbBundle.getMessage(DiffAction.class,"MSG_DIFF_TITLE")); // NOI18N
             logger.outputInRed( NbBundle.getMessage(DiffAction.class,"MSG_DIFF_TITLE_SEP")); // NOI18N
             logger.outputInRed(

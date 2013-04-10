@@ -180,7 +180,8 @@ class SlownessReporter {
                     message,
                     ImageUtilities.loadImageIcon("org/netbeans/modules/uihandler/vilik.png", true),
                     createPanel(), createPanel(),
-                    priority);
+                    priority,
+                    NotificationDisplayer.Category.WARNING);
             if (CLEAR > 0) {
                 Installer.RP.post(new Runnable() {
 
