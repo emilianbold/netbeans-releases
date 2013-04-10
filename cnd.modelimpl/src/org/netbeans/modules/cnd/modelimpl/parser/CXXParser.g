@@ -1497,7 +1497,7 @@ greedy_declarator returns [declarator_type_t type]
         greedy_nonptr_declarator //{{ type = $greedy_nonptr_declarator.type; }}
     |
         (ptr_operator)=>
-            ptr_operator decl=greedy_declarator
+            ptr_operator gnu_attribute_specifier* decl=greedy_declarator
 //            {{ type = $decl.type;
 //               type.apply_ptr($ptr_operator.type);
 //            }}
