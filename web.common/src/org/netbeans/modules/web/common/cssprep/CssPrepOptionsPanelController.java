@@ -39,56 +39,65 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.ui.options;
+package org.netbeans.modules.web.common.cssprep;
 
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.css.prep.options.CssPrepOptions;
-import org.netbeans.modules.css.prep.options.CssPrepOptionsValidator;
-import org.netbeans.modules.css.prep.util.UiUtils;
-import org.netbeans.modules.css.prep.util.ValidationResult;
-import org.netbeans.modules.css.prep.util.Warnings;
+import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 @OptionsPanelController.SubRegistration(
-    location=UiUtils.OPTIONS_CATEGORY,
-    id=UiUtils.OPTIONS_SUBCATEGORY,
+    location=CssPreprocessors.OPTIONS_CATEGORY,
+    id=CssPreprocessors.OPTIONS_SUBCATEGORY,
     displayName="#CssPrepOptionsPanel.name" // NOI18N
 )
 public final class CssPrepOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
+    private static final Logger LOGGER = Logger.getLogger(CssPrepOptionsPanelController.class.getName());
+
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private final List<CssPreprocessorImplementation.Options> allOptions = new CopyOnWriteArrayList<>();
 
     // @GuardedBy("EDT")
-    private CssPrepOptionsPanel cssPrepOptionsPanel = null;
+    private volatile CssPrepOptionsPanel cssPrepOptionsPanel = null;
     private volatile boolean changed = false;
 
 
     @Override
     public void update() {
         assert EventQueue.isDispatchThread();
-        getCssPrepOptionsPanel().setSassPath(getCssPrepOptions().getSassPath());
-        getCssPrepOptionsPanel().setLessPath(getCssPrepOptions().getLessPath());
+        for (CssPreprocessorImplementation.Options options : allOptions) {
+            options.update();
+        }
 
         changed = false;
     }
 
     @Override
     public void applyChanges() {
-        getCssPrepOptions().setSassPath(getCssPrepOptionsPanel().getSassPath());
-        getCssPrepOptions().setLessPath(getCssPrepOptionsPanel().getLessPath());
-
-        // XXX refresh project problems
-
-        Warnings.resetSassWarning();
-        Warnings.resetLessWarning();
+        for (CssPreprocessorImplementation.Options options : allOptions) {
+            assert options.isValid() : "Saving invalid options: " + options.getDisplayName() + " (error: " + options.getErrorMessage() + ")";
+            try {
+                options.save();
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "Error while saving CSS preprocessor: " + options.getDisplayName(), ex);
+            }
+        }
 
         changed = false;
     }
@@ -101,22 +110,21 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
     public boolean isValid() {
         assert EventQueue.isDispatchThread();
         CssPrepOptionsPanel panel = getCssPrepOptionsPanel();
-        ValidationResult result = new CssPrepOptionsValidator()
-                .validateSassPath(panel.getSassPath())
-                .validateLessPath(panel.getLessPath())
-                .getResult();
-        // errors
-        if (result.hasErrors()) {
-            panel.setError(result.getErrors().get(0).getMessage());
-            return false;
+        String warning = null;
+        for (CssPreprocessorImplementation.Options options : allOptions) {
+            if (!options.isValid()) {
+                String error = options.getErrorMessage();
+                Parameters.notNull("error", error); // NOI18N
+                panel.setError(error);
+                return false;
+            }
         }
-        // warnings
-        if (result.hasWarnings()) {
-            panel.setWarning(result.getWarnings().get(0).getMessage());
-            return true;
+        if (warning != null) {
+            panel.setWarning(warning);
+        } else {
+            // everything ok
+            panel.setError(" "); // NOI18N
         }
-        // everything ok
-        panel.setError(" "); // NOI18N
         return true;
     }
 
@@ -133,7 +141,7 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.css.prep.ui.options.CssPrepOptionsPanelController"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.web.common.cssprep.CssPrepOptionsPanelController"); // NOI18N
     }
 
     @Override
@@ -158,14 +166,18 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
     private CssPrepOptionsPanel getCssPrepOptionsPanel() {
         assert EventQueue.isDispatchThread();
         if (cssPrepOptionsPanel == null) {
-            cssPrepOptionsPanel = new CssPrepOptionsPanel();
-            cssPrepOptionsPanel.addChangeListener(this);
+            for (CssPreprocessor preprocessor : CssPreprocessors.getDefault().getPreprocessors()) {
+                CssPreprocessorImplementation.Options options = CssPreprocessorAccessor.getDefault().createOptions(preprocessor);
+                if (options != null) {
+                    allOptions.add(options);
+                }
+            }
+            cssPrepOptionsPanel = new CssPrepOptionsPanel(new ArrayList<>(allOptions));
+            for (CssPreprocessorImplementation.Options options : allOptions) {
+                options.addChangeListener(this);
+            }
         }
         return cssPrepOptionsPanel;
-    }
-
-    private CssPrepOptions getCssPrepOptions() {
-        return CssPrepOptions.getInstance();
     }
 
 }

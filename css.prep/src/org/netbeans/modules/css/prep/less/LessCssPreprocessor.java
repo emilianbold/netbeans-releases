@@ -46,6 +46,7 @@ import org.netbeans.modules.css.prep.process.LessProcessor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.problems.LessProjectProblemsProvider;
 import org.netbeans.modules.css.prep.ui.customizer.LessCustomizer;
+import org.netbeans.modules.css.prep.ui.options.LessOptions;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
@@ -87,6 +88,11 @@ public final class LessCssPreprocessor implements CssPreprocessorImplementation 
     @Override
     public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
         return new LessProjectProblemsProvider(support, createCustomizer(support.getProject()));
+    }
+
+    @Override
+    public Options createOptions() {
+        return new LessOptions(this);
     }
 
     @Override

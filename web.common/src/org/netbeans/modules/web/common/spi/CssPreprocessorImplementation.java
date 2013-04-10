@@ -98,10 +98,17 @@ public interface CssPreprocessorImplementation {
      * @param project the project that is to be customized
      * @return a new CSS preprocessor customizer; can be {@code null} if the CSS preprocessor doesn't need
      *         to store/read any project specific properties (or does not need to be added/removed to given project)
-     * @see org.netbeans.modules.web.common.api.CssPreprocessorsCustomizer
      */
     @CheckForNull
     Customizer createCustomizer(@NonNull Project project);
+
+    /**
+     * Create a {@link Options options} for this CSS preprocessor.
+     * @return a new CSS preprocessor options; can be {@code null} if the CSS preprocessor doesn't need
+     *         to store/read any properties
+     */
+    @CheckForNull
+    Options createOptions();
 
     /**
      * Create a {@link ProjectProblemsProvider} for this CSS preprocessor.
@@ -215,6 +222,94 @@ public interface CssPreprocessorImplementation {
          * (e.g. sending e-mail, connecting to a remote server), to create {@link org.openide.util.RequestProcessor} and run the code in it.
          * @see #isValid()
          * @see org.netbeans.api.project.ProjectUtils#getPreferences(Project, Class, boolean)
+         */
+        void save() throws IOException;
+
+    }
+
+    /**
+     * Provide support for setting options of this CSS preprocessor (via IDE Options dialog).
+     * Implementations <b>must be thread safe</b> since {@link #save() save} method is called in a background thread.
+     * @since 1.43
+     */
+    interface Options {
+
+        /**
+         * Return the display name of this options.
+         * @return display name used in options, cannot be empty
+         */
+        @NonNull
+        String getDisplayName();
+
+        /**
+         * Attach a change listener that is to be notified of changes
+         * in the options (e.g., the result of the {@link #isValid} method
+         * has changed).
+         * @param listener a listener, can be {@code null}
+         */
+        void addChangeListener(@NullAllowed ChangeListener listener);
+
+        /**
+         * Removes a change listener.
+         * @param listener a listener, can be {@code null}
+         */
+        void removeChangeListener(@NullAllowed ChangeListener listener);
+
+        /**
+         * Return a UI component used to allow the user to set options of this CSS preprocessor.
+         * <p>
+         * <b>There should not be any time consuming tasks running in this method; use method {@link #update() update} for it.</b>
+         * <p>
+         * This method might be called more than once and it is expected to always return the same instance.
+         * @return a component that provides configuration UI
+         */
+        @NonNull
+        JComponent getComponent();
+
+        /**
+         * {@link #getComponent() Component} should load its data here.
+         */
+        void update();
+
+        /**
+         * Checks if this options are valid (e.g., if the configuration set
+         * using the UI component returned by {@link #getComponent} is valid).
+         * <p>
+         * If it returns {@code false}, check {@link #getErrorMessage() error message}, it
+         * should not be {@code null}.
+         * @return {@code true} if the configuration is valid, {@code false} otherwise
+         * @see #getErrorMessage()
+         * @see #getWarningMessage()
+         */
+        boolean isValid();
+
+        /**
+         * Get error message or {@code null} if the {@link #getComponent component} is {@link #isValid() valid}.
+         * @return error message or {@code null} if the {@link #getComponent component} is {@link #isValid() valid}
+         * @see #isValid()
+         * @see #getWarningMessage()
+         */
+        @CheckForNull
+        String getErrorMessage();
+
+        /**
+         * Get warning message that can be not {@code null} even for {@link #isValid() valid} extender.
+         * In other words, it is safe to customize the given project even if this method returns a message.
+         * @return warning message or {@code null}
+         * @see #isValid()
+         * @see #getErrorMessage()
+         */
+        @CheckForNull
+        String getWarningMessage();
+
+        /**
+         * Called to update global properties of this CSS preprocessor. This method
+         * is called in a background thread and only if user clicks the OK or the Apply button;
+         * also, it cannot be called if {@link #isValid()} is {@code false}.
+         * <p>
+         * It is possible, if it is a long-running task (e.g. sending e-mail, connecting to a remote server),
+         * to create {@link org.openide.util.RequestProcessor} and run the code in it.
+         * @see #isValid()
          */
         void save() throws IOException;
 

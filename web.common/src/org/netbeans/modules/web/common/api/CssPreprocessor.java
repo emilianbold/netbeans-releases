@@ -81,6 +81,11 @@ public final class CssPreprocessor {
             public CssPreprocessorImplementation.Customizer createCustomizer(CssPreprocessor cssPreprocessor, Project project) {
                 return cssPreprocessor.createCustomizer(project);
             }
+
+            @Override
+            public CssPreprocessorImplementation.Options createOptions(CssPreprocessor cssPreprocessor) {
+                return cssPreprocessor.createOptions();
+            }
             @Override
             public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor cssPreprocessor, ProjectProblemsProviderSupport support) {
                 return cssPreprocessor.createProjectProblemsProvider(support);
@@ -99,6 +104,10 @@ public final class CssPreprocessor {
 
     CssPreprocessorImplementation.Customizer createCustomizer(@NonNull Project project) {
         return delegate.createCustomizer(project);
+    }
+
+    CssPreprocessorImplementation.Options createOptions() {
+        return delegate.createOptions();
     }
 
     ProjectProblemsProvider createProjectProblemsProvider(@NonNull CssPreprocessor.ProjectProblemsProviderSupport support) {

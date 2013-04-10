@@ -84,6 +84,22 @@ public final class CssPreprocessors {
      * @since 1.41
      */
     public static final String CUSTOMIZER_IDENT = "CssPreprocessors"; // NOI18N
+    /**
+     * Top level category name in IDE Options.
+     * @since 1.43
+     */
+    public static final String OPTIONS_CATEGORY = "Advanced"; // NOI18N
+    /**
+     * Subcategory name in IDE Options.
+     * @since 1.43
+     */
+    public static final String OPTIONS_SUBCATEGORY = "CssPreprocessors"; // NOI18N
+    /**
+     * Full path in IDE Options.
+     * @since 1.43
+     */
+    public static final String OPTIONS_PATH = OPTIONS_CATEGORY + "/" + OPTIONS_SUBCATEGORY; // NOI18N
+
 
     private static final RequestProcessor RP = new RequestProcessor(CssPreprocessors.class.getName(), 2);
     private static final Lookup.Result<CssPreprocessorImplementation> PREPROCESSORS = Lookups.forPath(PREPROCESSORS_PATH).lookupResult(CssPreprocessorImplementation.class);
