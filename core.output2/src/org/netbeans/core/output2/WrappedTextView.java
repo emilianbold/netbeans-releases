@@ -48,6 +48,8 @@ import java.util.Map;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.openide.util.Exceptions;
 
 /**
@@ -123,6 +125,8 @@ public class WrappedTextView extends View implements TabExpander {
     int tabBase;
     private int tabOffsetX = 0;
     
+    private final PropertyChangeListener propertyChangeListener;
+
     @SuppressWarnings("unchecked")
     static Map<RenderingHints.Key, Object> getHints() {
         if (hintsMap == null) {
@@ -139,9 +143,11 @@ public class WrappedTextView extends View implements TabExpander {
         return hintsMap;
     }
 
-    public WrappedTextView(Element elem, JTextComponent comp) {
+    public WrappedTextView(Element elem, JTextComponent comp,
+            PropertyChangeListener propertyChangeListener1) {
         super(elem);
         this.comp = comp;
+        this.propertyChangeListener = propertyChangeListener1;
     }
 
 
@@ -232,6 +238,7 @@ public class WrappedTextView extends View implements TabExpander {
     }
 
     private void updateWidth() {
+        int oldCharPerWidth = charsPerLine;
         if (comp.getParent() instanceof JViewport) {
             JViewport jv = (JViewport) comp.getParent();
             width = jv.getExtentSize().width - (aa ? 18 : 17);
@@ -242,6 +249,10 @@ public class WrappedTextView extends View implements TabExpander {
             width = 0;
         }
         charsPerLine = width / charWidth;
+        if (charsPerLine != oldCharPerWidth) {
+            propertyChangeListener.propertyChange(new PropertyChangeEvent(this,
+                    "charsPerLine", oldCharPerWidth, charsPerLine));    //NOI18N
+        }
     }
 
     /**

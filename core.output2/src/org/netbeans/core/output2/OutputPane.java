@@ -51,6 +51,8 @@ import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.text.Caret;
 import org.netbeans.core.output2.options.OutputOptions;
 import org.openide.util.NbPreferences;
@@ -59,6 +61,7 @@ import org.openide.util.NbPreferences;
 class OutputPane extends AbstractOutputPane {
 
     OutputTab parent;
+    PropertyChangeListener editorKitListener = new OutputEditorKitListener();
 
     public OutputPane(OutputTab parent) {
         this.parent = parent;
@@ -131,7 +134,8 @@ class OutputPane extends AbstractOutputPane {
             textView.setDocument (new PlainDocument());
             return;
         }
-        textView.setEditorKit (new OutputEditorKit(isWrapped(), textView));
+        textView.setEditorKit(new OutputEditorKit(isWrapped(), textView,
+                editorKitListener));
         super.setDocument(doc);
         updateKeyBindings();
     }
@@ -145,7 +149,7 @@ class OutputPane extends AbstractOutputPane {
             Cursor cursor = textView.getCursor();
             try {
                 textView.setCursor (Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                setEditorKit (new OutputEditorKit(val, textView));
+                setEditorKit(new OutputEditorKit(val, textView, editorKitListener));
             } finally {
                 textView.setCursor (cursor);
             }
@@ -177,6 +181,7 @@ class OutputPane extends AbstractOutputPane {
                 getHorizontalScrollBar().setValue(getHorizontalScrollBar().getModel().getMinimum());
             }
             validate();
+            getFoldingSideBar().setWrapped(val);
         }
     }
     
@@ -266,5 +271,16 @@ class OutputPane extends AbstractOutputPane {
             return retValue;
         }
         
+    }
+
+    private class OutputEditorKitListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if ("charsPerLine".equals(evt.getPropertyName())) { //NOI18N
+                getFoldingSideBar().setCharsPerLine(
+                        (Integer) evt.getNewValue());
+            }
+        }
     }
 }

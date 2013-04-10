@@ -51,6 +51,7 @@ package org.netbeans.core.output2;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
@@ -73,11 +74,14 @@ final class OutputEditorKit extends DefaultEditorKit implements javax.swing.text
     private final boolean wrapped;
     private final JTextComponent comp;
     private static final Action[] actions = prepareActions();
+    private final PropertyChangeListener propertyChangeListener;
 
     /** Creates a new instance of OutputEditorKit */
-    OutputEditorKit(boolean wrapped, JTextComponent comp) {
+    OutputEditorKit(boolean wrapped, JTextComponent comp,
+            PropertyChangeListener propertyChangeListener) {
         this.comp = comp;
-        this.wrapped = wrapped;       
+        this.wrapped = wrapped;
+        this.propertyChangeListener = propertyChangeListener;        
     }
     
     @Override
@@ -91,9 +95,9 @@ final class OutputEditorKit extends DefaultEditorKit implements javax.swing.text
 
     private WrappedTextView lastWrappedView = null;
     public javax.swing.text.View create(Element element) {
-        javax.swing.text.View result =
-                wrapped ? (javax.swing.text.View) new WrappedTextView(element, comp) :
-                (javax.swing.text.View) new ExtPlainView (element);
+        javax.swing.text.View result = wrapped
+                ? new WrappedTextView(element, comp, propertyChangeListener)
+                : new ExtPlainView(element);
         lastWrappedView = wrapped ? (WrappedTextView) result : null;
         return result;
     }

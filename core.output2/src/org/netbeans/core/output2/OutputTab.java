@@ -155,6 +155,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
      */
     private void setTextViewBackground(JTextComponent textView, Color bg) {
         getOutputPane().getTextView().setBackground(bg);
+        getOutputPane().getFoldingSideBar().setBackground(bg);
         if ("Nimbus".equals(UIManager.getLookAndFeel().getName())) { //NOI18N
             UIDefaults defaults = new UIDefaults();
             defaults.put("EditorPane[Enabled].backgroundPainter", bg);  //NOI18N
