@@ -255,7 +255,7 @@ public class GeneralHTMLProject extends JellyTestCase {
 
             if (browser.getName().equals(browserName)) {
                 browsers.selectItem(i);
-                if (browser.getBrowserFamily().hasNetBeansAdvancedIntegration()) {
+                if (browser.hasNetBeansIntegration()) {
                     (new JCheckBoxOperator(propertiesDialogOper, "Auto-refresh")).setSelected(autoRefresh);
                     (new JCheckBoxOperator(propertiesDialogOper, "Synchronize")).setSelected(syncHover);
                 }

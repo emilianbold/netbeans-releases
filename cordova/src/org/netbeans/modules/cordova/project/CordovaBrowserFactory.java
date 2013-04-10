@@ -53,7 +53,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jan Becicka
  */
-@ServiceProvider(service = HtmlBrowser.Factory.class, path="Services/MobileBrowsers")
+@ServiceProvider(service = HtmlBrowser.Factory.class, path="Services/Browsers2")
 public class CordovaBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory {
 
     @Override
@@ -79,6 +79,16 @@ public class CordovaBrowserFactory implements EnhancedBrowserFactory, HtmlBrowse
     @Override
     public String getId() {
         return "Cordova"; // NOI18N
+    }
+
+    @Override
+    public boolean hasNetBeansIntegration() {
+        return false;
+    }
+
+    @Override
+    public boolean canCreateHtmlBrowserImpl() {
+        return true;
     }
     
 }

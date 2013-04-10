@@ -46,15 +46,10 @@ import org.openide.util.Lookup;
 
 
 /**
- * @author ads
- *
+ * SPI describing additional browser behaviours.
  */
 public interface EnhancedBrowser {
     
-    boolean hasEnhancedMode();
-    
-    void setEnhancedMode( boolean mode );
-
     void disablePageInspector();
     
     void enableLiveHTML();
