@@ -45,6 +45,8 @@
 package org.netbeans.modules.websvc.rest.model.impl;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -225,7 +227,8 @@ public class Utils {
         boolean isRest = false;
         if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
 
-            if (helper.hasAnnotation(type.getAnnotationMirrors(), RestConstants.PATH)) { // NOI18N
+            if (helper.hasAnyAnnotation(type.getAnnotationMirrors(),
+                    new HashSet<String>(Arrays.asList(RestConstants.PATH, RestConstants.PROVIDER_ANNOTATION)))) { // NOI18N
                 isRest = true;
             } else {
                 for (Element element : type.getEnclosedElements()) {

@@ -216,13 +216,13 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 || NodeUtil.isMethodCall(previous))) {
             return target;
         } else {
-            // prvious node was method call
-            if (previous instanceof AstMethodArguments) {
-                return rootToNode.get(rootToNode.size() - 2);
-            }
             for (int i = rootToNode.size() - 1; i >= 0; i--) {
-                if (rootToNode.get(i) instanceof AstListData || rootToNode.get(i) instanceof AstMapData) {
-                    return rootToNode.get(i);
+                Node node = rootToNode.get(i);
+                if (node instanceof AstMethodArguments) {
+                    // prvious node was method call
+                    return rootToNode.get(i - 1);
+                } else if (node instanceof AstListData || node instanceof AstMapData) {
+                    return node;
                 }
             }
             return previous;

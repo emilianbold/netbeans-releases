@@ -517,7 +517,7 @@ public class Util {
     public static boolean isCDIEnabled(Project project) {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
-            if (  !RestUtils.isJavaEE6(project))
+            if (  !RestUtils.isJavaEE6AndHigher(project))
             {
                 return false;
             }
