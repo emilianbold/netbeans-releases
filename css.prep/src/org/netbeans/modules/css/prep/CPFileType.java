@@ -39,50 +39,36 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.common.cssprep;
+package org.netbeans.modules.css.prep;
 
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
-import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import java.util.Arrays;
+import java.util.Collection;
 
-public abstract class CssPreprocessorAccessor {
-
-    private static volatile CssPreprocessorAccessor accessor;
-
-
-    public static synchronized CssPreprocessorAccessor getDefault() {
-        if (accessor != null) {
-            return accessor;
-        }
-        Class<?> c = CssPreprocessor.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            assert false : ex;
-        }
-        assert accessor != null;
-        return accessor;
+/**
+ * Represents a type of CSS preprocessor file.
+ *
+ * @author marekfukala
+ */
+public enum CPFileType {
+    
+    /**
+     * CP file type for LESS sources.
+     */
+    LESS("text/less"), 
+    
+    /**
+     * CP file type for SASS sources.
+     */
+    SASS("text/scss", "text/sass");
+    
+    private final Collection<String> mimeTypes;
+    
+    private CPFileType(String... mimes) {
+        mimeTypes = Arrays.asList(mimes);
     }
 
-    public static void setDefault(CssPreprocessorAccessor accessor) {
-        if (CssPreprocessorAccessor.accessor != null) {
-            throw new IllegalStateException("Already initialized accessor");
-        }
-        CssPreprocessorAccessor.accessor = accessor;
+    public Collection<String> getMimeTypes() {
+        return mimeTypes;
     }
-
-
-    public abstract CssPreprocessor create(CssPreprocessorImplementation cssPreprocessorImplementation);
-
-    @CheckForNull
-    public abstract CssPreprocessorImplementation.Customizer createCustomizer(CssPreprocessor cssPreprocessor, Project project);
-
-    @CheckForNull
-    public abstract CssPreprocessorImplementation.Options createOptions(CssPreprocessor cssPreprocessor);
-
-    @CheckForNull
-    public abstract ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor cssPreprocessor, CssPreprocessor.ProjectProblemsProviderSupport support);
-
+    
 }

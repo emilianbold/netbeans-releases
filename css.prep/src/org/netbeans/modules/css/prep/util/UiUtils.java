@@ -43,6 +43,7 @@ package org.netbeans.modules.css.prep.util;
 
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Mutex;
@@ -52,11 +53,6 @@ import org.openide.util.Parameters;
 // XXX copied & adjusted from PHP
 public final class UiUtils {
 
-    public static final String OPTIONS_CATEGORY = "Advanced"; // NOI18N
-    public static final String OPTIONS_SUBCATEGORY = "CssPreprocessors"; // NOI18N
-    public static final String OPTIONS_PATH = OPTIONS_CATEGORY + "/" + OPTIONS_SUBCATEGORY; // NOI18N
-
-
     private UiUtils() {
     }
 
@@ -64,7 +60,7 @@ public final class UiUtils {
      * Display Options dialog with Miscellaneous &lt; CSS Preprocessors panel preselected.
      */
     public static void showOptions() {
-        OptionsDisplayer.getDefault().open(OPTIONS_PATH);
+        OptionsDisplayer.getDefault().open(CssPreprocessors.OPTIONS_PATH);
     }
 
     /**

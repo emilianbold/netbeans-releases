@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.webkit.tooling.console;
 
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.api.console.Console;
 import org.netbeans.modules.web.webkit.debugging.spi.BrowserConsoleLoggerFactory;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -53,7 +54,9 @@ public class BrowserConsoleLoggerFactoryImpl implements BrowserConsoleLoggerFact
     @Override
     public Lookup createBrowserConsoleLogger(WebKitDebugging webkit, Lookup projectContext) {
         BrowserConsoleLogger logger = new BrowserConsoleLogger(projectContext);
-        webkit.getConsole().addListener(logger);
+        Console console = webkit.getConsole();
+        console.addListener(logger);
+        logger.setInput(console.getInput());
         return Lookups.fixed(webkit, logger);
     }
 

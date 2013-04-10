@@ -39,59 +39,75 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.process;
+package org.netbeans.modules.css.prep;
 
-import org.netbeans.api.annotations.common.CheckForNull;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.Document;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.editor.CPUtils;
-import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
-import org.netbeans.modules.css.prep.less.LessExecutable;
-import org.netbeans.modules.css.prep.preferences.LessPreferences;
-import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
-import org.netbeans.modules.css.prep.util.Warnings;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.openide.cookies.EditorCookie;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
 
-public final class LessProcessor extends BaseProcessor {
+@ActionID(
+        category = "Other",
+        id = "org.netbeans.modules.css.prep.CPDumpInfo")
+@ActionRegistration(
+        displayName = "#CTL_CPDumpInfo")
+@Messages("CTL_CPDumpInfo=Dump CSS Processors Info")
 
-    private final LessCssPreprocessor lessCssPreprocessor;
+public final class CPDumpInfo implements ActionListener {
 
+    private static final Logger LOGGER = Logger.getLogger(CPDumpInfo.class.getSimpleName());
+    
+    private final EditorCookie context;
 
-    public LessProcessor(LessCssPreprocessor lessCssPreprocessor) {
-        this.lessCssPreprocessor = lessCssPreprocessor;
+    public CPDumpInfo(EditorCookie context) {
+        this.context = context;
     }
 
     @Override
-    protected boolean isEnabledInternal(Project project) {
-        return LessPreferences.isEnabled(project);
-    }
-
-    @Override
-    protected boolean isSupportedFile(FileObject fileObject) {
-        return CPUtils.LESS_FILE_MIMETYPE.equals(FileUtil.getMIMEType(fileObject, CPUtils.LESS_FILE_MIMETYPE));
-    }
-
-    @Override
-    protected void compile(Project project, FileObject fileObject) {
-        LessExecutable less = getLess(project);
-        if (less == null) {
-            return;
+    public void actionPerformed(ActionEvent ev) {
+        Document document = context.getDocument();
+        FileObject file = DataLoadersBridge.getDefault().getFileObject(document);
+        if(file == null) {
+            LOGGER.log(Level.WARNING, "Couldn't get file for the document"); //NOI18N
+            return ;
         }
-        less.compile(fileObject);
+        LOGGER.log(Level.INFO, "File {0}", file.getPath()); //NOI18N
+        
+        Project project = FileOwnerQuery.getOwner(file);
+        if(project == null) {
+            LOGGER.log(Level.WARNING, "Couldn't get project for the file"); //NOI18N
+            return ;
+        }
+        
+        dumpCPIndexData(project);
     }
-
-    @CheckForNull
-    private LessExecutable getLess(Project project) {
+    
+    private void dumpCPIndexData(Project project) {
         try {
-            return LessExecutable.getDefault();
-        } catch (InvalidExternalExecutableException ex) {
-            if (Warnings.showLessWarning()) {
-                // refresh project problems
-                lessCssPreprocessor.firePropertyChange(CssPreprocessorImplementation.CUSTOMIZER_PROPERTY, project, project);
+            CPIndex index = CPIndex.get(project);
+            for(CPFileType type : CPFileType.values()) {
+                LOGGER.log(Level.INFO, "{0} files:", type.name()); //NOI18N
+                for(FileObject file : index.findFiles(type)) {
+                    LOGGER.log(Level.INFO, file.getPath());
+                }
+                LOGGER.log(Level.INFO, "-----------------------"); //NOI18N
+                
             }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Couldn't find CPIndex for project", ex); //NOI18N
         }
-        return null;
     }
-
+    
+    
 }
