@@ -129,6 +129,5 @@ public class DetectorTest {
         t1.stop();
         t2.stop();
         Thread.sleep(15000);
-        fail("Do not run this test in an automatic test suite! It launches external programs: web browser and notepad.");
     }
 }

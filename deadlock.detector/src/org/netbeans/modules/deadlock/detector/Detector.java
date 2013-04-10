@@ -45,17 +45,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.Thread.State;
 import java.lang.management.LockInfo;
 import static java.lang.management.ManagementFactory.*;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
 
 
 /**
@@ -88,15 +86,6 @@ class Detector implements Runnable {
      * The thread bean used for the deadlock detection.
      */
     private ThreadMXBean threadMXBean;
-    /**
-     * Java binary used to launch a second Java VM when reporting the deadlock.
-     * @see DeadlockReporter class to what is being launched by the new VM.
-     */
-    private static final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java"; // NOI18N
-    /**
-     * Jar file name that is put on classpath of the newly spawned VM.
-     */
-    private File myJar = null;
     
     Detector() {
         threadMXBean = getThreadMXBean();
@@ -107,15 +96,6 @@ class Detector implements Runnable {
         Integer initialPauseFromSysProp = Integer.getInteger("org.netbeans.modules.deadlock.detector.Detector.INITIAL_PAUSE"); // NOI18N
         if (initialPauseFromSysProp != null) {
             INITIAL_PAUSE = initialPauseFromSysProp.longValue();
-        }
-        try {
-            myJar = Utilities.toFile(Detector.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        if (myJar == null || !myJar.getName().endsWith(".jar")) {
-            // unable to report the deadlock --> don't even start the thread
-            threadMXBean = null;
         }
     }
     
@@ -187,26 +167,19 @@ class Detector implements Runnable {
                 LOG.log(Level.FINE, "Temporrary file created: {0}" , file);
             }            
         } catch (IOException iOException) {
-            out = System.out;
-            
-        }
-        String userDir = System.getProperty ("netbeans.user");
-        if (userDir != null) {
-            out.println("Please consider also attaching " + userDir + "/var/log/messages.log");
-        }
-        
+            out = System.out;            
+        }        
         out.println("Deadlocked threads :"); // NOI18N
-        ThreadInfo[] infos = threadMXBean.getThreadInfo(tids, true, true);
-        for (ThreadInfo ti : infos) {
+        ThreadInfo[] deadlocked = threadMXBean.getThreadInfo(tids, true, true);
+        for (ThreadInfo ti : deadlocked) {
             printThreadInfo(ti, out);
             printMonitorInfo(ti, out);
             printLockInfo(ti.getLockedSynchronizers(), out);
             out.println();
         }
-        
         out.println("All threads :"); // NOI18N
         tids = threadMXBean.getAllThreadIds();
-        infos = threadMXBean.getThreadInfo(tids, true, true);
+        ThreadInfo[] infos = threadMXBean.getThreadInfo(tids, true, true);
         for (ThreadInfo ti : infos) {
             printThreadInfo(ti, out);
             printMonitorInfo(ti, out);
@@ -217,7 +190,8 @@ class Detector implements Runnable {
             out.close();
         }
         stop();
-        fork(file);
+        
+        reportStackTrace(deadlocked, file);
     }
 
     private void printThreadInfo(ThreadInfo ti, PrintStream out) {
@@ -274,28 +248,22 @@ class Detector implements Runnable {
            out.println(INDENT + "  - " + li); // NOI18N
        }
        out.println();
-    }   
-    
-    /**
-     * Starts a new java VM with DeadlockReporter as the main class. The
-     * main class is specified in the manifest of the module jar file.
-     * @param dumpFile 
-     */
-    private void fork(File dumpFile) {
-        try {
-            final ArrayList<String> command = new ArrayList<String>();
-            command.add(javaBin);
-            command.add("-jar");
-            command.add(myJar.getPath());
-            command.add(dumpFile.getPath());
-
-            final ProcessBuilder builder = new ProcessBuilder(command);
-            builder.start();
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "FORKED OK with command {0}", command);
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
     }    
+
+    /**
+     * Use exception reporter to report the stack trace of the deadlocked thrads.
+     * @param deadlocked 
+     */
+    private void reportStackTrace(ThreadInfo[] deadlocked, File report) {
+        for (ThreadInfo toBeReported : deadlocked) {
+            DeadlockDetectedException dde = new DeadlockDetectedException();
+            dde.setStackTrace(toBeReported.getStackTrace());
+            LOG.log(Level.SEVERE, report.getAbsolutePath(), dde);
+        }
+    }
+    
+    private static class DeadlockDetectedException extends RuntimeException {
+    }
 }
+
+// o.n.core
