@@ -186,9 +186,6 @@ public class CommonServerSupport
     /** Delay before next try while server is initializing [ms]. */
     private static final int STARTUP_RETRY_DELAY = 2000;
 
-    /** Properties fetching timeout [ms]. */
-    public static final int PROPERTIES_FETCH_TIMEOUT = 10000;
-
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////

@@ -529,7 +529,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         return retVal.toArray(new String[retVal.size()]);
     }
 
-    CommandFactory getCommandFactory() {
+    public CommandFactory getCommandFactory() {
        return cf;
     }
 
