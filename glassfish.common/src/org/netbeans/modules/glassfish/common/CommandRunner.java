@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -60,11 +60,11 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.net.ssl.*;
+import org.glassfish.tools.ide.GlassFishIdeException;
 import org.glassfish.tools.ide.admin.*;
 import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
-import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.*;
 
 
@@ -162,19 +162,19 @@ public class CommandRunner extends BasicTask<OperationState> {
             if (!data.isEmpty()) {
                 // now I can reset the debug data
                 String oldValue = data.get("configs.config.server-config.java-config.debug-options");
-                ServerCommand.SetPropertyCommand setCmd =
+                CommandSetProperty setCmd =
                         cf.getSetPropertyCommand("configs.config.server-config.java-config.debug-options",
                         oldValue.replace("transport=dt_shmem", "transport=dt_socket").
                         replace("address=[^,]+", "address=" + debugPort));
                 //serverCmd = setCmd;
                 //task = executor.submit(this);
                 try {
-                    state = inner.execute(setCmd).get();
+                    ResultString setResult = CommandSetProperty.setProperty(
+                            instance, setCmd,
+                            CommonServerSupport.PROPERTIES_FETCH_TIMEOUT);
                     qs = "debug=true";
-                } catch (InterruptedException ie) {
+                } catch (GlassFishIdeException ie) {
                      Logger.getLogger("glassfish").log(Level.INFO,debugPort+"",ie);
-                } catch (ExecutionException ee) {
-                     Logger.getLogger("glassfish").log(Level.INFO,debugPort+"",ee);
                 }
             }
         }
@@ -222,10 +222,12 @@ public class CommandRunner extends BasicTask<OperationState> {
             if (null == apps || apps.isEmpty()) {
                 return result;
             }
-            ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand("applications.application.*"); // NOI18N
+            ServerCommand.GetPropertyCommand getCmd
+                    = new ServerCommand.GetPropertyCommand("applications.application.*"); // NOI18N
             OperationState operationState = inner.execute(getCmd).get();
             if (operationState == OperationState.COMPLETED) {
-                ServerCommand.GetPropertyCommand getRefs = new ServerCommand.GetPropertyCommand("servers.server.*.application-ref.*"); // NOI18N
+                ServerCommand.GetPropertyCommand getRefs
+                        = new ServerCommand.GetPropertyCommand("servers.server.*.application-ref.*"); // NOI18N
                 operationState = inner.execute(getRefs).get();
                 if (OperationState.COMPLETED == operationState) {
                     result = processApplications(apps, getCmd.getData(),getRefs.getData());
@@ -243,7 +245,6 @@ public class CommandRunner extends BasicTask<OperationState> {
         Map<String, List<AppDesc>> result = new HashMap<String, List<AppDesc>>();
         Iterator<String> appsItr = appsList.keySet().iterator();
         while (appsItr.hasNext()) {
-            boolean enabled = false;
             String engine = appsItr.next();
             List<String> apps = appsList.get(engine);
             for (int i = 0; i < apps.size(); i++) {
@@ -279,7 +280,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                 }
                 String enabledValue = refProperties.get(enabledKey);
                 if (null != enabledValue) {
-                    enabled = Boolean.parseBoolean(enabledValue);
+                    boolean enabled = Boolean.parseBoolean(enabledValue);
 
                     List<AppDesc> appList = result.get(engine);
                     if(appList == null) {
@@ -301,13 +302,12 @@ public class CommandRunner extends BasicTask<OperationState> {
     public List<WSDesc> getWebServices() {
         List<WSDesc> result = Collections.emptyList();
         try {
-            List<String> wss = Collections.emptyList();
             Commands.ListWebservicesCommand cmd = new Commands.ListWebservicesCommand();
             serverCmd = cmd;
             Future<OperationState> task = executor().submit(this);
             OperationState state = task.get();
             if (state == OperationState.COMPLETED) {
-                wss = cmd.getWebserviceList();
+                List<String>  wss = cmd.getWebserviceList();
 
                 result = processWebServices(wss);
             }
@@ -385,19 +385,12 @@ public class CommandRunner extends BasicTask<OperationState> {
             String compValue = data.get(k);
 
             try {
-                SetPropertyCommand cmd = cf.getSetPropertyCommand(compName, compValue);
-                serverCmd = cmd;
-                Future<OperationState> task = executor().submit(this);
-                OperationState state = task.get();
-                if (state == OperationState.COMPLETED) {
-                    cmd.processResponse();
-                //return cmd.getData();
-                }
-            } catch (InterruptedException ex) {
-                lastEx = ex;
-                Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
-                itemsNotUpdated = addName(compName, itemsNotUpdated);
-            } catch (ExecutionException ex) {
+                CommandSetProperty cmd = cf.getSetPropertyCommand(compName, compValue);
+//                serverCmd = cmd;
+                ResultString setResult = CommandSetProperty.setProperty(
+                        instance, cmd,
+                        CommonServerSupport.PROPERTIES_FETCH_TIMEOUT);
+            } catch (GlassFishIdeException ex) {
                 lastEx = ex;
                 Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
                 itemsNotUpdated = addName(compName, itemsNotUpdated);
@@ -581,9 +574,8 @@ public class CommandRunner extends BasicTask<OperationState> {
                                     }
                                 };
 
-                                SSLContext context = null;
                                 try {
-                                    context = SSLContext.getInstance("SSL");
+                                    SSLContext context = SSLContext.getInstance("SSL");
                                     context.init(null, tm, null);
                                     ((HttpsURLConnection) hconn).setSSLSocketFactory(context.getSocketFactory());
                                     ((HttpsURLConnection) hconn).setHostnameVerifier(new HostnameVerifier() {
@@ -811,7 +803,6 @@ public class CommandRunner extends BasicTask<OperationState> {
                     } catch(IOException ex) {
                         Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);  // NOI18N
                     }
-                    ostream = null;
                 }
             }
         } else if("POST".equalsIgnoreCase(serverCmd.getRequestMethod())) { // NOI18N

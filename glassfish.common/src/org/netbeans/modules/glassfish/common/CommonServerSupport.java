@@ -113,6 +113,7 @@ public class CommonServerSupport
                     : NbBundle.getMessage(CommonServerSupport.class, resName,
                     args[0], args[1]);
         }
+
         /**
          * Callback to notify about GlassFish __locations command execution
          * state change.
@@ -185,6 +186,9 @@ public class CommonServerSupport
     /** Delay before next try while server is initializing [ms]. */
     private static final int STARTUP_RETRY_DELAY = 2000;
 
+    /** Properties fetching timeout [ms]. */
+    public static final int PROPERTIES_FETCH_TIMEOUT = 10000;
+
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
@@ -252,10 +256,10 @@ public class CommonServerSupport
 
     private FileObject getInstanceFileObject() {
         FileObject dir = FileUtil.getConfigFile(
-                instance.getInstanceProvider().getInstancesDirName());
+                instance.getInstanceProvider().getInstancesDirFirstName());
         if(dir != null) {
             String instanceFN = instance
-                    .getProperty(GlassfishInstanceProvider.INSTANCE_FO_ATTR);
+                    .getProperty(GlassfishInstance.INSTANCE_FO_ATTR);
             if(instanceFN != null) {
                 return dir.getFileObject(instanceFN);
             }
@@ -1353,6 +1357,7 @@ public class CommonServerSupport
 
         return retVal;
     }
+
     private String getHttpHostFromServer(String server, String nameOfLocalhost) {
         String retVal = "localhostFAIL"; // NOI18N
         GetPropertyCommand  gpc = new GetPropertyCommand("servers.server."+server+".node-ref"); // NOI18N
