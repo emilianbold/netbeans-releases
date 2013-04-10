@@ -84,6 +84,7 @@ public final class CompletionContext {
     private String typeName;
     private String prefix;
     private int anchor;
+    private boolean nameOnly;
     
     public final int lexOffset;
     public final int astOffset;
@@ -124,6 +125,7 @@ public final class CompletionContext {
         // Are we invoked right behind a dot? This is information is used later on in
         // a couple of completions.
         this.dotContext = getDotCompletionContext();
+        this.nameOnly = dotContext != null && dotContext.isMethodsOnly();
 
         this.declaringClass = getBeforeDotDeclaringClass();
 
@@ -179,6 +181,10 @@ public final class CompletionContext {
     
     public boolean isBehindDot() {
         return dotContext != null;
+    }
+
+    public boolean isNameOnly() {
+        return nameOnly;
     }
 
     /**

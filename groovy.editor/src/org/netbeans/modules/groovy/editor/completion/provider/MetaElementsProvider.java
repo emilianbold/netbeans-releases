@@ -50,82 +50,75 @@ import groovy.lang.MetaProperty;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.codehaus.groovy.reflection.CachedClass;
-import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.MetaMethodItem;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 import org.netbeans.modules.groovy.editor.java.Utilities;
+import org.netbeans.modules.groovy.editor.spi.completion.CompletionProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
+ * FIXME: this should somehow use compilation classpath.
+ * 
  * @author Petr Hejl
+ * @author Martin Janicek
  */
-// FIXME this should somehow use compilation classpath
-public final class MetaElementHandler {
+@ServiceProvider(
+    service = CompletionProvider.class,
+    position = 500
+)
+public final class MetaElementsProvider implements CompletionProvider {
 
-    private static final Logger LOG = Logger.getLogger(MetaElementHandler.class.getName());
-
-    private final ParserResult info;
-
-    private MetaElementHandler(ParserResult info) {
-        this.info = info;
-    }
-
-    public static MetaElementHandler forCompilationInfo(ParserResult info) {
-        return new MetaElementHandler(info);
-    }
-
-    // FIXME ideally there should be something like nice CompletionRequest once public and stable
-    // then this class could implement some common interface
-    // FIXME SPI to plug here for Grails dynamic methods
-    public Map<FieldSignature, ? extends CompletionItem> getFields(String className,
-            String prefix, int anchor) {
-
-        final Class clazz = loadClass(className);
-        if (clazz != null) {
-            final MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(clazz);
-
-            if (metaClass != null) {
-                Map<FieldSignature, CompletionItem.FieldItem> result = new HashMap<FieldSignature, CompletionItem.FieldItem>();
-
-                LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
-                for (Object field : metaClass.getProperties()) {
-                    LOG.log(Level.FINEST, field.toString());
-                    MetaProperty prop = (MetaProperty) field;
-                    if (prop.getName().startsWith(prefix)) {
-                        result.put(new FieldSignature(prop.getName()), new CompletionItem.FieldItem(
-                                prop.getName(), prop.getModifiers(), anchor, info, prop.getType().getSimpleName()));
-                    }
-                }
-
-                return result;
-            }
-        }
-        
-        return Collections.emptyMap();
-    }
     
-    public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
-            String prefix, int anchor, boolean nameOnly) {
-
-        final Class clz = loadClass(className);
+    @Override
+    public Map<MethodSignature, CompletionItem> getMethods(CompletionContext context) {
+        final Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
+        final Class clz = loadClass(context.getTypeName());
+        
         if (clz != null) {
             final MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
 
             if (metaClz != null) {
-                Map<MethodSignature, CompletionItem.MetaMethodItem> result = new HashMap<MethodSignature, CompletionItem.MetaMethodItem>();
-
-                LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
                 for (MetaMethod method : metaClz.getMetaMethods()) {
-                    populateProposal(clz, method, prefix, anchor, result, nameOnly);
+                    populateProposal(clz, method, context.getPrefix(), context.getAnchor(), result, context.isNameOnly());
                 }
-
-                return result;
             }
-        
         }
+        return result;
+    }
+
+    @Override
+    public Map<MethodSignature, CompletionItem> getStaticMethods(CompletionContext context) {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public Map<FieldSignature, CompletionItem> getFields(CompletionContext context) {
+        final Map<FieldSignature, CompletionItem> result = new HashMap<FieldSignature, CompletionItem>();
+        final Class clazz = loadClass(context.getTypeName());
+        
+        if (clazz != null) {
+            final MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(clazz);
+
+            if (metaClass != null) {
+                
+                for (Object field : metaClass.getProperties()) {
+                    MetaProperty prop = (MetaProperty) field;
+                    if (prop.getName().startsWith(context.getPrefix())) {
+                        result.put(new FieldSignature(prop.getName()), new CompletionItem.FieldItem(
+                                prop.getName(), prop.getModifiers(), context.getAnchor(), context.getParserResult(), prop.getType().getSimpleName()));
+                    }
+                }
+            }
+        }
+        
+        return result;
+    }
+
+    @Override
+    public Map<FieldSignature, CompletionItem> getStaticFields(CompletionContext context) {
         return Collections.emptyMap();
     }
     
@@ -134,26 +127,21 @@ public final class MetaElementHandler {
             // FIXME should be loaded by classpath classloader
             return Class.forName(className);
         } catch (ClassNotFoundException e) {
-            LOG.log(Level.FINE, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
             return null;
         } catch (NoClassDefFoundError err) {
-            LOG.log(Level.FINE, "Class.forName() failed: {0}", err.getMessage()); // NOI18N
             return null;
         }
     }
 
     private void populateProposal(Class clz, MetaMethod method, String prefix, int anchor,
-            Map<MethodSignature, CompletionItem.MetaMethodItem> methodList, boolean nameOnly) {
+            Map<MethodSignature, CompletionItem> methodList, boolean nameOnly) {
 
         if (method.getName().startsWith(prefix)) {
-            LOG.log(Level.FINEST, "Found matching method: {0}", method.getName()); // NOI18N
-
             addOrReplaceItem(methodList, new CompletionItem.MetaMethodItem(clz, method, anchor, true, nameOnly));
         }
     }
 
-    private void addOrReplaceItem(Map<MethodSignature, CompletionItem.MetaMethodItem> methodItemList,
-            CompletionItem.MetaMethodItem itemToStore) {
+    private void addOrReplaceItem(Map<MethodSignature, CompletionItem> methodItemList, CompletionItem.MetaMethodItem itemToStore) {
 
         // if we have a method in-store which has the same name and same signature
         // then replace it if we have a method with a higher distance to the super-class.
@@ -162,15 +150,17 @@ public final class MetaElementHandler {
 
         MetaMethod methodToStore = itemToStore.getMethod();
 
-        for (CompletionItem.MetaMethodItem methodItem : methodItemList.values()) {
-            MetaMethod currentMethod = methodItem.getMethod();
+        for (CompletionItem methodItem : methodItemList.values()) {
+            if (methodItem instanceof MetaMethodItem) {
+                MetaMethod currentMethod = ((MetaMethodItem) methodItem).getMethod();
 
-            if (isSameMethod(currentMethod, methodToStore)) {
-                if (isBetterDistance(currentMethod, methodToStore)) {
-                    methodItemList.remove(getSignature(currentMethod));
-                    methodItemList.put(getSignature(methodToStore), itemToStore);
+                if (isSameMethod(currentMethod, methodToStore)) {
+                    if (isBetterDistance(currentMethod, methodToStore)) {
+                        methodItemList.remove(getSignature(currentMethod));
+                        methodItemList.put(getSignature(methodToStore), itemToStore);
+                    }
+                    return;
                 }
-                return;
             }
         }
 
@@ -178,7 +168,7 @@ public final class MetaElementHandler {
         methodItemList.put(getSignature(methodToStore), itemToStore);
     }
 
-    private static boolean isSameMethod(MetaMethod currentMethod, MetaMethod methodToStore) {
+    private boolean isSameMethod(MetaMethod currentMethod, MetaMethod methodToStore) {
         if (!currentMethod.getName().equals(methodToStore.getName())) {
             return false;
         }
@@ -198,7 +188,7 @@ public final class MetaElementHandler {
         return true;
     }
 
-    private static boolean isSameParams(CachedClass[] parameters1, CachedClass[] parameters2) {
+    private boolean isSameParams(CachedClass[] parameters1, CachedClass[] parameters2) {
         if (parameters1.length == parameters2.length) {
             for (int i = 0, size = parameters1.length; i < size; i++) {
                 if (parameters1[i] != parameters2[i]) {
