@@ -39,38 +39,48 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.webkit.tooling.console;
+package org.netbeans.modules.web.webkit.debugging.api.console;
 
+import java.util.List;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
-import org.netbeans.modules.web.webkit.debugging.api.console.Console;
-import org.netbeans.modules.web.webkit.debugging.spi.BrowserConsoleLoggerFactory;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.PropertyDescriptor;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 
-@ServiceProvider(service=BrowserConsoleLoggerFactory.class)
-public class BrowserConsoleLoggerFactoryImpl implements BrowserConsoleLoggerFactory {
-
-    @Override
-    public Lookup createBrowserConsoleLogger(WebKitDebugging webkit, Lookup projectContext) {
-        BrowserConsoleLogger logger = new BrowserConsoleLogger(projectContext);
-        Console console = webkit.getConsole();
-        console.addListener(logger);
-        logger.setInput(console.getInput());
-        return Lookups.fixed(webkit, logger);
+/**
+ *
+ * @author Martin
+ */
+class RemoteObjectMessage extends ConsoleMessage {
+    
+    private final RemoteObject ro;
+    private final WebKitDebugging webKit;
+    
+    RemoteObjectMessage(WebKitDebugging webKit, RemoteObject ro) {
+        super(ro.getOwningProperty());
+        this.webKit = webKit;
+        this.ro = ro;
     }
 
     @Override
-    public void stopBrowserConsoleLogger(Lookup session) {
-        WebKitDebugging webkit = session.lookup(WebKitDebugging.class);
-        assert webkit != null;
-        BrowserConsoleLogger logger = session.lookup(BrowserConsoleLogger.class);
-        assert logger != null;
-        if (logger == null || webkit == null) {
-            return;
+    public String getType() {
+        return ro.getType().getName();
+    }
+
+    @Override
+    public String getText() {
+        if (ro.getType() == RemoteObject.Type.OBJECT) {
+            String className = ro.getClassName();
+            if (className.startsWith("HTML") && className.endsWith("Element")) {
+                List<PropertyDescriptor> properties = webKit.getRuntime().getRemoteObjectProperties(ro, true);
+                for (PropertyDescriptor pd : properties) {
+                    if ("outerHTML".equals(pd.getName())) {
+                        return pd.getValue().getValueAsString();
+                    }
+                }
+            }
+            return ro.getDescription();
         }
-        webkit.getConsole().removeListener(logger);
-        logger.close();
+        return ro.getValueAsString();
     }
 
 }
