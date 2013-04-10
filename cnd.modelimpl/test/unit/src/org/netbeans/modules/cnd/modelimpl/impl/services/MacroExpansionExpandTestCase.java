@@ -54,7 +54,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import org.netbeans.modules.cnd.modelimpl.impl.services.MacroExpansionDocProviderImpl;
 import java.io.File;
 import java.io.PrintStream;
 import javax.swing.text.Document;
