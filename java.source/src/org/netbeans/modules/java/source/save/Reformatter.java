@@ -3108,14 +3108,16 @@ public class Reformatter implements ReformatTask {
                         lastToken = tokens.token();
                         break;
                     case BLOCK_COMMENT:
-                        if (count >= 0 && tokens.index() > 1 && after != 1)
+                        if (tokens.index() > 1 && after != 1) {
+                            maxCount++;
                             count++;
+                        }
                         if (lastToken != null) {
                             int offset = tokens.offset() - lastToken.length();
                             String text = lastToken.text().toString();
                             int idx = 0;
                             int lastIdx = 0;
-                            while(maxCount >= 0 && (idx = text.indexOf('\n', lastIdx)) >= 0) { //NOI18N
+                            while(maxCount > 0 && (idx = text.indexOf('\n', lastIdx)) >= 0) { //NOI18N
                                 if (idx > lastIdx)
                                     addDiff(new Diff(offset + lastIdx, offset + idx, null));
                                 lastIdx = idx + 1;
@@ -3139,14 +3141,16 @@ public class Reformatter implements ReformatTask {
                         after = 3;
                         break;
                     case JAVADOC_COMMENT:
-                        if (count >= 0 && tokens.index() > 1 && after != 1)
+                        if (tokens.index() > 1 && after != 1) {
+                            maxCount++;
                             count++;
+                        }
                         if (lastToken != null) {
                             int offset = tokens.offset() - lastToken.length();
                             String text = lastToken.text().toString();
                             int idx = 0;
                             int lastIdx = 0;
-                            while(maxCount >= 0 && (idx = text.indexOf('\n', lastIdx)) >= 0) { //NOI18N
+                            while(maxCount > 0 && (idx = text.indexOf('\n', lastIdx)) >= 0) { //NOI18N
                                 if (idx > lastIdx)
                                     addDiff(new Diff(offset + lastIdx, offset + idx, null));
                                 lastIdx = idx + 1;
@@ -3181,11 +3185,13 @@ public class Reformatter implements ReformatTask {
                         if (lastToken != null) {
                             int offset = tokens.offset() - lastToken.length();
                             String text = lastToken.text().toString();
-                            if (count >= 0 && tokens.index() > 1 && after != 1 && text.indexOf('\n') >= 0)
+                            if (tokens.index() > 1 && after != 1 && text.indexOf('\n') >= 0) {
+                                maxCount++;
                                 count++;
+                            }
                             int idx = 0;
                             int lastIdx = 0;
-                            while(maxCount >= 0 && (idx = text.indexOf('\n', lastIdx)) >= 0) { //NOI18N
+                            while(maxCount > 0 && (idx = text.indexOf('\n', lastIdx)) >= 0) { //NOI18N
                                 if (idx > lastIdx)
                                     addDiff(new Diff(offset + lastIdx, offset + idx, null));
                                 lastIdx = idx + 1;
@@ -3211,14 +3217,16 @@ public class Reformatter implements ReformatTask {
                         after = 1;
                         break;
                     default:
-                        if (count >= 0 && tokens.index() > 1 && after != 1)
+                        if (tokens.index() > 1 && after != 1) {
+                            maxCount++;
                             count++;
+                        }
                         if (lastToken != null) {
                             int offset = tokens.offset() - lastToken.length();
                             String text = lastToken.text().toString();
                             int idx = 0;
                             int lastIdx = 0;
-                            while(maxCount >= 0 && (idx = text.indexOf('\n', lastIdx)) >= 0) { //NOI18N
+                            while(maxCount > 0 && (idx = text.indexOf('\n', lastIdx)) >= 0) { //NOI18N
                                 if (idx > 0) {
                                     if (templateEdit && idx >= lastIdx)
                                         addDiff(new Diff(offset + lastIdx, offset + idx, getIndent()));
