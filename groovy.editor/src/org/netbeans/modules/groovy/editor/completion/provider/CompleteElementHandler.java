@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.completion;
+package org.netbeans.modules.groovy.editor.completion.provider;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,7 +48,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
@@ -59,7 +58,9 @@ import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
+import org.netbeans.modules.groovy.editor.completion.AccessLevel;
 import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
@@ -70,56 +71,71 @@ import org.openide.filesystems.FileObject;
  */
 public final class CompleteElementHandler {
 
-    private static final Logger LOG = Logger.getLogger(CompleteElementHandler.class.getName());
-
+    private final CompletionContext context;
     private final ParserResult info;
-
     private final GroovyIndex index;
 
-    private CompleteElementHandler(ParserResult info) {
-        this.info = info;
+    
+    public CompleteElementHandler(CompletionContext context) {
+        this.context = context;
+        this.info = context.getParserResult();
 
         FileObject fo = info.getSnapshot().getSource().getFileObject();
         if (fo != null) {
             // FIXME index is broken when invoked on start
-            this.index = GroovyIndex.get(QuerySupport.findRoots(fo,
-                    Collections.singleton(ClassPath.SOURCE), null, null));
+            this.index = GroovyIndex.get(QuerySupport.findRoots(fo, Collections.singleton(ClassPath.SOURCE), null, null));
         } else {
-            index = null;
+            this.index = null;
         }
     }
 
-    public static CompleteElementHandler forCompilationInfo(ParserResult info) {
-        return new CompleteElementHandler(info);
-    }
-
-    // FIXME ideally there should be something like nice CompletionRequest once public and stable
-    // then this class could implement some common interface
-    public Map<MethodSignature, CompletionItem> getMethods(
-            ClassNode source, ClassNode node, String prefix, int anchor, boolean nameOnly) {
-
-        //Map<MethodSignature, CompletionItem> meta = new HashMap<MethodSignature, CompletionItem>();
-
+    public Map<MethodSignature, CompletionItem> getMethods() {
+        final ClassNode source = context.getSurroundingClass();
+        final ClassNode node = context.declaringClass;
+        
+        if (node == null) {
+            return Collections.emptyMap();
+        }
+        
         Map<MethodSignature, CompletionItem> result = getMethodsInner(
-                source, node, prefix, anchor, 0, AccessLevel.create(source, node), nameOnly);
+                source, 
+                node,
+                context.getPrefix(), 
+                context.getAnchor(),
+                0,
+                AccessLevel.create(source, node),
+                context.dotContext != null && context.dotContext.isMethodsOnly());
 
-        //fillSuggestions(meta, result);
         return result;
     }
 
-    public Map<FieldSignature, CompletionItem> getFields(
-            ClassNode source, ClassNode node, String prefix, int anchor) {
+    public Map<FieldSignature, CompletionItem> getFields() {
+        final ClassNode source = context.getSurroundingClass();
+        final ClassNode node = context.declaringClass;
+        
+        if (node == null) {
+            return Collections.emptyMap();
+        }
+        
+        Map<FieldSignature, CompletionItem> result = getFieldsInner(
+                source, 
+                node,
+                context.getPrefix(), 
+                context.getAnchor(),
+                0);
 
-        //Map<MethodSignature, CompletionItem> meta = new HashMap<MethodSignature, CompletionItem>();
-        Map<FieldSignature, CompletionItem> result = getFieldsInner(source, node, prefix, anchor, 0);
-
-        //fillSuggestions(meta, result);
         return result;
     }
 
     // FIXME configure acess levels
     private Map<MethodSignature, CompletionItem> getMethodsInner(
-            ClassNode source, ClassNode node, String prefix, int anchor, int level, Set<AccessLevel> access, boolean nameOnly) {
+            ClassNode source,
+            ClassNode node,
+            String prefix,
+            int anchor,
+            int level,
+            Set<AccessLevel> access,
+            boolean nameOnly) {
 
         boolean leaf = (level == 0);
         Set<AccessLevel> modifiedAccess = AccessLevel.update(access, source, node);
@@ -162,14 +178,13 @@ public final class CompleteElementHandler {
         if ("int".equals(typeName)) { // NOI18N
             typeName = "java.lang.Integer"; // NOI18N
         }
+        context.setTypeName(typeName);
 
-        Map<MethodSignature, ? extends CompletionItem> groovyItems = GroovyElementHandler.forCompilationInfo(info)
-                .getMethods(index, typeName, prefix, anchor, leaf, access, nameOnly);
-
-        fillSuggestions(groovyItems, result);
-
+        GroovyElementsProvider groovyProvider = new GroovyElementsProvider();
+        fillSuggestions(groovyProvider.getMethods(context), result);
+        
         // we can't go groovy and java - helper methods would be visible
-        if (groovyItems.isEmpty()) {
+        if (result.isEmpty()) {
             String[] typeParameters = new String[(typeNode.isUsingGenerics() && typeNode.getGenericsTypes() != null)
                     ? typeNode.getGenericsTypes().length : 0];
             for (int i = 0; i < typeParameters.length; i++) {
@@ -186,14 +201,14 @@ public final class CompleteElementHandler {
                             leaf, modifiedAccess, nameOnly), result);
         }
 
+        CompletionProviderHandler providerHandler = new CompletionProviderHandler();
+        fillSuggestions(providerHandler.getMethods(context), result);
+        fillSuggestions(providerHandler.getStaticMethods(context), result);
+        
         // FIXME not sure about order of the meta methods, perhaps interface
         // methods take precedence
         fillSuggestions(MetaElementHandler.forCompilationInfo(info).getMethods(typeName, prefix, anchor, nameOnly), result);
-
-        if (source != null) {
-            fillSuggestions(DynamicElementHandler.forCompilationInfo(info).getMethods(source.getName(), typeName, prefix, anchor, nameOnly, leaf, definition.getFileObject()), result);
-        }
-
+        
         if (typeNode.getSuperClass() != null) {
             fillSuggestions(getMethodsInner(source, typeNode.getSuperClass(), prefix, anchor, level + 1, modifiedAccess, nameOnly), result);
         } else if (leaf) {
@@ -209,36 +224,36 @@ public final class CompleteElementHandler {
         return result;
     }
 
-    private Map<FieldSignature, CompletionItem> getFieldsInner(
-            ClassNode source, ClassNode node, String prefix, int anchor, int level) {
-
+    private Map<FieldSignature, CompletionItem> getFieldsInner(ClassNode source, ClassNode node, String prefix, int anchor, int level) {
         boolean leaf = (level == 0);
 
-        Map<FieldSignature, CompletionItem> result = new HashMap<FieldSignature, CompletionItem>();
+        /* Move this whole block away, context information should be in CompletionContext */
         ClassDefinition definition = loadDefinition(node);
         ClassNode typeNode = definition.getNode();
+        String typeName = typeNode.getName();
+        // In cases like 1.^ we have current type name "int" but indexer won't find anything for such a primitive
+        if ("int".equals(typeName)) { // NOI18N
+            typeName = "java.lang.Integer"; // NOI18N
+        }
+        context.setTypeName(typeName);
+        /**/
+        
+        Map<FieldSignature, CompletionItem> result = new HashMap<FieldSignature, CompletionItem>();
 
-        fillSuggestions(GroovyElementHandler.forCompilationInfo(info)
-                .getFields(index, typeNode.getName(), prefix, anchor, leaf), result);
-
-        fillSuggestions(JavaElementHandler.forCompilationInfo(info)
-                .getFields(typeNode.getName(), prefix, anchor, leaf), result);
+        fillSuggestions(JavaElementHandler.forCompilationInfo(info).getFields(typeNode.getName(), prefix, anchor, leaf), result);
 
         // FIXME not sure about order of the meta methods, perhaps interface
         // methods take precedence
-        fillSuggestions(MetaElementHandler.forCompilationInfo(info)
-                .getFields(typeNode.getName(), prefix, anchor), result);
+        fillSuggestions(MetaElementHandler.forCompilationInfo(info).getFields(typeNode.getName(), prefix, anchor), result);
 
-        if (source != null) {
-            fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
-                    .getFields(source.getName(), typeNode.getName(), prefix, anchor, leaf, definition.getFileObject()), result);
-        }
+        CompletionProviderHandler providerHandler = new CompletionProviderHandler();
+        fillSuggestions(providerHandler.getFields(context), result);
+        fillSuggestions(providerHandler.getStaticFields(context), result);
 
         if (typeNode.getSuperClass() != null) {
             fillSuggestions(getFieldsInner(source, typeNode.getSuperClass(), prefix, anchor, level + 1), result);
         } else if (leaf) {
-            fillSuggestions(JavaElementHandler.forCompilationInfo(info)
-                    .getFields("java.lang.Object", prefix, anchor, false), result); // NOI18N
+            fillSuggestions(JavaElementHandler.forCompilationInfo(info).getFields("java.lang.Object", prefix, anchor, false), result); // NOI18N
         }
 
         for (ClassNode inter : typeNode.getInterfaces()) {

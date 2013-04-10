@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion.impl;
+package org.netbeans.modules.groovy.editor.completion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,9 +49,9 @@ import java.util.logging.Level;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionSurrounding;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 
 /**
  *
@@ -61,10 +61,10 @@ public class NewVarCompletion extends BaseCompletion {
 
 
     @Override
-    public boolean complete(List<CompletionProposal> proposals, CompletionRequest request, int anchor) {
+    public boolean complete(List<CompletionProposal> proposals, CompletionContext request, int anchor) {
         LOG.log(Level.FINEST, "-> completeNewVars"); // NOI18N
 
-        List<String> newVars = getNewVarNameSuggestion(request.ctx);
+        List<String> newVars = getNewVarNameSuggestion(request.context);
 
         if (isValid(request, newVars) == false) {
             return false;
@@ -73,7 +73,7 @@ public class NewVarCompletion extends BaseCompletion {
         boolean stuffAdded = false;
         for (String var : newVars) {
             LOG.log(Level.FINEST, "Variable candidate: {0}", var); // NOI18N
-            if (var.startsWith(request.prefix) && !var.equals(request.prefix)) {
+            if (var.startsWith(request.getPrefix()) && !var.equals(request.getPrefix())) {
                 proposals.add(new CompletionItem.NewVarItem(var, anchor));
                 stuffAdded = true;
             }
@@ -87,7 +87,7 @@ public class NewVarCompletion extends BaseCompletion {
      * @param request completion request
      * @return true if there is a possibility that something could be proposed, false otherwise
      */
-    private boolean isValid(CompletionRequest request, List<String> newVars) {
+    private boolean isValid(CompletionContext request, List<String> newVars) {
         if (request.location == CaretLocation.OUTSIDE_CLASSES) {
             LOG.log(Level.FINEST, "outside of any class, bail out."); // NOI18N
             return false;
@@ -119,7 +119,7 @@ public class NewVarCompletion extends BaseCompletion {
      * @param ctx
      * @return
      */
-    private List<String> getNewVarNameSuggestion(CompletionContext ctx) {
+    private List<String> getNewVarNameSuggestion(CompletionSurrounding ctx) {
         LOG.log(Level.FINEST, "getNewVarNameSuggestion()"); // NOI18N
 
         List<String> result = new ArrayList<String>();

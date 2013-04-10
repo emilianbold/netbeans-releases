@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.editor.api.completion;
+
+package org.netbeans.modules.groovy.editor.spi.completion;
+
+import java.util.Set;
 
 /**
- *
- * @author phejl
+ * Provides additional default imports.
+ * 
+ * @author Martin Janicek
  */
-public class AccessCCTest extends GroovyCCTestBase {
+public interface DefaultImportsProvider {
 
-    public AccessCCTest(String testName) {
-        super(testName);
-    }
+    Set<String> getDefaultImportPackages();
+    
+    Set<String> getDefaultImportClasses();
 
-    @Override
-    protected String getTestType() {
-        return "access";
-    }
-
-    // FIXME this does not provide accurate results, but we need to test
-    // at least basic closure completion
-    public void testBasicAccessLevels1() throws Exception {
-        checkCompletion(BASE + "" + "BasicAccessLevels1.groovy", "        this.^", false);
-    }
 }

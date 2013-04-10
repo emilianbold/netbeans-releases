@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion.impl;
+package org.netbeans.modules.groovy.editor.completion;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -53,9 +53,9 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -67,7 +67,7 @@ public abstract class BaseCompletion {
     protected static final Logger LOG = Logger.getLogger(BaseCompletion.class.getName());
 
 
-    public abstract boolean complete(List<CompletionProposal> proposals, CompletionRequest request, int anchor);
+    public abstract boolean complete(List<CompletionProposal> proposals, CompletionContext request, int anchor);
 
 
     protected class PackageCompletionRequest {
@@ -76,8 +76,8 @@ public abstract class BaseCompletion {
         String prefix = "";
     }
 
-    protected final ClasspathInfo getClasspathInfoFromRequest(final CompletionRequest request) {
-        FileObject fileObject = request.info.getSnapshot().getSource().getFileObject();
+    protected final ClasspathInfo getClasspathInfoFromRequest(final CompletionContext request) {
+        FileObject fileObject = request.getSourceFile();
 
         if (fileObject != null) {
             return ClasspathInfo.create(fileObject);
@@ -110,15 +110,15 @@ public abstract class BaseCompletion {
         }
     }
 
-    protected boolean isPrefixed(CompletionRequest request, String name) {
-        return name.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH));
+    protected boolean isPrefixed(CompletionContext request, String name) {
+        return name.toUpperCase(Locale.ENGLISH).startsWith(request.getPrefix().toUpperCase(Locale.ENGLISH));
     }
 
-    protected boolean isPrefixedAndNotEqual(CompletionRequest request, String name) {
-        return isPrefixed(request, name) && !(name.equals(request.prefix));
+    protected boolean isPrefixedAndNotEqual(CompletionContext request, String name) {
+        return isPrefixed(request, name) && !(name.equals(request.getPrefix()));
     }
 
-    protected final PackageCompletionRequest getPackageRequest(final CompletionRequest request) {
+    protected final PackageCompletionRequest getPackageRequest(final CompletionContext request) {
         int position = request.lexOffset;
         PackageCompletionRequest result = new PackageCompletionRequest();
 
@@ -183,7 +183,7 @@ public abstract class BaseCompletion {
             // This might happened if we are trying to get completion on prefix which match to some keyword
             // In that case 'sb' is empty, but we want to have result.prefix initialized (see issue #209453)
             if (token != null && "keyword".equals(token.id().primaryCategory())) {
-                result.prefix = request.prefix;
+                result.prefix = request.getPrefix();
             }
         } else if (lastToken != null && lastToken.id() == GroovyTokenId.DOT) {
             String pkgString = sb.toString();

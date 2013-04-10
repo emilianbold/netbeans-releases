@@ -32,6 +32,7 @@ CLASS      ArrayStoreException                        null
 CLASS      Arrays                                     null
 CLASS      AssertionError                             null
 CLASS      Authenticator                              null
+CLASS      AutoCloseable                              null
 CLASS      BenchmarkInterceptor                       null
 CLASS      BigDecimal                                 null
 CLASS      BigInteger                                 null
@@ -39,6 +40,7 @@ CLASS      BindException                              null
 CLASS      Binding                                    null
 CLASS      BitSet                                     null
 CLASS      Boolean                                    null
+CLASS      BootstrapMethodError                       null
 CLASS      BufferedInputStream                        null
 CLASS      BufferedOutputStream                       null
 CLASS      BufferedReader                             null
@@ -64,6 +66,7 @@ CLASS      ClassCircularityError                      null
 CLASS      ClassFormatError                           null
 CLASS      ClassLoader                                null
 CLASS      ClassNotFoundException                     null
+CLASS      ClassValue                                 null
 CLASS      CliBuilder                                 null
 CLASS      CloneNotSupportedException                 null
 CLASS      Cloneable                                  null
@@ -201,6 +204,7 @@ CLASS      IllegalMonitorStateException               null
 CLASS      IllegalPropertyAccessException             null
 CLASS      IllegalStateException                      null
 CLASS      IllegalThreadStateException                null
+CLASS      IllformedLocaleException                   null
 CLASS      IncompatibleClassChangeError               null
 CLASS      IncorrectClosureArgumentsExcep             null
 CLASS      IndentPrinter                              null
@@ -304,6 +308,7 @@ CLASS      ObjectStreamClass                          null
 CLASS      ObjectStreamConstants                      null
 CLASS      ObjectStreamException                      null
 CLASS      ObjectStreamField                          null
+CLASS      Objects                                    null
 CLASS      Observable                                 null
 CLASS      ObservableList                             null
 CLASS      ObservableMap                              null
@@ -335,6 +340,7 @@ CLASS      PropertyPermission                         null
 CLASS      PropertyResourceBundle                     null
 CLASS      PropertyValue                              null
 CLASS      ProtocolException                          null
+CLASS      ProtocolFamily                             null
 CLASS      Proxy                                      null
 CLASS      Proxy                                      null
 CLASS      ProxyGenerator                             null
@@ -351,6 +357,7 @@ CLASS      ReadOnlyPropertyException                  null
 CLASS      Readable                                   null
 CLASS      Reader                                     null
 CLASS      Reference                                  null
+CLASS      ReflectiveOperationException               null
 CLASS      ResourceBundle                             null
 CLASS      ResourceConnector                          null
 CLASS      ResourceException                          null
@@ -359,6 +366,7 @@ CLASS      Runnable                                   null
 CLASS      Runtime                                    null
 CLASS      RuntimeException                           null
 CLASS      RuntimePermission                          null
+CLASS      SafeVarargs                                null
 CLASS      Scanner                                    null
 CLASS      Script                                     null
 CLASS      ScriptException                            null
@@ -381,6 +389,7 @@ CLASS      SocketAddress                              null
 CLASS      SocketException                            null
 CLASS      SocketImpl                                 null
 CLASS      SocketImplFactory                          null
+CLASS      SocketOption                               null
 CLASS      SocketOptions                              null
 CLASS      SocketPermission                           null
 CLASS      SocketTimeoutException                     null
@@ -392,6 +401,8 @@ CLASS      SpreadMapEvaluatingException               null
 CLASS      Stack                                      null
 CLASS      StackOverflowError                         null
 CLASS      StackTraceElement                          null
+CLASS      StandardProtocolFamily                     null
+CLASS      StandardSocketOptions                      null
 CLASS      StreamCorruptedException                   null
 CLASS      StreamTokenizer                            null
 CLASS      StrictMath                                 null
