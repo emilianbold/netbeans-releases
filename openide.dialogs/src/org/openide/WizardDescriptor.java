@@ -45,6 +45,8 @@
 package org.openide;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -3190,6 +3192,31 @@ public class WizardDescriptor extends DialogDescriptor {
                     }
                 }
             });
+            addMouseListener( new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    showCopyToClipboardPopupMenu( e );
+                }
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    showCopyToClipboardPopupMenu( e );
+                }
+
+                private void showCopyToClipboardPopupMenu(MouseEvent e) {
+                    if( e.isPopupTrigger() && null != getToolTipText() && !getToolTipText().isEmpty() ) {
+                        JPopupMenu pm = new JPopupMenu();
+                        pm.add(new AbstractAction(NbBundle.getMessage(WizardDescriptor.class, "Lbl_CopyToClipboard")) { //NOI18N
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
+                                c.setContents(new StringSelection(getToolTipText()), null);
+                            }
+                        });
+                        pm.show(e.getComponent(), e.getX(), e.getY());
+                    }
+                }
+
+            } );
         }
 
         @Override
