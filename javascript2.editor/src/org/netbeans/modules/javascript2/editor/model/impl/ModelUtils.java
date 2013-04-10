@@ -643,22 +643,26 @@ public class ModelUtils {
                             }
                         }
                         
+                        boolean checkProperty = false;
                         for (IndexResult indexResult : indexResults) {
                             // go through the resul from index and add appropriate types to the new resolved
                             JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
                             if ("@mtd".equals(kind) && jsKind.isFunction()) {
                                 //Collection<TypeUsage> resolved = resolveTypeFromSemiType(model, ModelUtils.findJsObject(model, offset), IndexedElement.getReturnTypes(indexResult));
-                                Collection<? extends TypeUsage> resolvedTypes = IndexedElement.getReturnTypes(indexResult);
-                                newResolvedTypes.addAll(resolvedTypes);
+                                Collection<TypeUsage> resolvedTypes = IndexedElement.getReturnTypes(indexResult);
+                                ModelUtils.addUnigueType(newResolvedTypes, resolvedTypes);
                             } else {
-                                String propertyFQN = typeUsage.getType() + "." + name;
-                                List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
-                                resolveAssignments(jsIndex, propertyFQN, fromAssignment);
-                                if (fromAssignment.isEmpty()) {
-                                    newResolvedTypes.add(new TypeUsageImpl(propertyFQN));
-                                } else {
-                                    newResolvedTypes.addAll(fromAssignment);
-                                }
+                                checkProperty = true;
+                            }
+                        }
+                        if (checkProperty) {
+                            String propertyFQN = typeUsage.getType() + "." + name;
+                            List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
+                            resolveAssignments(jsIndex, propertyFQN, fromAssignment);
+                            if (fromAssignment.isEmpty()) {
+                                ModelUtils.addUnigueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
+                            } else {
+                                ModelUtils.addUnigueType(newResolvedTypes, fromAssignment);
                             }
                         }
                         // from libraries look for top level types
