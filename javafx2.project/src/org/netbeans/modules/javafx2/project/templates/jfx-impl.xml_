@@ -1537,15 +1537,21 @@
     </target>
     
     <target name="-javafx-init-keystore" depends="-check-signing-possible,-javafx-init-signing,-javafx-init-keystore1,-javafx-init-keystore2,-check-keystore-exists" 
-            if="javafx.signed.true+signjars.task.available" unless="javafx.signjar.keystore.exists">
+            if="javafx.signed.true+signjars.task.available" unless="do.not.init.keystore">
         <property name="javafx.signjar.vendor" value="CN=${application.vendor}"/>
         <echo message="Going to create default keystore in ${javafx.signjar.keystore}"/>
         <genkey dname="${javafx.signjar.vendor}" alias="${javafx.signjar.alias}" keystore="${javafx.signjar.keystore}"
             storepass="${javafx.signjar.storepass}" keypass="${javafx.signjar.keypass}"/>
     </target>
     
-    <target name="-check-keystore-exists">
+    <target name="-check-keystore-exists" depends="-security-props-check">
         <available property="javafx.signjar.keystore.exists" file="${javafx.signjar.keystore}"/>
+        <condition property="do.not.init.keystore">
+            <or>
+                <not><isset property="javafx.signed.true"/></not>
+                <isset property="javafx.signjar.keystore.exists"/>
+            </or>
+        </condition>
     </target>
 
     <target name="-javafx-init-signing">
@@ -1566,6 +1572,19 @@
         <property name="javafx.signjar.storepass" value="${javafx.signing.keystore.password}"/>
         <property name="javafx.signjar.keypass" value="${javafx.signing.keyalias.password}"/>
         <property name="javafx.signjar.alias" value="${javafx.signing.keyalias}"/>
+    </target>
+
+    <target name="-check-signing-security" depends="-security-props-check">
+        <condition property="is.signing.unsafe">
+            <or>
+                <not><isset property="javafx.signed.true"/></not>
+                <not><equals arg1="${javafx.signing.type}" arg2="key" casesensitive="false" trim="true"/></not>
+            </or>
+        </condition>
+    </target>
+
+    <target name="-warn-insufficient-signing" depends="-check-signing-security" if="is.signing.unsafe">
+        <echo message="Warning: Unsigned and self-signed WebStart applications are deprecated from JDK7u21 onwards due to security reasons.${line.separator}         To ensure future correct functionality please sign WebStart applications using trusted certificate."/>
     </target>
 
     
@@ -3632,7 +3651,7 @@
 
 
     <!-- Running/Debugging/Profiling as WebStart -->
-    
+
     <target name="-check-jnlp-file-fx" depends="-swing-api-check" unless="fx-in-swing-app-workaround">
         <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
         <property name="jfx.deployment.jnlp" location="${jfx.deployment.dir}${file.separator}${jfx.deployment.base}.jnlp"/>
@@ -3677,7 +3696,7 @@
     </target>
 
     <target name="jfxws-run" if="jnlp-file-exists" depends="-mark-project-state-running,-clean-if-config-changed,-mark-project-needs-jnlp,-check-jdk-7u4or5-mac,jar,
-            -check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,-check-concurrent-jnlp-runs,-create-temp-run-dir" 
+            -check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,-check-concurrent-jnlp-runs,-create-temp-run-dir,-warn-insufficient-signing" 
             description="Start JavaFX javaws execution">
         <echo message="Executing ${temp.run.jnlp} using ${active.webstart.executable}"/>
         <exec executable="${active.webstart.executable}">
@@ -3687,7 +3706,7 @@
     </target>
     
     <target name="jfxws-debug" if="jnlp-file-exists+netbeans.home" depends="-mark-project-state-debugging,-clean-if-config-changed,-mark-project-needs-jnlp,
-            -check-jdk-7u4or5-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,
+            -check-jdk-7u4or5-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,-warn-insufficient-signing,
             -debug-start-debugger,-debug-javaws-debuggee" description="Debug JavaFX javaws project in IDE"/>
         
     <target name="-debug-javaws-debuggee" depends="-init-debug-args">
@@ -3714,7 +3733,7 @@
     </target>
     
     <target name="-do-jfxws-profile" depends="-mark-project-state-profiling,-mark-project-needs-jnlp,
-            -check-jdk-7u4or5-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime">
+            -check-jdk-7u4or5-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,-warn-insufficient-signing">
         <echo message="Executing ${jfx.deployment.jnlp} in profile mode using ${active.webstart.executable}"/>
         <property name="run.jvmargs.ide" value=""/>        
         <exec executable="${active.webstart.executable}">
@@ -3819,7 +3838,7 @@
     </target>
 
     <target name="jfxbe-run" if="html-file-exists" depends="-mark-project-state-running,-clean-if-config-changed,-mark-project-needs-jnlp,-check-jdk-7u4or5-mac,jar,
-            -check-selected-browser-path,-set-html-file,-check-jfx-runtime,-check-concurrent-html-runs,-create-temp-run-dir"
+            -check-selected-browser-path,-set-html-file,-check-jfx-runtime,-check-concurrent-html-runs,-create-temp-run-dir,-warn-insufficient-signing"
             description="Start JavaFX execution in browser">
         <echo message="Executing ${temp.run.html} using ${javafx.run.inbrowser}"/>
         <echo message="(${javafx.run.inbrowser.path})"/>
@@ -3830,7 +3849,7 @@
     </target>
     
     <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="-mark-project-state-debugging,-clean-if-config-changed,-mark-project-needs-jnlp,
-            -check-jdk-7u4or5-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime,
+            -check-jdk-7u4or5-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime,-warn-insufficient-signing,
             -debug-start-debugger,-debug-jfxbe-debuggee" description="Debug JavaFX project in browser"/>
         
     <target name="-debug-jfxbe-debuggee" depends="-init-debug-args">
@@ -3847,7 +3866,7 @@
     </target>
 
     <target name="-do-jfxbe-profile" depends="-mark-project-state-profiling,-mark-project-needs-jnlp,
-            -check-jdk-7u4or5-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime">
+            -check-jdk-7u4or5-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime,-warn-insufficient-signing">
         <echo message="Executing ${jfx.deployment.html} in profile mode using ${javafx.run.inbrowser}"/>
         <echo message="(${javafx.run.inbrowser.path})"/>
         <property name="run.jvmargs.ide" value=""/>        
