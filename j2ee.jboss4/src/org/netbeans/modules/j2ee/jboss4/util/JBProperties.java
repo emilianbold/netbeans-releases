@@ -248,9 +248,9 @@ public class JBProperties {
 
             if (version != null
                     && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_7_0_0) >= 0) {
-                addFiles(new File(new File(rootDir, "modules"), // NOI18N
+                addFiles(new File(new File(rootDir, JBPluginUtils.getModulesBase(rootDir.getAbsolutePath())), // NOI18N
                         "javax"), list); // NOI18N
-                addFiles(new File(new File(rootDir, "modules"), // NOI18N
+                addFiles(new File(new File(rootDir, JBPluginUtils.getModulesBase(rootDir.getAbsolutePath())), // NOI18N
                         "org" + File.separator + "hibernate" + File.separator + "main"), list); // NOI18N
             }
             

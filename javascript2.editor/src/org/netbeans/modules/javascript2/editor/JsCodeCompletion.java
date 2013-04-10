@@ -759,13 +759,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         if (!elements.isEmpty()) {
                             for (int i = 0; i < elements.size(); i++) {
                                 JsElement element = elements.get(i);
-                                if (!element.isDeclared() || element.getFileObject().equals(property.getFileObject())) {
+                                FileObject fo = element.getFileObject();
+                                if (!element.isDeclared() || (fo != null && fo.equals(property.getFileObject()))) {
                                     if (!element.isDeclared() || (element.getOffsetRange() == OffsetRange.NONE && property.getOffsetRange() != OffsetRange.NONE)) {
                                         elements.remove(i);
                                         elements.add(property);
                                         addAsNew = false;
                                         break;
-                                    } else if (element.getFileObject().equals(property.getFileObject())) {
+                                    } else if (fo != null && fo.equals(property.getFileObject())) {
                                         addAsNew = false;
                                         break;
                                     }
