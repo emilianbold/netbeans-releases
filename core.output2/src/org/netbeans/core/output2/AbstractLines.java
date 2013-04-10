@@ -103,6 +103,8 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     /** Sums of length of all preceding tabs (length of extra spaces) */
     private IntListSimple tabLengthSums = new IntListSimple(100);
 
+    private IntListSimple foldOffsets = new IntListSimple(100);
+    private int currentFoldStart = -1;
     /** last storage size (after dispose), in bytes */
     private int lastStorageSize = -1;
 
@@ -769,9 +771,12 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             if (isFinished) {
                 charLineLength -= 1;
             }
-            updateLastLine(lineStartList.size() - 1, charLengthWithTabs);
+            int lineIndex = lineStartList.size() - 1;
+            updateLastLine(lineIndex, charLengthWithTabs);
             if (isFinished) {
                 lineStartList.add(lineStart + lineLength);
+                foldOffsets.add(currentFoldStart == -1
+                        ? 0 : lineIndex - currentFoldStart);
                 lineCharLengthListWithTabs.add(charLengthWithTabs);
             }
             lastLineFinished = isFinished;
@@ -779,6 +784,16 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             lastCharLengthWithTabs = isFinished ? -1 : charLengthWithTabs;
         }
         markDirty();
+    }
+
+    void setCurrentFoldStart(int foldStart) {
+        synchronized (readLock()) {
+            this.currentFoldStart = foldStart;
+        }
+    }
+
+    IntListSimple getFoldOffsets() {
+        return this.foldOffsets;
     }
 
     /** Convert an index from chars to byte count (*2).  Simple math, but it
