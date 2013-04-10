@@ -123,6 +123,12 @@ public final class SymTabStack {
 
     @Override
     public String toString() {
-        return "SymTabStack{" + "nestingLevel=" + stack.size() + ", stack=" + stack + '}'; // NOI18N
+        StringBuilder sb = new StringBuilder();
+        sb.append("SymTabStack, nestingLevel=").append(stack.size());
+        sb.append(", stack=");
+        for (SymTab symTab : stack) {
+            sb.append("\n").append(symTab);
+        }
+        return sb.toString();
     }
 }
