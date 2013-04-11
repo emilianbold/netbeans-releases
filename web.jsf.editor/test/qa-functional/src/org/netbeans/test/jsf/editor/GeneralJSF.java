@@ -41,6 +41,7 @@
  */
 package org.netbeans.test.jsf.editor;
 
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
@@ -58,7 +59,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Vldimir Riha
+ * @author Vladimir Riha
  */
 public class GeneralJSF extends JellyTestCase {
 
@@ -224,5 +225,10 @@ public class GeneralJSF extends JellyTestCase {
         public void hideAll() {
             CompletionJListOperator.hideAll();
         }
+    }
+    
+     protected void clearLine(EditorOperator eo) {
+        eo.deleteLine(eo.getLineNumber());
+        eo.pressKey(KeyEvent.VK_ENTER);
     }
 }
