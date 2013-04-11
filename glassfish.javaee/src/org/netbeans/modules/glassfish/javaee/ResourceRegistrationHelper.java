@@ -305,20 +305,19 @@ public class ResourceRegistrationHelper {
 
     public static Map<String, String> getResourceData(String query, Hk2DeploymentManager dm) {
         try {
-            GetPropertyCommand cmd = new ServerCommand.GetPropertyCommand(query); 
-            Future<OperationState> task = dm.getCommonServerSupport().execute(cmd);
-            OperationState state = task.get();
-            if (state == OperationState.COMPLETED) {
-                Map<String,String> retVal = cmd.getData();
-                if (retVal.isEmpty())
-                    Logger.getLogger("glassfish-javaee").log(Level.INFO, null, new IllegalStateException(query+" has no data"));  // NOI18N
-                return retVal;
+            ResultMap<String, String> result = CommandGetProperty.getProperties(
+                    dm.getCommonServerSupport().getInstance(), query);
+            if (result.getState() == TaskState.COMPLETED) {
+                Map<String,String> values = result.getValue();
+                if (values.isEmpty())
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, null,
+                            new IllegalStateException(query+" has no data"));
+                return values;
+                
             }
-
-        } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
-        } catch (ExecutionException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+        } catch (GlassFishIdeException gfie) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO,
+                    "Could not retrieve property from server.", gfie);
         }
         return new HashMap<String,String>();
     }
@@ -330,13 +329,11 @@ public class ResourceRegistrationHelper {
             String value = data.get(k);
             try {
                 GlassfishModule support = dm.getCommonServerSupport();
-                CommandSetProperty spc = support.getCommandFactory()
+                CommandSetProperty command = support.getCommandFactory()
                         .getSetPropertyCommand(name, value);
-                        ResultString setResult = CommandSetProperty.setProperty(
-                                support.getInstance(), spc,
-                                GlassfishModule.PROPERTIES_FETCH_TIMEOUT);  
-            } catch (GlassFishIdeException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+                CommandSetProperty.setProperty(support.getInstance(), command);
+            } catch (GlassFishIdeException gfie) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, gfie.getMessage(), gfie);  // NOI18N
             }
         }
     }
