@@ -67,26 +67,34 @@ public class EnableComet implements Runnable {
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
-    private final GlassfishModule support;
+     /** GlassFish server instance to be modified. */
+    private final GlassfishInstance instance;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
-    public EnableComet(GlassfishModule support) {
-        this.support = support;
+    /**
+     * Creates an instance of Comet support enable handler.
+     * @param instance GlassFish server instance to be modified.
+     */
+    public EnableComet(GlassfishInstance instance) {
+        this.instance = instance;
     }
 
+    /**
+     * Thread execution method.
+     */
     @Override
     public void run() {
         String propertiesPattern = "*.comet-support-enabled";
         try {
             ResultMap<String, String> result = CommandGetProperty.getProperties(
-                    support.getInstance(), propertiesPattern,
+                    instance, propertiesPattern,
                     CommonServerSupport.PROPERTIES_FETCH_TIMEOUT);
             if (result.getState() == TaskState.COMPLETED) {
-                String newValue = support.getInstanceProperties()
-                        .get(GlassfishModule.COMET_FLAG);
+                String newValue
+                        = instance.getProperty(GlassfishModule.COMET_FLAG);
                 if (null == newValue || newValue.trim().length() < 1) {
                     newValue = "false"; // NOI18N
                 }
@@ -95,11 +103,13 @@ public class EnableComet implements Runnable {
                     String key = entry.getKey();
                     // do not update the admin listener....
                     if (null != key && !key.contains("admin-listener")) {
-                        CommandSetProperty command = support.getCommandFactory()
-                                .getSetPropertyCommand(key, newValue);
+                        CommandSetProperty command
+                                = GlassfishInstanceProvider.getProvider()
+                                .getCommandFactory().getSetPropertyCommand(
+                                key, newValue);
                         ResultString setResult = CommandSetProperty.setProperty(
-                                support.getInstance(), command,
-                                CommonServerSupport.PROPERTIES_FETCH_TIMEOUT);
+                                instance, command,
+                                CommonServerSupport.PROPERTIES_FETCH_TIMEOUT);  
                     }
                 }
                 
@@ -109,4 +119,5 @@ public class EnableComet implements Runnable {
                     "Could not get comment-support-enabeld value.", gfie);
         }
     }
+
 }

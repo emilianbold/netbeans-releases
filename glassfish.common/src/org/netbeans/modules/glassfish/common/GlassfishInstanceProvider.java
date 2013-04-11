@@ -43,7 +43,6 @@
 package org.netbeans.modules.glassfish.common;
 
 import org.netbeans.modules.glassfish.common.utils.Util;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -51,18 +50,15 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.admin.CommandSetProperty;
-import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
-import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
-import org.netbeans.modules.glassfish.common.ui.WarnPanel;
+import org.netbeans.modules.glassfish.common.utils.ServerUtils;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 
@@ -141,40 +137,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             return ee6Provider;
         }
     }
-
-//    public static GlassfishInstanceProvider getPrelude() {
-//        if (preludeProvider != null) {
-//            return preludeProvider;
-//        }
-//        else {
-//            boolean runInit = false;
-//            synchronized(GlassfishInstanceProvider.class) {
-//                if (preludeProvider == null) {
-//                    runInit = true;
-//                    preludeProvider = new GlassfishInstanceProvider(
-//                            new String[]{PRELUDE_DEPLOYER_FRAGMENT},
-//                            new String[]{PRELUDE_INSTANCES_PATH},
-//                            org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
-//                                "STR_PRELUDE_SERVER_NAME", new Object[]{}), // NOI18N
-//                            false,
-//                            null,
-//                            new CommandFactory()  {
-//
-//                                @Override
-//                                public SetPropertyCommand getSetPropertyCommand(String name, String value) {
-//                                    return new ServerCommand.SetPropertyCommand(name, value,
-//                                            "target={0}&value={1}"); // NOI18N
-//                                }
-//
-//                            });
-//                }
-//            }
-//            if (runInit) {
-//                preludeProvider.init();                
-//            }
-//            return preludeProvider;
-//        }
-//    }
 
     public static final Set<String> activeRegistrationSet = Collections.synchronizedSet(new HashSet<String>());
     
@@ -430,7 +392,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         FileObject installedInstance = null;
         int savedj = -1;
         for (int j = 0; j < instancesDirNames.length; j++) {
-            FileObject dir = ServerUtils.getRepositoryDir(instancesDirNames[j], false);
+            FileObject dir
+                    = ServerUtils.getRepositoryDir(instancesDirNames[j], false);
             if (dir != null) {
                 FileObject[] instanceFOs = dir.getChildren();
                 if (instanceFOs != null && instanceFOs.length > 0) {
