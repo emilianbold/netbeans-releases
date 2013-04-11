@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -938,7 +939,7 @@ public class CppParserActionTracer extends CppParserActionImpl implements CppPar
     }
 
     @Override
-    public void ptr_operator(int kind, Token token) {
+    public void ptr_operator(int kind, Token token) throws RecognitionException {
         print("ptr_operator", token); //NOI18N
         super.ptr_operator(kind, token);
     }
@@ -1064,7 +1065,7 @@ public class CppParserActionTracer extends CppParserActionImpl implements CppPar
     }
 
     @Override
-    public void function_definition_after_declarator(Token token) {
+    public void function_definition_after_declarator(Token token) throws RecognitionException {
         printIn("function_definition_after_declarator", token); //NOI18N
         super.function_definition_after_declarator(token);
     }
