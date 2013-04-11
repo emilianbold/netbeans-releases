@@ -1003,8 +1003,6 @@ elaborated_type_specifier
             (IDENT SCOPE)=>
                 nested_name_specifier IDENT
         |
-            nested_name_specifier IDENT
-        |
             (IDENT)=>
                 IDENT
         )
