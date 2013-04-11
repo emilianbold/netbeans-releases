@@ -53,7 +53,6 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -78,7 +77,6 @@ import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -86,26 +84,24 @@ import org.openide.util.ImageUtilities;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public final class NavigatorScanner {
-
-    private static ImageIcon interfaceIcon = null;
-    private static ImageIcon traitIcon = null;
     private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
     private static final String CLOSE_FONT = "</font>"; //NOI18N
-    private Set<TypeElement> deprecatedTypes;
-    private Model model;
+    private static ImageIcon interfaceIcon = null;
+    private static ImageIcon traitIcon = null;
+    private final FileScope fileScope;
+    private final Set<TypeElement> deprecatedTypes;
 
-    public static NavigatorScanner create() {
-        return new NavigatorScanner();
+    public static NavigatorScanner create(Model model) {
+        return new NavigatorScanner(model);
     }
 
-    private NavigatorScanner() {
+    private NavigatorScanner(Model model) {
+        fileScope = model.getFileScope();
+        deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
     }
 
-    public List<? extends StructureItem> scan(final ParserResult info) {
+    public List<? extends StructureItem> scan() {
         final List<StructureItem> items = new ArrayList<StructureItem>();
-        PHPParseResult result = (PHPParseResult) info;
-        model = result.getModel();
-        FileScope fileScope = model.getFileScope();
         Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
         for (NamespaceScope nameScope : declaredNamespaces) {
             List<StructureItem> namespaceChildren = nameScope.isDefaultNamespace() ? items : new ArrayList<StructureItem>();
@@ -176,17 +172,10 @@ public final class NavigatorScanner {
         return items;
     }
 
-    private Set<TypeElement> getDeprecatedTypes() {
-        if (deprecatedTypes == null) {
-            deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
-        }
-        return deprecatedTypes;
-    }
-
     private boolean isDeprecatedType(String type, ModelElement modelElement) {
         boolean result = false;
         QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(type), modelElement.getOffset(), modelElement.getInScope());
-        for (TypeElement typeElement : getDeprecatedTypes()) {
+        for (TypeElement typeElement : deprecatedTypes) {
             if (typeElement.getFullyQualifiedName().equals(fullyQualifiedName)) {
                 result = true;
                 break;
