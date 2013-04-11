@@ -101,7 +101,7 @@ public final class NavigatorScanner {
     }
 
     public List<? extends StructureItem> scan() {
-        final List<StructureItem> items = new ArrayList<StructureItem>();
+        final List<StructureItem> items = new ArrayList<>();
         Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
         for (NamespaceScope nameScope : declaredNamespaces) {
             List<StructureItem> namespaceChildren = nameScope.isDefaultNamespace() ? items : new ArrayList<StructureItem>();
@@ -118,7 +118,7 @@ public final class NavigatorScanner {
                 if (fnc.isAnonymous()) {
                     continue;
                 }
-                List<StructureItem> variables = new ArrayList<StructureItem>();
+                List<StructureItem> variables = new ArrayList<>();
                 namespaceChildren.add(new PHPFunctionStructureItem(fnc, variables));
             }
             Collection<? extends ConstantElement> declaredConstants = nameScope.getDeclaredConstants();
@@ -127,7 +127,7 @@ public final class NavigatorScanner {
             }
             Collection<? extends TypeScope> declaredTypes = nameScope.getDeclaredTypes();
             for (TypeScope type : declaredTypes) {
-                List<StructureItem> children = new ArrayList<StructureItem>();
+                List<StructureItem> children = new ArrayList<>();
                 if (type instanceof ClassScope) {
                     namespaceChildren.add(new PHPClassStructureItem((ClassScope) type, children));
                 } else if (type instanceof InterfaceScope) {
@@ -141,7 +141,7 @@ public final class NavigatorScanner {
                     // For example when user writes in  a php doc @method and parsing is
                     // started when there is no name yet.
                     if (method.getName() != null && !method.getName().isEmpty()) {
-                        List<StructureItem> variables = new ArrayList<StructureItem>();
+                        List<StructureItem> variables = new ArrayList<>();
                         if (method.isConstructor()) {
                             children.add(new PHPConstructorStructureItem(method, variables));
                         } else {
