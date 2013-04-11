@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.apt.impl.support;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.apt.impl.support.APTMacroMapSnapshot.Holder;
+import org.netbeans.modules.cnd.utils.cache.MapSnapshot.Holder;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.WeakSet;
