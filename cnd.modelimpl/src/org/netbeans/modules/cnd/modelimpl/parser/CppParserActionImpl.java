@@ -81,7 +81,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.FriendClassImpl.FriendClassBuilder
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDDImpl.FriendFunctionDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDefinitionImpl.FriendFunctionDefinitionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionImpl.FriendFunctionBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl.FunctionDDBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl.FunctionDefinitionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl.FunctionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
@@ -187,7 +189,12 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     private void regesterException(Exception ex) {
-        ex.printStackTrace(System.err);
+        if (ex instanceof MyRecognitionException) {
+            MyRecognitionException re = (MyRecognitionException) ex;
+            parser.displayRecognitionError(new String[0], re);
+        } else {
+            ex.printStackTrace(System.err);
+        }
     }
     
     @Override
@@ -263,12 +270,12 @@ public class CppParserActionImpl implements CppParserActionEx {
                     if (LA == APTTokenTypes.LESSTHAN) {
                         input.consume();
                         LA = input.LA(1);
-                        int templateLevel = 0;
-                        while (templateLevel != 0 || LA != APTTokenTypes.GREATERTHAN) {
+                        int aTemplateLevel = 0;
+                        while (aTemplateLevel != 0 || LA != APTTokenTypes.GREATERTHAN) {
                             if(LA == APTTokenTypes.GREATERTHAN) {
-                                templateLevel--;
+                                aTemplateLevel--;
                             } else if(LA == APTTokenTypes.LESSTHAN) {
-                                templateLevel++;
+                                aTemplateLevel++;
                             }
                             input.consume();
                             LA = input.LA(1);
@@ -756,9 +763,9 @@ public class CppParserActionImpl implements CppParserActionEx {
                     org.netbeans.modules.cnd.antlr.TokenStream bodyTokenStream = ((MethodDDBuilder)memberBuilder).getBodyTokenStream();
                     if(bodyTokenStream != null) {
                         builderContext.push((MethodDDBuilder)memberBuilder);
-                        ParserProviderImpl.Antlr3CXXParser parser = new ParserProviderImpl.Antlr3CXXParser(params);
-                        parser.init(null, bodyTokenStream, wrapper);
-                        parser.parse(CsmParserProvider.CsmParser.ConstructionKind.FUNCTION_DEFINITION_AFTER_DECLARATOR);
+                        ParserProviderImpl.Antlr3CXXParser aParser = new ParserProviderImpl.Antlr3CXXParser(params);
+                        aParser.init(null, bodyTokenStream, wrapper);
+                        aParser.parse(CsmParserProvider.CsmParser.ConstructionKind.FUNCTION_DEFINITION_AFTER_DECLARATOR);
                         builderContext.pop();
                     }
                 }
@@ -1665,6 +1672,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         return currentContext.objects;
     }
     
+    @Override
     public CsmFile getCurrentFile() {
         return currentContext.file;
     }
@@ -1758,13 +1766,14 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
     }
     
-    private void end_labeled_statement_impl(Token token) {
+    private void end_labeled_statement_impl(Token token) throws RecognitionException {
         CsmObjectBuilder top = builderContext.top();
         if (top instanceof CaseStatementBuilder) {
             // remove unfinished case
             CaseStatementBuilder builder = (CaseStatementBuilder)builderContext.top();
             builderContext.pop();
             builder.setEndOffset(((APTToken)token).getEndOffset());
+            throw new MyRecognitionException("Unfinished case at '"+token.getText()+"'", token); // NOI18N
         }
     }
     
@@ -2493,11 +2502,9 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void ptr_operator(Token token) {}
     
     @Override
-    public void ptr_operator(int kind, Token token) throws RecognitionException {
+    public void ptr_operator(int kind, Token token) {
         try {
             ptr_operator_impl(kind, token);
-        } catch (RecognitionException ex) {
-            throw ex;
         } catch (Exception ex) {
             regesterException(ex);
         }
@@ -2516,12 +2523,10 @@ public class CppParserActionImpl implements CppParserActionEx {
                         typeBuilder.setReference();
                         break;
                     default:
-                        //System.err.println("Unexpected kind " + kind + " for " + sdb + "\n at " + token);
-                        throw new MyRecognitionException("Unexpected kind " + kind + " for " + sdb + "\n at " + token, token);
+                        throw new MyRecognitionException("Unexpected kind " + kind + " at '"+token.getText()+"'", token); // NOI18N
                 }
             } else {
-                //System.err.println("Unexpected declaration without type " + sdb + "\n at " + token);
-                throw new MyRecognitionException("Unexpected declaration without type " + sdb + "\n at " + token, token);
+                throw new MyRecognitionException("Unexpected declaration without type at '"+token.getText()+"'", token); // NOI18N
             }
         }
     }
@@ -2736,17 +2741,15 @@ public class CppParserActionImpl implements CppParserActionEx {
     }    
     
     @Override
-    public void function_definition_after_declarator(Token token) throws RecognitionException {
+    public void function_definition_after_declarator(Token token) {
         try {
             function_definition_after_declarator_impl(token);
-        } catch (RecognitionException ex) {
-            throw ex;
         } catch (Exception ex) {
             regesterException(ex);
         }
     }
     
-    private void function_definition_after_declarator_impl(Token token) throws MyRecognitionException {
+    private void function_definition_after_declarator_impl(Token token) throws RecognitionException {
         SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
 
         CsmObjectBuilder parent = builderContext.top(1);
@@ -2790,7 +2793,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             if (nameBuilder != null) {
                 name = nameBuilder.getName();
             } else {
-                throw new MyRecognitionException("Unexpected empty name for " + declBuilder + "\n at " + token, token);
+                throw new MyRecognitionException("Unexpected empty name at '"+token.getText()+"'", token); // NOI18N
             }
             FunctionBuilder builder;
             if(name != null && !name.toString().contains("::")) { //NOI18N
@@ -2834,18 +2837,24 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
     }
     
-    private void end_function_definition_after_declarator_impl(Token token) {
+    private void end_function_definition_after_declarator_impl(Token token) throws RecognitionException {
         CsmObjectBuilder top = builderContext.top();
         if(top instanceof FunctionDDBuilder) {
             FunctionDDBuilder builder = (FunctionDDBuilder)top;
             builder.setEndOffset(((APTToken)token).getEndOffset());
             builderContext.pop();
-            builder.create();                
+            FunctionDDImpl create = builder.create();
+            if (create == null) {
+                throw new MyRecognitionException("Unrecognized function definition at '"+token.getText()+"'", token); // NOI18N
+            }
         } else if(top instanceof FunctionDefinitionBuilder) {
             FunctionDefinitionBuilder builder = (FunctionDefinitionBuilder)top;
             builder.setEndOffset(((APTToken)token).getEndOffset());
             builderContext.pop();
-            builder.create();                
+            FunctionDefinitionImpl create = builder.create();                
+            if (create == null) {
+                throw new MyRecognitionException("Unrecognized function definition at '"+token.getText()+"'", token); // NOI18N
+            }
         } else if(top instanceof MethodDDBuilder) {
             MethodDDBuilder builder = (MethodDDBuilder)top;
             builder.setEndOffset(((APTToken)token).getEndOffset());
@@ -2961,10 +2970,10 @@ public class CppParserActionImpl implements CppParserActionEx {
             // FIXME: need to use nameBuilder offsets (now not initialized)
             classBuilder.setNameStartOffset(aToken.getOffset());
             classBuilder.setNameEndOffset(aToken.getEndOffset());
-            List<SpecializationParameterBuilder> params = nameBuilder.getNames().get(nameBuilder.getNames().size() - 1).getParams();
-            if(!params.isEmpty()) {
+            List<SpecializationParameterBuilder> aParams = nameBuilder.getNames().get(nameBuilder.getNames().size() - 1).getParams();
+            if(!aParams.isEmpty()) {
                 SpecializationDescriptorBuilder sdb = new SpecializationDescriptorBuilder();
-                for (SpecializationParameterBuilder specializationParameterBuilder : params) {
+                for (SpecializationParameterBuilder specializationParameterBuilder : aParams) {
                     sdb.addParameterBuilder(specializationParameterBuilder);
                 }
                 ClassSpecializationBuilder classSpecializationBuilder = new ClassSpecializationBuilder(classBuilder);

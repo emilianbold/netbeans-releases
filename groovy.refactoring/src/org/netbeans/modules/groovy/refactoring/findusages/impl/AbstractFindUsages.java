@@ -50,12 +50,13 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.findusages.FindUsagesElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.ClassRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -91,7 +92,7 @@ public abstract class AbstractFindUsages {
      */
     public final void findUsages(FileObject fo) {
         try {
-            SourceUtils.runUserActionTask(fo, new AddFindUsagesElementsTask(fo));
+            ParserManager.parse(Collections.singleton(Source.create(fo)), new AddFindUsagesElementsTask(fo));
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

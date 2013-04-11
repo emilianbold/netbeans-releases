@@ -46,6 +46,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
+import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -116,11 +117,12 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
 
     @Override
     public void save() throws IOException {
+        Warnings.resetSassWarning();
         boolean originalEnabled = SassPreferences.isEnabled(project);
         boolean enabled = getComponent().isSassEnabled();
         SassPreferences.setEnabled(project, enabled);
         if (enabled != originalEnabled) {
-            sassCssPreprocessor.firePropertyChange(CssPreprocessorImplementation.CUSTOMIZER_PROPERTY, null, project);
+            sassCssPreprocessor.fireCustomizerChanged(project);
         }
     }
 

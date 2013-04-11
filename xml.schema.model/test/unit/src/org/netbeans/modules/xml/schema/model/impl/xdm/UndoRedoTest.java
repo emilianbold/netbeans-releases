@@ -134,9 +134,11 @@ public class UndoRedoTest extends TestCase {
         
         String afterInsert = doc.getText(0, doc.getLength());
         //System.out.println("doc after insert simpleType"+doc.getText(290, 10));
-        doc.insertString(290, "\n", null);
+        // position was changing which is weird but doesn't matter for undo-redo testing
+        int schemaTagPosition = afterInsert.length() - 10;
+        doc.insertString(schemaTagPosition, "\n", null);
         model.sync();
-        doc.insertString(291, stStr, null);
+        doc.insertString(schemaTagPosition + 1, stStr, null);
         model.sync();
         
         //System.out.println("doc after insert simpleType"+doc.getText(0, doc.getLength()));

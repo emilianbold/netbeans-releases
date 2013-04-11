@@ -118,6 +118,9 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
                 panel.setError(error);
                 return false;
             }
+            if (warning == null) {
+                warning = options.getWarningMessage();
+            }
         }
         if (warning != null) {
             panel.setWarning(warning);
@@ -166,7 +169,7 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
     private CssPrepOptionsPanel getCssPrepOptionsPanel() {
         assert EventQueue.isDispatchThread();
         if (cssPrepOptionsPanel == null) {
-            for (CssPreprocessor preprocessor : CssPreprocessors.getDefault().getPreprocessors()) {
+            for (CssPreprocessor preprocessor : CssPreprocessorsAccessor.getDefault().getPreprocessors()) {
                 CssPreprocessorImplementation.Options options = CssPreprocessorAccessor.getDefault().createOptions(preprocessor);
                 if (options != null) {
                     allOptions.add(options);
