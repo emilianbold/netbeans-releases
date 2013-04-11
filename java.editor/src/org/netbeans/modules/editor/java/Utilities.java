@@ -807,6 +807,7 @@ public final class Utilities {
         
         if (type.getKind() == TypeKind.WILDCARD) {
             TypeMirror tmirr = ((WildcardType) type).getExtendsBound();
+            tmirr = tmirr != null ? tmirr : ((WildcardType) type).getSuperBound();
             if (tmirr != null)
                 return tmirr;
             else { //no extends, just '?'

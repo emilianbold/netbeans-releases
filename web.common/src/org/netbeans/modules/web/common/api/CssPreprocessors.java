@@ -46,18 +46,19 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.cssprep.CssPreprocessorAccessor;
+import org.netbeans.modules.web.common.cssprep.CssPreprocessorsAccessor;
 import org.netbeans.modules.web.common.cssprep.CssPreprocessorsCustomizer;
 import org.netbeans.modules.web.common.cssprep.CssPreprocessorsProblemProvider;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.netbeans.modules.web.common.spi.CssPreprocessorImplementationListener;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -106,7 +107,8 @@ public final class CssPreprocessors {
     private static final CssPreprocessors INSTANCE = new CssPreprocessors();
 
     private final List<CssPreprocessor> preprocessors = new CopyOnWriteArrayList<>();
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    final CssPreprocessorsListener.Support listenersSupport = new CssPreprocessorsListener.Support();
+    private final PreprocessorImplementationsListener preprocessorImplementationsListener = new PreprocessorImplementationsListener();
 
 
     static {
@@ -114,6 +116,12 @@ public final class CssPreprocessors {
             @Override
             public void resultChanged(LookupEvent ev) {
                 INSTANCE.reinitProcessors();
+            }
+        });
+        CssPreprocessorsAccessor.setDefault(new CssPreprocessorsAccessor() {
+            @Override
+            public List<CssPreprocessor> getPreprocessors() {
+                return INSTANCE.getPreprocessors();
             }
         });
     }
@@ -131,12 +139,7 @@ public final class CssPreprocessors {
         return INSTANCE;
     }
 
-    /**
-     * Get all registered {@link CssPreprocessor}s.
-     * @return a list of all registered {@link CssPreprocessor}s; never {@code null}
-     * @return list of all registered {@link CssPreprocessor}s; never {@code null}
-     */
-    public List<CssPreprocessor> getPreprocessors() {
+    List<CssPreprocessor> getPreprocessors() {
         return new ArrayList<>(preprocessors);
     }
 
@@ -164,23 +167,22 @@ public final class CssPreprocessors {
     }
 
     /**
-     * Attach a change listener that is to be notified of changes
-     * in CSS preprocessors or in any CSS preprocessor.
+     * Attach a listener that is to be notified of changes
+     * in CSS preprocessors.
      * @param listener a listener, can be {@code null}
-     * @see CssPreprocessor#validate(org.netbeans.api.project.Project)
-     * @since 1.40
+     * @since 1.44
      */
-    public void addChangeListener(@NullAllowed ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+    public void addCssPreprocessorsListener(@NullAllowed CssPreprocessorsListener listener) {
+        listenersSupport.addCssPreprocessorListener(listener);
     }
 
     /**
      * Removes a change listener.
      * @param listener a listener, can be {@code null}
-     * @since 1.40
+     * @since 1.44
      */
-    public void removeChangeListener(@NullAllowed ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
+    public void removeCssPreprocessorsListener(@NullAllowed CssPreprocessorsListener listener) {
+        listenersSupport.removeCssPreprocessorListener(listener);
     }
 
     /**
@@ -224,14 +226,36 @@ public final class CssPreprocessors {
     private void initProcessors() {
         assert preprocessors.isEmpty() : "Empty preprocessors expected but: " + preprocessors;
         preprocessors.addAll(map(PREPROCESSORS.allInstances()));
+        for (CssPreprocessor cssPreprocessor : preprocessors) {
+            cssPreprocessor.getDelegate().addCssPreprocessorListener(preprocessorImplementationsListener);
+        }
     }
 
     void reinitProcessors() {
         synchronized (preprocessors) {
-            preprocessors.clear();
+            clearProcessors();
             initProcessors();
         }
-        changeSupport.fireChange();
+        listenersSupport.firePreprocessorsChanged();
+    }
+
+    private void clearProcessors() {
+        for (CssPreprocessor cssPreprocessor : preprocessors) {
+            cssPreprocessor.getDelegate().removeCssPreprocessorListener(preprocessorImplementationsListener);
+        }
+        preprocessors.clear();
+    }
+
+    @CheckForNull
+    CssPreprocessor findCssPreprocessor(CssPreprocessorImplementation cssPreprocessorImplementation) {
+        Parameters.notNull("cssPreprocessorImplementation", cssPreprocessorImplementation); // NOI18N
+        for (CssPreprocessor cssPreprocessor : preprocessors) {
+            if (cssPreprocessor.getDelegate() == cssPreprocessorImplementation) {
+                return cssPreprocessor;
+            }
+        }
+        assert false : "Cannot find CSS preprocessor for implementation: " + cssPreprocessorImplementation.getIdentifier();
+        return null;
     }
 
     //~ Mappers
@@ -242,6 +266,29 @@ public final class CssPreprocessors {
             result.add(CssPreprocessorAccessor.getDefault().create(cssPreprocessor));
         }
         return result;
+    }
+
+    //~ Inner classes
+
+    private final class PreprocessorImplementationsListener implements CssPreprocessorImplementationListener {
+
+        @Override
+        public void optionsChanged(CssPreprocessorImplementation cssPreprocessor) {
+            CssPreprocessor preprocessor = findCssPreprocessor(cssPreprocessor);
+            if (preprocessor != null) {
+                listenersSupport.fireOptionsChanged(preprocessor);
+            }
+        }
+
+        @Override
+        public void customizerChanged(Project project, CssPreprocessorImplementation cssPreprocessor) {
+            Parameters.notNull("project", project); // NOI18N
+            CssPreprocessor preprocessor = findCssPreprocessor(cssPreprocessor);
+            if (preprocessor != null) {
+                listenersSupport.fireCustomizerChanged(project, preprocessor);
+            }
+        }
+
     }
 
 }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.prep.process;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -52,11 +53,13 @@ import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
+import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 public final class SassProcessor extends BaseProcessor {
 
@@ -112,7 +115,13 @@ public final class SassProcessor extends BaseProcessor {
         if (sass == null) {
             return;
         }
-        sass.compile(fileObject);
+        try {
+            sass.compile(fileObject);
+        } catch (ExecutionException ex) {
+            if (Warnings.showSassWarning()) {
+                UiUtils.processExecutionException(ex);
+            }
+        }
     }
 
     @CheckForNull
@@ -121,8 +130,7 @@ public final class SassProcessor extends BaseProcessor {
             return SassExecutable.getDefault();
         } catch (InvalidExternalExecutableException ex) {
             if (Warnings.showSassWarning()) {
-                // refresh project problems
-                sassCssPreprocessor.firePropertyChange(CssPreprocessorImplementation.CUSTOMIZER_PROPERTY, project, project);
+                UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
             }
         }
         return null;

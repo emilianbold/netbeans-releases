@@ -50,6 +50,8 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -109,7 +111,7 @@ public class RemoveUnnecessary {
             tp = tp.getParentPath();
 
             switch (tp.getLeaf().getKind()) {
-                case METHOD:
+                case METHOD: {
                     if (targetLoop != null) return null; //TODO: unnecessary continue - can happen?
                     MethodTree mt = (MethodTree) tp.getLeaf();
 
@@ -124,6 +126,17 @@ public class RemoveUnnecessary {
 
                     if (tm == null || tm.getKind() != TypeKind.VOID) return null;
                     break OUTER;
+                }
+                case LAMBDA_EXPRESSION: {
+                    if (targetLoop != null) return null; //TODO: unnecessary continue - can happen?
+                    TypeMirror functionalType = ctx.getInfo().getTrees().getTypeMirror(tp);
+                    if (functionalType == null || functionalType.getKind() != TypeKind.DECLARED) return null; //unknown, ignore
+                    ExecutableType descriptorType = ctx.getInfo().getTypeUtilities().getDescriptorType((DeclaredType) functionalType);
+                    TypeMirror returnType = descriptorType != null ? descriptorType.getReturnType() : null;
+
+                    if (returnType == null || returnType.getKind() != TypeKind.VOID) return null;
+                    break OUTER;
+                }
                 case BLOCK: statements = ((BlockTree) tp.getLeaf()).getStatements(); break;
                 case CASE: {
                     if (tp.getParentPath().getLeaf().getKind() == Kind.SWITCH) {

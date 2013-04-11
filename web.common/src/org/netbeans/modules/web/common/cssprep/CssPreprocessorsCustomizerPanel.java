@@ -61,7 +61,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.HelpCtx;
@@ -122,7 +121,7 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
     }
 
     private Collection<CssPreprocessorImplementation.Customizer> getCustomizers() {
-        List<CssPreprocessor> preprocessors = CssPreprocessors.getDefault().getPreprocessors();
+        List<CssPreprocessor> preprocessors = CssPreprocessorsAccessor.getDefault().getPreprocessors();
         List<CssPreprocessorImplementation.Customizer> result = new ArrayList<>(preprocessors.size());
         for (CssPreprocessor cssPreprocessor : preprocessors) {
             CssPreprocessorImplementation.Customizer customizer = CssPreprocessorAccessor.getDefault().createCustomizer(cssPreprocessor, project);

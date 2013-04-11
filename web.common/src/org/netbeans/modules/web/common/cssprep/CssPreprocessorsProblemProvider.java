@@ -44,10 +44,10 @@ package org.netbeans.modules.web.common.cssprep;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.util.WeakListeners;
@@ -55,10 +55,11 @@ import org.openide.util.WeakListeners;
 /**
  * Project problems for CSS preprocessors.
  */
-public final class CssPreprocessorsProblemProvider implements ProjectProblemsProvider, ChangeListener {
+public final class CssPreprocessorsProblemProvider implements ProjectProblemsProvider {
 
     final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
     final CssPreprocessor.ProjectProblemsProviderSupport support;
+    final PreprocessorsListener preprocessorsListener = new PreprocessorsListener();
 
 
     private CssPreprocessorsProblemProvider(CssPreprocessor.ProjectProblemsProviderSupport suppport) {
@@ -66,10 +67,11 @@ public final class CssPreprocessorsProblemProvider implements ProjectProblemsPro
         this.support = suppport;
     }
 
+    @SuppressWarnings("unchecked")
     public static CssPreprocessorsProblemProvider create(CssPreprocessor.ProjectProblemsProviderSupport suppport) {
         CssPreprocessorsProblemProvider problemProvider = new CssPreprocessorsProblemProvider(suppport);
         CssPreprocessors cssPreprocessors = CssPreprocessors.getDefault();
-        cssPreprocessors.addChangeListener(WeakListeners.change(problemProvider, cssPreprocessors));
+        cssPreprocessors.addCssPreprocessorsListener(WeakListeners.create(CssPreprocessorsListener.class, problemProvider.preprocessorsListener, cssPreprocessors));
         return problemProvider;
     }
 
@@ -89,7 +91,7 @@ public final class CssPreprocessorsProblemProvider implements ProjectProblemsPro
             @Override
             public Collection<ProjectProblemsProvider.ProjectProblem> collectProblems() {
                 Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<>();
-                for (CssPreprocessor preprocessor : CssPreprocessors.getDefault().getPreprocessors()) {
+                for (CssPreprocessor preprocessor : CssPreprocessorsAccessor.getDefault().getPreprocessors()) {
                     ProjectProblemsProvider problemsProvider = CssPreprocessorAccessor.getDefault().createProjectProblemsProvider(preprocessor, support);
                     if (problemsProvider != null) {
                         currentProblems.addAll(problemsProvider.getProblems());
@@ -100,9 +102,27 @@ public final class CssPreprocessorsProblemProvider implements ProjectProblemsPro
         });
     }
 
-    @Override
-    public void stateChanged(ChangeEvent e) {
-        problemsProviderSupport.fireProblemsChange();
+    //~ Inner classes
+
+    private final class PreprocessorsListener implements CssPreprocessorsListener {
+
+        @Override
+        public void preprocessorsChanged() {
+            problemsProviderSupport.fireProblemsChange();
+        }
+
+        @Override
+        public void optionsChanged(CssPreprocessor cssPreprocessor) {
+            problemsProviderSupport.fireProblemsChange();
+        }
+
+        @Override
+        public void customizerChanged(Project project, CssPreprocessor cssPreprocessor) {
+            if (support.getProject().equals(project)) {
+                problemsProviderSupport.fireProblemsChange();
+            }
+        }
+
     }
 
 }

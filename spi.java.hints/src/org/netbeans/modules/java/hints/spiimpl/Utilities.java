@@ -1257,6 +1257,24 @@ public class Utilities {
         }
 
         @Override
+        protected JCVariableDecl implicitParameter() {
+            if (token.kind == TokenKind.IDENTIFIER) {
+                if (token.name().startsWith(dollar)) {
+                    com.sun.tools.javac.util.Name name = token.name();
+
+                    Token peeked = S.token(1);
+
+                    if (peeked.kind == TokenKind.COMMA || peeked.kind == TokenKind.RPAREN) {
+                        nextToken();
+                        return new VariableWildcard(ctx, name, F.Ident(name));
+                    }
+                }
+            }
+
+            return super.implicitParameter();
+        }
+        
+        @Override
         protected JCCatch catchClause() {
             if (token.kind == TokenKind.CATCH) {
                 Token peeked = S.token(1);
