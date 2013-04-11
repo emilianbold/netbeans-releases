@@ -110,9 +110,13 @@ public class Nette2FrameworkProvider extends PhpFrameworkProvider {
         if (sourceDirectory != null) {
             List<File> files = new ArrayList<File>();
             FileObject composer = sourceDirectory.getFileObject(COMPOSER_PATH);
-            files.add(FileUtil.toFile(composer));
+            if (composer != null) {
+                files.add(FileUtil.toFile(composer));
+            }
             FileObject bootstrap = sourceDirectory.getFileObject(COMMON_BOOTSTRAP_PATH);
-            files.add(FileUtil.toFile(bootstrap));
+            if (bootstrap != null) {
+                files.add(FileUtil.toFile(bootstrap));
+            }
             FileObject config = sourceDirectory.getFileObject(COMMON_CONFIG_PATH);
             if (config != null && config.isFolder() && config.isValid()) {
                 files.addAll(Arrays.asList(FileUtil.toFile(config).listFiles()));
