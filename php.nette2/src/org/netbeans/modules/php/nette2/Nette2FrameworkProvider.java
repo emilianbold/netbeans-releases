@@ -68,9 +68,9 @@ import org.openide.util.NbBundle;
 public class Nette2FrameworkProvider extends PhpFrameworkProvider {
     private static final Nette2FrameworkProvider INSTANCE = new Nette2FrameworkProvider();
     private static final String ICON_PATH = "org/netbeans/modules/php/nette2/ui/resources/nette_badge_8.png"; // NOI18N
-    private static final String COMMON_BOOTSTRAP_PATH = "app/bootstrap.php"; //NOI18N
     private static final String COMMON_CONFIG_PATH = "app/config"; //NOI18N
     private static final String COMPOSER_PATH = "composer.json"; //NOI18N
+    static final String COMMON_BOOTSTRAP_PATH = "app/bootstrap.php"; //NOI18N
     private final BadgeIcon badgeIcon;
 
     @PhpFrameworkProvider.Registration(position = 190)

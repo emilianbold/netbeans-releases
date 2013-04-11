@@ -71,6 +71,10 @@ public class NewNette2ProjectPanel extends javax.swing.JPanel implements ChangeL
         return null;
     }
 
+    public boolean isCopyNetteCheckboxSelected() {
+        return copyNetteCheckBox.isSelected();
+    }
+
     @Override
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();

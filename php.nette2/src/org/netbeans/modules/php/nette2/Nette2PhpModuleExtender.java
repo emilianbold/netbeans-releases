@@ -41,14 +41,18 @@
  */
 package org.netbeans.modules.php.nette2;
 
-import java.util.Collections;
+import org.netbeans.modules.php.nette2.utils.FileUtils;
+import java.io.File;
+import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.nette2.options.Nette2Options;
 import org.netbeans.modules.php.nette2.ui.wizards.NewNette2ProjectPanel;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 
 /**
@@ -56,6 +60,7 @@ import org.openide.util.HelpCtx;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 class Nette2PhpModuleExtender extends PhpModuleExtender {
+    private static final String NETTE_LIBS_DIR = "/libs/Nette"; //NOI18N
     //@GuardedBy("this")
     private NewNette2ProjectPanel netteProjectPanel;
 
@@ -96,7 +101,25 @@ class Nette2PhpModuleExtender extends PhpModuleExtender {
 
     @Override
     public Set<FileObject> extend(PhpModule phpModule) throws ExtendingException {
-        return Collections.<FileObject>emptySet();
+        Set<FileObject> result = new HashSet<FileObject>();
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory != null) {
+            String projectDirectory = sourceDirectory.getPath();
+            FileUtils.copyDirectory(new File(Nette2Options.getInstance().getSandbox()), new File(projectDirectory));
+            File netteLibsDirectory = new File(projectDirectory, NETTE_LIBS_DIR);
+            if (isValidNetteLibsDir(netteLibsDirectory) && getPanel().isCopyNetteCheckboxSelected()) {
+                FileUtils.copyDirectory(new File(Nette2Options.getInstance().getNetteDirectory()), netteLibsDirectory);
+            }
+            FileObject bootstrap = FileUtil.toFileObject(new File(projectDirectory, Nette2FrameworkProvider.COMMON_BOOTSTRAP_PATH));
+            if (bootstrap != null && !bootstrap.isFolder() && bootstrap.isValid()) {
+                result.add(bootstrap);
+            }
+        }
+        return result;
+    }
+
+    private boolean isValidNetteLibsDir(File netteLibsDirectory) {
+        return !netteLibsDirectory.exists() || (netteLibsDirectory.exists() && netteLibsDirectory.isDirectory() && netteLibsDirectory.list() == null);
     }
 
     private synchronized NewNette2ProjectPanel getPanel() {
