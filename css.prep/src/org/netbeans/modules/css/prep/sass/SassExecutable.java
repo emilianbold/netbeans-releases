@@ -57,8 +57,6 @@ import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.util.ExternalExecutable;
 import org.netbeans.modules.css.prep.util.ExternalExecutableValidator;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
-import org.netbeans.modules.css.prep.util.UiUtils;
-import org.netbeans.modules.css.prep.util.Warnings;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -104,7 +102,7 @@ public final class SassExecutable {
 
     @NbBundle.Messages("Sass.compile=Sass (compile)")
     @CheckForNull
-    public void compile(FileObject fileObject) {
+    public void compile(FileObject fileObject) throws ExecutionException {
         assert !EventQueue.isDispatchThread();
         assert fileObject.isValid() : "Invalid file given: " + fileObject;
         try {
@@ -135,9 +133,7 @@ public final class SassExecutable {
             // cancelled
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
-            if (Warnings.showSassWarning()) {
-                UiUtils.processExecutionException(ex);
-            }
+            throw ex;
         }
     }
 

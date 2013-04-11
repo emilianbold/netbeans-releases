@@ -96,7 +96,7 @@ public class SassOptions implements CssPreprocessorImplementation.Options {
 
     @Override
     public boolean isValid() {
-        return getValidationResult().isFaultless();
+        return !getValidationResult().hasErrors();
     }
 
     @Override
@@ -124,7 +124,7 @@ public class SassOptions implements CssPreprocessorImplementation.Options {
         String path = getComponent().getSassPath();
         CssPrepOptions.getInstance().setSassPath(path);
         if (!originalPath.equals(path)) {
-            sassCssPreprocessor.firePropertyChange(CssPreprocessorImplementation.OPTIONS_PROPERTY, null, null);
+            sassCssPreprocessor.fireOptionsChanged();
         }
     }
 

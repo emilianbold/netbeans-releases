@@ -46,6 +46,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
+import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -116,11 +117,12 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
 
     @Override
     public void save() throws IOException {
+        Warnings.resetLessWarning();
         boolean originalEnabled = LessPreferences.isEnabled(project);
         boolean enabled = getComponent().isLessEnabled();
         LessPreferences.setEnabled(project, enabled);
         if (enabled != originalEnabled) {
-            lessCssPreprocessor.firePropertyChange(CssPreprocessorImplementation.CUSTOMIZER_PROPERTY, null, project);
+            lessCssPreprocessor.fireCustomizerChanged(project);
         }
     }
 

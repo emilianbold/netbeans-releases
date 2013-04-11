@@ -52,14 +52,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -88,6 +85,7 @@ import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderIm
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -145,30 +143,20 @@ public class ClientSideProject implements Project {
     private ClientSideProjectBrowserProvider projectBrowserProvider;
 
     // css preprocessors
-    final List<CssPreprocessor> cssPreprocessors = new CopyOnWriteArrayList<CssPreprocessor>();
-    final PropertyChangeListener cssPreprocessorPropertyChangeListener = new PropertyChangeListener() {
+    final CssPreprocessorsListener cssPreprocessorsListener = new CssPreprocessorsListener() {
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            String propertyName = evt.getPropertyName();
-            CssPreprocessor cssPreprocessor = (CssPreprocessor) evt.getSource();
-            switch (propertyName) {
-                case CssPreprocessor.OPTIONS_PROPERTY:
-                    recompileSources(cssPreprocessor);
-                    break;
-                case CssPreprocessor.CUSTOMIZER_PROPERTY:
-                    if (evt.getNewValue().equals(ClientSideProject.this)) {
-                        recompileSources(cssPreprocessor);
-                    }
-                    break;
-                default:
-                    assert false : "Unknown property: " + propertyName;
-            }
+        public void preprocessorsChanged() {
+            // noop?
         }
-    };
-    final ChangeListener cssPreprocessorsChangeListener = new ChangeListener() {
         @Override
-        public void stateChanged(ChangeEvent e) {
-            reinitCssPreprocessors();
+        public void optionsChanged(CssPreprocessor cssPreprocessor) {
+            recompileSources(cssPreprocessor);
+        }
+        @Override
+        public void customizerChanged(Project project, CssPreprocessor cssPreprocessor) {
+            if (project.equals(ClientSideProject.this)) {
+                recompileSources(cssPreprocessor);
+            }
         }
     };
 
@@ -411,28 +399,6 @@ public class ClientSideProject implements Project {
                LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup"));
     }
 
-    void initCssPreprocessors() {
-        assert cssPreprocessors.isEmpty() : "Empty preprocessors expected: " + cssPreprocessors;
-        cssPreprocessors.addAll(CssPreprocessors.getDefault().getPreprocessors());
-        for (CssPreprocessor preprocessor : cssPreprocessors) {
-            preprocessor.addPropertyChangeListener(cssPreprocessorPropertyChangeListener);
-        }
-    }
-
-    void clearCssPreprocessors() {
-        for (CssPreprocessor preprocessor : cssPreprocessors) {
-            preprocessor.removePropertyChangeListener(cssPreprocessorPropertyChangeListener);
-        }
-        cssPreprocessors.clear();
-    }
-
-    void reinitCssPreprocessors() {
-        synchronized (cssPreprocessors) {
-            clearCssPreprocessors();
-            initCssPreprocessors();
-        }
-    }
-
     void recompileSources(CssPreprocessor cssPreprocessor) {
         assert cssPreprocessor != null;
         FileObject siteRootFolder = getSiteRootFolder();
@@ -569,8 +535,7 @@ public class ClientSideProject implements Project {
             if (wb != null) {
                 browserId = wb.getId();
             }
-            CssPreprocessors.getDefault().addChangeListener(project.cssPreprocessorsChangeListener);
-            project.initCssPreprocessors();
+            CssPreprocessors.getDefault().addCssPreprocessorsListener(project.cssPreprocessorsListener);
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
                     new Object[] { browserId,
                     project.getTestsFolder() != null && project.getTestsFolder().getChildren().length > 0 ? "YES" : "NO"}); // NOI18N
@@ -581,8 +546,7 @@ public class ClientSideProject implements Project {
             project.getEvaluator().removePropertyChangeListener(this);
             removeSiteRootListener();
             GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
-            CssPreprocessors.getDefault().removeChangeListener(project.cssPreprocessorsChangeListener);
-            project.clearCssPreprocessors();
+            CssPreprocessors.getDefault().removeCssPreprocessorsListener(project.cssPreprocessorsListener);
         }
 
         private synchronized void addSiteRootListener() {

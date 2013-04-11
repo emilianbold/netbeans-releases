@@ -39,49 +39,38 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.problems;
+package org.netbeans.modules.web.common.cssprep;
 
-import java.util.Collection;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CPFileType;
-import org.netbeans.modules.css.prep.preferences.SassPreferences;
-import org.netbeans.modules.css.prep.sass.SassExecutable;
-import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
+import java.util.List;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 
-public final class SassProjectProblemsProvider extends BaseProjectProblemsProvider {
+public abstract class CssPreprocessorsAccessor {
 
-    public SassProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support, CssPreprocessorImplementation.Customizer customizer) {
-        super(support, customizer);
-    }
+    private static volatile CssPreprocessorsAccessor accessor;
 
-    @Override
-    boolean isEnabled(Project project) {
-        return SassPreferences.isEnabled(project);
-    }
 
-    @Override
-    CPFileType getFileType() {
-        return CPFileType.SASS;
-    }
-
-    @NbBundle.Messages({
-        "SassProjectProblemsProvider.invalidCompiler.title=Invalid Sass compiler",
-        "SassProjectProblemsProvider.invalidCompiler.description=The provided Sass compiler is not valid.",
-    })
-    @Override
-    void checkCompiler(Collection<ProjectProblem> currentProblems) {
-        try {
-            SassExecutable.getDefault();
-        } catch (InvalidExternalExecutableException ex) {
-            ProjectProblem problem = ProjectProblem.createError(
-                    Bundle.SassProjectProblemsProvider_invalidCompiler_title(),
-                    Bundle.SassProjectProblemsProvider_invalidCompiler_description(),
-                    OPTIONS_PROBLEM_RESOLVER);
-            currentProblems.add(problem);
+    public static synchronized CssPreprocessorsAccessor getDefault() {
+        if (accessor != null) {
+            return accessor;
         }
+        Class<?> c = CssPreprocessors.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
+        }
+        assert accessor != null;
+        return accessor;
     }
+
+    public static void setDefault(CssPreprocessorsAccessor accessor) {
+        if (CssPreprocessorsAccessor.accessor != null) {
+            throw new IllegalStateException("Already initialized accessor");
+        }
+        CssPreprocessorsAccessor.accessor = accessor;
+    }
+
+    public abstract List<CssPreprocessor> getPreprocessors();
 
 }

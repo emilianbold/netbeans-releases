@@ -42,10 +42,15 @@
 package org.netbeans.modules.css.prep.problems;
 
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.CPFileType;
+import org.netbeans.modules.css.prep.CPIndex;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
@@ -53,6 +58,8 @@ import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 
 abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(BaseProjectProblemsProvider.class.getName());
 
     // one instance only so it is correctly found in project problems list
     protected static final ProjectProblemResolver OPTIONS_PROBLEM_RESOLVER = new OptionsProblemResolver();
@@ -70,6 +77,7 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
     }
 
     abstract boolean isEnabled(Project project);
+    abstract CPFileType getFileType();
     abstract void checkCompiler(Collection<ProjectProblem> currentProblems);
 
     @Override
@@ -84,7 +92,11 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
 
     @Override
     public Collection<? extends ProjectProblem> getProblems() {
-        if (!isEnabled(support.getProject())) {
+        Project project = support.getProject();
+        if (!isEnabled(project)) {
+            return Collections.emptyList();
+        }
+        if (!hasAnyFilesForCompiling(project)) {
             return Collections.emptyList();
         }
         return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
@@ -96,6 +108,16 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
                 return currentProblems;
             }
         });
+    }
+
+    protected boolean hasAnyFilesForCompiling(Project project) {
+        try {
+            return !CPIndex.get(project).findFiles(getFileType()).isEmpty();
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+        // presume we have some files for processing
+        return true;
     }
 
     protected void checkCustomizer(Collection<ProjectProblem> currentProblems) {
