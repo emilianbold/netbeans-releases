@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CXXParser;
@@ -75,71 +76,28 @@ public class CXXParserEx extends CXXParser {
         if(errorDelegate != null) {
             if (e instanceof MyRecognitionException) {
                 MyRecognitionException ex = (MyRecognitionException) e;
+                String hdr = getSourceName();
                 if (APTUtils.isEOF(ex.getToken())) {
-                    errorDelegate.onError(new CsmParserProvider.ParserError(ex.getMessage(), -1, -1, ex.getToken().getText(), true));
+                    errorDelegate.onError(new CsmParserProvider.ParserError(hdr+" "+ex.getMessage(), -1, -1, ex.getToken().getText(), true));
                 } else {
-                    errorDelegate.onError(new CsmParserProvider.ParserError(ex.getMessage(), ex.getToken().getLine(), ex.getToken().getColumn(), ex.getToken().getText(), false));
+                    errorDelegate.onError(new CsmParserProvider.ParserError(hdr+":"+ex.getToken().getLine()+": error: "+ex.getMessage(), ex.getToken().getLine(), ex.getToken().getColumn(), ex.getToken().getText(), false));
                 }
             } else {
-                errorDelegate.onError(new CsmParserProvider.ParserError(e.getMessage(), e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1));
+                String hdr = getSourceName();
+                String msg = getErrorMessage(e, tokenNames);
+                errorDelegate.onError(new CsmParserProvider.ParserError(hdr+":"+e.line+": error: "+msg, e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1));
             }
         }
     }
 
-//    @Override
-//    public void recover(IntStream input, RecognitionException re) {
-//        //super.recover(input, re);
-//        if (state.lastErrorIndex == input.index()) {
-//            // uh oh, another error at same token index; must be a case
-//            // where LT(1) is in the recovery token set so nothing is
-//            // consumed; consume a single token so at least to prevent
-//            // an infinite loop; this is a failsafe.
-//            input.consume();
-//        }
-//        state.lastErrorIndex = input.index();
-//        BitSet followSet = computeErrorRecoverySet();
-//        beginResync();
-//        consumeUntil(input, followSet);
-//        endResync();
-//    }
-//
-//    @Override
-//    public void consumeUntil(IntStream input, BitSet set) {
-//        //System.out.println("consumeUntil("+set.toString(getTokenNames())+")");
-//        int ttype = input.LA(1);
-//        while (ttype != org.antlr.runtime.Token.EOF && !set.member(ttype)) {
-//            //System.out.println("consume during recover LA(1)="+getTokenNames()[input.LA(1)]);
-//            input.consume();
-//            ttype = input.LA(1);
-//        }
-//    }
-//    
-//    @Override
-//    protected BitSet combineFollows(boolean exact) {
-//        int top = state._fsp;
-//        BitSet followSet = new BitSet();
-//        for (int i = top; i >= 0; i--) {
-//            BitSet localFollowSet = state.following[i];
-//            /*
-//             System.out.println("local follow depth "+i+"="+
-//             localFollowSet.toString(getTokenNames())+")");
-//             */
-//            followSet.orInPlace(localFollowSet);
-//            if (exact) {
-//                // can we see end of rule?
-//                if (localFollowSet.member(org.antlr.runtime.Token.EOR_TOKEN_TYPE)) {
-//                    // Only leave EOR in set if at top (start rule); this lets
-//                    // us know if have to include follow(start rule); i.e., EOF
-//                    if (i > 0) {
-//                        followSet.remove(org.antlr.runtime.Token.EOR_TOKEN_TYPE);
-//                    }
-//                } else { // can't see end of rule, quit
-//                    break;
-//                }
-//            }
-//        }
-//        return followSet;
-//    }
+    @Override
+    public String getSourceName() {
+        CsmFile currentFile = action.getCurrentFile();
+        if (currentFile != null) {
+            return currentFile.getAbsolutePath().toString();
+        }
+        return "";
+    }
 
     public int backtrackingLevel() {
         return state.backtracking;
