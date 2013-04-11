@@ -153,7 +153,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 WHITESPACE=[ \t\r\n]+
 COMMENT_START="{*"
-COMMENT_END=([^"*""}"]|"*"|"}")*"*}"
+COMMENT_END=~"*}"
+ALL=([^"{""*"] | "{"[^"*"])*
 
 %state ST_COMMENT
 %state ST_HIGHLIGHTING_ERROR
@@ -166,7 +167,7 @@ COMMENT_END=([^"*""}"]|"*"|"}")*"*}"
     {COMMENT_START} {
         pushState(ST_COMMENT);
     }
-    . {
+    {ALL} {
         return LatteTopTokenId.T_HTML;
     }
 }
