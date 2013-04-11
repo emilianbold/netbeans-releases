@@ -39,9 +39,10 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.nette2.codegen;
+package org.netbeans.modules.php.nette2.ui.codegen;
 
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.modules.php.nette2.codegen.ActionRenderMethodChecker;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,10 +57,7 @@ public class ActionRenderCodeGeneratorTableModel  extends DefaultTableModel {
         String.class, Boolean.class, Boolean.class
     };
 
-    @NbBundle.Messages({
-        "LBL_ActionName=Action name:",
-        "LBL_GenerateTemplate=gen. template"
-    })
+    @NbBundle.Messages("LBL_ActionName=Action name:")
     public ActionRenderCodeGeneratorTableModel(ActionRenderMethodChecker methodChecker) {
         super(
                 null,
@@ -68,7 +66,6 @@ public class ActionRenderCodeGeneratorTableModel  extends DefaultTableModel {
                     ACTION_COLUMN_TITLE,
                     RENDER_COLUMN_TITLE
                 });
-
         this.methodChecker = methodChecker;
     }
 

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.nette2.codegen;
 
+import org.netbeans.modules.php.nette2.ui.codegen.ActionRenderCodeGeneratorTableModel;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.JTextComponent;
