@@ -39,24 +39,24 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.gsf;
+package org.netbeans.modules.php.latte.csl;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-// XXX: Uncomment when lexing will be implemented
-//@LanguageRegistration(mimeType = LatteLanguage.LATTE_MIME_TYPE)
+@LanguageRegistration(mimeType = LatteLanguage.LATTE_MIME_TYPE)
 public class LatteLanguage extends DefaultLanguageConfig {
     public static final String LATTE_MIME_TYPE = "text/x-latte"; //NOI18N
 
     @Override
     public Language getLexerLanguage() {
-        return null;
+        return LatteTopTokenId.language();
     }
 
     @Override

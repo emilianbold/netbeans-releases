@@ -44,7 +44,7 @@ package org.netbeans.modules.php.latte;
 import java.io.IOException;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.netbeans.modules.php.latte.gsf.LatteLanguage;
+import org.netbeans.modules.php.latte.csl.LatteLanguage;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -63,7 +63,7 @@ import org.openide.windows.TopComponent;
 
 @Messages("LatteResolver=Latte Files")
 @MIMEResolver.ExtensionRegistration(displayName = "#LatteResolver", position = 130, extension = "latte", mimeType = LatteLanguage.LATTE_MIME_TYPE)
-@DataObject.Registration(displayName = "LATTE", iconBase = LatteDataObject.LATTE_ICON, mimeType = LatteLanguage.LATTE_MIME_TYPE)
+@DataObject.Registration(displayName = "LATTE", iconBase = LatteDataObject.LATTE_ICON, mimeType = LatteLanguage.LATTE_MIME_TYPE, position = 1983)
 @ActionReferences(value = {
     @ActionReference(id =
     @ActionID(category = "System", id = "org.openide.actions.OpenAction"), path = LatteDataObject.ACTIONS, position = 100, separatorAfter = 200),
