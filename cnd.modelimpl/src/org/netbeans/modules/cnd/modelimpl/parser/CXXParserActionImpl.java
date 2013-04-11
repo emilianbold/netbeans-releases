@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.parser;
 
 import java.util.Map;
+import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -474,7 +475,7 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     @Override public void greedy_nonptr_declarator(int kind, Token token) {orig.greedy_nonptr_declarator(kind, convertToken(token));}
     @Override public void end_greedy_nonptr_declarator(Token token) {orig.end_greedy_nonptr_declarator(convertToken(token));}
     @Override public void ptr_operator(Token token) {orig.ptr_operator(convertToken(token));}
-    @Override public void ptr_operator(int kind, Token token) {orig.ptr_operator(kind, convertToken(token));}
+    @Override public void ptr_operator(int kind, Token token) throws RecognitionException {orig.ptr_operator(kind, convertToken(token));}
     @Override public void end_ptr_operator(Token token) {orig.end_ptr_operator(convertToken(token));}
     @Override public void cv_qualifier(int kind, Token token) {orig.cv_qualifier(kind, convertToken(token));}
     @Override public void ref_qualifier(int kind, Token token) {orig.ref_qualifier(kind, convertToken(token));}
@@ -495,7 +496,7 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     @Override public void parameter_declaration(Token token) {orig.parameter_declaration(convertToken(token));}
     @Override public void parameter_declaration(int kind, Token token) {orig.parameter_declaration(kind, convertToken(token));}
     @Override public void end_parameter_declaration(Token token) {orig.end_parameter_declaration(convertToken(token));}
-    @Override public void function_definition_after_declarator(Token token) {orig.function_definition_after_declarator(convertToken(token));}
+    @Override public void function_definition_after_declarator(Token token) throws RecognitionException {orig.function_definition_after_declarator(convertToken(token));}
     @Override public void function_definition_after_declarator(int kind, Token token) {orig.function_definition_after_declarator(kind, convertToken(token));}
     @Override public void end_function_definition_after_declarator(Token token) {orig.end_function_definition_after_declarator(convertToken(token));}
     @Override public void function_declaration(Token token) {orig.function_declaration(convertToken(token));}

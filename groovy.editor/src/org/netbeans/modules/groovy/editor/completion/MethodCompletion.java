@@ -63,8 +63,9 @@ import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.Paramete
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.completion.provider.CompleteElementHandler;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
+import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
+import org.netbeans.modules.groovy.editor.imports.ImportUtils;
 
 /**
  * Complete the methods invokable on a class.
@@ -197,7 +198,7 @@ public class MethodCompletion extends BaseCompletion {
 
     private List<String> getAllImports() {
         List<String> imports = new ArrayList<String>();
-        imports.addAll(GroovyUtils.DEFAULT_IMPORT_PACKAGES);
+        imports.addAll(ImportUtils.getDefaultImportPackages());
         imports.addAll(getImportedTypes());
         imports.addAll(getTypesInSamePackage());
         imports.addAll(getTypesInSameFile());

@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.parser;
 
 import java.util.*;
+import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
@@ -124,6 +125,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilde
 import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilderContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.SwitchStatementImpl.SwitchStatementBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.UniversalStatement.UniversalStatementBuilder;
+import org.netbeans.modules.cnd.modelimpl.parser.CXXParserEx.MyRecognitionException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
@@ -1747,7 +1749,23 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
     }
     
-    @Override public void end_labeled_statement(Token token) {
+    @Override 
+    public void end_labeled_statement(Token token) {
+        try {
+            end_labeled_statement_impl(token);
+        } catch (Exception ex) {
+            regesterException(ex);
+        }
+    }
+    
+    private void end_labeled_statement_impl(Token token) {
+        CsmObjectBuilder top = builderContext.top();
+        if (top instanceof CaseStatementBuilder) {
+            // remove unfinished case
+            CaseStatementBuilder builder = (CaseStatementBuilder)builderContext.top();
+            builderContext.pop();
+            builder.setEndOffset(((APTToken)token).getEndOffset());
+        }
     }
     
     @Override 
@@ -2475,15 +2493,17 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void ptr_operator(Token token) {}
     
     @Override
-    public void ptr_operator(int kind, Token token) {
+    public void ptr_operator(int kind, Token token) throws RecognitionException {
         try {
             ptr_operator_impl(kind, token);
+        } catch (RecognitionException ex) {
+            throw ex;
         } catch (Exception ex) {
             regesterException(ex);
         }
     }
     
-    private void ptr_operator_impl(int kind, Token token) {
+    private void ptr_operator_impl(int kind, Token token) throws RecognitionException {
         if (builderContext.top(1) instanceof SimpleDeclarationBuilder) {
             SimpleDeclarationBuilder sdb = (SimpleDeclarationBuilder) builderContext.top(1);
             TypeBuilder typeBuilder = sdb.getTypeBuilder();
@@ -2496,10 +2516,12 @@ public class CppParserActionImpl implements CppParserActionEx {
                         typeBuilder.setReference();
                         break;
                     default:
-                        System.err.println("Unexpected kind " + kind + " for " + sdb + "\n at " + token);
+                        //System.err.println("Unexpected kind " + kind + " for " + sdb + "\n at " + token);
+                        throw new MyRecognitionException("Unexpected kind " + kind + " for " + sdb + "\n at " + token, token);
                 }
             } else {
-                System.err.println("Unexpected declaration without type " + sdb + "\n at " + token);
+                //System.err.println("Unexpected declaration without type " + sdb + "\n at " + token);
+                throw new MyRecognitionException("Unexpected declaration without type " + sdb + "\n at " + token, token);
             }
         }
     }
@@ -2714,15 +2736,17 @@ public class CppParserActionImpl implements CppParserActionEx {
     }    
     
     @Override
-    public void function_definition_after_declarator(Token token) {
+    public void function_definition_after_declarator(Token token) throws RecognitionException {
         try {
             function_definition_after_declarator_impl(token);
+        } catch (RecognitionException ex) {
+            throw ex;
         } catch (Exception ex) {
             regesterException(ex);
         }
     }
     
-    private void function_definition_after_declarator_impl(Token token) {
+    private void function_definition_after_declarator_impl(Token token) throws MyRecognitionException {
         SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
 
         CsmObjectBuilder parent = builderContext.top(1);
@@ -2761,7 +2785,13 @@ public class CppParserActionImpl implements CppParserActionEx {
             builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
             builderContext.push(builder);            
         } else {
-            CharSequence name = declBuilder.getDeclaratorBuilder().getNameBuilder().getName();
+            NameBuilder nameBuilder = declBuilder.getDeclaratorBuilder().getNameBuilder();
+            CharSequence name = null;
+            if (nameBuilder != null) {
+                name = nameBuilder.getName();
+            } else {
+                throw new MyRecognitionException("Unexpected empty name for " + declBuilder + "\n at " + token, token);
+            }
             FunctionBuilder builder;
             if(name != null && !name.toString().contains("::")) { //NOI18N
                 builder = new FunctionDDBuilder();
@@ -3426,6 +3456,6 @@ public class CppParserActionImpl implements CppParserActionEx {
             }
         };
         currentContext.file.addReference(ref, definition);
-    }   
-
+    }
+    
 }

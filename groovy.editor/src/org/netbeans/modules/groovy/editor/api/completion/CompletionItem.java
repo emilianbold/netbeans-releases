@@ -64,7 +64,7 @@ import org.netbeans.modules.groovy.editor.api.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.api.elements.KeywordElement;
 import org.netbeans.modules.groovy.editor.java.Utilities;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
+import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.openide.util.ImageUtilities;
 
