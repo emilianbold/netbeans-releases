@@ -45,6 +45,7 @@ import java.awt.Cursor;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.php.nette2.options.Nette2Options;
 import org.netbeans.modules.php.nette2.ui.options.Nette2OptionsPanelController;
 import org.openide.util.ChangeSupport;
 
@@ -60,6 +61,13 @@ public class NewNette2ProjectPanel extends javax.swing.JPanel implements ChangeL
     }
 
     public String getErrorMessage() {
+        String sandboxMessage = Nette2OptionsPanelController.validateSandbox(Nette2Options.getInstance().getSandbox());
+        if (sandboxMessage != null) {
+            return sandboxMessage;
+        }
+        if (copyNetteCheckBox.isSelected()) {
+            return Nette2OptionsPanelController.validateNetteDirectory(Nette2Options.getInstance().getNetteDirectory());
+        }
         return null;
     }
 
@@ -76,6 +84,18 @@ public class NewNette2ProjectPanel extends javax.swing.JPanel implements ChangeL
         changeSupport.removeChangeListener(listener);
     }
 
+    @Override
+    public void addNotify() {
+        Nette2Options.getInstance().addChangeListener(this);
+        super.addNotify();
+    }
+
+    @Override
+    public void removeNotify() {
+        Nette2Options.getInstance().removeChangeListener(this);
+        super.removeNotify();
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -86,6 +106,7 @@ public class NewNette2ProjectPanel extends javax.swing.JPanel implements ChangeL
     private void initComponents() {
 
         optionsLabel = new javax.swing.JLabel();
+        copyNetteCheckBox = new javax.swing.JCheckBox();
 
         optionsLabel.setForeground(new java.awt.Color(0, 0, 255));
         org.openide.awt.Mnemonics.setLocalizedText(optionsLabel, org.openide.util.NbBundle.getMessage(NewNette2ProjectPanel.class, "NewNette2ProjectPanel.optionsLabel.text")); // NOI18N
@@ -98,21 +119,32 @@ public class NewNette2ProjectPanel extends javax.swing.JPanel implements ChangeL
             }
         });
 
+        copyNetteCheckBox.setMnemonic('C');
+        org.openide.awt.Mnemonics.setLocalizedText(copyNetteCheckBox, org.openide.util.NbBundle.getMessage(NewNette2ProjectPanel.class, "NewNette2ProjectPanel.copyNetteCheckBox.text")); // NOI18N
+        copyNetteCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                copyNetteCheckBoxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(317, Short.MAX_VALUE)
-                .addComponent(optionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(optionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(copyNetteCheckBox)
+                .addGap(0, 52, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addComponent(optionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(4, 4, 4)
+                .addComponent(copyNetteCheckBox)
+                .addContainerGap(55, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -124,7 +156,12 @@ public class NewNette2ProjectPanel extends javax.swing.JPanel implements ChangeL
         evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }//GEN-LAST:event_optionsLabelMouseEntered
 
+    private void copyNetteCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyNetteCheckBoxActionPerformed
+        changeSupport.fireChange();
+    }//GEN-LAST:event_copyNetteCheckBoxActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox copyNetteCheckBox;
     private javax.swing.JLabel optionsLabel;
     // End of variables declaration//GEN-END:variables
 
