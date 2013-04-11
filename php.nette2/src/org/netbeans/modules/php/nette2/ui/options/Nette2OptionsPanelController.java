@@ -103,12 +103,12 @@ public class Nette2OptionsPanelController extends OptionsPanelController impleme
         String warningNette = validateNetteDirectory(nette2OptionsPanel.getNetteDirectory());
         if (warningNette != null) {
             nette2OptionsPanel.setWarning(warningNette);
-            return false;
+            return true;
         }
         String warningSandbox = validateSandbox(nette2OptionsPanel.getSandbox());
         if (warningSandbox != null) {
             nette2OptionsPanel.setWarning(warningSandbox);
-            return false;
+            return true;
         }
         nette2OptionsPanel.setError(" "); //NOI18N
         return true;
