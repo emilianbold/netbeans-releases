@@ -80,12 +80,13 @@ import org.openide.util.Exceptions;
  *
  * @author Lukas Waldmann
  */
-public class CDCMainClassHelper implements AntProjectListener, FileChangeListener, PropertyChangeListener
+public class CDCMainClassHelper implements AntProjectListener, FileChangeListener
 {
     final private AntProjectHelper helper;
     private String mainClass;
     private FileObject lastMain=null;
     private DataObject currentDo;
+    private L listener = new L();
 
     /** Creates a new instance of CDCMainClassHelper */
     public CDCMainClassHelper(AntProjectHelper helper)
@@ -137,16 +138,18 @@ public class CDCMainClassHelper implements AntProjectListener, FileChangeListene
     public void fileAttributeChanged(FileAttributeEvent fe) {
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (!lastMain.isValid() || !currentDo.isValid()) {
-            String newMC = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty("main.class");
-            setUp(newMC);
-        }
-        if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
-            // Main class was moved or package was renamed
-            final FileObject newFile = (FileObject) evt.getNewValue();
-            handleMainClassMoved(newFile, true);
+    private class L implements PropertyChangeListener {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (!lastMain.isValid() || !currentDo.isValid()) {
+                String newMC = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty("main.class");
+                setUp(newMC);
+            }
+            if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+                // Main class was moved or package was renamed
+                final FileObject newFile = (FileObject) evt.getNewValue();
+                handleMainClassMoved(newFile, true);
+            }
         }
     }
 
@@ -191,14 +194,14 @@ public class CDCMainClassHelper implements AntProjectListener, FileChangeListene
                         lastMain.removeFileChangeListener(CDCMainClassHelper.this);
                     }
                     if (currentDo != null) {
-                        currentDo.removePropertyChangeListener(CDCMainClassHelper.this);
+                        currentDo.removePropertyChangeListener(CDCMainClassHelper.this.listener);
                     }
                     if (o!=null)
                     {
                         o.addFileChangeListener(CDCMainClassHelper.this);
                         try {
                             currentDo = DataObject.find(o);
-                            currentDo.addPropertyChangeListener(CDCMainClassHelper.this);
+                            currentDo.addPropertyChangeListener(CDCMainClassHelper.this.listener);
                         } catch (DataObjectNotFoundException ex) {
                             Exceptions.printStackTrace(ex);
                         }                    
