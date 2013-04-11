@@ -4,12 +4,12 @@
     <folder name="Editors">
         <folder name="text">
             <folder name="x-latte">
-                <file name="org-netbeans-modules-php-latte-embedding-LatteHtmlEmbeddingProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.parsing.impl.EmbeddingProviderFactory.create"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
-                    <attr name="targetMimeType" stringvalue="text/x-php5"/>
-                </file>
-                <file name="org-netbeans-modules-php-latte-embedding-LattePhpEmbeddingProvider.instance_hidden"/>
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-html-editor-completion-HtmlPaletteCompletionProvider.instance"/>
+                    <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"/>
+                </folder>
             </folder>
         </folder>
     </folder>
