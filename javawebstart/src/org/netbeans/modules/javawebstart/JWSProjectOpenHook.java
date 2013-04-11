@@ -104,24 +104,30 @@ public class JWSProjectOpenHook extends ProjectOpenedHook {
             return;
         }
         if (extender.getExtension(JWSProjectPropertiesUtils.getCurrentExtensionName()) == null) {
-            LOG.log(
-                Level.FINE,
-                "The project {0} ({1}) does not have a current version ({2}) of JWS extension.", //NOI18N
-                new Object[] {
-                    ProjectUtils.getInformation(prj).getDisplayName(),
-                    FileUtil.getFileDisplayName(prj.getProjectDirectory()),
-                    JWSProjectPropertiesUtils.getCurrentExtensionName()
-                });
+            if (LOG.isLoggable(Level.FINE)) {
+                //Prevent expensive ProjectUtils.getInformation(prj) when not needed
+                LOG.log(
+                    Level.FINE,
+                    "The project {0} ({1}) does not have a current version ({2}) of JWS extension.", //NOI18N
+                    new Object[] {
+                        ProjectUtils.getInformation(prj).getDisplayName(),
+                        FileUtil.getFileDisplayName(prj.getProjectDirectory()),
+                        JWSProjectPropertiesUtils.getCurrentExtensionName()
+                    });
+            }
             return;
         }
         if (JWSProjectPropertiesUtils.isJnlpImplUpToDate(prj)) {
-            LOG.log(
-                Level.FINE,
-                "The project {0} ({1}) have an up to date JWS extension.", //NOI18N
-                new Object[] {
-                    ProjectUtils.getInformation(prj).getDisplayName(),
-                    FileUtil.getFileDisplayName(prj.getProjectDirectory())
-                });
+            if (LOG.isLoggable(Level.FINE)) {
+                //Prevent expensive ProjectUtils.getInformation(prj) when not needed
+                LOG.log(
+                    Level.FINE,
+                    "The project {0} ({1}) have an up to date JWS extension.", //NOI18N
+                    new Object[] {
+                        ProjectUtils.getInformation(prj).getDisplayName(),
+                        FileUtil.getFileDisplayName(prj.getProjectDirectory())
+                    });
+            }
             return;
         }
         try {
