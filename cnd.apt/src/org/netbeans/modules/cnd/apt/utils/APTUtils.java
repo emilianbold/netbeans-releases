@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
@@ -376,13 +377,13 @@ public class APTUtils {
         return retValue.toString();
     }
     
-    public static String macros2String(Map<CharSequence/*getTokenTextKey(token)*/, ? extends Object> macros) {
+    public static String macros2String(Map<CharSequence/*getTokenTextKey(token)*/, APTMacro> macros) {
         StringBuilder retValue = new StringBuilder();
         retValue.append("MACROS (sorted ").append(macros.size()).append("):\n"); // NOI18N
         List<CharSequence> macrosSorted = new ArrayList<CharSequence>(macros.keySet());
         Collections.sort(macrosSorted, CharSequences.comparator());
         for (CharSequence key : macrosSorted) {
-            Object macro = macros.get(key);
+            APTMacro macro = macros.get(key);
             assert(macro != null);
             retValue.append(macro);
             retValue.append("'\n"); // NOI18N
