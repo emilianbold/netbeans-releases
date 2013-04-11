@@ -98,33 +98,41 @@ public class Nette2OptionsPanelController extends OptionsPanelController impleme
     public void cancel() {
     }
 
-    @NbBundle.Messages({
-        "Nette2ValidationSandbox=Nette2 Sandbox",
-        "Nette2ValidationDirectory=Nette2 Directory",
-        "# {0} - File in a root of Nette sources directory",
-        "Nette2DirectoryValidationWarning=Nette2 Directory does not contain {0} file."
-    })
     @Override
     public boolean isValid() {
-        String netteDirectory = nette2OptionsPanel.getNetteDirectory();
-        String warningNette = FileUtils.validateDirectory(Bundle.Nette2ValidationDirectory(), netteDirectory, false);
-        if (warningNette == null) {
-            File loaderPhp = new File(netteDirectory, LOADER_FILE);
-            if (!loaderPhp.exists() || loaderPhp.isDirectory()) {
-                warningNette = Bundle.Nette2DirectoryValidationWarning(LOADER_FILE);
-            }
-        }
+        String warningNette = validateNetteDirectory(nette2OptionsPanel.getNetteDirectory());
         if (warningNette != null) {
             nette2OptionsPanel.setWarning(warningNette);
             return false;
         }
-        String warningSandbox = FileUtils.validateDirectory(Bundle.Nette2ValidationSandbox(), nette2OptionsPanel.getSandbox(), false);
+        String warningSandbox = validateSandbox(nette2OptionsPanel.getSandbox());
         if (warningSandbox != null) {
             nette2OptionsPanel.setWarning(warningSandbox);
             return false;
         }
         nette2OptionsPanel.setError(" "); //NOI18N
         return true;
+    }
+
+    @NbBundle.Messages({
+        "Nette2ValidationDirectory=Nette2 Directory",
+        "# {0} - File in a root of Nette sources directory",
+        "Nette2DirectoryValidationWarning=Nette2 Directory does not contain {0} file."
+    })
+    public static String validateNetteDirectory(String netteDirectory) {
+        String result = FileUtils.validateDirectory(Bundle.Nette2ValidationDirectory(), netteDirectory, false);
+        if (result == null) {
+            File loaderPhp = new File(netteDirectory, LOADER_FILE);
+            if (!loaderPhp.exists() || loaderPhp.isDirectory()) {
+                result = Bundle.Nette2DirectoryValidationWarning(LOADER_FILE);
+            }
+        }
+        return result;
+    }
+
+    @NbBundle.Messages("Nette2ValidationSandbox=Nette2 Sandbox")
+    public static String validateSandbox(String sandbox) {
+        return FileUtils.validateDirectory(Bundle.Nette2ValidationSandbox(), sandbox, false);
     }
 
     @Override
