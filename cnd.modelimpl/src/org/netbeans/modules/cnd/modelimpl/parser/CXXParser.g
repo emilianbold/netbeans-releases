@@ -748,7 +748,7 @@ simple_declaration_or_function_definition [decl_kind kind]
 scope Declaration;
 @init                                                                           {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
     :
-        gnu_attribute_specifiers?
+        gnu_attribute_or_extension_specifiers?
                                                                                 {action.decl_specifiers(input.LT(1));}
         (decl_specifier gnu_attribute_specifiers?)*                              {action.end_decl_specifiers(input.LT(0));}
 
@@ -1011,7 +1011,7 @@ elaborated_type_specifier
     )                                                                           //{action.end_elaborated_type_specifier(input.LT(0));}
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_elaborated_type_specifier(input.LT(0));}}
-
+    
 // In C++0x this is factored out already
 typename_specifier
 @init                                                                           {if(state.backtracking == 0){action.typename_specifier(input.LT(1));}}
@@ -1121,7 +1121,7 @@ namespace_definition:
         (   
             IDENT                                                               {action.namespace_name($IDENT);}
         )?
-        gnu_attribute_specifiers?
+        gnu_attribute_or_extension_specifiers?
         LCURLY                                                                  {action.namespace_body($LCURLY);}
         namespace_body 
         RCURLY                                                                  {action.end_namespace_body($RCURLY);} 
@@ -1205,7 +1205,7 @@ linkage_specification [decl_kind kind]:
     ;
 
 attribute_specifiers:
-        (attribute_specifier | gnu_attribute_specifier)+
+        (attribute_specifier | gnu_attribute_or_extension_specifier)+
     ;
 
 cpp11_attribute_specifiers:
@@ -1268,14 +1268,22 @@ balanced_token:
         ~(RCURLY | LCURLY | LSQUARE | RSQUARE | LPAREN | RPAREN)
     ;
 
+gnu_attribute_or_extension_specifiers:
+        gnu_attribute_or_extension_specifier+
+    ;
+
+gnu_attribute_or_extension_specifier:
+        gnu_attribute_specifier
+    |
+        LITERAL___extension__
+    ;
+
 gnu_attribute_specifiers:
         gnu_attribute_specifier+
     ;
 
 gnu_attribute_specifier:
         LITERAL___attribute__ LPAREN balanced_tokens RPAREN
-    |
-        LITERAL___extension__
     ;
 
 init_declarator_list
@@ -1357,6 +1365,7 @@ noptr_declarator returns [declarator_type_t type]
 //                {{ type = $declarator_id.type; }}
         |
             LPAREN                                                              {action.noptr_declarator(action.NOPTR_DECLARATOR__LPAREN, input.LT(0));}
+            gnu_attribute_specifier*
             declarator 
             RPAREN                                                              {action.noptr_declarator(action.NOPTR_DECLARATOR__RPAREN, input.LT(0));}
 //                {{ type = $declarator.type; }}
@@ -1483,7 +1492,7 @@ finally                                                                         
 
 greedy_declarator returns [declarator_type_t type]
 @init                                                                           {if(state.backtracking == 0){action.greedy_declarator(input.LT(1));}}
-    :                                                                           
+    :   
     (
         greedy_nonptr_declarator //{{ type = $greedy_nonptr_declarator.type; }}
     |
@@ -1509,6 +1518,7 @@ greedy_nonptr_declarator returns [declarator_type_t type]
                 //{{ type = $declarator_id.type; }}
         |
             LPAREN                                                              {action.greedy_nonptr_declarator(action.GREEDY_NONPTR_DECLARATOR__LPAREN, input.LT(0));}
+            gnu_attribute_specifier*
             greedy_declarator 
             RPAREN                                                              {action.greedy_nonptr_declarator(action.GREEDY_NONPTR_DECLARATOR__RPAREN, input.LT(0));}
                 //{{ type = $greedy_declarator.type; }}
@@ -1593,7 +1603,7 @@ finally                                                                         
 type_id
 @init                                                                           {if(state.backtracking == 0){action.type_id(input.LT(1));}}
     :                                            
-        gnu_attribute_specifiers?
+        gnu_attribute_or_extension_specifiers?
         (type_specifier gnu_attribute_specifiers?)+ 
         ((abstract_declarator) => abstract_declarator)? // review: predicate to avoid ambiguity around ELLIPSIS
     ;
@@ -2453,9 +2463,9 @@ throw_expression:
         LITERAL_throw assignment_expression? 
     ;
 exception_specification:
-        dynamic_exception_specification gnu_attribute_specifiers?
+        dynamic_exception_specification gnu_attribute_or_extension_specifiers?
     |
-        noexcept_specification gnu_attribute_specifiers?
+        noexcept_specification gnu_attribute_or_extension_specifiers?
     ;
 dynamic_exception_specification:
         LITERAL_throw LPAREN type_id_list? RPAREN 
