@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.prep.process;
 
+import java.util.concurrent.ExecutionException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.editor.CPUtils;
@@ -48,8 +49,8 @@ import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
 import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
+import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.Warnings;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -78,7 +79,13 @@ public final class LessProcessor extends BaseProcessor {
         if (less == null) {
             return;
         }
-        less.compile(fileObject);
+        try {
+            less.compile(fileObject);
+        } catch (ExecutionException ex) {
+            if (Warnings.showLessWarning()) {
+                UiUtils.processExecutionException(ex);
+            }
+        }
     }
 
     @CheckForNull
@@ -87,8 +94,7 @@ public final class LessProcessor extends BaseProcessor {
             return LessExecutable.getDefault();
         } catch (InvalidExternalExecutableException ex) {
             if (Warnings.showLessWarning()) {
-                // refresh project problems
-                lessCssPreprocessor.firePropertyChange(CssPreprocessorImplementation.CUSTOMIZER_PROPERTY, project, project);
+                UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
             }
         }
         return null;

@@ -43,8 +43,9 @@ package org.netbeans.modules.css.prep.problems;
 
 import java.util.Collection;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.CPFileType;
 import org.netbeans.modules.css.prep.less.LessExecutable;
-import org.netbeans.modules.css.prep.preferences.SassPreferences;
+import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
@@ -58,7 +59,12 @@ public final class LessProjectProblemsProvider extends BaseProjectProblemsProvid
 
     @Override
     boolean isEnabled(Project project) {
-        return SassPreferences.isEnabled(project);
+        return LessPreferences.isEnabled(project);
+    }
+
+    @Override
+    CPFileType getFileType() {
+        return CPFileType.LESS;
     }
 
     @NbBundle.Messages({
