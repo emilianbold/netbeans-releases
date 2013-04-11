@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,66 +34,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.imports;
 
-import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.groovy.editor.spi.completion.DefaultImportsProvider;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Matthias Schmidt
+ * @author Martin Janicek
  */
-public class GroovyUtilsTest extends GroovyTestBase {
+public final class ImportUtils {
 
-    String TEST_LINE = "this is a testline\n";
-    int meaningOfLife = 42;
-
-    public GroovyUtilsTest(String testName) {
-        super(testName);
-    }
-
-    public void testBadLocationExceptionThrown1() {
-        try {
-            GroovyUtils.getRowLastNonWhite(TEST_LINE, meaningOfLife);
-        } catch (BadLocationException ex) {
-            verifyException(ex);
-            return;
-        }
-        assertTrue(false);
-    }
-    public void testBadLocationExceptionThrown2() {
-        try {
-            GroovyUtils.getRowStart(TEST_LINE, meaningOfLife);
-        } catch (BadLocationException ex) {
-            verifyException(ex);
-            return;
-        }
-        assertTrue(false);
-    }
-    public void testBadLocationExceptionThrown3() {
-        try {
-            GroovyUtils.isRowEmpty(TEST_LINE, meaningOfLife);
-        } catch (BadLocationException ex) {
-            verifyException(ex);
-            return;
-        }
-        assertTrue(false);
-    }
-    public void testBadLocationExceptionThrown4() {
-        try {
-            GroovyUtils.isRowWhite(TEST_LINE, meaningOfLife);
-        } catch (BadLocationException ex) {
-            verifyException(ex);
-            return;
-        }
-        assertTrue(false);
-    }
-
-    void verifyException(BadLocationException ex){
-        assertEquals("Unexpected error-message", ex.getMessage(), String.valueOf(meaningOfLife) + " out of " + TEST_LINE.length());
+    private ImportUtils() {
     }
     
+    public static Set<String> getDefaultImportPackages() {
+        Set<String> defaultPackages = new HashSet<String>();
+        
+        defaultPackages.add("java.io");     // NOI18N
+        defaultPackages.add("java.lang");   // NOI18N
+        defaultPackages.add("java.net");    // NOI18N
+        defaultPackages.add("java.util");   // NOI18N
+        defaultPackages.add("groovy.util"); // NOI18N
+        defaultPackages.add("groovy.lang"); // NOI18N
+        
+        for (DefaultImportsProvider importsProvider : Lookup.getDefault().lookupAll(DefaultImportsProvider.class)) {
+            defaultPackages.addAll(importsProvider.getDefaultImportPackages());
+        }
+
+        return defaultPackages;
+    }
+    
+    public static Set<String> getDefaultImportClasses() {
+        Set<String> defaultClasses = new HashSet<String>();
+        
+        defaultClasses.add("java.math.BigDecimal"); // NOI18N
+        defaultClasses.add("java.math.BigInteger"); // NOI18N
+        
+        for (DefaultImportsProvider importsProvider : Lookup.getDefault().lookupAll(DefaultImportsProvider.class)) {
+            defaultClasses.addAll(importsProvider.getDefaultImportClasses());
+        }
+
+        return defaultClasses;
+    }
 }
