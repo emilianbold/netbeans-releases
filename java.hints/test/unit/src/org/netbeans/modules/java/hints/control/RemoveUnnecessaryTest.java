@@ -350,6 +350,39 @@ public class RemoveUnnecessaryTest extends NbTestCase {
                 .run(RemoveUnnecessary.class)
                 .assertWarnings();
     }
+    
+    public void testLambda227899a() throws Exception {
+        HintTest.create()
+                .sourceLevel("1.8")
+                .input("package test;\n" +
+                       "import java.util.Comparator;\n" +
+                       "public class Test {\n" +
+                       "    public void testReturn(int b) {\n" +
+                       "        Comparator<String> c = (String s1, String s2) -> {\n" +
+                       "               return s1.compareToIgnoreCase(s2);\n" +
+                       "            };\n" +
+                       "    }\n" +
+                       "}\n",
+                       false)
+                .run(RemoveUnnecessary.class)
+                .assertWarnings();
+    }
+    
+    public void testLambda227899b() throws Exception {
+        HintTest.create()
+                .sourceLevel("1.8")
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void testReturn(int b) {\n" +
+                       "        Runnable r = () -> {\n" +
+                       "               return ;\n" +
+                       "            };\n" +
+                       "    }\n" +
+                       "}\n",
+                       false)
+                .run(RemoveUnnecessary.class)
+                .assertWarnings("4:15-4:23:verifier:" + Bundle.ERR_UnnecessaryReturnStatement());
+    }
 
     public void testContinueSimple() throws Exception {
         HintTest

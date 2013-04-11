@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenStream;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
@@ -383,7 +383,7 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     void greedy_nonptr_declarator(int kind, Token token);
     void end_greedy_nonptr_declarator(Token token);
     void ptr_operator(Token token);
-    void ptr_operator(int kind, Token token) throws RecognitionException;
+    void ptr_operator(int kind, Token token);
     void end_ptr_operator(Token token);
     void cv_qualifier(int kind, Token token);
     void ref_qualifier(int kind, Token token);
@@ -404,7 +404,7 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     void parameter_declaration(Token token);
     void parameter_declaration(int kind, Token token);
     void end_parameter_declaration(Token token);
-    void function_definition_after_declarator(Token token) throws RecognitionException;
+    void function_definition_after_declarator(Token token);
     void function_definition_after_declarator(int kind, Token token);
     void end_function_definition_after_declarator(Token token);
     void function_declaration(Token token);
@@ -514,4 +514,5 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     
     void skip_balanced_curlies(Token token);
     
+    CsmFile getCurrentFile();   
 }

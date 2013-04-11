@@ -63,7 +63,9 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 import org.openide.util.Exceptions;
 
@@ -165,11 +167,11 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
             System.err.println("Inited golden content");
         } else {
             String diff = annotation.file() + "[" + annotation.line() + ":" + annotation.column() + "," + annotation.length() + "]" + annotation.insert();
-            assertModel("Recovery " + (isNew ? "new" : "old") + " " + source + " " + diff, goldenModel, w.toString());
+            assertModel(target, "Recovery " + (isNew ? "new" : "old") + " " + source + " " + diff, goldenModel, w.toString());
         }
     }
 
-    protected void assertModel(String msg, String expectedText, String actualText) {
+    protected void assertModel(CsmFile target, String msg, String expectedText, String actualText) {
         if (!actualText.equals(expectedText)) {
             StringBuilder sb = new StringBuilder();
             sb.append(msg);
@@ -199,6 +201,18 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
                 }
             }
             System.err.println(sb.toString());
+            if (target instanceof FileImpl) {
+                FileImpl impl = (FileImpl) target;
+                List<CsmParserProvider.ParserError> result = new ArrayList<CsmParserProvider.ParserError>();
+                impl.getErrors(result);
+                for(CsmParserProvider.ParserError error : result) {
+                    if (error.message != null) {
+                        System.err.println(error.message+", col="+error.getColumn());
+                    } else {
+                        System.err.println(error.getTokenText()+", line="+error.getLine()+", col="+error.getColumn());
+                    }
+                }
+            }
             fail(sb.toString());
         }
     }

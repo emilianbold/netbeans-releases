@@ -1085,6 +1085,26 @@ public class JavaFixUtilitiesTest extends TestBase {
 		           "}\n");
     }
     
+    public void testLambdaExpr2Block() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.util.*;\n" +
+                           "public class Test {\n" +
+                           "    public void main(List<String> list) {\n" +
+                           "        Collections.sort(list, (l, r) -> l.compareTo(r));\n" +
+                           "    }\n" +
+                           "}\n",
+                           "($args$) -> $expr => ($args$) -> { return $expr; }",
+                           "package test;\n" +
+                           "import java.util.*;\n" +
+                           "public class Test {\n" +
+                           "    public void main(List<String> list) {\n" +
+                           "        Collections.sort(list, (l, r) -> {\n" +
+                           "            return l.compareTo(r);\n" +
+                           "        });\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);
 
