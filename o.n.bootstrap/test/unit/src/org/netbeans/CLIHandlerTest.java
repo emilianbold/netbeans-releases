@@ -56,7 +56,6 @@ import org.openide.util.RequestProcessor;
  * Test the command-line-interface handler.
  * @author Jaroslav Tulach
  */
-@RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9887/testReport/
 public class CLIHandlerTest extends NbTestCase {
 
     final static ByteArrayInputStream nullInput = new ByteArrayInputStream(new byte[0]);
@@ -91,13 +90,18 @@ public class CLIHandlerTest extends NbTestCase {
             assertTrue(!f.exists());
         }
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        CLIHandler.stopServer();
+    }
     
     protected @Override Level logLevel() {
         return Level.FINEST;
     }
 
     protected @Override int timeOut() {
-        return 500000;
+        return 50000;
     }
     
     public void testFileExistsButItCannotBeRead() throws Exception {
@@ -228,7 +232,6 @@ public class CLIHandlerTest extends NbTestCase {
         }
     }
 
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9882/testReport/
     public void testHelpIsPassedToRunningServer() throws Exception {
         class UserDir extends CLIHandler implements Runnable {
             private int cnt;
@@ -281,7 +284,6 @@ public class CLIHandlerTest extends NbTestCase {
         
     }
     
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9886/testReport/
     public void testFileExistsButTheServerCannotBeContactedAndWeDoNotWantToCleanTheFileOnOtherHost() throws Exception {
         // start the server and block
         InitializeRunner runner = new InitializeRunner(65);
@@ -475,356 +477,6 @@ public class CLIHandlerTest extends NbTestCase {
         assertEquals("Now the result is 2 as cnt++ was increased", 2, res.getExitCode());
     }
 
-    @RandomlyFails
-    public void testServerWaitsBeforeFinishInitializationIsCalledOn () throws Exception {
-        // this tests will not execute handlers immediatelly
-        CLIHandler.finishInitialization (true);
-        
-        class H extends CLIHandler implements Runnable {
-            public volatile int cnt;
-            public volatile int afterFinish = -1;
-            
-            public H () {
-                super (CLIHandler.WHEN_INIT);
-            }
-            
-            protected int cli (Args args) {
-                cnt++;
-                LOG.info("Increased cnt to: " + cnt + " by thread " + Thread.currentThread());
-                return afterFinish;
-            }
-            
-            public void run () {
-                // cnt will be two as once the first cliInitialize will
-                // invoke the handler and once the second cliInitialize 
-                // using the Server            
-                afterFinish = 2;
-                CLIHandler.finishInitialization (false);
-            }
-            
-            protected void usage (PrintWriter w) {}
-        }
-        H h = new H ();
-        
-        CLIHandler.Status res = cliInitialize (new String[0], h, nullInput, nullOutput, nullOutput, null);
-        assertEquals ("Returns 0 as no finishInitialization is called", 0, res.getExitCode ());
-        // after two seconds it calls finishInitialization
-        RequestProcessor.Task task = RequestProcessor.getDefault ().post (h, 7000); // 7s is higher than socket timeout
-        res = cliInitialize (new String[0], h, nullInput, nullOutput, nullOutput, null);
-        
-        assertEquals ("Returns 2 as afterFinish needed to be set to 2 before" +
-        " calling finishInitialization", 2, res.getExitCode ());
-
-        long time = System.currentTimeMillis ();
-        task.waitFinished ();
-        time = System.currentTimeMillis () - time;
-        
-        if (time > 1000) {
-            fail ("The waitFinished should return almost immediatelly. But was: " + time);
-        }
-        
-        if (h.afterFinish != h.cnt) {
-            // in order to find out whether the failures in issue #44833
-            // are not caused just by threading issues, let's wait another
-            // few seconds and print the results of h.afterFinish and h.cnt
-            // if they will be the same then just replace the initial condition
-            // by say that h.afterFinish == 2 and h.cnt > 1 is ok
-            Thread.sleep (5000);
-            fail ("H is not executed before finishInitialization is called :" + h.afterFinish + " cnt: " + h.cnt);
-        }
-        
-    }
-
-    @RandomlyFails // NB-Core-Build #8297: The handler should not be finished, as it blocks in '99' but it is and the result is -255
-    public void testServerIsNotBlockedByLongRequests() throws Exception {
-        class H extends CLIHandler {
-            private int cnt = -1;
-            public int toReturn;
-            
-            public H() {
-                super(CLIHandler.WHEN_INIT);
-            }
-            
-            protected synchronized int cli(Args args) {
-                try {
-                    // this simulates really slow, but computing task
-                    Thread.sleep (6555);
-                } catch (InterruptedException ex) {
-                    throw new IllegalStateException ();
-                }
-                notifyAll();
-                cnt++;
-                return toReturn;
-            }
-            
-            protected void usage(PrintWriter w) {}
-        }
-        H h = new H();
-        
-        h.toReturn = 7;
-        final Integer blockOn = new Integer(99);
-        CLIHandler.Status res = cliInitialize(new String[0], h, nullInput, nullOutput, nullOutput, blockOn);
-        assertEquals("Called once, increased -1 to 0", 0, h.cnt);
-        assertEquals("Result is provided by H", 7, res.getExitCode());
-        
-        // blocks after connection established, before returning the result
-        class R implements Runnable {
-            CLIHandler.Status res;
-            public void run() {
-                res = cliInitialize(new String[0], Collections.<CLIHandler>emptyList(), nullInput, nullOutput, nullOutput, blockOn);
-            }
-        }
-        R r = new R();
-        RequestProcessor.Task task;
-        synchronized (h) {
-            h.toReturn = 5;
-            task = new org.openide.util.RequestProcessor("Blocking request").post(r);
-            h.wait();
-            assertEquals("Connects to the h", 1, h.cnt);
-            if (r.res != null) {
-                fail ("The handler should not be finished, as it blocks in '99' but it is and the result is " + r.res.getExitCode ());
-            }
-        }
-        
-        // while R is blocked, run another task
-        h.toReturn = 0;
-        res = cliInitialize(new String[0], Collections.<CLIHandler>emptyList(), nullInput, nullOutput, nullOutput, null);
-        assertEquals("Called once, increased to 2", 2, h.cnt);
-        assertEquals("Result is provided by H, H gives 0, changes into -1 right now", -1, res.getExitCode());
-        
-        synchronized (blockOn) {
-            // let the R task go on
-            blockOn.notifyAll();
-        }
-        task.waitFinished();
-        assertNotNull("Now it is finished", r.res);
-        assertEquals("Result is -1, if this fails: this usually means that the server is blocked by some work and the task R started new server to handle its request",
-            5, r.res.getExitCode());
-        assertEquals("H called three times (but counting from -1)", 2, h.cnt);
-    }
-    
-    public void testReadingOfInputWorksInHandler() throws Exception {
-        final byte[] template = { 1, 2, 3, 4 };
-        
-        class H extends CLIHandler {
-            private byte[] arr;
-            
-            public H() {
-                super(WHEN_INIT);
-            }
-            
-            protected int cli(Args args) {
-                try {
-                    InputStream is = args.getInputStream();
-                    arr = new byte[is.available() / 2];
-                    if (arr.length > 0) {
-                        assertEquals("Read amount is the same", arr.length, is.read(arr));
-                    }
-                    is.close();
-                } catch (IOException ex) {
-                    fail("There is an exception: " + ex);
-                }
-                return 0;
-            }
-            
-            protected void usage(PrintWriter w) {}
-        }
-        H h1 = new H();
-        H h2 = new H();
-        
-        // why twice? first attempt is direct, second thru the socket server
-        for (int i = 0; i < 2; i++) {
-            CLIHandler.Status res = cliInitialize(
-                new String[0], new H[] { h1, h2 }, new ByteArrayInputStream(template), nullOutput, nullOutput);
-            
-            assertNotNull("Attempt " + i + ": " + "Can be read", h1.arr);
-            assertEquals("Attempt " + i + ": " + "Read two bytes", 2, h1.arr.length);
-            assertEquals("Attempt " + i + ": " + "First is same", template[0], h1.arr[0]);
-            assertEquals("Attempt " + i + ": " + "Second is same", template[1], h1.arr[1]);
-            
-            assertNotNull("Attempt " + i + ": " + "Can read as well", h2.arr);
-            assertEquals("Attempt " + i + ": " + "Just one char", 1, h2.arr.length);
-            assertEquals("Attempt " + i + ": " + "And is the right one", template[2], h2.arr[0]);
-            
-            h1.arr = null;
-            h2.arr = null;
-        }
-    }
-    
-    public void testReadingMoreThanAvailableIsOk () throws Exception {
-        final byte[] template = { 1, 2, 3, 4 };
-        
-        class H extends CLIHandler {
-            private byte[] arr;
-            Exception error;
-            
-            public H() {
-                super(WHEN_INIT);
-            }
-            
-            @Override
-            protected int cli(Args args) {
-                try {
-                    InputStream is = args.getInputStream();
-                    arr = new byte[8];
-                    assertEquals("Read amount is the maximum of template", template.length, is.read(arr));
-                    assertEquals("EOF", -1, is.read());
-                    is.close();
-                } catch (Exception ex) {
-                    error = ex;
-                }
-                return 0;
-            }
-            
-            @Override
-            protected void usage(PrintWriter w) {}
-        }
-        H h1 = new H();
-        
-        // why twice? first attempt is direct, second thru the socket server
-        for (int i = 0; i < 2; i++) {
-            CLIHandler.Status res = cliInitialize(
-                new String[0], new H[] { h1 }, new ByteArrayInputStream(template), nullOutput, nullOutput);
-            
-            assertNotNull("Attempt " + i + ": " + "Can be read", h1.arr);
-            assertEquals("Attempt " + i + ": " + "First is same", template[0], h1.arr[0]);
-            assertEquals("Attempt " + i + ": " + "Second is same", template[1], h1.arr[1]);
-            assertEquals("Attempt " + i + ": " + "3rd is same", template[2], h1.arr[2]);
-            assertEquals("Attempt " + i + ": " + "4th is same", template[3], h1.arr[3]);
-            
-            h1.arr = null;
-        }
-        if (h1.error != null) {
-            throw h1.error;
-        }
-    }
-    
-    
-    public void testWritingToOutputIsFine() throws Exception {
-        final byte[] template = { 1, 2, 3, 4 };
-        
-        class H extends CLIHandler {
-            public H() {
-                super(WHEN_INIT);
-            }
-            
-            protected int cli(Args args) {
-                try {
-                    OutputStream os = args.getOutputStream();
-                    os.write(template);
-                    os.close();
-                    
-                    os = args.getErrorStream();
-                    os.write(0); 
-                    os.write(1);
-                    os.write(2);
-                    os.write(3);
-                    os.write(4);
-                    os.close();
-                } catch (IOException ex) {
-                    fail("There is an exception: " + ex);
-                }
-                return 0;
-            }
-            
-            protected void usage(PrintWriter w) {}
-        }
-        H h1 = new H();
-        H h2 = new H();
-        
-        // why twice? first attempt is direct, second thru the socket server
-        for (int i = 0; i < 2; i++) {
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            ByteArrayOutputStream err = new ByteArrayOutputStream();
-            
-            CLIHandler.Status res = cliInitialize(
-                new String[0], new H[] { h1, h2 }, nullInput, os, err);
-            
-            byte[] arr = os.toByteArray();
-            assertEquals("Double size of template", template.length * 2, arr.length);
-            
-            for (int pos = 0; pos < arr.length; pos++) {
-                assertEquals(pos + ". is the same", template[pos % template.length], arr[pos]);
-            }
-            
-            byte[] errArr = err.toByteArray();
-            assertEquals("5 bytes", 10, errArr.length);
-            for (int x = 0; x < errArr.length; x++) {
-                assertEquals(errArr[x], x % 5);
-            }
-        }
-    }
-
-    public void testGetInetAddressDoesNotBlock () throws Exception {
-        CLIHandler.Status res = cliInitialize(new String[0], Collections.<CLIHandler>emptyList(), nullInput, nullOutput, nullOutput, Integer.valueOf(27));
-        assertEquals("CLIHandler init finished" ,0, res.getExitCode());
-    }
-    
-    public void testServerCanBeStopped () throws Exception {
-        class H extends CLIHandler {
-            private int cnt = -1;
-            public int toReturn;
-            
-            public H() {
-                super(CLIHandler.WHEN_INIT);
-            }
-            
-            protected synchronized int cli(Args args) {
-                notifyAll();
-                cnt++;
-                return toReturn;
-            }
-            
-            protected void usage(PrintWriter w) {}
-        }
-        H h = new H();
-        
-        h.toReturn = 7;
-        CLIHandler.Status res = cliInitialize(new String[0], h, nullInput, nullOutput, nullOutput, null);
-        assertEquals("Called once, increased -1 to 0", 0, h.cnt);
-        assertEquals("Result is provided by H", 7, res.getExitCode());
-        
-        CLIHandler.stopServer ();
-        
-        h.toReturn = 5;
-        h.cnt = -1;
-        res = cliInitialize(new String[0], Collections.<CLIHandler>emptyList(), nullInput, nullOutput, nullOutput, null);
-        assertEquals("Not called -1", -1, h.cnt);
-        // right now the handler will not be called, if there is anything else
-        // to do, let's wait for such requirements
-    }
-
-    public void testHostNotFound64004 () throws Exception {
-        class H extends CLIHandler {
-            private int cnt;
-            public int toReturn;
-            
-            public H() {
-                super(CLIHandler.WHEN_INIT);
-            }
-            
-            protected synchronized int cli(Args args) {
-                notifyAll();
-                cnt++;
-                return toReturn;
-            }
-            
-            protected void usage(PrintWriter w) {}
-        }
-        H h = new H();
-        
-        // handlers shall not be executed immediatelly
-        CLIHandler.finishInitialization(true);
-        
-        h.toReturn = 7;
-        CLIHandler.Status res = cliInitialize(new String[0], h, nullInput, nullOutput, nullOutput, new Integer(667));
-        // finish all calls
-        int newRes = CLIHandler.finishInitialization(false);
-        
-        assertEquals("Called once, increased", 1, h.cnt);
-        assertEquals("Result is provided by H", 7, newRes);
-    }
-    
     //
     // Utility methods
     //
