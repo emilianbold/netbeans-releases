@@ -71,6 +71,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.DiffContext;
 
@@ -343,6 +344,7 @@ public class UtilitiesTest extends TestBase {
         assertPositions(result, positions[0], code, "foo", "foo bar");
     }
 
+    @RandomlyFails
     public void testErrorsForPatterns2() throws Exception {
         prepareTest("test/Test.java", "package test; public class Test{}");
 
