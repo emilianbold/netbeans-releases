@@ -43,11 +43,15 @@ package org.netbeans.modules.glassfish.common.ui;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.utils.JavaUtils;
 import org.openide.DialogDisplayer;
@@ -86,6 +90,14 @@ public class JavaSEPlatformPanel extends JPanel {
         }
         
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Local logger. */
+    private static final Logger LOGGER
+            = GlassFishLogger.get(JavaSEPlatformPanel.class);
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
@@ -149,6 +161,12 @@ public class JavaSEPlatformPanel extends JPanel {
         if (selectedJavaHome != null && panel.updateProperties()) {
             instance.setJavaHome(
                     FileUtil.toFile(selectedJavaHome).getAbsolutePath());
+            try {
+                GlassfishInstance.writeInstanceToFile(instance);
+            } catch(IOException ex) {
+                LOGGER.log(Level.INFO,
+                        "Could not store GlassFish server attributes", ex);
+            }
         }
         return selectedJavaHome;
     }

@@ -655,10 +655,29 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                                     serverName, userName),
                                     entry.getValue().toCharArray(),
                                     "GlassFish administrator user password");
+                            LOGGER.log(Level.FINEST,
+                                    "{0} attribute stored in keyring: {1}",
+                                    new String[] {instance.getDisplayName(),
+                                        key});
                         } else {
                             instanceFO.setAttribute(key, entry.getValue());
+                            LOGGER.log(Level.FINEST,
+                                    "{0} attribute stored: {1} = {2}",
+                                    new String[] {instance.getDisplayName(),
+                                        key, entry.getValue()});
                         }
                     }
+                }
+            }
+            // Remove FO attributes that are no more stored in server instance.
+            for (Enumeration<String> foAttrs = instanceFO.getAttributes(); foAttrs.hasMoreElements(); ) {
+                String foAttr = foAttrs.nextElement();
+                if (!attrMap.containsKey(foAttr)) {
+                    instanceFO.setAttribute(foAttr, null);
+                    LOGGER.log(Level.FINEST,
+                            "{0} attribute deleted: {1}",
+                            new String[]{instance.getDisplayName(),
+                        foAttr});
                 }
             }
             

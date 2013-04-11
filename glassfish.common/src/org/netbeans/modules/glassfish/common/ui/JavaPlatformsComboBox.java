@@ -42,8 +42,10 @@
 package org.netbeans.modules.glassfish.common.ui;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -108,6 +110,29 @@ public class JavaPlatformsComboBox extends JComboBox {
         public String toString() {
             return platform.getDisplayName();
         }
+    }
+
+    /**
+     * Comparator for <code>Platform</code> instances to be sorted in combo box.
+     */
+    public static class PlatformComparator implements Comparator<Platform> {
+
+        /**
+         * Compares display name values of <code>Platform</code> instances.
+         * @param p1 First <code>Platform</code> instance to be compared.
+         * @param p2 Second <code>Platform</code> instance to be compared.
+         * @return A negative integer, zero, or a positive integer as the first
+         *         argument is less than, equal to, or greater than the second.
+         */
+        @Override
+        public int compare(Platform p1, Platform p2) {
+            String d1 = p1 != null ? p1.toString() : null;
+            String d2 = p2 != null ? p2.toString() : null;
+            return d1 != null
+                ? (d2 != null ? d1.compareTo(d2) : 1)
+                :  (d2 != null ? -1 : 0);
+        }
+        
     }
 
     /**
@@ -191,6 +216,11 @@ public class JavaPlatformsComboBox extends JComboBox {
     public static final Platform EMPTY_PLATFORM
             = new Platform(new EmptyJavaPlatform());
 
+    /** Comparator for <code>Platform</code> instances to be sorted
+     *  in combo box. */
+    private static final PlatformComparator platformComparator
+            = new PlatformComparator();
+
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
@@ -217,6 +247,7 @@ public class JavaPlatformsComboBox extends JComboBox {
         }
         for(int i = 0; i < size; i++)
             platformsOut[addEmpty ? i + 1 : i] = new Platform(platformsIn[i]);
+        Arrays.sort(platformsOut, platformComparator);
         return platformsOut;
     }
 
