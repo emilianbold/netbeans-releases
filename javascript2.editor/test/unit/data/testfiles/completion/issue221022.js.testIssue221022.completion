@@ -8,4 +8,4 @@ FIELD      loads: Number                   [PUBLIC]   issue221022.js
 FIELD      orderProp: String               [PUBLIC]   issue221022.js
 FIELD      rights: Number                  [PUBLIC]   issue221022.js
 FIELD      specs: Array                    [PUBLIC]   issue221022.js
-FIELD      version: SpecPoolCtrl.$routePa  [PUBLIC]   issue221022.js
+FIELD      version: String|SpecPoolCtrl.$  [PUBLIC]   issue221022.js
