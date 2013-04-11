@@ -1340,8 +1340,11 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         if (m == null) {
             try {
                 m = doc.getClass().getMethod(add ?
-                        "addUpdateDocumentListener" : "removeUpdateDocumentListener", 
+                        "addUpdateDocumentListener" : "removeUpdateDocumentListener", // NOI18N
                         DocumentListener.class);
+                if (!"org.netbeans.editor.BaseDocument".equals(m.getDeclaringClass().getName())) { // NOI18N
+                    return;
+                }
                 if (add) {
                     addUpdateListener = m;
                 } else {
