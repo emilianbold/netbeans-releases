@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.utils;
 
 import javax.swing.text.BadLocationException;
 
