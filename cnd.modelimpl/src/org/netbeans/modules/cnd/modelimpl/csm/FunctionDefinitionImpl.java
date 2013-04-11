@@ -335,6 +335,10 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         
         @Override
         public FunctionDefinitionImpl create() {
+            final FunctionParameterListBuilder parameters = (FunctionParameterListBuilder)getParametersListBuilder();
+            if (parameters == null) {
+                return null;
+            }
             CsmScope scope = AstRenderer.FunctionRenderer.getScope(getScope(), getFile(), isStatic(), true);
 
             FunctionDefinitionImpl<?> impl = new FunctionDefinitionImpl(getName(), getRawName(), scope, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);        
@@ -350,8 +354,8 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
             }
             
             impl.setReturnType(getType());
-            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(impl);
-            impl.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(), false);
+            (parameters).setScope(impl);
+            impl.setParameters(parameters.create(), false);
             
             impl.setClassOrNspNames(getScopeNames());        
             
