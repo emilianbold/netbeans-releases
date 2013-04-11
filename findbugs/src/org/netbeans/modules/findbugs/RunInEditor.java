@@ -64,6 +64,7 @@ import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.findbugs.RunFindBugs.Cancel;
 import org.netbeans.modules.findbugs.RunFindBugs.SigFilesValidator;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -138,7 +139,11 @@ public class RunInEditor implements CancellableTask<CompilationInfo> {
         final AtomicLong latest = new AtomicLong(-1);
         final AtomicReference<String> newTimeStampsString = new AtomicReference<String>();
         
-        List<ErrorDescription> bugs = RunFindBugs.runFindBugs(parameter, null, null, sourceRoot, classNames, null, new SigFilesValidator() {
+        List<ErrorDescription> bugs = RunFindBugs.runFindBugs(parameter, null, null, sourceRoot, classNames, null, new Cancel() {
+            @Override public boolean isCancelled() {
+                return cancel.get();
+            }
+        }, new SigFilesValidator() {
             @Override public boolean validate(Iterable<? extends FileObject> files) {
                 StringBuilder timeStamps = new StringBuilder();
 
