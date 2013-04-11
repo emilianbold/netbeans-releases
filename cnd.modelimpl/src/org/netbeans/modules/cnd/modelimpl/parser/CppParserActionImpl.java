@@ -2787,6 +2787,10 @@ public class CppParserActionImpl implements CppParserActionEx {
             if (declBuilder.isConst()) {
                 builder.setConst();
             }
+            
+            if (declBuilder.isStatic()) {
+                builder.setStatic();
+            }
 
             builder.setName(name);
             builder.setTypeBuilder(declBuilder.getTypeBuilder());
@@ -2823,6 +2827,10 @@ public class CppParserActionImpl implements CppParserActionEx {
             
             if (declBuilder.isConst()) {
                 builder.setConst();
+            }
+            
+            if (declBuilder.isStatic()) {
+                builder.setStatic();
             }
 
             builder.setName(name);
