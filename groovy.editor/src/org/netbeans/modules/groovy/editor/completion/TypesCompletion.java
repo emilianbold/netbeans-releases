@@ -69,6 +69,7 @@ import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
+import org.netbeans.modules.groovy.editor.imports.ImportUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
@@ -269,7 +270,7 @@ public class TypesCompletion extends BaseCompletion {
         // First, create a list of default JDK packages. These are reused,
         // so they are defined elsewhere.
 
-        localDefaultImports.addAll(GroovyUtils.DEFAULT_IMPORT_PACKAGES);
+        localDefaultImports.addAll(ImportUtils.getDefaultImportClasses());
 
         // adding types from default import, optionally filtered by
         // prefix
@@ -285,7 +286,7 @@ public class TypesCompletion extends BaseCompletion {
         }
 
         // Adding single classes
-        for (String className : GroovyUtils.DEFAULT_IMPORT_CLASSES) {
+        for (String className : ImportUtils.getDefaultImportClasses()) {
             addToProposalUsingFilter(addedTypes, new TypeHolder(className, ElementKind.CLASS), onlyInterfaces);
         }
 

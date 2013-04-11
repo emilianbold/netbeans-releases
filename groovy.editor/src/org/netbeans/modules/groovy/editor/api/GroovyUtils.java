@@ -44,9 +44,6 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.text.BadLocationException;
 
 /**
@@ -56,27 +53,6 @@ import javax.swing.text.BadLocationException;
  * @author Gopala Krishnan Sankaran
  */
 public final class GroovyUtils {
-
-    public static final Set<String> DEFAULT_IMPORT_PACKAGES;
-    public static final Set<String> DEFAULT_IMPORT_CLASSES;
-
-    static {
-        Set<String> defaultPackages = new HashSet<String>(7);
-        defaultPackages.add("java.io");     // NOI18N
-        defaultPackages.add("java.lang");   // NOI18N
-        defaultPackages.add("java.net");    // NOI18N
-        defaultPackages.add("java.util");   // NOI18N
-        defaultPackages.add("groovy.util"); // NOI18N
-        defaultPackages.add("groovy.lang"); // NOI18N
-
-        DEFAULT_IMPORT_PACKAGES = Collections.unmodifiableSet(defaultPackages);
-
-        Set<String> defaultClasses = new HashSet<String>(3);
-        defaultClasses.add("java.math.BigDecimal"); // NOI18N
-        defaultClasses.add("java.math.BigInteger"); // NOI18N
-
-        DEFAULT_IMPORT_CLASSES = Collections.unmodifiableSet(defaultClasses);
-    }
 
     private GroovyUtils() {
     }
@@ -216,7 +192,7 @@ public final class GroovyUtils {
         }
     }
     
-    static BadLocationException getBadLocationException(IndexOutOfBoundsException ex, String text, int offset) {
+    private static BadLocationException getBadLocationException(IndexOutOfBoundsException ex, String text, int offset) {
         BadLocationException ble = new BadLocationException(offset + " out of " + text.length(), offset);
         ble.initCause(ex);
         return ble;
