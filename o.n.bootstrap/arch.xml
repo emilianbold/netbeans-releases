@@ -1046,8 +1046,25 @@ made subject to such option by the copyright holder.
             IDE.
             </p>
         </api>
+        <api category="friend" group="java.io.File" name="installation.cache" type="export">
+            <p>
+                Installer can speed NetBeans IDE start by generating caches when the
+                installation is over. Such caches are stored in the installation,
+                in first cluster listed by <a href="#systemproperty-netbeans.dirs">
+                netbeans.dirs</a> and have the same layout as user caches 
+                (including here in described caches like <a href="#java.io.File-all-resources.dat">all-resources.dat</a>, 
+                as well as caches provided by other subsystems like 
+                <a href="@org-netbeans-core-netigso@/architecture-summary.html#java.io.File-netigso-bundles">
+                netigso-bundles</a>)
+                in the user directory - e.g. they are under <code>var/cache</code>.
+            </p>
+            <p>
+                If a file <code>var/cache/populate.zip</code> is found, its 
+                content is unzipped into user directory (if it is empty).
+            </p>
+        </api>
 
-        <api category="devel" group="java.io.File" name="all-resources.dat" type="export">
+        <api category="friend" group="java.io.File" name="all-resources.dat" type="export">
             <p>
             To speedup class loading during startup, the system keeps a cache
             of resources needed during startup in var/cache/all-resources.dat.
@@ -1057,8 +1074,106 @@ made subject to such option by the copyright holder.
                         
             <p>
             The file is binary and shouldn't be modified by other code than
-            org.netbeans.Archive. The file content uses magic header
+            <code>org.netbeans.Archive</code>. The file content uses magic header
             and versioning to allow evolution of its (private) format.
+            The location is however well known for 
+            <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="all-files.dat" type="export">
+            <p>
+            Rather than seeking on disk and using <code>access</code> OS call uselessly
+            to find that some file is not present, the layout of files under
+            the clusters is recorded in <code>var/cache/all-files.data</code>.
+            </p>
+                        
+            <p>
+            The file is binary and its format is <em>private</em>. The location
+            is however well known for 
+            <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="all-layers.dat" type="export">
+            <p>
+            Modules register their functionality into the system using 
+            <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">layers</a>.
+            To avoid parsing and merging of content of these files on each start, 
+            the system creates a cached, binary representation of the layers
+            structure in <code>var/cache/all-layers.dat</code> and
+            <code>var/cache/all-local-layers.dat</code>.
+            </p>
+                        
+            <p>
+            The file is binary and its format is <em>private</em>. The location
+            is however well known for 
+            <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="all-installer.dat" type="export">
+            <p>
+                Additional information about modules (like <em>deprecation message</em>, etc.)
+                is stored in <code>var/cache/all-installer.dat</code> to avoid the need
+                to parse it out on each start.
+            </p>
+                        
+            <p>
+                The file is binary and its format is <em>private</em>. The location
+                is however well known for 
+                <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="all-manifests.dat" type="export">
+            <p>
+                Graph of dependencies between modules, sorted startup order,
+                state of modules 
+                is stored in <code>var/cache/all-manifests.dat</code> to avoid the need
+                to compute this information on every start.
+            </p>
+                        
+            <p>
+                The file is binary and its format is <em>private</em>. The location
+                is however well known for 
+                <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="all-modules.dat" type="export">
+            <p>
+                Pre-parsed content of <code>config/Modules/*.xml</code>
+                is cached in <code>var/cache/all-modules.dat</code>.
+            </p>
+                        
+            <p>
+                The file is binary and its format is <em>private</em>. The location
+                is however well known for 
+                <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="package-attrs.dat" type="export">
+            <p>
+                Cache of various attributes of packages (vendor, spec &amp; impl version, etc.)
+                is stored in <code>var/cache/package-attrs.dat</code>. This
+                file is often almost empty to signal such information 
+                is not provided by any module.
+            </p>
+                        
+            <p>
+                The file is binary and its format is <em>private</em>. The location
+                is however well known for 
+                <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="localeVariants" type="export">
+            <p>
+                File <code>var/cache/localeVariants</code> contains information
+                about used branding and L10N files for each module. Avoids checking
+                for <code>locale/xyz_cs_CZ.jar</code> files when (for example) only English
+                L10N are present.
+            </p>
+                        
+            <p>
+                The file is binary and its format is <em>private</em>. The location
+                is however well known for 
+                <a href="#java.io.File-installation.cache">purposes of installer</a>.
             </p>
         </api>
     </answer>
