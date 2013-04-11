@@ -604,7 +604,9 @@ public class CommonServerSupport
     public ServerState getServerState() {
         if (serverState == ServerState.UNKNOWN) {
             RequestProcessor.Task task = refresh();
-            task.waitFinished();
+            if (task != null) {
+                task.waitFinished();
+            }
         }
         return serverState;
     }

@@ -72,6 +72,8 @@ import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsf.JsfConstants;
 import org.netbeans.modules.web.jsf.dialogs.BrowseFolders;
 import org.netbeans.modules.web.jsf.wizards.TemplateClientPanel.TemplateEntry;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -94,7 +96,6 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
     
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
 
-    private final static String NAME_SPACE = "http://java.sun.com/jsf/facelets";    //NOI18N
     private final static String TAG_NAME = "ui:insert";    //NOI18N
     private final static String VALUE_NAME = "name";    //NOI18N
 
@@ -384,8 +385,14 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
                     Result result = resultIterator.getParserResult(0);
                     if (result.getSnapshot().getMimeType().equals("text/html")) {
                         HtmlParserResult htmlResult = (HtmlParserResult)result;
-                        if (htmlResult.getNamespaces().containsKey(NAME_SPACE)) {
-                            List<OpenTag> foundNodes = findValue(htmlResult.root(NAME_SPACE).children(OpenTag.class), TAG_NAME, new ArrayList<OpenTag>());
+                        String ns = null;
+                        if (htmlResult.getNamespaces().containsKey(DefaultLibraryInfo.FACELETS.getNamespace())) {
+                            ns = DefaultLibraryInfo.FACELETS.getNamespace();
+                        } else if (htmlResult.getNamespaces().containsKey(DefaultLibraryInfo.FACELETS.getLegacyNamespace())) {
+                            ns = DefaultLibraryInfo.FACELETS.getLegacyNamespace();
+                        }
+                        if (ns != null) {
+                            List<OpenTag> foundNodes = findValue(htmlResult.root(ns).children(OpenTag.class), TAG_NAME, new ArrayList<OpenTag>());
 
                             for (OpenTag node : foundNodes) {
                                 Attribute attr = node.getAttribute(VALUE_NAME);

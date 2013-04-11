@@ -51,7 +51,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.wizards.Utilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -84,9 +86,17 @@ public final class CompositeComponentWizardIterator implements TemplateWizard.It
 
         FileObject template = Templates.getTemplate( wizard );
         DataObject dTemplate = DataObject.find(template);
-        HashMap<String, String> templateProperties = new HashMap<String, String>();
+        HashMap<String, Object> templateProperties = new HashMap<String, Object>();
         if (selectedText != null) {
             templateProperties.put("implementation", selectedText);   //NOI18N
+        }
+        Project project = Templates.getProject(wizard);
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            JSFVersion version = JSFVersion.forWebModule(webModule);
+            if (version != null && version.isAtLeast(JSFVersion.JSF_2_2)) {
+                templateProperties.put("isJSF22", Boolean.TRUE); //NOI18N
+            }
         }
 
         result  = dTemplate.createFromTemplate(df,targetName,templateProperties);

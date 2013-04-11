@@ -69,8 +69,11 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -215,6 +218,16 @@ public abstract class FromEntityBase {
             params.put("htmlTagPrefix", jls.getLibraryPrefix(DefaultLibraryInfo.HTML));
             params.put("coreTagPrefix", jls.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE));
         }
+
+        // namespace location
+        WebModule webModule = WebModule.getWebModule(targetJspFO);
+        JSFVersion version = webModule != null ? JSFVersion.forWebModule(webModule) : null;
+        String nsLocation = NamespaceUtils.SUN_COM_LOCATION;
+        if (version != null && version.isAtLeast(JSFVersion.JSF_2_2)) {
+            nsLocation = NamespaceUtils.JCP_ORG_LOCATION;
+        }
+        params.put("nsLocation", nsLocation); //NOI18N
+
         return params;
     }
 

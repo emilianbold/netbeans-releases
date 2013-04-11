@@ -42,6 +42,7 @@
 package org.netbeans.modules.glassfish.common.utils;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -205,4 +206,26 @@ public class JavaUtils {
             platforms[i++] = platform;
         return platforms;
     }
+
+    /**
+     * Search for first available installed folder in Java SE platform.
+     * <p/>
+     * @param platform Java SE platform to search for first available
+     *                 installed folder.
+     * @return First available installed folder or <code>null</code> if no such
+     *         folder exists.
+     */
+    public static String getJavaHome(JavaPlatform platform) {
+        String javaHome = null;
+        Iterator<FileObject> platformIterator
+                = platform.getInstallFolders().iterator();
+        if (platformIterator.hasNext()) {
+            FileObject javaHomeFO = (FileObject) platformIterator.next();
+            if (javaHomeFO != null) {
+                javaHome = FileUtil.toFile(javaHomeFO).getAbsolutePath();
+            }
+        }
+        return javaHome;
+    }
+
 }
