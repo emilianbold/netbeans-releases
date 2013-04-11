@@ -84,8 +84,7 @@ public class JavaSEPlatformPanel extends JPanel {
         public void actionPerformed(ActionEvent e) {
             PlatformsCustomizer.showCustomizer(javaPlatform());
             javaPlatforms = JavaUtils.findSupportedPlatforms(instance);
-            ((JavaPlatformsComboBox)javaComboBox)
-                    .updateModel(javaPlatforms, false);
+            ((JavaPlatformsComboBox)javaComboBox).updateModel(javaPlatforms);
             setDescriptorButtons(descriptor, javaPlatforms);
         }
         
@@ -159,8 +158,8 @@ public class JavaSEPlatformPanel extends JPanel {
             }
         }
         if (selectedJavaHome != null && panel.updateProperties()) {
-            instance.setJavaHome(
-                    FileUtil.toFile(selectedJavaHome).getAbsolutePath());
+            instance.setJavaHome(panel.isJavaPlatformDefault() ? null
+                    : FileUtil.toFile(selectedJavaHome).getAbsolutePath());
             try {
                 GlassfishInstance.writeInstanceToFile(instance);
             } catch(IOException ex) {
@@ -258,6 +257,19 @@ public class JavaSEPlatformPanel extends JPanel {
         return platform != null ? platform.getPlatform() : null;
     }
 
+    /**
+     * Check if selected Java SE platform from java combo box
+     * is the default platform.
+     * <p/>
+     * @return Value of <code>true</code> if this platform is the default
+     *         platform or <code>false</code> otherwise.
+     */
+    boolean isJavaPlatformDefault() {
+        JavaPlatformsComboBox.Platform platform =
+                (JavaPlatformsComboBox.Platform)javaComboBox.getSelectedItem();
+        return platform != null ? platform.isDefault() : false;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Generated GUI code                                                     //
     ////////////////////////////////////////////////////////////////////////////
@@ -272,7 +284,7 @@ public class JavaSEPlatformPanel extends JPanel {
     private void initComponents() {
 
         messageLabel = new javax.swing.JLabel();
-        javaComboBox = new JavaPlatformsComboBox(javaPlatforms, false);
+        javaComboBox = new JavaPlatformsComboBox(javaPlatforms);
         javaLabel = new javax.swing.JLabel();
         propertiesLabel = new javax.swing.JLabel();
         propertiesCheckBox = new javax.swing.JCheckBox();
