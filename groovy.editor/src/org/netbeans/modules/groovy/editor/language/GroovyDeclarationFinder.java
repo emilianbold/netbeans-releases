@@ -95,7 +95,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
+import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.Methods;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;

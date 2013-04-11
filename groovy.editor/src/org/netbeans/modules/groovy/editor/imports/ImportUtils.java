@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.nav;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.StructureItem;
-import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
+package org.netbeans.modules.groovy.editor.imports;
+
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.groovy.editor.spi.completion.DefaultImportsProvider;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Petr Pisl, Radek Matous
+ * @author Martin Janicek
  */
-public class PhpStructureScanner implements StructureScanner {
+public final class ImportUtils {
 
-    @Override
-    public List<? extends StructureItem> scan(final ParserResult info) {
-        List<? extends StructureItem> result = Collections.<StructureItem>emptyList();
-        if (info instanceof PHPParseResult) {
-            PHPParseResult phpParseResult = (PHPParseResult) info;
-            result = NavigatorScanner.create(phpParseResult.getModel()).scan();
+    private ImportUtils() {
+    }
+    
+    public static Set<String> getDefaultImportPackages() {
+        Set<String> defaultPackages = new HashSet<String>();
+        
+        defaultPackages.add("java.io");     // NOI18N
+        defaultPackages.add("java.lang");   // NOI18N
+        defaultPackages.add("java.net");    // NOI18N
+        defaultPackages.add("java.util");   // NOI18N
+        defaultPackages.add("groovy.util"); // NOI18N
+        defaultPackages.add("groovy.lang"); // NOI18N
+        
+        for (DefaultImportsProvider importsProvider : Lookup.getDefault().lookupAll(DefaultImportsProvider.class)) {
+            defaultPackages.addAll(importsProvider.getDefaultImportPackages());
         }
-        return result;
-    }
 
-    @Override
-    public Map<String, List<OffsetRange>> folds(ParserResult info) {
-        return FoldingScanner.create().folds(info);
+        return defaultPackages;
     }
+    
+    public static Set<String> getDefaultImportClasses() {
+        Set<String> defaultClasses = new HashSet<String>();
+        
+        defaultClasses.add("java.math.BigDecimal"); // NOI18N
+        defaultClasses.add("java.math.BigInteger"); // NOI18N
+        
+        for (DefaultImportsProvider importsProvider : Lookup.getDefault().lookupAll(DefaultImportsProvider.class)) {
+            defaultClasses.addAll(importsProvider.getDefaultImportClasses());
+        }
 
-    @Override
-    public Configuration getConfiguration() {
-        return new Configuration(true, true);
+        return defaultClasses;
     }
-
 }
