@@ -145,7 +145,7 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener, 
         if(keySign.isSelected()) {
             labelWarning.setText(null);
         } else {
-            labelWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.WarnDeprecated"));
+            labelWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.WarnDeprecated")); //NOI18N
         }
     }
 
@@ -318,7 +318,7 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener, 
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled(false);
-        chooser.setDialogTitle(NbBundle.getMessage(JWSCustomizerPanel.class, "TITLE_KeystoreBrowser"));
+        chooser.setDialogTitle(NbBundle.getMessage(JWSCustomizerPanel.class, "TITLE_KeystoreBrowser")); //NOI18N
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
             path.setText(file.getAbsolutePath());
@@ -351,12 +351,12 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener, 
                if(path.getDocument().getLength()>0) {
                    labelWarning.setText(null);
                } else {
-                   labelWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.InfoDefaultPath"));
+                   labelWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.InfoDefaultPath")); //NOI18N
                }
            }
         } else {
            desc.setValid(false);
-           labelWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.WarnMissingInfo"));
+           labelWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.WarnMissingInfo")); //NOI18N
         }
     }
 
