@@ -127,14 +127,11 @@ public class ExpressionLangTest extends GeneralJSF {
         completion = getCompletion();
         cjo = completion.listItself;
         checkCompletionItems(cjo, new String[]{"simplebean", "session"});
-        clearLine(eo);
+        this.clearLine(eo);
         endTest();
     }
 
-    private void clearLine(EditorOperator eo) {
-        eo.deleteLine(eo.getLineNumber());
-        eo.pressKey(KeyEvent.VK_ENTER);
-    }
+  
 
     public void testBeansCompletionNoClosingBrace(String elprefix) {
         startTest();
@@ -152,7 +149,7 @@ public class ExpressionLangTest extends GeneralJSF {
         completion = getCompletion();
         cjo = completion.listItself;
         checkCompletionItems(cjo, new String[]{"simplebean", "session"});
-        clearLine(eo);
+        this.clearLine(eo);
         endTest();
     }
 
@@ -251,7 +248,7 @@ public class ExpressionLangTest extends GeneralJSF {
         completion = getCompletion();
         cjo = completion.listItself;
         checkCompletionItems(cjo, new String[]{"name", "total", "print"});
-        clearLine(eo);
+        this.clearLine(eo);
 
         type(eo, "var d=new Number(); d.");
         evt.waitNoEvent(1000);
