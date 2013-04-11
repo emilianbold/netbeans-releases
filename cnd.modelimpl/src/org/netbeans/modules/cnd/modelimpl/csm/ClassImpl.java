@@ -1400,6 +1400,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         public static class ClassMemberForwardDeclarationBuilder extends ClassForwardDeclarationBuilder implements MemberBuilder {
             private CsmVisibility visibility = CsmVisibility.PUBLIC;
             
+            public ClassMemberForwardDeclarationBuilder() {
+            }
+
+            public ClassMemberForwardDeclarationBuilder(SimpleDeclarationBuilder builder) {
+                super(builder);
+            }
+
             @Override
             public void setVisibility(CsmVisibility visibility) {
                 this.visibility = visibility;

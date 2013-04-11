@@ -351,10 +351,14 @@ public class TypeFactory {
         public NameBuilder getNameBuilder() {
             return nameBuilder;
         }
-        
+                
         public void setClassifier(CsmClassifier cls) {
             this.cls = cls;
         }
+        
+        public CsmClassifier getClassifier() {
+            return cls;
+        }        
 
         public void setTypedef() {
             this.typedef = true;
