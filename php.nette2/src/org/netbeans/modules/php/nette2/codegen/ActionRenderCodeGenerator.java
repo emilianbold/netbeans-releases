@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@NbBundle.Messages("LBL_ActionRenderCodeGeneratorName=Add action and/or render method...")
+@NbBundle.Messages("LBL_ActionRenderCodeGeneratorName=Action and/or Render Method...")
 public class ActionRenderCodeGenerator implements CodeGenerator {
     private ActionRenderVisualPanel panel;
     private final JTextComponent textComp;
