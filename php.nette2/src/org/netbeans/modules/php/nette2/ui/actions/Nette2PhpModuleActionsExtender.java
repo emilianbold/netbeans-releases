@@ -41,7 +41,11 @@
  */
 package org.netbeans.modules.php.nette2.ui.actions;
 
+import org.netbeans.modules.php.nette2.utils.EditorUtils;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.framework.actions.GoToActionAction;
+import org.netbeans.modules.php.spi.framework.actions.GoToViewAction;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -49,7 +53,24 @@ import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
  */
 public class Nette2PhpModuleActionsExtender extends PhpModuleActionsExtender {
 
-    public Nette2PhpModuleActionsExtender() {
+    @Override
+    public boolean isViewWithAction(FileObject fileObject) {
+        return EditorUtils.isViewWithAction(fileObject);
+    }
+
+    @Override
+    public boolean isActionWithView(FileObject fileObject) {
+        return EditorUtils.isAction(fileObject);
+    }
+
+    @Override
+    public GoToActionAction getGoToActionAction(FileObject fileObject, int offset) {
+        return new Nette2GoToActionAction(fileObject);
+    }
+
+    @Override
+    public GoToViewAction getGoToViewAction(FileObject fileObject, int offset) {
+        return new Nette2GoToViewAction(fileObject, offset);
     }
 
 }

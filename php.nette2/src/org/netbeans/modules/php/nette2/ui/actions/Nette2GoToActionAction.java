@@ -39,22 +39,64 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.nette2.utils;
+package org.netbeans.modules.php.nette2.ui.actions;
+
+import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.nette2.utils.Constants;
+import org.netbeans.modules.php.nette2.utils.EditorUtils;
+import org.netbeans.modules.php.spi.framework.actions.GoToActionAction;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class Constants {
-    public static final String NETTE_ACTION_METHOD_PREFIX = "action"; //NOI18N
-    public static final String NETTE_RENDER_METHOD_PREFIX = "render"; //NOI18N
-    public static final String NETTE_PRESENTER_EXTENSION = ".php"; //NOI18N
-    public static final String VALID_ACTION_NAME_REGEX = "^[a-zA-Z0-9][a-zA-Z0-9_]*$"; //NOI18N
-    public static final String NETTE_PRESENTER_SUFFIX = "Presenter"; //NOI18N
-    public static final String LATTE_MIME_TYPE = "text/x-latte"; //NOI18N
-    public static final String LATTE_TEMPLATE_EXTENSION = ".latte"; //NOI18N
+class Nette2GoToActionAction extends GoToActionAction {
+    private static final int NO_OFFSET = -1;
+    private final FileObject fileObject;
+    private int methodOffset = NO_OFFSET;
 
-    private Constants() {
+    public Nette2GoToActionAction(FileObject fileObject) {
+        this.fileObject = fileObject;
+    }
+
+    @Override
+    public boolean goToAction() {
+        boolean result = false;
+        FileObject action = EditorUtils.getAction(fileObject);
+        if (action != null) {
+            UiUtils.open(action, getActionMethodOffset(action));
+            result = true;
+        }
+        return result;
+    }
+
+    private int getActionMethodOffset(FileObject action) {
+        String actionMethodName = EditorUtils.getActionName(fileObject);
+        String renderMethodName = EditorUtils.getRenderName(fileObject);
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        for (PhpClass phpClass : editorSupport.getClasses(action)) {
+            if (phpClass.getName().endsWith(Constants.NETTE_PRESENTER_SUFFIX)) {
+                methodOffset(actionMethodName, phpClass);
+                methodOffset(renderMethodName, phpClass);
+
+                return methodOffset == NO_OFFSET ? phpClass.getOffset() : methodOffset;
+            }
+        }
+        return DEFAULT_OFFSET;
+    }
+
+    private void methodOffset(String methodName, PhpClass phpClass) {
+        if (methodName != null && methodOffset == NO_OFFSET) {
+            for (PhpClass.Method method : phpClass.getMethods()) {
+                if (methodName.equals(method.getName())) {
+                    methodOffset = method.getOffset();
+                }
+            }
+        }
     }
 
 }

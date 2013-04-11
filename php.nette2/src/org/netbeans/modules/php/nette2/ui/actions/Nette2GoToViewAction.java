@@ -39,22 +39,42 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.nette2.utils;
+package org.netbeans.modules.php.nette2.ui.actions;
+
+import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
+import org.netbeans.modules.php.nette2.utils.EditorUtils;
+import org.netbeans.modules.php.spi.framework.actions.GoToViewAction;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class Constants {
-    public static final String NETTE_ACTION_METHOD_PREFIX = "action"; //NOI18N
-    public static final String NETTE_RENDER_METHOD_PREFIX = "render"; //NOI18N
-    public static final String NETTE_PRESENTER_EXTENSION = ".php"; //NOI18N
-    public static final String VALID_ACTION_NAME_REGEX = "^[a-zA-Z0-9][a-zA-Z0-9_]*$"; //NOI18N
-    public static final String NETTE_PRESENTER_SUFFIX = "Presenter"; //NOI18N
-    public static final String LATTE_MIME_TYPE = "text/x-latte"; //NOI18N
-    public static final String LATTE_TEMPLATE_EXTENSION = ".latte"; //NOI18N
+class Nette2GoToViewAction extends GoToViewAction {
+    private final FileObject fileObject;
+    private final int offset;
 
-    private Constants() {
+    public Nette2GoToViewAction(FileObject fileObject, int offset) {
+        this.fileObject = fileObject;
+        this.offset = offset;
+    }
+
+    @Override
+    public boolean goToView() {
+        boolean result = false;
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        PhpBaseElement phpElement = editorSupport.getElement(fileObject, offset);
+        if (phpElement != null) {
+            FileObject view = EditorUtils.getView(fileObject, phpElement);
+            if (view != null) {
+                UiUtils.open(view, DEFAULT_OFFSET);
+                result = true;
+            }
+        }
+        return result;
     }
 
 }
