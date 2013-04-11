@@ -22,6 +22,30 @@
                         <specification-version>2.17</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.7</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.31</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.lookup</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.21</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages/>
         </data>
