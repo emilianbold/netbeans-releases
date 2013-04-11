@@ -96,7 +96,7 @@ public class LessOptions implements CssPreprocessorImplementation.Options {
 
     @Override
     public boolean isValid() {
-        return getValidationResult().isFaultless();
+        return !getValidationResult().hasErrors();
     }
 
     @Override
@@ -124,7 +124,7 @@ public class LessOptions implements CssPreprocessorImplementation.Options {
         String path = getComponent().getLessPath();
         CssPrepOptions.getInstance().setLessPath(path);
         if (!originalPath.equals(path)) {
-            lessCssPreprocessor.firePropertyChange(CssPreprocessorImplementation.OPTIONS_PROPERTY, null, null);
+            lessCssPreprocessor.fireOptionsChanged();
         }
     }
 

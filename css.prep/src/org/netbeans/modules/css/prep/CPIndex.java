@@ -93,7 +93,7 @@ public class CPIndex {
     }
 
     /**
-     * Gets a collection of files of the given {@link CPFileType} type for the 
+     * Gets a collection of valid files of the given {@link CPFileType} type for the
      * index scope.
      * 
      * @param type
@@ -110,7 +110,11 @@ public class CPIndex {
                     QuerySupport.Kind.EXACT);
             
             for (IndexResult result : results) {
-                files.add(result.getFile());
+                FileObject file = result.getFile();
+                if (file != null
+                        && file.isValid()) {
+                    files.add(file);
+                }
             }
             
             return files;

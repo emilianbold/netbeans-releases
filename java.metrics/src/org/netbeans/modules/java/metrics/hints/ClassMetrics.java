@@ -119,7 +119,8 @@ public class ClassMetrics {
         displayName = "#DN_ClassAnonymousTooComplex",
         description = "#DESC_ClassAnonymousTooComplex",
         category = "metrics",
-        options = { Hint.Options.HEAVY, Hint.Options.QUERY }
+        options = { Hint.Options.HEAVY, Hint.Options.QUERY },
+        enabled = false
     )
     @UseOptions(OPTION_ANONYMOUS_COMPLEXITY_LIMIT)
     @TriggerPatterns({
@@ -149,7 +150,8 @@ public class ClassMetrics {
         displayName = "#DN_ClassTooComplex",
         description = "#DESC_ClassTooComplex",
         category = "metrics",
-        options = { Hint.Options.HEAVY, Hint.Options.QUERY }
+        options = { Hint.Options.HEAVY, Hint.Options.QUERY },
+        enabled = false
     )
     @UseOptions(OPTION_COMPLEXITY_LIMIT)
     @TriggerTreeKind(Tree.Kind.CLASS)
@@ -177,7 +179,8 @@ public class ClassMetrics {
         displayName = "#DN_ClassTooCoupled",
         description = "#DESC_ClassTooCoupled",
         category = "metrics",
-        options = { Hint.Options.HEAVY, Hint.Options.QUERY }
+        options = { Hint.Options.HEAVY, Hint.Options.QUERY },
+        enabled = false
     )
     @UseOptions({ OPTION_COUPLING_LIMIT, OPTION_COUPLING_IGNORE_JAVA })
     @TriggerTreeKind(Tree.Kind.CLASS)

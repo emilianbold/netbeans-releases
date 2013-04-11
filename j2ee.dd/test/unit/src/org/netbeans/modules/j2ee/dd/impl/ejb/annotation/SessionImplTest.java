@@ -336,7 +336,7 @@ public class SessionImplTest extends CommonTestCase {
         TestUtilities.copyStringToFileObject(srcFO, "foo/FooService.java",
                 "package foo;" +
                 "@javax.jws.WebService()" +
-                "public class FooService {" +
+                "public class FooService extends javax.xml.ws.Service {" +
                 "}");
         TestUtilities.copyStringToFileObject(srcFO, "foo/FooServicePort.java",
                 "package foo;" +

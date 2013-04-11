@@ -214,7 +214,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
 
                             keywordsFile.write();
                         } catch (LayerGenerationException ex) {
-                            rethrowAsRuntime(ex);
+                            JavaHintsAnnotationProcessor.<RuntimeException>rethrowAsRuntime(ex);
                         }
                     }
 
@@ -628,7 +628,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
     }
     
     @SuppressWarnings("unchecked")
-    private static <T extends RuntimeException> void rethrowAsRuntime(Throwable t) throws RuntimeException {
+    private static <T extends Throwable> void rethrowAsRuntime(Throwable t) throws T {
         throw (T) t;
     }
 
