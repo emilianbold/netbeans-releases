@@ -1364,6 +1364,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
         public static class ClassMemberForwardDeclarationBuilder extends ClassForwardDeclarationBuilder implements MemberBuilder {
 
+            public ClassMemberForwardDeclarationBuilder() {
+            }
+
+            public ClassMemberForwardDeclarationBuilder(SimpleDeclarationBuilder builder) {
+                super(builder);
+            }
+
             @Override
             public ClassMemberForwardDeclaration create() {
                 TemplateDescriptor td = null;

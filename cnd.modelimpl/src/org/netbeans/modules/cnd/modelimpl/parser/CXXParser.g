@@ -753,7 +753,7 @@ scope Declaration;
         (decl_specifier gnu_attribute_specifiers?)*                              {action.end_decl_specifiers(input.LT(0));}
 
         (
-            SEMICOLON
+            SEMICOLON                                                           {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
         |
             (constructor_declarator)=>
                 constructor_declarator
@@ -1968,7 +1968,7 @@ simple_member_declaration_or_function_definition[decl_kind kind, boolean class_l
                 SEMICOLON                                                       {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
             )
         |
-            SEMICOLON
+            SEMICOLON                                                           {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
         )
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_simple_member_declaration(input.LT(0));}}
