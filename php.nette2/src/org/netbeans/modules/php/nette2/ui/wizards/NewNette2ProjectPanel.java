@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.php.nette2.ui.wizards;
 
+import java.awt.Cursor;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.php.nette2.ui.options.Nette2OptionsPanelController;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -83,18 +85,47 @@ public class NewNette2ProjectPanel extends javax.swing.JPanel implements ChangeL
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        optionsLabel = new javax.swing.JLabel();
+
+        optionsLabel.setForeground(new java.awt.Color(0, 0, 255));
+        org.openide.awt.Mnemonics.setLocalizedText(optionsLabel, org.openide.util.NbBundle.getMessage(NewNette2ProjectPanel.class, "NewNette2ProjectPanel.optionsLabel.text")); // NOI18N
+        optionsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                optionsLabelMouseEntered(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                optionsLabelMouseReleased(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(317, Short.MAX_VALUE)
+                .addComponent(optionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(optionsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void optionsLabelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_optionsLabelMouseReleased
+        OptionsDisplayer.getDefault().open(Nette2OptionsPanelController.getOptionsPath());
+    }//GEN-LAST:event_optionsLabelMouseReleased
+
+    private void optionsLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_optionsLabelMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_optionsLabelMouseEntered
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel optionsLabel;
     // End of variables declaration//GEN-END:variables
 
 }

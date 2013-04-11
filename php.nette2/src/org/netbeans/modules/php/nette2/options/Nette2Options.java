@@ -55,6 +55,8 @@ import org.openide.util.NbPreferences;
 public class Nette2Options {
     private static final String PREFERENCES_PATH = "nette2"; //NOI18N
     private static final Nette2Options INSTANCE = new Nette2Options();
+    private static final String SANDBOX = "sandbox"; // NOI18N
+    private static final String NETTE_DIRECTORY = "nette-directory"; // NOI18N
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     public static Nette2Options getInstance() {
@@ -80,6 +82,22 @@ public class Nette2Options {
 
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
+    }
+
+    public String getSandbox() {
+        return getPreferences().get(SANDBOX, null);
+    }
+
+    public void setSandbox(String sandbox) {
+        getPreferences().put(SANDBOX, sandbox);
+    }
+
+    public String getNetteDirectory() {
+        return getPreferences().get(NETTE_DIRECTORY, null);
+    }
+
+    public void setNetteDirectory(String netteDirectory) {
+        getPreferences().put(NETTE_DIRECTORY, netteDirectory);
     }
 
 }
