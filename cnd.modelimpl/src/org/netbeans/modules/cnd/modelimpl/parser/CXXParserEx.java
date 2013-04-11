@@ -80,12 +80,12 @@ public class CXXParserEx extends CXXParser {
                 if (APTUtils.isEOF(ex.getToken())) {
                     errorDelegate.onError(new CsmParserProvider.ParserError(hdr+" "+ex.getMessage(), -1, -1, ex.getToken().getText(), true));
                 } else {
-                    errorDelegate.onError(new CsmParserProvider.ParserError(hdr+":"+ex.getToken().getLine()+": error: "+ex.getMessage(), ex.getToken().getLine(), ex.getToken().getColumn(), ex.getToken().getText(), false));
+                    errorDelegate.onError(new CsmParserProvider.ParserError(hdr+":"+ex.getToken().getLine()+": error: "+ex.getMessage(), ex.getToken().getLine(), ex.getToken().getColumn(), ex.getToken().getText(), false)); // NOI18N
                 }
             } else {
                 String hdr = getSourceName();
                 String msg = getErrorMessage(e, tokenNames);
-                errorDelegate.onError(new CsmParserProvider.ParserError(hdr+":"+e.line+": error: "+msg, e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1));
+                errorDelegate.onError(new CsmParserProvider.ParserError(hdr+":"+e.line+": error: "+msg, e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1)); // NOI18N
             }
         }
     }
@@ -96,7 +96,7 @@ public class CXXParserEx extends CXXParser {
         if (currentFile != null) {
             return currentFile.getAbsolutePath().toString();
         }
-        return "";
+        return ""; // NOI18N
     }
 
     public int backtrackingLevel() {
