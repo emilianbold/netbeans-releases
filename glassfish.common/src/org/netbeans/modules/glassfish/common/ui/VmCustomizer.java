@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -101,7 +101,7 @@ public class VmCustomizer extends javax.swing.JPanel {
     private final PlatformAction platformButtonAction;
 
     /** GlassFish server instance to be modified. */
-    final GlassfishInstance instance;
+    private final GlassfishInstance instance;
 
     /** Java SE JDK selection content. */
     JavaPlatform[] javaPlatforms;

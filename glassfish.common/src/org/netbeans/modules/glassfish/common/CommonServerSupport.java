@@ -114,6 +114,7 @@ public class CommonServerSupport
                     : NbBundle.getMessage(CommonServerSupport.class, resName,
                     args[0], args[1]);
         }
+
         /**
          * Callback to notify about GlassFish __locations command execution
          * state change.
@@ -270,10 +271,10 @@ public class CommonServerSupport
 
     private FileObject getInstanceFileObject() {
         FileObject dir = FileUtil.getConfigFile(
-                instance.getInstanceProvider().getInstancesDirName());
+                instance.getInstanceProvider().getInstancesDirFirstName());
         if(dir != null) {
             String instanceFN = instance
-                    .getProperty(GlassfishInstanceProvider.INSTANCE_FO_ATTR);
+                    .getProperty(GlassfishInstance.INSTANCE_FO_ATTR);
             if(instanceFN != null) {
                 return dir.getFileObject(instanceFN);
             }
@@ -1082,6 +1083,7 @@ public class CommonServerSupport
         } catch (GlassFishIdeException gfie) {
             LOGGER.log(Level.INFO, "Could not get server value from target.", gfie);
         }
+
         return retVal;
     }
 

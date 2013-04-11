@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
 public class JavaSEPlatformPanel extends JPanel {
 
     ////////////////////////////////////////////////////////////////////////////
-    // Inner classes methods                                                         //
+    // Inner classes                                                          //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
