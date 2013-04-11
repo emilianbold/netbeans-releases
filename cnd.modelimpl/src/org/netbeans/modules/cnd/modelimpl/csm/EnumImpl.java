@@ -253,6 +253,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         private List<EnumeratorBuilder> enumeratorBuilders = new ArrayList<EnumeratorBuilder>();
         
         private EnumImpl instance;
+        private CsmVisibility visibility = CsmVisibility.PUBLIC;
         
         
         public void setStronglyTyped() {
@@ -261,6 +262,11 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
 
         public void addEnumerator(EnumeratorBuilder eb) {
             enumeratorBuilders.add(eb);
+        }
+        
+        @Override
+        public void setVisibility(CsmVisibility visibility) {
+            this.visibility = visibility;
         }
         
         public EnumImpl getEnumDefinitionInstance() {
@@ -294,7 +300,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
             EnumImpl impl = getEnumDefinitionInstance();
             if(impl == null) {
                 impl = new EnumImpl(getName(), getName().toString(), stronglyTyped, getFile(), getStartOffset(), getEndOffset());
-                impl.setVisibility(CsmVisibility.PUBLIC);
+                impl.setVisibility(visibility);
                 impl.initScope(getScope());
                 impl.register(getScope(), true);
                 getNameHolder().addReference(getFileContent(), impl);

@@ -113,7 +113,7 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
         
         private CharSequence name;// = CharSequences.empty();
         private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
-        CsmVisibility visibility = CsmVisibility.PUBLIC;
+        private CsmVisibility visibility = CsmVisibility.PUBLIC;
         private final FileContent fileContent;
 
         private CsmScope scope;
@@ -145,6 +145,11 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
         
         private FieldImpl getVariableInstance() {
             return instance;
+        }
+
+        @Override
+        public void setVisibility(CsmVisibility visibility) {
+            this.visibility = visibility;
         }
         
         public void setScope(CsmScope scope) {
