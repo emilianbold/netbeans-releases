@@ -47,7 +47,6 @@ package org.netbeans.modules.project.ui.groups;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -92,9 +91,10 @@ import static org.netbeans.modules.project.ui.groups.Bundle.*;
 })
 @Messages("GroupsMenu.label=Project Gro&up")
 public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presenter.Popup {
-    private static int MAX_COUNT = 20;
+    private static final int MAX_COUNT = 20;
 
     private static final RequestProcessor RP = new RequestProcessor(GroupsMenu.class.getName());
+    private static final String HELPCTX = "org.netbeans.modules.project.ui.groups.GroupsMenu";
 
     public GroupsMenu() {
         super(GroupsMenu_label());
@@ -302,7 +302,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
         panel.setNotificationLineSupport(dd.createNotificationLineSupport());
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         dd.setModal(true);
-        dd.setHelpCtx(new HelpCtx(GroupsMenu.class));
+        dd.setHelpCtx(new HelpCtx(HELPCTX));
         final JButton create = new JButton(GroupsMenu_new_create());
         create.setDefaultCapable(true);
         create.setEnabled(panel.isReady());
@@ -345,7 +345,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
         panel.setNotificationLineSupport(dd.createNotificationLineSupport());
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         dd.setModal(true);
-        dd.setHelpCtx(new HelpCtx(GroupsMenu.class));
+        dd.setHelpCtx(new HelpCtx(HELPCTX));
         Object result = DialogDisplayer.getDefault().notify(dd);
         if (result.equals(NotifyDescriptor.OK_OPTION)) {
             panel.applyChanges();
