@@ -50,7 +50,9 @@ import java.util.Set;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.nette2.annotations.Nette2AnnotationsProvider;
 import org.netbeans.modules.php.nette2.ui.actions.Nette2PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
@@ -153,6 +155,11 @@ public class Nette2FrameworkProvider extends PhpFrameworkProvider {
     @Override
     public BadgeIcon getBadgeIcon() {
         return badgeIcon;
+    }
+
+    @Override
+    public List<AnnotationCompletionTagProvider> getAnnotationsCompletionTagProviders(PhpModule phpModule) {
+        return Collections.<AnnotationCompletionTagProvider>singletonList(new Nette2AnnotationsProvider());
     }
 
 }
