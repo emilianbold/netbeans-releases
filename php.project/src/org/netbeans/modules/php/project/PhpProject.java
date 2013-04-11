@@ -59,7 +59,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -109,6 +108,7 @@ import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -204,30 +204,20 @@ public final class PhpProject implements Project {
     private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<PropertyChangeListener>();
 
     // css preprocessors
-    final List<CssPreprocessor> cssPreprocessors = new CopyOnWriteArrayList<CssPreprocessor>();
-    final PropertyChangeListener cssPreprocessorPropertyChangeListener = new PropertyChangeListener() {
+    final CssPreprocessorsListener cssPreprocessorsListener = new CssPreprocessorsListener() {
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            String propertyName = evt.getPropertyName();
-            CssPreprocessor cssPreprocessor = (CssPreprocessor) evt.getSource();
-            switch (propertyName) {
-                case CssPreprocessor.OPTIONS_PROPERTY:
-                    recompileSources(cssPreprocessor);
-                    break;
-                case CssPreprocessor.CUSTOMIZER_PROPERTY:
-                    if (evt.getNewValue().equals(PhpProject.this)) {
-                        recompileSources(cssPreprocessor);
-                    }
-                    break;
-                default:
-                    assert false : "Unknown property: " + propertyName;
-            }
+        public void preprocessorsChanged() {
+            // noop?
         }
-    };
-    final ChangeListener cssPreprocessorsChangeListener = new ChangeListener() {
         @Override
-        public void stateChanged(ChangeEvent e) {
-            reinitCssPreprocessors();
+        public void optionsChanged(CssPreprocessor cssPreprocessor) {
+            recompileSources(cssPreprocessor);
+        }
+        @Override
+        public void customizerChanged(Project project, CssPreprocessor cssPreprocessor) {
+            if (project.equals(PhpProject.this)) {
+                recompileSources(cssPreprocessor);
+            }
         }
     };
 
@@ -446,28 +436,6 @@ public final class PhpProject implements Project {
             } finally {
                 sourceDirectoryFileChangeListener.setSourceDir(null);
             }
-        }
-    }
-
-    void initCssPreprocessors() {
-        assert cssPreprocessors.isEmpty() : "Empty preprocessors expected: " + cssPreprocessors;
-        cssPreprocessors.addAll(CssPreprocessors.getDefault().getPreprocessors());
-        for (CssPreprocessor preprocessor : cssPreprocessors) {
-            preprocessor.addPropertyChangeListener(cssPreprocessorPropertyChangeListener);
-        }
-    }
-
-    void clearCssPreprocessors() {
-        for (CssPreprocessor preprocessor : cssPreprocessors) {
-            preprocessor.removePropertyChangeListener(cssPreprocessorPropertyChangeListener);
-        }
-        cssPreprocessors.clear();
-    }
-
-    void reinitCssPreprocessors() {
-        synchronized (cssPreprocessors) {
-            clearCssPreprocessors();
-            initCssPreprocessors();
         }
     }
 
@@ -792,8 +760,7 @@ public final class PhpProject implements Project {
             new ProjectUpgrader(PhpProject.this).upgrade();
 
             addSourceDirListener();
-            CssPreprocessors.getDefault().addChangeListener(cssPreprocessorsChangeListener);
-            initCssPreprocessors();
+            CssPreprocessors.getDefault().addCssPreprocessorsListener(cssPreprocessorsListener);
 
             testingProviders.projectOpened();
             frameworks.projectOpened();
@@ -832,8 +799,7 @@ public final class PhpProject implements Project {
         protected void projectClosed() {
             try {
                 removeSourceDirListener();
-                CssPreprocessors.getDefault().removeChangeListener(cssPreprocessorsChangeListener);
-                clearCssPreprocessors();
+                CssPreprocessors.getDefault().removeCssPreprocessorsListener(cssPreprocessorsListener);
 
                 testingProviders.projectClosed();
                 frameworks.projectClosed();

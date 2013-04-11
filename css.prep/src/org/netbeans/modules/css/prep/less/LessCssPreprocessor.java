@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.css.prep.less;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.css.prep.process.LessProcessor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.problems.LessProjectProblemsProvider;
@@ -50,6 +48,7 @@ import org.netbeans.modules.css.prep.ui.customizer.LessCustomizer;
 import org.netbeans.modules.css.prep.ui.options.LessOptions;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.spi.CssPreprocessorImplementationListener;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
@@ -61,7 +60,7 @@ public final class LessCssPreprocessor implements CssPreprocessorImplementation 
 
     private static final String IDENTIFIER = "LESS"; // NOI18N
 
-    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private final CssPreprocessorImplementationListener.Support listenersSupport = new CssPreprocessorImplementationListener.Support();
 
 
     @Override
@@ -96,17 +95,21 @@ public final class LessCssPreprocessor implements CssPreprocessorImplementation 
     }
 
     @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.addPropertyChangeListener(listener);
+    public void addCssPreprocessorListener(CssPreprocessorImplementationListener listener) {
+        listenersSupport.addCssPreprocessorListener(listener);
     }
 
     @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.removePropertyChangeListener(listener);
+    public void removeCssPreprocessorListener(CssPreprocessorImplementationListener listener) {
+        listenersSupport.removeCssPreprocessorListener(listener);
     }
 
-    public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-        propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+    public void fireOptionsChanged() {
+        listenersSupport.fireOptionsChanged(this);
+    }
+
+    public void fireCustomizerChanged(Project project) {
+        listenersSupport.fireCustomizerChanged(project, this);
     }
 
 }
