@@ -41,70 +41,31 @@
  */
 package org.netbeans.modules.php.nette2.utils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.openide.filesystems.FileObject;
-
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class FileUtils {
-    private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
+public final class EditorUtils {
 
-    private FileUtils() {
+    private EditorUtils() {
     }
 
-    public static void copyDirectory(File sourceDirectory, File destinationDirectory) {
-        assert sourceDirectory != null;
-        assert destinationDirectory != null;
-        if (sourceDirectory.isDirectory()) {
-            if (!destinationDirectory.exists()) {
-                destinationDirectory.mkdir();
-            }
-            String[] children = sourceDirectory.list();
-            if (children != null) {
-                for (int i = 0; i < children.length; i++) {
-                    copyDirectory(new File(sourceDirectory, children[i]), new File(destinationDirectory, children[i]));
-                }
-            }
-        } else {
-            try {
-                copyFile(sourceDirectory, destinationDirectory);
-            } catch (IOException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            }
+    public static String firstLetterSmall(String text) {
+        assert text != null;
+        String result = text;
+        if (text.length() > 0) {
+            result = text.substring(0, 1).toLowerCase() + text.substring(1);
         }
+        return result;
     }
 
-    public static void copyFile(File source, File destination) throws IOException {
-        assert source != null;
-        assert destination != null;
-        InputStream fis = new FileInputStream(source);
-        OutputStream fos = new FileOutputStream(destination);
-        try {
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = fis.read(buf)) > 0) {
-                fos.write(buf, 0, len);
-            }
-        } finally {
-            fis.close();
-            fos.close();
+    public static String firstLetterCapital(String text) {
+        assert text != null;
+        String result = text;
+        if (text.length() > 0) {
+            result = text.substring(0, 1).toUpperCase() + text.substring(1);
         }
-    }
-
-    public static FileObject getFile(JTextComponent textComponent) {
-        assert textComponent != null;
-        return NbEditorUtilities.getFileObject(textComponent.getDocument());
+        return result;
     }
 
 }

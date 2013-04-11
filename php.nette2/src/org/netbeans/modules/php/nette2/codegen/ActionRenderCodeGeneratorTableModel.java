@@ -39,72 +39,69 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.nette2.utils;
+package org.netbeans.modules.php.nette2.codegen;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.openide.filesystems.FileObject;
+import javax.swing.table.DefaultTableModel;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class FileUtils {
-    private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
+public class ActionRenderCodeGeneratorTableModel  extends DefaultTableModel {
+    private static final String ACTION_COLUMN_TITLE = "action<action>()"; //NOI18N
+    private static final String RENDER_COLUMN_TITLE = "render<action>()"; //NOI18N
+    private final ActionRenderMethodChecker methodChecker;
+    private static final Class[] TYPES = new Class[] {
+        String.class, Boolean.class, Boolean.class
+    };
 
-    private FileUtils() {
+    @NbBundle.Messages({
+        "LBL_ActionName=Action name:",
+        "LBL_GenerateTemplate=gen. template"
+    })
+    public ActionRenderCodeGeneratorTableModel(ActionRenderMethodChecker methodChecker) {
+        super(
+                null,
+                new String[]{
+                    Bundle.LBL_ActionName(),
+                    ACTION_COLUMN_TITLE,
+                    RENDER_COLUMN_TITLE
+                });
+
+        this.methodChecker = methodChecker;
     }
 
-    public static void copyDirectory(File sourceDirectory, File destinationDirectory) {
-        assert sourceDirectory != null;
-        assert destinationDirectory != null;
-        if (sourceDirectory.isDirectory()) {
-            if (!destinationDirectory.exists()) {
-                destinationDirectory.mkdir();
-            }
-            String[] children = sourceDirectory.list();
-            if (children != null) {
-                for (int i = 0; i < children.length; i++) {
-                    copyDirectory(new File(sourceDirectory, children[i]), new File(destinationDirectory, children[i]));
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        return column != 0;
+    }
+
+    @Override
+    public Class getColumnClass(int columnIndex) {
+        return TYPES[columnIndex];
+    }
+
+    @Override
+    public void setValueAt(Object aValue, int row, int column) {
+        String action = (String) getValueAt(row, 0);
+        switch (column) {
+            case 1:
+                if (methodChecker.existsActionMethod(action)) {
+                    super.setValueAt(false, row, column);
+                } else {
+                    super.setValueAt(aValue, row, column);
                 }
-            }
-        } else {
-            try {
-                copyFile(sourceDirectory, destinationDirectory);
-            } catch (IOException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            }
+                break;
+            case 2:
+                if (methodChecker.existsRenderMethod(action)) {
+                    super.setValueAt(false, row, column);
+                } else {
+                    super.setValueAt(aValue, row, column);
+                }
+                break;
+            default:
+                super.setValueAt(aValue, row, column);
         }
     }
-
-    public static void copyFile(File source, File destination) throws IOException {
-        assert source != null;
-        assert destination != null;
-        InputStream fis = new FileInputStream(source);
-        OutputStream fos = new FileOutputStream(destination);
-        try {
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = fis.read(buf)) > 0) {
-                fos.write(buf, 0, len);
-            }
-        } finally {
-            fis.close();
-            fos.close();
-        }
-    }
-
-    public static FileObject getFile(JTextComponent textComponent) {
-        assert textComponent != null;
-        return NbEditorUtilities.getFileObject(textComponent.getDocument());
-    }
-
 }

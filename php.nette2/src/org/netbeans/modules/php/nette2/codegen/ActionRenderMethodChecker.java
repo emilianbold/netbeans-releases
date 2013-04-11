@@ -39,72 +39,68 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.nette2.utils;
+package org.netbeans.modules.php.nette2.codegen;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.editor.NbEditorUtilities;
+import java.util.Collection;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpClass.Method;
+import org.netbeans.modules.php.nette2.utils.Constants;
+import org.netbeans.modules.php.nette2.utils.EditorUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class FileUtils {
-    private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
+public class ActionRenderMethodChecker {
+    private FileObject presenterFile;
+    private final EditorSupport editorSupport;
 
-    private FileUtils() {
+    public ActionRenderMethodChecker(FileObject presenterFile) {
+        assert presenterFile != null;
+        this.presenterFile = presenterFile;
+        editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
     }
 
-    public static void copyDirectory(File sourceDirectory, File destinationDirectory) {
-        assert sourceDirectory != null;
-        assert destinationDirectory != null;
-        if (sourceDirectory.isDirectory()) {
-            if (!destinationDirectory.exists()) {
-                destinationDirectory.mkdir();
-            }
-            String[] children = sourceDirectory.list();
-            if (children != null) {
-                for (int i = 0; i < children.length; i++) {
-                    copyDirectory(new File(sourceDirectory, children[i]), new File(destinationDirectory, children[i]));
+    public boolean existsActionMethod(String action) {
+        return existsMethod(action, Constants.NETTE_ACTION_METHOD_PREFIX);
+    }
+
+    public boolean existsRenderMethod(String name) {
+        return existsMethod(name, Constants.NETTE_RENDER_METHOD_PREFIX);
+    }
+
+    private boolean existsMethod(String name, String type) {
+        boolean result = false;
+        PhpClass properlyNamedPhpClass = getProperlyNamedPhpClass();
+        if (properlyNamedPhpClass != null) {
+            Collection<Method> classMethods = properlyNamedPhpClass.getMethods();
+            if (classMethods != null) {
+                for (Method method : classMethods) {
+                    if (method.getName().equals(type + EditorUtils.firstLetterCapital(name))) {
+                        result = true;
+                        break;
+                    }
                 }
             }
-        } else {
-            try {
-                copyFile(sourceDirectory, destinationDirectory);
-            } catch (IOException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            }
         }
+        return result;
     }
 
-    public static void copyFile(File source, File destination) throws IOException {
-        assert source != null;
-        assert destination != null;
-        InputStream fis = new FileInputStream(source);
-        OutputStream fos = new FileOutputStream(destination);
-        try {
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = fis.read(buf)) > 0) {
-                fos.write(buf, 0, len);
+    private PhpClass getProperlyNamedPhpClass() {
+        PhpClass result = null;
+        if (editorSupport != null) {
+            Collection<PhpClass> classes = editorSupport.getClasses(presenterFile);
+            for (PhpClass phpClazz : classes) {
+                if (phpClazz.getName().contains(presenterFile.getName())) {
+                    result = phpClazz;
+                    break;
+                }
             }
-        } finally {
-            fis.close();
-            fos.close();
         }
-    }
-
-    public static FileObject getFile(JTextComponent textComponent) {
-        assert textComponent != null;
-        return NbEditorUtilities.getFileObject(textComponent.getDocument());
+        return result;
     }
 
 }
