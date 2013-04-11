@@ -46,12 +46,13 @@ package org.netbeans.core.windows.view.ui.toolbars;
 
 
 import java.awt.Cursor;
+import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.*;
 import org.openide.explorer.view.*;
 import org.openide.nodes.Node;
@@ -62,43 +63,29 @@ import org.openide.nodes.Node;
  *
  * @author Stanislav Aubrecht
  */
-public class ActionsTree extends JTree implements DragGestureListener, DragSourceListener {
-    
-    private boolean firstTimeExpand = true;
+public class ActionsTree extends BeanTreeView implements DragGestureListener, DragSourceListener {
     
     private Cursor dragMoveCursor = DragSource.DefaultMoveDrop;
     private Cursor dragNoDropCursor = DragSource.DefaultMoveNoDrop;
     
     /** Creates a new instance of ActionsTree */
-    public ActionsTree( Node root ) {
-        super( new NodeTreeModel( root ) );
+    public ActionsTree() {
         setRootVisible( false );
-        getSelectionModel().setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
-        setCellRenderer( new NodeRenderer() );
-        setShowsRootHandles( true );
-        expandAll();
-        DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer( this, DnDConstants.ACTION_MOVE, this );
-    }
-    
-    private void expandAll() {
-        int i = 0;
-        int j /*, k = tree.getRowCount()*/;
-
-        do {
-            do {
-                j = getRowCount();
-                expandRow(i);
-            } while (j != getRowCount());
-
-            i++;
-        } while (i < getRowCount());
+        tree.setCellRenderer( new NodeRenderer() );
+        tree.setShowsRootHandles( true );
+        setDragSource( false );
+        setDropTarget( false );
+        DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer( tree, DnDConstants.ACTION_MOVE, this );
+        setQuickSearchAllowed( true );
+        setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
     }
 
+    @Override
     public void dragGestureRecognized(DragGestureEvent dge) {
-        TreePath path = getPathForLocation( dge.getDragOrigin().x, dge.getDragOrigin().y );
+        TreePath path = tree.getPathForLocation( dge.getDragOrigin().x, dge.getDragOrigin().y );
         if( null != path ) {
             Object obj = path.getLastPathComponent();
-            if( getModel().isLeaf( obj ) ) {
+            if( tree.getModel().isLeaf( obj ) ) {
                 try {
                     Node node = Visualizer.findNode( obj );
                     Transferable t = node.drag();
@@ -114,13 +101,16 @@ public class ActionsTree extends JTree implements DragGestureListener, DragSourc
         }
     }
 
+    @Override
     public void dragExit(java.awt.dnd.DragSourceEvent dse) {
         dse.getDragSourceContext().setCursor( dragNoDropCursor );
     }
 
+    @Override
     public void dropActionChanged(java.awt.dnd.DragSourceDragEvent dsde) {
     }
 
+    @Override
     public void dragOver(java.awt.dnd.DragSourceDragEvent e) {
         DragSourceContext context = e.getDragSourceContext();
         int action = e.getDropAction();
@@ -131,10 +121,12 @@ public class ActionsTree extends JTree implements DragGestureListener, DragSourc
         }
     }
 
+    @Override
     public void dragEnter(java.awt.dnd.DragSourceDragEvent dsde) {
         dragOver( dsde );
     }
 
+    @Override
     public void dragDropEnd(java.awt.dnd.DragSourceDropEvent dsde) {
     }
 }

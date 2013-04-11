@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
@@ -118,6 +119,7 @@ public class DOM {
      * @param node node to check/insert.
      */
     private synchronized void updateNodesMap(Node node) {
+        removeClassForHover(node);
         nodes.put(node.getNodeId(), node);
         synchronized (node) {
             List<Node> subNodes = node.getChildren();
@@ -451,6 +453,50 @@ public class DOM {
      */
     public synchronized void reset() {
         documentNode = null;
+        classForHover = null;
+    }
+
+    /** CSS class used to simulate hovering. */
+    private String classForHover;
+
+    /**
+     * Sets the CSS class that is used to simulate hovering.
+     * 
+     * @param classForHover class to simulate hovering.
+     */
+    public void setClassForHover(String classForHover) {
+        this.classForHover = classForHover;
+    }
+
+    /**
+     * Returns the class used to simulate hovering.
+     * 
+     * @return class to simulate hovering.
+     */
+    private String getClassForHover() {
+        return classForHover;
+    }
+
+    /**
+     * Remove the class used for simulation of hovering from the {@code class}
+     * attribute of the specified node.
+     * 
+     * @param node node to remove the class from.
+     */
+    private void removeClassForHover(Node node) {
+        Node.Attribute attr = node.getAttribute("class"); // NOI18N
+        if (attr != null) {
+            String value = attr.getValue();
+            String clazz = getClassForHover();
+            if (clazz != null && value.contains(clazz)) {
+                value = Pattern.compile(Pattern.quote(clazz)).matcher(value).replaceAll("").trim(); // NOI18N
+                if (value.isEmpty()) {
+                    node.removeAttribute(attr.getName());
+                } else {
+                    attr.setValue(value);
+                }
+            }
+        }
     }
 
     /**
@@ -624,6 +670,12 @@ public class DOM {
             }
             name = (String)params.get("name"); // NOI18N
             String value = (String)params.get("value"); // NOI18N
+            if ("class".equals(name)) { // NOI18N
+                String clazz = getClassForHover();
+                if (clazz != null && value.contains(clazz)) {
+                    value = Pattern.compile(Pattern.quote(clazz)).matcher(value).replaceAll("").trim();
+                }
+            }
             node.setAttribute(name, value);
         }
         notifyAttributeModified(node, name);

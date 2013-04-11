@@ -2,7 +2,7 @@ class Test2 {
 
     def String st
 
-	def test = {
+    def test = {
         super.
     }
 }

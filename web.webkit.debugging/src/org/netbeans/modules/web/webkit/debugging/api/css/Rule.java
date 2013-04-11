@@ -56,7 +56,7 @@ public class Rule {
     /** Identifier of the rule (absent for user agent stylesheet and user-specified stylesheet rules). */
     private RuleId id;
     /*** Selector of the rule. */
-    private final String selector;
+    private String selector;
     /** Parent stylesheet resource URL. */
     private final String sourceURL;
     /** Line number of the first character of the selector. */
@@ -141,6 +141,15 @@ public class Rule {
      */
     public String getSelector() {
         return selector;
+    }
+
+    /**
+     * Sets the selector of the rule.
+     * 
+     * @param selector selector of the rule.
+     */
+    void setSelector(String selector) {
+        this.selector = selector;
     }
 
     /**

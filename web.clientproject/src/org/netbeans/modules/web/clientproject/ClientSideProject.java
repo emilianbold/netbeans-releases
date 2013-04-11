@@ -72,6 +72,7 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
+import org.netbeans.modules.web.clientproject.problems.CssPreprocessorsProblemsSupport;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
@@ -82,7 +83,9 @@ import org.netbeans.modules.web.clientproject.ui.action.ProjectOperations;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -137,12 +140,33 @@ public class ClientSideProject implements Project {
     private RemoteFiles remoteFiles;
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
     private WebBrowser projectWebBrowser;
+    private ClientSideProjectBrowserProvider projectBrowserProvider;
+
+    // css preprocessors
+    final CssPreprocessorsListener cssPreprocessorsListener = new CssPreprocessorsListener() {
+        @Override
+        public void preprocessorsChanged() {
+            // noop?
+        }
+        @Override
+        public void optionsChanged(CssPreprocessor cssPreprocessor) {
+            recompileSources(cssPreprocessor);
+        }
+        @Override
+        public void customizerChanged(Project project, CssPreprocessor cssPreprocessor) {
+            if (project.equals(ClientSideProject.this)) {
+                recompileSources(cssPreprocessor);
+            }
+        }
+    };
+
 
     public ClientSideProject(AntProjectHelper helper) {
         this.projectHelper = helper;
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
         eval = createEvaluator();
         referenceHelper = new ReferenceHelper(helper, configuration, eval);
+        projectBrowserProvider = new ClientSideProjectBrowserProvider(this);
         lookup = createLookup(configuration);
         ClientProjectEnhancedBrowserImplementation ebi = getEnhancedBrowserImpl();
         if (ebi != null) {
@@ -170,6 +194,7 @@ public class ClientSideProject implements Project {
                     if (ebi != null) {
                         lookup.setConfigurationProvider(ebi.getProjectConfigurationProvider());
                     }
+                    projectBrowserProvider.activeBrowserHasChanged();
                 }
             }
         });
@@ -364,13 +389,24 @@ public class ClientSideProject implements Project {
                new ClientSideProjectSources(this, projectHelper, eval),
                new ClientSideModuleImpl(this),
                ProjectPropertiesProblemProvider.createForProject(this),
+               CssPreprocessors.getDefault().createProjectProblemsProvider(new CssPreprocessorsProblemsSupport(this)),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
                     ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
-               new ClientSideProjectBrowserProvider(this),
+               projectBrowserProvider,
        });
        return new DynamicProjectLookup(this,
                LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup"));
+    }
+
+    void recompileSources(CssPreprocessor cssPreprocessor) {
+        assert cssPreprocessor != null;
+        FileObject siteRootFolder = getSiteRootFolder();
+        if (siteRootFolder == null) {
+            return;
+        }
+        // force recompiling
+        CssPreprocessors.getDefault().process(cssPreprocessor, this, siteRootFolder);
     }
 
     private static class DynamicProjectLookup extends ProxyLookup {
@@ -499,10 +535,7 @@ public class ClientSideProject implements Project {
             if (wb != null) {
                 browserId = wb.getId();
             }
-            FileObject sources = project.getSiteRootFolder();
-            if (sources != null) {
-                CssPreprocessors.getDefault().process(project, sources, true);
-            }
+            CssPreprocessors.getDefault().addCssPreprocessorsListener(project.cssPreprocessorsListener);
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
                     new Object[] { browserId,
                     project.getTestsFolder() != null && project.getTestsFolder().getChildren().length > 0 ? "YES" : "NO"}); // NOI18N
@@ -513,6 +546,7 @@ public class ClientSideProject implements Project {
             project.getEvaluator().removePropertyChangeListener(this);
             removeSiteRootListener();
             GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
+            CssPreprocessors.getDefault().removeCssPreprocessorsListener(project.cssPreprocessorsListener);
         }
 
         private synchronized void addSiteRootListener() {
@@ -605,7 +639,7 @@ public class ClientSideProject implements Project {
         }
 
         private void checkPreprocessors(FileObject file) {
-            CssPreprocessors.getDefault().process(p, file, true);
+            CssPreprocessors.getDefault().process(p, file);
         }
     }
 

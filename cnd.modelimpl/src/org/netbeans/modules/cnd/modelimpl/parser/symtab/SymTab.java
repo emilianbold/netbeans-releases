@@ -88,7 +88,7 @@ public final class SymTab {
 
     @Override
     public String toString() {
-        return "SymTab{" + "nestingLevel=" + nestingLevel + "entries=" + entries + "\nimported=" + imported + '}'; // NOI18N
+        return "SymTab{name=" + name + ", nestingLevel=" + nestingLevel + ", entries=" + entries + ", imported=" + imported + '}'; // NOI18N
     }
     
     

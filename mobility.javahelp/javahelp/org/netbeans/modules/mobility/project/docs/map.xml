@@ -208,7 +208,7 @@
 	<mapID target="cldc.svg_waitscreen" url="svg/svg_waitscreen.html"/>
 	<mapID target="cldc.svg_working" url="svg/svg_working.html"/>
 	<mapID target="cldc.gloss_svg" url="glossary/gloss_svg.html"/>
-	<mapID target="cdc.panelConfigurationPlatform" url="ui/wizard_newcdcproject_platformselection.html"/>
+	<mapID target="cdc.panelConfigurePlatform" url="ui/wizard_newcdcproject_platformselection.html"/>
 	<mapID target="cldc.games_about" url="games/games_about.html"/>
 	<mapID target="cldc.games_quickref" url="games/games_quickref.html"/>
 	<mapID target="cldc.gloss_tiledlayers" url="glossary/gloss_tiledlayers.html"/>

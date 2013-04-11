@@ -41,10 +41,6 @@
  */
 package org.netbeans.modules.web.jsfapi.api;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.api.annotations.common.CheckForNull;
-
 public enum DefaultLibraryInfo implements LibraryInfo {
 
     HTML("http://xmlns.jcp.org/jsf/html", "Html Basic", "h"), //NOI18N
@@ -57,18 +53,6 @@ public enum DefaultLibraryInfo implements LibraryInfo {
 //    FLOW("http://java.sun.com/jsf/flow", "Faces Flow", "j"), //NOI18N
     JSF("http://xmlns.jcp.org/jsf", "Jsf", "jsf"), //NOI18N
     PASSTHROUGH("http://xmlns.jcp.org/jsf/passthrough", "Passthrough", "p"); //NOI18N
-    
-    public static final Map<String, String> NS_MAPPING = new HashMap<String, String>(8);
-    static {
-        NS_MAPPING.put("http://xmlns.jcp.org/jsf/html", "http://java.sun.com/jsf/html");
-        NS_MAPPING.put("http://xmlns.jcp.org/jsf/core", "http://java.sun.com/jsf/core");
-        NS_MAPPING.put("http://xmlns.jcp.org/jsp/jstl/core", "http://java.sun.com/jsp/jstl/core");
-        NS_MAPPING.put("http://xmlns.jcp.org/jsp/jstl/functions", "http://java.sun.com/jsp/jstl/functions");
-        NS_MAPPING.put("http://xmlns.jcp.org/jsf/facelets", "http://java.sun.com/jsf/facelets");
-        NS_MAPPING.put("http://xmlns.jcp.org/jsf/composite", "http://java.sun.com/jsf/composite");
-        NS_MAPPING.put("http://xmlns.jcp.org/jsf", "http://java.sun.com/jsf");
-        NS_MAPPING.put("http://xmlns.jcp.org/jsf/passthrough", "http://java.sun.com/jsf/passthrough");
-    }
 
     private String namespace;
     private String displayName;
@@ -92,7 +76,7 @@ public enum DefaultLibraryInfo implements LibraryInfo {
      */
     @Override
     public String getLegacyNamespace() {
-        return NS_MAPPING.get(namespace);
+        return NamespaceUtils.NS_MAPPING.get(namespace);
     }
 
     @Override

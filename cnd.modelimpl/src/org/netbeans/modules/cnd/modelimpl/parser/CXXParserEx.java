@@ -43,6 +43,9 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.TokenStream;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CXXParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
@@ -71,8 +74,29 @@ public class CXXParserEx extends CXXParser {
     @Override
     public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
         if(errorDelegate != null) {
-            errorDelegate.onError(new CsmParserProvider.ParserError(e.getMessage(), e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1));
+            if (e instanceof MyRecognitionException) {
+                MyRecognitionException ex = (MyRecognitionException) e;
+                String hdr = getSourceName();
+                if (APTUtils.isEOF(ex.getToken())) {
+                    errorDelegate.onError(new CsmParserProvider.ParserError(hdr+" "+ex.getMessage(), -1, -1, ex.getToken().getText(), true));
+                } else {
+                    errorDelegate.onError(new CsmParserProvider.ParserError(hdr+":"+ex.getToken().getLine()+": error: "+ex.getMessage(), ex.getToken().getLine(), ex.getToken().getColumn(), ex.getToken().getText(), false)); // NOI18N
+                }
+            } else {
+                String hdr = getSourceName();
+                String msg = getErrorMessage(e, tokenNames);
+                errorDelegate.onError(new CsmParserProvider.ParserError(hdr+":"+e.line+": error: "+msg, e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1)); // NOI18N
+            }
         }
+    }
+
+    @Override
+    public String getSourceName() {
+        CsmFile currentFile = action.getCurrentFile();
+        if (currentFile != null) {
+            return currentFile.getAbsolutePath().toString();
+        }
+        return ""; // NOI18N
     }
 
     public int backtrackingLevel() {
@@ -105,5 +129,23 @@ public class CXXParserEx extends CXXParser {
             buf.append(' '); //NOI18N
             super.traceOut(buf.toString() + ruleName, ruleIndex);
         }
-    }    
+    }
+    
+    public static class MyRecognitionException extends RecognitionException {
+        private final String message;
+        private final Token myToken;
+        public MyRecognitionException(String message, Token token) {
+            this.message = message;
+            myToken = token;
+        }
+
+        public Token getToken() {
+            return myToken;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+    }
 }

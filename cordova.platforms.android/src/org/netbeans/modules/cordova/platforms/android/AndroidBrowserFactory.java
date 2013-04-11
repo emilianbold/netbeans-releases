@@ -71,7 +71,17 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
         return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/android/androidbrowser.png", false);
     }
 
-    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/MobileBrowsers")
+    @Override
+    public boolean hasNetBeansIntegration() {
+        return false;
+    }
+
+    @Override
+    public boolean canCreateHtmlBrowserImpl() {
+        return true;
+    }
+
+    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
     public static class DeviceDefault extends AndroidBrowserFactory {
 
         @Override
@@ -91,7 +101,7 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
 
     }
 
-    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/MobileBrowsers")
+    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
     public static class DeviceChrome extends AndroidBrowserFactory {
 
         @Override
@@ -110,7 +120,7 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
         }
     }
     
-    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/MobileBrowsers")
+    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
     public static class EmulatorDefault extends AndroidBrowserFactory {
 
         @Override

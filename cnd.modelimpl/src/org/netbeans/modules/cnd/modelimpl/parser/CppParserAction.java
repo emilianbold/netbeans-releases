@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 
 import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
@@ -510,5 +511,7 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     void constant_expression(Token token);
     void end_constant_expression(Token token);    
     
-    void skip_balanced_curlies(Token token);    
+    void skip_balanced_curlies(Token token);
+    
+    CsmFile getCurrentFile();    
 }

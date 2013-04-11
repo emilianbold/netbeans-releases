@@ -1064,7 +1064,7 @@ public class CppParserActionTracer extends CppParserActionImpl implements CppPar
     }
 
     @Override
-    public void function_definition_after_declarator(Token token) {
+    public void function_definition_after_declarator(Token token){
         printIn("function_definition_after_declarator", token); //NOI18N
         super.function_definition_after_declarator(token);
     }

@@ -69,6 +69,7 @@ import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 
 /**
  *
@@ -202,11 +203,7 @@ public class LibraryUtils {
             while (librariesIterator.hasNext()) {
                 Library library = librariesIterator.next();
                 Map<String, String> declaredNamespaces = result.getNamespaces();
-                String alreadyDeclaredPrefix = declaredNamespaces.get(library.getNamespace());
-                if (alreadyDeclaredPrefix == null && library.getLegacyNamespace() != null) {
-                    // try legacy namespace for JSF2.1-
-                    alreadyDeclaredPrefix = declaredNamespaces.get(library.getLegacyNamespace());
-                }
+                String alreadyDeclaredPrefix = NamespaceUtils.getForNs(declaredNamespaces, library.getNamespace());
                 if (alreadyDeclaredPrefix == null) {
                     //try composite component library default prefix
                     String defaultNS = library.getDefaultNamespace();
@@ -289,10 +286,7 @@ public class LibraryUtils {
             Map<String, ? extends Library> libs = jsfSupport.getLibraries();
 
             for (String namespace : declaredNamespaces) {
-                Library lib = libs.get(namespace);
-                if (lib == null && DefaultLibraryInfo.NS_MAPPING.get(namespace) != null) {
-                    lib = libs.get(DefaultLibraryInfo.NS_MAPPING.get(namespace));
-                }
+                Library lib = NamespaceUtils.getForNs(libs, namespace);
                 if (lib != null) {
                     declaredLibraries.put(namespace, lib);
                 }

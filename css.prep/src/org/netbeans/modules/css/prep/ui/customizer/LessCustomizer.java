@@ -44,20 +44,25 @@ package org.netbeans.modules.css.prep.ui.customizer;
 import java.io.IOException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
+import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public final class LessCustomizer implements CssPreprocessorImplementation.Customizer {
 
+    private final LessCssPreprocessor lessCssPreprocessor;
     private final Project project;
 
     private volatile LessCustomizerPanel customizerPanel = null;
 
 
-    public LessCustomizer(Project project) {
+    public LessCustomizer(LessCssPreprocessor lessCssPreprocessor, Project project) {
+        assert lessCssPreprocessor != null;
         assert project != null;
+        this.lessCssPreprocessor = lessCssPreprocessor;
         this.project = project;
     }
 
@@ -112,7 +117,13 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
 
     @Override
     public void save() throws IOException {
-        LessPreferences.setEnabled(project, getComponent().isLessEnabled());
+        Warnings.resetLessWarning();
+        boolean originalEnabled = LessPreferences.isEnabled(project);
+        boolean enabled = getComponent().isLessEnabled();
+        LessPreferences.setEnabled(project, enabled);
+        if (enabled != originalEnabled) {
+            lessCssPreprocessor.fireCustomizerChanged(project);
+        }
     }
 
 }

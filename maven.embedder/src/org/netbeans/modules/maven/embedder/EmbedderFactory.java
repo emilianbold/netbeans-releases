@@ -101,16 +101,19 @@ public final class EmbedderFactory {
         });
 
     static {
-        OpenProjects.getDefault().addProjectGroupChangeListener(new ProjectGroupChangeListener() {
-
+        RP.post(new Runnable() {
             @Override
-            public void projectGroupChanging(ProjectGroupChangeEvent event) {
-                resetCachedEmbedders();
-            }
+            public void run() { //#228379
+                OpenProjects.getDefault().addProjectGroupChangeListener(new ProjectGroupChangeListener() {
+                    @Override
+                    public void projectGroupChanging(ProjectGroupChangeEvent event) {
+                        resetCachedEmbedders();
+                    }
 
-            @Override
-            public void projectGroupChanged(ProjectGroupChangeEvent event) {
-                
+                    @Override
+                    public void projectGroupChanged(ProjectGroupChangeEvent event) {
+                    }
+                });
             }
         });
     }

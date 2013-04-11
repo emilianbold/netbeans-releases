@@ -102,7 +102,7 @@ public final class BrowserUISupport {
      */
     public static BrowserComboBoxModel createBrowserModel(@NullAllowed String selectedBrowserId,
             boolean showIDEGlobalBrowserOption, boolean includePhoneGap) {
-        List<WebBrowser> browsers = WebBrowsers.getInstance().getAll(false, true, showIDEGlobalBrowserOption, includePhoneGap, true);
+        List<WebBrowser> browsers = WebBrowsers.getInstance().getAll(false, showIDEGlobalBrowserOption, includePhoneGap, true);
         if (selectedBrowserId == null) {
             selectedBrowserId = getDefaultBrowserChoice(showIDEGlobalBrowserOption).getId();
         }
@@ -139,7 +139,7 @@ public final class BrowserUISupport {
         } else {
             // try to find first browser with NB integration;
             // preferrably Chrome or Chromium; failing that use first browser from ordered list:
-            List<WebBrowser> browsers = WebBrowsers.getInstance().getAll(false, true, false, true, true);
+            List<WebBrowser> browsers = WebBrowsers.getInstance().getAll(false, false, true, true);
             for (WebBrowser bw : browsers) {
                 if (bw.getBrowserFamily() == BrowserFamilyId.CHROME && bw.hasNetBeansIntegration()) {
                     return bw;
@@ -175,7 +175,7 @@ public final class BrowserUISupport {
     }
 
     private static WebBrowser findWebBrowserById(String id) {
-        for (WebBrowser wb : WebBrowsers.getInstance().getAll(false, true, true, true, false)) {
+        for (WebBrowser wb : WebBrowsers.getInstance().getAll(false, true, true, false)) {
             if (wb.getId().equals(id)) {
                 return wb;
             }

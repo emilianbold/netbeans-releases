@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.web.common.cssprep;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 
 public abstract class CssPreprocessorAccessor {
 
@@ -72,5 +75,14 @@ public abstract class CssPreprocessorAccessor {
 
 
     public abstract CssPreprocessor create(CssPreprocessorImplementation cssPreprocessorImplementation);
+
+    @CheckForNull
+    public abstract CssPreprocessorImplementation.Customizer createCustomizer(CssPreprocessor cssPreprocessor, Project project);
+
+    @CheckForNull
+    public abstract CssPreprocessorImplementation.Options createOptions(CssPreprocessor cssPreprocessor);
+
+    @CheckForNull
+    public abstract ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor cssPreprocessor, CssPreprocessor.ProjectProblemsProviderSupport support);
 
 }

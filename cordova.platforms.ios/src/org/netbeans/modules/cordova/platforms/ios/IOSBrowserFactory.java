@@ -70,7 +70,17 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
         return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/apple.png", false);
     }
 
-    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/MobileBrowsers")
+    @Override
+    public boolean hasNetBeansIntegration() {
+        return false;
+    }
+
+    @Override
+    public boolean canCreateHtmlBrowserImpl() {
+        return true;
+    }
+
+    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
     public static class DeviceDefault extends IOSBrowserFactory {
 
         @Override
@@ -90,7 +100,7 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
 
     }
 
-    //@ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/MobileBrowsers")
+    //@ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
     public static class EmulatorDefault extends IOSBrowserFactory {
 
         @Override

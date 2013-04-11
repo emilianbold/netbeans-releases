@@ -2,5 +2,5 @@ Code completion result for source line:
 new Foo().@|tes
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-FIELD      class                                      Class
+FIELD      class                           [PUBLIC]   Class
 FIELD      test                            [PRIVATE]  

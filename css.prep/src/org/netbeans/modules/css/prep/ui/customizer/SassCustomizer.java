@@ -45,19 +45,24 @@ import java.io.IOException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
+import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
+import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public final class SassCustomizer implements CssPreprocessorImplementation.Customizer {
 
+    private final SassCssPreprocessor sassCssPreprocessor;
     private final Project project;
 
     private volatile SassCustomizerPanel customizerPanel = null;
 
 
-    public SassCustomizer(Project project) {
+    public SassCustomizer(SassCssPreprocessor sassCssPreprocessor, Project project) {
+        assert sassCssPreprocessor != null;
         assert project != null;
+        this.sassCssPreprocessor = sassCssPreprocessor;
         this.project = project;
     }
 
@@ -112,7 +117,13 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
 
     @Override
     public void save() throws IOException {
-        SassPreferences.setEnabled(project, getComponent().isSassEnabled());
+        Warnings.resetSassWarning();
+        boolean originalEnabled = SassPreferences.isEnabled(project);
+        boolean enabled = getComponent().isSassEnabled();
+        SassPreferences.setEnabled(project, enabled);
+        if (enabled != originalEnabled) {
+            sassCssPreprocessor.fireCustomizerChanged(project);
+        }
     }
 
 }

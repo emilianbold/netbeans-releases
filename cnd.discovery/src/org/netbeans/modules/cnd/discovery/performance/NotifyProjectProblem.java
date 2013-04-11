@@ -167,7 +167,7 @@ public class NotifyProjectProblem extends javax.swing.JPanel {
         };
         ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/discovery/performance/exclamation.gif", false); // NOI18N
         final Notification notification = NotificationDisplayer.getDefault().notify(shortDescription, icon,
-                Bundle.NotifyProjectProblem_action_text(), onClickAction, NotificationDisplayer.Priority.HIGH); // NOI18N
+                Bundle.NotifyProjectProblem_action_text(), onClickAction, NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.WARNING); // NOI18N
         //RP.post(new Runnable() {
         //    @Override
         //    public void run() {

@@ -85,7 +85,7 @@ import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
+import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;

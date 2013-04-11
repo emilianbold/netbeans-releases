@@ -262,7 +262,8 @@ public class MethodMetrics {
     @Hint(category = "metrics",
           displayName = "#DN_MethodTooComplex",
           description = "#DESC_MethodTooComplex",
-          options = Hint.Options.QUERY
+          options = { Hint.Options.QUERY, Hint.Options.HEAVY },
+          enabled = false
     )
     @TriggerTreeKind(Tree.Kind.METHOD)
     @UseOptions(value = { OPTION_COMPLEXITY_TRESHOLD })
@@ -286,7 +287,8 @@ public class MethodMetrics {
          category = "metrics",
          displayName = "#DN_MethodTooDeepNesting",
          description = "#DESC_MethodTooDeepNesting",
-         options = Hint.Options.QUERY
+         options = { Hint.Options.QUERY, Hint.Options.HEAVY },
+         enabled = false
     )
     @TriggerTreeKind(Tree.Kind.METHOD)
     @UseOptions(value = { OPTION_NESTING_LIMIT })
@@ -310,7 +312,8 @@ public class MethodMetrics {
         category = "metrics",
         displayName = "#DN_MethodTooLong",
         description = "#DESC_MethodTooLong",
-        options = Hint.Options.QUERY
+        options = { Hint.Options.QUERY, Hint.Options.HEAVY },
+        enabled = false
     )
     @TriggerTreeKind(Tree.Kind.METHOD)
     @UseOptions({ OPTION_LINES_LIMIT, OPTION_STATEMENTS_LIMIT })
@@ -342,7 +345,8 @@ public class MethodMetrics {
         category = "metrics",
         displayName = "#DN_MethodTooManyExceptions",
         description = "#DESC_MethodTooManyExceptions",
-        options = Hint.Options.QUERY
+        options = { Hint.Options.QUERY, Hint.Options.HEAVY },
+        enabled = false
     )
     @UseOptions(value = { OPTION_EXCEPTIONS_LIMIT })
     @TriggerPattern("$modifiers$ <$typeParams$> $returnType $name($args$) throws $thrown1, $thrown2$ { $body$; }")
@@ -365,7 +369,8 @@ public class MethodMetrics {
         category = "metrics",
         displayName = "#DN_MethodTooManyParameters",
         description = "#DESC_MethodTooManyParameters",
-        options = Hint.Options.QUERY
+        options = { Hint.Options.QUERY, Hint.Options.HEAVY },
+        enabled = false
     )
     @UseOptions(value = { OPTION_PARAMETERS_LIMIT })
     @TriggerPattern("$modifiers$ <$typeParams$> $returnType $name($args1, $arg2, $args$) throws $whatever$ { $body$; }")
@@ -388,7 +393,8 @@ public class MethodMetrics {
         category = "metrics",
         displayName = "#DN_MethodMultipleReturns",
         description = "#DESC_MethodMultipleReturns",
-        options = Hint.Options.QUERY
+        options = { Hint.Options.QUERY, Hint.Options.HEAVY },
+        enabled = false
     )
     @UseOptions({ OPTION_RETURN_LIMIT, OPTION_RETURN_IGNORE_EQUALS, OPTION_RETURN_IGNORE_GUARDS })
     @TriggerTreeKind(Tree.Kind.METHOD)
@@ -491,7 +497,8 @@ public class MethodMetrics {
         category = "metrics",
         displayName = "#DN_MethodMultipleNegations",
         description = "#DESC_MethodMultipleNegations",
-        options = Hint.Options.QUERY
+        options = { Hint.Options.QUERY, Hint.Options.HEAVY },
+        enabled = false
     )
     @TriggerTreeKind(Tree.Kind.METHOD)
     @UseOptions(value = { OPTION_NEGATIONS_IGNORE_ASSERT, OPTION_NEGATIONS_IGNORE_EQUALS, OPTION_NEGATIONS_LIMIT })
@@ -610,7 +617,8 @@ public class MethodMetrics {
         category = "metrics",
         displayName = "#DN_MethodMultipleLoops",
         description = "#DESC_MethodMultipleLoops",
-        options = Hint.Options.QUERY
+        options = { Hint.Options.QUERY, Hint.Options.HEAVY },
+        enabled = false
     )
     @TriggerTreeKind(Tree.Kind.METHOD)
     @UseOptions({ OPTION_LOOPS_LIMIT })
@@ -635,7 +643,8 @@ public class MethodMetrics {
         category = "metrics",
         displayName = "#DN_MethodCoupled",
         description = "#DESC_MethodCoupled",
-        options = { Hint.Options.QUERY, Hint.Options.HEAVY }
+        options = { Hint.Options.QUERY, Hint.Options.HEAVY },
+        enabled = false
     )
     @TriggerTreeKind(Tree.Kind.METHOD)
     @UseOptions({ OPTION_COUPLING_LIMIT, OPTION_COUPLING_IGNORE_JAVA })

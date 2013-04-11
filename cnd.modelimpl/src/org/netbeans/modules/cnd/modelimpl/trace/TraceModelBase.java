@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -25,6 +26,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -51,10 +53,10 @@ public class TraceModelBase {
     private List<String> quoteIncludePaths = new ArrayList<String>();
     private List<String> systemIncludePaths = new ArrayList<String>();
     private List<String> libProjectsPaths = new ArrayList<String>();
-    private List<File> files = new ArrayList<File>();
+    private final List<File> files = new ArrayList<File>();
     private List<String> currentIncludePaths = null;
-    private List<String> macros = new ArrayList<String>();
-    private List<String> undefinedMacros = new ArrayList<String>();
+    private final List<String> macros = new ArrayList<String>();
+    private final List<String> undefinedMacros = new ArrayList<String>();
 
     // if true, then relative include paths oin -I option are considered
     // to be based on the file that we currently compile rather then current dir
@@ -201,6 +203,38 @@ public class TraceModelBase {
         return reopened;
     }
 
+    public static void enableProjectListeners(CsmProject p, boolean enable) {
+        ((ProjectBase) p).enableProjectListeners(enable);
+    }
+    
+    public static void shutdownModel(CsmModel model) {
+        if (model instanceof ModelImpl) {
+            ((ModelImpl)model).shutdown();
+        } else {
+            CndUtils.assertTrueInConsole(false, "unexpected model instance ", model);
+        }
+    }
+    
+    public static CsmProject addNativeProject(NativeProject np) {
+        CsmModel model = CsmModelAccessor.getModel();
+        CsmProject csmProject = null;
+        if (model instanceof ModelImpl) {
+            csmProject = ((ModelImpl)model).addProject(np, np.getProjectDisplayName(), true);
+        } else {
+            CndUtils.assertTrueInConsole(false, "unexpected model instance ", model);
+        }
+        return csmProject;
+    }
+    
+    public static void closeNativeProject(NativeProject np) {
+        CsmModel model = CsmModelAccessor.getModel();
+        if (model instanceof ModelImpl) {
+            ((ModelImpl) model).closeProject(np);
+        } else {
+            CndUtils.assertTrueInConsole(false, "unexpected model instance ", model);
+        }
+    }
+    
     public static void closeProject(CsmProject project) {
         closeProject(project, false);
     }
@@ -243,6 +277,7 @@ public class TraceModelBase {
             closeProject(aProject, cleanRepository);
         }
         projectUID = null;
+        files.clear();
     //getProject();
     }
 

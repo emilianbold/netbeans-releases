@@ -13,6 +13,7 @@ METHOD     byteValue()                     [PUBLIC]   byte
 METHOD     collect()                                  Collection
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
+METHOD     compare(byte, byte)             [STATIC,   int
 METHOD     compareTo(Byte)                 [PUBLIC]   int
 METHOD     compareTo(Character)                       int
 METHOD     compareTo(Number)                          int
@@ -127,4 +128,4 @@ FIELD      MAX_VALUE                       [STATIC,   byte
 FIELD      MIN_VALUE                       [STATIC,   byte
 FIELD      SIZE                            [STATIC,   int
 FIELD      TYPE                            [STATIC,   Class<Byte>
-FIELD      class                                      Class
+FIELD      class                           [PUBLIC]   Class

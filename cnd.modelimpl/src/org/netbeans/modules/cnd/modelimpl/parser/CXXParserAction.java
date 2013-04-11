@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 
 import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenStream;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
@@ -94,6 +95,8 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     public static int STORAGE_CLASS_SPECIFIER____THREAD = 43;
     public static int STORAGE_CLASS_SPECIFIER__THREAD_LOCAL = 44;
     public static int STORAGE_CLASS_SPECIFIER___HIDDEN = 45;
+    public static int STORAGE_CLASS_SPECIFIER___GLOBAL = 46;
+    public static int STORAGE_CLASS_SPECIFIER___SYMBOLIC = 47;
     public static int FUNCTION_SPECIFIER__INLINE = 60;
     public static int FUNCTION_SPECIFIER__VIRTUAL = 61;
     public static int FUNCTION_SPECIFIER__EXPLICIT = 62;
@@ -511,4 +514,5 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     
     void skip_balanced_curlies(Token token);
     
+    CsmFile getCurrentFile();   
 }

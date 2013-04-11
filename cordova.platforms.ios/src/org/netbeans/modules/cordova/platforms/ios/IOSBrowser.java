@@ -66,15 +66,6 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
     private Lookup projectContext;
 
     @Override
-    public boolean hasEnhancedMode() {
-        return false;
-    }
-
-    @Override
-    public void setEnhancedMode(boolean mode) {
-    }
-
-    @Override
     public void disablePageInspector() {
     }
 

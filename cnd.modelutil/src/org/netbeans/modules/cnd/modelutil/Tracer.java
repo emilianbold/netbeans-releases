@@ -55,6 +55,7 @@ import java.io.PrintStream;
  * @author Vladimir Kvashin
  */
 public class Tracer {
+    public static final String PARSE_FILE_PERFORMANCE_EVENT = "PARSE_FILE_PERFORMANCE_EVENT"; //NOI18N
     
     private int step = 4;
     private PrintStream pstream;
