@@ -76,7 +76,7 @@ public final class SassCssPreprocessor implements CssPreprocessorImplementation 
 
     @Override
     public void process(Project project, FileObject fileObject) {
-        new SassProcessor(this).process(project, fileObject);
+        new SassProcessor().process(project, fileObject);
     }
 
     @Override

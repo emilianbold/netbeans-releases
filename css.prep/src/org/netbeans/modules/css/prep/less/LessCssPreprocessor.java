@@ -76,7 +76,7 @@ public final class LessCssPreprocessor implements CssPreprocessorImplementation 
 
     @Override
     public void process(Project project, FileObject fileObject) {
-        new LessProcessor(this).process(project, fileObject);
+        new LessProcessor().process(project, fileObject);
     }
 
     @Override
