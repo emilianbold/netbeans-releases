@@ -46,6 +46,7 @@ package org.netbeans.modules.editor.fold;
 import javax.swing.JEditorPane;
 import javax.swing.text.AbstractDocument;
 import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
 
 /*
@@ -71,6 +72,7 @@ public class FoldHierarchyTestEnv {
     public FoldHierarchyTestEnv(FoldManagerFactory... factories) {
         pane = new JEditorPane();
         assert (getMimeType() != null);
+        pane.setDocument(new BaseDocument(false, "text/plain"));
 
         FoldManagerFactoryProvider.setForceCustomProvider(true);
         FoldManagerFactoryProvider provider = FoldManagerFactoryProvider.getDefault();
