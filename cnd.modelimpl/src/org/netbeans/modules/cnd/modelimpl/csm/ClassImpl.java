@@ -436,8 +436,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
     
     public static interface MemberBuilder {
-        public CsmMember create();
-        public void setScope(CsmScope scope);
+        CsmMember create();
+        void setScope(CsmScope scope);
+        void setVisibility(CsmVisibility visibility);
     }
     
     public static class ClassBuilder extends SimpleDeclarationBuilder implements MemberBuilder {
@@ -448,6 +449,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private List<InheritanceBuilder> inheritanceBuilders = new ArrayList<InheritanceBuilder>();
         
         private ClassImpl instance;
+        private CsmVisibility visibility = CsmVisibility.PUBLIC;
+        private CsmVisibility currentMemberVisibility = CsmVisibility.PUBLIC;
 
         public ClassBuilder() {
         }
@@ -459,8 +462,29 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             inheritanceBuilders = builder.inheritanceBuilders;
         }
         
+        @Override
+        public void setVisibility(CsmVisibility visibility) {
+            this.visibility = visibility;
+        }
+        
+        public void setCurrentMemberVisibility(CsmVisibility visibility) {
+            this.currentMemberVisibility = visibility;
+        }
+
+        public CsmVisibility getCurrentMemberVisibility() {
+            return currentMemberVisibility;
+        }
+        
         public void setKind(Kind kind) {
             this.kind = kind;
+            switch (kind) {
+                case CLASS:
+                    setCurrentMemberVisibility(CsmVisibility.PRIVATE);
+                    break;
+                case STRUCT: case UNION:
+                    setCurrentMemberVisibility(CsmVisibility.PUBLIC);
+                    break;
+            }
         }
 
         public Kind getKind() {
@@ -518,7 +542,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             CsmScope s = getScope();
             if (cls == null && s != null && getName() != null && getEndOffset() != 0) {
                 instance = cls = new ClassImpl(getNameHolder(), getKind(), getStartOffset(), getFile(), getStartOffset(), getEndOffset());
-                cls.setVisibility(CsmVisibility.PUBLIC);
+                cls.setVisibility(visibility);
                 cls.init3(s, isGlobal());
                 if(getTemplateDescriptorBuilder() != null) {
                     cls.setTemplateDescriptor(getTemplateDescriptor());
@@ -1195,9 +1219,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
 
         public static class MemberTypedefBuilder extends TypedefBuilder implements CsmObjectBuilder, MemberBuilder {
+            private CsmVisibility visibility = CsmVisibility.PUBLIC;
 
             public MemberTypedefBuilder(SimpleDeclarationBuilder builder) {
                 super(builder);
+            }
+            
+            @Override
+            public void setVisibility(CsmVisibility visibility) {
+                this.visibility = visibility;
             }
         
             @Override
@@ -1213,7 +1243,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), getFile(), getStartOffset(), getStartOffset()); // NOI18N
                 }
 
-                MemberTypedef td = new MemberTypedef(type, getName(), CsmVisibility.PUBLIC, cls, getFile(), getStartOffset(), getEndOffset());
+                MemberTypedef td = new MemberTypedef(type, getName(), visibility, cls, getFile(), getStartOffset(), getEndOffset());
 
                 if (!isGlobal()) {
                     Utils.setSelfUID(td);
@@ -1363,7 +1393,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
 
         public static class ClassMemberForwardDeclarationBuilder extends ClassForwardDeclarationBuilder implements MemberBuilder {
-
+            private CsmVisibility visibility = CsmVisibility.PUBLIC;
+            
+            @Override
+            public void setVisibility(CsmVisibility visibility) {
+                this.visibility = visibility;
+            }
+            
             @Override
             public ClassMemberForwardDeclaration create() {
                 TemplateDescriptor td = null;
@@ -1372,7 +1408,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     td = getTemplateDescriptorBuilder().create();
                 }
 
-                ClassMemberForwardDeclaration fc = new ClassMemberForwardDeclaration(getName(), td, (CsmClass)getScope(), CsmVisibility.PUBLIC, getFile(), getStartOffset(), getEndOffset());
+                ClassMemberForwardDeclaration fc = new ClassMemberForwardDeclaration(getName(), td, (CsmClass)getScope(), visibility, getFile(), getStartOffset(), getEndOffset());
 
                 postObjectCreateRegistration(isGlobal(), fc);
 

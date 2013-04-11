@@ -1071,14 +1071,22 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     private void decl_specifier_impl(int kind, Token token) {
-        if(kind == DECL_SPECIFIER__LITERAL_TYPEDEF) {
-            if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
-                builderContext.getSimpleDeclarationBuilderIfExist().setTypedefSpecifier();
-            }
-        } else if(kind == DECL_SPECIFIER__LITERAL_FRIEND) {
-            if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
-                builderContext.getSimpleDeclarationBuilderIfExist().setFriend();
-            }
+        switch (kind) {
+            case DECL_SPECIFIER__LITERAL_TYPEDEF:
+                if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
+                    builderContext.getSimpleDeclarationBuilderIfExist().setTypedefSpecifier();
+                }
+                break;
+            case DECL_SPECIFIER__LITERAL_FRIEND:
+                if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
+                    builderContext.getSimpleDeclarationBuilderIfExist().setFriend();
+                }
+                break;
+            case STORAGE_CLASS_SPECIFIER__STATIC:
+                if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
+                    builderContext.getSimpleDeclarationBuilderIfExist().setStatic();
+                }
+                break;
         }
     }
 
@@ -3063,6 +3071,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             if (builder instanceof FriendFunctionBuilder) {
                 parent.addFriendBuilder((FriendFunctionBuilder)builder);
             } else {
+                ((MemberBuilder)builder).setVisibility(parent.getCurrentMemberVisibility());
                 parent.addMemberBuilder((MemberBuilder)builder);
             }
         }    
@@ -3174,7 +3183,27 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
                 
     }
-    @Override public void access_specifier(int kind, Token token) {}
+    
+    @Override public void access_specifier(int kind, Token token) {
+        switch (kind) {
+            case ACCESS_SPECIFIER__PRIVATE:
+                if(builderContext.getClassBuilder() != null) {
+                    builderContext.getClassBuilder().setCurrentMemberVisibility(CsmVisibility.PRIVATE);
+                }
+                break;
+            case ACCESS_SPECIFIER__PROTECTED:
+                if(builderContext.getClassBuilder() != null) {
+                    builderContext.getClassBuilder().setCurrentMemberVisibility(CsmVisibility.PROTECTED);
+                }
+                break;
+            case ACCESS_SPECIFIER__PUBLIC:
+                if(builderContext.getClassBuilder() != null) {
+                    builderContext.getClassBuilder().setCurrentMemberVisibility(CsmVisibility.PUBLIC);
+                }
+                break;
+        }
+    }
+    
     @Override public void conversion_function_id(Token token) {}
     @Override public void end_conversion_function_id(Token token) {}
     @Override public void conversion_type_id(Token token) {}
