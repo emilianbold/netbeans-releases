@@ -451,6 +451,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private ClassImpl instance;
         private CsmVisibility visibility = CsmVisibility.PUBLIC;
         private CsmVisibility currentMemberVisibility = CsmVisibility.PUBLIC;
+        private int leftBracketPos;
 
         public ClassBuilder() {
         }
@@ -485,6 +486,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     setCurrentMemberVisibility(CsmVisibility.PUBLIC);
                     break;
             }
+        }
+
+        public void setLeftBracketPos(int leftBracketPos) {
+            this.leftBracketPos = leftBracketPos;
         }
 
         public Kind getKind() {
@@ -541,7 +546,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             ClassImpl cls = getClassDefinitionInstance();
             CsmScope s = getScope();
             if (cls == null && s != null && getName() != null && getEndOffset() != 0) {
-                instance = cls = new ClassImpl(getNameHolder(), getKind(), getStartOffset(), getFile(), getStartOffset(), getEndOffset());
+                instance = cls = new ClassImpl(getNameHolder(), getKind(), leftBracketPos, getFile(), getStartOffset(), getEndOffset());
                 cls.setVisibility(visibility);
                 cls.init3(s, isGlobal());
                 if(getTemplateDescriptorBuilder() != null) {

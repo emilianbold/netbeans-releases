@@ -724,6 +724,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         if(top instanceof ClassBuilder) {
             ClassBuilder classBuilder = (ClassBuilder) top;
             name = classBuilder.getName();
+            classBuilder.setLeftBracketPos(((APTToken)token).getOffset());
         }
         
         SymTab st;
