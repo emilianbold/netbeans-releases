@@ -72,6 +72,8 @@ public class Nette2FrameworkProvider extends PhpFrameworkProvider {
     private static final String ICON_PATH = "org/netbeans/modules/php/nette2/ui/resources/nette_badge_8.png"; // NOI18N
     private static final String COMMON_CONFIG_PATH = "app/config"; //NOI18N
     private static final String COMPOSER_PATH = "composer.json"; //NOI18N
+    private static final String COMMON_INDEX_PATH = "www/index.php"; //NOI18N
+    private static final String EXTRA_INDEX_PATH = "index.php"; //NOI18N
     static final String COMMON_BOOTSTRAP_PATH = "app/bootstrap.php"; //NOI18N
     private final BadgeIcon badgeIcon;
 
@@ -116,6 +118,14 @@ public class Nette2FrameworkProvider extends PhpFrameworkProvider {
             FileObject bootstrap = sourceDirectory.getFileObject(COMMON_BOOTSTRAP_PATH);
             if (bootstrap != null) {
                 files.add(FileUtil.toFile(bootstrap));
+            }
+            FileObject commonIndex = sourceDirectory.getFileObject(COMMON_INDEX_PATH);
+            if (commonIndex != null) {
+                files.add(FileUtil.toFile(commonIndex));
+            }
+            FileObject extraIndex = sourceDirectory.getFileObject(EXTRA_INDEX_PATH);
+            if (extraIndex != null) {
+                files.add(FileUtil.toFile(extraIndex));
             }
             FileObject config = sourceDirectory.getFileObject(COMMON_CONFIG_PATH);
             if (config != null && config.isFolder() && config.isValid()) {
