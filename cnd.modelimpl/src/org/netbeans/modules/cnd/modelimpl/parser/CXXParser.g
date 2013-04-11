@@ -769,7 +769,7 @@ scope Declaration;
                 )
         |
             // greedy_declarator starts init_declarator
-            greedy_declarator
+            greedy_declarator asm_statement?
             (
                 { /*$greedy_declarator.type.is_function()*/ input.LA(1) != ASSIGNEQUAL }?
                     function_definition_after_declarator[false, false, false]
@@ -1187,8 +1187,12 @@ using_directive:
     ;
 
 
+asm_statement:
+        literal_asm LPAREN STRING_LITERAL+ RPAREN
+    ;
+
 asm_definition:
-        literal_asm LPAREN STRING_LITERAL RPAREN SEMICOLON                      //{action.asm_definition($LITERAL_asm, $LPAREN, $STRING_LITERAL, $RPAREN, $SEMICOLON);}
+        asm_statement SEMICOLON                      //{action.asm_definition($LITERAL_asm, $LPAREN, $STRING_LITERAL, $RPAREN, $SEMICOLON);}
     ;
 
 linkage_specification [decl_kind kind]:
@@ -1308,7 +1312,7 @@ finally                                                                         
 init_declarator
 @init                                                                           {if(state.backtracking == 0){action.init_declarator(input.LT(1));}}
     :                                                                           
-        greedy_declarator initializer?                                          
+        greedy_declarator asm_statement? initializer?                                          
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_init_declarator(input.LT(0));}}
 
