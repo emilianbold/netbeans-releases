@@ -72,7 +72,7 @@ public class ActionRenderCodeGenerator implements CodeGenerator {
         textComp = context.lookup(JTextComponent.class);
     }
 
-    @MimeRegistration(mimeType = "text/x-php5", service = CodeGenerator.Factory.class) //NOI18N
+    @MimeRegistration(mimeType = org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE, service = CodeGenerator.Factory.class)
     public static class Factory implements CodeGenerator.Factory {
 
         @Override
