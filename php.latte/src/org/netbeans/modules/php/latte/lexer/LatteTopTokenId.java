@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -99,9 +100,13 @@ public enum LatteTopTokenId implements TokenId {
                 }
 
                 @Override
-                protected LanguageEmbedding<?> embedding(Token<LatteTopTokenId> token,
-                        LanguagePath languagePath, InputAttributes inputAttributes) {
-                    return null;
+                protected LanguageEmbedding<?> embedding(Token<LatteTopTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+                    LanguageEmbedding<?> result = null;
+                    LatteTopTokenId tokenId = token.id();
+                    if (tokenId == LatteTopTokenId.T_HTML)  {
+                        result = LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
+                    }
+                    return result;
                 }
             }.language();
 
