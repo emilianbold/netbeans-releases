@@ -376,7 +376,14 @@ public class WorkingCopy extends CompilationController {
     private static boolean REWRITE_WHOLE_FILE = Boolean.getBoolean(WorkingCopy.class.getName() + ".rewrite-whole-file");
 
     private void addSyntheticTrees(DiffContext diffContext, Tree node) {
-        if (node != null && node.getKind() == Kind.EXPRESSION_STATEMENT) {
+        if (node == null) return ;
+        
+        if (((JCTree) node).pos == (-1)) {
+            diffContext.syntheticTrees.add(node);
+            return ;
+        }
+        
+        if (node.getKind() == Kind.EXPRESSION_STATEMENT) {
             ExpressionTree est = ((ExpressionStatementTree) node).getExpression();
 
             if (est.getKind() == Kind.METHOD_INVOCATION) {
