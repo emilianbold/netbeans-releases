@@ -4,6 +4,7 @@
     <folder name="Editors">
         <folder name="text">
             <folder name="x-latte">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.latte.resources.Bundle#Editors/text/x-latte"/>
                 <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
                 </file>
@@ -12,6 +13,15 @@
                     <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-html-editor-completion-HtmlPaletteCompletionProvider.instance"/>
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"/>
+                </folder>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="highlighting.xml" url="highlighting.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.latte.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
         </folder>
