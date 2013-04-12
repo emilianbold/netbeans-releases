@@ -1631,7 +1631,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
                     LOG.log(Level.FINE, "doShow, reading from = {0}", url);
                     //sb.append("doShow reading from: ").append(url).append("\n");
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    URLConnection conn = url.openConnection();
                     conn.setRequestProperty("User-Agent", "NetBeans");
                     conn.setConnectTimeout(5000);
                     File tmp = File.createTempFile("uigesture", ".html");
@@ -1644,20 +1644,22 @@ public class Installer extends ModuleInstall implements Runnable {
                     String errMsg = (errorMessage == null) ? "" : errorMessage;
                     replacements.put("{org.netbeans.modules.uihandler.LoadError}", errMsg);
                     if(conn instanceof HttpsURLConnection){
-                        Installer.initSSL(conn);
+                        Installer.initSSL((HttpsURLConnection) conn);
                     }
-                    //conenct and read response - redirection or not?
-                    conn.connect();
-                    if (conn.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP ) {
-                        // in case of redirection, try to obtain new URL
-                        String redirUrl = conn.getHeaderField("Location"); //NOI18N
-                        if( null != redirUrl && !redirUrl.isEmpty() ) {
-                            //create connection to redirected url and substitute original conn
-                            URL redirectedUrl = new URL(redirUrl);
-                            URLConnection connRedir = redirectedUrl.openConnection();
-                            connRedir.setRequestProperty("User-Agent", "NetBeans");
-                            connRedir.setConnectTimeout(5000);
-                            conn = (HttpURLConnection) connRedir;
+                    //for HTTP or HTTPS: conenct and read response - redirection or not?
+                    if (conn instanceof HttpURLConnection){
+                        conn.connect();
+                        if (((HttpURLConnection) conn).getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP ) {
+                            // in case of redirection, try to obtain new URL
+                            String redirUrl = conn.getHeaderField("Location"); //NOI18N
+                            if( null != redirUrl && !redirUrl.isEmpty() ) {
+                                //create connection to redirected url and substitute original conn
+                                URL redirectedUrl = new URL(redirUrl);
+                                URLConnection connRedir = redirectedUrl.openConnection();
+                                connRedir.setRequestProperty("User-Agent", "NetBeans");
+                                connRedir.setConnectTimeout(5000);
+                                conn = (HttpURLConnection) connRedir;
+                            }
                         }
                     }
                     copyWithEncoding(conn.getInputStream(), os, replacements);
