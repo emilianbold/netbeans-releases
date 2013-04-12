@@ -1079,13 +1079,15 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     private void end_compound_statement_impl(Token token) {
-        CompoundStatementBuilder builder = (CompoundStatementBuilder)builderContext.top();
-        builderContext.pop();
-        builder.setEndOffset(((APTToken)token).getEndOffset());
-        
-        if(builderContext.top() instanceof StatementBuilderContainer) {
-            StatementBuilderContainer container = (StatementBuilderContainer)builderContext.top();
-            container.addStatementBuilder(builder);
+        if(builderContext.top() instanceof CompoundStatementBuilder) {
+            CompoundStatementBuilder builder = (CompoundStatementBuilder)builderContext.top();
+            builderContext.pop();
+            builder.setEndOffset(((APTToken)token).getEndOffset());
+
+            if(builderContext.top() instanceof StatementBuilderContainer) {
+                StatementBuilderContainer container = (StatementBuilderContainer)builderContext.top();
+                container.addStatementBuilder(builder);
+            }
         }
 
         globalSymTab.pop();
@@ -3075,6 +3077,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                 if (builder instanceof FriendFunctionBuilder) {
                     parent.addFriendBuilder((FriendFunctionBuilder)builder);
                 } else {
+                    ((MemberBuilder)builder).setVisibility(parent.getCurrentMemberVisibility());
                     parent.addMemberBuilder((MemberBuilder)builder);
                 }
             } else if (declBuilder.getTypeBuilder() != null && declBuilder.getTypeBuilder().getNameBuilder() != null) {
