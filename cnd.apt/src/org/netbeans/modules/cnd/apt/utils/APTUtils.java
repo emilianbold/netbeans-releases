@@ -814,7 +814,7 @@ public class APTUtils {
 
         @Override
         public int getOffset() {
-            throw new UnsupportedOperationException("getOffset must not be used"); // NOI18N
+            return Integer.MAX_VALUE;
         }
 
         @Override
@@ -824,7 +824,7 @@ public class APTUtils {
 
         @Override
         public int getEndOffset() {
-            throw new UnsupportedOperationException("getEndOffset must not be used"); // NOI18N
+            return Integer.MAX_VALUE;
         }
 
         @Override
