@@ -215,8 +215,10 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
                 tabContext.rerun.setEnabled(true);
                 tabContext.rerunDebug.setEnabled(true);
                 tabContext.resume.setFinder(resumeFromFinder);
-                tabContext.overview.setEnabled(true); //??TODO
-                tabContext.overview.setRoot(root); //??TODO
+                if (root != null) {
+                    tabContext.overview.setEnabled(true);
+                    tabContext.overview.setRoot(root);
+                }
                 tabContext.stop.setEnabled(false);
             }
         });

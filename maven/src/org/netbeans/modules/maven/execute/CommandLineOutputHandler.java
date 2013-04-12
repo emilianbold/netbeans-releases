@@ -132,8 +132,15 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
         initProcessorList(proj, config);
     }
     
-    public ExecutionEventObject.Tree getExecutionTree() {
-        return executionTree;
+    /**
+     * 
+     * @return null if tree is not being built (maven 2.x)
+     */
+    public @CheckForNull ExecutionEventObject.Tree getExecutionTree() {
+        if (contextImpl != null) {
+            return executionTree;
+        }
+        return null;
     }
 
 
