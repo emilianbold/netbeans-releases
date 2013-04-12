@@ -41,11 +41,19 @@
  */
 package org.netbeans.modules.css.prep.util;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.css.live.LiveUpdater;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -95,6 +103,23 @@ public final class UiUtils {
                         NotifyDescriptor.ERROR_MESSAGE));
             }
         });
+    }
+
+    public static void refreshCssInBrowser(File cssFile) {
+        LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
+        if (liveUpdater != null) {
+            FileObject fob = FileUtil.toFileObject(cssFile);
+            if (fob != null) {
+                try {
+                    DataObject dob = DataObject.find(fob);
+                    EditorCookie cookie = dob.getLookup().lookup(EditorCookie.class);
+                    if (cookie != null) {
+                        liveUpdater.update(cookie.openDocument());
+                    }
+                } catch (IOException donfex) {
+                }
+            }
+        }
     }
 
     static void informAndOpenOptions(NotifyDescriptor descriptor) {

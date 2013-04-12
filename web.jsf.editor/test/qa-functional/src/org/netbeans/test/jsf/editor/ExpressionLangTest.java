@@ -61,8 +61,10 @@ public class ExpressionLangTest extends GeneralJSF {
     }
 
     public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(ExpressionLangTest.class);
+        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ExpressionLangTest.class).addTest(
+               conf.addTest(
                 "testOpenProject", "testBeansCompletionInsideBraces_hash", "testBeansCompletionNoClosingBrace_hash","testMixedEmbeddedJS_hash",
                 "testMixedEmbeddCSS_hash", "testBeansCompletionInsideBraces_dollar", "testBeansCompletionNoClosingBrace_dollar","testMixedEmbeddedJS_dollar",
                 "testMixedEmbeddCSS_dollar").enableModules(".*").clusters(".*").honorAutoloadEager(true));
@@ -100,6 +102,7 @@ public class ExpressionLangTest extends GeneralJSF {
         openFile("index.xhtml", ExpressionLangTest.current_project);
         EditorOperator eo = new EditorOperator("index.xhtml");
         ExpressionLangTest.originalContent = eo.getText();
+        resolveServer(ExpressionLangTest.current_project);
         endTest();
     }
     

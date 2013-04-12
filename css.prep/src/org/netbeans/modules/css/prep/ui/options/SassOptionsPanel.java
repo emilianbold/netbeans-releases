@@ -45,6 +45,8 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -55,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -98,6 +101,7 @@ public final class SassOptionsPanel extends JPanel {
 
         // listeners
         sassPathTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
+        sassOutputOnErrorCheckBox.addItemListener(new DefaultItemListener());
     }
 
     public String getSassPath() {
@@ -106,6 +110,14 @@ public final class SassOptionsPanel extends JPanel {
 
     public void setSassPath(String path) {
         sassPathTextField.setText(path);
+    }
+
+    public boolean getSassOutputOnError() {
+        return sassOutputOnErrorCheckBox.isSelected();
+    }
+
+    public void setSassOutputOnError(boolean outputOnError) {
+        sassOutputOnErrorCheckBox.setSelected(outputOnError);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -133,6 +145,7 @@ public final class SassOptionsPanel extends JPanel {
         sassPathSearchButton = new JButton();
         sassPathHintLabel = new JLabel();
         installSassLabel = new JLabel();
+        sassOutputOnErrorCheckBox = new JCheckBox();
 
         sassPathLabel.setLabelFor(sassPathTextField);
         Mnemonics.setLocalizedText(sassPathLabel, NbBundle.getMessage(SassOptionsPanel.class, "SassOptionsPanel.sassPathLabel.text")); // NOI18N
@@ -163,6 +176,8 @@ public final class SassOptionsPanel extends JPanel {
             }
         });
 
+        Mnemonics.setLocalizedText(sassOutputOnErrorCheckBox, NbBundle.getMessage(SassOptionsPanel.class, "SassOptionsPanel.sassOutputOnErrorCheckBox.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -181,6 +196,9 @@ public final class SassOptionsPanel extends JPanel {
                         .addComponent(sassPathBrowseButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(sassPathSearchButton))))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(sassOutputOnErrorCheckBox)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {sassPathBrowseButton, sassPathSearchButton});
@@ -197,7 +215,8 @@ public final class SassOptionsPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(sassPathHintLabel)
                     .addComponent(installSassLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(sassOutputOnErrorCheckBox))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -234,6 +253,7 @@ public final class SassOptionsPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel installSassLabel;
+    private JCheckBox sassOutputOnErrorCheckBox;
     private JButton sassPathBrowseButton;
     private JLabel sassPathHintLabel;
     private JLabel sassPathLabel;
@@ -261,6 +281,15 @@ public final class SassOptionsPanel extends JPanel {
         }
 
         private void processUpdate() {
+            fireChange();
+        }
+
+    }
+
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
             fireChange();
         }
 
