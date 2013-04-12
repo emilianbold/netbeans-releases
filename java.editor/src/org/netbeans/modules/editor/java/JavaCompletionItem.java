@@ -3315,15 +3315,20 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         TreePath tp = copy.getTreeUtilities().pathFor(embeddedOffset);
                         if (TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                             TypeElement parent = parentHandle.resolve(copy);
-                            ArrayList<VariableElement> fieldElements = new ArrayList<VariableElement>();
-                            for (ElementHandle<? extends Element> handle : fieldHandles) {
-                                fieldElements.add((VariableElement)handle.resolve(copy));
+                            if (parent != null && parent == copy.getTrees().getElement(tp)) {
+                                ArrayList<VariableElement> fieldElements = new ArrayList<VariableElement>();
+                                for (ElementHandle<? extends Element> handle : fieldHandles) {
+                                    Element fieldElement = handle.resolve(copy);
+                                    if (fieldElement != null && fieldElement.getKind().isField()) {
+                                        fieldElements.add((VariableElement)fieldElement);
+                                    }
+                                }
+                                ExecutableElement superConstructor = superConstructorHandle != null ? superConstructorHandle.resolve(copy) : null;
+                                ClassTree clazz = (ClassTree) tp.getLeaf();
+                                GeneratorUtilities gu = GeneratorUtilities.get(copy);
+                                ClassTree decl = GeneratorUtils.insertClassMember(copy, clazz, gu.createConstructor(parent, fieldElements, superConstructor), embeddedOffset);
+                                copy.rewrite(clazz, decl);
                             }
-                            ExecutableElement superConstructor = superConstructorHandle != null ? superConstructorHandle.resolve(copy) : null;
-                            ClassTree clazz = (ClassTree) tp.getLeaf();
-                            GeneratorUtilities gu = GeneratorUtilities.get(copy);
-                            ClassTree decl = GeneratorUtils.insertClassMember(copy, clazz, gu.createConstructor(parent, fieldElements, superConstructor), embeddedOffset);
-                            copy.rewrite(clazz, decl);
                         }
                     }
                 });

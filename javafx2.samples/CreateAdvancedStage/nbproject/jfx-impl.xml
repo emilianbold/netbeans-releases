@@ -2371,6 +2371,18 @@
                             }
                         }
                     }
+                    if(isTrue(nativeEnabled) && defined(nativeType) && nativeType != "none") {
+                        if(!isTrue(projStateRun) && !isTrue(projStateDbg) && !isTrue(projStatePrf)) {
+                            if(plat.setBasedir) {
+                                var sdkdir = new String(project.getProperty("javafx.sdk"));
+                                if(defined(sdkdir)) {
+                                    plat.setBasedir(sdkdir);
+                                }
+                            } else {
+                                print("Note: the current version of native packager Ant task can bundle the default JRE only.");
+                            }
+                        }
+                    }
                     
                     // fx:callbacks
                     var callbs = deploy.createCallbacks();
