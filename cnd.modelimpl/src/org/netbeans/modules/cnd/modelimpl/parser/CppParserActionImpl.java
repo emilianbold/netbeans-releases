@@ -2621,19 +2621,21 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     private void end_type_id_impl(Token token) {
-        TypeBuilder typeBuilder = (TypeBuilder) builderContext.top();
-        typeBuilder.setEndOffset(((APTToken)token).getEndOffset());
-        builderContext.pop();
-        if (builderContext.top() instanceof NameBuilder) {
-            TypeBasedSpecializationParameterBuilder paramBuilder = new TypeBasedSpecializationParameterBuilder();
-            paramBuilder.setTypeBuilder(typeBuilder);
-            paramBuilder.setFile(typeBuilder.getFile());
-            paramBuilder.setStartOffset(typeBuilder.getStartOffset());
-            paramBuilder.setEndOffset(typeBuilder.getEndOffset());
+        if (builderContext.top() instanceof TypeBuilder) {
+            TypeBuilder typeBuilder = (TypeBuilder) builderContext.top();
+            typeBuilder.setEndOffset(((APTToken)token).getEndOffset());
+            builderContext.pop();
+            if (builderContext.top() instanceof NameBuilder) {
+                TypeBasedSpecializationParameterBuilder paramBuilder = new TypeBasedSpecializationParameterBuilder();
+                paramBuilder.setTypeBuilder(typeBuilder);
+                paramBuilder.setFile(typeBuilder.getFile());
+                paramBuilder.setStartOffset(typeBuilder.getStartOffset());
+                paramBuilder.setEndOffset(typeBuilder.getEndOffset());
 
-            NameBuilder nameBuilder2 = (NameBuilder) builderContext.top();
-            nameBuilder2.addParameterBuilder(paramBuilder);
-        }        
+                NameBuilder nameBuilder2 = (NameBuilder) builderContext.top();
+                nameBuilder2.addParameterBuilder(paramBuilder);
+            }
+        }
     }
     
     @Override public void parameters_and_qualifiers(Token token) {}
