@@ -53,54 +53,11 @@ public class NbIOFoldTest {
 
     /**
      * Test writing folded InputOutput to the first-level InputOutput.
-     *
-     * Situation:
-     *
-     * <pre>
-     * Line String           | IO   | Offset to the first line of parent fold
-     * -----------             --     ---------------------------------------
-     * FoldA                 | A    | 0
-     *   FoldA1              | A    | 1
-     * + FoldB               | B    | 2
-     *     FoldB1            | B    | 1
-     * +   FoldC             | C    | 2
-     *       FoldC1          | C    | 1
-     *       FoldC2          | C    | 2
-     *     FoldB2            | B    | 5
-     * + FoldD               | D    | 8
-     *     FoldD1            | D    | 1
-     *   FoldA2              | A    | 10
-     * </pre>
      */
     @Test
     public void printToNbIO2() throws Exception {
-        NbIO nbIO = new NbIO("test");
-        nbIO.getOut().println("Start.");
-        nbIO.getOut().println("FoldA");
-        FoldHandle foldA = IOFolding.startFold(nbIO, true);
-        nbIO.getOut().println("  FoldA1");
-        nbIO.getOut().println("  FoldB");
-        FoldHandle foldB = foldA.startFold(true);
-        nbIO.getOut().println("    FoldB1");
-        nbIO.getOut().println("    FoldC");
-        FoldHandle foldC = foldB.startFold(true);
-        nbIO.getOut().println("      FoldC1");
-        nbIO.getOut().println("      FoldC2");
-        foldC.finish();
-        nbIO.getOut().println("    FoldB2");
-        foldB.finish();
-        nbIO.getOut().print("  ");
-        nbIO.getOut().print("FoldD\n");
-        FoldHandle foldD = foldA.startFold(true);
-        nbIO.getOut().print("    FoldD");
-        nbIO.getOut().println(1);
-        foldD.finish();
-        nbIO.getOut().println("  FoldA2");
-        foldA.finish();
-        nbIO.getOut().println("End.");
 
-        AbstractLines lines = (AbstractLines) ((NbWriter) nbIO.getOut())
-                .out().getLines();
+        AbstractLines lines = createTestLines();
 
         assertEquals("Start.\n", lines.getLine(0));
         assertEquals("FoldA\n", lines.getLine(1));
@@ -131,5 +88,134 @@ public class NbIOFoldTest {
         assertEquals(8, foldOffsets.get(9));
         assertEquals(1, foldOffsets.get(10));
         assertEquals(10, foldOffsets.get(11));
+    }
+
+    @Test
+    public void testFoldLengths() {
+        AbstractLines lines = createTestLines();
+        assertEquals(10, lines.foldLength(1));
+        assertEquals(5, lines.foldLength(3));
+        assertEquals(2, lines.foldLength(5));
+        assertEquals(1, lines.foldLength(9));
+    }
+
+    @Test
+    public void testRealAndVisibleIndexes() {
+        AbstractLines lines = createTestLines();
+        assertEquals(8, lines.realToVisibleLine(8));
+
+        lines.hideFold(5);
+        assertEquals(5, lines.realToVisibleLine(5));
+        assertEquals(-1, lines.realToVisibleLine(6));
+        assertEquals(-1, lines.realToVisibleLine(7));
+        assertEquals(6, lines.realToVisibleLine(8));
+
+        assertEquals(5, lines.visibleToRealLine(5));
+        assertEquals(8, lines.visibleToRealLine(6));
+
+        lines.showFold(5);
+        assertEquals(6, lines.realToVisibleLine(6));
+        assertEquals(7, lines.realToVisibleLine(7));
+        assertEquals(8, lines.realToVisibleLine(8));
+
+        assertEquals(5, lines.visibleToRealLine(5));
+        assertEquals(6, lines.visibleToRealLine(6));
+        assertEquals(7, lines.visibleToRealLine(7));
+        assertEquals(8, lines.visibleToRealLine(8));
+
+        lines.hideFold(5);
+        assertEquals(8, lines.visibleToRealLine(6));
+        assertEquals(6, lines.realToVisibleLine(8));
+    }
+
+    @Test
+    public void testFoldFirstLine() {
+        NbIO nbIO = new NbIO("test");
+        nbIO.getOut().println("FoldA");
+        FoldHandle foldA = IOFolding.startFold(nbIO, true);
+        nbIO.getOut().println("  A");
+        nbIO.getOut().println("  B");
+        foldA.finish();
+        AbstractLines lines = (AbstractLines) ((NbWriter) nbIO.getOut())
+                .out().getLines();
+        assertEquals(1, lines.visibleToRealLine(1));
+        assertEquals(2, lines.visibleToRealLine(2));
+        assertEquals(1, lines.realToVisibleLine(1));
+        assertEquals(2, lines.realToVisibleLine(2));
+        lines.hideFold(0);
+        assertEquals(-1, lines.realToVisibleLine(1));
+        assertEquals(-1, lines.realToVisibleLine(2));
+        lines.showFold(0);
+        assertEquals(1, lines.visibleToRealLine(1));
+        assertEquals(2, lines.visibleToRealLine(2));
+        assertEquals(1, lines.realToVisibleLine(1));
+        assertEquals(2, lines.realToVisibleLine(2));
+    }
+
+    @Test
+    public void testCollapseAndExpandFoldWithNestedHiddenFold() {
+        AbstractLines lines = createTestLines();
+        lines.hideFold(5);
+        assertEquals(6, lines.realToVisibleLine(8));
+        lines.hideFold(3);
+        assertEquals(4, lines.realToVisibleLine(9));
+        lines.showFold(3);
+        assertEquals(5, lines.realToVisibleLine(5));
+        assertEquals(6, lines.realToVisibleLine(8));
+        assertEquals(7, lines.realToVisibleLine(9));
+    }
+
+    /**
+     * Create Lines object for InputOutput that contains the following structure
+     * of lines.
+     *
+     *  * Situation:
+     *
+     * <pre>
+     * Line String           | IO   | Offset to the first line of parent fold
+     * -----------             --     ---------------------------------------
+     * Start.
+     * FoldA                 | A    | 0
+     *   FoldA1              | A    | 1
+     * + FoldB               | B    | 2
+     *     FoldB1            | B    | 1
+     * +   FoldC             | C    | 2
+     *       FoldC1          | C    | 1
+     *       FoldC2          | C    | 2
+     *     FoldB2            | B    | 5
+     * + FoldD               | D    | 8
+     *     FoldD1            | D    | 1
+     *   FoldA2              | A    | 10
+     * End.
+     * </pre>
+     */
+    private AbstractLines createTestLines() {
+        NbIO nbIO = new NbIO("test");
+        nbIO.getOut().println("Start.");
+        nbIO.getOut().println("FoldA");
+        FoldHandle foldA = IOFolding.startFold(nbIO, true);
+        nbIO.getOut().println("  FoldA1");
+        nbIO.getOut().println("  FoldB");
+        FoldHandle foldB = foldA.startFold(true);
+        nbIO.getOut().println("    FoldB1");
+        nbIO.getOut().println("    FoldC");
+        FoldHandle foldC = foldB.startFold(true);
+        nbIO.getOut().println("      FoldC1");
+        nbIO.getOut().println("      FoldC2");
+        foldC.finish();
+        nbIO.getOut().println("    FoldB2");
+        foldB.finish();
+        nbIO.getOut().print("  ");
+        nbIO.getOut().print("FoldD\n");
+        FoldHandle foldD = foldA.startFold(true);
+        nbIO.getOut().print("    FoldD");
+        nbIO.getOut().println(1);
+        foldD.finish();
+        nbIO.getOut().println("  FoldA2");
+        foldA.finish();
+        nbIO.getOut().println("End.");
+        AbstractLines lines = (AbstractLines) ((NbWriter) nbIO.getOut())
+                .out().getLines();
+        return lines;
     }
 }

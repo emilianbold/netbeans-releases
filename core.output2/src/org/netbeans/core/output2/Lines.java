@@ -342,4 +342,50 @@ public interface Lines {
      * @return True if there is still an open stream which may write to the backing storage and no error has occured
      */
     boolean isGrowing();
+
+    /**
+     * Show lines in fold that starts at {@code foldStartIndex}.
+     */
+    void showFold(int foldStartIndex);
+
+    /**
+     * Hide lines in fold that starts at {@code foldStartIndex}.
+     */
+    void hideFold(int foldStartIndex);
+
+    int getVisibleLineCount();
+
+//    /**
+//     * Test whether a line is visible, e.g. it is not inside a hidden fold.
+//     */
+//    boolean isVisible(int lineIndex);
+//
+//    /**
+//     * Get count of visible lines.
+//     */
+//    int visibleLineCount();
+//
+    /**
+     * Convert real line index to visible line index.
+     *
+     * @return Visible line index, or -1 if the line is invisible.
+     */
+    int realToVisibleLine(int realLineIndex);
+
+    /**
+     * Convert visible line index to a real line index.
+     */
+    int visibleToRealLine(int visibleLineIndex);
+
+//    /**
+//     * Convert real position to visible position.
+//     *
+//     * @return Visible position, or -1 if the position is in a hidden line.
+//     */
+//    int realToVisiblePosition(int realPosition);
+//
+//    /**
+//     * Convert visible position to real position.
+//     */
+//    int visibleToRealPosition(int visiblePosition);
 }

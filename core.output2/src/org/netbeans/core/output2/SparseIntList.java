@@ -93,7 +93,7 @@ final class SparseIntList {
      * this method.
      */
     public synchronized void add(int idx, int value) {
-        if (value <= lastAdded) {
+        if (value < lastAdded) {
             throw new IllegalArgumentException ("Contents must be presorted - " + //NOI18N
                 "added value " + value + " is less than preceding " + //NOI18N
                 "value " + lastAdded); //NOI18N

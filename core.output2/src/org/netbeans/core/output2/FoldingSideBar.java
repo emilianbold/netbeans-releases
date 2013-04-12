@@ -42,11 +42,13 @@
 
 package org.netbeans.core.output2;
 
-import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
@@ -88,6 +90,8 @@ public class FoldingSideBar extends JComponent {
         setPreferredSize(new Dimension(BAR_WIDTH, Integer.MAX_VALUE));
         setMaximumSize(new Dimension(BAR_WIDTH, Integer.MAX_VALUE));
         wrapped = outputPane.isWrapped();
+        addMouseListener(new FoldingMouseListener());
+        addMouseMotionListener(new FoldingMouseListener()); //TODO one is enough
     }
 
     private AbstractLines getLines() {
@@ -125,19 +129,24 @@ public class FoldingSideBar extends JComponent {
         int size = lines.getLineCount();
         int logLine = 0; // logical line (including wrapped lines)
         int nextLogLine;
+        int line = 0;
         for (int i = 0; i < size - 1; i++) {
-            nextLogLine = findLogicalLineIndex(i + 1, size);
+            if (!lines.isVisible(i)) {
+                continue;
+            }
+            nextLogLine = findLogicalLineIndex(line + 1, size);
             drawLineGraphics(g, i, logLine, nextLogLine, offset, lineHeight,
                     descent);
             logLine = nextLogLine;
+            line++;
         }
     }
 
     /**
      * @param g Graphics to draw into.
      * @param line Physical line index.
-     * @param logLine Logical line index.
-     * @param nextLogLine Logical index of the next line.
+     * @param logLine Logical visible line index.
+     * @param nextLogLine Logical index of the next visible line.
      * @param offset Y offset of the first line (pixels).
      * @param lineHeight Height of line (pixels).
      * @param descent Descent of font metrics (pixels).
@@ -152,7 +161,7 @@ public class FoldingSideBar extends JComponent {
         int startY = logLine * lineHeight + offset;
         int endY = nextLogLine * lineHeight + offset;
         if (nextOffset == 1) {
-            drawButton(g, startY, endY);
+            drawButton(g, startY, endY, line);
         } else if (currOffset != 0 && currOffset + 1 == nextOffset) {
             g.drawLine(7, startY, 7, endY);
         } else if (currOffset > 0 && nextOffset == 0) {
@@ -175,11 +184,26 @@ public class FoldingSideBar extends JComponent {
      * @param lineStartY Y coordinate of the start of the line.
      * @param lineEndY Y coordinate of the end of the line.
      */
-    private void drawButton(Graphics g, int lineStartY, int lineEndY) {
+    private void drawButton(Graphics g, int lineStartY, int lineEndY, int line) {
+        boolean collapsed = !lines.isVisible(line + 1);
         g.drawRect(2, lineStartY, 10, 10);
         g.drawLine(5, lineStartY + 5, 9, lineStartY + 5);
-        if (lineEndY > lineStartY + 10) {
+        if (collapsed) {
+            g.drawLine(7, lineStartY + 3, 7, lineStartY + 7);
+        }
+        if (lineEndY > lineStartY + 10
+                && (!collapsed || isLastVisibleLineInFold(line))) {
             g.drawLine(7, lineStartY + 10, 7, lineEndY);
+        }
+    }
+
+    private boolean isLastVisibleLineInFold(int line) {
+        if (lines.getFoldOffsets().get(line) > 0) {
+            int visibleLine = lines.realToVisibleLine(line);
+            int nextVisibleRealIndex = lines.visibleToRealLine(visibleLine + 1);
+            return lines.getFoldOffsets().get(nextVisibleRealIndex) > 0;
+        } else {
+            return false;
         }
     }
 
@@ -213,8 +237,8 @@ public class FoldingSideBar extends JComponent {
      * the physical line index is bigger or equal to count of physical lines,
      * return total count of logical lines.
      *
-     * @param physicalLineIndex Index of physical (not wrapped) line.
-     * @param size Total count of physical lines.
+     * @param physicalLineIndex Index of physical (not wrapped) visible line.
+     * @param size Total count of physical visible lines.
      */
     private int findLogicalLineIndex(int physicalLineIndex, int size) {
         if (wrapped) {
@@ -237,5 +261,63 @@ public class FoldingSideBar extends JComponent {
     public void setCharsPerLine(int charsPerLine) {
         this.charsPerLine = charsPerLine;
         repaint();
+    }
+
+    private class FoldingMouseListener extends MouseAdapter {
+
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            int physicalRealLine = getLineForEvent(e);            
+            if (isFoldStartLine(physicalRealLine)) {
+                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            } else {
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            int physicalRealLine = getLineForEvent(e);
+            if (isFoldStartLine(physicalRealLine)) {
+                if (lines.isVisible(physicalRealLine + 1)) {
+                    lines.hideFold(physicalRealLine);
+                } else {
+                    lines.showFold(physicalRealLine);
+                }
+            }
+        }
+
+        private boolean isFoldStartLine(int physicalLine) {
+            return physicalLine >= 0
+                    && physicalLine + 1 < lines.getFoldOffsets().size()
+                    && lines.getFoldOffsets().get(physicalLine + 1) == 1;
+        }
+
+        private int getLineForEvent(MouseEvent e) {
+            // TODO refactor, the same code as in paint()
+            FontMetrics fontMetrics = textView.getFontMetrics(textView.getFont());
+            int lineHeight = fontMetrics.getHeight();
+            int offset = 0;
+            try {
+                Rectangle modelToView = textView.modelToView(0);
+                offset = modelToView.y;
+            } catch (BadLocationException ex) {
+                LOG.log(Level.INFO, null, ex);
+            }
+            offset += lineHeight - fontMetrics.getAscent();
+            // end TODO
+            int logicalLine = (e.getY() - offset) / lineHeight;
+            final int physicalLine;
+            if (wrapped) {
+                int[] info = new int[]{logicalLine, 0, 0};
+                lines.toPhysicalLineIndex(info, charsPerLine);
+                physicalLine = info[0];
+            } else {
+                physicalLine = logicalLine < lines.getVisibleLineCount()
+                        ? lines.visibleToRealLine(logicalLine)
+                        : -1;
+            }
+            return physicalLine;
+        }
     }
 }

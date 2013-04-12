@@ -103,7 +103,12 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     /** Sums of length of all preceding tabs (length of extra spaces) */
     private IntListSimple tabLengthSums = new IntListSimple(100);
 
-    private IntListSimple foldOffsets = new IntListSimple(100);
+    private final IntListSimple foldOffsets = new IntListSimple(10);
+    private final IntListSimple visibleList = new IntListSimple(100);
+    private final IntListSimple visibleToRealLine = new IntListSimple(100);
+    private final IntListSimple realToVisibleLine = new IntListSimple(100);
+    private int hiddenLines = 0;
+
     private int currentFoldStart = -1;
     /** last storage size (after dispose), in bytes */
     private int lastStorageSize = -1;
@@ -775,8 +780,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             updateLastLine(lineIndex, charLengthWithTabs);
             if (isFinished) {
                 lineStartList.add(lineStart + lineLength);
-                foldOffsets.add(currentFoldStart == -1
-                        ? 0 : lineIndex - currentFoldStart);
+                updateFolds(lineIndex);
                 lineCharLengthListWithTabs.add(charLengthWithTabs);
             }
             lastLineFinished = isFinished;
@@ -784,6 +788,26 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             lastCharLengthWithTabs = isFinished ? -1 : charLengthWithTabs;
         }
         markDirty();
+    }
+
+    /**
+     * Update data structures with info about folds. Called after a new line is
+     * finished.
+     */
+    private void updateFolds(int lineIndex) {
+        if (currentFoldStart == -1) {
+            foldOffsets.add(0);
+        } else {
+            foldOffsets.add(lineIndex - currentFoldStart);
+        }
+        if (currentFoldStart != -1 && visibleList.get(currentFoldStart) == 0) {
+            hiddenLines++;
+            realToVisibleLine.add(-1);
+        } else {
+            visibleToRealLine.add(lineIndex);
+            realToVisibleLine.add(lineIndex - hiddenLines);
+        }
+        visibleList.add(1);
     }
 
     void setCurrentFoldStart(int foldStart) {
@@ -1218,6 +1242,169 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         public void releaseBuffer() {
             cb = null;
             parentResource.releaseBuffer();
+        }
+    }
+
+    @Override
+    public void showFold(int foldStartIndex) {
+        setFoldExpanded(foldStartIndex, true);
+    }
+
+    @Override
+    public void hideFold(int foldStartIndex) {
+        setFoldExpanded(foldStartIndex, false);
+    }
+
+    /**
+     * @param foldStartIndex Real index of the first line of the fold.
+     */
+    private void setFoldExpanded(int foldStartIndex, boolean expanded) {
+        synchronized (readLock()) {
+            visibleList.set(foldStartIndex, expanded ? 1 : 0);
+            int len = foldLength(foldStartIndex);
+            if (len > 0) {
+                int changed = updateRealToVisibleIndexesInFold(foldStartIndex,
+                        len, expanded);
+                for (int i = foldStartIndex + len + 1;
+                        i < realToVisibleLine.size(); i++) {
+                    int currentValue = realToVisibleLine.get(i);
+                    if (currentValue != -1) {
+                        realToVisibleLine.set(i,
+                                currentValue + (expanded ? changed : -changed));
+                    }
+                }
+                hiddenLines += expanded ? -changed : changed;
+                updateVisibleToRealLines(foldStartIndex);
+                calcLogicalLineCount(knownCharsPerLine);
+                markDirty();
+                delayedFire();
+            }
+        }
+    }
+
+    /**
+     * Update realToVisibleLine indexes in a fold. Handle nested folds, keep
+     * their expanded/collapsed state.
+     *
+     * @param foldStart Real index of the first line of the fold.
+     * @param len Total length of the fold, including nested folds
+     * @param expanded True to expand the fold, false to collapse the fold.
+     *
+     * @return Number of newly hidden of shown lines.
+     */
+    private int updateRealToVisibleIndexesInFold(
+            int foldStart, int len, boolean expanded) {
+
+        int changed = 0;
+        int nestedHidden = -1; // start index of currently processed hidden fold
+        for (int i = 0; i < len; i++) {
+            int lineIndex = foldStart + i + 1;
+            int foldOffset = foldOffsets.get(lineIndex);
+            if (i > 0 && foldOffset == 1 && visibleList.get(lineIndex - 1) == 0
+                    && nestedHidden == -1) {
+                // a nested hidden fold encountered
+                nestedHidden = lineIndex - 1;
+            } else if (foldOffset <= i + 1 && (nestedHidden == -1
+                    || foldOffset > lineIndex - nestedHidden)) {
+                assert !expanded || realToVisibleLine.get(lineIndex) == -1;
+                assert expanded || realToVisibleLine.get(lineIndex) != -1;
+                nestedHidden = -1;
+                changed++;
+                realToVisibleLine.set(lineIndex, expanded
+                        ? realToVisibleLine.get(foldStart) + changed
+                        : -1); // invisible: -1
+            } else if (foldOffset <= len + 1 && nestedHidden != -1) {
+                assert foldOffset <= lineIndex - nestedHidden;
+            } else {
+                assert false : "Only nested fold expected";             //NOI18N
+            }
+        }
+        return changed;
+    }
+
+    private void updateVisibleToRealLines(int fromRealIndex) {
+        for (int i = fromRealIndex; i < getLineCount() - 1; i++) {
+            int visibleLine = realToVisibleLine.get(i);
+            if (visibleLine == -1) {
+                continue;
+            }
+            if (visibleLine >= visibleToRealLine.size()) {
+                visibleToRealLine.add(i);
+            } else {
+                visibleToRealLine.set(visibleLine, i);
+            }
+        }
+        visibleToRealLine.shorten(realToVisibleLine.size() - hiddenLines);
+    }
+
+    @Override
+    public int visibleToRealLine(int visibleLineIndex) {
+        synchronized (readLock()) {
+            if (visibleLineIndex >= visibleToRealLine.size()) {
+                return visibleLineIndex + hiddenLines;
+            } else if (visibleLineIndex < 0) {
+                return visibleLineIndex;
+            }
+            return visibleToRealLine.get(visibleLineIndex);
+        }
+    }
+
+    @Override
+    public int realToVisibleLine(int realLineIndex) {
+        synchronized (readLock()) {
+            if (realLineIndex >= realToVisibleLine.size()) {
+                return realLineIndex - hiddenLines;
+            }
+            return realToVisibleLine.get(realLineIndex);
+        }
+    }
+
+    /**
+     * @param lineIndex Real line index.
+     */
+    boolean isVisible(int lineIndex) {
+        synchronized (readLock()) {
+            if (lineIndex >= foldOffsets.size()) {
+                return true;
+            }
+            int fo = foldOffsets.get(lineIndex);
+            if (fo == 0) {
+                return true;
+            }
+            int parentFold = lineIndex - foldOffsets.get(lineIndex);
+            while (parentFold >= 0) {
+                if (visibleList.get(parentFold) == 0) {
+                    return false;
+                } else {
+                    fo = foldOffsets.get(parentFold);
+                    if (fo == 0) {
+                        break;
+                    } else {
+                        parentFold = parentFold - fo;
+                    }
+                }
+            }
+            return true;
+        }
+    }
+
+    /**
+     * @param foldStart Real fold start index.
+     */
+    int foldLength(int foldStart) {
+        int i = foldStart + 1;
+        while (i < foldOffsets.size()
+                && foldOffsets.get(i) > 0
+                && foldOffsets.get(i) <= i - foldStart) {
+            i++;
+        }
+        return i - foldStart - 1;
+    }
+
+    @Override
+    public int getVisibleLineCount() {
+        synchronized (readLock()) {
+            return getLineCount() - hiddenLines;
         }
     }
 }
