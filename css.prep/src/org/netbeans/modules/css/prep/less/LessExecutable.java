@@ -134,7 +134,7 @@ public final class LessExecutable {
                 .inputOutput(IOProvider.getDefault().getIO(Bundle.Less_compile(), false))
                 .inputVisible(false)
                 .frontWindow(false)
-                .frontWindowOnError(true)
+                .frontWindowOnError(CssPrepOptions.getInstance().getLessOutputOnError())
                 .noReset(true)
                 .showProgress(true)
                 .postExecution(postTask);

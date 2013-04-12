@@ -92,6 +92,7 @@ public class SassOptions implements CssPreprocessorImplementation.Options {
     @Override
     public void update() {
         getComponent().setSassPath(CssPrepOptions.getInstance().getSassPath());
+        getComponent().setSassOutputOnError(CssPrepOptions.getInstance().getSassOutputOnError());
     }
 
     @Override
@@ -123,6 +124,7 @@ public class SassOptions implements CssPreprocessorImplementation.Options {
         String originalPath = CssPrepOptions.getInstance().getSassPath();
         String path = getComponent().getSassPath();
         CssPrepOptions.getInstance().setSassPath(path);
+        CssPrepOptions.getInstance().setSassOutpuOnError(getComponent().getSassOutputOnError());
         if (!originalPath.equals(path)) {
             sassCssPreprocessor.fireOptionsChanged();
         }

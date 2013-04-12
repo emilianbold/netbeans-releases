@@ -58,8 +58,10 @@ public final class CssPrepOptions {
 
     // sass
     private static final String SASS_PATH = "sass.path"; // NOI18N
+    private static final String SASS_OUTPUT_ON_ERROR = "sass.outputOnError"; // NOI18N
     // less
     private static final String LESS_PATH = "less.path"; // NOI18N
+    private static final String LESS_OUTPUT_ON_ERROR = "less.outputOnError"; // NOI18N
 
     private volatile boolean sassSearched = false;
     private volatile boolean lessSearched = false;
@@ -89,6 +91,14 @@ public final class CssPrepOptions {
         getPreferences().put(SASS_PATH, sassPath);
     }
 
+    public boolean getSassOutputOnError() {
+        return getPreferences().getBoolean(SASS_OUTPUT_ON_ERROR, true);
+    }
+
+    public void setSassOutpuOnError(boolean outputOnError) {
+        getPreferences().putBoolean(SASS_OUTPUT_ON_ERROR, outputOnError);
+    }
+
     public String getLessPath() {
         String path = getPreferences().get(LESS_PATH, null);
         if (path == null && !lessSearched) {
@@ -104,6 +114,14 @@ public final class CssPrepOptions {
 
     public void setLessPath(String lessPath) {
         getPreferences().put(LESS_PATH, lessPath);
+    }
+
+    public boolean getLessOutputOnError() {
+        return getPreferences().getBoolean(LESS_OUTPUT_ON_ERROR, true);
+    }
+
+    public void setLessOutpuOnError(boolean outputOnError) {
+        getPreferences().putBoolean(LESS_OUTPUT_ON_ERROR, outputOnError);
     }
 
     private Preferences getPreferences() {

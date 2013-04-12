@@ -134,7 +134,7 @@ public final class SassExecutable {
                 .inputOutput(IOProvider.getDefault().getIO(Bundle.Sass_compile(), false))
                 .inputVisible(false)
                 .frontWindow(false)
-                .frontWindowOnError(true)
+                .frontWindowOnError(CssPrepOptions.getInstance().getSassOutputOnError())
                 .noReset(true)
                 .showProgress(true)
                 .postExecution(postTask);
