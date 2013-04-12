@@ -237,7 +237,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 handle.finish();
                 ioput.getOut().close();
                 ioput.getErr().close();
-                actionStatesAtFinish(out.createResumeFromFinder());
+                actionStatesAtFinish(out.createResumeFromFinder(), out.getExecutionTree());
                 markFreeTab();
                 RP.post(new Runnable() { //#103460
                     @Override
