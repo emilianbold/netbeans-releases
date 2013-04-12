@@ -43,6 +43,7 @@ package org.netbeans.modules.bugtracking.ui.query;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -74,6 +75,7 @@ import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.LineBorder;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.APIAccessor;
@@ -89,6 +91,7 @@ import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.util.NoContentPanel;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Cancellable;
@@ -129,8 +132,14 @@ public final class QueryTopComponent extends TopComponent
         title.setBorder(BorderFactory.createEmptyBorder(
                 0, getLeftContainerGap(title), 0, 0));
 
+        leftRepoPanel.setVisible(false);
         repoPanel = new RepoSelectorPanel(repositoryComboBox, newButton);
-        ((GroupLayout)headerPanel.getLayout()).replace(bottomPanel, repoPanel);
+        
+        GroupLayout layout = (GroupLayout) headerPanel.getLayout();
+        leftRepoPanel.setVisible(true);
+        layout.replace(leftRepoPanel, repoPanel);
+                
+        addNoContentPanel();
         
         /* texts */
         Mnemonics.setLocalizedText(
@@ -195,7 +204,7 @@ public final class QueryTopComponent extends TopComponent
                 }
             }
             QueryController c = getController(query);
-            queryPanel.add(c.getComponent());
+            addQueryComponent(c.getComponent());
             this.query.addPropertyChangeListener(this);
         } else {
             newButton.addActionListener(new ActionListener() {
@@ -417,6 +426,13 @@ public final class QueryTopComponent extends TopComponent
         });
     }
 
+    @NbBundle.Messages("LBL_NoRepositorySelected=<no repository selected>")
+    private void addNoContentPanel() {
+        NoContentPanel ncp = new NoContentPanel();
+        ncp.setText(Bundle.LBL_NoRepositorySelected());
+        queryPanel.add(ncp);
+    }
+
     final static class ResolvableHelper implements Serializable {
 
         private static final long serialVersionUID = 1L;
@@ -485,10 +501,8 @@ public final class QueryTopComponent extends TopComponent
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            queryPanel.add(addController.getComponent());
-
+                            addQueryComponent(addController.getComponent());
                             focusFirstEnabledComponent();
-
                         }
                     });
                 } finally {
@@ -498,6 +512,11 @@ public final class QueryTopComponent extends TopComponent
             }
 
         });
+    }
+
+    private void addQueryComponent(JComponent cmp) {
+        queryPanel.removeAll();
+        queryPanel.add(cmp);
     }
 
     private RepositoryImpl getRepository() {
@@ -558,24 +577,10 @@ public final class QueryTopComponent extends TopComponent
         mainPanel = new javax.swing.JPanel();
         headerPanel = new javax.swing.JPanel();
         title = new javax.swing.JLabel();
-        bottomPanel = new javax.swing.JPanel();
         leftRepoPanel = new javax.swing.JPanel();
         queryPanel = new javax.swing.JPanel();
 
         org.openide.awt.Mnemonics.setLocalizedText(title, org.openide.util.NbBundle.getMessage(QueryTopComponent.class, "QueryTopComponent.findIssuesLabel.text")); // NOI18N
-
-        bottomPanel.setOpaque(false);
-
-        javax.swing.GroupLayout bottomPanelLayout = new javax.swing.GroupLayout(bottomPanel);
-        bottomPanel.setLayout(bottomPanelLayout);
-        bottomPanelLayout.setHorizontalGroup(
-            bottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 94, Short.MAX_VALUE)
-        );
-        bottomPanelLayout.setVerticalGroup(
-            bottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 26, Short.MAX_VALUE)
-        );
 
         leftRepoPanel.setOpaque(false);
 
@@ -583,11 +588,11 @@ public final class QueryTopComponent extends TopComponent
         leftRepoPanel.setLayout(leftRepoPanelLayout);
         leftRepoPanelLayout.setHorizontalGroup(
             leftRepoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
+            .addGap(0, 66, Short.MAX_VALUE)
         );
         leftRepoPanelLayout.setVerticalGroup(
             leftRepoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 16, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(headerPanel);
@@ -596,24 +601,18 @@ public final class QueryTopComponent extends TopComponent
             headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(headerPanelLayout.createSequentialGroup()
                 .addComponent(title)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 77, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 203, Short.MAX_VALUE)
                 .addComponent(leftRepoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .addGroup(headerPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(bottomPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         headerPanelLayout.setVerticalGroup(
             headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(headerPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(leftRepoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(title, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(bottomPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(leftRepoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(title))
+                .addContainerGap())
         );
 
         queryPanel.setLayout(new java.awt.BorderLayout());
@@ -639,7 +638,7 @@ public final class QueryTopComponent extends TopComponent
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
+            .addComponent(jScrollPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -647,7 +646,6 @@ public final class QueryTopComponent extends TopComponent
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel bottomPanel;
     private javax.swing.JPanel headerPanel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel leftRepoPanel;
