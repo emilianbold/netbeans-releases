@@ -2274,6 +2274,20 @@ public class CppParserActionImpl implements CppParserActionEx {
             builderContext.pop();
             SimpleDeclarationBuilder declarationBuilder = (SimpleDeclarationBuilder) builderContext.top();
             declarationBuilder.setTypeBuilder(typeBuilder);
+
+            final NameBuilder nameBuilder = typeBuilder.getNameBuilder();
+            for (int i = 0; i < nameBuilder.getNameParts().size() - 1; i++) {
+                CharSequence part = nameBuilder.getNameParts().get(i);
+
+                SymTabEntry classEntry = globalSymTab.lookup(part);
+                SymTab st = null;
+                if (classEntry != null) {
+                    st = (SymTab)classEntry.getAttribute(CppAttributes.SYM_TAB);
+                }
+                if(st != null) {
+                    globalSymTab.importToLocal(st);
+                }
+            }
         }
     }
     
