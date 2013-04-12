@@ -109,6 +109,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ProjectModificationActions">
+            <api name="general"/>
+            <summary>Added <code>ProjectProblemsProvider</code> to resolve JDK 8 Profile problems</summary>
+            <version major="1" minor="53"/>
+            <date day="12" month="4" year="2013"/>
+            <author login="mkozeny"/>
+            <compatibility addition="yes" deprecation="yes"/>
+            <description>
+                <p>
+                    In method <code>getActions</code> added package actions from <code>Projects/package/Actions</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support.ui" name="PackageViewChildren"/>
+            <issue number="200833"/>
+        </change>
         <change id="BrokenReferencesSupport-Profiles">
             <api name="general"/>
             <summary>Added <code>ProjectProblemsProvider</code> to resolve JDK 8 Profile problems</summary>
