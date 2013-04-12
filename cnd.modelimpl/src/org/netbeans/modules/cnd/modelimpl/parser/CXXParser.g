@@ -1570,7 +1570,7 @@ ptr_operator returns [ declarator_type_t type ]
 finally                                                                         {if(state.backtracking == 0){action.end_ptr_operator(input.LT(0));}}
 
 cv_qualifier returns [ qualifier_t qual ]:
-        LITERAL_const                                                           {action.cv_qualifier(action.CV_QUALIFIER__CONST, input.LT(0));}
+        literal_const                                                           {action.cv_qualifier(action.CV_QUALIFIER__CONST, input.LT(0));}
         //{{ qual = LITERAL_const; }}
     |
         LITERAL_volatile                                                        {action.cv_qualifier(action.CV_QUALIFIER__VOLATILE, input.LT(0));}
