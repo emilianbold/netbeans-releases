@@ -647,7 +647,15 @@ public class ClientSideProject implements Project {
 
         @Override
         public FileObject getWebRoot(FileObject file) {
-            return getSiteRootFolder();
+            FileObject siteRoot = getSiteRootFolder();
+            if (siteRoot == null) {
+                return null;
+            }
+            if (siteRoot.equals(file)
+                    || FileUtil.isParentOf(siteRoot, file)) {
+                return siteRoot;
+            }
+            return null;
         }
     }
 
