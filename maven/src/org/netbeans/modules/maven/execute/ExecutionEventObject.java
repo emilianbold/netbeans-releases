@@ -116,7 +116,7 @@ public class ExecutionEventObject {
     public static class Tree {
         public final ExecutionEventObject startEvent;
         public ExecutionEventObject endEvent;
-        public final ExecutionEventObject.Tree parentNode;
+        public ExecutionEventObject.Tree parentNode;
         public final List<ExecutionEventObject.Tree> childrenNodes = new ArrayList<ExecutionEventObject.Tree>();
         private IOPosition.Position startOffset;
         private IOPosition.Position endOffset;
@@ -160,6 +160,10 @@ public class ExecutionEventObject {
                 return parentNode;
             }
             return parentNode.findParentNodeOfType(startType);
+        }
+        
+        public void reassingParent(ExecutionEventObject.Tree parent) {
+            this.parentNode = parent;
         }
         
     }

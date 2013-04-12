@@ -43,9 +43,13 @@ package org.netbeans.modules.maven.execute.ui;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import static javax.swing.Action.NAME;
@@ -72,6 +76,7 @@ import org.openide.util.lookup.Lookups;
 public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerManager.Provider {
 
     private final ExplorerManager manager;
+    private boolean showPhases = false;
 
     /**
      * Creates new form ShowExecutionPanel
@@ -81,6 +86,19 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         initComponents();
         ((BeanTreeView)btvExec).setRootVisible(false);
         ((BeanTreeView)btvExec).setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        btnPhaseToggle.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/ui/phase.png", true));
+        btnPhaseToggle.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showPhases = btnPhaseToggle.isSelected();
+                ExecutionEventObject.Tree item = manager.getRootContext().getLookup().lookup(ExecutionEventObject.Tree.class);
+                manager.setRootContext(createNodeForExecutionEventTree(item));
+                expandCollapseChildNodes(manager.getRootContext(), false, false);
+
+            }
+        });
+        
     }
 
     /**
@@ -93,6 +111,44 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
     private void initComponents() {
 
         btvExec = new BeanTreeView();
+        jToolBar1 = new javax.swing.JToolBar();
+        btnPhaseToggle = new javax.swing.JToggleButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
+        btnCollapse = new javax.swing.JButton();
+        btnExpand = new javax.swing.JButton();
+
+        jToolBar1.setFloatable(false);
+        jToolBar1.setRollover(true);
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnPhaseToggle, org.openide.util.NbBundle.getMessage(ShowExecutionPanel.class, "ShowExecutionPanel.btnPhaseToggle.text")); // NOI18N
+        btnPhaseToggle.setToolTipText(org.openide.util.NbBundle.getMessage(ShowExecutionPanel.class, "ShowExecutionPanel.btnPhaseToggle.toolTipText")); // NOI18N
+        btnPhaseToggle.setFocusable(false);
+        jToolBar1.add(btnPhaseToggle);
+        jToolBar1.add(jSeparator1);
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnCollapse, org.openide.util.NbBundle.getMessage(ShowExecutionPanel.class, "ShowExecutionPanel.btnCollapse.text")); // NOI18N
+        btnCollapse.setToolTipText(org.openide.util.NbBundle.getMessage(ShowExecutionPanel.class, "ShowExecutionPanel.btnCollapse.toolTipText")); // NOI18N
+        btnCollapse.setFocusable(false);
+        btnCollapse.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnCollapse.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnCollapse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCollapseActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(btnCollapse);
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnExpand, org.openide.util.NbBundle.getMessage(ShowExecutionPanel.class, "ShowExecutionPanel.btnExpand.text")); // NOI18N
+        btnExpand.setToolTipText(org.openide.util.NbBundle.getMessage(ShowExecutionPanel.class, "ShowExecutionPanel.btnExpand.toolTipText")); // NOI18N
+        btnExpand.setFocusable(false);
+        btnExpand.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnExpand.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnExpand.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExpandActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(btnExpand);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -100,19 +156,36 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(btvExec, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(btvExec)
+                    .add(jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(btvExec, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(btvExec, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jToolBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnCollapseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCollapseActionPerformed
+        expandCollapseChildNodes(manager.getRootContext(), true, true);
+    }//GEN-LAST:event_btnCollapseActionPerformed
+
+    private void btnExpandActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExpandActionPerformed
+        expandCollapseChildNodes(manager.getRootContext(), false, true);
+    }//GEN-LAST:event_btnExpandActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCollapse;
+    private javax.swing.JButton btnExpand;
+    private javax.swing.JToggleButton btnPhaseToggle;
     private javax.swing.JScrollPane btvExec;
+    private javax.swing.JToolBar.Separator jSeparator1;
+    private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -126,13 +199,15 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         manager.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                    Node[] nds = manager.getSelectedNodes();
-                    if (nds.length > 0) {
-                        ExecutionEventObject.Tree tree = nds[0].getLookup().lookup(ExecutionEventObject.Tree.class);
-                        tree.getStartOffset().scrollTo();
-                    }
-                }
+//                if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+//                    Node[] nds = manager.getSelectedNodes();
+//                    if (nds.length > 0) {
+//                        ExecutionEventObject.Tree tree = nds[0].getLookup().lookup(ExecutionEventObject.Tree.class);
+//                        if (tree != null) {
+//                            tree.getStartOffset().scrollTo();
+//                        }
+//                    }
+//                }
             }
         });
     }
@@ -140,37 +215,38 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
     @Override
     public void addNotify() {
         super.addNotify();
-        Node[] nds = manager.getRootContext().getChildren().getNodes(true);
-        for (Node nd : nds) {
-            ((BeanTreeView)btvExec).expandNode(nd);
-        }
+        expandCollapseChildNodes(manager.getRootContext(), false, false);
     }
     
     
     
-    private static Node createNodeForExecutionEventTree(ExecutionEventObject.Tree item) {
+    private Node createNodeForExecutionEventTree(ExecutionEventObject.Tree item) {
         ExecutionEventObject se = item.startEvent;
         if (se != null) {
             //TODO
             AbstractNode nd = new AbstractNode(createChildren(item.childrenNodes), Lookups.fixed(item));
             switch (se.type) {
                 case ProjectStarted :
-                    return new ProjectNode(createChildren(item.childrenNodes), Lookups.fixed(item));
+                    return new ProjectNode(showPhases ? createPhasedChildren(item.childrenNodes) : createChildren(item.childrenNodes), Lookups.fixed(item));
                 case MojoStarted :
-                    return new MojoNode(Children.LEAF, Lookups.fixed(item));
+                    return new MojoNode(createChildren(item.childrenNodes), Lookups.fixed(item));
                 case ForkStarted :
                 case ForkedProjectStarted :
                 default :
                     nd.setDisplayName(se.type.name());
+                    nd.setName(se.type.name());
                     break;
             }
             
             return nd;
         }
-        return new AbstractNode(createChildren(item.childrenNodes));
+        return new AbstractNode(createChildren(item.childrenNodes), Lookups.fixed(item));
     }
     
-    private static Children createChildren(final List<ExecutionEventObject.Tree> childrenNodes) {
+    private Children createChildren(final List<ExecutionEventObject.Tree> childrenNodes) {
+        if (childrenNodes.isEmpty()) {
+            return Children.LEAF;
+        }
         return Children.create(new ChildFactory<ExecutionEventObject.Tree>() {
             @Override
             protected boolean createKeys(List<ExecutionEventObject.Tree> toPopulate) {
@@ -184,6 +260,62 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
             }
             
         }, false);
+    }
+    
+    private Children createPhasedChildren(final List<ExecutionEventObject.Tree> childrenNodes) {
+        return Children.create(new ChildFactory<Tuple>() {
+            @Override
+            protected boolean createKeys(List<Tuple> toPopulate) {
+                
+                Map<String, Tuple> phases = new HashMap<String, Tuple>();
+                for (ExecutionEventObject.Tree item : childrenNodes) {
+                    ExecMojo mojo = (ExecMojo) item.startEvent;
+                    String phaseString = mojo.phase != null ? mojo.phase : "<none>";
+                    Tuple phase = phases.get(phaseString);
+                    if (phase == null) {
+                        phase = new Tuple();
+                        phase.phase = phaseString;
+                        phases.put(phaseString, phase);
+                        toPopulate.add(phase);
+                    }
+                    phase.items.add(item);
+                }
+                return true;
+            }
+            
+            @Override
+            protected Node createNodeForKey(Tuple key) {
+                return createPhaseNode(key);
+            }
+
+            
+        }, false);
+    }    
+    
+    private static class Tuple {
+        String phase;
+        List<ExecutionEventObject.Tree> items = new ArrayList<ExecutionEventObject.Tree>();
+    }
+
+    private Node createPhaseNode(Tuple key) {
+        AbstractNode nd = new AbstractNode(createChildren(key.items), Lookup.EMPTY);
+        nd.setName(key.phase);
+        nd.setDisplayName(key.phase);
+        nd.setIconBaseWithExtension("org/netbeans/modules/maven/execute/ui/phase.png");
+        return nd;
+    }
+    
+    private void expandCollapseChildNodes(Node parent, boolean collapse, boolean recursive) {
+        for (Node nd : parent.getChildren().getNodes(true)) {
+            if (recursive) {
+                expandCollapseChildNodes(nd, collapse, recursive);
+            }
+            if (collapse) {
+                ((BeanTreeView)btvExec).collapseNode(nd);
+            } else {
+                ((BeanTreeView)btvExec).expandNode(nd);
+            }
+        }
     }
     
     private static class MojoNode extends AbstractNode {

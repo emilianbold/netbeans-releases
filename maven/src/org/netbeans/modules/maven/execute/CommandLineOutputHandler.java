@@ -418,15 +418,24 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
         
         
     }
-    //experimental
     private void growTree(ExecutionEventObject obj) {
         ExecutionEventObject.Tree tn = new ExecutionEventObject.Tree(obj, currentTreeNode);
+        //fork events come before the mojo events, we want them as childs, to know what form belongs to which mojo.
+        if (tn.startEvent.type.equals(ExecutionEvent.Type.MojoStarted) && !currentTreeNode.childrenNodes.isEmpty()) {
+            //check if the previous fork should be added to this event
+            ExecutionEventObject.Tree lastSibling = currentTreeNode.childrenNodes.get(currentTreeNode.childrenNodes.size() - 1 );
+            while (lastSibling != null && lastSibling.endEvent != null && (ExecutionEvent.Type.ForkFailed.equals(lastSibling.endEvent.type) || ExecutionEvent.Type.ForkSucceeded.equals(lastSibling.endEvent.type))) {
+                currentTreeNode.childrenNodes.remove(lastSibling);
+                tn.childrenNodes.add(0, lastSibling);
+                lastSibling.reassingParent(tn);
+                lastSibling = currentTreeNode.childrenNodes.isEmpty() ? null : currentTreeNode.childrenNodes.get(currentTreeNode.childrenNodes.size() - 1 );
+            }
+        }
         currentTreeNode.childrenNodes.add(tn);
         currentTreeNode = tn;
         currentTreeNode.setStartOffset(IOPosition.currentPosition(inputOutput));
     }
 
-    //experimental
     private void trimTree(ExecutionEventObject obj) {
         currentTreeNode.setEndOffset(IOPosition.currentPosition(inputOutput));
         currentTreeNode.setEndEvent(obj);
