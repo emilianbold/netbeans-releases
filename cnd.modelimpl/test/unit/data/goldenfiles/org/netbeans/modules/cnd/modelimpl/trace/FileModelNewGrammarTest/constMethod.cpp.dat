@@ -11,7 +11,7 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS AAA (AAA ) [1:1/0-3:2/35] lcurly=0 SCOPE: $Global$ 
+CLASS AAA (AAA ) [1:1/0-3:2/35] lcurly=10 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION foo [2:5/16-2:22/33] MethodImpl SCOPE: AAA 
@@ -29,7 +29,7 @@ FUNCTION DEFINITION foo  [5:1/38-6:2/63] FunctionDefinitionImpl SCOPE: constMeth
     STATEMENT COMPOUND  [5:23/60-6:2/63] SCOPE: foo 
 
 ========== Dumping model of PROJECT DummyProject
-CLASS AAA (AAA ) [1:1/0-3:2/35] lcurly=0 SCOPE: $Global$ 
+CLASS AAA (AAA ) [1:1/0-3:2/35] lcurly=10 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION foo [2:5/16-2:22/33] MethodImpl SCOPE: AAA 

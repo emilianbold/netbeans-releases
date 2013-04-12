@@ -41,10 +41,11 @@
  */
 package org.netbeans.modules.css.prep.ui.options;
 
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -53,9 +54,9 @@ import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -98,6 +99,7 @@ public final class LessOptionsPanel extends JPanel {
 
         // listeners
         lessPathTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
+        lessOutputOnErrorCheckBox.addItemListener(new DefaultItemListener());
     }
 
     public String getLessPath() {
@@ -106,6 +108,14 @@ public final class LessOptionsPanel extends JPanel {
 
     public void setLessPath(String path) {
         lessPathTextField.setText(path);
+    }
+
+    public boolean getLessOutputOnError() {
+        return lessOutputOnErrorCheckBox.isSelected();
+    }
+
+    public void setLessOutputOnError(boolean outputOnError) {
+        lessOutputOnErrorCheckBox.setSelected(outputOnError);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -127,76 +137,84 @@ public final class LessOptionsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lessPathLabel = new javax.swing.JLabel();
-        lessPathTextField = new javax.swing.JTextField();
-        lessPathBrowseButton = new javax.swing.JButton();
-        lessPathSearchButton = new javax.swing.JButton();
-        lessPathHintLabel = new javax.swing.JLabel();
-        installLessLabel = new javax.swing.JLabel();
+        lessPathLabel = new JLabel();
+        lessPathTextField = new JTextField();
+        lessPathBrowseButton = new JButton();
+        lessPathSearchButton = new JButton();
+        lessPathHintLabel = new JLabel();
+        installLessLabel = new JLabel();
+        lessOutputOnErrorCheckBox = new JCheckBox();
 
         lessPathLabel.setLabelFor(lessPathTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(lessPathLabel, org.openide.util.NbBundle.getMessage(LessOptionsPanel.class, "LessOptionsPanel.lessPathLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(lessPathLabel, NbBundle.getMessage(LessOptionsPanel.class, "LessOptionsPanel.lessPathLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lessPathBrowseButton, org.openide.util.NbBundle.getMessage(LessOptionsPanel.class, "LessOptionsPanel.lessPathBrowseButton.text")); // NOI18N
-        lessPathBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(lessPathBrowseButton, NbBundle.getMessage(LessOptionsPanel.class, "LessOptionsPanel.lessPathBrowseButton.text")); // NOI18N
+        lessPathBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 lessPathBrowseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(lessPathSearchButton, org.openide.util.NbBundle.getMessage(LessOptionsPanel.class, "LessOptionsPanel.lessPathSearchButton.text")); // NOI18N
-        lessPathSearchButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(lessPathSearchButton, NbBundle.getMessage(LessOptionsPanel.class, "LessOptionsPanel.lessPathSearchButton.text")); // NOI18N
+        lessPathSearchButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 lessPathSearchButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(lessPathHintLabel, "HINT"); // NOI18N
+        Mnemonics.setLocalizedText(lessPathHintLabel, "HINT"); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(installLessLabel, org.openide.util.NbBundle.getMessage(LessOptionsPanel.class, "LessOptionsPanel.installLessLabel.text")); // NOI18N
-        installLessLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        Mnemonics.setLocalizedText(installLessLabel, NbBundle.getMessage(LessOptionsPanel.class, "LessOptionsPanel.installLessLabel.text")); // NOI18N
+        installLessLabel.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
                 installLessLabelMouseEntered(evt);
             }
-            public void mousePressed(java.awt.event.MouseEvent evt) {
+            public void mousePressed(MouseEvent evt) {
                 installLessLabelMousePressed(evt);
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        Mnemonics.setLocalizedText(lessOutputOnErrorCheckBox, NbBundle.getMessage(LessOptionsPanel.class, "LessOptionsPanel.lessOutputOnErrorCheckBox.text")); // NOI18N
+
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(lessPathLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lessPathHintLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(installLessLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(installLessLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(lessPathTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 8, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lessPathTextField)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lessPathBrowseButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lessPathSearchButton))))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(lessOutputOnErrorCheckBox)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(lessPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(lessPathTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addComponent(lessPathLabel))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(lessPathSearchButton)
                         .addComponent(lessPathBrowseButton)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(installLessLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(installLessLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(lessPathHintLabel))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lessOutputOnErrorCheckBox)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -233,12 +251,13 @@ public final class LessOptionsPanel extends JPanel {
     }//GEN-LAST:event_installLessLabelMousePressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel installLessLabel;
-    private javax.swing.JButton lessPathBrowseButton;
-    private javax.swing.JLabel lessPathHintLabel;
-    private javax.swing.JLabel lessPathLabel;
-    private javax.swing.JButton lessPathSearchButton;
-    private javax.swing.JTextField lessPathTextField;
+    private JLabel installLessLabel;
+    private JCheckBox lessOutputOnErrorCheckBox;
+    private JButton lessPathBrowseButton;
+    private JLabel lessPathHintLabel;
+    private JLabel lessPathLabel;
+    private JButton lessPathSearchButton;
+    private JTextField lessPathTextField;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
@@ -261,6 +280,15 @@ public final class LessOptionsPanel extends JPanel {
         }
 
         private void processUpdate() {
+            fireChange();
+        }
+
+    }
+
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
             fireChange();
         }
 

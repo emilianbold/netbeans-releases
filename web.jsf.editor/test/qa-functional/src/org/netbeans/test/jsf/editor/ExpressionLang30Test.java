@@ -61,8 +61,10 @@ public class ExpressionLang30Test extends GeneralJSF {
     }
 
     public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(ExpressionLang30Test.class);
+        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ExpressionLang30Test.class).addTest(
+                conf.addTest(
                 "testOpenProject",
                 "testNoErrors",
                 "testCollection",
@@ -78,6 +80,7 @@ public class ExpressionLang30Test extends GeneralJSF {
         openFile("el30.xhtml", ExpressionLang30Test.current_project);
         EditorOperator eo = new EditorOperator("el30.xhtml");
         ExpressionLang30Test.originalContent = eo.getText();
+        resolveServer(ExpressionLangTest.current_project);
         endTest();
     }
 

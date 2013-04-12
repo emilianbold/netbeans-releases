@@ -11,7 +11,7 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS AAA (AAA ) [1:1/0-3:2/36] lcurly=0 SCOPE: $Global$ 
+CLASS AAA (AAA ) [1:1/0-3:2/36] lcurly=10 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
     FRIENDS:
@@ -31,7 +31,7 @@ FUNCTION DEFINITION foo  [5:1/39-6:2/53] FunctionDDImpl SCOPE: $Global$
     STATEMENT COMPOUND  [5:12/50-6:2/53] SCOPE: foo 
 
 ========== Dumping model of PROJECT DummyProject
-CLASS AAA (AAA ) [1:1/0-3:2/36] lcurly=0 SCOPE: $Global$ 
+CLASS AAA (AAA ) [1:1/0-3:2/36] lcurly=10 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
     FRIENDS:

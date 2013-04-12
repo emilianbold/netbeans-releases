@@ -92,6 +92,7 @@ public class LessOptions implements CssPreprocessorImplementation.Options {
     @Override
     public void update() {
         getComponent().setLessPath(CssPrepOptions.getInstance().getLessPath());
+        getComponent().setLessOutputOnError(CssPrepOptions.getInstance().getLessOutputOnError());
     }
 
     @Override
@@ -123,6 +124,7 @@ public class LessOptions implements CssPreprocessorImplementation.Options {
         String originalPath = CssPrepOptions.getInstance().getLessPath();
         String path = getComponent().getLessPath();
         CssPrepOptions.getInstance().setLessPath(path);
+        CssPrepOptions.getInstance().setLessOutpuOnError(getComponent().getLessOutputOnError());
         if (!originalPath.equals(path)) {
             lessCssPreprocessor.fireOptionsChanged();
         }
