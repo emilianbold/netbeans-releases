@@ -315,11 +315,6 @@ public class AndroidPlatform implements MobilePlatform {
     }
 
     @Override
-    public MobileDebugTransport getDebugTransport() {
-        return new AndroidDebugTransport();
-    }
-
-    @Override
     public Device getDevice(String name, EditableProperties props) {
         return AndroidDevice.get(name, props);
     }

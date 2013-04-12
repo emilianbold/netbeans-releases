@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,75 +37,79 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cordova.platforms.ios;
 
-import java.awt.Image;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
-import org.openide.awt.HtmlBrowser;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
-
+import com.dd.plist.NSObject;
+import com.dd.plist.XMLPropertyListParser;
+import org.json.simple.JSONObject;
+import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 
 /**
  *
  * @author Jan Becicka
  */
-@NbBundle.Messages({
-    "LBL_DeviceDefault=iOS Device",
-    "LBL_SimulatorDefault=iOS Simulator"
-})
-public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory {
+public class DeviceDebugTransport extends IOSDebugTransport implements TransportImplementation {
+    
+    private WebInspectorJNIBinding nativeCall;
+
+    public DeviceDebugTransport() {
+        super();
+        nativeCall = new WebInspectorJNIBinding();
+    }
+
+    public static void runWhenReady(Runnable run, long timeout) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    protected void init() throws Exception {
+        nativeCall.start();
+    }
 
     @Override
-    public BrowserFamilyId getBrowserFamilyId() {
-        return BrowserFamilyId.IOS;
+    public void sendCommand(JSONObject command) throws Exception {
+        sendMessage(createJSONCommand(command));
     }
 
     @Override
-    public Image getIconImage() {
-        return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/apple.png", false);
+    public void sendCommand(String command) throws Exception {
+        //System.out.println("sending " + command);
+        sendMessage(command);
+    }
+    
+    private void sendMessage(String message) {
+        //if (keepGoing)
+            nativeCall.sendMessage(message);
     }
 
-    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/MobileBrowsers")
-    public static class EmulatorDefault extends IOSBrowserFactory {
-
-        @Override
-        public String getDisplayName() {
-            return Bundle.LBL_SimulatorDefault();
+    @Override
+    protected NSObject readData() throws Exception {
+        String content = nativeCall.receiveMessage();
+        if (content==null) {
+            Thread.sleep(100);
+            return null;
         }
 
-        @Override
-        public HtmlBrowser.Impl createHtmlBrowserImpl() {
-            return new IOSBrowser(IOSBrowser.Kind.IOS_SIMULATOR_DEFAULT);
-        }
+        NSObject object = XMLPropertyListParser.parse(fromString(content));
+        return object;
+    }
+    
+    @Override
+    protected void stop() {
+        super.stop();
+        nativeCall.stop();
+   }
 
-        @Override
-        public String getId() {
-            return IOSBrowser.Kind.IOS_SIMULATOR_DEFAULT.toString(); // NOI18N
-        }
-
+    @Override
+    public String getConnectionName() {
+        return "iOS Device";
     }
 
-    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/MobileBrowsers")
-    public static class DeviceDefault extends IOSBrowserFactory {
-
-        @Override
-        public String getDisplayName() {
-            return Bundle.LBL_DeviceDefault();
-        }
-
-        @Override
-        public HtmlBrowser.Impl createHtmlBrowserImpl() {
-            return new IOSBrowser(IOSBrowser.Kind.IOS_DEVICE_DEFAULT);
-        }
-
-        @Override
-        public String getId() {
-            return IOSBrowser.Kind.IOS_DEVICE_DEFAULT.toString(); // NOI18N
-        }
+    @Override
+    public String getVersion() {
+        return "1.0";
     }
 }
+         

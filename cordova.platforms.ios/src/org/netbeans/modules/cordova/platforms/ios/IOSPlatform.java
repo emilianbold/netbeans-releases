@@ -185,14 +185,6 @@ public class IOSPlatform implements MobilePlatform {
     }
 
     @Override
-    public MobileDebugTransport getDebugTransport() {
-        //Simultor
-        return new IOSDebugTransport();
-        //native
-        //return new IOSDebugTransport2();
-    }
-
-    @Override
     public Device getDevice(String name, EditableProperties props) {
         return IOSDevice.IPHONE;
     }

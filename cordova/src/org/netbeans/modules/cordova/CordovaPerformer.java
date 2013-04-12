@@ -281,7 +281,7 @@ public class CordovaPerformer implements BuildPerformer {
 
     @Override
     public void startDebugging(Device device, Project p, Lookup context) {
-        transport = device.getPlatform().getDebugTransport();
+        transport = device.getDebugTransport();
         transport.setBaseUrl(getUrl(p, context));
         transport.attach();
         try {

@@ -42,7 +42,6 @@
 package org.netbeans.modules.cordova.platforms.ios;
 
 import com.dd.plist.Base64;
-import com.dd.plist.BinaryPropertyListParser;
 import com.dd.plist.BinaryPropertyListWriter;
 import com.dd.plist.NSData;
 import com.dd.plist.NSDictionary;
@@ -52,12 +51,8 @@ import com.dd.plist.XMLPropertyListParser;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.Socket;
 import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -77,19 +72,21 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Becicka
  */
-public class IOSDebugTransport extends MobileDebugTransport implements TransportImplementation {
+public abstract class IOSDebugTransport extends MobileDebugTransport implements TransportImplementation {
     
     private final RequestProcessor RP = new RequestProcessor(IOSDebugTransport.class);
-    private Socket socket;
-    private final static String LOCALHOST_IPV6 = "::1";
-    private final static int port = 27753;
     private RequestProcessor.Task socketListener;
     private volatile boolean keepGoing = true;
-    private Tabs tabs;
+    private Tabs tabs = new IOSDebugTransport.Tabs();
+;
 
-    public IOSDebugTransport() {
+    @Override
+    public void registerResponseCallback(ResponseCallback callback) {
+        this.callBack = callback;
     }
+
     
+
     @Override
     public boolean attach() {
         try {
@@ -97,142 +94,32 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
             socketListener = RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        InputStream is = socket.getInputStream();
-                        while (keepGoing) {
-                            try {
-                                process(is);
-                            } catch (SocketException e) {
-                                if (socket.isClosed()) {
-                                    return;
-                                }
-                                Exceptions.printStackTrace(e);
-                            } catch (Exception exception) {
-                                Exceptions.printStackTrace(exception);
-                            } 
+                    while (keepGoing) {
+                        try {
+                            process();
+                        } catch (SocketException e) {
+                            Exceptions.printStackTrace(e);
+                            return;
+                        } catch (Exception exception) {
+                            Exceptions.printStackTrace(exception);
                         }
-                    } catch (IOException e) {
-                        Exceptions.printStackTrace(e);
                     }
-                }});
+                }
+            });
+            sendInitCommands();
+
             return true;
-        }  catch (Exception ex) {
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
             return false;
         }
     }
-
-    public static void runWhenReady(Runnable run, long timeout) {
-        long time;
-        long started = System.currentTimeMillis();
-        do {
-            try {
-                //Socket socket = new Socket(LOCALHOST_IPV6, port);
-                //socket.close();
-                Thread.sleep(5000);
-                run.run();
-                return;
-            //} catch (UnknownHostException ex) {
-            //    Exceptions.printStackTrace(ex);
-            //} catch (IOException ex) {
-            //    Exceptions.printStackTrace(ex);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            time = System.currentTimeMillis() - started;
-        } while (time < timeout);
-        
-    }
-    @Override
-    public boolean detach() {
-        stop();
-        return true;
-    }
-
-    @Override
-    public void sendCommand(Command command) {
-        try {
-            sendCommand(command.getCommand());
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    @Override
-    public void registerResponseCallback(ResponseCallback callback) {
-        this.callBack = callback;
-    }
-
-    private String getCommand(String name) {
-        try {
-            Properties props = new Properties();
-            props.load(IOSDebugTransport.class.getResourceAsStream("Command.properties"));
-            return props.getProperty(name).replace("$bundleId", "com.apple.mobilesafari").replace("$tabIdentifier", tabs.getActive());
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    public String createJSONCommand(JSONObject command) throws IOException {
-        String json = translate(command.toString());
-        String s = Base64.encodeBytes(json.getBytes());
-        String res = getCommand("sendJSONCommand").replace("$json_encoded", s);
-        //System.out.println("sending " + res);
-        return res;
-    }
-
-    public byte[] plistXmlToBinary(String msg) throws Exception {
-        NSObject object = XMLPropertyListParser.parse(msg.getBytes());
-        return BinaryPropertyListWriter.writeToArray(object);
-
-    }
-
-    public void init() throws Exception {
-        if (socket != null && (socket.isConnected() || !socket.isClosed())) {
-            socket.close();
-        }
-        tabs = new Tabs();
-        socket = new Socket(LOCALHOST_IPV6, port);
-        sendCommand(getCommand("setConnectionKey"));
-        sendCommand(getCommand("connectToApp"));
-        sendCommand(getCommand("setSenderKey"));
-    }
-
-    public void sendCommand(JSONObject command) throws Exception {
-        sendBinaryMessage(plistXmlToBinary(createJSONCommand(command)));
-    }
-
-    private void sendCommand(String command) throws Exception {
-        //System.out.println("sending " + command);
-        sendBinaryMessage(plistXmlToBinary(command));
-    }
-
-    private void sendBinaryMessage(byte[] bytes) throws IOException {
-        if (socket.isClosed()) {
+    
+    private void process() throws Exception {
+        NSObject object = readData();
+        if (object == null) {
             return;
         }
-        OutputStream os = socket.getOutputStream();
-        byte[] lenght = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(bytes.length).array();
-        os.write(lenght);
-        os.write(bytes);
-    }
-
-    private void process(InputStream is) throws Exception {
-        byte sizeBuffer[] = new byte[4];
-        int count = is.read(sizeBuffer);
-        while (count < 4) {
-            count += is.read(sizeBuffer, count, 4 - count);
-        }
-        int size = ByteBuffer.wrap(sizeBuffer, 0, 4).getInt();
-        byte[] content = new byte[size];
-        count = is.read(content);
-        while (count < size) {
-            count += is.read(content, count, size - count);
-        }
-        assert count == size;
-
-        NSObject object = BinaryPropertyListParser.parse(content);
-
         //System.out.println("receiving " + object.toXMLPropertyList());
         JSONObject jmessage = extractResponse(object);
         if (jmessage != null) {
@@ -242,6 +129,36 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
                 checkClose(object);
             }
         }
+    }
+    
+    protected abstract NSObject readData() throws Exception;
+    
+    private String getCommand(String name, boolean replace) {
+        try {
+            Properties props = new Properties();
+            props.load(IOSDebugTransport.class.getResourceAsStream("Command.properties"));
+            final String cmd = props.getProperty(name).replace("$bundleId", "com.apple.mobilesafari");
+            if (!replace) {
+                return cmd;
+            }
+            return cmd.replace("$tabIdentifier", tabs.getActive());
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    protected final String createJSONCommand(JSONObject command) throws IOException {
+        String json = translate(command.toString());
+        String s = Base64.encodeBytes(json.getBytes());
+        String res = getCommand("sendJSONCommand", true).replace("$json_encoded", s);
+        //System.out.println("sending " + res);
+        return res;
+    }
+
+    protected final byte[] plistXmlToBinary(String msg) throws Exception {
+        NSObject object = XMLPropertyListParser.parse(msg.getBytes());
+        return BinaryPropertyListWriter.writeToArray(object);
+
     }
     
     private void checkClose(NSObject r) throws Exception {
@@ -261,7 +178,6 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
                 }
                 NSDictionary applications = (NSDictionary) argument.objectForKey("WIRApplicationDictionaryKey");
                 if (applications.count() == 0) {
-                    stop();
                     Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
                 }
 
@@ -272,7 +188,6 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
                 }
                 NSDictionary applications = (NSDictionary) argument.objectForKey("WIRApplicationIdentifierKey");
                 if (applications.objectForKey("WIRApplicationIdentifierKey").toString().equals("com.apple.mobilesafari")) {
-                    stop();
                     Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
                 }
             }
@@ -303,7 +218,7 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
         return o;
     }
 
-    public static InputStream fromString(String str) {
+    protected static InputStream fromString(String str) {
         try {
             byte[] bytes = str.getBytes("UTF-8");
             return new ByteArrayInputStream(bytes);
@@ -313,33 +228,44 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
         }
     }
 
-    public void stop() {
-        try {
-            socket.close();
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
-        }
+    protected void stop() {
         keepGoing = false;
         if (socketListener != null) {
             socketListener.cancel();
         }
-        keepGoing = true;
-
     }
 
     @Override
-    public String getConnectionName() {
-        return "iOS";
+    public boolean detach() {
+        stop();
+        return true;
     }
 
     @Override
-    public String getVersion() {
-        return "1.0";
+    public final void sendCommand(Command command) {
+        try {
+            sendCommand(command.getCommand());
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
-    class Tabs {
+    protected void sendInitCommands() throws Exception {
+        sendCommand(getCommand("setConnectionKey", false));
+        sendCommand(getCommand("connectToApp", false));
+        sendCommand(getCommand("setSenderKey", true));
+    }
+    
+    protected abstract void sendCommand(String command) throws Exception;
+    protected abstract void sendCommand(JSONObject command) throws Exception;
+
+    protected abstract void init() throws Exception;
+
+    private class Tabs {
 
         private HashMap<String, TabDescriptor> map = new HashMap();
+        private Object monitor = new Object();
+        private boolean inited = false;
 
         public boolean update(NSObject r) throws Exception {
             if (r ==  null) {
@@ -365,10 +291,14 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
                 NSObject title = o.objectForKey("WIRTitleKey");
                 map.put(s, new TabDescriptor(url.toString(), title.toString(), identifier.toString()));
             }
+            synchronized (monitor) {
+                inited = true;
+                monitor.notifyAll();
+            }
             if (!map.keySet().contains(getActive())) {
-                stop();
                 Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
             }
+                   
             return true;
         }
 
@@ -377,6 +307,15 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
         }
 
         private String getActive() {
+                synchronized(monitor) {
+                    if (!inited) {
+                        try {
+                            monitor.wait();
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
             for (Map.Entry<String, TabDescriptor> entry: map.entrySet()) {
                 String urlFromBrowser = entry.getValue().getUrl();
                 int hash = urlFromBrowser.indexOf("#");
@@ -391,10 +330,10 @@ public class IOSDebugTransport extends MobileDebugTransport implements Transport
                     return entry.getKey();
                 }                        
             }
-            return "1";
+            throw new IllegalStateException();
         }
 
-        public class TabDescriptor {
+        private class TabDescriptor {
 
             String url;
             String title;

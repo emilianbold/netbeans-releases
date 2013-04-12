@@ -39,39 +39,45 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.modules.cordova.platforms.ios;
+ 
+import org.openide.modules.InstalledFileLocator;
 
-import java.util.Properties;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
-import org.netbeans.spi.project.ActionProvider;
+public class WebInspectorJNIBinding {
 
-/**
- *
- * @author Jan Becicka
- */
-public interface Device {
-    
-    public static String EMULATOR = "emulator";
-    public static String DEVICE_PROP = "device";
-    public static String DEVICE = "device";
-    public static String VIRTUAL_DEVICE_PROP = "virtual.device";
-    public static String BROWSER_PROP = "browser";
+    private native void nstart();
 
-    public static final String TYPE_PROP = "type";
+    private native void nstop();
 
-    public boolean isEmulator();
+    private native String nreceiveMessage(Integer timeout);
 
-    public MobilePlatform getPlatform();
-    
-    public void addProperties(Properties props);
+    private native void nsendMessage(String xml);
 
-    public ActionProvider getActionProvider(Project p);
+    static {
+        System.load(InstalledFileLocator.getDefault().locate("bin/libiDeviceNativeBinding.dylib", "org.netbeans.modules.cordova.platforms.ios", false).getPath());
+    }
 
-    public ProjectConfigurationCustomizer getProjectConfigurationCustomizer(Project project, PropertyProvider aThis);
+    public WebInspectorJNIBinding() {
+    }
 
-    void openUrl(String url);
-    
-    public MobileDebugTransport getDebugTransport();
-    
+    public void start() {
+        nstart();
+    }
+
+    public void stop() {
+        nstop();
+    }
+
+    public String receiveMessage() {
+        final String receiveMessage = nreceiveMessage(100);
+//        System.out.println("receiving ");
+//        System.out.println(receiveMessage);
+        return receiveMessage;
+    }
+
+    public void sendMessage(String message) {
+//        System.out.println("sending ");
+//        System.out.println(message);
+        nsendMessage(message);
+    }
 }

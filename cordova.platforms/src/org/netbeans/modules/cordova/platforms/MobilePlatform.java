@@ -131,12 +131,6 @@ public interface MobilePlatform {
      * @return 
      */
     String getSimulatorPath();
-
-    /**
-     * Debugger transport
-     * @return 
-     */
-    public MobileDebugTransport getDebugTransport();
     
     String getCodeSignIdentity();
     

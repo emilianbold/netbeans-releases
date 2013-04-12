@@ -129,10 +129,10 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
     public void setURL(URL url) {
         this.url = url;
         Project project = projectContext.lookup(Project.class);
-        openBrowser(ActionProvider.COMMAND_RUN, Lookups.fixed(url), project);
+        openBrowser(ActionProvider.COMMAND_RUN, Lookups.fixed(url), kind, project);
     }
 
-    public static void openBrowser(String command, final Lookup context, final Project project) throws IllegalArgumentException {
+    public static void openBrowser(String command, final Lookup context, final IOSBrowser.Kind kind, final Project project) throws IllegalArgumentException {
         if (!Utilities.isMac()) {
             NotifyDescriptor not = new NotifyDescriptor(
                     Bundle.LBL_NoMac(),
@@ -149,14 +149,18 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
         ProgressUtils.runOffEventDispatchThread(new Runnable() {
             @Override
             public void run() {
-                IOSDevice.IPHONE.openUrl(build.getUrl(project, context));
-                IOSDebugTransport.runWhenReady(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        build.startDebugging(IOSDevice.IPHONE, project, context);
-                    }
-                }, 30000);
+                final IOSDevice dev = kind == Kind.IOS_DEVICE_DEFAULT ? IOSDevice.CONNECTED : IOSDevice.IPHONE;
+                dev.openUrl(build.getUrl(project, context));
+                if (kind == Kind.IOS_DEVICE_DEFAULT) {
+                    build.startDebugging(dev, project, context);
+                } else {
+                    SimulatorDebugTransport.runWhenReady(new Runnable() {
+                        @Override
+                        public void run() {
+                            build.startDebugging(dev, project, context);
+                        }
+                    }, 30000);
+                }
             }
         }, Bundle.LBL_Opening(), new AtomicBoolean(), false);
     }

@@ -123,7 +123,7 @@ public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplemen
 
         @Override
         public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
-            IOSBrowser.openBrowser(command, context, project);
+            IOSBrowser.openBrowser(command, context, IOSBrowser.Kind.valueOf(browser.getId()), project);
         }
 
         @Override
