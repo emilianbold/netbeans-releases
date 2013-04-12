@@ -1079,13 +1079,15 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     private void end_compound_statement_impl(Token token) {
-        CompoundStatementBuilder builder = (CompoundStatementBuilder)builderContext.top();
-        builderContext.pop();
-        builder.setEndOffset(((APTToken)token).getEndOffset());
-        
-        if(builderContext.top() instanceof StatementBuilderContainer) {
-            StatementBuilderContainer container = (StatementBuilderContainer)builderContext.top();
-            container.addStatementBuilder(builder);
+        if(builderContext.top() instanceof CompoundStatementBuilder) {
+            CompoundStatementBuilder builder = (CompoundStatementBuilder)builderContext.top();
+            builderContext.pop();
+            builder.setEndOffset(((APTToken)token).getEndOffset());
+
+            if(builderContext.top() instanceof StatementBuilderContainer) {
+                StatementBuilderContainer container = (StatementBuilderContainer)builderContext.top();
+                container.addStatementBuilder(builder);
+            }
         }
 
         globalSymTab.pop();
