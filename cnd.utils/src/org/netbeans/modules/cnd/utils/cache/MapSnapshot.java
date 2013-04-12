@@ -301,7 +301,7 @@ public abstract class MapSnapshot<V> implements Iterable<Entry<CharSequence, V>>
 
                                 @Override
                                 public Object setValue(Object value) {
-                                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                                    throw new UnsupportedOperationException("Not supported."); //NOI18N
                                 }
                             };
                     pos++;
@@ -310,7 +310,7 @@ public abstract class MapSnapshot<V> implements Iterable<Entry<CharSequence, V>>
 
                 @Override
                 public void remove() {
-                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                    throw new UnsupportedOperationException("Not supported."); //NOI18N
                 }
             };
         }
@@ -357,7 +357,7 @@ public abstract class MapSnapshot<V> implements Iterable<Entry<CharSequence, V>>
 
                 @Override
                 public Object setValue(Object value) {
-                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                    throw new UnsupportedOperationException("Not supported."); //NOI18N
                 }
             };
         }
@@ -376,7 +376,7 @@ public abstract class MapSnapshot<V> implements Iterable<Entry<CharSequence, V>>
 
         @Override
         public void remove() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
         }
     }
 }

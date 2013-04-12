@@ -110,12 +110,19 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.actions.MoveWindowWithinModeAction.createMoveRight"/>
                 <attr name="instanceOf" stringvalue="javax.swing.Action"/>
             </file>
+            <file name="org-netbeans-core-windows-actions-ShowEditorOnlyAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.actions.ShowEditorOnlyAction.create"/>
+                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+            </file>
         </folder>
     </folder>
     
     <folder name="Shortcuts">
         <file name="OS-ENTER.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-ToggleFullScreenAction.instance"/>
+	</file>
+        <file name="DS-ENTER.shadow">
+	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-ShowEditorOnlyAction.instance"/>
 	</file>
         <file name="OS-D.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DockWindowAction.instance"/>
@@ -149,6 +156,11 @@ made subject to such option by the copyright holder.
             <file name="Separator3.instance">
               <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="1100"/>
+            </file>
+
+            <file name="ShowEditorOnlyAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-ShowEditorOnlyAction.instance"/>
+                <attr name="position" intvalue="1198"/>
             </file>
             
             <file name="ToggleFullScreenAction.shadow">

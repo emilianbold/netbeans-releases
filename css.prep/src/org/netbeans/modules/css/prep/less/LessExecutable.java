@@ -43,7 +43,6 @@ package org.netbeans.modules.css.prep.less;
 
 import java.awt.EventQueue;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -52,16 +51,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.modules.css.live.LiveUpdater;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.util.ExternalExecutable;
 import org.netbeans.modules.css.prep.util.ExternalExecutableValidator;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.css.prep.util.UiUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 
@@ -73,6 +69,8 @@ public final class LessExecutable {
     private static final Logger LOGGER = Logger.getLogger(LessExecutable.class.getName());
 
     public static final String EXECUTABLE_NAME = "lessc"; // NOI18N
+
+    private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
 
     private final String sassPath;
 
@@ -114,19 +112,7 @@ public final class LessExecutable {
                 @Override
                 public void run() {
                     FileUtil.refreshFor(cssFile.getParentFile());
-                    LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
-                    if(liveUpdater != null) {
-                        FileObject fob = FileUtil.toFileObject(cssFile);
-                        if (fob != null) {
-                            try {
-                                DataObject dob = DataObject.find(fob);
-                                EditorCookie cookie = dob.getLookup().lookup(EditorCookie.class);
-                                if (cookie != null) {
-                                    liveUpdater.update(cookie.openDocument());
-                                }
-                            } catch (IOException donfex) {}
-                        }
-                    }
+                    UiUtils.refreshCssInBrowser(cssFile);
                 }
             }), "Compiling less files..."); // NOI18N
         } catch (CancellationException ex) {
@@ -139,6 +125,7 @@ public final class LessExecutable {
 
     private ExternalExecutable getExecutable(String title) {
         return new ExternalExecutable(sassPath)
+                .workDir(TMP_DIR)
                 .displayName(title);
     }
 
@@ -147,7 +134,7 @@ public final class LessExecutable {
                 .inputOutput(IOProvider.getDefault().getIO(Bundle.Less_compile(), false))
                 .inputVisible(false)
                 .frontWindow(false)
-                .frontWindowOnError(true)
+                .frontWindowOnError(CssPrepOptions.getInstance().getLessOutputOnError())
                 .noReset(true)
                 .showProgress(true)
                 .postExecution(postTask);

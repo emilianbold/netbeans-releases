@@ -86,7 +86,7 @@
     </Component>
     <Component class="javax.swing.JComboBox" name="javaComboBox">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JavaPlatformsComboBox(javaPlatforms, false)"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JavaPlatformsComboBox(javaPlatforms)"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="javaLabel">

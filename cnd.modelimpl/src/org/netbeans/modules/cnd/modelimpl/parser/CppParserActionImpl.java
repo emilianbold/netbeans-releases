@@ -1079,13 +1079,15 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     private void end_compound_statement_impl(Token token) {
-        CompoundStatementBuilder builder = (CompoundStatementBuilder)builderContext.top();
-        builderContext.pop();
-        builder.setEndOffset(((APTToken)token).getEndOffset());
-        
-        if(builderContext.top() instanceof StatementBuilderContainer) {
-            StatementBuilderContainer container = (StatementBuilderContainer)builderContext.top();
-            container.addStatementBuilder(builder);
+        if(builderContext.top() instanceof CompoundStatementBuilder) {
+            CompoundStatementBuilder builder = (CompoundStatementBuilder)builderContext.top();
+            builderContext.pop();
+            builder.setEndOffset(((APTToken)token).getEndOffset());
+
+            if(builderContext.top() instanceof StatementBuilderContainer) {
+                StatementBuilderContainer container = (StatementBuilderContainer)builderContext.top();
+                container.addStatementBuilder(builder);
+            }
         }
 
         globalSymTab.pop();
@@ -2619,19 +2621,21 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     private void end_type_id_impl(Token token) {
-        TypeBuilder typeBuilder = (TypeBuilder) builderContext.top();
-        typeBuilder.setEndOffset(((APTToken)token).getEndOffset());
-        builderContext.pop();
-        if (builderContext.top() instanceof NameBuilder) {
-            TypeBasedSpecializationParameterBuilder paramBuilder = new TypeBasedSpecializationParameterBuilder();
-            paramBuilder.setTypeBuilder(typeBuilder);
-            paramBuilder.setFile(typeBuilder.getFile());
-            paramBuilder.setStartOffset(typeBuilder.getStartOffset());
-            paramBuilder.setEndOffset(typeBuilder.getEndOffset());
+        if (builderContext.top() instanceof TypeBuilder) {
+            TypeBuilder typeBuilder = (TypeBuilder) builderContext.top();
+            typeBuilder.setEndOffset(((APTToken)token).getEndOffset());
+            builderContext.pop();
+            if (builderContext.top() instanceof NameBuilder) {
+                TypeBasedSpecializationParameterBuilder paramBuilder = new TypeBasedSpecializationParameterBuilder();
+                paramBuilder.setTypeBuilder(typeBuilder);
+                paramBuilder.setFile(typeBuilder.getFile());
+                paramBuilder.setStartOffset(typeBuilder.getStartOffset());
+                paramBuilder.setEndOffset(typeBuilder.getEndOffset());
 
-            NameBuilder nameBuilder2 = (NameBuilder) builderContext.top();
-            nameBuilder2.addParameterBuilder(paramBuilder);
-        }        
+                NameBuilder nameBuilder2 = (NameBuilder) builderContext.top();
+                nameBuilder2.addParameterBuilder(paramBuilder);
+            }
+        }
     }
     
     @Override public void parameters_and_qualifiers(Token token) {}
@@ -3075,6 +3079,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                 if (builder instanceof FriendFunctionBuilder) {
                     parent.addFriendBuilder((FriendFunctionBuilder)builder);
                 } else {
+                    ((MemberBuilder)builder).setVisibility(parent.getCurrentMemberVisibility());
                     parent.addMemberBuilder((MemberBuilder)builder);
                 }
             } else if (declBuilder.getTypeBuilder() != null && declBuilder.getTypeBuilder().getNameBuilder() != null) {

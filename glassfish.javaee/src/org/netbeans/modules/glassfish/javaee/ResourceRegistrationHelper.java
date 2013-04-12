@@ -197,7 +197,7 @@ public class ResourceRegistrationHelper {
             }
             String localValue = (String) localData.get(key);
             if (localValue != null) {
-                if ((remoteValue == null) || ((remoteValue != null) && (!localValue.equals(remoteValue)))) {
+                if (remoteValue == null || !localValue.equals(remoteValue)) {
                     changedData.put(remoteDataKey, localValue);
                 }
             } else {

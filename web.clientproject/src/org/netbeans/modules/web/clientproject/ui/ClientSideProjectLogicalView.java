@@ -44,6 +44,7 @@ package org.netbeans.modules.web.clientproject.ui;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -55,15 +56,18 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
@@ -94,10 +98,13 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.xml.XMLUtil;
 
 @ActionReferences({
     @ActionReference(
@@ -109,6 +116,8 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     static final Logger LOGGER = Logger.getLogger(ClientSideProjectLogicalView.class.getName());
 
+    static final RequestProcessor RP = new RequestProcessor(ClientSideProjectLogicalView.class);
+
     private final ClientSideProject project;
 
     public ClientSideProjectLogicalView(ClientSideProject project) {
@@ -117,7 +126,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     @Override
     public Node createLogicalView() {
-        return new ClientSideProjectNode(project);
+        return ClientSideProjectNode.createForProject(project);
     }
 
     @Override
@@ -211,13 +220,28 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
 
 /** This is the node you actually see in the project tab for the project */
-    private static final class ClientSideProjectNode extends AbstractNode {
+    private static final class ClientSideProjectNode extends AbstractNode implements ChangeListener, PropertyChangeListener {
 
         final ClientSideProject project;
+        private final ProjectInformation projectInfo;
 
-        public ClientSideProjectNode(ClientSideProject project) {
+
+        private ClientSideProjectNode(ClientSideProject project) {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-web-clientproject/Nodes"), createLookup(project));
             this.project = project;
+            projectInfo = ProjectUtils.getInformation(project);
+        }
+
+        public static ClientSideProjectNode createForProject(ClientSideProject project) {
+            ClientSideProjectNode rootNode = new ClientSideProjectNode(project);
+            rootNode.addListeners();
+            return rootNode;
+        }
+
+        private void addListeners() {
+            PropertyEvaluator evaluator = project.getEvaluator();
+            evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+            projectInfo.addPropertyChangeListener(WeakListeners.propertyChange(this, projectInfo));
         }
 
         private static Lookup createLookup(ClientSideProject project) {
@@ -294,8 +318,22 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         @Override
-        public String getDisplayName() {
-            return project.getName();
+        public String getName() {
+            // i would expect getName() here but see #222588
+            return projectInfo.getDisplayName();
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            String dispName = super.getDisplayName();
+            try {
+                dispName = XMLUtil.toElementContent(dispName);
+            } catch (CharConversionException ex) {
+                return dispName;
+            }
+            return ClientSideProjectUtilities.isBroken(project)
+                    ? "<font color=\"#" + Integer.toHexString(ClientSideProjectUtilities.getErrorForeground().getRGB() & 0xffffff) + "\">" + dispName + "</font>" // NOI18N
+                    : null;
         }
 
         @NbBundle.Messages({
@@ -325,6 +363,29 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         @Override
         public boolean canRename() {
             return false;
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    fireIconChange();
+                    fireOpenedIconChange();
+                    fireDisplayNameChange(null, null);
+                }
+            });
+        }
+
+        @Override
+        public void propertyChange(final PropertyChangeEvent evt) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    fireNameChange(null, null);
+                    fireDisplayNameChange(null, null);
+                }
+            });
         }
 
     }
