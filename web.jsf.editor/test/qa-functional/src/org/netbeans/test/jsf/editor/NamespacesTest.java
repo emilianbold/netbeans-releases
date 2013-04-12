@@ -59,8 +59,10 @@ public class NamespacesTest extends GeneralJSF {
     }
 
     public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(NamespacesTest.class);
+        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(NamespacesTest.class).addTest(
+                conf.addTest(
                 "testOpenProject",
                 "testAutoinsert",
                 "testMarkedUnused",
@@ -74,6 +76,7 @@ public class NamespacesTest extends GeneralJSF {
         openFile("ns.xhtml", ExpressionLangTest.current_project);
         EditorOperator eo = new EditorOperator("ns.xhtml");
         ExpressionLangTest.originalContent = eo.getText();
+        resolveServer(ExpressionLangTest.current_project);
         endTest();
     }
 
