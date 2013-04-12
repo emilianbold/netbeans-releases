@@ -11,7 +11,7 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS AAA (AAA ) [1:1/0-4:2/36] lcurly=0 SCOPE: $Global$ 
+CLASS AAA (AAA ) [1:1/0-4:2/36] lcurly=10 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION AAA [2:5/16-2:11/22] ConstructorImpl SCOPE: AAA 
@@ -28,7 +28,7 @@ CLASS AAA (AAA ) [1:1/0-4:2/36] lcurly=0 SCOPE: $Global$
             RETURNS <*no_classifier*> TEXT=  [null-null]
 
 ========== Dumping model of PROJECT DummyProject
-CLASS AAA (AAA ) [1:1/0-4:2/36] lcurly=0 SCOPE: $Global$ 
+CLASS AAA (AAA ) [1:1/0-4:2/36] lcurly=10 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION AAA [2:5/16-2:11/22] ConstructorImpl SCOPE: AAA 
