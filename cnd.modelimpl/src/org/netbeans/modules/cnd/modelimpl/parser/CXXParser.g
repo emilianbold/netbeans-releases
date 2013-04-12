@@ -1194,7 +1194,7 @@ using_directive:
 
 
 asm_statement:
-        literal_asm LPAREN STRING_LITERAL+ RPAREN
+        literal_asm LPAREN adjacent_string_literals? RPAREN
     ;
 
 asm_definition:
@@ -1570,7 +1570,7 @@ ptr_operator returns [ declarator_type_t type ]
 finally                                                                         {if(state.backtracking == 0){action.end_ptr_operator(input.LT(0));}}
 
 cv_qualifier returns [ qualifier_t qual ]:
-        LITERAL_const                                                           {action.cv_qualifier(action.CV_QUALIFIER__CONST, input.LT(0));}
+        literal_const                                                           {action.cv_qualifier(action.CV_QUALIFIER__CONST, input.LT(0));}
         //{{ qual = LITERAL_const; }}
     |
         LITERAL_volatile                                                        {action.cv_qualifier(action.CV_QUALIFIER__VOLATILE, input.LT(0));}
@@ -1782,7 +1782,7 @@ finally                                                                         
 
 initializer_clause
 @init                                                                           {if(state.backtracking == 0){action.initializer_clause(input.LT(1));}}
-    :                                                                           
+    : 
     (
         assignment_expression 
     |
@@ -2677,6 +2677,9 @@ unary_expression:
         (delete_expression)=>
             delete_expression
     |
+        (type_trait_literal)=>
+            type_trait_expression
+    |
         postfix_expression
     |
         PLUSPLUS cast_expression
@@ -2684,13 +2687,6 @@ unary_expression:
         MINUSMINUS cast_expression
     |
         unary_operator_but_not_TILDE cast_expression
-    |
-        LITERAL_sizeof (
-            (LPAREN type_id RPAREN)=>
-                LPAREN type_id RPAREN
-        |
-            unary_expression
-        )
     |
         noexcept_expression
     ;
@@ -2922,10 +2918,38 @@ constant_expression returns [ expression_t expr ]
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_constant_expression(input.LT(0));}}
 
+
+type_trait_expression
+    :
+        type_trait_literal 
+        (
+            (LPAREN type_id RPAREN)=>
+                LPAREN type_id RPAREN
+        |
+            unary_expression
+        )
+    ;
+
+type_trait_literal
+    :
+        LITERAL_sizeof | compiler_specific_type_trait_literal
+    ;
+
+compiler_specific_type_trait_literal
+    :        
+        LITERAL___is_pod
+    ;
+
 // [gram.lex]
 
-literal:
-    DECIMALINT|HEXADECIMALINT|FLOATONE|CHAR_LITERAL|STRING_LITERAL|NUMBER|OCTALINT|LITERAL_true|LITERAL_false
+literal
+    :
+    DECIMALINT|HEXADECIMALINT|FLOATONE|CHAR_LITERAL|adjacent_string_literals|NUMBER|OCTALINT|LITERAL_true|LITERAL_false
+    ;
+
+adjacent_string_literals
+    :
+        STRING_LITERAL+
     ;
 
 // lookahead stuff
