@@ -71,14 +71,18 @@ public class ExecutionEventObject {
 
     
     public static class GAV {
-        final String groupId;
-        final String artifactId;
-        final String version;
+        public final String groupId;
+        public final String artifactId;
+        public final String version;
 
         public GAV(@NonNull String groupId, @NonNull String artifactId, @NonNull String version) {
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.version = version;
+        }
+        
+        public String getId() {
+            return groupId + ":" + artifactId + ":" + version;
         }
         
     }

@@ -109,6 +109,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     //the depth is as follows
     //Session -> Project -> [Fork -> ForkedProject] -> Mojo                
     private final ExecutionEventObject.Tree executionTree = new ExecutionEventObject.Tree(null, null);
+
     private ExecutionEventObject.Tree currentTreeNode = executionTree;
     
 
@@ -130,6 +131,11 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
 //        logger = new Logger();
         initProcessorList(proj, config);
     }
+    
+    public ExecutionEventObject.Tree getExecutionTree() {
+        return executionTree;
+    }
+
 
     @Override
     protected final void checkSleepiness() {
