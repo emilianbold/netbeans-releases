@@ -66,7 +66,8 @@ import static org.netbeans.modules.java.metrics.hints.Bundle.*;
     category = "metrics",
     displayName = "#DN_ComplexArithmeticExpression",
     description = "#DESC_ComplexArithmeticExpression",
-    options = { Hint.Options.QUERY, Hint.Options.HEAVY }
+    options = { Hint.Options.QUERY, Hint.Options.HEAVY },
+    enabled = false
 )
 @NbBundle.Messages({
     "# {0} - number of operands",

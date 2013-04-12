@@ -126,38 +126,22 @@ class JsCodeCompletion implements CodeCompletionHandler {
             switch (context) {
                 case GLOBAL:
                     Collection<IndexedElement> fromIndex = JsIndex.get(fileObject).getGlobalVar(request.prefix);
-                    HashMap<String, JsElement> addedGlobal = new HashMap<String, JsElement>();
+                    HashMap<String, List<JsElement>> addedGlobal = new HashMap<String, List<JsElement>>();
                     for (IndexedElement indexElement : fromIndex) {
-                        JsElement element = addedGlobal.get(indexElement.getName());
-                        if (element == null) {
-                            if (indexElement.isDeclared()) {
-                                resultList.add(JsCompletionItem.Factory.create(indexElement, request));
-                            }
-                            addedGlobal.put(indexElement.getName(), indexElement);
-                        } else if (!element.isDeclared() && indexElement.isDeclared()) {
-                            resultList.add(JsCompletionItem.Factory.create(indexElement, request));
-                            addedGlobal.put(indexElement.getName(), indexElement);
-                        }
+                        addPropertyToMap(request, addedGlobal, indexElement);
                     }
+                    JsCompletionItem.Factory.create(addedGlobal, request, resultList);
                     break;    
                 case EXPRESSION:    
                 case OBJECT_MEMBERS:    
                 case OBJECT_PROPERTY:
                     Collection<? extends IndexResult> indexResults = JsIndex.get(fileObject).query(JsIndex.FIELD_BASE_NAME, request.prefix, QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
-                    HashMap<String, JsElement> all = new HashMap<String, JsElement>();
+                    HashMap<String, List<JsElement>> added = new HashMap<String, List<JsElement>>();
                     for (IndexResult indexResult : indexResults) {
                         IndexedElement indexElement = IndexedElement.create(indexResult);
-                        JsElement element = all.get(indexElement.getName());
-                        if (element == null) {
-                            if (indexElement.isDeclared()) {
-                                resultList.add(JsCompletionItem.Factory.create(indexElement, request));
-                            }
-                            all.put(indexElement.getName(), indexElement);
-                        } else if (!element.isDeclared() && indexElement.isDeclared()) {
-                            resultList.add(JsCompletionItem.Factory.create(indexElement, request));
-                            all.put(indexElement.getName(), indexElement);
-                        }
+                        addPropertyToMap(request, added, indexElement);
                     }
+                    JsCompletionItem.Factory.create(added, request, resultList);
                     break;
             }
         } else {
@@ -182,7 +166,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         addPropertyToMap(request, addedProperties, indexElement);
                     }
 
-                    createCompletionItems(request, resultList, addedProperties);
+                    JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
                 case EXPRESSION:
                     completeKeywords(request, resultList);
@@ -440,17 +424,17 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
 
-        createCompletionItems(request, resultList, addedProperties);
+        JsCompletionItem.Factory.create(addedProperties, request, resultList);
     }
 
     private int checkRecursion;
 
     private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
         List<String> expChain = resolveExpressionChain(request);
-        Map<String, List<JsElement>> results = getCompletionFromExpressionChain(request, expChain);
+        Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
 
         // create code completion results
-        createCompletionItems(request, resultList, results);
+        JsCompletionItem.Factory.create(toAdd, request, resultList);
     }
 
     private Map<String, List<JsElement>> getCompletionFromExpressionChain(CompletionRequest request, List<String> expChain) {
@@ -591,7 +575,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private void completeObjectMember(CompletionRequest request, List<CompletionProposal> resultList) {
         JsParserResult result = (JsParserResult)request.info;
         JsObject jsObject = (JsObject)ModelUtils.getDeclarationScope(result.getModel(), request.anchor);
-        HashMap<String, JsElement> properties = new HashMap<String, JsElement>();
+        Map<String, List<JsElement>> properties = new HashMap<String, List<JsElement>>();
         
         if (jsObject.getJSKind() == JsElement.Kind.METHOD) {
             jsObject = jsObject.getParent();
@@ -603,24 +587,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
             completeObjectMembers(jsObject.getParent(), request, properties);
         }
         
-        for (JsElement element : properties.values()) {
-            if (element instanceof JsObject)
-                resultList.add(JsCompletionItem.Factory.create((JsObject)element, request));
-            else if (element instanceof IndexedElement){
-                resultList.add(JsCompletionItem.Factory.create((IndexedElement)element, request));
-            }
-        }
+        JsCompletionItem.Factory.create(properties, request, resultList);
     }
     
-    private void completeObjectMembers(JsObject jsObject, CompletionRequest request, HashMap<String, JsElement> properties) {
+    private void completeObjectMembers(JsObject jsObject, CompletionRequest request, Map<String, List<JsElement>> properties) {
         if (jsObject.getJSKind() == JsElement.Kind.OBJECT || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
             for (JsObject property : jsObject.getProperties().values()) {
-                if(!property.getModifiers().contains(Modifier.PRIVATE)
-                        && startsWith(property.getName(), request.prefix)) {
-                    JsElement element = properties.get(property.getName());
-                    if(element == null || (!element.isDeclared() && property.isDeclared())) {
-                        properties.put(property.getName(), property);
-                    }
+                if(!property.getModifiers().contains(Modifier.PRIVATE)) {
+                    addPropertyToMap(request, properties, property);
                 }
             }
         }
@@ -630,12 +604,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
         Collection<IndexedElement> indexedProperties = JsIndex.get(fo).getProperties(fqn);
         for (IndexedElement indexedElement : indexedProperties) {
-            if (startsWith(indexedElement.getName(), request.prefix)) {
-                JsElement element = properties.get(indexedElement.getName());
-                if (element == null || (!element.isDeclared() && indexedElement.isDeclared())) {
-                    properties.put(indexedElement.getName(), indexedElement);
-                }
-            }
+            addPropertyToMap(request, properties, indexedElement);
         }
     }
 
@@ -774,14 +743,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
     }
     
-
-    private void createCompletionItems(JsCompletionItem.CompletionRequest request, List<CompletionProposal> resultList, Map<String, List<JsElement>> addedProperties) {
-        for (List<JsElement> elements : addedProperties.values()) {
-            for (JsElement element : elements) {
-                resultList.add(JsCompletionItem.Factory.create(element, request));
-            }
-        }
-    }
+    
     
     private Map<String, List<JsElement>> getDomCompletionResults(CompletionRequest request) {
         Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);

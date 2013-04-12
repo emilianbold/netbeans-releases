@@ -79,10 +79,10 @@ public class APTMacroMapTest {
         mmap1.undef(null, tokGuard);
         assertNull(mmap1.getMacro(tokGuard));
         assertNull(mmap1.active.getMacro(CharSequences.create("NO_SUCH_KEY")));
-        assertEquals(0, APTMacroMapSnapshot.addAllMacros(mmap1.active, null).size());
-        Map<CharSequence, APTMacro> allMacros = APTMacroMapSnapshot.addAllMacros(mmap1.active, null);
+        assertEquals(0, mmap1.active.getAll().size());
+        Map<CharSequence, APTMacro> allMacros = mmap1.active.getAll();
         assertTrue(allMacros.isEmpty());
-        Map<CharSequence, APTMacro> allMacrosState1 = APTMacroMapSnapshot.addAllMacros(state1.snap, null);
+        Map<CharSequence, APTMacro> allMacrosState1 = state1.snap.getAll();
         assertEquals(1, allMacrosState1.size());
         assertEquals(macro1, allMacrosState1.get(CharSequences.create(GUARD)));
         mmap1.define(null, defineKey, APTMacro.Kind.DEFINED);
@@ -97,8 +97,8 @@ public class APTMacroMapTest {
         assertNotNull(fromState1.getMacro(tokGuard));
         assertNull(fromState1.getMacro(tokKey));
         assertNotNull(mmap1.getMacro(tokKey));
-        assertEquals(2, APTMacroMapSnapshot.addAllMacros(mmap1.active, null).size());
+        assertEquals(2, mmap1.active.getAll().size());
         mmap1.define(null, macro1.getDefineNode(), APTMacro.Kind.DEFINED);
-        assertEquals(3, APTMacroMapSnapshot.addAllMacros(mmap1.active, null).size());
+        assertEquals(3, mmap1.active.getAll().size());
     }
 }

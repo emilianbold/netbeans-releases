@@ -43,6 +43,7 @@ package org.netbeans.modules.css.prep.problems;
 
 import java.util.Collection;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.CPFileType;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
@@ -59,6 +60,11 @@ public final class SassProjectProblemsProvider extends BaseProjectProblemsProvid
     @Override
     boolean isEnabled(Project project) {
         return SassPreferences.isEnabled(project);
+    }
+
+    @Override
+    CPFileType getFileType() {
+        return CPFileType.SASS;
     }
 
     @NbBundle.Messages({

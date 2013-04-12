@@ -97,7 +97,6 @@ public final class UiUtils {
         });
     }
 
-
     static void informAndOpenOptions(NotifyDescriptor descriptor) {
         assert descriptor != null;
 
