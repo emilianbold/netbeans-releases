@@ -2686,7 +2686,8 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
     }
     @Override public void end_parameter_declaration_clause(Token token) {}
-    @Override public void parameter_declaration_list(Token token) {}
+    @Override public void parameter_declaration_list(Token token) {
+    }
     @Override public void end_parameter_declaration_list(int kind, Token token) {}
     @Override public void end_parameter_declaration_list(Token token) {}
     
