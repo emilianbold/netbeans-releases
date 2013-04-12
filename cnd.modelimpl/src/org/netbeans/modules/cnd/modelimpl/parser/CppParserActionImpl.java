@@ -3075,6 +3075,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                 if (builder instanceof FriendFunctionBuilder) {
                     parent.addFriendBuilder((FriendFunctionBuilder)builder);
                 } else {
+                    ((MemberBuilder)builder).setVisibility(parent.getCurrentMemberVisibility());
                     parent.addMemberBuilder((MemberBuilder)builder);
                 }
             } else if (declBuilder.getTypeBuilder() != null && declBuilder.getTypeBuilder().getNameBuilder() != null) {
