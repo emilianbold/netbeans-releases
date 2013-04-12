@@ -98,6 +98,7 @@ public final class SymTabStack {
     }
     
     public SymTabEntry lookup(CharSequence entry) {
+        assert CharSequences.isCompact(entry) : "only compact strings allowed";
         assert stack.size() > 0;
         SymTabEntry out = null;
         for (int i = stack.size() - 1; i >= 0; i--) {
