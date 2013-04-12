@@ -393,9 +393,11 @@ public class FaceletsLibrarySupport {
 
         //4. in case of JSF2.2 include pseudo-libraries (http://java.sun.com/jsf/passthrough, http://java.sun.com/jsf)
         // right now, we have no idea whether such libraries will be included into the JSF bundle or not
-        JSFVersion jsfVersion = JSFVersion.forWebModule(webModule);
-        if (jsfVersion != null && jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
-            libsMap.putAll(DefaultFaceletLibraries.getJsf22FaceletPseudoLibraries(this));
+        if (webModule != null) {
+            JSFVersion jsfVersion = JSFVersion.forWebModule(webModule);
+            if (jsfVersion != null && jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
+                libsMap.putAll(DefaultFaceletLibraries.getJsf22FaceletPseudoLibraries(this));
+            }
         }
 
         return libsMap;
