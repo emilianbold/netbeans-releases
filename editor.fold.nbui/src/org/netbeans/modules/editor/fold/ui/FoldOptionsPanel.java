@@ -200,7 +200,8 @@ final class FoldOptionsPanel extends javax.swing.JPanel implements ActionListene
             if (k == null || FoldUtilitiesImpl.PREF_CONTENT_SUMMARY.equals(FoldUtilitiesImpl.PREF_CONTENT_SUMMARY)) {
                 foldedSummary.setSelected(currentPreferences.getBoolean(FoldUtilitiesImpl.PREF_CONTENT_SUMMARY, true));
             } 
-            if (k == null || FoldUtilitiesImpl.PREF_OVERRIDE_DEFAULTS.equals(k)) {
+            // must not replicate defaults over current settings if unspecified key arrives.
+            if (k != null && FoldUtilitiesImpl.PREF_OVERRIDE_DEFAULTS.equals(k)) {
                 boolean b = parentPrefs == null || !currentPreferences.getBoolean(FoldUtilitiesImpl.PREF_OVERRIDE_DEFAULTS, true);
                 if (parentPrefs != null) {
                     if (b) {

@@ -198,7 +198,11 @@ public final class DocPositions {
             Collections.sort(this.sortedTags);
             if (env.btags.length > 0) {
                 int[] span = this.positions.get(env.btags[0]);
-                blockSectionStart = span[0];
+                if (span == null) {
+                    blockSectionStart = 0;
+                } else {
+                    blockSectionStart = span[0];
+                }
             } else {
                 blockSectionStart = 0;
             }
