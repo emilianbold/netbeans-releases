@@ -122,7 +122,7 @@ public abstract class ApiPackageAccessor {
 
     public abstract boolean foldIsEndDamaged(Fold fold);
 
-    public abstract boolean foldIsExpandNecessary(Fold fold);
+//    public abstract boolean foldIsExpandNecessary(Fold fold);
 
     public abstract void foldInsertUpdate(Fold fold, DocumentEvent evt);
 
@@ -149,5 +149,11 @@ public abstract class ApiPackageAccessor {
     int originalEndOffset);
     
     public abstract FoldHierarchyExecution foldGetExecution(FoldHierarchy fh);
+    
+    public abstract void foldMarkDamaged(Fold f, int dmgBits);
+    
+    public abstract int foldStartGuardedLength(Fold f);
+    
+    public abstract int foldEndGuardedLength(Fold f);
 
 }

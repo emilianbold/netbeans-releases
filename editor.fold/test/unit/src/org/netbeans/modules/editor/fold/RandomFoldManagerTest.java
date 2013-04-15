@@ -44,10 +44,13 @@
 
 package org.netbeans.modules.editor.fold;
 
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.Filter;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.random.DocumentTesting;
@@ -83,8 +86,16 @@ public class RandomFoldManagerTest extends NbTestCase {
     }
 
     private RandomTestContainer createContainer() throws Exception {
-        RandomTestContainer container = new RandomTestContainer();
-        container = EditorPaneTesting.initContainer(container, null);
+        final RandomTestContainer fcontainer = new RandomTestContainer();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                JEditorPane pane = new JEditorPane();
+                pane.setDocument(new BaseDocument(false, "text/plain"));
+                fcontainer.putProperty(JEditorPane.class, pane);
+            }
+        });
+        RandomTestContainer container = EditorPaneTesting.initContainer(fcontainer, null);
         DocumentTesting.initContainer(container);
         DocumentTesting.initUndoManager(container);
         FoldManagerTesting.initContainer(container);

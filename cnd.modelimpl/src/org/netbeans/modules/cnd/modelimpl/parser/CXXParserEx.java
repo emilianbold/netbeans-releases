@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import org.antlr.runtime.BitSet;
+import org.antlr.runtime.IntStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.antlr.Token;
@@ -56,9 +58,20 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
  */
 public class CXXParserEx extends CXXParser {
     
+    private static final int RECOVERY_LIMIT = 20;
+    private static final BitSet stopSet = new BitSet();
+    static {
+        stopSet.add(LCURLY);
+        stopSet.add(RCURLY);
+        stopSet.add(RPAREN);
+        stopSet.add(LPAREN);
+    }
+        
     private final CXXParserActionEx action;
     private final boolean trace;
-    
+    private int level = 0; // indentation based trace
+    private int recoveryCounter = 0;
+
     public CXXParserEx(TokenStream input, CXXParserActionEx action) {
         super(input, action);
         this.action = action;
@@ -102,9 +115,65 @@ public class CXXParserEx extends CXXParser {
     public int backtrackingLevel() {
         return state.backtracking;
     }        
+     
+    /**
+     * Recover from an error found on the input stream. This is for NoViableAlt
+     * and mismatched symbol exceptions. If you enable single token insertion
+     * and deletion, this will usually not handle mismatched symbol exceptions
+     * but there could be a mismatched token that the match() routine could not
+     * recover from.
+     */
+    @Override
+    public void recover(IntStream input, RecognitionException re) {
+        BitSet followSet = computeErrorRecoverySet();
+        if (state.lastErrorIndex == input.index()) {
+            //<editor-fold defaultstate="collapsed" desc="Original Implementation">
+            // uh oh, another error at same token index; must be a case
+            // where LT(1) is in the recovery token set so nothing is
+            // consumed; consume a single token so at least to prevent
+            // an infinite loop; this is a failsafe.
+            //input.consume();
+            //</editor-fold>
+            // our solution:
+            if (recoveryCounter > RECOVERY_LIMIT) {
+                input.consume();
+                recoveryCounter = 0;
+                //followSet.orInPlace(stopSet);
+            } else {
+                recoveryCounter++;
+            }
+        } else {
+            recoveryCounter = 0;
+        }
+        state.lastErrorIndex = input.index();
+        beginResync();
+        consumeUntil(input, followSet);
+        endResync();
+    }
     
-    // indentation based trace
-    private int level = 0;
+//    @Override
+//    public void consumeUntil(IntStream input, int tokenType) {
+//        //System.out.println("consumeUntil "+tokenType);
+//        int ttype = input.LA(1);
+//        while (ttype != org.antlr.runtime.Token.EOF && ttype != tokenType) {
+//            input.consume();
+//            ttype = input.LA(1);
+//        }
+//    }
+//
+//    /**
+//     * Consume tokens until one matches the given token set
+//     */
+//    @Override
+//    public void consumeUntil(IntStream input, BitSet set) {
+//        //System.out.println("consumeUntil("+set.toString(getTokenNames())+")");
+//        int ttype = input.LA(1);
+//        while (ttype != org.antlr.runtime.Token.EOF && !set.member(ttype)) {
+//            System.out.println("consume during recover LA(1)="+getTokenNames()[input.LA(1)]);
+//            input.consume();
+//            ttype = input.LA(1);
+//        }
+//    }
 
     @Override
     public void traceIn(String ruleName, int ruleIndex) {

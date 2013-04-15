@@ -311,7 +311,7 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
     
     protected void setDialogDescriptor(final DialogDescriptor desc) {
         this.dd = desc;
-        dd.setHelpCtx(new HelpCtx(AddKeystorePanel.class));
+        dd.setHelpCtx(new HelpCtx("me.signing_createkeypair"));
         checkErrors();
     }
     

@@ -236,7 +236,7 @@ public class AnalyzerImpl implements Analyzer {
             final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
             JavaSource.create(ClasspathInfo.create(ClassPath.EMPTY, ClassPath.EMPTY, ClassPath.EMPTY)).runUserActionTask(new Task<CompilationController>() {
                 @Override public void run(CompilationController parameter) throws Exception {
-                    result.addAll(RunFindBugs.runFindBugs(null, ctx.getSettings(), ctx.getSingleWarningId(), sourceRoot, null, progress, null));
+                    result.addAll(RunFindBugs.runFindBugs(null, ctx.getSettings(), ctx.getSingleWarningId(), sourceRoot, null, progress, null, null));
                 }
             }, true);
             return result;

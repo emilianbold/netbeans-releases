@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
@@ -61,7 +62,7 @@ import org.openide.util.Exceptions;
  *
  * @author Vladimir Riha
  */
-public class GeneralJSF extends JellyTestCase {
+public class GeneralJSF extends J2eeTestCase {
 
     protected EventTool evt;
     public static String current_project = "";

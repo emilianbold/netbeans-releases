@@ -109,6 +109,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     //the depth is as follows
     //Session -> Project -> [Fork -> ForkedProject] -> Mojo                
     private final ExecutionEventObject.Tree executionTree = new ExecutionEventObject.Tree(null, null);
+
     private ExecutionEventObject.Tree currentTreeNode = executionTree;
     
 
@@ -130,6 +131,18 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
 //        logger = new Logger();
         initProcessorList(proj, config);
     }
+    
+    /**
+     * 
+     * @return null if tree is not being built (maven 2.x)
+     */
+    public @CheckForNull ExecutionEventObject.Tree getExecutionTree() {
+        if (contextImpl != null) {
+            return executionTree;
+        }
+        return null;
+    }
+
 
     @Override
     protected final void checkSleepiness() {
@@ -412,15 +425,24 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
         
         
     }
-    //experimental
     private void growTree(ExecutionEventObject obj) {
         ExecutionEventObject.Tree tn = new ExecutionEventObject.Tree(obj, currentTreeNode);
+        //fork events come before the mojo events, we want them as childs, to know what form belongs to which mojo.
+        if (tn.startEvent.type.equals(ExecutionEvent.Type.MojoStarted) && !currentTreeNode.childrenNodes.isEmpty()) {
+            //check if the previous fork should be added to this event
+            ExecutionEventObject.Tree lastSibling = currentTreeNode.childrenNodes.get(currentTreeNode.childrenNodes.size() - 1 );
+            while (lastSibling != null && lastSibling.endEvent != null && (ExecutionEvent.Type.ForkFailed.equals(lastSibling.endEvent.type) || ExecutionEvent.Type.ForkSucceeded.equals(lastSibling.endEvent.type))) {
+                currentTreeNode.childrenNodes.remove(lastSibling);
+                tn.childrenNodes.add(0, lastSibling);
+                lastSibling.reassingParent(tn);
+                lastSibling = currentTreeNode.childrenNodes.isEmpty() ? null : currentTreeNode.childrenNodes.get(currentTreeNode.childrenNodes.size() - 1 );
+            }
+        }
         currentTreeNode.childrenNodes.add(tn);
         currentTreeNode = tn;
         currentTreeNode.setStartOffset(IOPosition.currentPosition(inputOutput));
     }
 
-    //experimental
     private void trimTree(ExecutionEventObject obj) {
         currentTreeNode.setEndOffset(IOPosition.currentPosition(inputOutput));
         currentTreeNode.setEndEvent(obj);
