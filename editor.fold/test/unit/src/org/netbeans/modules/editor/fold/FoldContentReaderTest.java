@@ -61,6 +61,9 @@ import org.netbeans.spi.editor.fold.FoldManagerFactory;
 import org.netbeans.spi.editor.fold.FoldOperation;
 import org.openide.util.Exceptions;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+
 /**
  *
  * @author
@@ -99,7 +102,7 @@ public class FoldContentReaderTest extends NbTestCase implements FoldManagerFact
         Fold f = fm.foldMap.get("A");
         assertNotNull(f);
         
-        ContentReader r = FoldingSupport.contentReader("*", "\\.", "@", " ");
+        ContentReader r = javaReader();
         CharSequence content = r.read(d, f, f.getType().getTemplate());
         assertNull(content);
     }
@@ -112,7 +115,7 @@ public class FoldContentReaderTest extends NbTestCase implements FoldManagerFact
         Fold f = fm.foldMap.get("B");
         assertNotNull(f);
         
-        ContentReader r = FoldingSupport.contentReader("*", "\\.", "@", " ");
+        ContentReader r = javaReader();
         CharSequence content = r.read(d, f, f.getType().getTemplate());
         assertEquals(" First line alone", content.toString());
     }
@@ -165,6 +168,10 @@ public class FoldContentReaderTest extends NbTestCase implements FoldManagerFact
         assertEquals("^Empty line left out", content.toString());
     }
     
+    private static ContentReader javaReader() {
+        return FoldingSupport.contentReader("*", "\\.", "@", " ");
+    }
+    
     /**
      * Reading of a tag with attributes
      */
@@ -189,7 +196,22 @@ public class FoldContentReaderTest extends NbTestCase implements FoldManagerFact
         assertEquals("%tag-with-newline", content.toString());
     }
     
+    public void testJavaOneLinerWithoutDot() throws Exception {
+        Fold f = fm.foldMap.get("I");
+        assertNotNull(f);
+        
+        CharSequence content = javaReader().read(d, f, f.getType().getTemplate());
+        assertEquals(" One liner without dot", content.toString());
+    }
     
+    public void testJavaOneLinerWithDot() throws Exception {
+        Fold f = fm.foldMap.get("J");
+        assertNotNull(f);
+        
+        CharSequence content = javaReader().read(d, f, f.getType().getTemplate());
+        assertEquals(" One liner with dot", content.toString());
+    }
+
     private static final FoldType BLOCK_COMMENT = FoldType.COMMENT.derive("comment", "Comment", 
             new FoldTemplate(3, 2, "/**...*/"));
     
@@ -222,7 +244,7 @@ public class FoldContentReaderTest extends NbTestCase implements FoldManagerFact
                 // now search for <> tags
                 for (int idx = s.indexOf('<'); idx != -1; idx = s.indexOf('<', idx)) {
                     int idx2 = s.indexOf('>', idx + 1);
-                    Fold f = oper.addToHierarchy(FoldType.TAG, idx, idx2, null, null, null, null, transaction);
+                    Fold f = oper.addToHierarchy(FoldType.TAG, idx, idx2 + 1, null, null, null, null, transaction);
                     String id = s.substring(idx -1, idx);
                     foldMap.put(id, f);
 
