@@ -250,6 +250,8 @@ public class NPECheck {
     }
 
     private static State getStateFromAnnotations(Element e, State def) {
+        if (e == null) return def;
+        
         for (AnnotationMirror am : e.getAnnotationMirrors()) {
             String simpleName = ((TypeElement) am.getAnnotationType().asElement()).getSimpleName().toString();
 
@@ -376,19 +378,13 @@ public class NPECheck {
                 wasNPE = true;
             }
             
-            Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
+            Element site = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
             
-            if (isVariableElement(e)) {
-                State r = getStateFromAnnotations(e);
-                
-                if (wasNPE) {
-                    variable2State.put((VariableElement) e, NOT_NULL_BE_NPE);
-                }
-                
-                return r;
+            if (isVariableElement(site) && wasNPE && (variable2State.get(site) == null || !variable2State.get(site).isNotNull())) {
+                variable2State.put((VariableElement) site, NOT_NULL_BE_NPE);
             }
             
-            return State.POSSIBLE_NULL;
+            return getStateFromAnnotations(info.getTrees().getElement(getCurrentPath()));
         }
 
         @Override

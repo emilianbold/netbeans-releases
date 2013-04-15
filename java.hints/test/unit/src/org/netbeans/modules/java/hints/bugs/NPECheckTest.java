@@ -1200,6 +1200,49 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void test228239a() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private static void t(@NonNull Data d) {\n" +
+                       "        if (d.a == null) {\n" +
+                       "            System.err.println(\"null\");\n" +
+                       "        }\n" +
+                       "        t(new Data(null));\n" +
+                       "    }\n" +
+                       "    @interface NonNull {}\n" +
+                       "    public static class Data {\n" +
+                       "        public final String a;\n" +
+                       "        public Data(String a) {\n" +
+                       "            this.a = a;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test228239b() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private static void t(@NonNull Data d) {\n" +
+                       "        if (d.a == null) {\n" +
+                       "            System.err.println(\"null\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "    @interface NonNull {}\n" +
+                       "    public static class Data {\n" +
+                       "        @NonNull public final String a;\n" +
+                       "        public Data(@NonNull String a) {\n" +
+                       "            this.a = a;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings("3:12-3:23:verifier:ERR_NotNull");
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
