@@ -48,7 +48,6 @@ import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputSource;
 import org.codehaus.plexus.util.Base64;
 import org.json.simple.JSONObject;
-import org.netbeans.modules.maven.execute.ExecutionEventObject;
 import org.openide.util.Exceptions;
 
 /**
