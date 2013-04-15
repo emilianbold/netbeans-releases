@@ -1376,6 +1376,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-usecases">
      <usecase id="invalidate.cache" name="Invalidating Caches">
+        <a name="usecase-invalidate.cache"></a>
         <p>
             NetBeans Module system is optimized to eliminate useless I/O
             operations on start (as a result the <a href="http://netbinox.apidesign.org">
@@ -1419,6 +1420,24 @@ made subject to such option by the copyright holder.
             timestamp. That will tell the system that caches are invalid 
             (as their timestamps will become older than newest <code>.lastModified</code> file).
         </p>
+     </usecase>
+     <usecase id="shared.cache" name="Generating Shared Cache">
+         <p>
+             The caches (as introduced in <a href="#usecase-invalidate.cache">
+             invalidating cache</a>) are optimized to reflect the state of 
+             previous start. However that means, the very first start runs
+             without them. This may not be a problem (if the start follows
+             immediately after installation), however in <a href="http://wiki.apidesign.org/wiki/Startup#Multi_User_Initial_Launch">
+             multi user environment</a> (when the installation is done by administrator), 
+             the first start may be slow. 
+         </p>
+         <p>
+             To mitigate that the system offers support for <em>shared caches</em>.
+             As part of installation, one can also copy <a href="#java.io.File-installation.cache">
+             certain cache files
+             </a> into the shared location. Those files will then be used
+             on a first start of the system (when the user directory is empty).
+         </p>
      </usecase>
  </answer>
 
