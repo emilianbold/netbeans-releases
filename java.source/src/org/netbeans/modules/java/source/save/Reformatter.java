@@ -4152,6 +4152,8 @@ public class Reformatter implements ReformatTask {
                                     break;
                                 case 5:
                                     noFormat = true;
+                                    if (currWSPos > 0)
+                                        lastWSPos = currWSPos;
                                     break;
                                 case 6:
                                     preserveNewLines = true;
