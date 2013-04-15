@@ -39,72 +39,39 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.csl;
+package org.netbeans.modules.php.latte.format;
 
-import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.Formatter;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.php.latte.format.LatteFormatter;
-import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
-import org.netbeans.modules.php.latte.navigation.LatteStructureScanner;
-import org.netbeans.modules.php.latte.parser.LatteParser;
-import org.netbeans.modules.php.latte.semantic.LatteSemanticAnalyzer;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.indent.spi.Context;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@LanguageRegistration(mimeType = LatteLanguage.LATTE_MIME_TYPE)
-public class LatteLanguage extends DefaultLanguageConfig {
-    public static final String LATTE_MIME_TYPE = "text/x-latte"; //NOI18N
+public class LatteFormatter implements Formatter {
 
     @Override
-    public Language getLexerLanguage() {
-        return LatteTopTokenId.language();
+    public void reformat(Context context, ParserResult compilationInfo) {
     }
 
     @Override
-    public String getDisplayName() {
-        return "Latte"; //NOI18N
+    public void reindent(Context context) {
     }
 
     @Override
-    public boolean isIdentifierChar(char c) {
-        return Character.isJavaIdentifierPart(c) || (c == '$') ||(c == '_');
+    public boolean needsParserResult() {
+        return false;
     }
 
     @Override
-    public Parser getParser() {
-        return new LatteParser();
+    public int indentSize() {
+        return 0;
     }
 
     @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return new LatteSemanticAnalyzer();
-    }
-
-    @Override
-    public boolean hasStructureScanner() {
-        return true;
-    }
-
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new LatteStructureScanner();
-    }
-
-    @Override
-    public boolean hasFormatter() {
-        return true;
-    }
-
-    @Override
-    public Formatter getFormatter() {
-        return new LatteFormatter();
+    public int hangingIndentSize() {
+        return 0;
     }
 
 }
