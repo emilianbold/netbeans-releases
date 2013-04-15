@@ -110,7 +110,6 @@ public class ODCSHandler {
                         }
                         lastLoggedUser = user;
                     }
-                    refreshKenaiQueries();
                 }
             }
         });
@@ -355,10 +354,6 @@ public class ODCSHandler {
     private String getKenaiUser () {
         PasswordAuthentication pa = KenaiAccessorImpl.getPasswordAuthentication(server, false);
         return pa != null ? pa.getUserName() : null;
-    }
-
-    private void refreshKenaiQueries () {
-        KenaiUtil.refreshOpenedQueries();
     }
 
     private class KenaiRepositoryListener implements PropertyChangeListener {

@@ -44,15 +44,19 @@ package org.netbeans.modules.odcs.tasks;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Stupka
  */
 public class ODCSIssueProvider extends IssueProvider<ODCSIssue> {
+    private IssueStatusProvider statusProvider;
 
     @Override
     public String getDisplayName(ODCSIssue data) {
@@ -118,5 +122,31 @@ public class ODCSIssueProvider extends IssueProvider<ODCSIssue> {
     public void addPropertyChangeListener(ODCSIssue data, PropertyChangeListener listener) {
         data.addPropertyChangeListener(listener);
     }
+
+    @Override
+    public IssueStatusProvider getStatusProvider() {
+        if(statusProvider == null) {
+            statusProvider = new IssueStatusProvider<ODCSIssue>() {
+                @Override
+                public Status getStatus(ODCSIssue issue) {
+                    return issue.getIssueStatus();
+                }
+                @Override
+                public void setSeen(ODCSIssue issue, boolean seen) {
+                    issue.setSeen(seen);
+                }
+                @Override
+                public void removePropertyChangeListener(ODCSIssue issue, PropertyChangeListener listener) {
+                    issue.removePropertyChangeListener(listener);
+                }
+                @Override
+                public void addPropertyChangeListener(ODCSIssue issue, PropertyChangeListener listener) {
+                    issue.addPropertyChangeListener(listener);
+                }
+            };
+        }
+        return statusProvider;
+    }
+    
     
 }

@@ -124,7 +124,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.OwnerUtils;
@@ -288,9 +288,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         headerField.setText(issue.getDisplayName());
         if (this.issue == null) {
             
-            IssueCache<ODCSIssue, TaskData> cache = issue.getRepository().getIssueCache();
-            cache.removePropertyChangeListener(issue, cacheListener);
-            cache.addPropertyChangeListener(issue, cacheListener);
+            issue.removePropertyChangeListener(cacheListener);
+            issue.addPropertyChangeListener(cacheListener);
 
             summaryField.getDocument().addDocumentListener(new DocumentListener() {
                 @Override
@@ -1005,7 +1004,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if(evt.getSource() != IssuePanel.this.issue) {
                 return;
             }
-            if (IssueCache.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
+            if (IssueStatusProvider.EVENT_SEEN_CHANGED.equals(evt.getPropertyName())) {
                 updateFieldStatuses();
             }
         }

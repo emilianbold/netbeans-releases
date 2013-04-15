@@ -45,13 +45,13 @@ import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -100,11 +100,6 @@ public class ODCSRepositoryProvider extends KenaiRepositoryProvider<ODCSReposito
     }
 
     @Override
-    public Lookup getLookup(ODCSRepository r) {
-        return r.getLookup();
-    }
-
-    @Override
     public Collection<ODCSIssue> simpleSearch(ODCSRepository r, String criteria) {
         return r.simpleSearch(criteria);
     }
@@ -125,12 +120,17 @@ public class ODCSRepositoryProvider extends KenaiRepositoryProvider<ODCSReposito
 
     @Override
     public ODCSQuery getAllIssuesQuery (ODCSRepository repository) {
-        return (repository).getPredefinedQuery(PredefinedTaskQuery.ALL);
+        return repository.getPredefinedQuery(PredefinedTaskQuery.ALL);
     }
 
     @Override
     public ODCSQuery getMyIssuesQuery (ODCSRepository repository) {
-        return (repository).getPredefinedQuery(PredefinedTaskQuery.MINE);
+        return repository.getPredefinedQuery(PredefinedTaskQuery.MINE);
+    }
+
+    @Override
+    public KenaiProject getKenaiProject(ODCSRepository repository) {
+        return repository.getKenaiProject();
     }
     
 }

@@ -77,11 +77,12 @@ import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.mylyn.util.GetAttachmentCommand;
 import org.netbeans.modules.mylyn.util.PostAttachmentCommand;
@@ -227,8 +228,12 @@ public class ODCSIssue {
         return attachments;
     }
 
-    public void setSeen(boolean seen) throws IOException {
-        repository.getIssueCache().setSeen(getID(), seen);
+    public void setSeen(boolean seen) {
+        try {
+            repository.getIssueCache().setSeen(getID(), seen);
+        } catch (IOException ex) {
+            ODCS.LOG.log(Level.WARNING, null, ex);
+        }
     }
     
     private boolean wasSeen() {
@@ -276,10 +281,10 @@ public class ODCSIssue {
         if(wasSeen()) {
             return ""; //NOI18N
         }
-        int status = repository.getIssueCache().getStatus(getID());
-        if(status == IssueCache.ISSUE_STATUS_NEW) {
+        IssueStatusProvider.Status status = getIssueStatus();
+        if(status == IssueStatusProvider.Status.NEW) {
             return Bundle.LBL_NEW_STATUS();
-        } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
+        } else if(status == IssueStatusProvider.Status.MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             assert getSeenAttributes() != null;
             for (IssueField f : IssueField.getFields()) {
@@ -627,12 +632,8 @@ public class ODCSIssue {
             // XXX repository.refreshAllQueries();
         }
 
-        try {
-            seenAtributes = null;
-            setSeen(true);
-        } catch (IOException ex) {
-            ODCS.LOG.log(Level.SEVERE, null, ex);
-        }
+        seenAtributes = null;
+        setSeen(true);
         return true;
     }
 
@@ -877,7 +878,8 @@ public class ODCSIssue {
             if (td == null) {
                 return false;
             }
-            getRepository().getIssueCache().setIssueData(this, td); // XXX
+            setTaskData(td);
+            getRepository().getIssueCache().setIssueData(td.getTaskId(), this); // XXX
 //            getRepository().ensureConfigurationUptodate(this);
             refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
@@ -1297,4 +1299,21 @@ public class ODCSIssue {
         }
 
     }    
+    
+    public IssueStatusProvider.Status getIssueStatus() {
+        IssueCache.Status status = getRepository().getIssueCache().getStatus(getID());
+        IssueStatusProvider.Status ret = null;
+        switch(status) {
+            case ISSUE_STATUS_NEW:
+                ret = IssueStatusProvider.Status.NEW;
+                break;
+            case ISSUE_STATUS_MODIFIED:
+                ret = IssueStatusProvider.Status.MODIFIED;
+                break;
+            case ISSUE_STATUS_SEEN:
+                ret = IssueStatusProvider.Status.SEEN;
+                break;
+        }
+        return ret;        
+    }
 }

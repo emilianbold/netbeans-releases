@@ -45,6 +45,7 @@ import java.util.logging.Logger;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
@@ -75,6 +76,7 @@ public class ODCS {
     private ODCSQueryProvider odcsQueryProvider;
     private ODCSRepositoryProvider odcsRepositoryProvider;
     private BugtrackingFactory<ODCSRepository, ODCSQuery, ODCSIssue> bf;
+    private IssueNode.ChangesProvider<ODCSIssue> ocp;
 
     private void init() {
         rc = new CloudDevRepositoryConnector();
@@ -120,5 +122,16 @@ public class ODCS {
     public CloudDevClient getCloudDevClient(TaskRepository taskRepository) {
         return rc.getCloudDevClientManager().getCloudDevClient(taskRepository);
     }
-    
+
+    public IssueNode.ChangesProvider<ODCSIssue> getChangesProvider() {
+        if(ocp == null) {
+            ocp = new IssueNode.ChangesProvider<ODCSIssue>() {
+                @Override
+                public String getRecentChanges(ODCSIssue i) {
+                    return i.getRecentChanges();
+                }
+            };
+        }
+        return ocp;
+    }    
 }

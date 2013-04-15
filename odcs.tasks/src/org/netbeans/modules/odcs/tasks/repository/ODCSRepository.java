@@ -74,13 +74,13 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.mylyn.util.MylynUtils;
 import org.netbeans.modules.odcs.tasks.ODCS;
@@ -285,7 +285,8 @@ public class ODCSRepository implements PropertyChangeListener {
             return null;
         }
         try {
-            ODCSIssue issue = getIssueCache().setIssueData(id, taskData);
+            ODCSIssue issue = getIssueCache().getIssue(id);
+            issue = (ODCSIssue) getIssueCache().setIssueData(id, issue != null ? issue : new ODCSIssue(taskData, this));
             // XXX ensureConfigurationUptodate(issue);
             return issue;
         } catch (IOException ex) {
@@ -480,7 +481,7 @@ public class ODCSRepository implements PropertyChangeListener {
         return info.getId();
     }
 
-    public IssueCache<ODCSIssue, TaskData> getIssueCache() {
+    public IssueCache<ODCSIssue> getIssueCache() {
         if(cache == null) {
             cache = new Cache();
         }
@@ -544,32 +545,13 @@ public class ODCSRepository implements PropertyChangeListener {
         return configuration;
     }
     
-    private class Cache extends IssueCache<ODCSIssue, TaskData> {
+    private class Cache extends IssueCache<ODCSIssue> {
         Cache() {
-            super(
-                ODCSRepository.this.getUrl(), 
-                new IssueAccessorImpl(), 
-                ODCS.getInstance().getIssueProvider(), 
-                ODCSUtil.getRepository(ODCSRepository.this));
+            super(ODCSRepository.this.getUrl(), new IssueAccessorImpl());
         }
     }
 
-    private class IssueAccessorImpl implements IssueCache.IssueAccessor<ODCSIssue, TaskData> {
-        @Override
-        public ODCSIssue createIssue(TaskData taskData) {
-            ODCSIssue issue = new ODCSIssue(taskData, ODCSRepository.this);
-            return issue;
-        }
-        @Override
-        public void setIssueData(ODCSIssue issue, TaskData taskData) {
-            assert issue != null && taskData != null;
-            issue.setTaskData(taskData);
-        }
-        @Override
-        public String getRecentChanges(ODCSIssue issue) {
-            assert issue != null;
-            return issue.getRecentChanges();
-        }
+    private class IssueAccessorImpl implements IssueCache.IssueAccessor<ODCSIssue> {
         @Override
         public long getLastModified(ODCSIssue issue) {
             assert issue != null;
@@ -579,11 +561,6 @@ public class ODCSRepository implements PropertyChangeListener {
         public long getCreated(ODCSIssue issue) {
             assert issue != null;
             return issue.getCreated();
-        }
-        @Override
-        public String getID(TaskData issueData) {
-            assert issueData != null;
-            return ODCSIssue.getID(issueData);
         }
         @Override
         public Map<String, String> getAttributes(ODCSIssue issue) {

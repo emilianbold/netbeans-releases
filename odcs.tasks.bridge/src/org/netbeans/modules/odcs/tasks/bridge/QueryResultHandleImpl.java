@@ -49,7 +49,7 @@ import java.util.LinkedList;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import static org.netbeans.modules.odcs.tasks.bridge.Bundle.*;
 import org.openide.util.NbBundle.Messages;
@@ -94,53 +94,46 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
         KenaiUtil.openQuery(query, queryMode, true);
     }
 
-    @Messages({"# {0} - number of tasks", "LBL_QueryResultTotal=total {0}",
-        "# {0} - number of tasks", "LBL_QueryResultUnseen=new or changed {0}"})
-    static QueryResultHandleImpl forStatus(Query query, int status) {
+    @Messages({"# {0} - number of tasks", "LBL_QueryResultTotal=total {0}"})
+    static QueryResultHandleImpl forAllStatus(Query query) {
+        Collection<Issue> issues = query.getIssues();
+        int issueCount = issues != null ? issues.size() : 0;
+        return new QueryResultHandleImpl(
+                query,
+                LBL_QueryResultTotal(issueCount),
+                getTotalTooltip(issueCount),
+                Query.QueryMode.SHOW_ALL,
+                ResultType.NAMED_RESULT);
+    }
+    
+    @Messages({"# {0} - number of tasks", "LBL_QueryResultUnseen=new or changed {0}"})
+    static QueryResultHandleImpl forNotSeenStatus(Query query) {
         Collection<Issue> issues;
-        switch(status) {
-
-            case IssueCache.ISSUE_STATUS_ALL:
-
-                issues = query.getIssues();
-                int issueCount = issues != null ? issues.size() : 0;
-                return new QueryResultHandleImpl(
-                        query,
-                        LBL_QueryResultTotal(issueCount),
-                        getTotalTooltip(issueCount),
-                        Query.QueryMode.SHOW_ALL,
-                        ResultType.NAMED_RESULT);
-
-            case IssueCache.ISSUE_STATUS_NOT_SEEN:
-
-                int unseenIssues;
-                Collection<Issue> c = query.getIssues();
-                if(c == null || c.isEmpty()) {
-                    return null;
-                }
-                issues = new LinkedList<Issue>();
-                for (Issue issue : c) {
-                    if(issue.getStatus() == Issue.Status.MODIFIED ||
-                       issue.getStatus() == Issue.Status.NEW) 
-                    {
-                        issues.add(issue);
-                    }
-                }
-                unseenIssues = issues.size();
-
-                String label = LBL_QueryResultUnseen(unseenIssues);
-                String tooltip = getUnseenTooltip(unseenIssues);
-                
-                return new QueryResultHandleImpl(
-                        query,
-                        label,
-                        tooltip,
-                        Query.QueryMode.SHOW_NEW_OR_CHANGED,
-                        ResultType.NAMED_RESULT);
-
-            default:
-                throw new IllegalStateException("wrong status value [" + status + "]"); // NOI18N
+        int unseenIssues;
+        Collection<Issue> c = query.getIssues();
+        if(c == null || c.isEmpty()) {
+            return null;
         }
+        issues = new LinkedList<Issue>();
+        for (Issue issue : c) {
+            if(issue.getStatus() == Issue.Status.MODIFIED ||
+               issue.getStatus() == Issue.Status.NEW) 
+            {
+                issues.add(issue);
+            }
+        }
+        unseenIssues = issues.size();
+
+        String label = LBL_QueryResultUnseen(unseenIssues);
+        String tooltip = getUnseenTooltip(unseenIssues);
+
+        return new QueryResultHandleImpl(
+                query,
+                label,
+                tooltip,
+                Query.QueryMode.SHOW_NEW_OR_CHANGED,
+                ResultType.NAMED_RESULT);
+
     }
 
     static QueryResultHandle getAllChangedResult(Query query) {

@@ -107,7 +107,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class ODCSQueryController extends QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, IssueTable.IssueTableProvider {
+public class ODCSQueryController extends QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
 
     protected QueryPanel panel;
 
@@ -770,11 +770,7 @@ public class ODCSQueryController extends QueryController implements ItemListener
             public void run() {
                 Collection<ODCSIssue> issues = query.getIssues();
                 for (ODCSIssue issue : issues) {
-                    try {
-                        issue.setSeen(true);
-                    } catch (IOException ex) {
-                        ODCS.LOG.log(Level.SEVERE, null, ex);
-                    }
+                    issue.setSeen(true);
                 }
             }
         });
@@ -886,11 +882,6 @@ public class ODCSQueryController extends QueryController implements ItemListener
                 refreshTask.addProgressUnit(issueDesc);
             }
         }
-    }
-
-    @Override
-    public IssueTable getIssueTable() {
-        return issueTable;
     }
 
     private void hideModificationFields () {

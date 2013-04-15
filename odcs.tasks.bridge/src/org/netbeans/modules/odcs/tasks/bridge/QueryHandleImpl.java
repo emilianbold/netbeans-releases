@@ -53,7 +53,7 @@ import java.util.List;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import org.openide.util.WeakListeners;
@@ -114,18 +114,18 @@ public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, Act
         if(evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
             registerIssues();
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
-        } else if(evt.getPropertyName().equals(IssueCache.EVENT_ISSUE_SEEN_CHANGED)) {
+        } else if(evt.getPropertyName().equals(IssueStatusProvider.EVENT_SEEN_CHANGED)) {
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
         } 
     }
 
     List<QueryResultHandle> getQueryResults() {
         List<QueryResultHandle> ret = new ArrayList<QueryResultHandle>();
-        QueryResultHandle qh = QueryResultHandleImpl.forStatus(query, IssueCache.ISSUE_STATUS_ALL);
+        QueryResultHandle qh = QueryResultHandleImpl.forAllStatus(query);
         if(qh != null) {
             ret.add(qh);
         }
-        qh = QueryResultHandleImpl.forStatus(query, IssueCache.ISSUE_STATUS_NOT_SEEN);
+        qh = QueryResultHandleImpl.forNotSeenStatus(query);
         if(qh != null) {
             ret.add(qh);
         }

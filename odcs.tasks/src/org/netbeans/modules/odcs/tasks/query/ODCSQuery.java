@@ -64,11 +64,11 @@ import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
@@ -190,7 +190,7 @@ public abstract class ODCSQuery {
             ids.addAll(issues);
         }
         
-        IssueCache<ODCSIssue, TaskData> cache = repository.getIssueCache();
+        IssueCache<ODCSIssue> cache = repository.getIssueCache();
         List<ODCSIssue> ret = new ArrayList<ODCSIssue>();
         for (String id : ids) {
             ret.add(cache.getIssue(id));
@@ -372,8 +372,12 @@ public abstract class ODCSQuery {
             }
             ODCSIssue issue;
             try {
-                IssueCache<ODCSIssue, TaskData> cache = repository.getIssueCache();
-                issue = cache.setIssueData(id, taskData);
+                IssueCache<ODCSIssue> cache = repository.getIssueCache();
+                issue = cache.getIssue(id);
+                if(issue != null) {
+                    issue.setTaskData(taskData);
+                }
+                issue = (ODCSIssue) cache.setIssueData(id, issue != null ? issue : new ODCSIssue(taskData, repository));                
                 if (!issue.isNew() && issue.isOpened()) {
                     openedIssues.add(issue);
                 }

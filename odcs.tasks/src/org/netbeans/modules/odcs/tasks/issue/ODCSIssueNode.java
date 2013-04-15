@@ -47,6 +47,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
+import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.openide.nodes.Node.Property;
 
@@ -56,7 +57,7 @@ import org.openide.nodes.Node.Property;
  */
 public class ODCSIssueNode extends IssueNode<ODCSIssue> {
     public ODCSIssueNode(ODCSIssue issue) {
-        super(ODCSUtil.getRepository(issue.getRepository()), issue);
+        super(ODCSUtil.getRepository(issue.getRepository()), issue, ODCS.getInstance().getChangesProvider());
     }
 
     ODCSIssue getODCSIssue() {
