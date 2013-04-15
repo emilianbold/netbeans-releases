@@ -492,7 +492,11 @@ public abstract class WebRestSupport extends RestSupport {
     public JaxRsStackSupport getJaxRsStackSupport(){
         return JaxRsStackSupport.getInstance(project);
     }
-    
+
+    /**
+     * Returns true if JAX-RS APIs are available for the project. That means if
+     * project's profile is EE7 (web profile or full) or EE6 (full).
+     */
     public boolean hasJaxRsApi(){
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if ( webModule == null ){
@@ -500,14 +504,14 @@ public abstract class WebRestSupport extends RestSupport {
         }
         Profile profile = webModule.getJ2eeProfile();
         boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) || 
-                Profile.JAVA_EE_6_FULL.equals(profile) ||
-                    Profile.JAVA_EE_7_WEB.equals(profile) ||
+                Profile.JAVA_EE_6_FULL.equals(profile);
+        boolean isJee7 = Profile.JAVA_EE_7_WEB.equals(profile) ||
                         Profile.JAVA_EE_7_FULL.equals(profile);
         // Fix for BZ#216345: JAVA_EE_6_WEB profile doesn't contain JAX-RS API
-        return isJee6 && supportsTargetProfile(Profile.JAVA_EE_6_FULL);
+        return (isJee6 && supportsTargetProfile(Profile.JAVA_EE_6_FULL)) || isJee7;
     }
-    
-    public boolean supportsTargetProfile(Profile profile){
+
+    private boolean supportsTargetProfile(Profile profile){
         J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().
                 lookup(J2eeModuleProvider.class);
         String serverInstanceID = provider.getServerInstanceID();
@@ -870,6 +874,9 @@ public abstract class WebRestSupport extends RestSupport {
     }
 
     public boolean isJersey2() {
+        if (hasResource("org.glassfish.jersey.servlet.ServletContainer")) {
+            return true;
+        }
         JaxRsStackSupport support = getJaxRsStackSupport();
         if (support != null){
             return support.isBundled("org.glassfish.jersey.servlet.ServletContainer");

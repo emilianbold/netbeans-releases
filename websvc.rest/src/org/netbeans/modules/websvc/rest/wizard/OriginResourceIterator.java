@@ -258,16 +258,6 @@ public class OriginResourceIterator implements
         return Collections.singleton(filterClass);
     }
 
-    static boolean isJee7Profile( Project project ) {
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        if ( webModule == null ){
-            return false;
-        }
-        Profile profile = webModule.getJ2eeProfile();
-        return  Profile.JAVA_EE_7_WEB.equals(profile) ||
-                        Profile.JAVA_EE_7_FULL.equals(profile);
-    }
-    
     private String generateFilter(JavaSource javaSource, boolean jersey2) throws IOException {
         if (jersey2) {
             generateJaxRs20Filter(javaSource);
@@ -357,10 +347,10 @@ public class OriginResourceIterator implements
             throws IOException
     {
         Project project = Templates.getProject(myWizard);
-        if (isJee7Profile(project)){
-            return false;
-        }
         if ( support!= null ){
+            if (support.isEE7()){
+                return false;
+            }
             boolean hasRequest = RestUtils.hasClass(project, 
                     CONTAINER_CONTAINER_REQUEST.replace('.', '/')+CLASS);
             boolean hasFilter = RestUtils.hasClass(project, 
