@@ -358,6 +358,9 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
      * </font>
      */
     public final void lock() {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Locked FoldHierarchy for " + System.identityHashCode(getComponent())); // NOI18N
+        }
         mutex.lock();
     }
     
@@ -372,6 +375,9 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     public void unlock() {
         if (activeTransaction != null) {
             activeTransaction.cancelled();
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Unlocked FoldHierarchy for " + System.identityHashCode(getComponent())); // NOI18N
         }
         mutex.unlock();
     }
@@ -768,8 +774,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
      *  but make the new root folds array empty.
      */
     private void rebuildManagers(boolean releaseOnly) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "rebuilding fold managers, release = {0}, document = {1}, component = {2}", new Object[] {
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.log(Level.FINER, "rebuilding fold managers, release = {0}, document = {1}, component = {2}", new Object[] {
                releaseOnly, this.lastDocument, Integer.toHexString(System.identityHashCode(this.component))
             });
         }
@@ -837,8 +843,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                 // TODO - remove folds under root fold
                 operations = EMPTY_FOLD_OPERTAION_IMPL_ARRAY;
             }
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "Fold managers initialized. New managers = {0}, status = {1}", new Object[] {
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.log(Level.FINER, "Fold managers initialized. New managers = {0}, status = {1}", new Object[] {
                     Arrays.asList(operations), ok
                 });
             }
@@ -1288,8 +1294,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                 preRemoveCheckDamaged(childFold, evt, damaged); // nest prior removing
                 removed = true;
 
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("preRemoveCheck: removed empty " // NOI18N
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.finer("preRemoveCheck: removed empty " // NOI18N
                     + childFold + '\n');
                 }
 
@@ -1300,7 +1306,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                 removed = true;
 
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("preRemoveCheck: removed damaged " // NOI18N
+                    LOG.finer("preRemoveCheck: removed damaged " // NOI18N
                     + childFold + '\n');
                 }
 
@@ -1314,15 +1320,15 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                 if (childFold.isCollapsed() && ((flag = FoldUtilitiesImpl.becomesDamagedByRemove(childFold, evt, true)) > 0)) {
                     damaged.add(OPERATION_COLLAPSE | flag);
                     damaged.add(childFold);
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("preRemoveCheck: expansion needed " // NOI18N
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer("preRemoveCheck: expansion needed " // NOI18N
                         + childFold + '\n');
                     }
                 } else {
                     damaged.add(OPERATION_UPDATE);
                     damaged.add(childFold);
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("preRemoveCheck: removeUpdate call " // NOI18N
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer("preRemoveCheck: removeUpdate call " // NOI18N
                         + childFold + '\n');
                     }
                 }
