@@ -112,13 +112,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
                         String propertyName = ts.token().text().toString();
                         for (Type type : assignments) {
-                            Collection<? extends IndexResult> items = jsIndex.query(
-                                    JsIndex.FIELD_FQ_NAME, type.getType() + "." + propertyName, QuerySupport.Kind.EXACT,  //NOI18N
-                                    JsIndex.TERMS_BASIC_INFO);
+                            Collection<? extends IndexResult> items = jsIndex.findFQN(type.getType() + "." + propertyName); // NOI18N
                             if(items.isEmpty()) {
-                                items = jsIndex.query(
-                                    JsIndex.FIELD_FQ_NAME, type.getType() + ".prototype." + propertyName, QuerySupport.Kind.EXACT,  //NOI18N
-                                    JsIndex.TERMS_BASIC_INFO);
+                                items = jsIndex.findFQN( type.getType() + ".prototype." + propertyName); // NOI18N
                             }
                             indexResults.addAll(items);
                         }
