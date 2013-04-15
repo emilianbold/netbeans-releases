@@ -546,6 +546,13 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    /**
+     * @since 0.119
+     */    
+    public boolean wrapAfterAssignOps() {
+        return preferences.getBoolean(wrapAfterAssignOps, getDefaultAsBoolean(wrapAfterAssignOps));
+    }
+
     // Blank lines -------------------------------------------------------------
     
     /**

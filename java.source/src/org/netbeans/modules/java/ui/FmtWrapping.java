@@ -115,6 +115,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         afterTernaryOpsCheckBox.addFocusListener(this);
         assignOpsCombo.putClientProperty(OPTION_ID, wrapAssignOps);
         assignOpsCombo.addFocusListener(this);
+        afterAssignOpsCheckBox.putClientProperty(OPTION_ID, wrapAfterAssignOps);
+        afterAssignOpsCheckBox.addFocusListener(this);
         lambdaParamsCombo.putClientProperty(OPTION_ID, wrapLambdaParams);
         lambdaParamsCombo.addFocusListener(this);
         lambdaArrowCombo.putClientProperty(OPTION_ID, wrapLambdaArrow);
@@ -201,6 +203,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         afterTernaryOpsCheckBox = new javax.swing.JCheckBox();
         assignOpsLabel = new javax.swing.JLabel();
         assignOpsCombo = new javax.swing.JComboBox();
+        afterAssignOpsCheckBox = new javax.swing.JCheckBox();
         lambdaParamsLabel = new javax.swing.JLabel();
         lambdaParamsCombo = new javax.swing.JComboBox();
         lambdaArrowLabel = new javax.swing.JLabel();
@@ -608,8 +611,21 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(assignOpsCombo, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(afterAssignOpsCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_afterAssignOps")); // NOI18N
+        afterAssignOpsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        afterAssignOpsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        afterAssignOpsCheckBox.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(2, 8, 6, 0);
+        panel1.add(afterAssignOpsCheckBox, gridBagConstraints);
+
+        lambdaParamsLabel.setLabelFor(lambdaParamsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(lambdaParamsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_lambdaParams")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 26;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
         panel1.add(lambdaParamsLabel, gridBagConstraints);
@@ -617,16 +633,17 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         lambdaParamsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 25;
+        gridBagConstraints.gridy = 26;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(lambdaParamsCombo, gridBagConstraints);
 
+        lambdaArrowLabel.setLabelFor(lambdaArrowCombo);
         org.openide.awt.Mnemonics.setLocalizedText(lambdaArrowLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_lambdaArrow")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 26;
+        gridBagConstraints.gridy = 27;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
         panel1.add(lambdaArrowLabel, gridBagConstraints);
@@ -634,7 +651,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         lambdaArrowCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 26;
+        gridBagConstraints.gridy = 27;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
@@ -646,7 +663,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         afterLambdaArrowCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 27;
+        gridBagConstraints.gridy = 28;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 8, 6, 0);
@@ -658,6 +675,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox afterAssignOpsCheckBox;
     private javax.swing.JCheckBox afterBinaryOpsCheckBox;
     private javax.swing.JCheckBox afterDotCheckBox;
     private javax.swing.JCheckBox afterLambdaArrowCheckBox;
