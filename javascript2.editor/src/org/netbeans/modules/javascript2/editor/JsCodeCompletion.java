@@ -223,8 +223,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                 }
                             }
                             
+                        } else {
+                            LOGGER.log(Level.INFO, "Not instance of JsParserResult: {0}", parserResult);
                         }
-                        LOGGER.log(Level.INFO, "Not instance of JsParserResult: {0}", parserResult);
                     }
                     
                 });

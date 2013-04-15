@@ -39,20 +39,21 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.test.jsf.editor;
+package org.netbeans.test.syntax;
 
 import java.awt.event.InputEvent;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Tests new Expression Language 3.0
  *
  * @author Vladimir Riha
  */
-public class ExpressionLang30Test extends GeneralJSF {
+public class ExpressionLang30Test extends GeneralJSP {
 
     public static String originalContent;
 
@@ -66,7 +67,7 @@ public class ExpressionLang30Test extends GeneralJSF {
         return NbModuleSuite.create(
                 conf.addTest(
                 "testOpenProject",
-                "testNoErrors",
+//                "testNoErrors", commented out due to JSP parser from GlassFish, see issue #228029
                 "testCollection",
                 "testChainedCall",
                 "testCollectionDetailed",
@@ -75,10 +76,10 @@ public class ExpressionLang30Test extends GeneralJSF {
 
     public void testOpenProject() throws Exception {
         startTest();
-        ExpressionLang30Test.current_project = "sampleJSF22";
+        ExpressionLang30Test.current_project = "sampleJSP";
         openProject(ExpressionLang30Test.current_project);
-        openFile("el30.xhtml", ExpressionLang30Test.current_project);
-        EditorOperator eo = new EditorOperator("el30.xhtml");
+        openFile("el30.jsp", ExpressionLang30Test.current_project);
+        EditorOperator eo = new EditorOperator("el30.jsp");
         ExpressionLang30Test.originalContent = eo.getText();
         resolveServer(ExpressionLang30Test.current_project);
         endTest();
@@ -86,7 +87,7 @@ public class ExpressionLang30Test extends GeneralJSF {
 
     public void testNoErrors() {
         startTest();
-        EditorOperator eo = new EditorOperator("el30.xhtml");
+        EditorOperator eo = new EditorOperator("el30.jsp");
         evt.waitNoEvent(1000);
         Object[] annotations = getAnnotations(eo, 0);
         assertEquals("Unexpected number of annotations", 1, annotations.length);
@@ -95,22 +96,22 @@ public class ExpressionLang30Test extends GeneralJSF {
 
     public void testCollection() {
         startTest();
-        EditorOperator eo = new EditorOperator("el30.xhtml");
-        eo.setCaretPositionToEndOfLine(9);
-        type(eo, "\n #{[1,2].");
+        EditorOperator eo = new EditorOperator("el30.jsp");
+        eo.setCaretPositionToEndOfLine(12);
+        type(eo, "\n ${[1,2].");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(200);
         String t = eo.getText(eo.getLineNumber());
-        assertTrue("Incorrect autocompletion", t.indexOf("#{[1,2].stream()}") > -1);
+        assertTrue("Incorrect autocompletion", t.indexOf("${[1,2].stream()}") > -1);
         this.clearLine(eo);
         endTest();
     }
 
     public void testCollectionDetailed() {
         startTest();
-        EditorOperator eo = new EditorOperator("el30.xhtml");
-        eo.setCaretPositionToEndOfLine(9);
-        type(eo, "\n #{[1,2].stream().");
+        EditorOperator eo = new EditorOperator("el30.jsp");
+        eo.setCaretPositionToEndOfLine(12);
+        type(eo, "\n ${[1,2].stream().");
         eo.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
@@ -133,25 +134,27 @@ public class ExpressionLang30Test extends GeneralJSF {
         this.clearLine(eo);
         endTest();
     }
-    
+
     public void testCollectionConstructor() {
         startTest();
-        EditorOperator eo = new EditorOperator("el30.xhtml");
-        eo.setCaretPositionToEndOfLine(9);
+        EditorOperator eo = new EditorOperator("el30.jsp");
+        eo.setCaretPositionToEndOfLine(12);
         type(eo, "\n  ${v = {\"one\":1, \"two\":2, \"three\":3}; v.");
         eo.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
-        assertTrue("Incorrect autocompletion", eo.getText().indexOf("#{v.stream()}") > -1);
+        CompletionInfo completion = getCompletion();
+        CompletionJListOperator cjo = completion.listItself;
+        checkCompletionItems(cjo, new String[]{"stream"});
         this.clearLine(eo);
         endTest();
     }
 
     public void testChainedCall() {
         startTest();
-        EditorOperator eo = new EditorOperator("el30.xhtml");
-        eo.setCaretPositionToEndOfLine(9);
-        type(eo, "\n #{simplebean[\"setMsg\"](\"test\");simplebean.");
+        EditorOperator eo = new EditorOperator("el30.jsp");
+        eo.setCaretPositionToEndOfLine(12);
+        type(eo, "\n ${simplebean[\"setMsg\"](\"test\");simplebean.");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
         CompletionInfo completion = getCompletion();
@@ -163,8 +166,8 @@ public class ExpressionLang30Test extends GeneralJSF {
 
     @Override
     public void tearDown() {
-        openFile("el30.xhtml", ExpressionLang30Test.current_project);
-        EditorOperator eo = new EditorOperator("el30.xhtml");
+        openFile("el30.jsp", ExpressionLang30Test.current_project);
+        EditorOperator eo = new EditorOperator("el30.jsp");
         eo.typeKey('a', InputEvent.CTRL_MASK);
         eo.pressKey(java.awt.event.KeyEvent.VK_DELETE);
         eo.insert(ExpressionLang30Test.originalContent);

@@ -35,7 +35,7 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
         expandedSelectSize:FIELD:[PUBLIC]:ESCAPED{expandedSelectSize}<font color="#999999">ESCAPED{ : }Number</font>:
         selectContainerWidth:FIELD:[PUBLIC]:ESCAPED{selectContainerWidth}:
         type:FIELD:[PUBLIC]:ESCAPED{type}<font color="#999999">ESCAPED{ : }String</font>:
-      val:METHOD:[PUBLIC]:ESCAPED{val}ESCAPED{(}ESCAPED{values}ESCAPED{)}<font color="#999999">ESCAPED{ : }returnArray</font>:
+      val:METHOD:[PUBLIC]:ESCAPED{val}ESCAPED{(}ESCAPED{values}ESCAPED{)}<font color="#999999">ESCAPED{ : }$.multicombo.plugin.val.returnArray</font>:
     resetSearchWidth:METHOD:[PRIVATE]:ESCAPED{resetSearchWidth}ESCAPED{(}ESCAPED{)}:
     resizeSelect:METHOD:[PRIVATE]:ESCAPED{resizeSelect}ESCAPED{(}ESCAPED{target}ESCAPED{, }ESCAPED{options}ESCAPED{)}:
     rightSelectOptionsData:VARIABLE:[PRIVATE]:ESCAPED{rightSelectOptionsData}<font color="#999999">ESCAPED{ : }Array</font>:
