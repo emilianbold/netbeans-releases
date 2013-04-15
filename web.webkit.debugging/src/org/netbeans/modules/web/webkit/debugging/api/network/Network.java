@@ -63,15 +63,15 @@ import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
  *
  */
 public class Network {
-    private TransportHelper transport;
+    private final TransportHelper transport;
     private boolean enabled;
-    private Callback callback;
-    private WebKitDebugging webKit;
+    private final Callback callback;
+    private final WebKitDebugging webKit;
     private int numberOfClients = 0;
     private boolean inLiveHTMLMode = false;
     private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
-    private Map<String, Request> activeRequests = new HashMap<String, Request>();
-    private Map<String, WebSocketRequest> activeWebSocketRequests = new HashMap<String, WebSocketRequest>();
+    private final Map<String, Request> activeRequests = new HashMap<String, Request>();
+    private final Map<String, WebSocketRequest> activeWebSocketRequests = new HashMap<String, WebSocketRequest>();
     
     public Network(TransportHelper transport, WebKitDebugging webKit) {
         this.transport = transport;
@@ -292,7 +292,7 @@ public class Network {
         private final String requestId;
         private String responseType;
         private JSONObject response;
-        private PropertyChangeSupport support = new PropertyChangeSupport(this);
+        private final PropertyChangeSupport support = new PropertyChangeSupport(this);
         private boolean hasData = false;
         private boolean dataReady = false;
         private final Network network;
@@ -417,8 +417,8 @@ public class Network {
         private final String url;
         private JSONObject handshakeRequest;
         private JSONObject handshakeResponse;
-        private PropertyChangeSupport support = new PropertyChangeSupport(this);
-        private List<WebSocketFrame> frames = new ArrayList<WebSocketFrame>();
+        private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+        private final List<WebSocketFrame> frames = new ArrayList<WebSocketFrame>();
         private boolean closed = false;
         private String errorMessage = null;
 
@@ -500,10 +500,10 @@ public class Network {
     
     public final static class WebSocketFrame {
 
-        private Direction direction;
-        private JSONObject data;
-        private Date timestamp;
-        private int opcode;
+        private final Direction direction;
+        private final JSONObject data;
+        private final Date timestamp;
+        private final int opcode;
 
         private WebSocketFrame(Date timestamp, Direction direction, JSONObject data, int opcode) {
             this.timestamp = timestamp;

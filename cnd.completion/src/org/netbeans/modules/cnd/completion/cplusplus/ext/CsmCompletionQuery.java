@@ -2688,19 +2688,24 @@ abstract public class CsmCompletionQuery {
 
         private CsmResultItem.SubstitutionHint getSubstitutionHint(ExprKind kind, CsmType type) {
             CsmResultItem.SubstitutionHint hint = CsmResultItem.SubstitutionHint.NONE;
+            if (openingSource) {
+                return hint;
+            }
             if (type != null) {
                 if (kind == ExprKind.DOT) {
-                    while (type != null) {
+                    Set<CsmType> antiLoop = new HashSet<CsmType>();
+                    while (type != null && !antiLoop.contains(type) && antiLoop.size() < 50) {
                         if (type.isPointer()) {
                             hint = CsmResultItem.SubstitutionHint.DOT_TO_ARROW;
                             break;
                         } else {
+                            antiLoop.add(type);
                             CsmClassifier classifier = type.getClassifier();
                             type = null;
                             if (CsmKindUtilities.isTypedef(classifier)) {
                                 type = ((CsmTypedef)classifier).getType();
                             }
-                        }
+                        }                        
                     }
                 } else if (kind == ExprKind.ARROW && !type.isPointer()) {
 

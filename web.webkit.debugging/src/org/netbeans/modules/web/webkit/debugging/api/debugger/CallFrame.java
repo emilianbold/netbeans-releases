@@ -43,7 +43,6 @@ package org.netbeans.modules.web.webkit.debugging.api.debugger;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;

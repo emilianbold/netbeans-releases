@@ -166,7 +166,8 @@ public class ReferencesCache {
         if (entry != null) {
             for (Iterator<Entry<TokenItem<TokenId>, CacheEntry>> it = entry.entrySet().iterator(); it.hasNext();) {
                 Entry<TokenItem<TokenId>, CacheEntry> next = it.next();
-                if (next.getValue().csmObject == UNRESOLVED) {
+                CacheEntry value = next.getValue();
+                if (value == null || value.csmObject == UNRESOLVED) {
                     it.remove();
                 }
             }
@@ -183,11 +184,14 @@ public class ReferencesCache {
                 SortedMap<TokenItem<TokenId>, CacheEntry> unresolved = new TreeMap<TokenItem<TokenId>, CacheEntry>();
                 SortedMap<TokenItem<TokenId>, CacheEntry> invalid = new TreeMap<TokenItem<TokenId>, CacheEntry>();
                 for (Map.Entry<TokenItem<TokenId>, CacheEntry> entry1 : entry.getValue().entrySet()) {
-                    CsmObject csmObject = entry1.getValue().csmObject;
-                    if (csmObject == UNRESOLVED) {
-                        unresolved.put(entry1.getKey(), entry1.getValue());
-                    } else if (!CsmBaseUtilities.isValid(csmObject)) {
-                        invalid.put(entry1.getKey(), entry1.getValue());
+                    CacheEntry value = entry1.getValue();
+                    if (value != null) {
+                        CsmObject csmObject = value.csmObject;
+                        if (csmObject == UNRESOLVED) {
+                            unresolved.put(entry1.getKey(), value);
+                        } else if (!CsmBaseUtilities.isValid(csmObject)) {
+                            invalid.put(entry1.getKey(), value);
+                        }
                     }
                 }
                 if (unresolved.isEmpty()) {
