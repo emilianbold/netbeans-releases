@@ -1183,6 +1183,23 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void test227745() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.*;\n" +
+                       "class Test {\n" +
+                       "    public static void test2(String a, Iterable<String> list) {\n" +
+                       "        if (null == a) return;\n" +
+                       "        for (String s : list) {\n" +
+                       "            if (null == a) return;\n" +
+                       "            if (\"\".equals(s)) a = null;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
