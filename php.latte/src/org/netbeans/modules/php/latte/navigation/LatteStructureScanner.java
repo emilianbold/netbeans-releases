@@ -39,60 +39,35 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.csl;
+package org.netbeans.modules.php.latte.navigation;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
-import org.netbeans.modules.php.latte.navigation.LatteStructureScanner;
-import org.netbeans.modules.php.latte.parser.LatteParser;
-import org.netbeans.modules.php.latte.semantic.LatteSemanticAnalyzer;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@LanguageRegistration(mimeType = LatteLanguage.LATTE_MIME_TYPE)
-public class LatteLanguage extends DefaultLanguageConfig {
-    public static final String LATTE_MIME_TYPE = "text/x-latte"; //NOI18N
+public class LatteStructureScanner implements StructureScanner {
 
     @Override
-    public Language getLexerLanguage() {
-        return LatteTopTokenId.language();
+    public List<? extends StructureItem> scan(ParserResult info) {
+        return Collections.<StructureItem>emptyList();
     }
 
     @Override
-    public String getDisplayName() {
-        return "Latte"; //NOI18N
+    public Map<String, List<OffsetRange>> folds(ParserResult info) {
+        return Collections.<String, List<OffsetRange>>emptyMap();
     }
 
     @Override
-    public boolean isIdentifierChar(char c) {
-        return Character.isJavaIdentifierPart(c) || (c == '$') ||(c == '_');
-    }
-
-    @Override
-    public Parser getParser() {
-        return new LatteParser();
-    }
-
-    @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return new LatteSemanticAnalyzer();
-    }
-
-    @Override
-    public boolean hasStructureScanner() {
-        return true;
-    }
-
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new LatteStructureScanner();
+    public Configuration getConfiguration() {
+        return null;
     }
 
 }
