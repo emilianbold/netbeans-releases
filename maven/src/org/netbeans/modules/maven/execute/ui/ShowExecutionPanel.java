@@ -56,7 +56,7 @@ import static javax.swing.Action.NAME;
 import javax.swing.tree.TreeSelectionModel;
 import org.apache.maven.execution.ExecutionEvent;
 import org.netbeans.modules.maven.api.ModelUtils;
-import org.netbeans.modules.maven.execute.ExecutionEventObject;
+import org.netbeans.modules.maven.execute.cmd.ExecutionEventObject;
 import org.netbeans.modules.maven.execute.cmd.ExecMojo;
 import org.netbeans.modules.maven.execute.cmd.ExecProject;
 import org.openide.explorer.ExplorerManager;
