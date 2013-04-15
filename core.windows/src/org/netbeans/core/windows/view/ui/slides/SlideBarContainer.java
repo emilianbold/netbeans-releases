@@ -95,14 +95,7 @@ public final class SlideBarContainer extends AbstractModeContainer {
         if( slideBar instanceof SlideBar ) {
             horizontal = ((SlideBar)slideBar).isHorizontal();
         }
-        panel.add(slideBar, horizontal ? BorderLayout.WEST : BorderLayout.NORTH );
-        if( isAqua ) {
-            JPanel filler = new JPanel();
-            filler.setBackground(slideBar.getBackground());
-            filler.setOpaque(true);
-            filler.setBorder(((JComponent)slideBar).getBorder());
-            panel.add(filler, BorderLayout.CENTER);
-        }
+        panel.add(slideBar, BorderLayout.CENTER);
     }
     
     

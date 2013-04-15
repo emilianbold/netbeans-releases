@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.execute;
 
+import org.netbeans.modules.maven.execute.cmd.ExecutionEventObject;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.io.File;

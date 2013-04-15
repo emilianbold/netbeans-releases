@@ -42,7 +42,6 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -50,11 +49,11 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.modules.tasks.ui.LinkButton;
-import org.netbeans.modules.tasks.ui.treelist.ColorManager;
-import org.netbeans.modules.tasks.ui.treelist.LeafNode;
-import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
-import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.netbeans.modules.team.ui.util.treelist.LinkButton;
+import org.netbeans.modules.team.ui.util.treelist.ColorManager;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 
 /**
  *
