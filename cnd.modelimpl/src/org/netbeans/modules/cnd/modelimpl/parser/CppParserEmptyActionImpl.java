@@ -552,6 +552,11 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     @Override
     public void skip_balanced_curlies(Token token) {
     }
+    
+    @Override
+    public boolean checkTokenText(Token token, String text) {        
+        return true;
+    }
 
     @Override
     public CsmFile getCurrentFile() {

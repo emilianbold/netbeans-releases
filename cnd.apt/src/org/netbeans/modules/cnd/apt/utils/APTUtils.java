@@ -93,6 +93,8 @@ public class APTUtils {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.apt"); // NOI18N
     
     public static final String SCOPE = "::"; // NOI18N
+    
+    public static final String FAKE_SHIFTRIGHT_LEFT_PART_TOKEN_TEXT = ""; // NOI18N
             
 
     static {

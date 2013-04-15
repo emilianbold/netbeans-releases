@@ -3471,6 +3471,11 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
     }
     
+    @Override
+    public boolean checkTokenText(Token token, String text) {
+        return (token.getType() != Token.SKIP) && token.getText().equals(text);        
+    }
+    
     private void skip_balanced_curlies_impl(Token token) {
         if (builderContext.top() instanceof MethodDDBuilder) {
             MethodDDBuilder builder = (MethodDDBuilder) builderContext.top();
