@@ -31,12 +31,11 @@ package org.netbeans.modules.java.hints.bugs;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -698,6 +697,11 @@ public class NPECheck {
         @Override
         public State visitForLoop(ForLoopTree node, Void p) {
             return handleGeneralizedFor(node.getInitializer(), node.getCondition(), node.getUpdate(), node.getStatement(), p);
+        }
+
+        @Override
+        public State visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+            return handleGeneralizedFor(Arrays.asList(node.getVariable(), node.getExpression()), null, null, node.getStatement(), p);
         }
         
         private State handleGeneralizedFor(Iterable<? extends Tree> initializer, Tree condition, Iterable<? extends Tree> update, Tree statement, Void p) {
