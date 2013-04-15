@@ -2944,12 +2944,17 @@ compiler_specific_type_trait_literal
 
 literal
     :
-    DECIMALINT|HEXADECIMALINT|FLOATONE|CHAR_LITERAL|adjacent_string_literals|NUMBER|OCTALINT|LITERAL_true|LITERAL_false
+    DECIMALINT|HEXADECIMALINT|FLOATONE|CHAR_LITERAL|adjacent_string_literals|NUMBER|OCTALINT|LITERAL_true|LITERAL_false|compiler_specific_literal
     ;
 
 adjacent_string_literals
     :
         STRING_LITERAL+
+    ;
+
+compiler_specific_literal
+    :
+        LITERAL___null
     ;
 
 // lookahead stuff
