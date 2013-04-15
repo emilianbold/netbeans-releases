@@ -63,12 +63,8 @@ public class JsIndex {
 
     private static final Logger LOG = Logger.getLogger(JsIndex.class.getName());
     private final QuerySupport querySupport;
-//    private static final JsIndex EMPTY = new JsIndex(null);
-
-//    public static final String FIELD_IS_GLOBAL = "isglobal"; //NOI18N
     public static final String FIELD_BASE_NAME = "bn"; //NOI18N
     public static final String FIELD_FQ_NAME = "fqn"; //NOI18N
-//    public static final String FIELD_PROPERTY = "prop"; //NOI18N
     public static final String FIELD_OFFSET = "offset"; //NOI18N
     public static final String FIELD_ASSIGNMENS = "assign"; //NOI18N
     public static final String FIELD_RETURN_TYPES = "return"; //NOI18N
@@ -111,11 +107,7 @@ public class JsIndex {
             final QuerySupport.Kind kind, final String... fieldsToLoad) {
         if (querySupport != null) {
             try {
-                long start = System.currentTimeMillis();
-                System.out.print("query to index: " + kind + ", fieldName: " + fieldName + ", fieldValue: " + fieldValue);
                 Collection<? extends IndexResult> result = querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
-                long end = System.currentTimeMillis();
-                System.out.println(" took: " + (end - start) + " items: " + result.size());
                 return result;
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, null, ioe);
