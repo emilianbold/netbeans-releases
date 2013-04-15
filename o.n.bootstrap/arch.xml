@@ -1438,6 +1438,25 @@ made subject to such option by the copyright holder.
              </a> into the shared location. Those files will then be used
              on a first start of the system (when the user directory is empty).
          </p>
+         <p>
+             To generate the shared cache files start NetBeans with an empty,
+             temporary user directory and then copy the desired files into
+             first cluster directory:
+         </p>
+         <pre>
+$ netbeans --userdir /tmp/nb -J-Dnetbeans.close=true -J-Dorg.netbeans.core.WindowSystem.show=false
+$ cd /tmp/nb
+$ zip -r $INSTALL/$first_netbeans_dirs_dir/var/cache/populate.zip var/cache/netigso
+$ cp var/cache/* $INSTALL/$first_netbeans_dirs_dir/var/cache
+$ rm -r /tmp/nb/
+         </pre>
+         <p>
+             The meaning of <code>populate.zip</code> and list of known cache
+             files is described <a href="#java.io.File-installation.cache">here</a>.
+             Additional modules and subsystems may add new files however. The 
+             ultimate knowledge is available only to those who understand overall
+             product installation structure.
+         </p>
      </usecase>
  </answer>
 
