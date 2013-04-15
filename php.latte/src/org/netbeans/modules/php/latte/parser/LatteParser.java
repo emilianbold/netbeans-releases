@@ -39,41 +39,61 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.csl;
+package org.netbeans.modules.php.latte.parser;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
-import org.netbeans.modules.php.latte.parser.LatteParser;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@LanguageRegistration(mimeType = LatteLanguage.LATTE_MIME_TYPE)
-public class LatteLanguage extends DefaultLanguageConfig {
-    public static final String LATTE_MIME_TYPE = "text/x-latte"; //NOI18N
+public class LatteParser extends Parser {
+    private LatteParserResult parserResult;
 
-    @Override
-    public Language getLexerLanguage() {
-        return LatteTopTokenId.language();
+    public LatteParser() {
     }
 
     @Override
-    public String getDisplayName() {
-        return "Latte"; //NOI18N
+    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        parserResult = new LatteParserResult(snapshot);
     }
 
     @Override
-    public boolean isIdentifierChar(char c) {
-        return Character.isJavaIdentifierPart(c) || (c == '$') ||(c == '_');
+    public Parser.Result getResult(Task task) throws ParseException {
+        return parserResult;
     }
 
     @Override
-    public Parser getParser() {
-        return new LatteParser();
+    public void addChangeListener(ChangeListener changeListener) {
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener changeListener) {
+    }
+
+    public static class LatteParserResult extends ParserResult {
+
+        private LatteParserResult(Snapshot s) {
+            super(s);
+        }
+
+        @Override
+        public List<? extends org.netbeans.modules.csl.api.Error> getDiagnostics() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        protected void invalidate() {
+        }
+
     }
 
 }
