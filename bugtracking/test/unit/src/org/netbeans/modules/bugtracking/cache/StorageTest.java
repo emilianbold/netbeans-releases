@@ -237,7 +237,15 @@ public class StorageTest extends NbTestCase {
         assertEquals(0, issueFiles.length); // issues are still there
     }
 
-
+    public void testVeryLongUrl() throws IOException, InterruptedException {
+        StringBuilder url = new StringBuilder();
+        for (int i = 0; i < 1000; i++) {
+            url.append('a');
+        }
+        File f = StorageUtils.getNameSpaceFolder(getWorkDir(), url.toString());
+        StorageUtils.getFileOutputStream(new File(f, "file"), true); // shouldn't throw file too long exception
+    }
+    
     private void emptyStorage() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
         File f = getStorageRootFile();
         BugtrackingUtil.deleteRecursively(f);
