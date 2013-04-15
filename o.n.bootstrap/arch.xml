@@ -1311,7 +1311,9 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-overall">
   <p>
-   XXX no answer for arch-overall
+  The heart of NetBeans Runtime Container. Handles 
+    <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html">lifecycle of 
+        installed modules and OSGi bundles</a>.
   </p>
  </answer>
 
