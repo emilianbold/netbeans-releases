@@ -69,6 +69,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
+import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
@@ -406,15 +407,33 @@ public class MavenProjectSupport {
     public static String readJ2eeVersion(Project project)  {
         return getPreferences(project, true).get(MavenJavaEEConstants.HINT_J2EE_VERSION, null);
     }
-    
+
     public static boolean isDeployOnSave(Project project)  {
-        return getPreferences(project, true).getBoolean(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
+        String result = getPreferences(project, true).get(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, null);
+        if (result != null) {
+            return Boolean.parseBoolean(result);
+        } else {
+            return true;
+        }
     }
     
-    public static void setDeployOnSave(Project project, boolean value) {
-        getPreferences(project, true).putBoolean(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, value);
+    public static void setDeployOnSave(Project project, Boolean value) {
+        if (value == null || value == true) {
+            getPreferences(project, true).remove(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE);
+        } else {
+            getPreferences(project, true).putBoolean(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, value);
+        }
+        
+        CopyOnSave copyOnSave = project.getLookup().lookup(CopyOnSave.class);
+        if (copyOnSave != null) {
+            if (isDeployOnSave(project)) {
+                copyOnSave.initialize();
+            } else {
+                copyOnSave.cleanup();
+            }
+        }
     }
-    
+
     public static void setJ2eeVersion(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, true);
     }
@@ -432,10 +451,16 @@ public class MavenProjectSupport {
     }
     
     private static void setSettings(Project project, String key, String value, boolean shared) {
+        Preferences preferences = getPreferences(project, shared);
         if (value != null) {
-            getPreferences(project, shared).put(key, value);
+            preferences.put(key, value);
         } else {
-            getPreferences(project, shared).remove(key);
+            preferences.remove(key);
+        }
+        try {
+            preferences.flush();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     

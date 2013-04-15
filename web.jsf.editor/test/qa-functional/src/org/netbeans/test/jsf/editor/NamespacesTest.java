@@ -71,22 +71,33 @@ public class NamespacesTest extends GeneralJSF {
 
     public void testOpenProject() throws Exception {
         startTest();
-        ExpressionLangTest.current_project = "sampleJSF";
-        openProject(ExpressionLangTest.current_project);
-        openFile("ns.xhtml", ExpressionLangTest.current_project);
+        NamespacesTest.current_project = "sampleJSF";
+        openProject(NamespacesTest.current_project);
+        openFile("ns.xhtml", NamespacesTest.current_project);
         EditorOperator eo = new EditorOperator("ns.xhtml");
-        ExpressionLangTest.originalContent = eo.getText();
-        resolveServer(ExpressionLangTest.current_project);
+        NamespacesTest.originalContent = eo.getText();
+        resolveServer(NamespacesTest.current_project);
+        endTest();
+    }
+    
+    public void testOpenProjectEE7() throws Exception {
+        startTest();
+        NamespacesTest.current_project = "sampleJSF22";
+        openProject(NamespacesTest.current_project);
+        openFile("ns.xhtml", NamespacesTest.current_project);
+        EditorOperator eo = new EditorOperator("ns.xhtml");
+        NamespacesTest.originalContent = eo.getText();
+        resolveServer(NamespacesTest.current_project);
         endTest();
     }
 
     @Override
     public void tearDown() {
-        openFile("ns.xhtml", ExpressionLangTest.current_project);
+        openFile("ns.xhtml", NamespacesTest.current_project);
         EditorOperator eo = new EditorOperator("ns.xhtml");
         eo.typeKey('a', InputEvent.CTRL_MASK);
         eo.pressKey(java.awt.event.KeyEvent.VK_DELETE);
-        eo.insert(ExpressionLangTest.originalContent);
+        eo.insert(NamespacesTest.originalContent);
         eo.save();
     }
 
@@ -120,7 +131,7 @@ public class NamespacesTest extends GeneralJSF {
         assertTrue("Namespace declaration not inserted (" + expectedNS + ")", eo.getText().contains(expectedNS));
         eo.typeKey('a', InputEvent.CTRL_MASK);
         eo.pressKey(java.awt.event.KeyEvent.VK_DELETE);
-        eo.insert(ExpressionLangTest.originalContent);
+        eo.insert(NamespacesTest.originalContent);
         eo.save();
     }
 
@@ -130,11 +141,11 @@ public class NamespacesTest extends GeneralJSF {
         Object[] annotations = getAnnotations(eo, 0);
         int original = annotations.length;
         eo.setCaretPositionToEndOfLine(3);
-        type(eo, "\n xmlns:ui=\"http://java.sun.com/jsf/facelets\"\n"
-                + "xmlns:c=\"http://java.sun.com/jsp/jstl/core\"\n"
-                + "xmlns:f=\"http://java.sun.com/jsf/core\"\n"
-                + "xmlns:cc=\"http://java.sun.com/jsf/composite\"\n"
-                + "xmlns:mdjnm=\"http://mojarra.dev.java.net/mojarra_ext\"");
+        type(eo, "\n xmlns:ui='http://java.sun.com/jsf/facelets'\n"
+                + "xmlns:c='http://java.sun.com/jsp/jstl/core'\n"
+                + "xmlns:f='http://java.sun.com/jsf/core'\n"
+                + "xmlns:cc='http://java.sun.com/jsf/composite'\n"
+                + "xmlns:mdjnm='http://mojarra.dev.java.net/mojarra_ext'");
         eo.save();
         evt.waitNoEvent(1000);
         annotations = getAnnotations(eo, 2);
@@ -147,11 +158,11 @@ public class NamespacesTest extends GeneralJSF {
         EditorOperator eo = new EditorOperator("ns.xhtml");
         int original = (getAnnotations(eo, 0)).length;
         eo.setCaretPositionToEndOfLine(3);
-        type(eo, "\n xmlns:ui=\"http://xmlns.jcp.org/jsf/facelets\"\n"
-                + "xmlns:c=\"http://xmlns.jcp.org/jsp/jstl/core\"\n"
-                + "xmlns:f=\"http://xmlns.jcp.org/jsf/core\"\n"
-                + "xmlns:cc=\"http://xmlns.jcp.org/jsf/composite\"\n"
-                + "xmlns:jsf=\"http://xmlns.jcp.org/jsf\"");
+        type(eo, "\n xmlns:ui='http://xmlns.jcp.org/jsf/facelets'\n"
+                + "xmlns:c='http://xmlns.jcp.org/jsp/jstl/core'\n"
+                + "xmlns:f='http://xmlns.jcp.org/jsf/core'\n"
+                + "xmlns:cc='http://xmlns.jcp.org/jsf/composite'\n"
+                + "xmlns:jsf='http://xmlns.jcp.org/jsf'");
         eo.save();
         evt.waitNoEvent(1000);
         int modified = (getAnnotations(eo, 2)).length;

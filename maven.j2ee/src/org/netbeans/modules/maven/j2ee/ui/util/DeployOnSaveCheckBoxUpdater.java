@@ -42,10 +42,13 @@
 
 package org.netbeans.modules.maven.j2ee.ui.util;
 
+import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
-import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 
 /**
  *
@@ -53,11 +56,13 @@ import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
  */
 public final class DeployOnSaveCheckBoxUpdater extends CheckBoxUpdater {
 
-    private final ModelHandle2 handle;
+    private final Project project;
+    private final boolean defaultValue;
 
-    private DeployOnSaveCheckBoxUpdater(ModelHandle2 handle, JCheckBox deployOnSaveCheckBox) {
+    private DeployOnSaveCheckBoxUpdater(Project project, JCheckBox deployOnSaveCheckBox) {
         super(deployOnSaveCheckBox);
-        this.handle = handle;
+        this.project = project;
+        this.defaultValue = MavenProjectSupport.isDeployOnSave(project);
     }
 
 
@@ -66,30 +71,32 @@ public final class DeployOnSaveCheckBoxUpdater extends CheckBoxUpdater {
      * want to do anything with a new instance so this makes more sense than creating
      * it using "new" keyword.
      *
-     * @param handle Maven customizer handler
+     * @param project project for which we want to change DoS
      * @param deployOnSaveCheckBox Deploy on Save check box for which we want to create updater
      */
-    public static void create(ModelHandle2 handle, JCheckBox deployOnSaveCheckBox) {
-        new DeployOnSaveCheckBoxUpdater(handle, deployOnSaveCheckBox);
+    public static void create(Project project, JCheckBox deployOnSaveCheckBox) {
+        new DeployOnSaveCheckBoxUpdater(project, deployOnSaveCheckBox);
     }
 
     @Override
     public Boolean getValue() {
-        String s = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
-        if (s != null) {
-            return Boolean.valueOf(s);
+        Preferences preferences = ProjectUtils.getPreferences(project, DeployOnSaveCheckBoxUpdater.class, true);
+        String value = preferences.get(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, null);
+        
+        if (value != null) {
+            return Boolean.parseBoolean(value);
+        } else {
+            return null;
         }
-        return null;
     }
 
     @Override
     public void setValue(Boolean value) {
-        handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE,
-                value == null ? null : Boolean.toString(value), true);
+        MavenProjectSupport.setDeployOnSave(project, value);
     }
 
     @Override
     public boolean getDefaultValue() {
-        return true;
+        return defaultValue;
     }
 }

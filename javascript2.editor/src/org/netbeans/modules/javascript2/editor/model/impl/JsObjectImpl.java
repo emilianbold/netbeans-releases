@@ -331,6 +331,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     } else {
                         DeclarationScope scope = ModelUtils.getDeclarationScope(jsObject);
                         JsObject object = ModelUtils.getJsObjectByName(scope, assignment.getType());
+                        if (object == null) {
+                            JsObject gloal = ModelUtils.getGlobalObject(jsObject);
+                            object = ModelUtils.findJsObjectByName(gloal, assignment.getType());
+                        }
                         if(object != null) {
                             Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, found != null ? found.getKey() : -1, visited);
                             if(resolvedFromObject.isEmpty()) {
@@ -380,7 +384,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                                 }
                             }
                             if (jsObject != null) {
-                                ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(typeHere.getOffset(), typeHere.getOffset() + typeHere.getType().length()));
+                                int index = typeHere.getType().lastIndexOf('.');
+                                int typeLength = (index > -1) ? typeHere.getType().length() - index - 1 : typeHere.getType().length();
+                                ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(typeHere.getOffset(), typeHere.getOffset() + typeLength));
                                 moveOccurrenceOfProperties((JsObjectImpl)jsObject, this);
                             }
                         }

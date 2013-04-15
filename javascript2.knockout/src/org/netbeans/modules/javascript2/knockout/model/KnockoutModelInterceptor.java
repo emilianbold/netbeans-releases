@@ -59,8 +59,16 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
 public class KnockoutModelInterceptor implements ModelInterceptor {
 
     private static final Logger LOGGER = Logger.getLogger(KnockoutModelInterceptor.class.getName());
+
+    // for unit testing
+    static boolean disabled = false;
+
     @Override
     public Collection<JsObject> interceptGlobal(ModelElementFactory factory) {
+        if (disabled) {
+            return Collections.emptySet();
+        }
+
         InputStream is = getClass().getClassLoader().getResourceAsStream(
                 "org/netbeans/modules/javascript2/knockout/model/resources/knockout-2.2.1.model"); // NOI18N
         try {

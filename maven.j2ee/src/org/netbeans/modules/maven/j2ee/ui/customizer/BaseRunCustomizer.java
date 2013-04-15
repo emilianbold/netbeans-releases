@@ -98,7 +98,7 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
     }
 
     protected void initDeployOnSave(final JCheckBox dosCheckBox, final JLabel dosDescription) {
-        DeployOnSaveCheckBoxUpdater.create(handle, dosCheckBox);
+        DeployOnSaveCheckBoxUpdater.create(project, dosCheckBox);
         addAncestorListener(new AncestorListener() {
 
             @Override
