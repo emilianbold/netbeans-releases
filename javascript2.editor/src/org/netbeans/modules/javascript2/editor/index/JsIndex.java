@@ -126,7 +126,7 @@ public class JsIndex {
         prefix = prefix == null ? "" : prefix; //NOI18N
         ArrayList<IndexedElement> globals = new ArrayList<IndexedElement>();
         long start = System.currentTimeMillis();
-        String indexPrefix = prefix + "[^\\.]*[" + IndexedElement.OBJECT_POSFIX + "]";   //NOI18N
+        String indexPrefix = escapeRegExp(prefix) + "[^\\.]*[" + IndexedElement.OBJECT_POSFIX + "]";   //NOI18N
         Collection<? extends IndexResult> globalObjects = query(
                 JsIndex.FIELD_FQ_NAME, indexPrefix, QuerySupport.Kind.REGEXP, TERMS_BASIC_INFO); //NOI18N
         for (IndexResult indexResult : globalObjects) {
@@ -179,7 +179,7 @@ public class JsIndex {
                 }
             }
             // find properties of the fqn
-            String pattern = fqn.replace(".", "\\.").replace("$", "\\$").replace("?", "\\?").replace("^", "\\^") + "\\.[^\\.]*"; //NOI18N
+            String pattern = escapeRegExp(fqn) + "\\.[^\\.]*"; //NOI18N
             results = query(
                     JsIndex.FIELD_FQ_NAME, pattern, QuerySupport.Kind.REGEXP, TERMS_BASIC_INFO); //NOI18N
             for (IndexResult indexResult : results) {
@@ -193,10 +193,14 @@ public class JsIndex {
     }
     
     public Collection<? extends IndexResult> findFQN(String fqn) {
-        String pattern = fqn.replace(".", "\\.").replace("$", "\\$").replace("?", "\\?").replace("^", "\\^") + "."; //NOI18N
+        String pattern = escapeRegExp(fqn)+ "."; //NOI18N
         Collection<? extends IndexResult> results = query(
                 JsIndex.FIELD_FQ_NAME, pattern, QuerySupport.Kind.REGEXP, TERMS_BASIC_INFO); //NOI18N
         
         return results;
+    }
+    
+    private String escapeRegExp(String text) {
+        return text.replace(".", "\\.").replace("$", "\\$").replace("?", "\\?").replace("^", "\\^").replace("[", "\\[").replace("]", "\\]");
     }
 }
