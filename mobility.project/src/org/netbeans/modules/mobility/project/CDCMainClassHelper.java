@@ -141,9 +141,13 @@ public class CDCMainClassHelper implements AntProjectListener, FileChangeListene
     private class L implements PropertyChangeListener {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (!lastMain.isValid() || !currentDo.isValid()) {
+            if ((lastMain != null && currentDo != null) && (!lastMain.isValid() || !currentDo.isValid())) {
                 String newMC = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty("main.class");
-                setUp(newMC);
+                if (newMC != null) {
+                    setUp(newMC);
+                } else if (currentDo != null) {
+                    currentDo.removePropertyChangeListener(this);
+                }
             }
             if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
                 // Main class was moved or package was renamed
