@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -86,7 +87,7 @@ public class LatteParser extends Parser {
         }
 
         @Override
-        public List<? extends org.netbeans.modules.csl.api.Error> getDiagnostics() {
+        public List<? extends Error> getDiagnostics() {
             return Collections.emptyList();
         }
 
