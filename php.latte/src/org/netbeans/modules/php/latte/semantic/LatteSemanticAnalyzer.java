@@ -39,48 +39,48 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.csl;
+package org.netbeans.modules.php.latte.semantic;
 
-import org.netbeans.api.lexer.Language;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
-import org.netbeans.modules.php.latte.parser.LatteParser;
-import org.netbeans.modules.php.latte.semantic.LatteSemanticAnalyzer;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@LanguageRegistration(mimeType = LatteLanguage.LATTE_MIME_TYPE)
-public class LatteLanguage extends DefaultLanguageConfig {
-    public static final String LATTE_MIME_TYPE = "text/x-latte"; //NOI18N
+public class LatteSemanticAnalyzer extends SemanticAnalyzer {
 
-    @Override
-    public Language getLexerLanguage() {
-        return LatteTopTokenId.language();
+    public LatteSemanticAnalyzer() {
     }
 
     @Override
-    public String getDisplayName() {
-        return "Latte"; //NOI18N
+    public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
+        return Collections.<OffsetRange, Set<ColoringAttributes>>emptyMap();
     }
 
     @Override
-    public boolean isIdentifierChar(char c) {
-        return Character.isJavaIdentifierPart(c) || (c == '$') ||(c == '_');
+    public void run(Parser.Result result, SchedulerEvent event) {
     }
 
     @Override
-    public Parser getParser() {
-        return new LatteParser();
+    public int getPriority() {
+        return 300;
     }
 
     @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return new LatteSemanticAnalyzer();
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return null;
+    }
+
+    @Override
+    public void cancel() {
     }
 
 }
