@@ -39,64 +39,37 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.maven.j2ee.ui.util;
-
-import java.util.prefs.Preferences;
-import javax.swing.JCheckBox;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
-import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+package test;
 
 /**
  *
- * @author Martin Janicek
+ * @author Vladimir Riha
  */
-public final class DeployOnSaveCheckBoxUpdater extends CheckBoxUpdater {
+public class SimpleBean {
 
-    private final Project project;
-    private final boolean defaultValue;
+    public InnerBean ib;
+    private String msg;
 
-    private DeployOnSaveCheckBoxUpdater(Project project, JCheckBox deployOnSaveCheckBox) {
-        super(deployOnSaveCheckBox);
-        this.project = project;
-        this.defaultValue = MavenProjectSupport.isDeployOnSave(project);
+    public String getMsg() {
+        return msg;
     }
 
-
-    /**
-     * Factory method encapsulating CheckBoxUpdater creation. Typically client don't
-     * want to do anything with a new instance so this makes more sense than creating
-     * it using "new" keyword.
-     *
-     * @param project project for which we want to change DoS
-     * @param deployOnSaveCheckBox Deploy on Save check box for which we want to create updater
-     */
-    public static void create(Project project, JCheckBox deployOnSaveCheckBox) {
-        new DeployOnSaveCheckBoxUpdater(project, deployOnSaveCheckBox);
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 
-    @Override
-    public Boolean getValue() {
-        Preferences preferences = ProjectUtils.getPreferences(project, DeployOnSaveCheckBoxUpdater.class, true);
-        String value = preferences.get(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, null);
-        
-        if (value != null) {
-            return Boolean.parseBoolean(value);
-        } else {
-            return null;
-        }
+    public InnerBean getIb() {
+        return ib;
     }
 
-    @Override
-    public void setValue(Boolean value) {
-        MavenProjectSupport.setDeployOnSave(project, value);
+    public void setIb(InnerBean ib) {
+        this.ib = ib;
     }
 
-    @Override
-    public boolean getDefaultValue() {
-        return defaultValue;
+    public String print() {
+        return "print";
+    }
+
+    private void paint() {
     }
 }
