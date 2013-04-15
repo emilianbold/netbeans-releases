@@ -500,8 +500,9 @@ made subject to such option by the copyright holder.
             </li>
             <li>
                 <api type="export" group="systemproperty" name="netbeans.dirs" category="friend">
-                    Additional secondary NetBeans installation directories, if <a
-                    href="http://www.netbeans.org/issues/show_bug.cgi?id=27151">applicable</a>.
+                    Additional secondary NetBeans installation directories as proposed in <a
+                    href="https://platform.netbeans.org/articles/installation.html">installation structure</a>
+                    design document.
                 </api>
             </li>
             <li>
@@ -1372,9 +1373,51 @@ made subject to such option by the copyright holder.
         </question>
 -->
  <answer id="arch-usecases">
-  <p>
-   XXX no answer for arch-usecases
-  </p>
+     <usecase id="invalidate.cache" name="Invalidating Caches">
+        <p>
+            NetBeans Module system is optimized to eliminate useless I/O
+            operations on start (as a result the <a href="http://netbinox.apidesign.org">
+            embedded OSGi container</a> is fastest on the planet -- with respect to 
+            application start up time). This is achieved by caching information
+            known to have been needed in previous starts and using it
+            rather than obtaining it again from the module JAR files.
+        </p>
+        <p>
+            There are various caches (like 
+                <a href="#java.io.File-all-layers.dat">all-layers.dat</a>,
+                <a href="#java.io.File-all-manifests.dat">all-manifests.dat</a>,
+                <a href="#java.io.File-all-resources.dat">all-resources.dat</a>,
+                <a href="@org-netbeans-core-netigso@/architecture-summary.html#java.io.File-netigso-bundles">netigso-bundles</a>,
+                etc.
+            ) provided by the module system or by other subsystems of the application.
+            Together, working in orchestration, they eliminate the need to
+            touch the disk (which is very slow operation especially during
+            <a href="http://wiki.apidesign.org/wiki/Startup#Morning_Launch">morning launch</a>).
+            Btw. there is a <a href="http://hg.netbeans.org/releases/file/cdbdc70050a8/core.startup/test/unit/src/org/netbeans/core/startup/layers/CachingPreventsFileTouchesTest.java">
+            test which verifies</a> 
+            the caching system really works
+            -- it is recommended for each product built on top of NetBeans Platform
+            to copy and adjust it to verify the caches are really used.
+        </p>
+        <p>
+            Of course, the caches may get out of date, for example when an external
+            tool modifies the installation layout. 
+            How can the system detect whether the caches are valid and 
+            still be usable? The only way to verify the
+            caches are 100% correct is to regenerate them and compare whether the
+            cached bits are the same. However that would be terribly slow and defeat 
+            the whole purpose of using caches.
+        </p>
+        <p>
+            As such we have the <a href="#java.io.File-.lastModified">lastModified API</a>.
+            Every cluster (as enumerated by <a href="#systemproperty-netbeans.dirs">netbeans.dirs</a>
+            and <a href="#systemproperty-netbeans.home">netbeans.home</a> properties)
+            is supposed to contain such file. Whenever an external tool changes something
+            inside some cluster, it is supposed to touch the file and change its 
+            timestamp. That will tell the system that caches are invalid 
+            (as their timestamps will become older than newest <code>.lastModified</code> file).
+        </p>
+     </usecase>
  </answer>
 
 
