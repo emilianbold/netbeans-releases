@@ -1080,7 +1080,7 @@ public class HintTest {
         public AppliedFix assertOutput(String fileName, String code) throws Exception {
             FileObject toCheck = sourceRoot.getFileObject(fileName);
 
-            assertNotNull(toCheck);
+            assertNotNull("Required file: " + fileName + " not found", toCheck);
 
             DataObject toCheckDO = DataObject.find(toCheck);
             EditorCookie ec = toCheckDO.getLookup().lookup(EditorCookie.class);
