@@ -14,6 +14,9 @@
                     <file name="org-netbeans-modules-html-editor-completion-HtmlPaletteCompletionProvider.instance"/>
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"/>
                 </folder>
+                <file name="org-netbeans-modules-javascript2-editor-embedding-JsEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
