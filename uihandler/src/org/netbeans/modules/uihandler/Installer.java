@@ -105,6 +105,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.SpecificationVersion;
@@ -1995,12 +1996,18 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
                 if (dataType != DataType.DATA_METRICS) {
                     String txt;
-                    if (!report) {
-                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm());
-                    } else {
-                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm());
+                    String logFile = NbBundle.getMessage(Installer.class, "LOG_FILE");
+                    File log = InstalledFileLocator.getDefault().locate(logFile, null, false);
+                    if (log != null) {
+                        logFile = log.getAbsolutePath();
                     }
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(txt, NotifyDescriptor.ERROR_MESSAGE);
+                    if (!report) {
+                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm(), logFile);
+                    } else {
+                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm(), logFile);
+                    }
+                    Object dlg = ConnectionErrorDlg.get(txt);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(dlg, NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notifyLater(nd);
                 }
             }
