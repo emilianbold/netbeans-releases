@@ -119,6 +119,7 @@ import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.test.Utilities.TestLookup;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.MimeTypes;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
@@ -473,6 +474,8 @@ public class HintTest {
      * @return a wrapper over the hint output that allows verifying results of the hint
      */
     public HintOutput run(Class<?> hint, String hintCode) throws Exception {
+        IndexingManager.getDefault().refreshIndexAndWait(sourceRoot.toURL(), null);
+        
         for (FileObject file : checkCompilable) {
             ensureCompilable(file);
         }
