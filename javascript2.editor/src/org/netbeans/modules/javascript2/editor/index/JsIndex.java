@@ -66,7 +66,7 @@ public class JsIndex {
     public static final String FIELD_BASE_NAME = "bn"; //NOI18N
     /**
      * In this field is in the lucene also coded, whether the object is anonymous (last char is 'A')
-     * or normal object (last cahr is 'O'). If someone needs to access this field
+     * or normal object (last char is 'O'). If someone needs to access this field
      * directly, then has to be count with this.
      */
     public static final String FIELD_FQ_NAME = "fqn"; //NOI18N

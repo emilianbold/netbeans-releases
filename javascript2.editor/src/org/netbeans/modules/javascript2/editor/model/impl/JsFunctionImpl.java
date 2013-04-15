@@ -189,6 +189,11 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                      }
                  } else {
                     JsObject jsObject = ModelUtils.getJsObjectByName(this,type.getType());
+                    if (jsObject == null) {
+                        // try to find according the fqn
+                        JsObject global = ModelUtils.getGlobalObject(this);
+                        jsObject = ModelUtils.findJsObjectByName(global, type.getType());
+                    }
                     if(jsObject != null) {
                        Collection<TypeUsage> resolveAssignments = resolveAssignments(jsObject, type.getOffset());
                        for (TypeUsage typeResolved: resolveAssignments) {

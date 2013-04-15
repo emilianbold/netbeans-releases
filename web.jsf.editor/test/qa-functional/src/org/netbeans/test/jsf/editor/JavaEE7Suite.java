@@ -39,35 +39,28 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.knockout.model;
+package org.netbeans.test.jsf.editor;
 
-import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
+import junit.framework.Test;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
- * @author Petr Pisl
+ * @author Vladimir Riha
  */
-public class KnockoutModelTest extends ModelTestBase {
-    
-    public KnockoutModelTest(String testName) {
-        super(testName);
+public class JavaEE7Suite extends J2eeTestCase {
+
+    public JavaEE7Suite(String name) {
+        super(name);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        KnockoutModelInterceptor.disabled = true;
-    }
-
-    public void testKnockout() throws Exception {
-        checkModel("testfiles/model/knockout-2.2.1.debug.js");
-    }
-
-    public void testExtend1() throws Exception {
-        checkModel("testfiles/model/extend1.js");
-    }
-
-    public void testExtend2() throws Exception {
-        checkModel("testfiles/model/extend2.js");
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = emptyConfiguration();
+        conf = addServerTests(J2eeTestCase.Server.GLASSFISH, conf, new String[0]);
+        conf = conf.addTest(ExpressionLang30Test.class, "testOpenProject", "testNoErrors", "testCollection", "testChainedCall", "testCollectionDetailed", "testCollectionConstructor");
+        conf = conf.addTest(NamespacesTest.class, "testOpenProjectEE7", "testAutoinsertEE7", "testMarkedUnusedEE7", "testNamespaceUsedEE7");
+        return conf.suite();
     }
 }

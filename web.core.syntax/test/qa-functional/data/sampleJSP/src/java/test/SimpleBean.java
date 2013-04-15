@@ -39,35 +39,37 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.knockout.model;
-
-import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
+package test;
 
 /**
  *
- * @author Petr Pisl
+ * @author Vladimir Riha
  */
-public class KnockoutModelTest extends ModelTestBase {
-    
-    public KnockoutModelTest(String testName) {
-        super(testName);
+public class SimpleBean {
+
+    public InnerBean ib;
+    private String msg;
+
+    public String getMsg() {
+        return msg;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        KnockoutModelInterceptor.disabled = true;
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 
-    public void testKnockout() throws Exception {
-        checkModel("testfiles/model/knockout-2.2.1.debug.js");
+    public InnerBean getIb() {
+        return ib;
     }
 
-    public void testExtend1() throws Exception {
-        checkModel("testfiles/model/extend1.js");
+    public void setIb(InnerBean ib) {
+        this.ib = ib;
     }
 
-    public void testExtend2() throws Exception {
-        checkModel("testfiles/model/extend2.js");
+    public String print() {
+        return "print";
+    }
+
+    private void paint() {
     }
 }

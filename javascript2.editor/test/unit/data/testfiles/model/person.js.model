@@ -44,6 +44,7 @@ Person        : FUNCTION Person [ANONYMOUS: false, DECLARED: true - Person, MODI
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               getName        : FUNCTION getName [ANONYMOUS: false, DECLARED: true - getName, MODIFIERS: PROTECTED, METHOD]
                              # RETURN TYPES
+                             Person.n, RESOLVED: true
                              String, RESOLVED: true
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
@@ -89,6 +90,7 @@ Person        : FUNCTION Person [ANONYMOUS: false, DECLARED: true - Person, MODI
                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               toString       : FUNCTION toString [ANONYMOUS: false, DECLARED: true - toString, MODIFIERS: PROTECTED, METHOD]
                              # RETURN TYPES
+                             Person.n, RESOLVED: true
                              String, RESOLVED: true
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]

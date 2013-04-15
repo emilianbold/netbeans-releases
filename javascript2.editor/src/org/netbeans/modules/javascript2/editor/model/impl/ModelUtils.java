@@ -446,21 +446,31 @@ public class ModelUtils {
 //            }
         } else if(type.getType().startsWith("@var;")){
             String name = type.getType().substring(5);
-            JsFunction declarationScope = (JsFunction)getDeclarationScope(object);
-
+            JsFunction declarationScope = object instanceof DeclarationScope ? (JsFunction)object : (JsFunction)getDeclarationScope(object);
+            Collection<? extends JsObject> variables = ModelUtils.getVariables(declarationScope);
             if (declarationScope != null) {
-                Collection<? extends JsObject> parameters = declarationScope.getParameters();
-                boolean isParameter = false;
-                for (JsObject parameter : parameters) {
-                    if(name.equals(parameter.getName())) {
-                        Collection<? extends TypeUsage> assignments = parameter.getAssignmentForOffset(parameter.getOffset());
-                        result.addAll(assignments);
-                        isParameter = true;
+                boolean resolved = false;
+                for (JsObject variable : variables) {
+                    if (variable.getName().equals(name)) {
+                        result.add(new TypeUsageImpl(variable.getFullyQualifiedName(), type.getOffset(), false));
+                        resolved = true;
                         break;
                     }
                 }
-                if (!isParameter) {
-                    result.add(new TypeUsageImpl(name, type.getOffset(), false));
+                if (!resolved) {
+                    Collection<? extends JsObject> parameters = declarationScope.getParameters();
+                    boolean isParameter = false;
+                    for (JsObject parameter : parameters) {
+                        if (name.equals(parameter.getName())) {
+                            Collection<? extends TypeUsage> assignments = parameter.getAssignmentForOffset(parameter.getOffset());
+                            result.addAll(assignments);
+                            isParameter = true;
+                            break;
+                        }
+                    }
+                    if (!isParameter) {
+                        result.add(new TypeUsageImpl(name, type.getOffset(), false));
+                    }
                 }
             }
         } else if(type.getType().startsWith("@param;")) {   //NOI18N
