@@ -70,6 +70,7 @@ package org.netbeans.modules.cnd.modelimpl.parser.generated;
 
 import java.util.HashMap;
 import org.netbeans.modules.cnd.modelimpl.parser.*;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 }
 
 @members {
@@ -2798,7 +2799,19 @@ additive_expression:
     ;
 
 shift_expression:
-        additive_expression ( SHIFTLEFT additive_expression | SHIFTRIGHT additive_expression )*
+        additive_expression 
+        (
+            (
+                SHIFTLEFT 
+            | 
+                SHIFTRIGHT
+            |
+                (GREATERTHAN GREATERTHAN)=>
+                    {action.checkTokenText(input.LT(1), APTUtils.FAKE_SHIFTRIGHT_LEFT_PART_TOKEN_TEXT)}?
+                        GREATERTHAN GREATERTHAN
+            )
+            additive_expression
+        )*
     ;
 
 /*

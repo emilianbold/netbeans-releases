@@ -1703,6 +1703,11 @@ public class CppParserActionTracer extends CppParserActionImpl implements CppPar
     public void skip_balanced_curlies(Token token) {
         super.skip_balanced_curlies(token);
     }
+    
+    @Override
+    public boolean checkTokenText(Token token, String text) {
+        return super.checkTokenText(token, text);
+    }
 
     @Override
     public void pushFile(CsmFile file) {
