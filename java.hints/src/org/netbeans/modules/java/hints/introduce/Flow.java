@@ -569,10 +569,12 @@ public class Flow {
             Tree oldNearestMethod = nearestMethod;
             Set<VariableElement> oldCurrentMethodVariables = currentMethodVariables;
             Map<TypeMirror, Collection<Map<VariableElement, State>>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
+            Map<VariableElement, State> oldVariable2State = variable2State;
 
             nearestMethod = node;
             currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<VariableElement, Boolean>());
             resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<VariableElement, State>>>();
+            variable2State = new HashMap<>();
             
             try {
                 scan(node.getModifiers(), p);
@@ -590,43 +592,44 @@ public class Flow {
                 scan(node.getThrows(), p);
                 scan(node.getBody(), p);
                 scan(node.getDefaultValue(), p);
+            
+                //constructor check:
+                boolean isConstructor = isConstructor(getCurrentPath());
+                Set<VariableElement> definitellyAssignedOnce = new HashSet<VariableElement>();
+                Set<VariableElement> assigned = new HashSet<VariableElement>();
+
+                for (Iterator<Entry<VariableElement, State>> it = variable2State.entrySet().iterator(); it.hasNext();) {
+                    Entry<VariableElement, State> e = it.next();
+
+                    if (e.getKey().getKind() == ElementKind.FIELD) {
+                        if (isConstructor && !e.getValue().hasUnassigned() && !e.getValue().reassigned && !e.getKey().getModifiers().contains(Modifier.STATIC)) {
+                            definitellyAssignedOnce.add(e.getKey());
+                        }
+
+                        assigned.add(e.getKey());
+
+                        it.remove();
+                    }
+                }
+
+                if (isConstructor) {
+                    if (finalCandidates == null) {
+                        definitellyAssignedOnce.removeAll(finalCandidatesFromInitializers);
+                        finalCandidates = definitellyAssignedOnce;
+                    } else {
+                        finalCandidates.retainAll(definitellyAssignedOnce);
+                    }
+                } else if (finalCandidates != null) {
+                    assert finalCandidates == null;
+                }
+
+                finalCandidatesFromInitializers.removeAll(assigned);
             } finally {
                 nearestMethod = oldNearestMethod;
                 currentMethodVariables = oldCurrentMethodVariables;
                 resumeOnExceptionHandler = oldResumeOnExceptionHandler;
+                variable2State = mergeOr(variable2State, oldVariable2State);
             }
-            
-            //constructor check:
-            boolean isConstructor = isConstructor(getCurrentPath());
-            Set<VariableElement> definitellyAssignedOnce = new HashSet<VariableElement>();
-            Set<VariableElement> assigned = new HashSet<VariableElement>();
-            
-            for (Iterator<Entry<VariableElement, State>> it = variable2State.entrySet().iterator(); it.hasNext();) {
-                Entry<VariableElement, State> e = it.next();
-                
-                if (e.getKey().getKind() == ElementKind.FIELD) {
-                    if (isConstructor && !e.getValue().hasUnassigned() && !e.getValue().reassigned && !e.getKey().getModifiers().contains(Modifier.STATIC)) {
-                        definitellyAssignedOnce.add(e.getKey());
-                    }
-                    
-                    assigned.add(e.getKey());
-                    
-                    it.remove();
-                }
-            }
-            
-            if (isConstructor) {
-                if (finalCandidates == null) {
-                    definitellyAssignedOnce.removeAll(finalCandidatesFromInitializers);
-                    finalCandidates = definitellyAssignedOnce;
-                } else {
-                    finalCandidates.retainAll(definitellyAssignedOnce);
-                }
-            } else if (finalCandidates != null) {
-                assert finalCandidates == null;
-            }
-            
-            finalCandidatesFromInitializers.removeAll(assigned);
             
             return null;
         }
