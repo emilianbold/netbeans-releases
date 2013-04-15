@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.bugtracking.util;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 /**
  *
  * @author Marian Petras
@@ -231,4 +234,25 @@ public class TextUtils {
                c == '.' ||                                                      // NOI18N
                c == '_';                                                        // NOI18N
     }
+    
+    public static String getMD5(String name) {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("MD5");                          // NOI18N
+        } catch (NoSuchAlgorithmException e) {
+            // should not happen
+            return null;
+        }
+        digest.update(name.getBytes());
+        byte[] hash = digest.digest();
+        StringBuilder ret = new StringBuilder();
+        for (int i = 0; i < hash.length; i++) {
+            String hex = Integer.toHexString(hash[i] & 0x000000FF);
+            if(hex.length()==1) {
+                hex = "0" + hex;                                                // NOI18N
+            }
+            ret.append(hex);
+        }
+        return ret.toString();
+    }    
 }
