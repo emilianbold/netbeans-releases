@@ -85,10 +85,10 @@ public class DefaultOutlineCellRendererTest extends NbTestCase {
         outline.setRenderDataProvider(rdp);
         DefaultOutlineCellRenderer instance = new DefaultOutlineCellRenderer();
         Component result = instance.getTableCellRendererComponent(outline, node1, false, false, 0, 0);
-        assertEquals("First line backgroundColor defaults to", Color.red, result.getBackground());
+        assertEquals("First line backgroundColor defaults to", outline.getBackground(), result.getBackground());
         assertEquals("Foreground defaults to", outline.getForeground(), result.getForeground());
         result = instance.getTableCellRendererComponent(outline, node2, false, false, 1, 0);
-        assertEquals("Second line backgroundColor defaults to", outline.getBackground(), result.getBackground());
+        assertEquals("Second line backgroundColor defaults to", Color.red, result.getBackground());
         assertEquals("Foreground defaults to", outline.getForeground(), result.getForeground());
         
         rdp.backgroundColor = Color.BLUE; // Custom background color
