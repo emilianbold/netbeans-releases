@@ -52,9 +52,15 @@ public class KnockoutModelTest extends ModelTestBase {
     public KnockoutModelTest(String testName) {
         super(testName);
     }
-    
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        KnockoutModelInterceptor.disabled = true;
+    }
+
     public void testKnockout() throws Exception {
-        //checkModel("testfiles/model/knockout-2.2.1.debug.js");
+        checkModel("testfiles/model/knockout-2.2.1.debug.js");
     }
 
     public void testExtend1() throws Exception {

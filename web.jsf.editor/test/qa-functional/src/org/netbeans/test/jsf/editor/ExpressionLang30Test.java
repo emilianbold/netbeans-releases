@@ -75,12 +75,12 @@ public class ExpressionLang30Test extends GeneralJSF {
 
     public void testOpenProject() throws Exception {
         startTest();
-        ExpressionLang30Test.current_project = "sampleJSF";
+        ExpressionLang30Test.current_project = "sampleJSF22";
         openProject(ExpressionLang30Test.current_project);
         openFile("el30.xhtml", ExpressionLang30Test.current_project);
         EditorOperator eo = new EditorOperator("el30.xhtml");
         ExpressionLang30Test.originalContent = eo.getText();
-        resolveServer(ExpressionLangTest.current_project);
+        resolveServer(ExpressionLang30Test.current_project);
         endTest();
     }
 
@@ -142,9 +142,7 @@ public class ExpressionLang30Test extends GeneralJSF {
         eo.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
-        CompletionInfo completion = getCompletion();
-        CompletionJListOperator cjo = completion.listItself;
-        checkCompletionItems(cjo, new String[]{"stream"});
+        assertTrue("Incorrect autocompletion", eo.getText().indexOf("#{v.stream()}") > -1);
         this.clearLine(eo);
         endTest();
     }
