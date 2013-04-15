@@ -59,6 +59,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId;
+import org.netbeans.modules.php.editor.options.OptionsUtils;
 
 /**
  *
@@ -299,7 +300,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 return;
             }
         }
-        if (concatPossibleStringToken(ts, offset, tokenOffsetOnCaret)) {
+        if (OptionsUtils.autoStringConcatination() && concatPossibleStringToken(ts, offset, tokenOffsetOnCaret)) {
             char stringDelimiter = extractStringDelimiter(ts);
             String concatString = stringDelimiter + "\n . " + stringDelimiter; //NOI18N
             context.setText(concatString, 1, concatString.length(), 2, concatString.length() - 1);
