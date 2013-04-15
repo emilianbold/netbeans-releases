@@ -49,6 +49,7 @@ import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstListData;
 import com.sun.el.parser.AstMapData;
 import com.sun.el.parser.AstMethodArguments;
+import com.sun.el.parser.AstSemiColon;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
 import java.io.IOException;
@@ -211,9 +212,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         // due to the ast structure in the case of identifiers we need to try to resolve the type of the identifier,
         // otherwise the type of the preceding node.
         if (target instanceof AstIdentifier
-                && (previous instanceof AstIdentifier
-                || previous instanceof AstDotSuffix
-                || NodeUtil.isMethodCall(previous))) {
+                && (previous instanceof AstIdentifier || previous instanceof AstDotSuffix || NodeUtil.isMethodCall(previous))) {
             return target;
         } else {
             for (int i = rootToNode.size() - 1; i >= 0; i--) {
@@ -223,6 +222,8 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     return rootToNode.get(i - 1);
                 } else if (node instanceof AstListData || node instanceof AstMapData) {
                     return node;
+                } else if (node.jjtGetParent() instanceof AstSemiColon) {
+                    return previous;
                 }
             }
             return previous;
