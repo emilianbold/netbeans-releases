@@ -108,7 +108,13 @@ public class CodeHintProviderImpl implements HintProvider {
         Map<HintMetadata, Collection<HintDescription>> result = new HashMap<HintMetadata, Collection<HintDescription>>();
         
         for (ClassWrapper c : FSWrapper.listClasses()) {
-            processClass(c, result);
+            try {
+                processClass(c, result);
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                Exceptions.printStackTrace(t);
+            }
         }
 
         return result;
