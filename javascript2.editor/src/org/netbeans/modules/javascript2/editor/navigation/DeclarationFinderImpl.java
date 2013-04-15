@@ -92,15 +92,13 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             JsIndex jsIndex = JsIndex.get(snapshot.getSource().getFileObject());
             List<IndexResult> indexResults = new ArrayList<IndexResult>();
             if (assignments == null || assignments.isEmpty()) {
+                FileObject fo = object.getFileObject();
                 if (object.isDeclared()) {
-                    FileObject fo = object.getFileObject();
                     if (fo != null) {
                         return new DeclarationLocation(fo, object.getDeclarationName().getOffsetRange().getStart());
                     }
                 } else {
-                    Collection<? extends IndexResult> items = jsIndex.query(
-                            JsIndex.FIELD_FQ_NAME, object.getFullyQualifiedName(), QuerySupport.Kind.EXACT,
-                            JsIndex.TERMS_BASIC_INFO);
+                    Collection<? extends IndexResult> items = JsIndex.get(fo).findFQN(object.getFullyQualifiedName());
                     indexResults.addAll(items);
                     DeclarationLocation location = processIndexResult(indexResults);
                     if (location != null) {

@@ -68,6 +68,8 @@ public class IndexedElement extends JsElementImpl {
     private final boolean isAnonymous;
     private final boolean isPlatform;
     private final Collection<TypeUsage> assignments;
+    public final static char ANONYMOUS_POSFIX = 'A';
+    public final static char OBJECT_POSFIX = 'O';
     
     public IndexedElement(FileObject fileObject, String name, String fqn, boolean isDeclared, boolean isAnonymous, JsElement.Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, Collection<TypeUsage> assignments, boolean isPlatform) {
         super(fileObject, name, isDeclared, offsetRange, modifiers);
@@ -103,9 +105,9 @@ public class IndexedElement extends JsElementImpl {
     protected static IndexDocument createDocument(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
         IndexDocument elementDocument = support.createDocument(indexable);
         elementDocument.addPair(JsIndex.FIELD_BASE_NAME, object.getName(), true, true);
-        elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  fqn, true, true);
-        boolean isGlobal = object.getParent() != null ? ModelUtils.isGlobal(object.getParent()) : ModelUtils.isGlobal(object);
-        elementDocument.addPair(JsIndex.FIELD_IS_GLOBAL, (isGlobal ? "1" : "0"), true, true);
+        elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  fqn + (object.isAnonymous() ? ANONYMOUS_POSFIX : OBJECT_POSFIX), true, true);
+//        boolean isGlobal = object.getParent() != null ? ModelUtils.isGlobal(object.getParent()) : ModelUtils.isGlobal(object);
+//        elementDocument.addPair(JsIndex.FIELD_IS_GLOBAL, (isGlobal ? "1" : "0"), true, true);
         elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
         elementDocument.addPair(JsIndex.FIELD_FLAG, Integer.toString(Flag.getFlag(object)), false, true);
         StringBuilder sb = new StringBuilder();
@@ -145,6 +147,7 @@ public class IndexedElement extends JsElementImpl {
         FileObject fo = indexResult.getFile();
         String name = indexResult.getValue(JsIndex.FIELD_BASE_NAME);
         String fqn = indexResult.getValue(JsIndex.FIELD_FQ_NAME);
+        fqn = fqn.substring(0, fqn.length() - 1);
         int flag = Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG));
         boolean isDeclared = Flag.isDeclared(flag);
         boolean isAnonymous = Flag.isAnonymous(flag);
