@@ -39,19 +39,26 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.treelist;
+
+package org.netbeans.modules.team.ui.util.treelist;
+
+import javax.swing.JLabel;
+import javax.swing.UIManager;
 
 /**
- * Listener to notify tree-list model that children were added/removed when a
- * row is expanded/collapsed.
+ * Use Tree font for rendering of Dashboard items
  *
  * @author S. Aubrecht
  */
-public interface TreeListListener {
+public class TreeLabel extends JLabel {
 
-    void childrenRemoved(TreeListNode parent);
 
-    void childrenAdded(TreeListNode parent);
+    public TreeLabel() {
+        setFont(UIManager.getFont("Tree.font")); //NOI18N
+    }
 
-    void contentChanged(TreeListNode node);
+    public TreeLabel( String text ) {
+        super( text );
+        setFont(UIManager.getFont("Tree.font")); //NOI18N
+    }
 }

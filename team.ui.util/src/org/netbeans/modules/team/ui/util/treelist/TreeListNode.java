@@ -39,24 +39,15 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.treelist;
+package org.netbeans.modules.team.ui.util.treelist;
 
 import java.awt.Color;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import org.jdesktop.swingx.painter.BusyPainter;
-import org.jdesktop.swingx.icon.PainterIcon;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -85,6 +76,7 @@ public abstract class TreeListNode {
     private final Object LOCK = new Object();
     private RendererPanel renderer;
     private ChildrenLoader loader;
+    private Type type;
     private static RequestProcessor rp = new RequestProcessor("Asynchronous Tree List Node", 5); // NOI18N
 
     protected static void post(Runnable run) {
@@ -249,6 +241,13 @@ public abstract class TreeListNode {
     protected void attach() {
     }
 
+    /**
+     * Returned type defines the rendering of the node.
+     */
+    protected Type getType() {
+        return Type.NORMAL;
+    }
+
     final boolean isDescendantOf(TreeListNode grandParent) {
         if (null == parent) {
             return false;
@@ -378,89 +377,12 @@ public abstract class TreeListNode {
         }
     }
 
-    public static final class ProgressLabel extends TreeLabel {
-
-        private int frame = 0;
-        private Timer t;
-        final BusyPainter painter;
-        private final Reference<TreeListNode> ref;
-
-        public ProgressLabel(String text, TreeListNode nd) {
-            super(text);
-            ref = new WeakReference<TreeListNode>(nd);
-            painter = new BusyPainter(16);
-            PainterIcon icon = new PainterIcon(new Dimension(16, 16));
-            icon.setPainter(painter);
-            setIcon(icon);
-            t = new Timer(100, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    //#183004 - The timer is never explicitly stopped (no
-                    //guarantee that setVisible(false) will ever be called
-                    //again.  This way, if the node it was rendering becomes
-                    //unreferenced, this label can be collected.  Since it is
-                    //no longer an inner class, although it may continue
-                    //running on a timer, it will not hold a reference to the
-                    //owning node
-                    TreeListNode nd = ref.get();
-                    if (nd == null) {
-                        t.stop();
-                        Container p = getParent();
-                        if (p != null) {
-                            p.remove(ProgressLabel.this);
-                        }
-                        return;
-                    } else {
-                        frame = (frame + 1) % painter.getPoints();
-                        painter.setFrame(frame);
-                        ProgressLabel.this.repaint();
-                        nd.fireContentChanged();
-                    }
-                }
-            });
-            t.setRepeats(true);
-            super.setVisible(false);
-        }
-
-        @Override
-        public void setVisible(boolean visible) {
-            boolean old = isVisible();
-            super.setVisible(visible);
-            if (old != visible) {
-                if (visible) {
-                    t.start();
-                } else {
-                    t.stop();
-                }
-            }
-        }
-
-        /**
-         * Stop the timer. Make sure to call this method if you do not
-         * explicitly call setVisible(false) on this label. Otherwise, its timer
-         * will keep running and it will be referenced forever.
-         */
-        public void stop() {
-            t.stop();
-        }
-
-        //The usual cell-renderer performance overrides
-        public void repaint() {
-            //do nothing
-        }
-
-        @Override
-        protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-            //do nothing
-        }
-
-        @Override
-        public void validate() {
-            //do nothing
-        }
-
-        @Override
-        public void invalidate() {
-            //do nothing
-        }
+    /**
+     * Type of the node - each type has a specific background
+     */
+    protected static enum Type {
+        NORMAL,
+        CLOSED,
+        TITLE;
     }
 }

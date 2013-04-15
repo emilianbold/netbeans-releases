@@ -42,22 +42,20 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.tasks.ui.LinkButton;
+import org.netbeans.modules.team.ui.util.treelist.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
 import org.netbeans.modules.tasks.ui.actions.Actions.CloseCategoryNodeAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.OpenCategoryNodeAction;
 import org.netbeans.modules.tasks.ui.model.Category;
 import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
-import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
-import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.Utils;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 

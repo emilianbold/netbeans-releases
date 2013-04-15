@@ -39,11 +39,10 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.treelist;
+package org.netbeans.modules.team.ui.util.treelist;
 
 import java.awt.event.MouseEvent;
 import java.util.logging.Logger;
-import org.netbeans.modules.tasks.ui.LinkButton;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -63,10 +62,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
-import org.netbeans.modules.tasks.ui.dashboard.ClosedCategoryNode;
-import org.netbeans.modules.tasks.ui.dashboard.ClosedRepositoryNode;
-import org.netbeans.modules.tasks.ui.dashboard.TitleNode;
 
 /**
  * Wrapper for node renderers. Defines appropriate foreground/background colors,
@@ -110,7 +105,7 @@ final class RendererPanel extends JPanel {
             });
 
             add(expander, BorderLayout.WEST);
-        } else if (!isRoot || node instanceof ClosedCategoryNode || node instanceof ClosedRepositoryNode) {
+        } else if (!isRoot || node.getType().equals(TreeListNode.Type.CLOSED)) {
             add(new JLabel(new EmptyIcon()), BorderLayout.WEST);
         }
         depth = getDepth();
@@ -128,15 +123,15 @@ final class RendererPanel extends JPanel {
     }
 
     public void configure(Color foreground, Color background, boolean isSelected, boolean hasFocus, int nestingDepth, int rowHeight, int rowWidth) {
-        if (isRoot && node.isExpandable() || node instanceof ClosedCategoryNode || node instanceof ClosedRepositoryNode) {
+        if (isRoot && node.isExpandable() || node.getType().equals(TreeListNode.Type.CLOSED)) {
             foreground = isSelected ? expandableRootSelectedForeground : expandableRootForeground;
             background = isSelected ? expandableRootSelectedBackground : expandableRootBackground;
-        } else if (node instanceof TitleNode) {
+        } else if (node.getType().equals(TreeListNode.Type.TITLE)) {
             background = isSelected ? expandableRootSelectedBackground : ColorManager.getDefault().getDisabledColor();
         }
         int maxWidth = rowWidth - depth * EMPTY_ICON.getIconWidth() - (TreeList.INSETS_LEFT + nestingDepth * rowHeight / 2) - TreeList.INSETS_RIGHT;
         JComponent inner = node.getComponent(foreground, background, isSelected, hasFocus, maxWidth > 0 ? maxWidth : 0);
-        if (node.isExpandable() || !isRoot || node instanceof ClosedCategoryNode || node instanceof ClosedRepositoryNode) {
+        if (node.isExpandable() || !isRoot || node.getType().equals(TreeListNode.Type.CLOSED)) {
             inner.setBorder(INNER_BORDER);
         }
         add(inner, BorderLayout.CENTER);

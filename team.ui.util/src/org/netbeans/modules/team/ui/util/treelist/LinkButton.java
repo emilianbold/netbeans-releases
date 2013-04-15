@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui;
+package org.netbeans.modules.team.ui.util.treelist;
 
 import java.awt.Color;
 import java.awt.Cursor;
@@ -56,7 +56,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
-import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 
 /**
  * Button with no border painted looking like a hypertext link.
