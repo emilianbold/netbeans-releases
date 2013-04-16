@@ -978,7 +978,7 @@ public class Css3ParserTest extends CssTestBase {
     public void testDuplicatedErrors() throws BadLocationException, ParseException {
         CssParserResult result = TestUtil.parse(
                 "head{\n"
-                + "    background-image: uri();"
+                + "    background-image: uri(;"
                 + "}");
 
         TestUtil.dumpResult(result);
@@ -1287,6 +1287,10 @@ public class Css3ParserTest extends CssTestBase {
         assertParses(".clz { ;;; ; color: red }");
         assertParses(".clz { ;;; ; color: red; ; }");
         assertParses(".clz { color: red; ;; }");
+    }
+    
+    public void testMaskFn() throws ParseException, BadLocationException {
+        assertParses(".clz { filter: mask(); }");
     }
     
 }
