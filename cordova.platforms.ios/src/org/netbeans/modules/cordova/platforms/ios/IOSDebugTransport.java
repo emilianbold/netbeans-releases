@@ -295,7 +295,8 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 inited = true;
                 monitor.notifyAll();
             }
-            if (!map.keySet().contains(getActive())) {
+            
+            if (getTabForUrl() == null) {
                 Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
             }
                    
@@ -316,7 +317,15 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                         }
                     }
                 }
-            for (Map.Entry<String, TabDescriptor> entry: map.entrySet()) {
+            final String tabForUrl = getTabForUrl();
+            if (tabForUrl !=null) {
+                return tabForUrl;
+            }
+            return map.entrySet().iterator().next().getKey();
+        }
+
+        private String getTabForUrl() {
+            for (Map.Entry<String, TabDescriptor> entry : map.entrySet()) {
                 String urlFromBrowser = entry.getValue().getUrl();
                 int hash = urlFromBrowser.indexOf("#");
                 if (hash != -1) {
@@ -325,12 +334,11 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 if (urlFromBrowser.endsWith("/")) {
                     urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length()-1); 
                 }
-                
                 if (getConnectionURL().toString().equals(urlFromBrowser)) {
                     return entry.getKey();
                 }                        
             }
-            throw new IllegalStateException();
+            return null;
         }
 
         private class TabDescriptor {

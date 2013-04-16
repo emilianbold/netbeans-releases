@@ -120,28 +120,8 @@ public enum IOSDevice implements Device {
     @Override
     public void openUrl(final String url) {
         if (!simulator) {
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Object[] options = {"OK"};
-                        JOptionPane.showOptionDialog(null,
-                                "Start Mobile Safari and open " + url, "Device Setup",
-                                JOptionPane.PLAIN_MESSAGE,
-                                JOptionPane.QUESTION_MESSAGE,
-                                null,
-                                options,
-                                options[0]);
-                    }
-                    
-                });
-                return;
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            //do nothing for device. Don't know how to open Safari on device.
+            return;
         }
         try {
             try {

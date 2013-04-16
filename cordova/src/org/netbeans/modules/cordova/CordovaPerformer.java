@@ -280,9 +280,10 @@ public class CordovaPerformer implements BuildPerformer {
     }
 
     @Override
-    public void startDebugging(Device device, Project p, Lookup context) {
+    public void startDebugging(Device device, Project p, Lookup context, boolean navigateToUrl) {
         transport = device.getDebugTransport();
-        transport.setBaseUrl(getUrl(p, context));
+        final String url = getUrl(p, context);
+        transport.setBaseUrl(url);
         transport.attach();
         try {
             Thread.sleep(1000);
@@ -290,6 +291,9 @@ public class CordovaPerformer implements BuildPerformer {
             Exceptions.printStackTrace(ex);
         }
         webKitDebugging = Factory.createWebKitDebugging(transport);
+        if (navigateToUrl) {
+            webKitDebugging.getPage().navigate(url);
+        }
         webKitDebugging.getDebugger().enable();
         Lookup projectContext = Lookups.singleton(p);
         debuggerSession = WebKitUIManager.getDefault().createDebuggingSession(webKitDebugging, projectContext);

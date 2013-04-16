@@ -152,14 +152,23 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
                 final IOSDevice dev = kind == Kind.IOS_DEVICE_DEFAULT ? IOSDevice.CONNECTED : IOSDevice.IPHONE;
                 dev.openUrl(build.getUrl(project, context));
                 if (kind == Kind.IOS_DEVICE_DEFAULT) {
-                    build.startDebugging(dev, project, context);
+                    build.startDebugging(dev, project, context, true);
                 } else {
+                    if (kind == Kind.IOS_SIMULATOR_DEFAULT) {
                     SimulatorDebugTransport.runWhenReady(new Runnable() {
                         @Override
                         public void run() {
-                            build.startDebugging(dev, project, context);
+                            build.startDebugging(dev, project, context, false);
                         }
                     }, 30000);
+                } else {
+                    DeviceDebugTransport.runWhenReady(new Runnable() {
+                        @Override
+                        public void run() {
+                            build.startDebugging(dev, project, context, true);
+                        }
+                    }, 30000);
+                    }
                 }
             }
         }, Bundle.LBL_Opening(), new AtomicBoolean(), false);

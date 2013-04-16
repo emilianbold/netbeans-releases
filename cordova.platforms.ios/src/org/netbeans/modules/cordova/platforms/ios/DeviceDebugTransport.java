@@ -60,7 +60,7 @@ public class DeviceDebugTransport extends IOSDebugTransport implements Transport
     }
 
     public static void runWhenReady(Runnable run, long timeout) {
-        throw new UnsupportedOperationException();
+        run.run();
     }
     
     @Override
