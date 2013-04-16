@@ -56,6 +56,7 @@ import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
+import org.openide.util.NbBundle;
 
 abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
 
@@ -120,6 +121,11 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
         return true;
     }
 
+    @NbBundle.Messages({
+        "# {0} - customizer name",
+        "# {1} - message",
+        "BaseProjectProblemsProvider.error={0}: {1}",
+    })
     protected void checkCustomizer(Collection<ProjectProblem> currentProblems) {
         if (customizer.isValid()) {
             return;
@@ -128,7 +134,8 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
         if (message == null) {
             message = customizer.getWarningMessage();
         }
-        assert message != null;
+        assert message != null : "Message should be found for invalid customizer: " + customizer.getDisplayName();
+        message = Bundle.BaseProjectProblemsProvider_error(customizer.getDisplayName(), message);
         ProjectProblem problem = ProjectProblem.createError(
                 message,
                 message,
