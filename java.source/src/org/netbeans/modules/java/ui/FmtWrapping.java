@@ -46,6 +46,7 @@ package org.netbeans.modules.java.ui;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import javax.swing.JLabel;
 import org.netbeans.api.java.source.CodeStyle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
@@ -64,6 +65,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         initComponents();
         
         scrollPane.getViewport().setBackground(java.awt.SystemColor.controlLtHighlight);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(new JLabel("X").getPreferredSize().height);
         
         extendsImplementsKeywordCombo.putClientProperty(OPTION_ID, wrapExtendsImplementsKeyword);
         extendsImplementsKeywordCombo.addFocusListener(this);
