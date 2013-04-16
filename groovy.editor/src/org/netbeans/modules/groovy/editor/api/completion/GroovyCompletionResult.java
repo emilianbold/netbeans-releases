@@ -44,7 +44,6 @@ package org.netbeans.modules.groovy.editor.api.completion;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.text.Document;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.ModuleNode;
@@ -54,10 +53,10 @@ import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.groovy.editor.imports.ImportHelper;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 import org.netbeans.modules.groovy.editor.imports.ImportUtils;
 import org.openide.filesystems.FileObject;
 
@@ -69,25 +68,32 @@ import org.openide.filesystems.FileObject;
  */
 public class GroovyCompletionResult extends DefaultCompletionResult {
 
+    private final CompletionContext context;
     private final ModuleNode root;
     private final FileObject fo;
 
-    public GroovyCompletionResult(List<CompletionProposal> list, ParserResult parserResult, Document document) {
+    public GroovyCompletionResult(List<CompletionProposal> list, CompletionContext context) {
         super(list, false);
 
-        this.root = ASTUtils.getRoot(parserResult);
-        this.fo = NbEditorUtilities.getDataObject(document).getPrimaryFile();
+        this.context = context;
+        this.root = ASTUtils.getRoot(context.getParserResult());
+        this.fo = context.getSourceFile();
     }
 
     @Override
     public void afterInsert(@NonNull CompletionProposal item) {
-        if (!isTypeCompletion(item)) {
+        // Don't add import statement if we are completing import statement - see #228587
+        if (context.isBehindImportStatement()) {
             return;
         }
 
-        // Don't add import statement for default imports
-        if (ImportUtils.isDefaultlyImported(((CompletionItem.TypeItem) item).getFqn())) {
-            return;
+        if (item instanceof CompletionItem.TypeItem) {
+            CompletionItem.TypeItem typeItem = (CompletionItem.TypeItem) item;
+            
+            // Don't add import statement for default imports
+            if (ImportUtils.isDefaultlyImported(typeItem.getFqn())) {
+                return;
+            }
         }
 
         final ElementKind kind = item.getKind();
@@ -100,13 +106,6 @@ public class GroovyCompletionResult extends DefaultCompletionResult {
                 ImportHelper.resolveImport(fo, name);
             }
         }
-    }
-    
-    private boolean isTypeCompletion(@NonNull CompletionProposal item) {
-        if (item instanceof CompletionItem.TypeItem) {
-            return true;
-        }
-        return false;
     }
     
     private static final class ImportCollector extends ClassCodeVisitorSupport {

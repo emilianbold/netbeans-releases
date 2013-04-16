@@ -77,7 +77,7 @@ public class PackageCompletion extends BaseCompletion {
 
         if (request.context.before1 != null
                 && CharSequenceUtilities.textEquals(request.context.before1.text(), "*")
-                && request.behindImport) {
+                && request.isBehindImportStatement()) {
             return false;
         }
 
@@ -97,7 +97,7 @@ public class PackageCompletion extends BaseCompletion {
             if (singlePackage.startsWith(packageRequest.prefix) && singlePackage.length() > 0) {
                 CompletionItem.PackageItem item = new CompletionItem.PackageItem(singlePackage, anchor, request.getParserResult());
 
-                if (request.behindImport) {
+                if (request.isBehindImportStatement()) {
                     item.setSmart(true);
                 }
                 proposals.add(item);
