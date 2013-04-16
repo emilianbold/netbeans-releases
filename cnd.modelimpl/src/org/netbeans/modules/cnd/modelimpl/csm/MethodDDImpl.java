@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
@@ -194,7 +195,9 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         }
         
         public void addBodyToken(Token token) {
-            bodyTokens.add(token);
+            if (!APTUtils.isEOF(token)) {
+                bodyTokens.add(token);
+            }
         }
         
         public TokenStream getBodyTokenStream() {
