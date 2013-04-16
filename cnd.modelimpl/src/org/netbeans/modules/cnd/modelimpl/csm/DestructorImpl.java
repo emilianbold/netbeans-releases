@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.Function
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -133,7 +134,11 @@ public final class DestructorImpl extends MethodImpl<CsmMethod> {
         }
         
         @Override
-        public DestructorImpl create() {
+        public DestructorImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
+            final FunctionParameterListBuilder parameters = (FunctionParameterListBuilder)getParametersListBuilder();
+            if (parameters == null) {
+                return null;
+            }
             CsmClass cls = (CsmClass) getScope();
             boolean _virtual = false;
             boolean _explicit = false;
@@ -152,8 +157,8 @@ public final class DestructorImpl extends MethodImpl<CsmMethod> {
             }
 
             //method.setReturnType(getType());
-            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(method);
-            method.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(),
+            parameters.setScope(method);
+            method.setParameters(parameters.create(),
                     true);
 
             postObjectCreateRegistration(true, method);

@@ -48,7 +48,6 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -58,6 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.Function
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -196,6 +196,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
             return visibility;
         }
 
+        @Override
         public void setVisibility(CsmVisibility visibility) {
             this.visibility = visibility;
         }
@@ -209,9 +210,12 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         }
         
         @Override
-        public MethodImpl create() {
+        public MethodImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
+            final FunctionParameterListBuilder parameters = (FunctionParameterListBuilder)getParametersListBuilder();
+            if (parameters == null) {
+                return null;
+            }
             CsmClass cls = (CsmClass) getScope();
-
 
             MethodImpl method = new MethodImpl(getName(), getRawName(), cls, getVisibility(), isVirtual(), isExplicit(), isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
@@ -226,9 +230,8 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
             }
 
             method.setReturnType(getType());
-            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(method);
-            method.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(),
-                    true);
+            parameters.setScope(method);
+            method.setParameters(parameters.create(), true);
 
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);

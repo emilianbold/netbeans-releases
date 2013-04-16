@@ -119,6 +119,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion.BaseType;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.VariableResultItem;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
+import org.netbeans.modules.cnd.completion.csm.CompletionResolver.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
@@ -172,13 +173,6 @@ abstract public class CsmCompletionQuery {
         return null;
     }
     
-    public static enum QueryScope {
-
-        LOCAL_QUERY,
-        SMART_QUERY,
-        GLOBAL_QUERY,
-    };
-
     public CsmCompletionQuery() {
     }
 
