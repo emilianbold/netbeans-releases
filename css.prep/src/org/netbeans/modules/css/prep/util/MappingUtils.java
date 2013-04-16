@@ -39,50 +39,68 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.preferences;
+package org.netbeans.modules.css.prep.util;
 
-import java.util.Collections;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.prefs.Preferences;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.css.prep.util.MappingUtils;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.web.common.api.Pair;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
- * Sass preferences specific for project.
- */
-public final class SassPreferences {
+public final class MappingUtils {
 
-    private static final String ENABLED = "sass.enabled"; // NOI18N
-    private static final String MAPPINGS = "sass.mappings"; // NOI18N
+    private static final String MAPPINGS_DELIMITER = ","; // NOI18N
+    private static final String MAPPING_DELIMITER = ":"; // NOI18N
 
 
-    private SassPreferences() {
+    private MappingUtils() {
     }
 
-    public static boolean isEnabled(Project project) {
-        return getPreferences(project).getBoolean(ENABLED, true);
+    public static String encode(List<String> mappings) {
+        return StringUtils.implode(mappings, MAPPINGS_DELIMITER);
     }
 
-    public static void setEnabled(Project project, boolean enabled) {
-        getPreferences(project).putBoolean(ENABLED, enabled);
+    public static List<String> decode(String mappings) {
+        return StringUtils.explode(mappings, MAPPINGS_DELIMITER);
     }
 
-    public static List<String> getMappings(Project project) {
-        String mappings = getPreferences(project).get(MAPPINGS, null);
-        if (mappings == null) {
-            return Collections.emptyList();
+    @CheckForNull
+    public static File resolveTarget(FileObject webRoot, List<String> mappings, FileObject source) {
+        File root = FileUtil.toFile(webRoot);
+        File file = FileUtil.toFile(source);
+        return resolveTarget(root, mappings, file, source.getName());
+    }
+
+    @CheckForNull
+    static File resolveTarget(File root, List<String> mappings, File file, String name) {
+        for (String mapping : mappings) {
+            List<String> exploded = StringUtils.explode(mapping, MAPPING_DELIMITER);
+            File from = resolveFile(root, exploded.get(0));
+            String relpath = PropertyUtils.relativizeFile(from, file.getParentFile());
+            if (relpath != null
+                    && !relpath.startsWith("../")) { // NOI18N
+                // path match
+                File to = resolveFile(root, exploded.get(1));
+                to = PropertyUtils.resolveFile(to, relpath);
+                return resolveFile(to, makeCssFilename(name));
+            }
         }
-        return MappingUtils.decode(mappings);
+        // no mapping
+        return null;
     }
 
-    public static void setMappings(Project project, List<String> mappings) {
-        getPreferences(project).put(MAPPINGS, MappingUtils.encode(mappings));
+    private static File resolveFile(File directory, String subpath) {
+        if (subpath.startsWith("/")) { // NOI18N
+            subpath = subpath.substring(1);
+        }
+        return PropertyUtils.resolveFile(directory, subpath);
     }
 
-    private static Preferences getPreferences(Project project) {
-        assert project != null;
-        return ProjectUtils.getPreferences(project, SassPreferences.class, true);
+    private static String makeCssFilename(String name) {
+        return name + ".css"; // NOI18N
     }
 
 }

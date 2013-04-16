@@ -187,6 +187,8 @@ public final class CssPreprocessors {
 
     /**
      * Process given file (can be a folder as well) by {@link #getPreprocessors() all CSS preprocessors}.
+     * <b>The project must have {@link org.netbeans.modules.web.common.spi.ProjectWebRootProvider}
+     * in its lookup.</b>
      * <p>
      * For detailed information see {@link CssPreprocessorImplementation#process(Project, FileObject)}.
      * @param project project where the file belongs, can be {@code null} for file without a project

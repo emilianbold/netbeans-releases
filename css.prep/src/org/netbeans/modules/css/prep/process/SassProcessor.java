@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.css.prep.process;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,9 +54,11 @@ import org.netbeans.modules.css.prep.editor.CPUtils;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
+import org.netbeans.modules.css.prep.util.MappingUtils;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -106,8 +110,31 @@ public final class SassProcessor extends BaseProcessor {
         if (sass == null) {
             return;
         }
+        FileObject webRoot = getWebRoot(project, fileObject);
+        if (webRoot == null) {
+            LOGGER.log(Level.INFO, "Not compiling, file {0} not underneath web root of project {1}",
+                    new Object[] {FileUtil.getFileDisplayName(fileObject), FileUtil.getFileDisplayName(project.getProjectDirectory())});
+            return;
+        }
+        List<String> mappings = SassPreferences.getMappings(project);
+        if (mappings.isEmpty()) {
+            // project problems know about it
+            LOGGER.log(Level.INFO, "Not compiling, no mappings for project {0}", FileUtil.getFileDisplayName(project.getProjectDirectory()));
+            return;
+        }
+        File file = FileUtil.toFile(fileObject);
+        if (file == null) {
+            LOGGER.log(Level.WARNING, "Not compiling, file not found for fileobject {0}", FileUtil.getFileDisplayName(fileObject));
+            return;
+        }
+        File target = MappingUtils.resolveTarget(webRoot, mappings, fileObject);
+        if (target == null) {
+            LOGGER.log(Level.INFO, "Not compiling, file {0} not matched within current mappings {1}",
+                    new Object[] {FileUtil.getFileDisplayName(fileObject), mappings});
+            return;
+        }
         try {
-            sass.compile(fileObject);
+            sass.compile(file, target);
         } catch (ExecutionException ex) {
             if (Warnings.showSassWarning()) {
                 UiUtils.processExecutionException(ex);
@@ -127,6 +154,15 @@ public final class SassProcessor extends BaseProcessor {
 
     private boolean isPartial(FileObject fileObject) {
         return fileObject.getName().startsWith("_"); // NOI18N
+    }
+
+    @CheckForNull
+    private FileObject getWebRoot(Project project, FileObject fileObject) {
+        ProjectWebRootProvider projectWebRootProvider = project.getLookup().lookup(ProjectWebRootProvider.class);
+        if (projectWebRootProvider == null) {
+            throw new IllegalArgumentException("ProjectWebRootProvider must be found in project lookup: " + project);
+        }
+        return projectWebRootProvider.getWebRoot(fileObject);
     }
 
 }

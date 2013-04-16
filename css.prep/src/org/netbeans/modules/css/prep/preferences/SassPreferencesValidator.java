@@ -41,48 +41,33 @@
  */
 package org.netbeans.modules.css.prep.preferences;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.prefs.Preferences;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.css.prep.util.MappingUtils;
+import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.openide.util.NbBundle;
 
-/**
- * Sass preferences specific for project.
- */
-public final class SassPreferences {
+public final class SassPreferencesValidator {
 
-    private static final String ENABLED = "sass.enabled"; // NOI18N
-    private static final String MAPPINGS = "sass.mappings"; // NOI18N
+    private final ValidationResult result = new ValidationResult();
 
 
-    private SassPreferences() {
+    public ValidationResult getResult() {
+        return result;
     }
 
-    public static boolean isEnabled(Project project) {
-        return getPreferences(project).getBoolean(ENABLED, true);
-    }
-
-    public static void setEnabled(Project project, boolean enabled) {
-        getPreferences(project).putBoolean(ENABLED, enabled);
-    }
-
-    public static List<String> getMappings(Project project) {
-        String mappings = getPreferences(project).get(MAPPINGS, null);
-        if (mappings == null) {
-            return Collections.emptyList();
+    public SassPreferencesValidator validate(boolean enabled, List<String> mappings) {
+        if (enabled) {
+            validateMappings(mappings);
         }
-        return MappingUtils.decode(mappings);
+        return this;
     }
 
-    public static void setMappings(Project project, List<String> mappings) {
-        getPreferences(project).put(MAPPINGS, MappingUtils.encode(mappings));
-    }
-
-    private static Preferences getPreferences(Project project) {
-        assert project != null;
-        return ProjectUtils.getPreferences(project, SassPreferences.class, true);
+    @NbBundle.Messages("SassPreferencesValidator.mappings=Mappings must be set.")
+    private SassPreferencesValidator validateMappings(List<String> mappings) {
+        if (mappings.isEmpty()) {
+            result.addError(new ValidationResult.Message("mappings", Bundle.SassPreferencesValidator_mappings())); // NOI18N
+        }
+        // XXX add format validation
+        return this;
     }
 
 }

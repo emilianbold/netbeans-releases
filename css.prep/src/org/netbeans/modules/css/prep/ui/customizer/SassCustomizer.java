@@ -42,12 +42,16 @@
 package org.netbeans.modules.css.prep.ui.customizer;
 
 import java.io.IOException;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
+import org.netbeans.modules.css.prep.preferences.SassPreferencesValidator;
 import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
+import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -85,8 +89,9 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
     @Override
     public synchronized SassCustomizerPanel getComponent() {
         if (customizerPanel == null) {
-           customizerPanel = new SassCustomizerPanel();
-           customizerPanel.setSassEnabled(SassPreferences.isEnabled(project));
+            customizerPanel = new SassCustomizerPanel(project.getLookup().lookup(ProjectWebRootProvider.class));
+            customizerPanel.setSassEnabled(SassPreferences.isEnabled(project));
+            customizerPanel.setMappings(SassPreferences.getMappings(project));
         }
         assert customizerPanel != null;
         return customizerPanel;
@@ -99,31 +104,70 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
 
     @Override
     public boolean isValid() {
-        // always valid
-        return true;
+        return getValidationResult().isFaultless();
     }
 
+    @NbBundle.Messages({
+        "# {0} - customizer name",
+        "# {1} - message",
+        "SassCustomizer.error={0}: {1}",
+    })
     @Override
     public String getErrorMessage() {
-        // always valid
+        ValidationResult validationResult = getValidationResult();
+        if (validationResult.hasErrors()) {
+            return Bundle.SassCustomizer_error(getDisplayName(), validationResult.getErrors().get(0).getMessage());
+        }
         return null;
     }
 
     @Override
     public String getWarningMessage() {
-        // always valid
+        ValidationResult validationResult = getValidationResult();
+        if (validationResult.hasWarnings()) {
+            return Bundle.SassCustomizer_error(getDisplayName(), validationResult.getWarnings().get(0).getMessage());
+        }
         return null;
     }
 
     @Override
     public void save() throws IOException {
         Warnings.resetSassWarning();
+        boolean fire = false;
+        // enabled
         boolean originalEnabled = SassPreferences.isEnabled(project);
         boolean enabled = getComponent().isSassEnabled();
         SassPreferences.setEnabled(project, enabled);
         if (enabled != originalEnabled) {
+            fire = true;
+        }
+        // mappings
+        List<String> originalMappings = SassPreferences.getMappings(project);
+        List<String> mappings = getComponent().getMappings();
+        SassPreferences.setMappings(project, mappings);
+        if (!mappings.equals(originalMappings)) {
+            fire = true;
+        }
+        // change?
+        if (fire) {
             sassCssPreprocessor.fireCustomizerChanged(project);
         }
+    }
+
+    private ValidationResult getValidationResult() {
+        boolean enabled;
+        List<String> mappings;
+        if (customizerPanel == null) {
+            // ui not shown (yet)
+            enabled = SassPreferences.isEnabled(project);
+            mappings = SassPreferences.getMappings(project);
+        } else {
+            enabled = getComponent().isSassEnabled();
+            mappings = getComponent().getMappings();
+        }
+        return new SassPreferencesValidator()
+                .validate(enabled, mappings)
+                .getResult();
     }
 
 }

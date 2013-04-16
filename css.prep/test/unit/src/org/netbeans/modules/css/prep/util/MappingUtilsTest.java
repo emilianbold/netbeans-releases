@@ -39,50 +39,30 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.preferences;
+package org.netbeans.modules.css.prep.util;
 
-import java.util.Collections;
+import java.io.File;
+import java.util.Arrays;
 import java.util.List;
-import java.util.prefs.Preferences;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.css.prep.util.MappingUtils;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-/**
- * Sass preferences specific for project.
- */
-public final class SassPreferences {
+public class MappingUtilsTest {
 
-    private static final String ENABLED = "sass.enabled"; // NOI18N
-    private static final String MAPPINGS = "sass.mappings"; // NOI18N
-
-
-    private SassPreferences() {
-    }
-
-    public static boolean isEnabled(Project project) {
-        return getPreferences(project).getBoolean(ENABLED, true);
-    }
-
-    public static void setEnabled(Project project, boolean enabled) {
-        getPreferences(project).putBoolean(ENABLED, enabled);
-    }
-
-    public static List<String> getMappings(Project project) {
-        String mappings = getPreferences(project).get(MAPPINGS, null);
-        if (mappings == null) {
-            return Collections.emptyList();
-        }
-        return MappingUtils.decode(mappings);
-    }
-
-    public static void setMappings(Project project, List<String> mappings) {
-        getPreferences(project).put(MAPPINGS, MappingUtils.encode(mappings));
-    }
-
-    private static Preferences getPreferences(Project project) {
-        assert project != null;
-        return ProjectUtils.getPreferences(project, SassPreferences.class, true);
+    @Test
+    public void testResolveTarget() {
+        File root = new File("/root");
+        List<String> mappings = Arrays.asList(
+                "/scss:/css",
+                "/another/scss:/another/css");
+        File file1 = new File(root, "scss/file1.scss");
+        assertEquals(new File(root, "css/file1.css"), MappingUtils.resolveTarget(root, mappings, file1, "file1"));
+        File file2 = new File(root, "another/scss/file2.scss");
+        assertEquals(new File(root, "another/css/file2.css"), MappingUtils.resolveTarget(root, mappings, file2, "file2"));
+        File file3 = new File(root, "file3.scss");
+        assertEquals(new File(root, "file3.css"), MappingUtils.resolveTarget(root, mappings, file3, "file3"));
+        File file4 = new File("/file4.scss");
+        assertEquals(null, MappingUtils.resolveTarget(root, mappings, file4, "file4"));
     }
 
 }
