@@ -89,6 +89,7 @@ public final class FmtSpaces extends JPanel implements TreeCellRenderer, MouseLi
     /** Creates new form FmtSpaces */
     private FmtSpaces() {
         initComponents();
+        jScrollPane1.getVerticalScrollBar().setUnitIncrement(20);
         model = createModel();
         cfgTree.setModel(model);
         cfgTree.setRootVisible(false);
