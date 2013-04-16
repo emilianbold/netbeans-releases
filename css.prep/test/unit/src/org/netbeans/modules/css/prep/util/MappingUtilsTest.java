@@ -65,4 +65,29 @@ public class MappingUtilsTest {
         assertEquals(null, MappingUtils.resolveTarget(root, mappings, file4, "file4"));
     }
 
+    @Test
+    public void testValidMappingsFormat() {
+        List<String> mappings = Arrays.asList(
+                "/scss:/css",
+                "/another/scss:/another/css",
+                ".:.");
+        ValidationResult validationResult = new MappingUtils.MappingsValidator()
+                .validate(mappings)
+                .getResult();
+        assertTrue(validationResult.isFaultless());
+    }
+
+    @Test
+    public void testInvalidMappingsFormat() {
+        String mapping = "/sc:ss:/css";
+        List<String> mappings = Arrays.asList(mapping);
+        ValidationResult validationResult = new MappingUtils.MappingsValidator()
+                .validate(mappings)
+                .getResult();
+        assertTrue(validationResult.hasErrors());
+        ValidationResult.Message error = validationResult.getErrors().get(0);
+        assertEquals("mapping." + mapping, error.getSource());
+        assertTrue(error.getMessage(), error.getMessage().contains(mapping));
+    }
+
 }

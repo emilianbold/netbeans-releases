@@ -43,6 +43,7 @@ package org.netbeans.modules.css.prep.util;
 
 import java.io.File;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -106,6 +107,8 @@ public final class MappingUtils {
 
     public static final class MappingsValidator {
 
+        private static final Pattern MAPPING_PATTERN = Pattern.compile("^[^:]+:[^:]+$"); // NOI18N
+
         private final ValidationResult result = new ValidationResult();
 
 
@@ -118,12 +121,20 @@ public final class MappingUtils {
             return this;
         }
 
-        @NbBundle.Messages("MappingsValidator.error.empty=Mappings must be set.")
+        @NbBundle.Messages({
+            "MappingsValidator.error.empty=Mappings must be set.",
+            "# {0} - mapping",
+            "MappingsValidator.error.format=Mapping \"{0}\" is incorrect.",
+        })
         private MappingsValidator validateMappings(List<String> mappings) {
             if (mappings.isEmpty()) {
                 result.addError(new ValidationResult.Message("mappings", Bundle.MappingsValidator_error_empty())); // NOI18N
             }
-            // XXX add format validation
+            for (String mapping : mappings) {
+                if (!MAPPING_PATTERN.matcher(mapping).matches()) {
+                    result.addError(new ValidationResult.Message("mapping." + mapping, Bundle.MappingsValidator_error_format(mapping))); // NOI18N
+                }
+            }
             return this;
         }
 
