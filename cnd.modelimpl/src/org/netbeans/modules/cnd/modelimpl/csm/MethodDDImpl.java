@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl.Compoun
 import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilderContainer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -222,7 +223,15 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         }
         
         @Override
-        public MethodDDImpl create() {
+        public MethodDDImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
+            final FunctionParameterListBuilder parameters = (FunctionParameterListBuilder)getParametersListBuilder();
+            if (parameters == null) {
+                return null;
+            }
+            final CompoundStatementBuilder aBodyBuilder = getBodyBuilder();
+            if (aBodyBuilder == null) {
+                return null;
+            }
             CsmClass cls = (CsmClass) getScope();
             boolean _virtual = false;
             boolean _explicit = false;
@@ -241,17 +250,16 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
             }
 
             method.setReturnType(getType());
-            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(method);
-            method.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(),
-                    true);
+            parameters.setScope(method);
+            method.setParameters(parameters.create(), true);
 
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);
 
             addDeclaration(method);
             
-            getBodyBuilder().setScope(method);
-            method.setCompoundStatement(getBodyBuilder().create());
+            aBodyBuilder.setScope(method);
+            method.setCompoundStatement(aBodyBuilder.create());
 
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);

@@ -71,11 +71,13 @@ public class CXXParserEx extends CXXParser {
     private final boolean trace;
     private int level = 0; // indentation based trace
     private int recoveryCounter = 0;
+    private final boolean reportErrors;
 
     public CXXParserEx(TokenStream input, CXXParserActionEx action) {
         super(input, action);
         this.action = action;
         this.trace = TraceFlags.TRACE_CPP_PARSER_RULES;
+        this.reportErrors = TraceFlags.REPORT_PARSING_ERRORS;
     }
     
     private CsmParserProvider.ParserErrorDelegate errorDelegate;
@@ -86,20 +88,25 @@ public class CXXParserEx extends CXXParser {
 
     @Override
     public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
-        if(errorDelegate != null) {
-            if (e instanceof MyRecognitionException) {
-                MyRecognitionException ex = (MyRecognitionException) e;
-                String hdr = getSourceName();
-                if (APTUtils.isEOF(ex.getToken())) {
-                    errorDelegate.onError(new CsmParserProvider.ParserError(hdr+" "+ex.getMessage(), -1, -1, ex.getToken().getText(), true));
-                } else {
-                    errorDelegate.onError(new CsmParserProvider.ParserError(hdr+":"+ex.getToken().getLine()+": error: "+ex.getMessage(), ex.getToken().getLine(), ex.getToken().getColumn(), ex.getToken().getText(), false)); // NOI18N
-                }
+        CsmParserProvider.ParserError parserError;
+        if (e instanceof MyRecognitionException) {
+            MyRecognitionException ex = (MyRecognitionException) e;
+            String hdr = getSourceName();
+            if (APTUtils.isEOF(ex.getToken())) {
+                parserError = new CsmParserProvider.ParserError(hdr+" "+ex.getMessage(), -1, -1, ex.getToken().getText(), true);
             } else {
-                String hdr = getSourceName();
-                String msg = getErrorMessage(e, tokenNames);
-                errorDelegate.onError(new CsmParserProvider.ParserError(hdr+":"+e.line+": error: "+msg, e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1)); // NOI18N
+                parserError = new CsmParserProvider.ParserError(hdr+":"+ex.getToken().getLine()+": error: "+ex.getMessage(), ex.getToken().getLine(), ex.getToken().getColumn(), ex.getToken().getText(), false); // NOI18N
             }
+        } else {
+            String hdr = getSourceName();
+            String msg = getErrorMessage(e, tokenNames);
+            parserError = new CsmParserProvider.ParserError(hdr+":"+e.line+": error: "+msg, e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1); // NOI18N
+        }
+        if (errorDelegate != null) {
+            errorDelegate.onError(parserError);
+        }
+        if (reportErrors) {
+            System.err.println(parserError);
         }
     }
 

@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.FriendClassImpl.FriendClassBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl.InheritanceBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -65,6 +64,7 @@ import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -436,7 +436,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
     
     public static interface MemberBuilder {
-        CsmMember create();
+        CsmMember create(CsmParserProvider.ParserErrorDelegate gelegate);
         void setScope(CsmScope scope);
         void setVisibility(CsmVisibility visibility);
     }
@@ -542,7 +542,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
         
         @Override
-        public ClassImpl create() {
+        public ClassImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
             ClassImpl cls = getClassDefinitionInstance();
             CsmScope s = getScope();
             if (cls == null && s != null && getName() != null && getEndOffset() != 0) {
@@ -561,9 +561,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 }
                 for (MemberBuilder builder : getMemberBuilders()) {
                     builder.setScope(cls);
-                    CsmMember inst = builder.create();
+                    CsmMember inst = builder.create(delegate);
                     if(inst != null) {
                         cls.addMember(inst, isGlobal());
+                    } else {
+                        CsmParserProvider.registerParserError(delegate, "Skip unrecognized member for builder '"+builder, getFile(), getStartOffsetImpl(builder, this)); //NOI18N
                     }
                 }                
                 for (SimpleDeclarationBuilder builder : getFriendBuilders()) {
@@ -584,6 +586,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return "ClassBuilder{" + "kind=" + kind + ", memberBuilders=" + memberBuilders + //NOI18N
                     ", friendBuilders=" + friendBuilders + ", inheritanceBuilders=" + inheritanceBuilders + //NOI18N
                     ", instance=" + instance + super.toString() + '}'; //NOI18N
+        }
+
+        public static int getStartOffsetImpl(MemberBuilder child, OffsetableBuilder parent) {
+            int startOffset = -1;
+            if (child instanceof OffsetableBuilder) {
+                startOffset = ((OffsetableBuilder)child).getStartOffset();
+            }
+            if (startOffset < 0) {
+                startOffset = parent.getStartOffset();
+            }
+            return startOffset;
         }
     }
 
@@ -1236,7 +1249,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             }
         
             @Override
-            public MemberTypedef create() {
+            public MemberTypedef create(CsmParserProvider.ParserErrorDelegate delegate) {
                 CsmClass cls = (CsmClass) getScope();
                 
                 CsmType type = null;
@@ -1413,7 +1426,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             }
             
             @Override
-            public ClassMemberForwardDeclaration create() {
+            public ClassMemberForwardDeclaration create(CsmParserProvider.ParserErrorDelegate delegate) {
                 TemplateDescriptor td = null;
                 if(getTemplateDescriptorBuilder() != null) {
                     getTemplateDescriptorBuilder().setScope(getScope());
