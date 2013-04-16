@@ -169,8 +169,8 @@ public class TypesCompletion extends BaseCompletion {
         JavaSource javaSource = getJavaSourceFromRequest();
 
         // if we are dealing with a basepackage we simply complete all the packages given in the basePackage
-        if (packageRequest.basePackage.length() > 0 || request.behindImport) {
-            if (!(request.behindImport && packageRequest.basePackage.length() == 0)) {
+        if (packageRequest.basePackage.length() > 0 || request.isBehindImportStatement()) {
+            if (!(request.isBehindImportStatement() && packageRequest.basePackage.length() == 0)) {
 
                 List<TypeHolder> typeList = getTypeHoldersForPackage(javaSource, packageRequest.basePackage, currentPackage);
 
