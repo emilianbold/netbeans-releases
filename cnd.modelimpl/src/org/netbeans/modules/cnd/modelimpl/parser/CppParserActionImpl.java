@@ -1027,7 +1027,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                             classEntry.setAttribute(CppAttributes.TYPE, true);
                         }                
                     } else if (declBuilder.getTypeBuilder().getClassifier() == null && declBuilder.getTypeBuilder().getNameBuilder() == null) {
-                        regesterException(new MyRecognitionException("Unexpected missing namebuilder!", token), token);
+                        regesterException(new MyRecognitionException("Unexpected missing namebuilder!", token), token); // NOI18N
                     }
                 }
             }
