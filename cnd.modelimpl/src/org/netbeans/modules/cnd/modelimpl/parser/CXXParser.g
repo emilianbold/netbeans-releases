@@ -2956,10 +2956,10 @@ shiftright_literal
     :
         SHIFTRIGHT
     |
-        (GREATERTHAN)=>
-            {input.LT(1).getText().equals("")}?=>  // NOI18N
-                // in this case first token has empty text and the second token is a FilterToken with the link to original and text from original
-                GREATERTHAN GREATERTHAN 
+        // check if we have special split SHIFTRIGHT token (it has empty name as marker)
+        {input.LA(1) == GREATERTHAN && input.LT(1).getText().equals("")}?=> 
+            // in this case first token has empty text and the second token is a FilterToken with the link to original and text from original
+            GREATERTHAN GREATERTHAN // if hook is expected to be called here => don't forget to pass SHIFT instead of two ">" tokens
     ;
 
 // [gram.lex]
