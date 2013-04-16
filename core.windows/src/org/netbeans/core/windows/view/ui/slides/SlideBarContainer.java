@@ -44,17 +44,17 @@
 
 package org.netbeans.core.windows.view.ui.slides;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Window;
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -88,14 +88,14 @@ public final class SlideBarContainer extends AbstractModeContainer {
     public SlideBarContainer(ModeView modeView, WindowDnDManager windowDnDManager) {
         super(modeView, windowDnDManager, Constants.MODE_KIND_SLIDING);
         
-        panel = new VisualPanel(this);
-        panel.setBorder(computeBorder(getSlidingView().getSide()));
         Component slideBar = this.tabbedHandler.getComponent();
-        boolean horizontal = true;
-        if( slideBar instanceof SlideBar ) {
-            horizontal = ((SlideBar)slideBar).isHorizontal();
-        }
-        panel.add(slideBar, BorderLayout.CENTER);
+        panel = new VisualPanel(this, slideBar);
+        panel.setBorder(computeBorder(getSlidingView().getSide()));
+//        boolean horizontal = true;
+//        if( slideBar instanceof SlideBar ) {
+//            horizontal = ((SlideBar)slideBar).isHorizontal();
+//        }
+//        panel.add(slideBar, Boolean.valueOf( horizontal ));
     }
     
     
@@ -248,8 +248,9 @@ public final class SlideBarContainer extends AbstractModeContainer {
             }
         }
         
-        public VisualPanel (SlideBarContainer modeContainer) {
-            super(new BorderLayout());
+        public VisualPanel (SlideBarContainer modeContainer, Component slideBar) {
+            super(new SimpleLayout(slideBar));
+            add( slideBar );
             this.modeContainer = modeContainer;
             // To be able to activate on mouse click.
             enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK);
@@ -370,4 +371,39 @@ public final class SlideBarContainer extends AbstractModeContainer {
         }
     } // End of VisualPanel
     
+    
+    private static class SimpleLayout implements LayoutManager {
+        
+        private final Component slideBar;
+                
+        public SimpleLayout( Component slideBar ) {
+            this.slideBar = slideBar;
+        }
+
+        @Override
+        public void addLayoutComponent( String name, Component comp ) {
+        }
+
+        @Override
+        public void removeLayoutComponent( Component comp ) {
+        }
+
+        @Override
+        public Dimension preferredLayoutSize( Container parent ) {
+            return slideBar.getPreferredSize();
+        }
+
+        @Override
+        public Dimension minimumLayoutSize( Container parent ) {
+            return slideBar.getMinimumSize();
+        }
+
+        @Override
+        public void layoutContainer( Container parent ) {
+            Dimension size = parent.getSize();
+            Dimension prefSize = slideBar.getPreferredSize();
+            slideBar.setBounds( 0, 0, Math.max(prefSize.width, size.width), Math.max(prefSize.height, size.height));
+        }
+        
+    }
 }
