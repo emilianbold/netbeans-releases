@@ -119,6 +119,9 @@ public interface GlassfishModule {
     /** Key to mark properties already imported into NetBeans 7.3 and fixed. */
     public static final String NB73_IMPORT_FIXED = "nb73ImportFixed";
 
+    /** Properties fetching timeout [ms]. */
+    public static final int PROPERTIES_FETCH_TIMEOUT = 10000;
+
     public CommandFactory getCommandFactory();
 
     public String getResourcesXmlName();

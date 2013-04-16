@@ -92,15 +92,13 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             JsIndex jsIndex = JsIndex.get(snapshot.getSource().getFileObject());
             List<IndexResult> indexResults = new ArrayList<IndexResult>();
             if (assignments == null || assignments.isEmpty()) {
+                FileObject fo = object.getFileObject();
                 if (object.isDeclared()) {
-                    FileObject fo = object.getFileObject();
                     if (fo != null) {
                         return new DeclarationLocation(fo, object.getDeclarationName().getOffsetRange().getStart());
                     }
                 } else {
-                    Collection<? extends IndexResult> items = jsIndex.query(
-                            JsIndex.FIELD_FQ_NAME, object.getFullyQualifiedName(), QuerySupport.Kind.EXACT,
-                            JsIndex.TERMS_BASIC_INFO);
+                    Collection<? extends IndexResult> items = JsIndex.get(fo).findFQN(object.getFullyQualifiedName());
                     indexResults.addAll(items);
                     DeclarationLocation location = processIndexResult(indexResults);
                     if (location != null) {
@@ -114,13 +112,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
                         String propertyName = ts.token().text().toString();
                         for (Type type : assignments) {
-                            Collection<? extends IndexResult> items = jsIndex.query(
-                                    JsIndex.FIELD_FQ_NAME, type.getType() + "." + propertyName, QuerySupport.Kind.EXACT,  //NOI18N
-                                    JsIndex.TERMS_BASIC_INFO);
+                            Collection<? extends IndexResult> items = jsIndex.findFQN(type.getType() + "." + propertyName); // NOI18N
                             if(items.isEmpty()) {
-                                items = jsIndex.query(
-                                    JsIndex.FIELD_FQ_NAME, type.getType() + ".prototype." + propertyName, QuerySupport.Kind.EXACT,  //NOI18N
-                                    JsIndex.TERMS_BASIC_INFO);
+                                items = jsIndex.findFQN( type.getType() + ".prototype." + propertyName); // NOI18N
                             }
                             indexResults.addAll(items);
                         }

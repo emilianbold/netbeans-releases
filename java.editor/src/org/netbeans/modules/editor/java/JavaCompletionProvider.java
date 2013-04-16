@@ -75,6 +75,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndex.Symbols;
 import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -3019,6 +3020,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         break;
                 }
             }
+            if (queryType == COMPLETION_ALL_QUERY_TYPE) {
+                addAllStaticMemberNames(env);
+            }
         }
 
         private void addLocalFieldsAndVars(final Env env) throws IOException {
@@ -3065,6 +3069,30 @@ public class JavaCompletionProvider implements CompletionProvider {
                         TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
                         results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
                         break;
+                }
+            }
+        }
+        
+        private void addAllStaticMemberNames(final Env env) {
+            String prefix = env.getPrefix();
+            if (prefix != null && prefix.length() > 0) {
+                CompilationController controller = env.getController();
+                Set<? extends Element> excludes = env.getExcludes();
+                Set<ElementHandle<Element>> excludeHandles = null;
+                if (excludes != null) {
+                    excludeHandles = new HashSet<ElementHandle<Element>>(excludes.size());
+                    for (Element el : excludes) {
+                        excludeHandles.add(ElementHandle.create(el));
+                    }
+                }
+                ClassIndex.NameKind kind = Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
+                Iterable<Symbols> declaredSymbols = controller.getClasspathInfo().getClassIndex().getDeclaredSymbols(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class));
+                for (Symbols symbols : declaredSymbols) {
+                    if (excludeHandles != null && excludeHandles.contains(symbols.getEnclosingType()) || isAnnonInner(symbols.getEnclosingType()))
+                        continue;
+                    for (String name : symbols.getSymbols()) {
+                        results.add(LazyStaticMemberCompletionItem.create(symbols.getEnclosingType(), name, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.getWhiteList()));
+                    }
                 }
             }
         }

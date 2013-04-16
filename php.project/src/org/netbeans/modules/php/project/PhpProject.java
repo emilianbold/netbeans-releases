@@ -998,7 +998,15 @@ public final class PhpProject implements Project {
 
         @Override
         public FileObject getWebRoot(FileObject file) {
-            return ProjectPropertiesSupport.getWebRootDirectory(PhpProject.this);
+            FileObject webRoot = ProjectPropertiesSupport.getWebRootDirectory(PhpProject.this);
+            if (webRoot == null) {
+                return null;
+            }
+            if (webRoot.equals(file)
+                    || FileUtil.isParentOf(webRoot, file)) {
+                return webRoot;
+            }
+            return null;
         }
     }
 

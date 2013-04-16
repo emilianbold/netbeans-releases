@@ -44,9 +44,13 @@ package org.netbeans.modules.maven.event;
 
 import org.apache.maven.eventspy.AbstractEventSpy;
 import org.apache.maven.execution.ExecutionEvent;
+import org.apache.maven.lifecycle.LifecycleExecutionException;
+import org.apache.maven.model.InputLocation;
+import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.logging.Logger;
+import org.codehaus.plexus.util.Base64;
 
 /**
  *
@@ -101,7 +105,7 @@ public class NbEventSpy extends AbstractEventSpy {
                     MavenProject mp = ex.getProject();
                     sb.append(" \"prj\":{");
                     {
-                        sb.append("\"id\": \"").append(mp.getId()).append("\" ");
+                        sb.append("\"id\": \"").append(mp.getGroupId()).append(":").append(mp.getArtifactId()).append(":").append(mp.getVersion()).append("\" ");
                         if (mp.getFile() != null) { //file is null in superpom
                             sb.append("\"file\":\"").append(mp.getFile().getParentFile().getAbsolutePath()).append("\"");
                         }
@@ -136,21 +140,45 @@ public class NbEventSpy extends AbstractEventSpy {
                         if (me.getLifecyclePhase() != null) {
                             sb.append("\"phase\":\"").append(me.getLifecyclePhase()).append("\"");
                         }
+                        PluginExecution exec = me.getPlugin().getExecutionsAsMap().get(me.getExecutionId());
+                        if (exec != null) {
+                            InputLocation execLoc = exec.getLocation(""); //apparently getLocation("id" never returns a thing)
+                            if (execLoc != null) {
+                                sb.append("\"loc\": {");
+                                {
+                                    sb.append("\"ln\":").append(execLoc.getLineNumber()).append(" ");
+                                    sb.append("\"col\":").append(execLoc.getColumnNumber()).append(" ");
+                                    String loc = execLoc.getSource().getLocation();
+                                    if (loc != null) {
+                                        //is path
+                                        sb.append("\"loc\":\"").append(loc).append("\" ");
+                                    }
+                                    String mid = execLoc.getSource().getModelId();
+                                    if (mid != null) {
+                                        sb.append("\"id\":\"").append(mid).append("\" ");
+                                    }
+                                }
+                                sb.append("}");
+                            }
+                        }
                     }
                     sb.append("}");
                 }
-//                if (ex.getException() != null) {
-//                    Exception exc = ex.getException();
-//                    sb.append("\"exc\": {");
-//                    {
-//                        String message = exc.getMessage();
-//                        byte[] enc = Base64.encodeBase64(message.getBytes("UTF-8")); //NOW are these conversions correct?
-//                        String encString = new String(enc, "UTF-8");
-//                        sb.append("\"msg\":\"").append(encString).append("\"");
-//                    }
-//                    sb.append("}");
-//                    
-//                }
+                if (ExecutionEvent.Type.MojoFailed.equals(ex.getType()) && ex.getException() != null) {
+                    Exception exc = ex.getException();
+                    if (exc instanceof LifecycleExecutionException) {
+                        //all mojo failed events in current codebase are lifecycle execs.
+                        sb.append("\"exc\": {");
+                        {
+                            String message = exc.getCause().getMessage();
+                            byte[] enc = Base64.encodeBase64(message.getBytes("UTF-8")); //NOW are these conversions correct?
+                            String encString = new String(enc, "UTF-8");
+                            sb.append("\"msg\":\"").append(encString).append("\"");
+                        }
+                        sb.append("}");
+                    }
+                    
+                }
             }    
             sb.append("}");
             logger.info("NETBEANS-ExecEvent:"  + sb);

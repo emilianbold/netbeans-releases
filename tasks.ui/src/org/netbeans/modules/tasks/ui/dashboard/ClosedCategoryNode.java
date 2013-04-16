@@ -52,9 +52,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.tasks.ui.model.Category;
-import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
-import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.Utils;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 
 public class ClosedCategoryNode extends CategoryNode {
 
@@ -118,5 +118,10 @@ public class ClosedCategoryNode extends CategoryNode {
             panel.add(new JLabel(), new GridBagConstraints(7, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             return panel;
         }
+    }
+
+    @Override
+    protected Type getType() {
+        return Type.CLOSED;
     }
 }

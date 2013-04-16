@@ -157,13 +157,13 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         warningLabel.setVisible(false);
 
         UIUtils.keepFocusedComponentVisible(this);
-        UIUtils.keepComponentsWidthByVisibleArea(this, new UIUtils.SizeController() {
-            @Override
-            public void setWidth(int width) {
-                byTextContainer.setPreferredSize(new Dimension(width, byTextPanel.getPreferredSize().height));
-                byTextContainer.revalidate();
-            }
-        });
+//        UIUtils.keepComponentsWidthByVisibleArea(this, new UIUtils.SizeController() {
+//            @Override
+//            public void setWidth(int width) {
+//                byTextContainer.setPreferredSize(new Dimension(width, byTextPanel.getPreferredSize().height));
+//                byTextContainer.revalidate();
+//            }
+//        });
         
         validate();
         repaint();
@@ -810,17 +810,15 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                     .addComponent(byDetailsLabel)
                     .addComponent(byPeopleLabel))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(criteriaPanelLayout.createSequentialGroup()
-                .addComponent(byTextContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(byTextContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         criteriaPanelLayout.setVerticalGroup(
             criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(criteriaPanelLayout.createSequentialGroup()
                 .addComponent(byTextLabel)
                 .addGap(0, 0, 0)
-                .addComponent(byTextContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(0, 0, 0)
+                .addComponent(byTextContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(byDetailsLabel)
                 .addGap(0, 0, 0)
                 .addComponent(byDetailsContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)

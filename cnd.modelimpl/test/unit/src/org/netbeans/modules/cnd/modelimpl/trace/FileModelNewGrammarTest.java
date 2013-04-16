@@ -94,6 +94,10 @@ public class FileModelNewGrammarTest extends TraceModelTestBase {
         performTest("parameters.cpp");
     }
     
+    public void testAccessModifiers() throws Exception {
+        performTest("accessModifiers.cpp");
+    }
+    
 //    public void testMultipleMemberDeclaration() throws Exception {
 //        performTest("typedefEnum.cpp");
 //    } 

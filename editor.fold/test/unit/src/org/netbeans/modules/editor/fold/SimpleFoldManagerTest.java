@@ -78,11 +78,11 @@ public class SimpleFoldManagerTest extends NbTestCase {
     /**
      * Test the creation of several folds.
      */
-    public void test() {
+    public void test() throws Exception {
         FoldHierarchyTestEnv env = new FoldHierarchyTestEnv(new SimpleFoldManagerFactory());
-
-        FoldHierarchy hierarchy = env.getHierarchy();
         AbstractDocument doc = env.getDocument();
+        doc.insertString(0, "1234567890", null);
+        FoldHierarchy hierarchy = env.getHierarchy();
         doc.readLock();
         try {
             hierarchy.lock();

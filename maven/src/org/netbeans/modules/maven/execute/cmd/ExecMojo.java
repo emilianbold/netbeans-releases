@@ -42,13 +42,13 @@
 
 package org.netbeans.modules.maven.execute.cmd;
 
-import java.io.File;
+import java.io.UnsupportedEncodingException;
 import org.apache.maven.execution.ExecutionEvent;
+import org.apache.maven.model.InputLocation;
+import org.apache.maven.model.InputSource;
+import org.codehaus.plexus.util.Base64;
 import org.json.simple.JSONObject;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.maven.execute.ExecutionEventObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -59,6 +59,8 @@ public class ExecMojo extends ExecutionEventObject {
         public final GAV plugin;
         public final String phase;
         public final String executionId;
+        private String errorMessage;
+        private InputLocation location;
 
     public ExecMojo(String goal, GAV plugin, String phase, String executionId, ExecutionEvent.Type type) {
         super(type);
@@ -77,20 +79,57 @@ public class ExecMojo extends ExecutionEventObject {
         String goal = (String) mojo.get("goal");
         String execId = (String) mojo.get("execId");
         String phase = (String) mojo.get("phase");
-        return new ExecMojo(goal, mojoGav, phase, execId, t);
-//        JSONObject exc = (JSONObject) obj.get("exc");
-//        if (exc != null) {
-//            String message = (String) exc.get("msg");
-//            if (message != null) {
-//                try {
-//                    byte[] bytes = Base64.decodeBase64(message.getBytes("UTF-8"));
-//                    excMessage = new String(bytes, "UTF-8");
-//                    System.out.println("exc message=" + excMessage);
-//                } catch (UnsupportedEncodingException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//            }
-//        }
+        ExecMojo toRet = new ExecMojo(goal, mojoGav, phase, execId, t);
+        JSONObject exc = (JSONObject) obj.get("exc");
+        if (exc != null) {
+            String message = (String) exc.get("msg");
+            if (message != null) {
+                try {
+                    byte[] bytes = Base64.decodeBase64(message.getBytes("UTF-8"));
+                    toRet.setErrorMessage(new String(bytes, "UTF-8"));
+                } catch (UnsupportedEncodingException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        JSONObject loc = (JSONObject) mojo.get("loc");
+        if (loc != null) {
+            Long lineNumber = (Long) loc.get("ln");
+            Long columnNumber = (Long) loc.get("col");
+            String file = (String) loc.get("loc");
+            String modelid = (String) loc.get("id");
+            InputSource is = new InputSource();
+            is.setLocation(file);
+            is.setModelId(modelid);
+            InputLocation location = new InputLocation(lineNumber.intValue(), columnNumber.intValue(), is);
+            toRet.setLocation(location);
+        }
+        return toRet;
     }
+
+    /**
+     * only applicable in mojofailed
+     */
+    private void setErrorMessage(String string) {
+        errorMessage = string;
+    }
+
+    /**
+     * only applicable in mojofailed
+     * @return 
+     */
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public InputLocation getLocation() {
+        return location;
+    }
+
+    private void setLocation(InputLocation location) {
+        this.location = location;
+    }
+    
+    
     
 }

@@ -54,7 +54,6 @@ import org.netbeans.modules.web.webkit.debugging.api.debugger.PropertyDescriptor
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
-import org.openide.util.Exceptions;
 
 /**
  * See Runtime section of WebKit Remote Debugging Protocol for more details.

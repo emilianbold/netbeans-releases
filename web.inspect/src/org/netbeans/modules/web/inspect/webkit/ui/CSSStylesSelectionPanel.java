@@ -1137,7 +1137,14 @@ public class CSSStylesSelectionPanel extends JPanel {
                 }
                 mediaLabel.setText(mediaQuery);
                 mediaLabel.setVisible(mediaQuery != null);
-                Color fg = isSelected ? foreground : UIManager.getColor("Label.disabledForeground"); // NOI18N
+                Color fg;
+                if (isSelected) {
+                    fg = foreground;
+                } else if (UIManager.getLookAndFeel().getID().equals("GTK")) { // NOI18N
+                    fg = UIManager.getColor("Label.foreground"); // NOI18N
+                } else {
+                    fg = UIManager.getColor("Label.disabledForeground"); // NOI18N
+                }
                 ruleLocationLabel.setForeground(fg);
                 mediaLabel.setForeground(fg);
                 mediaLabel.setEnabled(isSelected);

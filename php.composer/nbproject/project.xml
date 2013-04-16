@@ -114,6 +114,9 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.cakephp.netbeans</friend>
+                <friend>org.nbphpcouncil.modules.php.yii</friend>
+                <friend>org.netbeans.modules.php.fuel</friend>
                 <friend>org.netbeans.modules.php.zend2</friend>
                 <package>org.netbeans.modules.php.composer.api</package>
             </friend-packages>
