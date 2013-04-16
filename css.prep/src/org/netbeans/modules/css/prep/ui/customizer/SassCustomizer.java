@@ -51,7 +51,6 @@ import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
-import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -89,7 +88,7 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
     @Override
     public synchronized SassCustomizerPanel getComponent() {
         if (customizerPanel == null) {
-            customizerPanel = new SassCustomizerPanel(project.getLookup().lookup(ProjectWebRootProvider.class));
+            customizerPanel = new SassCustomizerPanel();
             customizerPanel.setSassEnabled(SassPreferences.isEnabled(project));
             customizerPanel.setMappings(SassPreferences.getMappings(project));
         }

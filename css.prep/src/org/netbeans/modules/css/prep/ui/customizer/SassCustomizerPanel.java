@@ -51,7 +51,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -67,9 +66,9 @@ public class SassCustomizerPanel extends JPanel {
     private volatile boolean enabled;
 
 
-    public SassCustomizerPanel(ProjectWebRootProvider projectWebRootProvider) {
+    public SassCustomizerPanel() {
         assert EventQueue.isDispatchThread();
-        this.mappingPanel = new MappingPanel(projectWebRootProvider);
+        this.mappingPanel = new MappingPanel(MappingPanel.Type.SASS);
         initComponents();
         init();
     }

@@ -51,7 +51,6 @@ import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
-import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -89,7 +88,7 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
     @Override
     public synchronized LessCustomizerPanel getComponent() {
         if (customizerPanel == null) {
-           customizerPanel = new LessCustomizerPanel(project.getLookup().lookup(ProjectWebRootProvider.class));
+           customizerPanel = new LessCustomizerPanel();
            customizerPanel.setLessEnabled(LessPreferences.isEnabled(project));
            customizerPanel.setMappings(LessPreferences.getMappings(project));
         }
