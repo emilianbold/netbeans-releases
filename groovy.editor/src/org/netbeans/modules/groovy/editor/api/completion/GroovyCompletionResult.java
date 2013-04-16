@@ -85,9 +85,11 @@ public class GroovyCompletionResult extends DefaultCompletionResult {
             return;
         }
 
-        // Don't add import statement for default imports
-        if (ImportUtils.isDefaultlyImported(((CompletionItem.TypeItem) item).getFqn())) {
-            return;
+        if (item instanceof CompletionItem.TypeItem) {
+            // Don't add import statement for default imports
+            if (ImportUtils.isDefaultlyImported(((CompletionItem.TypeItem) item).getFqn())) {
+                return;
+            }
         }
 
         final ElementKind kind = item.getKind();
