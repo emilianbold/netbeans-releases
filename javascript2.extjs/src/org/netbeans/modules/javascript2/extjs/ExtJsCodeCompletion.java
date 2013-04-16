@@ -39,29 +39,33 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.spi;
+package org.netbeans.modules.javascript2.extjs;
+
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
+import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 
 /**
  *
- * @author Petr Hejl
+ * @author Petr Pisl
  */
-public enum CompletionContext {
-    NONE, // There shouldn't be any code completion
-    EXPRESSION, // usually, we will offer everything what we know in the context
-    OBJECT_PROPERTY, // object property that are visible outside the object
-    OBJECT_MEMBERS, // usually after this.
-    /**
-     * This context is before ':' in an object literal definition, when a property
-     * is defined. Typically 
-     * var object_listeral = {
-     *  property_name : value
-     * }
-     * 
-     * This context can be used by frameworks to suggest the names of properties
-     * to define for example various configuration objects.
-     */
-    OBJECT_PROPERTY_NAME, 
-    DOCUMENTATION, // inside documentation blocks
-    GLOBAL
+@CompletionProvider.Registration(priority=10)
+public class ExtJsCodeCompletion implements CompletionProvider {
 
+    @Override
+    public List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContext jsCompletionContext, String prefix) {
+        //System.out.println("ExtJsCC: .... " + jsCompletionContext.name());
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public String getHelpDocumentation(ParserResult info, ElementHandle element) {
+        return null;
+    }
+    
 }
