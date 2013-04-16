@@ -41,26 +41,41 @@
  */
 package org.netbeans.modules.css.prep.preferences;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.prefs.Preferences;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.css.prep.util.MappingUtils;
-import org.netbeans.modules.css.prep.util.ValidationResult;
 
-public final class SassPreferencesValidator {
+abstract class BasePreferences {
 
-    private final ValidationResult result = new ValidationResult();
-
-
-    public ValidationResult getResult() {
-        return result;
+    BasePreferences() {
     }
 
-    public SassPreferencesValidator validate(boolean enabled, List<String> mappings) {
-        if (enabled) {
-            result.merge(new MappingUtils.MappingsValidator()
-                    .validate(mappings)
-                    .getResult());
+    public static boolean isEnabled(Project project, String propertyName) {
+        return getPreferences(project).getBoolean(propertyName, true);
+    }
+
+    public static void setEnabled(Project project, String propertyName, boolean enabled) {
+        getPreferences(project).putBoolean(propertyName, enabled);
+    }
+
+    public static List<String> getMappings(Project project, String propertyName) {
+        String mappings = getPreferences(project).get(propertyName, null);
+        if (mappings == null) {
+            return Collections.emptyList();
         }
-        return this;
+        return MappingUtils.decode(mappings);
+    }
+
+    public static void setMappings(Project project, String propertyName, List<String> mappings) {
+        getPreferences(project).put(propertyName, MappingUtils.encode(mappings));
+    }
+
+    protected static Preferences getPreferences(Project project) {
+        assert project != null;
+        return ProjectUtils.getPreferences(project, BasePreferences.class, true);
     }
 
 }

@@ -41,17 +41,13 @@
  */
 package org.netbeans.modules.css.prep.preferences;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.css.prep.util.MappingUtils;
 
 /**
  * Sass preferences specific for project.
  */
-public final class SassPreferences {
+public final class SassPreferences extends BasePreferences {
 
     private static final String ENABLED = "sass.enabled"; // NOI18N
     private static final String MAPPINGS = "sass.mappings"; // NOI18N
@@ -61,28 +57,19 @@ public final class SassPreferences {
     }
 
     public static boolean isEnabled(Project project) {
-        return getPreferences(project).getBoolean(ENABLED, true);
+        return isEnabled(project, ENABLED);
     }
 
     public static void setEnabled(Project project, boolean enabled) {
-        getPreferences(project).putBoolean(ENABLED, enabled);
+        setEnabled(project, ENABLED, enabled);
     }
 
     public static List<String> getMappings(Project project) {
-        String mappings = getPreferences(project).get(MAPPINGS, null);
-        if (mappings == null) {
-            return Collections.emptyList();
-        }
-        return MappingUtils.decode(mappings);
+        return getMappings(project, MAPPINGS);
     }
 
     public static void setMappings(Project project, List<String> mappings) {
-        getPreferences(project).put(MAPPINGS, MappingUtils.encode(mappings));
-    }
-
-    private static Preferences getPreferences(Project project) {
-        assert project != null;
-        return ProjectUtils.getPreferences(project, SassPreferences.class, true);
+        setMappings(project, MAPPINGS, mappings);
     }
 
 }

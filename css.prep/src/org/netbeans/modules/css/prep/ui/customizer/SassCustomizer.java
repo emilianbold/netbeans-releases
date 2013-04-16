@@ -107,27 +107,14 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
         return getValidationResult().isFaultless();
     }
 
-    @NbBundle.Messages({
-        "# {0} - customizer name",
-        "# {1} - message",
-        "SassCustomizer.error={0}: {1}",
-    })
     @Override
     public String getErrorMessage() {
-        ValidationResult validationResult = getValidationResult();
-        if (validationResult.hasErrors()) {
-            return Bundle.SassCustomizer_error(getDisplayName(), validationResult.getErrors().get(0).getMessage());
-        }
-        return null;
+        return getValidationResult().getFirstErrorMessage();
     }
 
     @Override
     public String getWarningMessage() {
-        ValidationResult validationResult = getValidationResult();
-        if (validationResult.hasWarnings()) {
-            return Bundle.SassCustomizer_error(getDisplayName(), validationResult.getWarnings().get(0).getMessage());
-        }
-        return null;
+        return getValidationResult().getFirstWarningMessage();
     }
 
     @Override

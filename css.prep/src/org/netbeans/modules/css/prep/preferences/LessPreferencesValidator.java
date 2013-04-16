@@ -45,7 +45,7 @@ import java.util.List;
 import org.netbeans.modules.css.prep.util.MappingUtils;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 
-public final class SassPreferencesValidator {
+public class LessPreferencesValidator {
 
     private final ValidationResult result = new ValidationResult();
 
@@ -54,7 +54,7 @@ public final class SassPreferencesValidator {
         return result;
     }
 
-    public SassPreferencesValidator validate(boolean enabled, List<String> mappings) {
+    public LessPreferencesValidator validate(boolean enabled, List<String> mappings) {
         if (enabled) {
             result.merge(new MappingUtils.MappingsValidator()
                     .validate(mappings)

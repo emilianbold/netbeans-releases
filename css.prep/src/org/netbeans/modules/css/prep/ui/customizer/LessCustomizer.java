@@ -42,12 +42,16 @@
 package org.netbeans.modules.css.prep.ui.customizer;
 
 import java.io.IOException;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
+import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
+import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -85,8 +89,9 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
     @Override
     public synchronized LessCustomizerPanel getComponent() {
         if (customizerPanel == null) {
-           customizerPanel = new LessCustomizerPanel();
+           customizerPanel = new LessCustomizerPanel(project.getLookup().lookup(ProjectWebRootProvider.class));
            customizerPanel.setLessEnabled(LessPreferences.isEnabled(project));
+           customizerPanel.setMappings(LessPreferences.getMappings(project));
         }
         assert customizerPanel != null;
         return customizerPanel;
@@ -99,31 +104,57 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
 
     @Override
     public boolean isValid() {
-        // always valid
-        return true;
+        return getValidationResult().isFaultless();
     }
 
     @Override
     public String getErrorMessage() {
-        // always valid
-        return null;
+        return getValidationResult().getFirstErrorMessage();
     }
 
     @Override
     public String getWarningMessage() {
-        // always valid
-        return null;
+        return getValidationResult().getFirstWarningMessage();
     }
 
     @Override
     public void save() throws IOException {
         Warnings.resetLessWarning();
+        boolean fire = false;
+        // enabled
         boolean originalEnabled = LessPreferences.isEnabled(project);
         boolean enabled = getComponent().isLessEnabled();
         LessPreferences.setEnabled(project, enabled);
         if (enabled != originalEnabled) {
+            fire = true;
+        }
+        // mappings
+        List<String> originalMappings = LessPreferences.getMappings(project);
+        List<String> mappings = getComponent().getMappings();
+        LessPreferences.setMappings(project, mappings);
+        if (!mappings.equals(originalMappings)) {
+            fire = true;
+        }
+        // change?
+        if (fire) {
             lessCssPreprocessor.fireCustomizerChanged(project);
         }
+    }
+
+    private ValidationResult getValidationResult() {
+        boolean enabled;
+        List<String> mappings;
+        if (customizerPanel == null) {
+            // ui not shown (yet)
+            enabled = LessPreferences.isEnabled(project);
+            mappings = LessPreferences.getMappings(project);
+        } else {
+            enabled = getComponent().isLessEnabled();
+            mappings = getComponent().getMappings();
+        }
+        return new LessPreferencesValidator()
+                .validate(enabled, mappings)
+                .getResult();
     }
 
 }

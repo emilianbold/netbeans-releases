@@ -42,13 +42,12 @@
 package org.netbeans.modules.css.prep.util;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 public final class MappingUtils {
 
@@ -102,5 +101,33 @@ public final class MappingUtils {
     private static String makeCssFilename(String name) {
         return name + ".css"; // NOI18N
     }
+
+    //~ Inner classes
+
+    public static final class MappingsValidator {
+
+        private final ValidationResult result = new ValidationResult();
+
+
+        public ValidationResult getResult() {
+            return result;
+        }
+
+        public MappingsValidator validate(List<String> mappings) {
+            validateMappings(mappings);
+            return this;
+        }
+
+        @NbBundle.Messages("MappingsValidator.error.empty=Mappings must be set.")
+        private MappingsValidator validateMappings(List<String> mappings) {
+            if (mappings.isEmpty()) {
+                result.addError(new ValidationResult.Message("mappings", Bundle.MappingsValidator_error_empty())); // NOI18N
+            }
+            // XXX add format validation
+            return this;
+        }
+
+    }
+
 
 }
