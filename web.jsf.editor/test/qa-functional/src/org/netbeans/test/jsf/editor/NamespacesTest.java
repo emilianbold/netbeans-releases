@@ -141,11 +141,7 @@ public class NamespacesTest extends GeneralJSF {
         Object[] annotations = getAnnotations(eo, 0);
         int original = annotations.length;
         eo.setCaretPositionToEndOfLine(3);
-        type(eo, "\n xmlns:ui='http://java.sun.com/jsf/facelets'\n"
-                + "xmlns:c='http://java.sun.com/jsp/jstl/core'\n"
-                + "xmlns:f='http://java.sun.com/jsf/core'\n"
-                + "xmlns:cc='http://java.sun.com/jsf/composite'\n"
-                + "xmlns:mdjnm='http://mojarra.dev.java.net/mojarra_ext'");
+        eo.insert("\n xmlns:mdjnm='http://mojarra.dev.java.net/mojarra_ext' \n xmlns:ui='http://java.sun.com/jsf/facelets' \n xmlns:c='http://java.sun.com/jsp/jstl/core' \n xmlns:f='http://java.sun.com/jsf/core' \n xmlns:cc='http://java.sun.com/jsf/composite'");
         eo.save();
         evt.waitNoEvent(1000);
         annotations = getAnnotations(eo, 2);
@@ -158,11 +154,7 @@ public class NamespacesTest extends GeneralJSF {
         EditorOperator eo = new EditorOperator("ns.xhtml");
         int original = (getAnnotations(eo, 0)).length;
         eo.setCaretPositionToEndOfLine(3);
-        type(eo, "\n xmlns:ui='http://xmlns.jcp.org/jsf/facelets'\n"
-                + "xmlns:c='http://xmlns.jcp.org/jsp/jstl/core'\n"
-                + "xmlns:f='http://xmlns.jcp.org/jsf/core'\n"
-                + "xmlns:cc='http://xmlns.jcp.org/jsf/composite'\n"
-                + "xmlns:jsf='http://xmlns.jcp.org/jsf'");
+        eo.insert( "\n xmlns:ui='http://xmlns.jcp.org/jsf/facelets'\n xmlns:c='http://xmlns.jcp.org/jsp/jstl/core'\n xmlns:f='http://xmlns.jcp.org/jsf/core'\n xmlns:cc='http://xmlns.jcp.org/jsf/composite'\n xmlns:jsf='http://xmlns.jcp.org/jsf'");
         eo.save();
         evt.waitNoEvent(1000);
         int modified = (getAnnotations(eo, 2)).length;
