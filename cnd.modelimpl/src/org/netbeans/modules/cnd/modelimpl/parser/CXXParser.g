@@ -2945,7 +2945,11 @@ type_trait_literal
 
 compiler_specific_type_trait_literal
     :        
-        LITERAL___is_pod
+        LITERAL___is_pod | LITERAL___has_nothrow_assign | LITERAL___has_nothrow_copy | LITERAL___has_nothrow_constructor |
+        LITERAL___has_trivial_assign | LITERAL___has_trivial_copy | LITERAL___has_trivial_destructor | LITERAL___has_virtual_destructor |
+        LITERAL___is_abstract | LITERAL___is_empty | LITERAL___is_literal_type | LITERAL___is_polymorphic |
+        LITERAL___is_standard_layout | LITERAL___is_trivial | LITERAL___is_union | LITERAL___underlying_type | 
+        LITERAL___is_class
     ;
 
 shiftright_literal
