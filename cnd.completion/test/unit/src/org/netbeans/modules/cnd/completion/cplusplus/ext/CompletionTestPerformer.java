@@ -50,20 +50,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import javax.swing.plaf.TextUI;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
-import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.netbeans.editor.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.source.CCDataObject;
-import org.netbeans.modules.cnd.source.CDataObject;
-import org.netbeans.modules.cnd.source.CppEditorSupport;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -72,9 +67,6 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
-import org.openide.text.CloneableEditor;
-import org.openide.text.CloneableEditorSupport;
 
 /**
  * <FONT COLOR="#CC3333" FACE="Courier New, Monospaced" SIZE="+1">
@@ -135,15 +127,15 @@ public class CompletionTestPerformer {
     private static final long OPENING_TIMEOUT = 60 * 1000;
     private static final long SLEEP_TIME = 1000;
     
-    private final CsmCompletionQuery.QueryScope queryScope;
+    private final CompletionResolver.QueryScope queryScope;
     /**
      * Creates new CompletionTestPerformer
      */
     public CompletionTestPerformer() {
-        this(CsmCompletionQuery.QueryScope.GLOBAL_QUERY);
+        this(CompletionResolver.QueryScope.GLOBAL_QUERY);
     }
     
-    public CompletionTestPerformer(CsmCompletionQuery.QueryScope queryScope) {
+    public CompletionTestPerformer(CompletionResolver.QueryScope queryScope) {
         this.queryScope = queryScope;
     }
     
