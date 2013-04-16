@@ -44,6 +44,7 @@ package org.netbeans.modules.cordova.platforms.ios;
 import org.openide.modules.InstalledFileLocator;
 
 public class WebInspectorJNIBinding {
+    private static final String CODE_BASE = "org.netbeans.modules.cordova.platforms.ios";
 
     private native void nstart();
 
@@ -54,7 +55,13 @@ public class WebInspectorJNIBinding {
     private native void nsendMessage(String xml);
 
     static {
-        System.load(InstalledFileLocator.getDefault().locate("bin/libiDeviceNativeBinding.dylib", "org.netbeans.modules.cordova.platforms.ios", false).getPath());
+        final InstalledFileLocator locator = InstalledFileLocator.getDefault();
+        System.load(locator.locate("bin/libplist.dylib", CODE_BASE, false).getPath());
+        System.load(locator.locate("bin/libusbmuxd.dylib", CODE_BASE, false).getPath());
+        System.load(locator.locate("bin/libssl.dylib", CODE_BASE, false).getPath());
+        System.load(locator.locate("bin/libcrypto.dylib", CODE_BASE, false).getPath());
+        System.load(locator.locate("bin/libimobiledevice.dylib", CODE_BASE, false).getPath());
+        System.load(locator.locate("bin/libiDeviceNativeBinding.dylib", CODE_BASE, false).getPath());
     }
 
     public WebInspectorJNIBinding() {
