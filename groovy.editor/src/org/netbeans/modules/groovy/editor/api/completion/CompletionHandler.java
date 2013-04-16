@@ -162,7 +162,7 @@ public class CompletionHandler implements CodeCompletionHandler {
                     proposalsCollector.completeTypes(context);
                 }
 
-                if (!context.behindImport) {
+                if (!context.isBehindImportStatement()) {
                     if (context.location != CaretLocation.INSIDE_STRING) {
                         proposalsCollector.completeKeywords(context);
                         proposalsCollector.completeMethods(context);
