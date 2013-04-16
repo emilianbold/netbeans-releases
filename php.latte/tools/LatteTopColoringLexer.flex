@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.latte.lexer;
 
+import java.util.Objects;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
@@ -200,7 +201,9 @@ SYNTAX_PYTHON_END="%}"
 
 <YYINITIAL> {
     {COMMENT_START} {
-        pushState(ST_COMMENT);
+        if (syntax != Syntax.OFF) {
+            pushState(ST_COMMENT);
+        }
     }
     {SYNTAX_LATTE_START} {
         if (syntax == Syntax.LATTE) {
@@ -298,6 +301,10 @@ SYNTAX_PYTHON_END="%}"
     }
     "python" {
         syntax = Syntax.PYTHON;
+        popState();
+    }
+    "off" {
+        syntax = Syntax.OFF;
         popState();
     }
     . {
