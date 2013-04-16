@@ -574,7 +574,13 @@ public class Flow {
             nearestMethod = node;
             currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<VariableElement, Boolean>());
             resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<VariableElement, State>>>();
-            variable2State = new HashMap<>();
+            variable2State = new HashMap<>(variable2State);
+            
+            for (Iterator<Entry<VariableElement, State>> it = variable2State.entrySet().iterator(); it.hasNext();) {
+                Entry<VariableElement, State> e = it.next();
+                
+                if (e.getKey().getKind().isField()) it.remove();
+            }
             
             try {
                 scan(node.getModifiers(), p);
@@ -628,7 +634,7 @@ public class Flow {
                 nearestMethod = oldNearestMethod;
                 currentMethodVariables = oldCurrentMethodVariables;
                 resumeOnExceptionHandler = oldResumeOnExceptionHandler;
-                variable2State = mergeOr(variable2State, oldVariable2State);
+                variable2State = mergeOr(variable2State, oldVariable2State, false);
             }
             
             return null;
@@ -1214,21 +1220,27 @@ public class Flow {
         }
 
         private Map<VariableElement, State> mergeOr(Map<VariableElement, State> into, Map<VariableElement, State> what) {
+            return mergeOr(into, what, true);
+        }
+        
+        private Map<VariableElement, State> mergeOr(Map<VariableElement, State> into, Map<VariableElement, State> what, boolean markMissingAsUnassigned) {
             for (Entry<VariableElement, State> e : what.entrySet()) {
                 State stt = into.get(e.getKey());
 
                 if (stt != null) {
                     into.put(e.getKey(), stt.merge(e.getValue()));
-                } else if (e.getKey().getKind() == ElementKind.FIELD) {
+                } else if (e.getKey().getKind() == ElementKind.FIELD && markMissingAsUnassigned) {
                     into.put(e.getKey(), e.getValue().merge(UNASSIGNED));
                 } else {
                     into.put(e.getKey(), e.getValue());
                 }
             }
             
-            for (Entry<VariableElement, State> e : into.entrySet()) {
-                if (e.getKey().getKind() == ElementKind.FIELD && !what.containsKey(e.getKey())) {
-                    into.put(e.getKey(), e.getValue().merge(UNASSIGNED));
+            if (markMissingAsUnassigned) {
+                for (Entry<VariableElement, State> e : into.entrySet()) {
+                    if (e.getKey().getKind() == ElementKind.FIELD && !what.containsKey(e.getKey())) {
+                        into.put(e.getKey(), e.getValue().merge(UNASSIGNED));
+                    }
                 }
             }
 
