@@ -72,11 +72,12 @@ public final class LessExecutable {
 
     private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
 
-    private final String sassPath;
+    private final String lessPath;
 
 
-    private LessExecutable(String sassPath) {
-        this.sassPath = sassPath;
+    private LessExecutable(String lessPath) {
+        assert lessPath != null;
+        this.lessPath = lessPath;
     }
 
     /**
@@ -124,7 +125,7 @@ public final class LessExecutable {
     }
 
     private ExternalExecutable getExecutable(String title) {
-        return new ExternalExecutable(sassPath)
+        return new ExternalExecutable(lessPath)
                 .workDir(TMP_DIR)
                 .displayName(title);
     }

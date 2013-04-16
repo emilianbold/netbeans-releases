@@ -76,6 +76,7 @@ public final class SassExecutable {
 
 
     private SassExecutable(String sassPath) {
+        assert sassPath != null;
         this.sassPath = sassPath;
     }
 
