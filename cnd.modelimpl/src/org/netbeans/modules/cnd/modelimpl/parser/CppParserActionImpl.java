@@ -3132,11 +3132,8 @@ public class CppParserActionImpl implements CppParserActionEx {
                         parent.addMemberBuilder((ClassMemberForwardDeclarationBuilder)builder);
                     }                    
                     
-                    SymTabEntry classEntry = globalSymTab.lookup(name);
-                    if (classEntry == null) {
-                        classEntry = globalSymTab.enterLocal(name);
-                        classEntry.setAttribute(CppAttributes.TYPE, true);
-                    }
+                    SymTabEntry classEntry = globalSymTab.enterLocal(name);
+                    classEntry.setAttribute(CppAttributes.TYPE, true);
                 }
             }
         }    
@@ -3473,11 +3470,6 @@ public class CppParserActionImpl implements CppParserActionEx {
         } catch (Exception ex) {
             regesterException(ex, token);
         }
-    }
-    
-    @Override
-    public boolean checkTokenText(Token token, String text) {
-        return (token.getType() != Token.SKIP) && token.getText().equals(text);        
     }
     
     private void skip_balanced_curlies_impl(Token token) {
