@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.spi;
+package org.netbeans.modules.javascript2.editor;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Petr Hejl
+ * @author Petr Pisl
  */
-public enum CompletionContext {
-    NONE, // There shouldn't be any code completion
-    EXPRESSION, // usually, we will offer everything what we know in the context
-    OBJECT_PROPERTY, // object property that are visible outside the object
-    OBJECT_MEMBERS, // usually after this.
-    /**
-     * This context is before ':' in an object literal definition, when a property
-     * is defined. Typically 
-     * var object_listeral = {
-     *  property_name : value
-     * }
-     * 
-     * This context can be used by frameworks to suggest the names of properties
-     * to define for example various configuration objects.
-     */
-    OBJECT_PROPERTY_NAME, 
-    DOCUMENTATION, // inside documentation blocks
-    GLOBAL
-
+public class JsCodeCompletionIssue228634Test extends JsCodeComplationBase {
+    
+    public JsCodeCompletionIssue228634Test(String testName) {
+        super(testName);
+    }
+    
+    public void testIssue228634_01() throws Exception {
+        checkCompletion("testfiles/completion/issue228634/issue228634.js", "con.y(\"a\").te^", false);
+    }
+    
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/issue228634")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
+    }
 }
