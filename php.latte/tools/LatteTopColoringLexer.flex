@@ -177,7 +177,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 WHITESPACE=[ \t\r\n]+
 COMMENT_START="{*"
 COMMENT_END=~"*}"
-SYNTAX_MACRO="syntax"[ \t]+
+MACRO_SYNTAX_START="syntax"[ \t]+
+MACRO_SYNTAX_END="/syntax"
 SYNTAX_LATTE_START="{"
 SYNTAX_LATTE_END="}"
 SYNTAX_DOUBLE_START="{{"
@@ -234,8 +235,11 @@ SYNTAX_PYTHON_END="%}"
 }
 
 <ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON> {
-    {SYNTAX_MACRO} {
+    {MACRO_SYNTAX_START} {
         pushState(ST_SYNTAX_CHANGE);
+    }
+    {MACRO_SYNTAX_END} {
+        syntax = Syntax.LATTE;
     }
 }
 
