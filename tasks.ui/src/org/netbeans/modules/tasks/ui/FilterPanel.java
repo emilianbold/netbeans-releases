@@ -45,16 +45,14 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.swingx.painter.BusyPainter;
-import org.jdesktop.swingx.icon.PainterIcon;
 import org.netbeans.modules.tasks.ui.actions.DummyAction;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.filter.OpenedCategoryFilter;
 import org.netbeans.modules.tasks.ui.filter.OpenedRepositoryFilter;
 import org.netbeans.modules.tasks.ui.filter.OpenedTaskFilter;
 import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
-import org.netbeans.modules.tasks.ui.treelist.ColorManager;
-import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.ColorManager;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -69,12 +67,11 @@ public class FilterPanel extends javax.swing.JPanel {
     private final TreeLabel lblTitle;
     private final JTextField textFilter;
     private final TreeLabel lblCount;
-    private final ProgressLabel lblProgress;
     private final JButton btnFilter;
     //private final JButton btnGroup;
-    private OpenedTaskFilter openedTaskFilter;
-    private OpenedCategoryFilter openedCategoryFilter;
-    private OpenedRepositoryFilter openedRepositoryFilter;
+    private final OpenedTaskFilter openedTaskFilter;
+    private final OpenedCategoryFilter openedCategoryFilter;
+    private final OpenedRepositoryFilter openedRepositoryFilter;
     private final DashboardToolbar toolBar;
 
     public FilterPanel() {
@@ -158,9 +155,6 @@ public class FilterPanel extends javax.swing.JPanel {
 //        });
 //        toolBar.addButton(btnGroup);
         add(toolBar, new GridBagConstraints(6, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-        lblProgress = new ProgressLabel("");
-        lblProgress.setBackground(BACKGROUND_COLOR);
-        add(lblProgress, new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
     }
 
     public void addDocumentListener(DocumentListener listener) {
@@ -320,74 +314,6 @@ public class FilterPanel extends javax.swing.JPanel {
             setHitsCount(hits);
         } else {
             clear();
-        }
-    }
-
-    private final class ProgressLabel extends TreeLabel {
-
-        private int frame = 0;
-        private Timer t;
-        final BusyPainter painter;
-
-        public ProgressLabel(String text) {
-            super(text);
-            painter = new BusyPainter(16);
-            PainterIcon icon = new PainterIcon(new Dimension(16, 16));
-            icon.setPainter(painter);
-            setIcon(icon);
-            t = new Timer(100, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    frame = (frame + 1) % painter.getPoints();
-                    painter.setFrame(frame);
-                    FilterPanel.this.repaint();
-                }
-            });
-            t.setRepeats(true);
-            super.setVisible(false);
-        }
-
-        @Override
-        public void setVisible(boolean visible) {
-            boolean old = isVisible();
-            super.setVisible(visible);
-            if (old != visible) {
-                if (visible) {
-                    t.start();
-                } else {
-                    t.stop();
-                }
-            }
-        }
-
-        /**
-         * Stop the timer. Make sure to call this method if you do not
-         * explicitly call setVisible(false) on this label. Otherwise, its timer
-         * will keep running and it will be referenced forever.
-         */
-        public void stop() {
-            t.stop();
-        }
-
-        //The usual cell-renderer performance overrides
-        @Override
-        public void repaint() {
-            //do nothing
-        }
-
-        @Override
-        protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-            //do nothing
-        }
-
-        @Override
-        public void validate() {
-            //do nothing
-        }
-
-        @Override
-        public void invalidate() {
-            //do nothing
         }
     }
 

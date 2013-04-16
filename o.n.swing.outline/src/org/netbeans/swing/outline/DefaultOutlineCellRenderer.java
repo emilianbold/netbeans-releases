@@ -320,6 +320,8 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                     }
                 }
                 setCheckBox(cb);
+            } else {
+                setCheckBox(null);
             }
             if (icon == null) {
                 if (!isleaf) {
@@ -339,6 +341,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
             }
         
         } else { // ! tbl.isTreeColumnIndex(column)
+            setCheckBox(null);
             if (swingRendering) {
                 setIcon(null);
             } else {

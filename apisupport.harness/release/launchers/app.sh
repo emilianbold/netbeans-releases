@@ -66,7 +66,17 @@ readClusters() {
   done
 }
 
-clusters=`(cat "$progdir/../etc/$APPNAME".clusters; echo) | readClusters | tr '\012' ':'`
+absolutize_paths() {
+    while read path; do
+        if [ -d "$path" ]; then
+            (cd "$path" 2>/dev/null && pwd)
+        else
+            echo "$path"
+        fi
+    done
+}
+
+clusters=`(cat "$progdir/../etc/$APPNAME".clusters; echo) | readClusters | absolutize_paths | tr '\012' ':'`
 
 if [ ! -z "$extra_clusters" ] ; then
     clusters="$clusters:$extra_clusters"
