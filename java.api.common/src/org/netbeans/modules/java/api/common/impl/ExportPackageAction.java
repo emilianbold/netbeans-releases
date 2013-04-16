@@ -39,33 +39,25 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.apisupport.project.ui.customizer;
+package org.netbeans.modules.java.api.common.impl;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.SortedSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.ApisupportAntUtils;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.openide.ErrorManager;
+import org.netbeans.modules.java.api.common.ant.PackageModifierImplementation;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -91,29 +83,51 @@ public final class ExportPackageAction extends AbstractAction implements Context
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-        Collection<FileObject> selectedPackages = (Collection<FileObject>) actionContext.lookupAll(FileObject.class);
-        Project project = FileOwnerQuery.getOwner(selectedPackages.iterator().hasNext()?selectedPackages.iterator().next():null);
-        NbModuleProject nbmProject = null;
-        if((nbmProject = project.getLookup().lookup(NbModuleProject.class)) != null)
-        {
-            Collection<String> packages = new ArrayList<String>();
-            SortedSet<String> availablePublicPackages = ApisupportAntUtils.scanProjectForPackageNames(FileUtil.toFile(nbmProject.getProjectDirectory()), false);
-            final SingleModuleProperties properties = SingleModuleProperties.getInstance(nbmProject);
-            String packageNameIter = "";
-            boolean export = false;
-            for (Iterator<FileObject> it = selectedPackages.iterator(); it.hasNext();) {
-                FileObject packageIter = it.next();
-                if(!availablePublicPackages.contains(packageNameIter = packageIter.getPath().substring(nbmProject.getSourceDirectory().getPath().length()+1).replace('/', '.'))) {
-                    continue;
-                }
-                packages.add(packageNameIter);
-                if(!properties.getPublicPackagesModel().getSelectedPackages().contains(packageNameIter) && !export) {
-                    export = true;
+        if(actionContext != null) {
+            Collection<? extends FileObject> selectedPackagesLookup = actionContext.lookupAll(FileObject.class);
+            Collection<FileObject> selectedPackages = new ArrayList<>();
+            for(FileObject packageIter:selectedPackagesLookup) {
+                selectedPackages.add(packageIter);
+            }
+            Iterator<FileObject> selectedPackagesIterator = selectedPackages.iterator();
+            Project project = null;
+            if(selectedPackagesIterator.hasNext()) {
+                project = FileOwnerQuery.getOwner(selectedPackagesIterator.next());
+                if(project != null) {
+                    while(selectedPackagesIterator.hasNext()) {
+                        Project tmpProject = FileOwnerQuery.getOwner(selectedPackagesIterator.next());
+                        if(!project.equals(tmpProject)) {
+                            return new ExportPackageAction.ContextAction();
+                        }
+                    }
+                } else {
+                    return new ExportPackageAction.ContextAction();
                 }
             }
-            return new ContextAction(!packages.isEmpty(), nbmProject, packages, properties, export);
+            PackageModifierImplementation pmi = null;
+            if((pmi = project.getLookup().lookup(PackageModifierImplementation.class)) != null) {
+                Collection<String> allPackages = pmi.getAllPackages();
+                Collection<String> packagesToExport = new ArrayList<>();
+                String selectedPackageNameIter = "";
+                for(FileObject selectedPkgIter:selectedPackages) {
+                    if(allPackages.contains(
+                            selectedPackageNameIter = selectedPkgIter.getPath()
+                            .substring(project.getProjectDirectory().getPath().length()+5).replace('/', '.'))) {
+                        packagesToExport.add(selectedPackageNameIter);
+                    }
+                }
+                Collection<String> publicPackages = pmi.getPublicPackages();
+                boolean export = false;
+                for(String exportPkgIter:packagesToExport) {
+                    if(!publicPackages.contains(exportPkgIter)) {
+                        export = true;
+                        break;
+                    }
+                }
+                return new ExportPackageAction.ContextAction(pmi, packagesToExport, export);
+            }
         }
-        return new ContextAction(false);
+        return new ExportPackageAction.ContextAction();
     }
 
     /**
@@ -121,50 +135,30 @@ public final class ExportPackageAction extends AbstractAction implements Context
      */
     private static final class ContextAction extends AbstractAction {
 
-        private NbModuleProject nbmProject;
-        
-        private final SingleModuleProperties properties;
-        
-        private Collection<String> packages;
-        
+        private Collection<String> packagesToExport; 
         private boolean export;
+        private PackageModifierImplementation pmi;
         
-        public ContextAction(boolean enabled) {
-            this(enabled, null, null, null, true);
+        public ContextAction() {
+            this(true, false);
         }
         
-        public ContextAction(boolean enabled, NbModuleProject nbmProject, Collection<String> packages, SingleModuleProperties properties, boolean export) {
-            super(export?Bundle.CTL_ExportPackageAction():Bundle.CTL_UnexportPackageAction());
-            this.nbmProject = nbmProject;
-            this.packages = packages;
-            this.properties = properties;
+        public ContextAction(PackageModifierImplementation pmi, Collection<String> packagesToExport, boolean export) {
+            this(export, packagesToExport!=null && !packagesToExport.isEmpty());
+            this.pmi = pmi;
+            this.packagesToExport = packagesToExport;
             this.export = export;
+        }
+        
+        private ContextAction(boolean export, boolean enable) {
+            super(export?Bundle.CTL_ExportPackageAction():Bundle.CTL_UnexportPackageAction());
             this.putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
-            this.setEnabled(enabled);
+            this.setEnabled(enable);
         }
         
         @Override
         public void actionPerformed(ActionEvent evt) {
-            CustomizerComponentFactory.PublicPackagesTableModel tableModel = properties.getPublicPackagesModel();
-            for(String packageIter:this.packages) {
-                for(int i = 0; i < tableModel.getRowCount(); i++) {
-                    if(tableModel.getValueAt(i, 1).equals(packageIter)) {
-                        tableModel.setValueAt(this.export, i, 0);
-                        break;
-                    }
-                }
-            }
-            try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                @Override public Void run() throws IOException {
-                    properties.storeProperties();
-                    ProjectManager.getDefault().saveProject(nbmProject);
-                    return null;
-                }
-            });
-            } catch (MutexException e) {
-                ErrorManager.getDefault().notify((IOException)e.getException());
-            }
+            pmi.exportPackageAction(packagesToExport, export);
         }
         
     }
