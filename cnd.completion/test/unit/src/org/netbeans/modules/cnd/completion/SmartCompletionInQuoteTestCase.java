@@ -59,7 +59,7 @@ import java.io.File;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionTestPerformer;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
+import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 
 /**
  *
@@ -82,7 +82,7 @@ public class SmartCompletionInQuoteTestCase extends CompletionBaseTestCase {
 
     @Override
     protected CompletionTestPerformer createTestPerformer() {
-        return new CompletionTestPerformer(CsmCompletionQuery.QueryScope.SMART_QUERY);
+        return new CompletionTestPerformer(CompletionResolver.QueryScope.SMART_QUERY);
     }
 
     public void testInCpuConstructorImpl() throws Exception {

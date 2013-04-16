@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl.InheritanceBuilder
 import org.netbeans.modules.cnd.modelimpl.csm.SpecializationDescriptor.SpecializationDescriptorBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -247,7 +248,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         }
         
         @Override
-        public ClassImpl create() {
+        public ClassImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
             ClassImplSpecialization cls = getInstance();
             CsmScope s = getScope();
             if (cls == null && s != null && getName() != null && getEndOffset() != 0) {
@@ -279,14 +280,19 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
                 }
                 for (MemberBuilder builder : getMemberBuilders()) {
                     builder.setScope(cls);
-                    cls.addMember(builder.create(), isGlobal());
+                    final CsmMember member = builder.create(delegate);
+                    if (member != null) {
+                        cls.addMember(member, isGlobal());
+                    } else {
+                        CsmParserProvider.registerParserError(delegate, "Skip unrecognized member for builder '"+builder, getFile(), getStartOffsetImpl(builder, this)); //NOI18N
+                    }
                 }                
                 getNameHolder().addReference(getFileContent(), cls);
                 addDeclaration(cls);
             }
             return cls;
         }
-        
+
     }
     
     

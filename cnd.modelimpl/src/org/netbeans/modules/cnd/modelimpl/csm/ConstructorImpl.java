@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -61,6 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.Function
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -142,7 +142,7 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
         }
         
         @Override
-        public ConstructorImpl create() {
+        public ConstructorImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
             CsmClass cls = (CsmClass) getScope();
             boolean _virtual = false;
             boolean _explicit = false;
