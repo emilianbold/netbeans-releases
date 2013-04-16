@@ -213,6 +213,11 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
         }
 
         @Override
+        public String getPackageName() {
+            return ((SourcePanel)mainPanel).getPackageName();
+        }
+
+        @Override
         public void read(final WizardDescriptor wizard) {
             mainPanel.read(wizard);
             Project project = Templates.getProject(wizard);

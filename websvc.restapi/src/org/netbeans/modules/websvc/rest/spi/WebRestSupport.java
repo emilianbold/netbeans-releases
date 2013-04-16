@@ -111,6 +111,7 @@ public abstract class WebRestSupport extends RestSupport {
     private static final String JACKSON_JERSEY2_JSON_PROVIDER =
             "org.glassfish.jersey.jackson.JacksonFeature";               // NOI18N
     private static final String GET_REST_RESOURCE_CLASSES = "getRestResourceClasses";//NOI18N
+    private static final String GET_REST_RESOURCE_CLASSES2 = "addRestResourceClasses";//NOI18N
     private static final String GET_CLASSES = "getClasses";                         //NOI18N
     
     public static final String PROP_REST_RESOURCES_PATH = "rest.resources.path";//NOI18N
@@ -415,8 +416,8 @@ public abstract class WebRestSupport extends RestSupport {
                             .methodsIn(typeElement.getEnclosedElements());
                     ExecutableElement getClasses = null;
                     for (ExecutableElement method : methods) {
-                        if (method.getSimpleName().contentEquals(
-                                GET_REST_RESOURCE_CLASSES)
+                        if ((method.getSimpleName().contentEquals(GET_REST_RESOURCE_CLASSES) ||
+                            method.getSimpleName().contentEquals(GET_REST_RESOURCE_CLASSES2))
                                 && method.getParameters().isEmpty())
                         {
                             getClasses = method;
@@ -1012,6 +1013,7 @@ public abstract class WebRestSupport extends RestSupport {
                     if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDeclaration.getKind())){
                         MethodTree getClasses = null;
                         MethodTree restResources = null;
+                        MethodTree restResources2 = null;
                         ClassTree classTree = (ClassTree) typeDeclaration;
                         List<? extends Tree> members = classTree.getMembers();
                         for (Tree member : members) {
@@ -1023,17 +1025,30 @@ public abstract class WebRestSupport extends RestSupport {
                                 }
                                 else if ( name.equals(GET_REST_RESOURCE_CLASSES)){
                                     restResources = method;
+                                } else if ( name.equals(GET_REST_RESOURCE_CLASSES2)){
+                                    restResources2 = method;
                                 }
                             }
                         }
                         TreeMaker maker = workingCopy.getTreeMaker();
                         ClassTree modified = classTree;
-                        // TODO: redesign method which is always regenerated so
-                        // that use can customize some parts of generated code:
-                        modified = removeResourcesMethod( restResources,
-                                maker, modified);
-                        modified = createMethods(getClasses, 
-                                maker, modified , restResources== null, workingCopy);
+
+                        if (getClasses != null && restResources != null) {
+                            // this is old code generator replaced in NB 7.3.1
+                            // as part of EE7 upgrade:
+                            modified = removeResourcesMethod( restResources,
+                                    maker, modified);
+                            modified = createMethodsOlderVersion(
+                                    maker, modified, workingCopy);
+                        } else {
+                            if (restResources2 != null) {
+                                modified = removeResourcesMethod( restResources2,
+                                        maker, modified);
+                            }
+                            modified = createMethods(getClasses,
+                                    maker, modified , restResources2 == null,
+                                    workingCopy);
+                        }
 
                         workingCopy.rewrite(classTree, modified);
                     }
@@ -1174,7 +1189,7 @@ public abstract class WebRestSupport extends RestSupport {
     
     private ClassTree createMethods( MethodTree getClasses,
             TreeMaker maker,ClassTree modified, boolean addComment, 
-            CompilationController controller ) throws IOException
+            CompilationController controller) throws IOException
     {
         WildcardTree wildCard = maker.Wildcard(Kind.UNBOUNDED_WILDCARD, 
                 null);
@@ -1195,11 +1210,48 @@ public abstract class WebRestSupport extends RestSupport {
                     Collections.<TypeParameterTree>emptyList(), 
                     Collections.<VariableTree>emptyList(), 
                     Collections.<ExpressionTree>emptyList(), 
-                    "{return "+GET_REST_RESOURCE_CLASSES+"();}", null);
+                    createBodyForGetClassesMethod(), null);
             modified = maker.addClassMember(modified, methodTree);
         }
         StringBuilder builder = new StringBuilder();
-        collectRestResources(builder, controller);
+        collectRestResources(builder, controller, false);
+        ModifiersTree modifiersTree = maker.Modifiers(EnumSet
+                .of(Modifier.PRIVATE));
+        VariableTree newParam = maker.Variable(
+                maker.Modifiers(Collections.<Modifier>emptySet()),
+                "resources", wildSet, null);
+        MethodTree methodTree = maker.Method(modifiersTree,
+                GET_REST_RESOURCE_CLASSES2, maker.Type("void"),
+                Collections.<TypeParameterTree> emptyList(),
+                Arrays.asList(newParam),
+                Collections.<ExpressionTree> emptyList(), builder.toString(),
+                null);
+        if (addComment) {
+            Comment comment = Comment.create(Style.JAVADOC, -2, -2, -2,
+                    "Do not modify "+GET_REST_RESOURCE_CLASSES2+"() method.\nIt is "
+                    + "automatically re-generated by "
+                    + "NetBeans REST support to populate\ngiven list with "
+                    + "all resources defined in the project."); // NOI18N
+            maker.addComment(methodTree, comment, true);
+        }
+        modified = maker.addClassMember(modified, methodTree);
+        return modified;
+    }
+
+    private ClassTree createMethodsOlderVersion(
+            TreeMaker maker,ClassTree modified,
+            CompilationController controller) throws IOException
+    {
+        WildcardTree wildCard = maker.Wildcard(Kind.UNBOUNDED_WILDCARD,
+                null);
+        ParameterizedTypeTree wildClass = maker.ParameterizedType(
+                maker.QualIdent(Class.class.getCanonicalName()),
+                Collections.singletonList(wildCard));
+        ParameterizedTypeTree wildSet = maker.ParameterizedType(
+                maker.QualIdent(Set.class.getCanonicalName()),
+                Collections.singletonList(wildClass));
+        StringBuilder builder = new StringBuilder();
+        collectRestResources(builder, controller, true);
         ModifiersTree modifiersTree = maker.Modifiers(EnumSet
                 .of(Modifier.PRIVATE));
         MethodTree methodTree = maker.Method(modifiersTree,
@@ -1208,22 +1260,31 @@ public abstract class WebRestSupport extends RestSupport {
                 Collections.<VariableTree> emptyList(),
                 Collections.<ExpressionTree> emptyList(), builder.toString(),
                 null);
-        if (addComment) {
-            Comment comment = Comment.create(Style.JAVADOC, -2, -2, -2,
-                    "Do not modify this method. It is "
-                            + "automatically generated by "
-                            + "NetBeans REST support."); // NOI18N
-            maker.addComment(methodTree, comment, true);
-        }
         modified = maker.addClassMember(modified, methodTree);
         return modified;
     }
 
-    private void collectRestResources( final StringBuilder builder , 
-            final CompilationController controller ) throws IOException 
-    {
+    private String createBodyForGetClassesMethod() {
+        StringBuilder builder = new StringBuilder();
         builder.append('{');
         builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
+        if (isJersey2()) {
+            builder.append(getJersey2JSONFeature());
+        } else {
+            builder.append(getJacksonProviderSnippet());
+        }
+        builder.append(GET_REST_RESOURCE_CLASSES2+"(resources);");
+        builder.append("return resources;}");
+        return builder.toString();
+    }
+
+    private void collectRestResources( final StringBuilder builder , 
+            final CompilationController controller, final boolean oldVersion) throws IOException
+    {
+        builder.append('{');
+        if (oldVersion) {
+            builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
+        }
         RestServicesModel model = getRestServicesModel();
         try {
             model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>()
@@ -1251,10 +1312,12 @@ public abstract class WebRestSupport extends RestSupport {
                         builder.append( className );
                         builder.append(".class);");             // NOI18N
                     }
-                    if (isJersey2()) {
-                        builder.append(getJersey2JSONFeature());
-                    } else {
-                        builder.append(getJacksonProviderSnippet());
+                    if (oldVersion) {
+                        if (isJersey2()) {
+                            builder.append(getJersey2JSONFeature());
+                        } else {
+                            builder.append(getJacksonProviderSnippet());
+                        }
                     }
                     return null;
                 }
@@ -1266,7 +1329,9 @@ public abstract class WebRestSupport extends RestSupport {
                     e.getLocalizedMessage(), e);
         }
         finally{
-            builder.append("return resources;");                // NOI18N
+            if (oldVersion) {
+                builder.append("return resources;");                // NOI18N
+            }
             builder.append('}');
         }
     }
@@ -1282,15 +1347,16 @@ public abstract class WebRestSupport extends RestSupport {
         }
         StringBuilder builder = new StringBuilder();
         if ( addJacksonProvider ){
+            builder.append("\n// following code can be used to customize Jersey 1.x JSON provider: \n");
             builder.append("try {");
-            builder.append("Class<?> jacksonProvider = Class.forName(");
+            builder.append("Class jacksonProvider = Class.forName(");
             builder.append('"');
             builder.append(JACKSON_JSON_PROVIDER);
             builder.append("\");");
             builder.append("resources.add(jacksonProvider);");
             builder.append("} catch (ClassNotFoundException ex) {");
             builder.append("java.util.logging.Logger.getLogger(getClass().getName())");
-            builder.append(".log(java.util.logging.Level.SEVERE, null, ex);}");
+            builder.append(".log(java.util.logging.Level.SEVERE, null, ex);}\n");
             return builder.toString();
         }
         else {
@@ -1309,23 +1375,24 @@ public abstract class WebRestSupport extends RestSupport {
         }
         StringBuilder builder = new StringBuilder();
         if ( addProvider ){
+            builder.append("\n// following code can be used to customize Jersey 2.0 JSON provider: \n");
             builder.append("try {");
-            builder.append("Class<?> jsonProvider = Class.forName(");
+            builder.append("Class jsonProvider = Class.forName(");
             builder.append('"');
             builder.append(JACKSON_JERSEY2_JSON_PROVIDER);
             builder.append("\");\n");
-            builder.append("// Class<?> jsonProvider = Class.forName(");
+            builder.append("// Class jsonProvider = Class.forName(");
             builder.append('"');
             builder.append("org.glassfish.jersey.moxy.json.MoxyJsonFeature");
             builder.append("\");\n");
-            builder.append("// Class<?> jsonProvider = Class.forName(");
+            builder.append("// Class jsonProvider = Class.forName(");
             builder.append('"');
             builder.append("org.glassfish.jersey.jettison.JettisonFeature");
             builder.append("\");\n");
             builder.append("resources.add(jsonProvider);");
             builder.append("} catch (ClassNotFoundException ex) {");
             builder.append("java.util.logging.Logger.getLogger(getClass().getName())");
-            builder.append(".log(java.util.logging.Level.SEVERE, null, ex);}");
+            builder.append(".log(java.util.logging.Level.SEVERE, null, ex);}\n");
             return builder.toString();
         }
         else {

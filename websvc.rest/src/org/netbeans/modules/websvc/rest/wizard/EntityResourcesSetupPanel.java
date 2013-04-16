@@ -251,6 +251,11 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
         
         private EntityResourcesSetupPanelVisual mainPanel;
         private JaxRsConfigurationPanel jaxRsConfigurationPanel;
+
+        @Override
+        public String getPackageName() {
+            return mainPanel.getPackageName();
+        }
     }
     
     private boolean withoutController;

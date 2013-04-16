@@ -68,11 +68,13 @@ import org.openide.util.Utilities;
 public class JaxRsConfigurationPanel extends javax.swing.JPanel implements ChangeListener, Settings {
     
     private static final long serialVersionUID = 5841706512529345806L;
+    private String parentPackageName = null;
     
     public JaxRsConfigurationPanel( SourcePanel sourcePanel ) {
         initComponents();
         listeners = new ArrayList<ChangeListener>(1);
         this.sourcePanel = sourcePanel;
+        updatePackageName();
         
         useJersey.addActionListener( new ActionListener() {
             
@@ -119,6 +121,7 @@ public class JaxRsConfigurationPanel extends javax.swing.JPanel implements Chang
             sourceGroup = group;
             updateSourceGroupPackages();
         }
+        updatePackageName();
     }
     
     /* (non-Javadoc)
@@ -144,15 +147,21 @@ public class JaxRsConfigurationPanel extends javax.swing.JPanel implements Chang
         useJersey.setVisible(!hideJerseyChoice);
         useJersey.setSelected(false);
 
+        // in case of EE7 and/or Jersey2 it is not necessary to ask user for
+        // Application subclass name and a package - just use default values:
+        boolean useDefaultConfiguration = restSupport.isEE7() || restSupport.isJersey2();
+        if (useDefaultConfiguration) {
+            jSeparator1.setVisible(false);
+            restAppClass.setVisible(false);
+            restAppClassLbl.setVisible(false);
+            restAppPackage.setVisible(false);
+            restAppPckgLbl.setVisible(false);
+        }
         String appPackage = (String) wizard.getProperty(
                 WizardProperties.APPLICATION_PACKAGE);
         if (appPackage != null) {
             ((JTextComponent) restAppPackage.getEditor().getEditorComponent()).
                 setText(appPackage);
-        }
-        else {
-            ((JTextComponent) restAppPackage.getEditor().getEditorComponent()).
-                setText("org.netbeans.rest.application.config");        // NOI18N
         }
         String appClass = (String) wizard.getProperty(
                 WizardProperties.APPLICATION_CLASS);
@@ -342,4 +351,12 @@ public class JaxRsConfigurationPanel extends javax.swing.JPanel implements Chang
     private SourcePanel sourcePanel;
     private SourceGroup sourceGroup;
     private List<ChangeListener> listeners;
+
+    private void updatePackageName() {
+        String pkg = sourcePanel.getPackageName();
+        if (parentPackageName == null || !parentPackageName.equals(pkg)) {
+            parentPackageName = pkg;
+            ((JTextComponent)restAppPackage.getEditor().getEditorComponent()).setText(pkg);
+        }
+    }
 }
