@@ -58,6 +58,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.groovy.editor.imports.ImportHelper;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
+import org.netbeans.modules.groovy.editor.imports.ImportUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -79,10 +80,20 @@ public class GroovyCompletionResult extends DefaultCompletionResult {
     }
 
     @Override
-    public void afterInsert(@NonNull CompletionProposal item) {
+    public void afterInsert(@NonNull CompletionProposal proposal) {
+        if (!isTypeCompletion(proposal)) {
+            return;
+        }
+        
+        CompletionItem.TypeItem item = (CompletionItem.TypeItem) proposal;
+        
+        if (ImportUtils.isDefaultlyImported(item.getFqn())) {
+            return;
+        }
+        
         final ElementKind kind = item.getKind();
         final String name = item.getName();
-
+        
         if (kind == ElementKind.CLASS || kind == ElementKind.INTERFACE || kind == ElementKind.CONSTRUCTOR) {
             List<String> imports = ImportCollector.collect(root);
 
@@ -91,7 +102,14 @@ public class GroovyCompletionResult extends DefaultCompletionResult {
             }
         }
     }
-
+    
+    private boolean isTypeCompletion(@NonNull CompletionProposal item) {
+        if (item instanceof CompletionItem.TypeItem) {
+            return true;
+        }
+        return false;
+    }
+    
     private static final class ImportCollector extends ClassCodeVisitorSupport {
 
         private final ModuleNode moduleNode;
