@@ -64,7 +64,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public enum LatteTopTokenId implements TokenId {
     T_HTML("html"),
     T_LATTE("latte-markup"),
-    T_LATTE_ERROR("error");
+    T_LATTE_ERROR("latte-error"),
+    T_LATTE_DELIMITER("latte-delimiter"),
+    T_LATTE_COMMENT("latte-comment");
     private String primaryCategory;
 
     private LatteTopTokenId(String primaryCategory) {
