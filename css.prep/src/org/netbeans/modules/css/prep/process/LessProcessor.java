@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.prep.process;
 
+import java.io.File;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
@@ -66,13 +68,18 @@ public final class LessProcessor extends BaseProcessor {
     }
 
     @Override
-    protected void compile(Project project, FileObject fileObject) {
+    protected List<String> getMappings(Project project) {
+        return LessPreferences.getMappings(project);
+    }
+
+    @Override
+    protected void compileInternal(File source, File target) {
         LessExecutable less = getLess();
         if (less == null) {
             return;
         }
         try {
-            less.compile(fileObject);
+            less.compile(source, target);
         } catch (ExecutionException ex) {
             if (Warnings.showLessWarning()) {
                 UiUtils.processExecutionException(ex);

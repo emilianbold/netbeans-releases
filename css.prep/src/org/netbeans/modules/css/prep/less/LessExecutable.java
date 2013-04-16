@@ -56,7 +56,6 @@ import org.netbeans.modules.css.prep.util.ExternalExecutable;
 import org.netbeans.modules.css.prep.util.ExternalExecutableValidator;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
@@ -101,19 +100,24 @@ public final class LessExecutable {
 
     @NbBundle.Messages("Less.compile=LESS (compile)")
     @CheckForNull
-    public void compile(FileObject fileObject) throws ExecutionException {
+    public void compile(File source, final File target) throws ExecutionException {
         assert !EventQueue.isDispatchThread();
-        assert fileObject.isValid() : "Invalid file given: " + fileObject;
+        assert source.isFile() : "Not file given: " + source;
+        final File targetDir = target.getParentFile();
+        if (!targetDir.isDirectory()) {
+            if (!targetDir.mkdirs() ) {
+                LOGGER.log(Level.WARNING, "Cannot create directory {0}", targetDir);
+                return;
+            }
+        }
         try {
-            File lessFile = FileUtil.toFile(fileObject);
-            final File cssFile = getCssFile(lessFile, fileObject.getName());
             getExecutable(Bundle.Less_compile())
-                    .additionalParameters(getParameters(lessFile, cssFile))
+                    .additionalParameters(getParameters(source, target))
                     .runAndWait(getDescriptor(new Runnable() {
                 @Override
                 public void run() {
-                    FileUtil.refreshFor(cssFile.getParentFile());
-                    UiUtils.refreshCssInBrowser(cssFile);
+                    FileUtil.refreshFor(targetDir);
+                    UiUtils.refreshCssInBrowser(target);
                 }
             }), "Compiling less files..."); // NOI18N
         } catch (CancellationException ex) {
@@ -142,16 +146,12 @@ public final class LessExecutable {
     }
 
     private List<String> getParameters(File inputFile, File outputFile) {
-        List<String> params = new ArrayList<String>();
+        List<String> params = new ArrayList<>();
         // input
         params.add(inputFile.getAbsolutePath());
         // output
         params.add(outputFile.getAbsolutePath());
         return params;
-    }
-
-    private File getCssFile(File lessFile, String name) {
-        return new File(lessFile.getParent(), name + ".css"); // NOI18N
     }
 
 }

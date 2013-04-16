@@ -41,13 +41,18 @@
  */
 package org.netbeans.modules.css.prep.process;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.util.MappingUtils;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Process file/folder changes.
@@ -56,14 +61,14 @@ abstract class BaseProcessor {
 
     private static final Logger LOGGER = Logger.getLogger(BaseProcessor.class.getName());
 
-    protected static final String CSS_EXTENSION = "css"; // NOI18N
-
 
     protected abstract boolean isEnabledInternal(@NonNull Project project);
 
     protected abstract boolean isSupportedFile(FileObject fileObject);
 
-    protected abstract void compile(Project project, FileObject fileObject);
+    protected abstract List<String> getMappings(Project project);
+
+    protected abstract void compileInternal(File source, File target);
 
     public void process(Project project, FileObject fileObject) {
         if (fileObject.isData()) {
@@ -119,21 +124,65 @@ abstract class BaseProcessor {
         compile(project, fileObject);
     }
 
+    protected void compile(Project project, FileObject fileObject) {
+        File file = FileUtil.toFile(fileObject);
+        if (file == null) {
+            LOGGER.log(Level.WARNING, "Not compiling, file not found for fileobject {0}", FileUtil.getFileDisplayName(fileObject));
+            return;
+        }
+        File target = getTargetFile(project, fileObject);
+        if (target == null) {
+            // not found
+            return;
+        }
+        compileInternal(file, target);
+    }
+
     private void fileDeleted(Project project, FileObject fileObject) {
-        FileObject cssFile = getCssFile(project, fileObject);
-        if (cssFile != null
-                && cssFile.isValid()) {
-            try {
-                cssFile.delete();
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Cannot delete file", ex);
+        File target = getTargetFile(project, fileObject);
+        if (target != null
+                && target.isFile()) {
+            FileObject fo = FileUtil.toFileObject(target);
+            if (fo != null) {
+                try {
+                    fo.delete();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, "Cannot delete file", ex);
+                }
             }
         }
     }
 
     @CheckForNull
-    protected FileObject getCssFile(Project project, FileObject fileObject) {
-        return fileObject.getParent().getFileObject(fileObject.getName(), CSS_EXTENSION);
+    protected File getTargetFile(Project project, FileObject fileObject) {
+        FileObject webRoot = getWebRoot(project, fileObject);
+        if (webRoot == null) {
+            LOGGER.log(Level.INFO, "Not compiling, file {0} not underneath web root of project {1}",
+                    new Object[] {FileUtil.getFileDisplayName(fileObject), FileUtil.getFileDisplayName(project.getProjectDirectory())});
+            return null;
+        }
+        List<String> mappings = getMappings(project);
+        if (mappings.isEmpty()) {
+            // project problems know about it
+            LOGGER.log(Level.INFO, "Not compiling, no mappings for project {0}", FileUtil.getFileDisplayName(project.getProjectDirectory()));
+            return null;
+        }
+        File target = MappingUtils.resolveTarget(webRoot, mappings, fileObject);
+        if (target == null) {
+            LOGGER.log(Level.INFO, "Not compiling, file {0} not matched within current mappings {1}",
+                    new Object[] {FileUtil.getFileDisplayName(fileObject), mappings});
+            return null;
+        }
+        return target;
+    }
+
+    @CheckForNull
+    private FileObject getWebRoot(Project project, FileObject fileObject) {
+        ProjectWebRootProvider projectWebRootProvider = project.getLookup().lookup(ProjectWebRootProvider.class);
+        if (projectWebRootProvider == null) {
+            throw new IllegalArgumentException("ProjectWebRootProvider must be found in project lookup: " + project.getProjectDirectory());
+        }
+        return projectWebRootProvider.getWebRoot(fileObject);
     }
 
 }
