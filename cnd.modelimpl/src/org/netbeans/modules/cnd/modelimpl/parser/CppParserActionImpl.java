@@ -1005,7 +1005,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                     // Here we will register forward declarations
 
                     // If declaration's type is not a definition of type, then it is forward declaration
-                    if (declBuilder.getTypeBuilder().getClassifier() == null) {
+                    if (declBuilder.getTypeBuilder().getClassifier() == null && declBuilder.getTypeBuilder().getNameBuilder() != null) {
                         builder = new ClassForwardDeclarationBuilder(declBuilder);
 
                         builder.setParent(parent);
@@ -1026,6 +1026,8 @@ public class CppParserActionImpl implements CppParserActionEx {
                             classEntry = globalSymTab.enterLocal(name);
                             classEntry.setAttribute(CppAttributes.TYPE, true);
                         }                
+                    } else if (declBuilder.getTypeBuilder().getClassifier() == null && declBuilder.getTypeBuilder().getNameBuilder() == null) {
+                        regesterException(new MyRecognitionException("Unexpected missing namebuilder!", token), token); // NOI18N
                     }
                 }
             }

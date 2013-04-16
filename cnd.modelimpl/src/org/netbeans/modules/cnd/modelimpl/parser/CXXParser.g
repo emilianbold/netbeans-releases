@@ -2945,17 +2945,21 @@ type_trait_literal
 
 compiler_specific_type_trait_literal
     :        
-        LITERAL___is_pod
+        LITERAL___is_pod | LITERAL___has_nothrow_assign | LITERAL___has_nothrow_copy | LITERAL___has_nothrow_constructor |
+        LITERAL___has_trivial_assign | LITERAL___has_trivial_copy | LITERAL___has_trivial_destructor | LITERAL___has_virtual_destructor |
+        LITERAL___is_abstract | LITERAL___is_empty | LITERAL___is_literal_type | LITERAL___is_polymorphic |
+        LITERAL___is_standard_layout | LITERAL___is_trivial | LITERAL___is_union | LITERAL___underlying_type | 
+        LITERAL___is_class
     ;
 
 shiftright_literal
     :
         SHIFTRIGHT
     |
-        (GREATERTHAN)=>
-            {input.LT(1).getText().equals("")}?=>  // NOI18N
-                // in this case first token has empty text and the second token is a FilterToken with the link to original and text from original
-                GREATERTHAN GREATERTHAN 
+        // check if we have special split SHIFTRIGHT token (it has empty name as marker)
+        {input.LA(1) == GREATERTHAN && input.LT(1).getText().equals("")}?=> 
+            // in this case first token has empty text and the second token is a FilterToken with the link to original and text from original
+            GREATERTHAN GREATERTHAN // if hook is expected to be called here => don't forget to pass SHIFT instead of two ">" tokens
     ;
 
 // [gram.lex]
