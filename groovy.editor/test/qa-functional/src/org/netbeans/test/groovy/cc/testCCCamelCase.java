@@ -90,7 +90,7 @@ public class testCCCamelCase extends GeneralGroovy {
         evt.waitNoEvent(1000);
 
         GeneralGroovy.CompletionInfo completion = getCompletion();
-        String[] res = {"AbstractCollection", "AutoCloseable"};
+        String[] res = {"AbstractCollection"};
         checkCompletionItems(completion.listItself, res);
         completion.listItself.hideAll();
 
