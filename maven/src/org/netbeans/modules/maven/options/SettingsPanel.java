@@ -90,9 +90,9 @@ import org.openide.util.NbBundle.Messages;
 @OptionsPanelController.Keywords(keywords={"maven"}, location=JavaOptions.JAVA, tabTitle= "#TIT_Maven_Category")
 public class SettingsPanel extends javax.swing.JPanel {
     private static final String SEPARATOR = "SEPARATOR";
-    private static final String BUNDLED_RUNTIME_VERSION =
+    public  static final String BUNDLED_RUNTIME_VERSION =
             MavenSettings.getCommandLineMavenVersion(EmbedderFactory.getDefaultMavenHome());
-    private static final int RUNTIME_COUNT_LIMIT = 5;
+    public static final int RUNTIME_COUNT_LIMIT = 5;
     private boolean changed;
     private boolean valid;
     private final ActionListener listener;
@@ -238,10 +238,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         if (selected < 0) {
             return null;
         }
-        
+
         if (selected < predefinedRuntimes.size()) {
             return predefinedRuntimes.get(selected);
-
+    
         } else if (!userDefinedMavenRuntimes.isEmpty() &&
                 selected - predefinedRuntimes.size() <= userDefinedMavenRuntimes.size()) {
             return userDefinedMavenRuntimes.get(selected - 1 - predefinedRuntimes.size());
