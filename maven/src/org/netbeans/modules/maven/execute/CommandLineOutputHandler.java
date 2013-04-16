@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.execute;
 
+import org.netbeans.modules.maven.execute.cmd.ExecutionEventObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

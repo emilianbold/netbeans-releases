@@ -46,7 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 
 public class ClosedRepositoryNode extends RepositoryNode {
 
@@ -71,5 +71,10 @@ public class ClosedRepositoryNode extends RepositoryNode {
     @Override
     Collection<Query> getQueries() {
         return Collections.emptyList();
+    }
+
+    @Override
+    protected Type getType() {
+        return Type.CLOSED;
     }
 }
