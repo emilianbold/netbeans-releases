@@ -212,14 +212,17 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         // check if valid element
         CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(refactoredCsmElement);
         // support only functions and not destructor
-        if (!CsmKindUtilities.isFunction(directReferencedObject) || CsmKindUtilities.isDestructor(directReferencedObject)) {
+        if (!CsmKindUtilities.isFunction(directReferencedObject)) {
             preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType"));
             return preCheckProblem;
         }
-        // we do not support constructors yet
-        if (CsmKindUtilities.isConstructor(directReferencedObject)) {
-            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType"));
+        if (CsmKindUtilities.isDestructor(directReferencedObject)) {
+            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeDestructorParamsWrongType"));
             return preCheckProblem;
+        }
+        // we do not support constructors completely yet
+        if (CsmKindUtilities.isConstructor(directReferencedObject)) {
+            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "MSG_ChangeConstructorParamsWrongType"));
         }
         
         // create additional objects to resolve

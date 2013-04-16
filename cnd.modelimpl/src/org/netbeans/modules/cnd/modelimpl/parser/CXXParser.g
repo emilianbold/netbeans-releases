@@ -2798,7 +2798,19 @@ additive_expression:
     ;
 
 shift_expression:
-        additive_expression ( SHIFTLEFT additive_expression | SHIFTRIGHT additive_expression )*
+        additive_expression 
+        (
+            (
+                SHIFTLEFT 
+            | 
+                SHIFTRIGHT
+            |
+                (GREATERTHAN GREATERTHAN)=>
+                    {action.checkTokenText(input.LT(1), "")}?  // NOI18N
+                        GREATERTHAN GREATERTHAN
+            )
+            additive_expression
+        )*
     ;
 
 /*
