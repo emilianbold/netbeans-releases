@@ -100,7 +100,7 @@ public class CPCustomIndexer extends CustomIndexer {
                     IndexDocument doc = sup.createDocument(file);
                     doc.addPair(CP_TYPE_KEY, type.name(), true, true);
                     sup.addDocument(doc);
-                    LOGGER.log(Level.INFO, "File {0} marked as CSS preprocessor file with {1} mimetype.", new Object[]{file.getNameExt(), fileMimeType});
+                    LOGGER.log(Level.FINE, "File {0} marked as CSS preprocessor file with {1} mimetype.", new Object[]{file.getNameExt(), fileMimeType});
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }

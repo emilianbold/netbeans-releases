@@ -187,7 +187,7 @@ public class KnockoutExportInterceptor implements FunctionInterceptor {
                             }
                             if (foundParent != null) {
                                 boolean skip = true;
-                                for (int i = levelUp; i < names.length; i++) {
+                                for (int i = levelUp; i < identifiers.size(); i++) {
                                     JsObject property = foundParent.getProperty(identifiers.get(i));
                                     if (property == null) {
                                         skip = false;
