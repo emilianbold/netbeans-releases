@@ -80,17 +80,16 @@ public class GroovyCompletionResult extends DefaultCompletionResult {
     }
 
     @Override
-    public void afterInsert(@NonNull CompletionProposal proposal) {
-        if (!isTypeCompletion(proposal)) {
+    public void afterInsert(@NonNull CompletionProposal item) {
+        if (!isTypeCompletion(item)) {
             return;
         }
-        
-        CompletionItem.TypeItem item = (CompletionItem.TypeItem) proposal;
-        
-        if (ImportUtils.isDefaultlyImported(item.getFqn())) {
+
+        // Don't add import statement for default imports
+        if (ImportUtils.isDefaultlyImported(((CompletionItem.TypeItem) item).getFqn())) {
             return;
         }
-        
+
         final ElementKind kind = item.getKind();
         final String name = item.getName();
         
