@@ -44,74 +44,65 @@ package org.netbeans.modules.groovy.editor.imports;
 
 import java.util.HashSet;
 import java.util.Set;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.modules.groovy.editor.spi.completion.DefaultImportsProvider;
-import org.openide.util.Lookup;
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Martin Janicek
  */
-public final class ImportUtils {
+public class ImportUtilsTest extends GroovyTestBase {
 
-    private ImportUtils() {
+    public ImportUtilsTest(String testName) {
+        super(testName);
     }
     
-    /**
-     * Finds out if the given fully qualified name is imported by default or not.
-     * 
-     * @param fqn fully qualified name for the type we need to check
-     * @return true if the given fqn is defaultly imported, false otherwise
-     */
-    public static boolean isDefaultlyImported(String fqn) {
-        for (String defaultImport : getDefaultImportClasses()) {
-            if (defaultImport.equals(fqn)) {
-                return true; // We don't want to add import statement for default imports
-            }
-        }
-        
-        final String packageName = getPackageName(fqn);
-        for (String defaultImport : getDefaultImportPackages()) {
-            if (defaultImport.equals(packageName)) {
-                return true; // We don't want to add import statement for types from defaultly imported packages
-            }
-        }
-        return false;
+    
+    public void testIsDefaultlyImported_directTypes() {
+        assertTrue(ImportUtils.isDefaultlyImported("java.math.BigDecimal"));
+        assertTrue(ImportUtils.isDefaultlyImported("java.math.BigInteger"));
+    }
+
+    public void testIsDefaultlyImported_typesFromImportedPackages() {
+        assertTrue(ImportUtils.isDefaultlyImported("java.io.File"));
+        assertTrue(ImportUtils.isDefaultlyImported("java.lang.Integer"));
+        assertTrue(ImportUtils.isDefaultlyImported("java.net.Socket"));
+        assertTrue(ImportUtils.isDefaultlyImported("java.util.Arrays"));
+        assertTrue(ImportUtils.isDefaultlyImported("groovy.util.GroovyTestCase"));
+        assertTrue(ImportUtils.isDefaultlyImported("groovy.lang.Singleton"));
+    }
+
+    public void testIsDefaultlyImported_typesFromProvidedPackages() {
+        assertTrue(ImportUtils.isDefaultlyImported("test.whatever.ImaginaryType"));
+        assertTrue(ImportUtils.isDefaultlyImported("test.somethingelse.ImaginaryType"));
+    }
+
+    public void testIsDefaultlyImported_typesFromProvidedClasses() {
+        assertTrue(ImportUtils.isDefaultlyImported("abc.efd.Oops"));
+        assertTrue(ImportUtils.isDefaultlyImported("qwe.rty.Psst"));
     }
     
-    private static String getPackageName(String fqn) {
-        if (fqn.contains(".")) {
-            fqn = fqn.substring(0, fqn.lastIndexOf("."));
-        }
-        return fqn;
-    }
-    
-    public static Set<String> getDefaultImportPackages() {
-        Set<String> defaultPackages = new HashSet<String>();
-        
-        defaultPackages.add("java.io");     // NOI18N
-        defaultPackages.add("java.lang");   // NOI18N
-        defaultPackages.add("java.net");    // NOI18N
-        defaultPackages.add("java.util");   // NOI18N
-        defaultPackages.add("groovy.util"); // NOI18N
-        defaultPackages.add("groovy.lang"); // NOI18N
-        
-        for (DefaultImportsProvider importsProvider : Lookup.getDefault().lookupAll(DefaultImportsProvider.class)) {
-            defaultPackages.addAll(importsProvider.getDefaultImportPackages());
+    @ServiceProvider(service = DefaultImportsProvider.class)
+    public static class TestImportProvider implements DefaultImportsProvider {
+
+        @Override
+        public Set<String> getDefaultImportPackages() {
+            Set<String> additionalImports = new HashSet<String>();
+            additionalImports.add("test.whatever");
+            additionalImports.add("test.somethingelse");
+            
+            return additionalImports;
         }
 
-        return defaultPackages;
-    }
-    
-    public static Set<String> getDefaultImportClasses() {
-        Set<String> defaultClasses = new HashSet<String>();
-        
-        defaultClasses.add("java.math.BigDecimal"); // NOI18N
-        defaultClasses.add("java.math.BigInteger"); // NOI18N
-        
-        for (DefaultImportsProvider importsProvider : Lookup.getDefault().lookupAll(DefaultImportsProvider.class)) {
-            defaultClasses.addAll(importsProvider.getDefaultImportClasses());
+        @Override
+        public Set<String> getDefaultImportClasses() {
+            Set<String> additionalImports = new HashSet<String>();
+            additionalImports.add("abc.efd.Oops");
+            additionalImports.add("qwe.rty.Psst");
+            
+            return additionalImports;
         }
-
-        return defaultClasses;
     }
 }
