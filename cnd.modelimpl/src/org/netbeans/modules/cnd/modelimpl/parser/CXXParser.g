@@ -2217,9 +2217,9 @@ operator_id returns [int id]
         LITERAL_new | LITERAL_delete |
         PLUS | MINUS | STAR | DIVIDE | MOD | BITWISEXOR | AMPERSAND | BITWISEOR | TILDE |
         NOT | ASSIGNEQUAL | LESSTHAN | GREATERTHAN | PLUSEQUAL | MINUSEQUAL | TIMESEQUAL | DIVIDEEQUAL | MODEQUAL |
-        BITWISEXOREQUAL | BITWISEANDEQUAL | BITWISEOREQUAL | SHIFTLEFT | SHIFTRIGHT | SHIFTRIGHTEQUAL | SHIFTLEFTEQUAL | EQUAL | NOTEQUAL |
+        BITWISEXOREQUAL | BITWISEANDEQUAL | BITWISEOREQUAL | SHIFTLEFT | shiftright_literal | SHIFTRIGHTEQUAL | SHIFTLEFTEQUAL | EQUAL | NOTEQUAL |
         LESSTHANOREQUALTO | GREATERTHANOREQUALTO | AND | OR | PLUSPLUS | MINUSMINUS | COMMA | POINTERTOMBR | POINTERTO | 
-        LPAREN RPAREN | LSQUARE RSQUARE
+        LPAREN RPAREN | LSQUARE RSQUARE 
     )                                                                           
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_operator_id(input.LT(0));}}
@@ -2803,11 +2803,7 @@ shift_expression:
             (
                 SHIFTLEFT 
             | 
-                SHIFTRIGHT
-            |
-                (GREATERTHAN GREATERTHAN)=>
-                    {action.checkTokenText(input.LT(1), "")}?  // NOI18N
-                        GREATERTHAN GREATERTHAN
+                shiftright_literal
             )
             additive_expression
         )*
@@ -2950,6 +2946,16 @@ type_trait_literal
 compiler_specific_type_trait_literal
     :        
         LITERAL___is_pod
+    ;
+
+shiftright_literal
+    :
+        SHIFTRIGHT
+    |
+        (GREATERTHAN)=>
+            {input.LT(1).getText().equals("")}?=>  // NOI18N
+                // in this case first token has empty text and the second token is a FilterToken with the link to original and text from original
+                GREATERTHAN GREATERTHAN 
     ;
 
 // [gram.lex]

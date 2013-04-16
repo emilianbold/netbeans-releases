@@ -513,7 +513,5 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     
     void skip_balanced_curlies(Token token);
     
-    boolean checkTokenText(Token token, String text);
-    
     CsmFile getCurrentFile();    
 }
