@@ -53,6 +53,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.spi.queries.ForeignClassBundler;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -99,6 +100,7 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
         assertEquals(null, MavenForBinaryQueryImpl.jarify(null)); // #202079
     }
 
+    @RandomlyFails // NB-Core-Build #9101, #9777, #9985, #9990, #10007
     public void testForeignClassBundler() throws Exception { // #155091 and deps
         TestFileUtils.writeFile(d,
                 "a/pom.xml",
