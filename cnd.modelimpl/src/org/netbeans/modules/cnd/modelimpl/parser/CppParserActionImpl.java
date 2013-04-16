@@ -188,11 +188,15 @@ public class CppParserActionImpl implements CppParserActionEx {
         });
     }
     
-    private void regesterException(Exception ex) {
+    private void regesterException(Exception ex, Token token) {
         if (ex instanceof MyRecognitionException) {
             MyRecognitionException re = (MyRecognitionException) ex;
             parser.displayRecognitionError(new String[0], re);
         } else {
+            if (token != null) {
+                MyRecognitionException re = new MyRecognitionException(ex.getMessage()+" at '"+token.getText()+"'", token); // NOI18N
+                parser.displayRecognitionError(new String[0], re);
+            }
             ex.printStackTrace(System.err);
         }
     }
@@ -202,7 +206,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             return type_specifier_already_present_impl(input);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, null);
         }
         return false;
     }
@@ -326,7 +330,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             return identifier_is_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
         return false;
     }
@@ -378,7 +382,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             return top_level_of_template_arguments_impl();
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, null);
         }
         return false;
     }
@@ -406,7 +410,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             decl_specifiers_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -422,7 +426,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_decl_specifiers_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -438,7 +442,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             enum_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -467,7 +471,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             enum_strongly_typed_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -486,7 +490,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             enum_name_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
 
@@ -513,7 +517,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             enum_body_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -526,7 +530,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             enumerator_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
 
@@ -560,7 +564,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_enum_body_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -582,7 +586,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_enum_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -620,7 +624,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             class_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -649,7 +653,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             class_kind_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -683,7 +687,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_class_name_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -714,7 +718,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             class_body_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -748,7 +752,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_class_body_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -780,7 +784,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_class_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -815,7 +819,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             namespace_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -834,7 +838,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             namespace_name_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -858,7 +862,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             namespace_body_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -891,7 +895,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_namespace_body_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -904,7 +908,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_namespace_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -922,7 +926,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             simple_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -950,7 +954,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             simple_declaration_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1033,7 +1037,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_simple_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1056,7 +1060,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             compound_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1074,7 +1078,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_compound_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1098,7 +1102,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             decl_specifier_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1131,7 +1135,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             simple_type_specifier_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1173,7 +1177,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_simple_type_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1234,7 +1238,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             simple_template_id_or_ident_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1290,7 +1294,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             template_declaration_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1325,7 +1329,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             using_declaration_impl(usingToken);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, usingToken);
         }
     }
     
@@ -1347,7 +1351,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             using_declaration_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1366,7 +1370,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_using_declaration_impl(semicolonToken);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, semicolonToken);
         }
     }
     
@@ -1410,7 +1414,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             namespace_alias_definition_impl(namespaceToken, identToken, assignequalToken);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, namespaceToken);
         }
     }
     
@@ -1436,7 +1440,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_namespace_alias_definition_impl(semicolonToken);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, semicolonToken);
         }
     }
     
@@ -1457,7 +1461,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             qualified_namespace_specifier_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1494,7 +1498,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             type_parameter_impl(kind, token, token2, token3);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1537,7 +1541,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             using_directive_impl(usingToken, namespaceToken);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, usingToken);
         }
     }
     
@@ -1558,7 +1562,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             using_directive_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1579,7 +1583,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_using_directive_impl(semicolonToken);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, semicolonToken);
         }
     }
     
@@ -1629,7 +1633,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             declarator_id_impl();
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, null);
         }
     }
     
@@ -1642,7 +1646,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_declarator_id_impl();
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, null);
         }
     }
     
@@ -1661,7 +1665,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             return isType_impl(name);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, null);
         }
         return false;
     }
@@ -1679,7 +1683,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             pushFile_impl(file);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, null);
         }
     }
     
@@ -1695,7 +1699,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             return popFile_impl();
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, null);
         }
         return null;
     }
@@ -1746,7 +1750,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             labeled_statement_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1771,7 +1775,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             labeled_statement_impl(kind, token1, token2);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token1);
         }
     }
     
@@ -1802,7 +1806,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_labeled_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1822,7 +1826,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             expression_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1838,7 +1842,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_expression_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1858,7 +1862,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             selection_statement_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1881,7 +1885,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_selection_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1903,7 +1907,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             condition_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1919,7 +1923,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_condition_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1947,7 +1951,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             condition_expression_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1963,7 +1967,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_condition_expression_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -1993,7 +1997,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             iteration_statement_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2026,7 +2030,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_iteration_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2052,7 +2056,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             jump_statement_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2082,7 +2086,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             jump_statement_impl(kind, token1, token2);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token1);
         }
     }
     
@@ -2099,7 +2103,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_jump_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2117,7 +2121,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             declaration_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2133,7 +2137,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_declaration_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2156,7 +2160,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             id_expression_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2172,7 +2176,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_id_expression_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2208,7 +2212,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             tilde_class_name_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2222,7 +2226,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_tilde_class_name_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2242,7 +2246,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             type_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2261,7 +2265,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_type_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2304,7 +2308,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             elaborated_type_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2319,7 +2323,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_elaborated_type_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2343,7 +2347,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             typename_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2359,7 +2363,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_typename_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2391,7 +2395,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             declarator_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2410,7 +2414,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_declarator_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2461,7 +2465,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             constructor_declarator_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2525,7 +2529,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             ptr_operator_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2557,7 +2561,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             cv_qualifier_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2586,7 +2590,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_declarator_id_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2616,7 +2620,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             type_id_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2632,7 +2636,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_type_id_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2661,7 +2665,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             parameters_and_qualifiers_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2690,7 +2694,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             parameter_declaration_clause_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2716,7 +2720,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             parameter_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2737,7 +2741,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_parameter_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2767,7 +2771,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             function_definition_after_declarator_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2863,7 +2867,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_function_definition_after_declarator_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2904,7 +2908,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             initializer_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2926,7 +2930,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_initializer_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2964,7 +2968,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             optionally_qualified_name_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -2977,7 +2981,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_optionally_qualified_name_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -3029,7 +3033,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             simple_member_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -3057,7 +3061,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             simple_member_declaration_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -3143,7 +3147,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_simple_member_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -3192,7 +3196,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             base_type_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -3209,7 +3213,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_base_type_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -3288,7 +3292,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             operator_id_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -3314,7 +3318,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             template_parameter_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -3330,7 +3334,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_template_parameter_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -3353,7 +3357,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             explicit_instantiation_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -3370,7 +3374,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             explicit_specialization_impl(templateToken, lessthenToken, greaterthenToken);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, templateToken);
         }
     }
     
@@ -3404,7 +3408,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             expression_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -3425,7 +3429,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_expression_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
@@ -3467,7 +3471,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             skip_balanced_curlies_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            regesterException(ex, token);
         }
     }
     
