@@ -41,32 +41,35 @@
  */
 package org.netbeans.modules.css.prep.preferences;
 
-import java.util.prefs.Preferences;
+import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 
 /**
  * Sass preferences specific for project.
  */
-public final class SassPreferences {
+public final class SassPreferences extends BasePreferences {
 
     private static final String ENABLED = "sass.enabled"; // NOI18N
+    private static final String MAPPINGS = "sass.mappings"; // NOI18N
 
 
     private SassPreferences() {
     }
 
     public static boolean isEnabled(Project project) {
-        return getPreferences(project).getBoolean(ENABLED, true);
+        return isEnabled(project, ENABLED);
     }
 
     public static void setEnabled(Project project, boolean enabled) {
-        getPreferences(project).putBoolean(ENABLED, enabled);
+        setEnabled(project, ENABLED, enabled);
     }
 
-    private static Preferences getPreferences(Project project) {
-        assert project != null;
-        return ProjectUtils.getPreferences(project, SassPreferences.class, true);
+    public static List<String> getMappings(Project project) {
+        return getMappings(project, MAPPINGS);
+    }
+
+    public static void setMappings(Project project, List<String> mappings) {
+        setMappings(project, MAPPINGS, mappings);
     }
 
 }

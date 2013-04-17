@@ -46,21 +46,21 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.problems.LessProjectProblemsProvider;
 import org.netbeans.modules.css.prep.ui.customizer.LessCustomizer;
 import org.netbeans.modules.css.prep.ui.options.LessOptions;
+import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementationListener;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation.Customizer;
+import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation.Options;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200)
-public final class LessCssPreprocessor implements CssPreprocessorImplementation {
+public final class LessCssPreprocessor extends BaseCssPreprocessor {
 
     private static final String IDENTIFIER = "LESS"; // NOI18N
-
-    private final CssPreprocessorImplementationListener.Support listenersSupport = new CssPreprocessorImplementationListener.Support();
 
 
     @Override
@@ -76,7 +76,7 @@ public final class LessCssPreprocessor implements CssPreprocessorImplementation 
 
     @Override
     public void process(Project project, FileObject fileObject) {
-        new LessProcessor().process(project, fileObject);
+        new LessProcessor(this).process(project, fileObject);
     }
 
     @Override
@@ -86,30 +86,12 @@ public final class LessCssPreprocessor implements CssPreprocessorImplementation 
 
     @Override
     public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        return new LessProjectProblemsProvider(support, createCustomizer(support.getProject()));
+        return new LessProjectProblemsProvider(support);
     }
 
     @Override
     public Options createOptions() {
         return new LessOptions(this);
-    }
-
-    @Override
-    public void addCssPreprocessorListener(CssPreprocessorImplementationListener listener) {
-        listenersSupport.addCssPreprocessorListener(listener);
-    }
-
-    @Override
-    public void removeCssPreprocessorListener(CssPreprocessorImplementationListener listener) {
-        listenersSupport.removeCssPreprocessorListener(listener);
-    }
-
-    public void fireOptionsChanged() {
-        listenersSupport.fireOptionsChanged(this);
-    }
-
-    public void fireCustomizerChanged(Project project) {
-        listenersSupport.fireCustomizerChanged(project, this);
     }
 
 }

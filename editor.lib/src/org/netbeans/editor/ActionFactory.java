@@ -94,6 +94,7 @@ import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.api.editor.NavigationHistory;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
+import org.netbeans.spi.editor.typinghooks.CamelCaseInterceptor;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -207,41 +208,9 @@ public class ActionFactory {
 
     }
 
-    /* #47709
-    public static class RemoveWordAction extends LocalBaseAction {
-
-        static final long serialVersionUID =9193117196412195554L;
-
-        public RemoveWordAction() {
-            super(BaseKit.removeWordAction, MAGIC_POSITION_RESET
-                  | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
-        }
-
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                if (!target.isEditable() || !target.isEnabled()) {
-                    target.getToolkit().beep();
-                    return;
-                }
-
-                Caret caret = target.getCaret();
-                try {
-                    BaseDocument doc = (BaseDocument)target.getDocument();
-                    int dotPos = caret.getDot();
-                    int [] identBlock = Utilities.getIdentifierBlock(doc,dotPos);
-                    if (identBlock != null){
-                        doc.remove(identBlock[0], identBlock[1] - identBlock[0]);
-                    }
-                } catch (BadLocationException e) {
-                    target.getToolkit().beep();
-                }
-            }
-        }
-    }
+    /**
+     * @deprecated use {@link CamelCaseInterceptor} instead
      */
-
-    // Disabled annotations due to overriding by camel-case actions in GSF (no concrete mimetype)
-//    @EditorActionRegistration(name = BaseKit.removePreviousWordAction)
     public static class RemoveWordPreviousAction extends LocalBaseAction {
 
         public RemoveWordPreviousAction() {
@@ -278,8 +247,9 @@ public class ActionFactory {
         }
     }
 
-    // Disabled annotations due to overriding by camel-case actions in GSF (no concrete mimetype)
-//    @EditorActionRegistration(name = BaseKit.removeNextWordAction)
+    /**
+     * @deprecated use {@link CamelCaseInterceptor} instead
+     */
     public static class RemoveWordNextAction extends LocalBaseAction {
 
         public RemoveWordNextAction() {

@@ -185,7 +185,7 @@ public class ModelTest extends ModelTestBase {
                     sw.append(str).append("\n");
                 }
             };
-            Model.writeObject(p, obj.iterator().next());
+            Model.writeObject(p, obj.iterator().next(), null);
             assertDescriptionMatches(fo, sw.toString(), false, ".revert", true);
         } finally {
             reader.close();

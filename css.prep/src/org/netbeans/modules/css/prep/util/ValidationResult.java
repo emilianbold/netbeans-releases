@@ -43,6 +43,7 @@ package org.netbeans.modules.css.prep.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.util.Parameters;
 
 // XXX copied from PHP
@@ -102,6 +103,19 @@ public final class ValidationResult {
     }
 
     /**
+     * Get the first error message or {@code null} if there are no errors.
+     * @return the first error messageor {@code null} if there are no errors
+     */
+    @CheckForNull
+    public String getFirstErrorMessage() {
+        List<Message> copy = getErrors();
+        if (copy.isEmpty()) {
+            return null;
+        }
+        return copy.get(0).getMessage();
+    }
+
+    /**
      * Check whether there are some warnings present.
      * @return {@code true} if the validation result contains any warning
      * @see #isFaultless()
@@ -117,6 +131,19 @@ public final class ValidationResult {
     public List<Message> getWarnings() {
         return new ArrayList<Message>(warnings);
 
+    }
+
+    /**
+     * Get the first warning message or {@code null} if there are no warnings.
+     * @return the first warning message or {@code null} if there are no warnings
+     */
+    @CheckForNull
+    public String getFirstWarningMessage() {
+        List<Message> copy = getWarnings();
+        if (copy.isEmpty()) {
+            return null;
+        }
+        return copy.get(0).getMessage();
     }
 
     /**

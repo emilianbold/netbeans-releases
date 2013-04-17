@@ -597,6 +597,8 @@ public final class TextRegionManager {
                                 return;
                             }
                             beforeDocumentModification();
+                            boolean oldTM = DocumentUtilities.isTypingModification(doc);
+                            DocumentUtilities.setTypingModification(doc, false);
                             try {
                                 if (forceSyncByMaster) {
                                     forceSyncByMaster = false;
@@ -609,6 +611,7 @@ public final class TextRegionManager {
                                     }
                                 }
                             } finally {
+                                DocumentUtilities.setTypingModification(doc, oldTM);
                                 afterDocumentModification();
                             }
                             syncSuccess = true;
@@ -621,6 +624,8 @@ public final class TextRegionManager {
                         TextRegion<?> master = activeTextSync.validMasterRegion();
                         fixRegionStartOffset(master, offset);
                         beforeDocumentModification();
+                        boolean oldTM = DocumentUtilities.isTypingModification(doc);
+                        DocumentUtilities.setTypingModification(doc, false);
                         try {
                             if (forceSyncByMaster) {
                                 forceSyncByMaster = false;
@@ -635,6 +640,7 @@ public final class TextRegionManager {
                                 }
                             }
                         } finally {
+                            DocumentUtilities.setTypingModification(doc, oldTM);
                             afterDocumentModification();
                         }
                         syncSuccess = true;
@@ -684,6 +690,8 @@ public final class TextRegionManager {
                         TextRegion<?> master = activeTextSync.validMasterRegion();
                         int relOffset = offset - master.startOffset();
                         beforeDocumentModification();
+                        boolean oldTM = DocumentUtilities.isTypingModification(doc);
+                        DocumentUtilities.setTypingModification(doc, false);
                         try {
                             // In case of JTextComponent.replaceSelection()
                             // the DOC_REPLACE_SELECTION_PROPERTY is expected to be set to TRUE
@@ -708,6 +716,7 @@ public final class TextRegionManager {
                             stopSyncEditing();
                             LOG.log(Level.WARNING, "Unexpected exception during synchronization", e); // NOI18N
                         } finally {
+                            DocumentUtilities.setTypingModification(doc, oldTM);
                             afterDocumentModification();
                         }
                     } else { // Not synced successfully
@@ -820,6 +829,8 @@ public final class TextRegionManager {
     void syncByMaster(TextSync textSync) {
         beforeDocumentModification();
         ignoreDocModifications++;
+        boolean oldTM = DocumentUtilities.isTypingModification(doc);
+        DocumentUtilities.setTypingModification(doc, false);
         try {
             TextRegion<?> masterRegion = textSync.validMasterRegion();
             CharSequence docText = DocumentUtilities.getText(doc);
@@ -844,6 +855,7 @@ public final class TextRegionManager {
         } catch (BadLocationException e) {
            LOG.log(Level.WARNING, "Invalid offset", e); // NOI18N 
         } finally {
+            DocumentUtilities.setTypingModification(doc, oldTM);
             assert (ignoreDocModifications > 0);
             ignoreDocModifications--;
             afterDocumentModification();
@@ -854,6 +866,8 @@ public final class TextRegionManager {
     void setText(TextSync textSync, String text) {
         beforeDocumentModification();
         ignoreDocModifications++;
+        boolean oldTM = DocumentUtilities.isTypingModification(doc);
+        DocumentUtilities.setTypingModification(doc, false);
         try {
             CharSequence docText = DocumentUtilities.getText(doc);
             for (TextRegion<?> region : textSync.regionsModifiable()) {
@@ -870,6 +884,7 @@ public final class TextRegionManager {
         } catch (BadLocationException e) {
            LOG.log(Level.WARNING, "Invalid offset", e); // NOI18N 
         } finally {
+            DocumentUtilities.setTypingModification(doc, oldTM);
             assert (ignoreDocModifications > 0);
             ignoreDocModifications--;
             afterDocumentModification();
