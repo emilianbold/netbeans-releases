@@ -57,6 +57,7 @@ import org.netbeans.editor.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -126,15 +127,15 @@ public class CompletionTestPerformer {
     private static final long OPENING_TIMEOUT = 60 * 1000;
     private static final long SLEEP_TIME = 1000;
     
-    private final CsmCompletionQuery.QueryScope queryScope;
+    private final CompletionResolver.QueryScope queryScope;
     /**
      * Creates new CompletionTestPerformer
      */
     public CompletionTestPerformer() {
-        this(CsmCompletionQuery.QueryScope.GLOBAL_QUERY);
+        this(CompletionResolver.QueryScope.GLOBAL_QUERY);
     }
     
-    public CompletionTestPerformer(CsmCompletionQuery.QueryScope queryScope) {
+    public CompletionTestPerformer(CompletionResolver.QueryScope queryScope) {
         this.queryScope = queryScope;
     }
     
@@ -166,7 +167,7 @@ public class CompletionTestPerformer {
      * editor code completion threading model. Revise if this changes
      * in future.
      */
-    private CompletionItem[] testPerform(PrintWriter log,
+    private CompletionTestResultItem[] testPerform(PrintWriter log,
             JEditorPane editor,
             BaseDocument doc,
             boolean unsorted,
@@ -208,18 +209,37 @@ public class CompletionTestPerformer {
             editor.grabFocus();
             editor.getCaret().setDot(offset);
         }        
-        return completionQuery(log, editor, doc, offset, unsorted, tooltip);
+        
+        CompletionItem items[] = completionQuery(log, editor, doc, offset, unsorted, tooltip);
+        
+        CompletionTestResultItem results[] = new CompletionTestResultItem[items.length];
+        
+        int lineBeginningOffset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, 1);        
+        JEditorPane textComponent = new JEditorPane();
+        textComponent.setDocument(new BaseDocument(false, "text/plain"));
+        
+        for (int i = 0; i < items.length; i++) {
+            textComponent.setText(doc.getText(0, doc.getLength()));
+            
+            items[i].defaultAction(textComponent);
+
+            int lineEndingOffset = Utilities.getRowEnd((BaseDocument) textComponent.getDocument(), offset);
+            
+            results[i] = new CompletionTestResultItem(items[i], textComponent.getText(lineBeginningOffset, lineEndingOffset - lineBeginningOffset));            
+        }
+        
+        return results;
     }
     
-    public CompletionItem[] test(final PrintWriter log,
+    public CompletionTestResultItem[] test(final PrintWriter log,
             final String textToInsert, final int offsetAfterInsertion, final boolean unsorted,
             final File testSourceFile, final int line, final int col, final boolean tooltip) throws Exception {
         try {
-            final CompletionItem[][] array = new CompletionItem[][] {null};
+            final CompletionTestResultItem[][] array = new CompletionTestResultItem[][] {null};
             log.println("Completion test start.");
             log.flush();
             
-            FileObject testFileObject = getTestFile(testSourceFile, log);
+            final FileObject testFileObject = getTestFile(testSourceFile, log);
             final DataObject testFile = DataObject.find(testFileObject);
             if (testFile == null) {
                 throw new DataObjectNotFoundException(testFileObject);
@@ -264,7 +284,7 @@ public class CompletionTestPerformer {
                 log.flush();
             }
             //((CloseCookie) testFile.getCookie(CloseCookie.class)).close();
-            return array[0] == null ? new CompletionItem[0] : array[0];
+            return array[0] == null ? new CompletionTestResultItem[0] : array[0];
         } catch (Exception e) {
             e.printStackTrace(log);
             throw e;
@@ -312,5 +332,5 @@ public class CompletionTestPerformer {
         prj.waitParse();
         assert csmFile.isParsed() : " file must be parsed: " + csmFile;
         assert prj.isStable(null) : " full project must be parsed" + prj;
-    }
+    }   
 }

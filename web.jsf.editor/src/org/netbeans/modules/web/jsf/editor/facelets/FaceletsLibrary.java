@@ -45,7 +45,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -236,6 +238,10 @@ public class FaceletsLibrary extends AbstractFaceletsLibrary {
         }
     }
 
+    @Override
+    public String getLegacyNamespace() {
+        return NamespaceUtils.NS_MAPPING.get(declaredNamespace);
+    }
 
-   
+
 }

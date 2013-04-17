@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.php.project;
 
-import org.netbeans.modules.php.project.problems.ProjectPropertiesProblemProvider;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -67,12 +67,12 @@ public final class PhpProjectValidator {
     /**
      * Is the given project broken?
      *
-     * Currently, it means that the given project has any {@link ProjectPropertiesProblemProvider#getProblems() problem}.
+     * Currently, it means that the given project has any {@link ProjectProblemsProvider#getProblems() problem}.
      * @param project project to be checked
      * @return {@code true} if the project is broken
      */
     public static boolean isBroken(PhpProject project) {
-        return !project.getLookup().lookup(ProjectPropertiesProblemProvider.class).getProblems().isEmpty();
+        return !project.getLookup().lookup(ProjectProblemsProvider.class).getProblems().isEmpty();
     }
 
 }

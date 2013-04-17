@@ -123,7 +123,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 
@@ -136,7 +135,7 @@ public class RunFindBugs {
     public static final String PREFIX_FINDBUGS = "findbugs:";
            static final Logger LOG = Logger.getLogger(RunFindBugs.class.getName());
     
-    public static List<ErrorDescription> runFindBugs(CompilationInfo info, Preferences customSettings, String singleBug, FileObject sourceRoot, Iterable<? extends String> classNames, FindBugsProgress progress, SigFilesValidator validator) {
+    public static List<ErrorDescription> runFindBugs(CompilationInfo info, Preferences customSettings, String singleBug, FileObject sourceRoot, Iterable<? extends String> classNames, final FindBugsProgress progress, final Cancel cancel, SigFilesValidator validator) {
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         
         try {
@@ -200,8 +199,37 @@ public class RunFindBugs {
             engine.setNoClassOk(true);
             engine.setBugReporter(r);
             
-            if (progress != null) {
-                engine.setProgressCallback(progress);
+            if (progress != null || cancel != null) {
+                engine.setProgressCallback(new FindBugsProgress() {
+                    @Override public void reportNumberOfArchives(int i) {
+                        if (cancel != null && cancel.isCancelled()) throw new Stop();
+                        if (progress != null) progress.reportNumberOfArchives(i);
+                    }
+                    @Override public void startArchive(String string) {
+                        if (cancel != null && cancel.isCancelled()) throw new Stop();
+                        if (progress != null) progress.startArchive(string);
+                    }
+                    @Override public void finishArchive() {
+                        if (cancel != null && cancel.isCancelled()) throw new Stop();
+                        if (progress != null) progress.finishArchive();
+                    }
+                    @Override public void predictPassCount(int[] ints) {
+                        if (cancel != null && cancel.isCancelled()) throw new Stop();
+                        if (progress != null) progress.predictPassCount(ints);
+                    }
+                    @Override public void startAnalysis(int i) {
+                        if (cancel != null && cancel.isCancelled()) throw new Stop();
+                        if (progress != null) progress.startAnalysis(i);
+                    }
+                    @Override public void finishClass() {
+                        if (cancel != null && cancel.isCancelled()) throw new Stop();
+                        if (progress != null) progress.finishClass();
+                    }
+                    @Override public void finishPerClassAnalysis() {
+                        if (cancel != null && cancel.isCancelled()) throw new Stop();
+                        if (progress != null) progress.finishPerClassAnalysis();
+                    }
+                });
             }
 
             boolean inEditor = validator != null;
@@ -230,6 +258,7 @@ public class RunFindBugs {
             Map<FileObject, List<BugInstance>> file2Bugs = new HashMap<FileObject, List<BugInstance>>();
             
             for (BugInstance b : r.getBugCollection().getCollection()) {
+                if (cancel != null && cancel.isCancelled()) return null;
                 if (singleBug != null && !singleBug.equals(b.getBugPattern().getType())) continue;
                 if (singleBug == null && !settings.getBoolean(b.getBugPattern().getType(), customSettings == null && isEnabledByDefault(b.getBugPattern()))) {
                     continue;
@@ -256,6 +285,8 @@ public class RunFindBugs {
             }
             
             for (Entry<FileObject, List<BugInstance>> e : file2Bugs.entrySet()) {
+                if (cancel != null && cancel.isCancelled()) return null;
+                
                 int[] lineOffsets = null;
                 FileObject sourceFile = e.getKey();
                 DataObject d = DataObject.find(sourceFile);
@@ -264,8 +295,20 @@ public class RunFindBugs {
                 JavaSource js = null;
                 
                 for (BugInstance b : e.getValue()) {
+                    if (cancel != null && cancel.isCancelled()) return null;
                     SourceLineAnnotation sourceLine = b.getPrimarySourceLineAnnotation();
 
+                    if ("UPM_UNCALLED_PRIVATE_METHOD".equals(b.getBugPattern().getType())) {
+                        if (js == null) {
+                            js = JavaSource.forFileObject(sourceFile);
+                        }
+                        int[] span = spanForEnclosingMethod(info, js, sourceLine.getStartLine());
+                        if (span != null && span[0] != (-1)) {
+                            LazyFixList fixes = prepareFixes(b, inEditor, sourceFile, -1, span);
+                            result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getBugPattern().getDetailHTML(), fixes, sourceFile, span[0], span[1]));
+                            continue;
+                        }
+                    }
                     if (sourceLine.getStartLine() >= 0) {
                         LazyFixList fixes = prepareFixes(b, inEditor, sourceFile, sourceLine.getStartLine(), null);
                         
@@ -294,6 +337,9 @@ public class RunFindBugs {
             Exceptions.printStackTrace(ex);
         } catch (InterruptedException ex) {
             LOG.log(Level.FINE, null, ex);
+        } catch (Stop stop) {
+            //cancelled
+            return null;
         }
 
         return result;
@@ -410,26 +456,55 @@ public class RunFindBugs {
             }
         };
         
-        final TaskImpl convertor = new TaskImpl();
+        runInJavac(info, js, new TaskImpl());
 
+        return result;
+    }
+
+    private static int[] spanForEnclosingMethod(CompilationInfo info, JavaSource js, final int startLine) {
+        final int[] result = new int[] {-1, -1};
+        class TaskImpl implements Task<CompilationInfo> {
+            @Override public void run(final CompilationInfo parameter) {
+                long pos = parameter.getCompilationUnit().getLineMap().getStartPosition(startLine);
+                for (Tree t : parameter.getTreeUtilities().pathFor((int) pos - 1)) {
+                    if (t.getKind() == Kind.METHOD) {
+                        int[] span = parameter.getTreeUtilities().findNameSpan((MethodTree) t);
+
+                        if (span != null && span[0] < pos) {
+                            result[0] = span[0];
+                            result[1] = span[1];
+                        }
+                    }
+                }
+            }
+        };
+        
+        runInJavac(info, js, new TaskImpl());
+
+        return result;
+    }
+    
+    private static void runInJavac(CompilationInfo info, JavaSource js, final Task<CompilationInfo> task) {
         if (info != null) {
-            convertor.run(info);
+            try {
+                task.run(info);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         } else {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
                     @Override public void run(CompilationController parameter) throws Exception {
                         parameter.toPhase(Phase.RESOLVED); //XXX: ENTER should be enough in most cases, but not for anonymous innerclasses.
-                        convertor.run(parameter);
+                        task.run(parameter);
                     }
                 }, true);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-
-        return result;
     }
-
+    
     private static LazyFixList prepareFixes(BugInstance b, boolean globalPreferences, FileObject sourceFile, int line, int[] span) {
         List<Fix> fixes;
 
@@ -842,6 +917,11 @@ public class RunFindBugs {
             return hash;
         }
 
-
     }
+    
+    public static interface Cancel {
+        public boolean isCancelled();
+    }
+    
+    private static final class Stop extends ThreadDeath { }
 }

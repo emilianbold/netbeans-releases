@@ -75,6 +75,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.JCheckBox;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -137,6 +138,8 @@ public final class HintsPanel extends javax.swing.JPanel   {
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private final ClassPathBasedHintWrapper cpBased;
     private final QueryStatus queryStatus;
+    private final boolean showHeavyInspections;
+    
     //AWT only:
     private HintMetadata toSelect = null;
     
@@ -148,6 +151,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
     HintsPanel(@NullAllowed final OptionsFilter filter) {
         this.cpBased = null;
         this.queryStatus = QueryStatus.SHOW_QUERIES;
+        this.showHeavyInspections = false;
         WORKER.post(new Runnable() {
 
             @Override
@@ -174,12 +178,14 @@ public final class HintsPanel extends javax.swing.JPanel   {
     public HintsPanel(Configuration preselected, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
         this.queryStatus = QueryStatus.ONLY_ENABLED;
+        this.showHeavyInspections = true;
         init(null, false, true, true, true);
         configCombo.setSelectedItem(preselected);
     }
     public HintsPanel(HintMetadata preselected, @NullAllowed final CustomizerContext<?, ?> cc, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
         this.queryStatus = cc == null ? QueryStatus.NEVER : QueryStatus.SHOW_QUERIES;
+        this.showHeavyInspections = true;
         init(null, false, false, cc == null, false);
         select(preselected);
         configurationsPanel.setVisible(false);
@@ -200,6 +206,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
     public HintsPanel(Preferences configurations, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
         this.queryStatus = QueryStatus.SHOW_QUERIES;
+        this.showHeavyInspections = true;
         init(null, false, false, false, true);
         setOverlayPreferences(configurations);
         configurationsPanel.setVisible(false);
@@ -245,6 +252,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
         
         descriptionTextArea.setContentType("text/html"); // NOI18N
+        descriptionTextArea.putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
         
         scriptTextArea.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-javahints"));
         scriptTextArea.setEditable(true);
@@ -1144,6 +1152,11 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
         for (HintMetadata m : metadata) {
             if (m.options.contains(Options.NON_GUI)) continue;
+            if (m.options.contains(Options.HEAVY)) {
+                if (!showHeavyInspections) {
+                    continue;
+                }
+            }
             if (   m.options.contains(Options.QUERY)
                 && !HintCategory.CUSTOM_CATEGORY.equals(m.category)) {
                 if (queryStatus == QueryStatus.NEVER) {
@@ -1152,7 +1165,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                 if (queryStatus == QueryStatus.ONLY_ENABLED && logic != null && !logic.isEnabled(m)) {
                     continue;
                 }
-            }
+            } 
 
             HintCategory cat = cat2CatDesc.get(m.category);
 

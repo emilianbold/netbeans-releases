@@ -123,8 +123,6 @@ public class BufferedCharSequence implements CharSequence {
         char PS = 0x2029;
         /** Unicode next line (0x0085) */
         char NEL = 0x0085;
-        /** Unicode form feed (0x000C) */
-        char FF = 0x000C;
     }
 
     // Internal state
@@ -390,7 +388,6 @@ public class BufferedCharSequence implements CharSequence {
                     case UnicodeLineTerminator.LF:
                     case UnicodeLineTerminator.PS:
                     case UnicodeLineTerminator.LS:
-                    case UnicodeLineTerminator.FF:
                     case UnicodeLineTerminator.NEL:
                         return sb.toString();
                     case UnicodeLineTerminator.CR:

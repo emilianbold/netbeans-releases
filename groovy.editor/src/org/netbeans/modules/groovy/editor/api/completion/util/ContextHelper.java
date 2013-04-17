@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.groovy.editor.api.completion.util;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -52,15 +53,20 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
+import org.netbeans.modules.groovy.editor.api.GroovyIndex;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedField;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.openide.filesystems.FileObject;
 
 /**
- * Utility class which provides various methods related to CompletionRequest.
+ * Utility class which provides various methods related to CompletionContext.
  *
  * @author Martin Janicek
  */
@@ -78,7 +84,7 @@ public final class ContextHelper {
      * @param request completion request
      * @return list of declared <code>ClassNode</code>'s
      */
-    public static List<ClassNode> getDeclaredClasses(CompletionRequest request) {
+    public static List<ClassNode> getDeclaredClasses(CompletionContext request) {
         if (request.path == null) {
             LOG.log(Level.FINEST, "path == null"); // NOI18N
             return Collections.EMPTY_LIST;
@@ -100,7 +106,7 @@ public final class ContextHelper {
      * @param request completion request which includes position information
      * @return the next surrounding ClassNode
      */
-    public static ClassNode getSurroundingClassNode(CompletionRequest request) {
+    public static ClassNode getSurroundingClassNode(CompletionContext request) {
         if (request.path == null) {
             LOG.log(Level.FINEST, "path == null"); // NOI18N
             return null;
@@ -123,7 +129,7 @@ public final class ContextHelper {
      * @param request completion request
      * @return the surrounding ModuleNode or null if it wasn't found
      */
-    public static ModuleNode getSurroundingModuleNode(CompletionRequest request) {
+    public static ModuleNode getSurroundingModuleNode(CompletionContext request) {
         AstPath path = request.path;
         if (path != null) {
             for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
@@ -143,7 +149,7 @@ public final class ContextHelper {
      * @param request completion request which includes position information
      * @return the next surrounding MethodNode
      */
-    public static ASTNode getSurroundingMethodOrClosure(CompletionRequest request) {
+    public static ASTNode getSurroundingMethodOrClosure(CompletionContext request) {
         if (request.path == null) {
             LOG.log(Level.FINEST, "path == null"); // NOI18N
             return null;
@@ -173,17 +179,17 @@ public final class ContextHelper {
     }
 
     /**
-     * Finds out if the give CompletionRequest is a complete-constructor call.
+     * Finds out if the give CompletionContext is a complete-constructor call.
      * 
      * @param request actual completion request
      * @return true if it's constructor call, false otherwise
      */
-    public static boolean isConstructorCall(CompletionRequest request) {
-        if (request.prefix.length() > 0) {
-            if (isEqualsNew(request.ctx.before1)) {
+    public static boolean isConstructorCall(CompletionContext request) {
+        if (request.getPrefix().length() > 0) {
+            if (isEqualsNew(request.context.before1)) {
                 return true; // new String|
             }
-            if (isEqualsNew(request.ctx.before2)) {
+            if (isEqualsNew(request.context.before2)) {
                 return true; // new String|("abc");
             }
         }
@@ -220,9 +226,9 @@ public final class ContextHelper {
      * @param ctx
      * @return true if we are on variable definition line, false otherwise
      */
-    public static boolean isVariableNameDefinition(CompletionRequest request) {
+    public static boolean isVariableNameDefinition(CompletionContext request) {
         LOG.log(Level.FINEST, "checkForVariableDefinition()"); //NOI18N
-        CompletionContext ctx = request.ctx;
+        CompletionSurrounding ctx = request.context;
 
         if (ctx == null || ctx.before1 == null) {
             return false;
@@ -278,9 +284,9 @@ public final class ContextHelper {
      * @param request completion request
      * @return true if it's field/property definition line, false otherwise
      */
-    public static boolean isFieldNameDefinition(CompletionRequest request) {
+    public static boolean isFieldNameDefinition(CompletionContext request) {
         LOG.log(Level.FINEST, "isFieldDefinitionLine()"); //NOI18N
-        CompletionContext ctx = request.ctx;
+        CompletionSurrounding ctx = request.context;
 
         if (ctx == null || ctx.before1 == null) {
             return false;
@@ -321,21 +327,21 @@ public final class ContextHelper {
         return false;
     }
 
-    private static ASTNode getASTNodeForToken(Token<GroovyTokenId> tokenId, CompletionRequest request) {
+    private static ASTNode getASTNodeForToken(Token<GroovyTokenId> tokenId, CompletionContext request) {
         LOG.log(Level.FINEST, "getASTNodeForToken()"); //NOI18N
         TokenHierarchy<Document> th = TokenHierarchy.get((Document) request.doc);
         int position = tokenId.offset(th);
 
-        ModuleNode rootNode = ASTUtils.getRoot(request.info);
+        ModuleNode rootNode = ASTUtils.getRoot(request.getParserResult());
         if (rootNode == null) {
             return null;
         }
-        int astOffset = ASTUtils.getAstOffset(request.info, position);
+        int astOffset = ASTUtils.getAstOffset(request.getParserResult(), position);
         if (astOffset == -1) {
             return null;
         }
 
-        BaseDocument document = (BaseDocument) request.info.getSnapshot().getSource().getDocument(false);
+        BaseDocument document = (BaseDocument) request.getParserResult().getSnapshot().getSource().getDocument(false);
         if (document == null) {
             LOG.log(Level.FINEST, "Could not get BaseDocument. It's null"); //NOI18N
             return null;
@@ -348,5 +354,25 @@ public final class ContextHelper {
         LOG.log(Level.FINEST, "node: {0}", node); //NOI18N
 
         return node;
+    }
+    
+    public static List<String> getProperties(CompletionContext context) {
+        FileObject f = context.getParserResult().getSnapshot().getSource().getFileObject();
+        if (f == null) {
+            return Collections.<String>emptyList();
+        }
+
+        GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(f,
+                Collections.singleton(ClassPath.SOURCE), Collections.<String>emptySet(), Collections.<String>emptySet()));
+
+        List<String> result = new ArrayList<String>();
+        
+        for (IndexedField indexedField : index.getFields(".*", context.getTypeName(), QuerySupport.Kind.REGEXP)) {
+            if (!indexedField.isStatic() && indexedField.isProperty()) {
+                result.add(indexedField.getName());
+            }
+        }
+
+        return result;
     }
 }

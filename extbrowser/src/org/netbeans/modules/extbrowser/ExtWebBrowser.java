@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.awt.Image;
 import java.beans.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -472,6 +473,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
         init();
     }
 
+    @Override
     public BrowserFamilyId getBrowserFamilyId() {
         NbProcessDescriptor desc = getBrowserExecutable();
         if (desc != null) {
@@ -487,6 +489,31 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             
         }
         return BrowserFamilyId.UNKNOWN;
+    }
+
+    @Override
+    public Image getIconImage() {
+        return null;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return null;
+    }
+
+    @Override
+    public String getId() {
+        return null;
+    }
+
+    @Override
+    public boolean hasNetBeansIntegration() {
+        return false;
+    }
+
+    @Override
+    public boolean canCreateHtmlBrowserImpl() {
+        return false;
     }
     
     /** Default format that can format tags related to execution. 

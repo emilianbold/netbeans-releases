@@ -628,6 +628,9 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     }
 
     @Override public void skip_balanced_curlies(Token token) {orig.skip_balanced_curlies(convertToken(token));}    
-    
-    
+
+    @Override
+    public CsmFile getCurrentFile() {
+        return orig.getCurrentFile();
+    }
 }

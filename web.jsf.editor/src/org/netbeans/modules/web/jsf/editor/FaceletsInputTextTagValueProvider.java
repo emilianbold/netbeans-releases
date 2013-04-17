@@ -60,6 +60,7 @@ import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.JsfUtils;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.modules.web.jsfapi.spi.InputTextTagValueProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -103,13 +104,14 @@ public class FaceletsInputTextTagValueProvider implements InputTextTagValueProvi
                 return null;
             }
 
-            if (hresult.getNamespaces().containsKey(DefaultLibraryInfo.HTML.getNamespace())) {
-                String htmlLibPrefix = hresult.getNamespaces().get(DefaultLibraryInfo.HTML.getNamespace());
+            String htmlNs = NamespaceUtils.getForNs(hresult.getNamespaces(), DefaultLibraryInfo.HTML.getNamespace());
+            if (htmlNs != null) {
+                String htmlLibPrefix = hresult.getNamespaces().get(htmlNs);
                 if(htmlLibPrefix == null) {
                     htmlLibPrefix = DefaultLibraryInfo.HTML.getDefaultPrefix();
                 }
                 String tagName = new StringBuilder().append(htmlLibPrefix).append('.').append(INPUT_TEXT_TAG_NAME).toString();
-                Collection<OpenTag> foundNodes = findValue(hresult.root(DefaultLibraryInfo.HTML.getNamespace()).children(), tagName, new ArrayList<OpenTag>());
+                Collection<OpenTag> foundNodes = findValue(hresult.root(htmlNs).children(), tagName, new ArrayList<OpenTag>());
 
                 Map<String, String> map = new HashMap<String, String>();
                 for (OpenTag node : foundNodes) {

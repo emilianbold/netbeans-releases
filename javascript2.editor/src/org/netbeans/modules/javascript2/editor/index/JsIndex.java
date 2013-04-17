@@ -49,6 +49,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -62,12 +63,13 @@ public class JsIndex {
 
     private static final Logger LOG = Logger.getLogger(JsIndex.class.getName());
     private final QuerySupport querySupport;
-    private static final JsIndex EMPTY = new JsIndex(null);
-
-    public static final String FIELD_IS_GLOBAL = "isglobal"; //NOI18N
     public static final String FIELD_BASE_NAME = "bn"; //NOI18N
+    /**
+     * In this field is in the lucene also coded, whether the object is anonymous (last char is 'A')
+     * or normal object (last char is 'O'). If someone needs to access this field
+     * directly, then has to be count with this.
+     */
     public static final String FIELD_FQ_NAME = "fqn"; //NOI18N
-    public static final String FIELD_PROPERTY = "prop"; //NOI18N
     public static final String FIELD_OFFSET = "offset"; //NOI18N
     public static final String FIELD_ASSIGNMENS = "assign"; //NOI18N
     public static final String FIELD_RETURN_TYPES = "return"; //NOI18N
@@ -75,9 +77,9 @@ public class JsIndex {
     public static final String FIELD_FLAG = "flag"; //NOI18N
 
     @org.netbeans.api.annotations.common.SuppressWarnings("MS_MUTABLE_ARRAY")
-    public static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_OFFSET, FIELD_RETURN_TYPES, FIELD_PARAMETERS, FIELD_FLAG, FIELD_IS_GLOBAL, FIELD_ASSIGNMENS};
-    static final String[] TERMS_PROPERTIES = new String[] { FIELD_PROPERTY, FIELD_ASSIGNMENS, FIELD_RETURN_TYPES, FIELD_FLAG};
+    public static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_OFFSET, FIELD_RETURN_TYPES, FIELD_PARAMETERS, FIELD_FLAG, FIELD_ASSIGNMENS};
     
+       
     private JsIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;
     }
@@ -110,7 +112,8 @@ public class JsIndex {
             final QuerySupport.Kind kind, final String... fieldsToLoad) {
         if (querySupport != null) {
             try {
-                return querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
+                Collection<? extends IndexResult> result = querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
+                return result;
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, null, ioe);
             }
@@ -119,32 +122,20 @@ public class JsIndex {
         return Collections.<IndexResult>emptySet();
     }
 
-    private Collection<IndexedElement> allGlobalItems = new ArrayList<IndexedElement>();
-    private static final Object LOCK = new Object();
-
-    public Collection <IndexedElement> getGlobalVar(String prefix) {
-        if (isIndexChanged.get()) {
-            synchronized(LOCK) {
-                if (isIndexChanged.get()) {
-                    ArrayList<IndexedElement> globals = new ArrayList<IndexedElement>();
-                    Collection<? extends IndexResult> globalObjects = query(
-                            JsIndex.FIELD_IS_GLOBAL, "1", QuerySupport.Kind.EXACT, TERMS_BASIC_INFO); //NOI18N
-                    for (IndexResult indexResult : globalObjects) {
-                        IndexedElement indexedElement = IndexedElement.create(indexResult);
-                        globals.add(indexedElement);
-                    }
-                    allGlobalItems.clear();
-                    allGlobalItems.addAll(globals);
-                    isIndexChanged.set(false);
-                }
-            }
-        }
+    public Collection<IndexedElement> getGlobalVar(String prefix) {
         prefix = prefix == null ? "" : prefix; //NOI18N
-        Collection<IndexedElement>sortedItems;
-        synchronized(LOCK) {
-            sortedItems = getElementsByPrefix(prefix, allGlobalItems);
+        ArrayList<IndexedElement> globals = new ArrayList<IndexedElement>();
+        long start = System.currentTimeMillis();
+        String indexPrefix = escapeRegExp(prefix) + "[^\\.]*[" + IndexedElement.OBJECT_POSFIX + "]";   //NOI18N
+        Collection<? extends IndexResult> globalObjects = query(
+                JsIndex.FIELD_FQ_NAME, indexPrefix, QuerySupport.Kind.REGEXP, TERMS_BASIC_INFO); //NOI18N
+        for (IndexResult indexResult : globalObjects) {
+            IndexedElement indexedElement = IndexedElement.create(indexResult);
+            globals.add(indexedElement);
         }
-        return sortedItems;
+        long end = System.currentTimeMillis();
+        LOG.log(Level.FINE, "Obtaining globals from the index took: {0}", (end - start)); //NOI18N
+        return globals;
     }
 
     private static Collection<IndexedElement> getElementsByPrefix(String prefix, Collection<IndexedElement> items) {
@@ -172,30 +163,44 @@ public class JsIndex {
         if (deepLevel > MAX_FIND_PROPERTIES_RECURSION) {
             return Collections.EMPTY_LIST;
         }
-        resolvedTypes.add(fqn);
-        deepLevel = deepLevel + 1;
-        Collection<? extends IndexResult> results = query(
-                JsIndex.FIELD_FQ_NAME, fqn, QuerySupport.Kind.EXACT, TERMS_PROPERTIES); //NOI18N
         Collection<IndexedElement> result = new ArrayList<IndexedElement>();
-        for (IndexResult indexResult : results) {
-            Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
-            if (!assignments.isEmpty()) {
-                TypeUsage type = assignments.iterator().next();
-                if (!resolvedTypes.contains(type.getType())) {                    
-                    result.addAll(getProperties(type.getType(), deepLevel, resolvedTypes));
+        if (!resolvedTypes.contains(fqn)) {
+            resolvedTypes.add(fqn);
+            deepLevel = deepLevel + 1;
+            Collection<? extends IndexResult> results = findFQN(fqn);
+            for (IndexResult indexResult : results) {
+                // find assignment to for the fqn
+                Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
+                if (!assignments.isEmpty()) {
+                    TypeUsage type = assignments.iterator().next();
+                    if (!resolvedTypes.contains(type.getType())) {                    
+                        result.addAll(getProperties(type.getType(), deepLevel, resolvedTypes));
+                    }
                 }
             }
-            for (IndexedElement indexedElement : IndexedElement.createProperties(indexResult, fqn)) {
-                result.add(indexedElement);
+            // find properties of the fqn
+            String pattern = escapeRegExp(fqn) + "\\.[^\\.]*"; //NOI18N
+            results = query(
+                    JsIndex.FIELD_FQ_NAME, pattern, QuerySupport.Kind.REGEXP, TERMS_BASIC_INFO); //NOI18N
+            for (IndexResult indexResult : results) {
+                IndexedElement property = IndexedElement.create(indexResult);
+                if (!property.getModifiers().contains(Modifier.PRIVATE)) {
+                    result.add(property);
+                }
             }
         }
         return result;
     }
     
     public Collection<? extends IndexResult> findFQN(String fqn) {
+        String pattern = escapeRegExp(fqn)+ "."; //NOI18N
         Collection<? extends IndexResult> results = query(
-                JsIndex.FIELD_FQ_NAME, fqn, QuerySupport.Kind.EXACT, TERMS_PROPERTIES); //NOI18N
+                JsIndex.FIELD_FQ_NAME, pattern, QuerySupport.Kind.REGEXP, TERMS_BASIC_INFO); //NOI18N
         
         return results;
+    }
+    
+    private String escapeRegExp(String text) {
+        return text.replace(".", "\\.").replace("$", "\\$").replace("?", "\\?").replace("^", "\\^").replace("[", "\\[").replace("]", "\\]");
     }
 }

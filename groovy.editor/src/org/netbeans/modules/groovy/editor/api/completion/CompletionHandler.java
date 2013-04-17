@@ -53,10 +53,6 @@ import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
@@ -75,13 +71,13 @@ import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
-import org.netbeans.modules.groovy.editor.api.completion.impl.ProposalsCollector;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
+import org.netbeans.modules.groovy.editor.completion.ProposalsCollector;
 import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.api.elements.ast.ASTMethod;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
+import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -121,23 +117,25 @@ public class CompletionHandler implements CodeCompletionHandler {
     }
 
     @Override
-    public CodeCompletionResult complete(CodeCompletionContext context) {
-        ParserResult info = context.getParserResult();
-        String prefix = context.getPrefix();
-
-        final int lexOffset = context.getCaretOffset();
-        final int astOffset = ASTUtils.getAstOffset(info, lexOffset);
+    public CodeCompletionResult complete(CodeCompletionContext completionContext) {
+        ParserResult parserResult = completionContext.getParserResult();
+        String prefix = completionContext.getPrefix();
+        
+        // Documentation says that @NonNull is return from getPrefix() but it's not true
+        // Invoking "this.^" makes the return value null
+        if (prefix == null) {
+            prefix = "";
+        }
+        
+        int lexOffset = completionContext.getCaretOffset();
+        int astOffset = ASTUtils.getAstOffset(parserResult, lexOffset);
+        int anchor = lexOffset - prefix.length();
 
         LOG.log(Level.FINEST, "complete(...), prefix      : {0}", prefix); // NOI18N
         LOG.log(Level.FINEST, "complete(...), lexOffset   : {0}", lexOffset); // NOI18N
         LOG.log(Level.FINEST, "complete(...), astOffset   : {0}", astOffset); // NOI18N
 
-        // Avoid all those annoying null checks
-        if (prefix == null) {
-            prefix = "";
-        }
-
-        final Document document = info.getSnapshot().getSource().getDocument(false);
+        final Document document = parserResult.getSnapshot().getSource().getDocument(false);
         if (document == null) {
             return CodeCompletionResult.NONE;
         }
@@ -146,37 +144,37 @@ public class CompletionHandler implements CodeCompletionHandler {
         doc.readLock(); // Read-lock due to Token hierarchy use
 
         try {
-            CompletionRequest request = new CompletionRequest(lexOffset, astOffset, info, doc, prefix);
-            boolean initResult = request.initContextAttributes();
-
-            if (initResult == false) {
+            CompletionContext context = new CompletionContext(parserResult, prefix, anchor, lexOffset, astOffset, doc);
+            context.init();
+            
+            // if we are above a package statement or inside a comment there's no completion at all.
+            if (context.location == CaretLocation.ABOVE_PACKAGE || context.location == CaretLocation.INSIDE_COMMENT) {
                 return new DefaultCompletionResult(Collections.EMPTY_LIST, false);
             }
+            
+            ProposalsCollector proposalsCollector = new ProposalsCollector(context);
 
-            int anchor = lexOffset - prefix.length();
-            ProposalsCollector proposalsCollector = new ProposalsCollector(anchor);
-
-            if (ContextHelper.isVariableNameDefinition(request) || ContextHelper.isFieldNameDefinition(request)) {
-                proposalsCollector.completeNewVars(request);
+            if (ContextHelper.isVariableNameDefinition(context) || ContextHelper.isFieldNameDefinition(context)) {
+                proposalsCollector.completeNewVars(context);
             } else {
-                if (!(request.location == CaretLocation.OUTSIDE_CLASSES || request.location == CaretLocation.INSIDE_STRING)) {
-                    proposalsCollector.completePackages(request);
-                    proposalsCollector.completeTypes(request);
+                if (!(context.location == CaretLocation.OUTSIDE_CLASSES || context.location == CaretLocation.INSIDE_STRING)) {
+                    proposalsCollector.completePackages(context);
+                    proposalsCollector.completeTypes(context);
                 }
 
-                if (!request.behindImport) {
-                    if (request.location != CaretLocation.INSIDE_STRING) {
-                        proposalsCollector.completeKeywords(request);
-                        proposalsCollector.completeMethods(request);
+                if (!context.isBehindImportStatement()) {
+                    if (context.location != CaretLocation.INSIDE_STRING) {
+                        proposalsCollector.completeKeywords(context);
+                        proposalsCollector.completeMethods(context);
                     }
 
-                    proposalsCollector.completeFields(request);
-                    proposalsCollector.completeLocalVars(request);
+                    proposalsCollector.completeFields(context);
+                    proposalsCollector.completeLocalVars(context);
                 }
             }
-            proposalsCollector.completeCamelCase(request);
+            proposalsCollector.completeCamelCase(context);
 
-            return new GroovyCompletionResult(proposalsCollector.getCollectedProposals(), info, document);
+            return new GroovyCompletionResult(proposalsCollector.getCollectedProposals(), context);
         } finally {
             doc.readUnlock();
         }
@@ -258,7 +256,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "getDeclaringClass() : {0}", mm.getDeclaringClass());
     }
 
-    boolean checkForPackageStatement(final CompletionRequest request) {
+    boolean checkForPackageStatement(final CompletionContext request) {
         TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(request.doc, 1);
 
         if (ts != null) {
@@ -313,56 +311,21 @@ public class CompletionHandler implements CodeCompletionHandler {
 
     }
 
-    boolean checkBehindDot(final CompletionRequest request) {
+    boolean checkBehindDot(final CompletionContext request) {
         boolean behindDot = false;
 
-        if (request == null || request.ctx == null || request.ctx.before1 == null) {
+        if (request == null || request.context == null || request.context.before1 == null) {
             behindDot = false;
         } else {
-            if (CharSequenceUtilities.textEquals(request.ctx.before1.text(), ".") // NOI18N
-                    || (request.ctx.before1.text().toString().equals(request.prefix)
-                        && request.ctx.before2 != null
-                        && CharSequenceUtilities.textEquals(request.ctx.before2.text(), "."))) { // NOI18N
+            if (CharSequenceUtilities.textEquals(request.context.before1.text(), ".") // NOI18N
+                    || (request.context.before1.text().toString().equals(request.getPrefix())
+                        && request.context.before2 != null
+                        && CharSequenceUtilities.textEquals(request.context.before2.text(), "."))) { // NOI18N
                 behindDot = true;
             }
         }
 
         return behindDot;
-    }
-
-    /**
-     * Get the parameter-list of this executable as String
-     * @param exe
-     * @return
-     */
-    public static String getParameterListForMethod(ExecutableElement exe) {
-        StringBuilder sb = new StringBuilder();
-
-        if (exe != null) {
-            // generate a list of parameters
-            // unfortunately, we have to work around # 139695 in an ugly fashion
-
-            try {
-                List<? extends VariableElement> params = exe.getParameters(); // this can cause NPE's
-
-                for (VariableElement variableElement : params) {
-                    TypeMirror tm = variableElement.asType();
-
-                    if (sb.length() > 0) {
-                        sb.append(", ");
-                    }
-
-                    if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY) {
-                        sb.append(GroovyUtils.stripPackage(tm.toString()));
-                    } else {
-                        sb.append(tm.toString());
-                    }
-                }
-            } catch (NullPointerException e) {
-                // simply do nothing.
-            }
-        }
-        return sb.toString();
     }
 
     /**

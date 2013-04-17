@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
@@ -68,6 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -276,7 +276,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         }
         
         @Override
-        public ClassImpl create() {
+        public ClassImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
             ClassImplFunctionSpecialization impl = getInstance();
             if (impl == null) {
                 instance = impl = new ClassImplFunctionSpecialization(getNameHolder(), getKind(), getFile(), getStartOffset(), getEndOffset());
@@ -295,7 +295,12 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
                 }
                 for (MemberBuilder builder : getMemberBuilders()) {
                     builder.setScope(impl);
-                    impl.addMember(builder.create(), isGlobal());
+                    final CsmMember member = builder.create(delegate);
+                    if (member != null) {
+                        impl.addMember(member, isGlobal());
+                    } else {
+                        CsmParserProvider.registerParserError(delegate, "Skip unrecognized member for builder '"+builder, getFile(), getStartOffsetImpl(builder, this)); //NOI18N
+                    }
                 }                
                 addDeclaration(impl);
             }

@@ -93,7 +93,7 @@ public class GroupGrammarElement extends GrammarElement {
         this(parent, index, null);
     }
     
-    private List<GrammarElement> elements = new ArrayList<GrammarElement>(5);
+    private List<GrammarElement> elements = new ArrayList<>(5);
     private Type type;
 
     
@@ -127,7 +127,7 @@ public class GroupGrammarElement extends GrammarElement {
     }
 
     public List<GrammarElement> getAllPossibleValues() {
-        List<GrammarElement> all = new ArrayList<GrammarElement>(10);
+        List<GrammarElement> all = new ArrayList<>(10);
         if (getType() == Type.LIST) {
             //sequence
             GrammarElement e = elements.get(0); //first element

@@ -3,4 +3,4 @@ x?.b|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     bitwiseNegate()                            Pattern
-FIELD      bytes                                      byte[]
+FIELD      bytes                           [PUBLIC]   byte[]

@@ -58,9 +58,12 @@ public class JavaHlClientAdapterFactoryTest extends NbTestCase {
         super(name);
     }
 
+    @Override
     public void setUp() {
+        System.setProperty("subversion.native.library", "");
     }
 
+    @Override
     public void tearDown() {
     }
 
@@ -70,13 +73,6 @@ public class JavaHlClientAdapterFactoryTest extends NbTestCase {
         assertTrue(f.isAvailable());
         ISVNClientAdapter c = f.createClient();
         assertNotNull(c);
-    }
-
-    public void testNotAvailable() {
-        System.setProperty("subversion.native.library", "/this/shouldnot/work" + System.currentTimeMillis());
-        JavaHlClientAdapterFactory f = getFactory();
-        assertNotNull(f);
-        assertFalse(f.isAvailable());
     }
 
     public void testProvides() {

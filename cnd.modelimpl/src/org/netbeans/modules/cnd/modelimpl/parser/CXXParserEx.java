@@ -41,10 +41,14 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import org.antlr.runtime.BitSet;
+import org.antlr.runtime.IntStream;
 import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.RecognizerSharedState;
 import org.antlr.runtime.TokenStream;
-import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CXXParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
@@ -54,11 +58,26 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
  */
 public class CXXParserEx extends CXXParser {
     
+    private static final int RECOVERY_LIMIT = 20;
+    private static final BitSet stopSet = new BitSet();
+    static {
+        stopSet.add(LCURLY);
+        stopSet.add(RCURLY);
+        stopSet.add(RPAREN);
+        stopSet.add(LPAREN);
+    }
+        
     private final CXXParserActionEx action;
-    
+    private final boolean trace;
+    private int level = 0; // indentation based trace
+    private int recoveryCounter = 0;
+    private final boolean reportErrors;
+
     public CXXParserEx(TokenStream input, CXXParserActionEx action) {
         super(input, action);
         this.action = action;
+        this.trace = TraceFlags.TRACE_CPP_PARSER_RULES;
+        this.reportErrors = TraceFlags.REPORT_PARSING_ERRORS;
     }
     
     private CsmParserProvider.ParserErrorDelegate errorDelegate;
@@ -69,12 +88,140 @@ public class CXXParserEx extends CXXParser {
 
     @Override
     public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
-        if(errorDelegate != null) {
-            errorDelegate.onError(new CsmParserProvider.ParserError(e.getMessage(), e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1));
+        CsmParserProvider.ParserError parserError;
+        if (e instanceof MyRecognitionException) {
+            MyRecognitionException ex = (MyRecognitionException) e;
+            String hdr = getSourceName();
+            if (APTUtils.isEOF(ex.getToken())) {
+                parserError = new CsmParserProvider.ParserError(hdr+" "+ex.getMessage(), -1, -1, ex.getToken().getText(), true);
+            } else {
+                parserError = new CsmParserProvider.ParserError(hdr+":"+ex.getToken().getLine()+": error: "+ex.getMessage(), ex.getToken().getLine(), ex.getToken().getColumn(), ex.getToken().getText(), false); // NOI18N
+            }
+        } else {
+            String hdr = getSourceName();
+            String msg = getErrorMessage(e, tokenNames);
+            parserError = new CsmParserProvider.ParserError(hdr+":"+e.line+": error: "+msg, e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1); // NOI18N
         }
+        if (errorDelegate != null) {
+            errorDelegate.onError(parserError);
+        }
+        if (reportErrors) {
+            System.err.println(parserError);
+        }
+    }
+
+    @Override
+    public String getSourceName() {
+        CsmFile currentFile = action.getCurrentFile();
+        if (currentFile != null) {
+            return currentFile.getAbsolutePath().toString();
+        }
+        return ""; // NOI18N
     }
 
     public int backtrackingLevel() {
         return state.backtracking;
     }        
+     
+    /**
+     * Recover from an error found on the input stream. This is for NoViableAlt
+     * and mismatched symbol exceptions. If you enable single token insertion
+     * and deletion, this will usually not handle mismatched symbol exceptions
+     * but there could be a mismatched token that the match() routine could not
+     * recover from.
+     */
+    @Override
+    public void recover(IntStream input, RecognitionException re) {
+        BitSet followSet = computeErrorRecoverySet();
+        if (state.lastErrorIndex == input.index()) {
+            //<editor-fold defaultstate="collapsed" desc="Original Implementation">
+            // uh oh, another error at same token index; must be a case
+            // where LT(1) is in the recovery token set so nothing is
+            // consumed; consume a single token so at least to prevent
+            // an infinite loop; this is a failsafe.
+            //input.consume();
+            //</editor-fold>
+            // our solution:
+            if (recoveryCounter > RECOVERY_LIMIT) {
+                input.consume();
+                recoveryCounter = 0;
+                //followSet.orInPlace(stopSet);
+            } else {
+                recoveryCounter++;
+            }
+        } else {
+            recoveryCounter = 0;
+        }
+        state.lastErrorIndex = input.index();
+        beginResync();
+        consumeUntil(input, followSet);
+        endResync();
+    }
+    
+//    @Override
+//    public void consumeUntil(IntStream input, int tokenType) {
+//        //System.out.println("consumeUntil "+tokenType);
+//        int ttype = input.LA(1);
+//        while (ttype != org.antlr.runtime.Token.EOF && ttype != tokenType) {
+//            input.consume();
+//            ttype = input.LA(1);
+//        }
+//    }
+//
+//    /**
+//     * Consume tokens until one matches the given token set
+//     */
+//    @Override
+//    public void consumeUntil(IntStream input, BitSet set) {
+//        //System.out.println("consumeUntil("+set.toString(getTokenNames())+")");
+//        int ttype = input.LA(1);
+//        while (ttype != org.antlr.runtime.Token.EOF && !set.member(ttype)) {
+//            System.out.println("consume during recover LA(1)="+getTokenNames()[input.LA(1)]);
+//            input.consume();
+//            ttype = input.LA(1);
+//        }
+//    }
+
+    @Override
+    public void traceIn(String ruleName, int ruleIndex) {
+        if (trace) {
+            StringBuilder buf = new StringBuilder();
+            for (int i = 0; i < level; i++) {
+                buf.append(' ').append(' '); //NOI18N
+            }
+            super.traceIn(buf.toString() + ruleName, ruleIndex);
+            level++;
+        }
+    }
+
+    @Override
+    public void traceOut(String ruleName, int ruleIndex) {
+        if (trace) {
+            level--;
+            StringBuilder buf = new StringBuilder();
+            for (int i = 0; i < level; i++) {
+                buf.append(' ').append(' '); //NOI18N
+            }
+            buf.append(' '); //NOI18N
+            super.traceOut(buf.toString() + ruleName, ruleIndex);
+        }
+    }
+    
+    public static class MyRecognitionException extends RecognitionException {
+        private final String message;
+        private final Token myToken;
+        public MyRecognitionException(String message, Token token) {
+            this.message = message;
+            myToken = token;
+        }
+
+        public Token getToken() {
+            return myToken;
+        }
+
+        @Override
+        public String getMessage() {
+            return message;
+        }
+    }
 }

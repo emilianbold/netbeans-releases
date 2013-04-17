@@ -58,7 +58,9 @@ public class FmtBlankLines extends javax.swing.JPanel {
     /** Creates new form FmtBlankLines */
     public FmtBlankLines() {
         initComponents();
-        
+
+        inDeclarationsField.putClientProperty(OPTION_ID, blankLinesInDeclarations);
+        inCodeField.putClientProperty(OPTION_ID, blankLinesInCode);
         bPackageField.putClientProperty(OPTION_ID, blankLinesBeforePackage );
         aPackageField.putClientProperty(OPTION_ID, blankLinesAfterPackage);
         bImportsField.putClientProperty(OPTION_ID, blankLinesBeforeImports);
@@ -74,6 +76,8 @@ public class FmtBlankLines extends javax.swing.JPanel {
         bMethodsField.putClientProperty(OPTION_ID, blankLinesBeforeMethods );
         aMethodsField.putClientProperty(OPTION_ID, blankLinesAfterMethods);
         
+        inDeclarationsField.addKeyListener(new NumericKeyListener());
+        inCodeField.addKeyListener(new NumericKeyListener());
         bPackageField.addKeyListener(new NumericKeyListener());
         aPackageField.addKeyListener(new NumericKeyListener());
         bImportsField.addKeyListener(new NumericKeyListener());
@@ -104,6 +108,14 @@ public class FmtBlankLines extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        maxLabel = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        inDeclarationsLabel = new javax.swing.JLabel();
+        inDeclarationsField = new javax.swing.JTextField();
+        inCodeLabel = new javax.swing.JLabel();
+        inCodeField = new javax.swing.JTextField();
+        minLabel = new javax.swing.JLabel();
+        jSeparator2 = new javax.swing.JSeparator();
         bPackageLabel = new javax.swing.JLabel();
         bPackageField = new javax.swing.JTextField();
         aPackageLabel = new javax.swing.JLabel();
@@ -135,6 +147,22 @@ public class FmtBlankLines extends javax.swing.JPanel {
 
         setName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_BlankLines")); // NOI18N
         setOpaque(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(maxLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blMax")); // NOI18N
+
+        inDeclarationsLabel.setLabelFor(inDeclarationsField);
+        org.openide.awt.Mnemonics.setLocalizedText(inDeclarationsLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blInDeclarations")); // NOI18N
+
+        inDeclarationsField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                inDeclarationsFieldActionPerformed(evt);
+            }
+        });
+
+        inCodeLabel.setLabelFor(inCodeField);
+        org.openide.awt.Mnemonics.setLocalizedText(inCodeLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blInCode")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(minLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blMin")); // NOI18N
 
         bPackageLabel.setLabelFor(bPackageField);
         org.openide.awt.Mnemonics.setLocalizedText(bPackageLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blBeforePackage")); // NOI18N
@@ -207,77 +235,112 @@ public class FmtBlankLines extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(bPackageLabel)
-                    .addComponent(aPackageLabel)
-                    .addComponent(bImportsLabel)
-                    .addComponent(aImports)
-                    .addComponent(bClassLabel)
-                    .addComponent(aClassLabel)
-                    .addComponent(aClassHeaderLabel)
-                    .addComponent(anAnonymousClassHeaderLabel)
-                    .addComponent(aClassFooterLabel)
-                    .addComponent(anAnonymousClassFooterLabel)
-                    .addComponent(bFieldsLabel)
-                    .addComponent(aFieldsLabel)
-                    .addComponent(bMethodsLabel)
-                    .addComponent(aMethodsLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(bMethodsField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                    .addComponent(aFieldsField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                    .addComponent(bFieldsField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                    .addComponent(anAnonymousClassFooterField, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(aClassFooterField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                    .addComponent(anAnonymousClassHeaderField, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(aClassHeaderField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                    .addComponent(aClassField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                    .addComponent(bClassField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                    .addComponent(aImportsField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                    .addComponent(bImportsField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                    .addComponent(aPackageField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                    .addComponent(bPackageField, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(aMethodsField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(bPackageLabel)
+                            .addComponent(aPackageLabel)
+                            .addComponent(bImportsLabel)
+                            .addComponent(aImports)
+                            .addComponent(bClassLabel)
+                            .addComponent(aClassLabel)
+                            .addComponent(aClassHeaderLabel)
+                            .addComponent(anAnonymousClassHeaderLabel)
+                            .addComponent(aClassFooterLabel)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(anAnonymousClassFooterLabel)
+                                    .addComponent(inCodeLabel)
+                                    .addComponent(inDeclarationsLabel))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(bFieldsField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(anAnonymousClassFooterField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(aFieldsField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(bMethodsField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(aMethodsField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(aClassFooterField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(anAnonymousClassHeaderField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(aClassHeaderField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(aClassField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(bClassField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(aImportsField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(bImportsField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(aPackageField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(bPackageField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(inCodeField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(inDeclarationsField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(aMethodsLabel)
+                            .addComponent(bMethodsLabel)
+                            .addComponent(aFieldsLabel)
+                            .addComponent(bFieldsLabel)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(minLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator2))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(maxLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator1)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(maxLabel)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(bPackageField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(bPackageLabel))
-                .addGap(4, 4, 4)
+                    .addComponent(inDeclarationsLabel)
+                    .addComponent(inDeclarationsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(inCodeLabel)
+                    .addComponent(inCodeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(minLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 9, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(bPackageLabel)
+                    .addComponent(bPackageField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(aPackageField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(aPackageLabel))
-                .addGap(4, 4, 4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(bImportsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(bImportsLabel))
-                .addGap(4, 4, 4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(aImportsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(aImports))
-                .addGap(4, 4, 4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(bClassField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(bClassLabel))
-                .addGap(4, 4, 4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(aClassField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(aClassLabel))
-                .addGap(4, 4, 4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(aClassHeaderField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(aClassHeaderLabel))
+                    .addComponent(aClassHeaderLabel)
+                    .addComponent(aClassHeaderField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(anAnonymousClassHeaderLabel)
                     .addComponent(anAnonymousClassHeaderField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(aClassFooterField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(aClassFooterLabel))
+                    .addComponent(aClassFooterLabel)
+                    .addComponent(aClassFooterField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(anAnonymousClassFooterLabel)
@@ -301,9 +364,13 @@ public class FmtBlankLines extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {aClassField, aClassHeaderField, aFieldsField, aImportsField, aMethodsField, aPackageField, bClassField, bFieldsField, bImportsField, bMethodsField, bPackageField});
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {aClassField, aClassHeaderField, aImportsField, aMethodsField, aPackageField, bClassField, bFieldsField, bImportsField, bMethodsField, bPackageField});
 
     }// </editor-fold>//GEN-END:initComponents
+
+    private void inDeclarationsFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inDeclarationsFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_inDeclarationsFieldActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -335,6 +402,14 @@ public class FmtBlankLines extends javax.swing.JPanel {
     private javax.swing.JLabel bMethodsLabel;
     private javax.swing.JTextField bPackageField;
     private javax.swing.JLabel bPackageLabel;
+    private javax.swing.JTextField inCodeField;
+    private javax.swing.JLabel inCodeLabel;
+    private javax.swing.JTextField inDeclarationsField;
+    private javax.swing.JLabel inDeclarationsLabel;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JLabel maxLabel;
+    private javax.swing.JLabel minLabel;
     // End of variables declaration//GEN-END:variables
     
 }

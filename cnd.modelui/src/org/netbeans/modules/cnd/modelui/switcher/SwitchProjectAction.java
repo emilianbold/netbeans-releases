@@ -53,9 +53,9 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -66,8 +66,8 @@ import org.openide.util.actions.NodeAction;
  */
 public final class SwitchProjectAction extends NodeAction {
     
-    private JCheckBoxMenuItem presenter;
-    private ModelImpl model;
+    private final JCheckBoxMenuItem presenter;
+    private final CsmModel model;
     private final AtomicBoolean running = new AtomicBoolean(false);
     
     private enum State {
@@ -83,8 +83,10 @@ public final class SwitchProjectAction extends NodeAction {
             }
         });
         CsmModel aModel = CsmModelAccessor.getModel();
-        if( aModel instanceof ModelImpl ) {
-            this.model = (ModelImpl) aModel;
+        if( CsmModelAccessor.getModelState() == CsmModelState.OFF ) {
+            this.model = null;
+        } else {
+            this.model = aModel;
         }
     }
     

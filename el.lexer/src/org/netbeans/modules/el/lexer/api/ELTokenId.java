@@ -74,6 +74,7 @@ public enum ELTokenId implements TokenId {
     QUESTION("?", ELTokenCategories.OPERATORS.categoryName),
     EQ("=", ELTokenCategories.OPERATORS.categoryName),
     PLUS("+", ELTokenCategories.OPERATORS.categoryName),
+    CONCAT("+=", ELTokenCategories.OPERATORS.categoryName),
     MINUS("-", ELTokenCategories.OPERATORS.categoryName),
     MUL("*", ELTokenCategories.OPERATORS.categoryName),
     DIV("/", ELTokenCategories.OPERATORS.categoryName),
@@ -110,8 +111,6 @@ public enum ELTokenId implements TokenId {
     NULL_KEYWORD("null", ELTokenCategories.KEYWORDS.categoryName),
     OR_KEYWORD("or", ELTokenCategories.KEYWORDS.categoryName),
     TRUE_KEYWORD("true", ELTokenCategories.KEYWORDS.categoryName),
-    CAT_KEYWORD("cat", ELTokenCategories.KEYWORDS.categoryName),
-    T_KEYWORD("T", ELTokenCategories.KEYWORDS.categoryName),
     
     //literals
     WHITESPACE(null, "whitespace"),

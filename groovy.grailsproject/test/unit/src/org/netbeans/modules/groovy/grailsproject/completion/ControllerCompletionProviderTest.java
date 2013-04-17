@@ -61,6 +61,12 @@ public class ControllerCompletionProviderTest extends GroovyTestBase {
     public ControllerCompletionProviderTest(String name) {
         super(name);
     }
+    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        indexFile("projects/completion/grails-app/controllers/TestDomainController.groovy");
+    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
@@ -73,7 +79,6 @@ public class ControllerCompletionProviderTest extends GroovyTestBase {
     }
 
     public void testControllerMethods1() throws Exception {
-        indexFile("projects/completion/grails-app/controllers/TestDomainController.groovy");
         checkCompletion(TEST_BASE + "TestDomainController.groovy", "        this.^", true);
     }
 }

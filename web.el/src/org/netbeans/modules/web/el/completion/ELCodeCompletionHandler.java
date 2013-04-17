@@ -49,10 +49,12 @@ import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstListData;
 import com.sun.el.parser.AstMapData;
 import com.sun.el.parser.AstMethodArguments;
+import com.sun.el.parser.AstSemiColon;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -61,6 +63,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -85,7 +88,6 @@ import org.netbeans.modules.web.el.ELTypeUtilities;
 import org.netbeans.modules.web.el.ELVariableResolvers;
 import org.netbeans.modules.web.el.NodeUtil;
 import org.netbeans.modules.web.el.ResourceBundles;
-import org.netbeans.modules.web.el.operators.OperatorDefinitions;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
@@ -167,7 +169,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     Element resolved = ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve);
 
                     if (ELTypeUtilities.isStaticIterableElement(ccontext, nodeToResolve)) {
-                        proposeOperators(ccontext, context, prefixMatcher, proposals);
+                        proposeStream(ccontext, context, prefixMatcher, proposals);
                     } else if (ELTypeUtilities.isRawObjectReference(ccontext, nodeToResolve)) {
                         proposeRawObjectProperties(ccontext, context, prefixMatcher, nodeToResolve, proposals);
                     } else if (ELTypeUtilities.isScopeObject(ccontext, nodeToResolve)) {
@@ -184,11 +186,14 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                             proposeImpicitObjects(ccontext, context, prefixMatcher, proposals);
                             proposeKeywords(context, prefixMatcher, proposals);
                         }
+                        if (ELStreamCompletionItem.STREAM_METHOD.equals(nodeToResolve.getImage())) {
+                            proposeOperators(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode);
+                        }
                         ELJavaCompletion.propose(ccontext, context, element, target, proposals);
                     } else {
                         proposeMethods(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode);
                         if (ELTypeUtilities.isIterableElement(ccontext, resolved)) {
-                            proposeOperators(ccontext, context, prefixMatcher, proposals);
+                            proposeStream(ccontext, context, prefixMatcher, proposals);
                         }
                     }
                 }
@@ -207,18 +212,18 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         // due to the ast structure in the case of identifiers we need to try to resolve the type of the identifier,
         // otherwise the type of the preceding node.
         if (target instanceof AstIdentifier
-                && (previous instanceof AstIdentifier
-                || previous instanceof AstDotSuffix
-                || NodeUtil.isMethodCall(previous))) {
+                && (previous instanceof AstIdentifier || previous instanceof AstDotSuffix || NodeUtil.isMethodCall(previous))) {
             return target;
         } else {
-            // prvious node was method call
-            if (previous instanceof AstMethodArguments) {
-                return rootToNode.get(rootToNode.size() - 2);
-            }
             for (int i = rootToNode.size() - 1; i >= 0; i--) {
-                if (rootToNode.get(i) instanceof AstListData || rootToNode.get(i) instanceof AstMapData) {
-                    return rootToNode.get(i);
+                Node node = rootToNode.get(i);
+                if (node instanceof AstMethodArguments) {
+                    // prvious node was method call
+                    return rootToNode.get(i - 1);
+                } else if (node instanceof AstListData || node instanceof AstMapData) {
+                    return node;
+                } else if (node.jjtGetParent() instanceof AstSemiColon) {
+                    return previous;
                 }
             }
             return previous;
@@ -268,18 +273,31 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return context.getParserResult().getSnapshot().getSource().getFileObject();
     }
 
+    private void proposeOperators(CompilationContext ccontext, CodeCompletionContext context, Element resolved,
+            PrefixMatcher prefixMatcher, ELElement element, List<CompletionProposal> proposals, List<Node> rootToNode) {
+        TypeElement streamElement = ccontext.info().getElements().getTypeElement("com.sun.el.stream.Stream"); //NOI18N
+        if (streamElement != null) {
+            proposeJavaMethodsForElements(ccontext, context, resolved, prefixMatcher, element,
+                    Arrays.<Element>asList(streamElement), proposals);
+        }
+    }
+
     private void proposeMethods(CompilationContext info, CodeCompletionContext context, Element resolved,
             PrefixMatcher prefix, ELElement elElement,List<CompletionProposal> proposals, List<Node> rootToNode) {
-        
         List<Element> allTypes = ELTypeUtilities.getSuperTypesFor(info, resolved, elElement, rootToNode);
-        for(Element element : allTypes) {
+        proposeJavaMethodsForElements(info, context, resolved, prefix, elElement, allTypes, proposals);
+    }
+
+    private void proposeJavaMethodsForElements(CompilationContext info, CodeCompletionContext context, Element resolved,
+            PrefixMatcher prefix, ELElement elElement, List<Element> elements, List<CompletionProposal> proposals) {
+        for(Element element : elements) {
             for (ExecutableElement enclosed : ElementFilter.methodsIn(element.getEnclosedElements())) {
                 //do not propose Object's members
                 if(element.getSimpleName().contentEquals("Object")) { //NOI18N
                     //XXX hmm, not an ideal non-fqn check
                     continue;
                 }
-                
+
                 if (!enclosed.getModifiers().contains(Modifier.PUBLIC) ||
                         enclosed.getModifiers().contains(Modifier.STATIC)) {
                     continue;
@@ -289,9 +307,9 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 if (!prefix.matches(propertyName)) {
                     continue;
                 }
-                
+
                 // Now check methodName or propertyName is EL keyword.
-                if (getKeywordFixedTexts().contains(propertyName) || 
+                if (getKeywordFixedTexts().contains(propertyName) ||
                         getKeywordFixedTexts().contains(methodName) ) {
                     continue;
                 }
@@ -321,18 +339,12 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
     }
 
-    private void proposeOperators(CompilationContext info, CodeCompletionContext context, PrefixMatcher prefix, List<CompletionProposal> proposals) {
-        for (String operator : OperatorDefinitions.OPERATORS) {
-            if (!prefix.matches(operator)) {
-                continue;
-            }
-            ELOperatorCompletionItem completionItem = new ELOperatorCompletionItem(operator);
-            completionItem.setSmart(true);
-            completionItem.setAnchorOffset(context.getCaretOffset() - prefix.length());
-            proposals.add(completionItem);
+    private void proposeStream(CompilationContext info, CodeCompletionContext context, PrefixMatcher prefix, List<CompletionProposal> proposals) {
+        if (prefix.matches(ELStreamCompletionItem.STREAM_METHOD)) {
+            proposals.add(new ELStreamCompletionItem(context.getCaretOffset() - prefix.length()));
         }
     }
-    
+
     private boolean contains(List<CompletionProposal> completionProposals, String proposalName) {
         if (proposalName == null || proposalName.isEmpty()) {
             return true;

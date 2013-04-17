@@ -119,7 +119,6 @@ class KenaiHandler {
                         }
                         user = lastLoggedUser;
                     }
-                    refreshKenaiQueries();
                 }
             }
         });
@@ -267,10 +266,6 @@ class KenaiHandler {
     private String getKenaiUser() {
         PasswordAuthentication pa = KenaiAccessorImpl.getPasswordAuthentication(kenai, false);
         return pa != null ? pa.getUserName() : null;
-    }
-
-    private void refreshKenaiQueries() {
-        KenaiUtil.refreshOpenedQueries();
     }
 
     void clear() {

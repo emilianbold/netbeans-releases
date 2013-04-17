@@ -52,9 +52,9 @@ public class RefreshOnSaveListenerImpl implements RefreshOnSaveListener {
 
     final private BrowserSupport support;
     final private Project project;
-    private ClientProjectConfigurationImpl cfg;
+    private ClientProjectEnhancedBrowserImpl cfg;
 
-    public RefreshOnSaveListenerImpl(Project project, BrowserSupport support, ClientProjectConfigurationImpl cfg) {
+    public RefreshOnSaveListenerImpl(Project project, BrowserSupport support, ClientProjectEnhancedBrowserImpl cfg) {
         this.support = support;
         this.project = project;
         this.cfg = cfg;
@@ -65,9 +65,11 @@ public class RefreshOnSaveListenerImpl implements RefreshOnSaveListener {
         if (!cfg.isAutoRefresh()) {
             return;
         }
+        if (!support.canRefreshOnSaveThisFileType(fo)) {
+            return;
+        }
         URL u = support.getBrowserURL(fo, true);
-        if (u != null) {
-            assert support.canReload(u) : u;
+        if (u != null && support.canReload(u)) {
             support.reload(u);
         }
     }

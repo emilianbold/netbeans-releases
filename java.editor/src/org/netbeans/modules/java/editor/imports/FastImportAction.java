@@ -54,7 +54,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -118,9 +120,9 @@ public class FastImportAction extends BaseAction {
                         return;
                     }
                     final JavaSource javaSource = parameter.getJavaSource();
-                    Pair<Map<String, List<TypeElement>>, Map<String, List<TypeElement>>> result = new ComputeImports().computeCandidates(parameter, Collections.singleton(ident));
+                    Pair<Map<String, List<Element>>, Map<String, List<Element>>> result = new ComputeImports().computeCandidates(parameter, Collections.singleton(ident));
 
-                    final List<TypeElement> priviledged = result.a.get(ident);
+                    final List<TypeElement> priviledged = ElementFilter.typesIn(result.a.get(ident));
 
                     if (priviledged == null) {
                         //not found?
@@ -128,7 +130,7 @@ public class FastImportAction extends BaseAction {
                         return;
                     }
 
-                    final List<TypeElement> denied = new ArrayList<TypeElement>(result.b.get(ident));
+                    final List<TypeElement> denied = new ArrayList<TypeElement>(ElementFilter.typesIn(result.b.get(ident)));
 
                     denied.removeAll(priviledged);
 

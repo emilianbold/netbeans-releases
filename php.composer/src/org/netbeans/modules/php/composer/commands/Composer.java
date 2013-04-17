@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.php.composer.commands;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.input.InputProcessor;
@@ -99,6 +101,8 @@ public final class Composer {
     );
 
     private final String composerPath;
+
+    private volatile File workDir;
 
 
     public Composer(String composerPath) {
@@ -300,20 +304,19 @@ public final class Composer {
                 .run(getDescriptor(phpModule));
     }
 
+    @CheckForNull
     private PhpExecutable getComposerExecutable(PhpModule phpModule, String title) {
-        FileObject sourceDirectory = null;
-        if (phpModule != null) {
-            sourceDirectory = phpModule.getSourceDirectory();
-            if (sourceDirectory == null) {
-                warnNoSources(phpModule.getDisplayName());
-                return null;
-            }
+        File dir = resolveWorkDir(phpModule);
+        if (dir == null
+                && phpModule != null) {
+            warnNoSources(phpModule.getDisplayName());
+            return null;
         }
         PhpExecutable composer = new PhpExecutable(composerPath)
                 .optionsSubcategory(ComposerOptionsPanelController.OPTIONS_SUBPATH)
                 .displayName(title);
-        if (sourceDirectory != null) {
-            composer.workDir(FileUtil.toFile(sourceDirectory));
+        if (dir != null) {
+            composer.workDir(dir);
         }
         return composer;
     }
@@ -356,17 +359,46 @@ public final class Composer {
     }
 
     private FileObject getComposerConfigFile(PhpModule phpModule) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        if (sourceDirectory == null) {
-            // broken project
+        File dir = resolveWorkDir(phpModule);
+        if (dir == null) {
             return null;
         }
-        return sourceDirectory.getFileObject(COMPOSER_FILENAME);
+        FileObject fo = FileUtil.toFileObject(dir);
+        if (fo == null) {
+            assert false : "FileObject should be found for file: " + dir;
+            return null;
+        }
+        return fo.getFileObject(COMPOSER_FILENAME);
     }
 
     private boolean userConfirmation(String title, String question) {
         NotifyDescriptor confirmation = new DialogDescriptor.Confirmation(question, title, DialogDescriptor.YES_NO_OPTION);
         return DialogDisplayer.getDefault().notify(confirmation) == DialogDescriptor.YES_OPTION;
+    }
+
+    @CheckForNull
+    private File resolveWorkDir(PhpModule phpModule) {
+        if (workDir != null) {
+            return workDir;
+        }
+        if (phpModule == null) {
+            return null;
+        }
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return null;
+        }
+        return FileUtil.toFile(sourceDirectory);
+    }
+
+    public File getWorkDir() {
+        return workDir;
+    }
+
+    public void setWorkDir(File workDir) {
+        assert workDir == null || workDir.isDirectory() : "Existing directory or null expected: " + workDir;
+        this.workDir = workDir;
     }
 
     //~ Inner classes

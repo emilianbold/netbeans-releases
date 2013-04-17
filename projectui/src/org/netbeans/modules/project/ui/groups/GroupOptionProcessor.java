@@ -85,6 +85,7 @@ public class GroupOptionProcessor implements ArgsProcessor {
         if (openOption != null) {
             for (Group g : Group.allGroups()) {
                 if (g.id.equals(openOption) || g.getName().equals(openOption)) {
+                    supressWinsysLazyLoading();
                     Group.setActiveGroup(g);
                     return;
                 }
@@ -103,5 +104,13 @@ public class GroupOptionProcessor implements ArgsProcessor {
                 ps.printf("%-" + max_size + "s  %s\n", g.id, g.getName());
             }
         }
+    }
+    
+    private void supressWinsysLazyLoading() {
+        String oldValue = System.getProperty("nb.core.windows.no.lazy.loading");
+        if (oldValue != null) {
+            System.setProperty("group.supresses.lazy.loading", oldValue);
+        }
+        System.setProperty("nb.core.windows.no.lazy.loading", "true");
     }
 }

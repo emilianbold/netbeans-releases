@@ -224,10 +224,6 @@ public class IssueAccessorTest extends NbTestCase {
         public RepositoryInfo getInfo() {
             return delegate.getInfo();
         }
-        
-        public Lookup getLookup() {
-            return delegate.getLookup();
-        }
         public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
         public TestIssue[] getIssues(String[] id) { throw new UnsupportedOperationException("Not supported yet."); }
         public void remove() { throw new UnsupportedOperationException("Not supported yet."); }

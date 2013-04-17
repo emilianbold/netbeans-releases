@@ -81,4 +81,18 @@ public class CommandLineOutputHandlerTest {
         assertEquals("compile", m.group(2));
     }
 
+    @Test
+    public void testReactorLine() throws Exception {
+        //the non event matching..
+        Matcher m = CommandLineOutputHandler.reactorFailure.matcher("[INFO] Maven Core ........................................ FAILURE [1.480s]");
+        assertTrue(m.matches());
+        
+        //
+        m = CommandLineOutputHandler.reactorSummaryLine.matcher("Maven Core ........................................ FAILURE [1.480s]");
+        assertTrue(m.matches());
+        
+        m = CommandLineOutputHandler.reactorSummaryLine.matcher("Maven Aether Provider ............................. SUCCESS [1.014s]");
+        assertTrue(m.matches());
+
+    }
 }

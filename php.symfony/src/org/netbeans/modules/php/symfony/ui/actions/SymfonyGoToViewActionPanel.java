@@ -64,20 +64,21 @@ import org.openide.filesystems.FileObject;
  * @author Ondřej Brejla <ondrej@brejla.cz>
  */
 public class SymfonyGoToViewActionPanel extends javax.swing.JPanel implements FocusListener {
-    
+
+    private static final long serialVersionUID = 874543213245676L;
+
     private final List<FileObject> views;
 
     private final SymfonyGoToViewActionPopup popup;
 
-    /** Creates new form SymfonyGoToViewActionPanel */
     public SymfonyGoToViewActionPanel(List<FileObject> views, SymfonyGoToViewActionPopup popup) {
         this.views = views;
         this.popup = popup;
-        
+
         initComponents();
-        
+
         viewsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        
+
         addFocusListener(this);
     }
 
@@ -93,7 +94,7 @@ public class SymfonyGoToViewActionPanel extends javax.swing.JPanel implements Fo
 
         titleLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        viewsList = new javax.swing.JList();
+        viewsList = new javax.swing.JList<SymfonyViewItem>();
 
         setFocusCycleRoot(true);
         setLayout(new java.awt.GridBagLayout());
@@ -144,59 +145,59 @@ public class SymfonyGoToViewActionPanel extends javax.swing.JPanel implements Fo
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel titleLabel;
-    private javax.swing.JList viewsList;
+    private javax.swing.JList<SymfonyViewItem> viewsList;
     // End of variables declaration//GEN-END:variables
 
     private void openSelected() {
-        SymfonyViewItem view = (SymfonyViewItem) viewsList.getSelectedValue();
-        
+        SymfonyViewItem view = viewsList.getSelectedValue();
+
         if (view != null) {
             FileObject fo = view.getFileObject();
             if (fo != null) {
                 UiUtils.open(fo, 0);
             }
         }
-        
+
         popup.hide();
     }
-    
-    private ListModel createListModel() {
-        DefaultListModel dlm = new DefaultListModel();
-        
+
+    private ListModel<SymfonyViewItem> createListModel() {
+        DefaultListModel<SymfonyViewItem> dlm = new DefaultListModel<SymfonyViewItem>();
+
         for (FileObject view : views) {
             dlm.addElement(new SymfonyViewItem(view));
         }
-        
+
         return dlm;
     }
-    
+
     @Override
     public void focusGained(FocusEvent arg0) {
         viewsList.requestFocus();
         viewsList.requestFocusInWindow();
     }
-    
+
     @Override
     public void focusLost(FocusEvent arg0) {
     }
-    
+
     private static class SymfonyViewItem {
-        
+
         private FileObject view;
-        
+
         public SymfonyViewItem(FileObject view) {
             this.view = view;
         }
-        
+
         public FileObject getFileObject() {
             return view;
         }
-        
+
         @Override
         public String toString() {
             return view.getNameExt();
         }
-        
+
     }
-    
+
 }

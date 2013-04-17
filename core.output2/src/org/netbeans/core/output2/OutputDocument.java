@@ -61,6 +61,8 @@ import org.openide.util.Exceptions;
  * @author  Tim Boudreau, Jesse Glick
  */
 public class OutputDocument implements Document, Element, ChangeListener {
+    private static final Logger LOG =
+            Logger.getLogger(OutputDocument.class.getName());
     private List<DocumentListener> dlisteners = new ArrayList<DocumentListener>();
     private volatile Timer timer = null;
 
@@ -637,6 +639,12 @@ public class OutputDocument implements Document, Element, ChangeListener {
                     return;
                 }
                 if (startOffset == -1) {
+                    if (lineIndex >= getLines().getLineCount()) {
+                        // line has been removed, probably due to reached limit
+                        startOffset = 0;
+                        endOffset = 0;
+                        return;
+                    }
                     startOffset = getLines().getLineStart(lineIndex);
                     if (lineIndex >= getLines().getLineCount()-1) {
                         endOffset = getLines().getCharCount() + inBuffer.length() + 1;
@@ -698,9 +706,15 @@ public class OutputDocument implements Document, Element, ChangeListener {
                 lastFiredLength = getLines().getCharCount() + inBuffer.length();
 
                 // fill event info
-                offset = getLines().getLineStart(first);
-                lineCount = lastFiredLineCount - first;
-                length = lastFiredLength - offset;
+                if (first < lastFiredLineCount) {
+                    offset = getLines().getLineStart(first);
+                    lineCount = lastFiredLineCount - first;
+                    length = lastFiredLength - offset;
+                } else {
+                    lineCount = 0;
+                    length = 0;
+                    offset = 0;
+                }
             }
         }
         
@@ -745,8 +759,9 @@ public class OutputDocument implements Document, Element, ChangeListener {
         public Element[] getChildrenAdded() {
             calc();
             if (first + lineCount > getLines().getLineCount()) {
-                throw new IllegalStateException ("Document line count: " + getLines().getLineCount() +
-                         ", OD line count: " + (first + lineCount));
+                 LOG.log(Level.INFO, "Document line count: {0}, OD line count: {1}",
+                         new Object[]{getLines().getLineCount(), first + lineCount});
+                 return new Element[0];
             }
             Element[] e = new Element[lineCount];
             for (int i = 0; i < lineCount; i++) {

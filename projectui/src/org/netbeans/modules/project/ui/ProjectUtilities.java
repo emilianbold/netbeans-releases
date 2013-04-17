@@ -50,6 +50,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.io.CharConversionException;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -67,6 +68,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import static org.netbeans.modules.project.ui.Bundle.*;
 import org.netbeans.modules.project.ui.groups.Group;
@@ -582,14 +584,17 @@ public class ProjectUtilities {
             toRet.add(fo);
         }
         
-        // clean-up stored files
+        // clean-up stored files -
+        // mkleint: I've commented this out as it makes debugging what went wrong when switching groups or exiting the IDE very difficult
+        // and now that we have per-group settings stored, removing a single group's values does not pose any real advantage.
+        
         //aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
-        openFiles.removeChild(groupEl);
-        if (openFiles.getElementsByTagNameNS(OPEN_FILES_NS2, GROUP_ELEMENT).getLength() > 0) {
-            aux.putConfigurationFragment (openFiles, false);
-        } else {
-            aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS2, false);
-        }
+//        openFiles.removeChild(groupEl);
+//        if (openFiles.getElementsByTagNameNS(OPEN_FILES_NS2, GROUP_ELEMENT).getLength() > 0) {
+//            aux.putConfigurationFragment (openFiles, false);
+//        } else {
+//            aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS2, false);
+//        }
         return toRet;
     }
     

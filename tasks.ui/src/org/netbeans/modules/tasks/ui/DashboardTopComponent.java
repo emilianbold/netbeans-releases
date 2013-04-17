@@ -82,16 +82,16 @@ autostore = false)
 @TopComponent.Description(preferredID = "DashboardTopComponent",
 iconBase = "org/netbeans/modules/tasks/ui/resources/dashboard.png",
 persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "explorer", openAtStartup = true, position = 350)
+@TopComponent.Registration(mode = "explorer", openAtStartup = false, position = 350)
 @ActionID(category = "Window", id = "org.netbeans.modules.tasks.ui.DashboardTopComponent")
 @ActionReferences({
-    @ActionReference(path = "Menu/Window", position = 551),
+    @ActionReference(path = "Menu/Window", position = 751),
     @ActionReference(path = "Shortcuts", name = "DS-6")        
 })
 @TopComponent.OpenActionRegistration(displayName = "#CTL_DashboardAction",
 preferredID = "DashboardTopComponent")
 @NbBundle.Messages({
-    "CTL_DashboardAction=Task Dashboard",
+    "CTL_DashboardAction=Tas&k Dashboard",
     "CTL_DashboardTopComponent=Task Dashboard",
     "HINT_DashboardTopComponent=This is a Task Dashboard"
 })

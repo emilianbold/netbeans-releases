@@ -63,6 +63,8 @@ import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
@@ -165,6 +167,19 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
         if (dirF != null && dirF.exists()) {
             ProjectChooser.setProjectsFolder (dirF);
         }
+
+        // Usages statistics
+        Object[] parameters = new Object[2];
+        parameters[0] = ""; //NOI18N
+        try {
+            if (createData.getServerInstanceID() != null) {
+                parameters[0] = Deployment.getDefault().getServerInstance(createData.getServerInstanceID()).getServerDisplayName();
+            }
+        } catch (InstanceRemovedException ire) {
+            // ignore
+        }
+        parameters[1] = createData.getJavaEEProfile();
+        Utils.logUsage(NewEjbJarProjectWizardIterator.class, "USG_PROJECT_CREATE_EJB", parameters); //NOI18N
 
         // Returning set of FileObject of project diretory. 
         // Project will be open and set as main

@@ -400,6 +400,13 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     
     public static class ClassForwardDeclarationBuilder extends SimpleDeclarationBuilder {
 
+        public ClassForwardDeclarationBuilder() {
+        }
+
+        public ClassForwardDeclarationBuilder(SimpleDeclarationBuilder builder) {
+            super(builder);
+        }
+
         @Override
         public ClassForwardDeclarationImpl create() {
             TemplateDescriptor td = null;

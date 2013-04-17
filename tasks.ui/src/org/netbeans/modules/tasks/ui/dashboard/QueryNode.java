@@ -50,13 +50,12 @@ import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.tasks.ui.LinkButton;
+import org.netbeans.modules.team.ui.util.treelist.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
 import org.netbeans.modules.tasks.ui.actions.Actions.OpenQueryAction;
 import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
-import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
-import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 
 /**
  *

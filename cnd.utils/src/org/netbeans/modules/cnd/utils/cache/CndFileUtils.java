@@ -88,6 +88,7 @@ public final class CndFileUtils {
     private static final FileSystem fileFileSystem;
     public static final int FS_TIME_OUT = 30;
     public static final String LS_FOLDER_UTILS_PERFORMANCE_EVENT = "LS_FOLDER_UTILS_PERFORMANCE_EVENT"; //NOI18N
+    public static final String READ_FILE_PERFORMANCE_EVENT = "READ_FILE_PERFORMANCE_EVENT"; //NOI18N
     static {
         FileSystem afileFileSystem = null;
         File tmpDirFile = new File(System.getProperty("java.io.tmpdir")); //NOI18N

@@ -127,4 +127,23 @@ public class JavaHintsAnnotationProcessorTest extends NbTestCase {
         assertTrue(errors.contains("error: Customizer provider must be public"));
         assertTrue(errors.contains("error: Customizer provider must provide a public default constructor"));
     }
+
+    public void testErrorsMessagesOnMethod() throws Exception {
+        File src = new File(getWorkDir(), "src");
+        File dest = new File(getWorkDir(), "classes");
+        AnnotationProcessorTestUtils.makeSource(src, "p.H",
+                "import org.netbeans.spi.java.hints.*;\n",
+                "import org.netbeans.spi.editor.hints.*;\n",
+                "import org.openide.util.NbBundle.Messages;\n",
+                "import java.util.*;\n",
+                "public class H {\n",
+                "    @Hint(displayName=\"#DN_p.H\", description=\"#DESC_p.H\", category=\"general\")\n",
+                "    @TriggerPattern(\"$1.$2.$3\")\n",
+                "    @Messages({\"DN_p.H=1\", \"DESC_p.H=2\"})\n",
+                "    public static List<ErrorDescription> hint(HintContext ctx) { return null;}\n",
+                "}\n");
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        boolean result = AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err);
+        assertTrue(err.toString(), result);
+    }
 }

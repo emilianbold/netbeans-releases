@@ -56,8 +56,8 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.modules.web.clientproject.browser.ClientProjectConfigurationImpl;
-import org.netbeans.modules.web.clientproject.browser.ClientProjectConfigurationImpl.BrowserIntegration;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.clientproject.browser.ClientProjectEnhancedBrowserImpl;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -247,15 +247,15 @@ public class GeneralHTMLProject extends JellyTestCase {
         NbDialogOperator propertiesDialogOper = new NbDialogOperator("Project Properties");
         new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
         JComboBoxOperator browsers = new JComboBoxOperator(propertiesDialogOper, "Browser");
-        ClientProjectConfigurationImpl browser;
+        WebBrowser browser;
         GeneralHTMLProject.setRunTimeout(browserName);
         GeneralHTMLProject.currentBrowser = browserName;
         for (int i = 0; i < browsers.getModel().getSize(); i++) {
-            browser = (ClientProjectConfigurationImpl) browsers.getModel().getElementAt(i);
+            browser = (WebBrowser) browsers.getModel().getElementAt(i);
 
-            if (browser.getDisplayName().equals(browserName)) {
+            if (browser.getName().equals(browserName)) {
                 browsers.selectItem(i);
-                if (browser.getBrowserIntegration() == BrowserIntegration.ENABLED) {
+                if (browser.hasNetBeansIntegration()) {
                     (new JCheckBoxOperator(propertiesDialogOper, "Auto-refresh")).setSelected(autoRefresh);
                     (new JCheckBoxOperator(propertiesDialogOper, "Synchronize")).setSelected(syncHover);
                 }

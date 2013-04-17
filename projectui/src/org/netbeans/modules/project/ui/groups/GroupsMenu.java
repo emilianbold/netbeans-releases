@@ -46,8 +46,8 @@ package org.netbeans.modules.project.ui.groups;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -63,6 +63,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.ProjectsRootNode;
 import org.openide.DialogDescriptor;
@@ -79,6 +80,10 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 import static org.netbeans.modules.project.ui.groups.Bundle.*;
+import org.netbeans.modules.project.uiapi.Utilities;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Submenu listing available groups and offering some operations on them.
@@ -92,9 +97,10 @@ import static org.netbeans.modules.project.ui.groups.Bundle.*;
 })
 @Messages("GroupsMenu.label=Project Gro&up")
 public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presenter.Popup {
-    private static int MAX_COUNT = 20;
+    private static final int MAX_COUNT = 20;
 
     private static final RequestProcessor RP = new RequestProcessor(GroupsMenu.class.getName());
+    private static final String HELPCTX = "org.netbeans.modules.project.ui.groups.GroupsMenu";
 
     public GroupsMenu() {
         super(GroupsMenu_label());
@@ -302,7 +308,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
         panel.setNotificationLineSupport(dd.createNotificationLineSupport());
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         dd.setModal(true);
-        dd.setHelpCtx(new HelpCtx(GroupsMenu.class));
+        dd.setHelpCtx(new HelpCtx(HELPCTX));
         final JButton create = new JButton(GroupsMenu_new_create());
         create.setDefaultCapable(true);
         create.setEnabled(panel.isReady());
@@ -340,16 +346,25 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
      */
     @Messages("GroupsMenu.properties_title=Project Group Properties")
     private static void openProperties(Group g) {
-        GroupEditPanel panel = g.createPropertiesPanel();
-        DialogDescriptor dd = new DialogDescriptor(panel, GroupsMenu_properties_title());
-        panel.setNotificationLineSupport(dd.createNotificationLineSupport());
-        dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
-        dd.setModal(true);
-        dd.setHelpCtx(new HelpCtx(GroupsMenu.class));
-        Object result = DialogDisplayer.getDefault().notify(dd);
-        if (result.equals(NotifyDescriptor.OK_OPTION)) {
-            panel.applyChanges();
-        }
+            Lookup context = Lookups.fixed(new Object[] { g, Utilities.ACCESSOR.createGroup(g.getName(), g.prefs()) });
+            Dialog dialog = ProjectCustomizer.createCustomizerDialog("Projects/Groups/Customizer", //NOI18N
+                                             context, 
+                                             (String)null, 
+                                             new ActionListener() {
+                                                @Override
+                                                public void actionPerformed(ActionEvent ae) {
+                                                    //noop
+                                                }
+                                            }, 
+                                             new ActionListener() {
+                                                @Override
+                                                public void actionPerformed(ActionEvent ae) {
+                                                    //noop
+                                                }
+                                             }, new HelpCtx(HELPCTX));
+            dialog.setTitle( GroupsMenu_properties_title() );
+            dialog.setModal(true);
+            dialog.setVisible(true);
     }
 
 }

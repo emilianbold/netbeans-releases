@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -60,6 +60,7 @@ import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 
 /**
  *
@@ -79,353 +80,19 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
 
     // configuration logic implementation ///////////////////////////////////////////
+    @Override
     public void install(final Progress progress)
             throws InstallationException {
-        final File directory = getProduct().getInstallationLocation();
-        /*
-        final String username = getProperty(GlassFishPanel.USERNAME_PROPERTY);
-        final String password = getProperty(GlassFishPanel.PASSWORD_PROPERTY);
-        final String httpPort = getProperty(GlassFishPanel.HTTP_PORT_PROPERTY);
-        final String httpsPort = getProperty(GlassFishPanel.HTTPS_PORT_PROPERTY);
-        final String adminPort = getProperty(GlassFishPanel.ADMIN_PORT_PROPERTY);
-
-        final File javaHome =
-                new File(getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY));
-        JavaInfo info = JavaUtils.getInfo(javaHome);
-        LogManager.log("Using the following JDK for GlassFish configuration : ");
-        LogManager.log("... path    : "  + javaHome);
-        LogManager.log("... version : "  + info.getVersion().toJdkStyle());
-        LogManager.log("... vendor  : "  + info.getVendor());
-        LogManager.log("... final   : "  + (!info.isNonFinal()));
-
-        final FilesList list = getProduct().getInstalledFiles();
-
-        /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.copy.files")); // NOI18N
-
-            if (SystemUtils.isWindows()) {
-                list.add(FileUtils.copyFile(
-                        new File(directory, ASENV_BAT_TEMPLATE),
-                        new File(directory, ASENV_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, ASADMINENV_CONF_TEMPLATE),
-                        new File(directory, ASADMINENV_CONF)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, ASADMIN_BAT_TEMPLATE),
-                        new File(directory, ASADMIN_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, ASANT_BAT_TEMPLATE),
-                        new File(directory, ASANT_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, APPCLIENT_BAT_TEMPLATE),
-                        new File(directory, APPCLIENT_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, JSPC_BAT_TEMPLATE),
-                        new File(directory, JSPC_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, PACKAGE_APPCLIENT_BAT_TEMPLATE),
-                        new File(directory, PACKAGE_APPCLIENT_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, VERIFIER_BAT_TEMPLATE),
-                        new File(directory, VERIFIER_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, ASUPGRADE_BAT_TEMPLATE),
-                        new File(directory, ASUPGRADE_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, CAPTURE_SCHEMA_BAT_TEMPLATE),
-                        new File(directory, CAPTURE_SCHEMA_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, WSIMPORT_BAT_TEMPLATE),
-                        new File(directory, WSIMPORT_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, WSGEN_BAT_TEMPLATE),
-                        new File(directory, WSGEN_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, SCHEMAGEN_BAT_TEMPLATE),
-                        new File(directory, SCHEMAGEN_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, XJC_BAT_TEMPLATE),
-                        new File(directory, XJC_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, ASAPT_BAT_TEMPLATE),
-                        new File(directory, ASAPT_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, WSCOMPILE_BAT_TEMPLATE),
-                        new File(directory, WSCOMPILE_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, WSDEPLOY_BAT_TEMPLATE),
-                        new File(directory, WSDEPLOY_BAT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, UPDATETOOL_BAT_TEMPLATE),
-                        new File(directory, UPDATETOOL_BAT)));
-            } else {
-                list.add(FileUtils.copyFile(
-                        new File(directory, ASENV_CONF_TEMPLATE),
-                        new File(directory, ASENV_CONF)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, ASADMINENV_CONF_TEMPLATE),
-                        new File(directory, ASADMINENV_CONF)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, UNINSTALL_TEMPLATE),
-                        new File(directory, UNINSTALL)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, ASADMIN_TEMPLATE),
-                        new File(directory, ASADMIN)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, ASANT_TEMPLATE),
-                        new File(directory, ASANT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, APPCLIENT_TEMPLATE),
-                        new File(directory, APPCLIENT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, JSPC_TEMPLATE),
-                        new File(directory, JSPC)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, PACKAGE_APPCLIENT_TEMPLATE),
-                        new File(directory, PACKAGE_APPCLIENT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, VERIFIER_TEMPLATE),
-                        new File(directory, VERIFIER)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, ASUPGRADE_TEMPLATE),
-                        new File(directory, ASUPGRADE)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, CAPTURE_SCHEMA_TEMPLATE),
-                        new File(directory, CAPTURE_SCHEMA)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, WSIMPORT_TEMPLATE),
-                        new File(directory, WSIMPORT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, WSGEN_TEMPLATE),
-                        new File(directory, WSGEN)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, XJC_TEMPLATE),
-                        new File(directory, XJC)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, SCHEMAGEN_TEMPLATE),
-                        new File(directory, SCHEMAGEN)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, ASAPT_TEMPLATE),
-                        new File(directory, ASAPT)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, WSCOMPILE_TEMPLATE),
-                        new File(directory, WSCOMPILE)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, WSDEPLOY_TEMPLATE),
-                        new File(directory, WSDEPLOY)));
-                list.add(FileUtils.copyFile(
-                        new File(directory, UPDATETOOL_TEMPLATE),
-                        new File(directory, UPDATETOOL)));
-            }
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.copy.files"), // NOI18N
-                    e);
-        }
-
-        /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.replace.tokens")); // NOI18N
-
-            final Map<String, Object> map = new HashMap<String, Object>();
-
-            map.put(CONFIG_HOME_TOKEN, new File(directory, CONFIG_SUBDIR));
-            map.put(INSTALL_HOME_TOKEN, directory);
-            map.put(WEBSERVICES_LIB_TOKEN, new File(directory, LIB_SUBDIR));
-            map.put(JAVA_HOME_TOKEN, javaHome);
-            map.put(ANT_HOME_TOKEN, new File(directory, LIB_ANT_SUBDIR));
-            map.put(ANT_LIB_TOKEN, new File(directory, LIB_ANT_LIB_SUBDIR));
-            map.put(NSS_HOME_TOKEN, new File(directory, LIB_SUBDIR));
-            map.put(NSS_BIN_HOME_TOKEN, new File(directory, LIB_ADMINCGI_SUBDIR));
-            map.put(IMQ_LIB_TOKEN, new File(directory, IMQ_LIB_SUBDIR));
-            map.put(IMQ_BIN_TOKEN, new File(directory, IMQ_BIN_SUBDIR));
-            map.put(JHELP_HOME_TOKEN, new File(directory, LIB_SUBDIR));
-            map.put(ICU_LIB_TOKEN, new File(directory, LIB_SUBDIR));
-            map.put(JATO_LIB_TOKEN, new File(directory, LIB_SUBDIR));
-            map.put(WEBCONSOLE_LIB_TOKEN, new File(directory, LIB_SUBDIR));
-            map.put(USE_NATIVE_LAUNCHER_TOKEN, USE_NATIVE_LAUNCHER);
-            map.put(LAUNCHER_LIB_TOKEN, LAUNCHER_LIB);
-            map.put(JDMK_HOME_TOKEN, new File(directory, JMDK_HOME));
-            map.put(LOCALE_TOKEN, LOCALE);
-            map.put(DEF_DOMAINS_PATH_TOKEN, new File(directory, DOMAINS_SUBDIR));
-            map.put(HADB_HOME_TOKEN, HADB_HOME);
-            if(SystemUtils.isWindows()) {
-                map.put(MFWK_HOME_TOKEN, new File(directory, MFWK_HOME_WINDOWS));
-            } else if(SystemUtils.isMacOS()) {
-                map.put(MFWK_HOME_TOKEN, new File(MFWK_HOME_MACOSX));
-            } else if(SystemUtils.isLinux()) {
-                map.put(MFWK_HOME_TOKEN, new File(MFWK_HOME_LINUX));
-            } else if(SystemUtils.isSolaris()) {
-                map.put(MFWK_HOME_TOKEN, new File(MFWK_HOME_SOLARIS));
-            }
-            map.put(ACC_CONFIG_TOKEN, new File(directory, ACC_CONFIG));
-            map.put(DERBY_HOME_TOKEN, new File(directory, DERBY_SUBDIR));
-            map.put("localhost", SystemUtils.getHostName());
-            map.put("user=admin","user=" + username);
-            map.put(HTTP_PORT_TOKEN,httpPort);
-            map.put(ADMIN_PORT_TOKEN,adminPort);
-            map.put(AS_ADMIN_PORT_TOKEN,adminPort);
-            map.put(AS_ADMIN_PROFILE_TOKEN,AS_ADMIN_PROFILE);
-            map.put(AS_ADMIN_SECURE_TOKEN,AS_ADMIN_SECURE);
-
-            FileUtils.modifyFile(new File(directory, BIN_SUBDIR), map);
-            FileUtils.modifyFile(new File(directory, CONFIG_SUBDIR), map);
-
-            map.put(UC_INSTALL_HOME_TOKEN,new File(directory, UC_INSTALL_HOME_SUBDIR));
-            map.put(UC_EXT_LIB_TOKEN,new File(directory, UC_EXT_LIB));
-            map.put(UC_AS_HOME_TOKEN, directory);
-            map.put(REGISTRATION_DIR_TOKEN,new File(directory,REGISTRATION_DIR));
-            map.put(JAVA_HOME_UNIX_ENV_TOKEN,javaHome);
-
-            if(SystemUtils.isWindows()) {
-                map.put(JDIC_LIB_TOKEN,
-                        new File(directory, JDIC_LIB_WINDOWS));
-                map.put(JDIC_STUB_LIB_TOKEN,
-                        new File(directory, JDIC_STUB_LIB_WINDOWS));
-            } else if (SystemUtils.isLinux()) {
-                map.put(JDIC_LIB_TOKEN,
-                        new File(directory, JDIC_LIB_LINUX));
-                map.put(JDIC_STUB_LIB_TOKEN,
-                        new File(directory, JDIC_STUB_LIB_LINUX));
-            } else if(SystemUtils.isMacOS()) {
-                map.put(JDIC_LIB_TOKEN,
-                        new File(directory, JDIC_LIB_MACOSX));
-                map.put(JDIC_STUB_LIB_TOKEN,
-                        new File(directory, JDIC_STUB_LIB_MACOSX));
-            } else if (SystemUtils.isSolaris()) {
-                if(SystemUtils.getCurrentPlatform().
-                        isCompatibleWith(Platform.SOLARIS_SPARC)) {
-                    map.put(JDIC_LIB_TOKEN,
-                            new File(directory, JDIC_LIB_SOLARIS_SPARC));
-                } else if(SystemUtils.getCurrentPlatform().
-                        isCompatibleWith(Platform.SOLARIS_X86)) {
-                    map.put(JDIC_LIB_TOKEN,
-                            new File(directory, JDIC_LIB_SOLARIS_X86));
-                }
-                map.put(JDIC_STUB_LIB_TOKEN,
-                        new File(directory, JDIC_STUB_LIB_SOLARIS));
-            }
-
-            FileUtils.modifyFile(new File(directory, UC_BIN_SUBDIR), map);
-            //ping UC on Tuesdays
-            map.put("never", "TUE");//NOI18N
-            FileUtils.modifyFile(new File(directory, UC_CONFIG_SUBDIR), map);
-
-
-            final String javaHomeString = javaHome.getAbsolutePath();
-            final String imqVarHomeString = new File(
-                    directory,
-                    DOMAINS_DOMAIN1_IMQ_SUBDIR).getAbsolutePath();
-            final String contents = StringUtils.format(
-                    IMQENV_CONF_ADDITION,
-                    javaHomeString,
-                    imqVarHomeString);
-
-            list.add(FileUtils.writeFile(
-                    new File(directory, IMQENV_CONF),
-                    contents,
-                    true));
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.replace.tokens"), // NOI18N
-                    e);
-        }
-
-        /////////////////////////////////////////////////////////////////////////////
-        //try {
-        //    progress.setDetail(getString("CL.install.irrelevant.files")); // NOI18N
-        //
-        //    SystemUtils.removeIrrelevantFiles(directory);
-        //} catch (IOException e) {
-        //    throw new InstallationException(
-        //            getString("CL.install.error.irrelevant.files"), // NOI18N
-        //            e);
-        //}
-
-        /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.files.permissions")); // NOI18N
-
-            SystemUtils.correctFilesPermissions(
-                    new File(directory, "bin"));
-            SystemUtils.correctFilesPermissions(
-                    new File(directory, "imq/bin"));
-            SystemUtils.correctFilesPermissions(
-                    new File(directory, "updatecenter/bin"));
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.files.permissions"), // NOI18N
-                    e);
-        }
-
-        /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.create.domain")); // NOI18N
-
-            GlassFishUtils.createDomain(
-                    directory,
-                    DOMAIN_NAME,
-                    username,
-                    password,
-                    httpPort,
-                    httpsPort,
-                    adminPort);
-        } catch (IOException e) {
-            final InstallationException firstException = new InstallationException(
-                    getString("CL.install.error.create.domain"), // NOI18N
-                    e);
-
-            final File asadminpass = new File(
-                    SystemUtils.getUserHomeDirectory(),
-                    ".asadminpass");
-            final File asadmintruststore = new File(
-                    SystemUtils.getUserHomeDirectory(),
-                    ".asadmintruststore");
-            if (asadminpass.exists() || asadmintruststore.exists()) {
-                LogManager.log("either .asadminpass or .asadmintruststore " +
-                        "files exist -- deleting them");
-
-                getProduct().addInstallationWarning(firstException);
-
-                try {
-                    FileUtils.deleteFile(asadminpass);
-                    FileUtils.deleteFile(asadmintruststore);
-                    FileUtils.deleteFile(
-                            new File(directory,
-                            DOMAINS_SUBDIR + File.separator + DOMAIN_NAME),
-                            true);
-
-                    GlassFishUtils.createDomain(
-                            directory,
-                            DOMAIN_NAME,
-                            username,
-                            password,
-                            httpPort,
-                            httpsPort,
-                            adminPort);
-                } catch (IOException ex) {
-                    throw new InstallationException(
-                            getString("CL.install.error.create.domain"), // NOI18N
-                            ex);
-                }
-            } else {
-                throw firstException;
+        File directory = getProduct().getInstallationLocation();
+        File jdk4GF4Home = null;
+        String jdk4GF4Path = getProduct().getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY);
+        if (! jdk4GF4Path.isEmpty()) {
+            File jdk4GF4 = new File(jdk4GF4Path);
+            if (JavaUtils.isJavaHome(jdk4GF4)) {
+                jdk4GF4Home = jdk4GF4;
             }
         }
 
-        /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.extra.files")); // NOI18N
-
-            list.add(new File(directory, DOMAINS_SUBDIR));
-            list.add(new File(directory, DERBY_LOG));
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.extra.files"), // NOI18N
-                    e);
-        }
-        */
         //get bundled registry to perform further runtime integration
         //http://wiki.netbeans.org/NetBeansInstallerIDEAndRuntimesIntegration
         Registry bundledRegistry = new Registry();
@@ -477,7 +144,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 final File location = productToIntegrate.getInstallationLocation();
                 registerJavaDB(location, new File(directory, "javadb"));
                 LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
-                if(!registerGlassFish(location, directory)) {
+                if (jdk4GF4Home != null) {
+                    LogManager.log("... setting Java Home " + jdk4GF4Home + " with " + getProduct().getDisplayName());
+                }
+                if(!registerGlassFish(location, directory, jdk4GF4Home)) {
                     continue;
                 }
                 
@@ -537,7 +207,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         return SystemUtils.executeCommand(nbLocation, commands.toArray(new String [] {})).getErrorCode() == 0;
     }
 
-    private boolean registerGlassFish(File nbLocation, File gfLocation) throws IOException {
+    private boolean registerGlassFish(File nbLocation, File gfLocation, File jdk4GF4Home) throws IOException {
         File javaExe = JavaUtils.getExecutable(new File(System.getProperty("java.home")));
         String [] cp = {
             "platform/core/core.jar",
@@ -546,7 +216,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "platform/core/org-openide-filesystems.jar",
             "platform/lib/org-openide-util.jar",
             "platform/lib/org-openide-util-lookup.jar",
-            "ide/modules/org-netbeans-modules-glassfish-common.jar"
+            "enterprise/modules/org-netbeans-modules-glassfish-common.jar"
         };
         for(String c : cp) {
             File f = new File(nbLocation, c);
@@ -564,10 +234,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         commands.add(mainClass);
         commands.add(nbCluster.getAbsolutePath());
         commands.add(new File(gfLocation, "glassfish").getAbsolutePath());
+        if (jdk4GF4Home != null) {
+            commands.add(jdk4GF4Home.getAbsolutePath());
+        }
         
         return SystemUtils.executeCommand(nbLocation, commands.toArray(new String[]{})).getErrorCode() == 0;
     }
 
+    @Override
     public void uninstall(final Progress progress) throws UninstallationException {
         File directory = getProduct().getInstallationLocation();
         
@@ -642,6 +316,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         progress.setPercentage(Progress.COMPLETE);
     }
 
+    @Override
     public List<WizardComponent> getWizardComponents() {
         return wizardComponents;
     }

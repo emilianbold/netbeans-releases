@@ -171,7 +171,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                     for (Type type : types) {
                         JsObject declaration = ModelUtils.findJsObjectByName(model, type.getType());
                         if (declaration != null && !object.getName().equals(declaration.getName())) {
-                            JsObject prototype = declaration.getProperty("prototype");
+                            JsObject prototype = declaration.getProperty(ModelUtils.PROTOTYPE);
                             declaration = declaration.getProperty(object.getName());
                             if (declaration == null && prototype != null) {
                                 declaration = prototype.getProperty(object.getName());
@@ -185,7 +185,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                         }
                     }
                     if (types.isEmpty()) {
-                        List<OffsetRange> usages = findMemberUsage(result.getModel().getGlobalObject(), ModelUtils.createFQN(parent), object.getName(), caretPosition);
+                        List<OffsetRange> usages = findMemberUsage(result.getModel().getGlobalObject(), parent.getFullyQualifiedName(), object.getName(), caretPosition);
                         for (OffsetRange range : usages) {
                             offsets.add(range);
                         }

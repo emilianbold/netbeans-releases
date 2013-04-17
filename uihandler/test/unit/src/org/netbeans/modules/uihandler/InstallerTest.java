@@ -46,8 +46,10 @@ package org.netbeans.modules.uihandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.swing.JButton;
@@ -62,8 +64,11 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
@@ -114,6 +119,7 @@ public class InstallerTest extends NbTestCase {
     protected void setUp() throws Exception {
         UIHandler.flushImmediatelly();
         System.setProperty("netbeans.user", getWorkDirPath());
+        assureInstallFileLocatorUserDir(getWorkDirPath());
         clearWorkDir();
         
         SwingUtilities.invokeAndWait(new Runnable() {
@@ -147,6 +153,7 @@ public class InstallerTest extends NbTestCase {
         assertEquals("One", 1, list.size());
     }
     
+    @RandomlyFails // #9267, #9435, #9436, #9437, #9949
     public void testLogsRereadOnStartup() throws Exception {
         Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
         log.warning("Something happened");
@@ -659,6 +666,48 @@ public class InstallerTest extends NbTestCase {
         List<LogRecord> logs = Installer.getLogs();
         logs = ScreenSizeTest.removeExtraLogs(logs);
         return logs;
+    }
+
+    /**
+     * Assures that the InstalledFileLocator uses the current user dir.
+     * @param workDirPath
+     */
+    static void assureInstallFileLocatorUserDir(String workDirPath) {
+        File f = new File(workDirPath).getAbsoluteFile();
+        if (!f.isDirectory()) {
+            return ;
+        }
+        File userDir = FileUtil.normalizeFile(f);
+        try {
+            Field instancesField = InstalledFileLocator.class.getDeclaredField("instances");
+            instancesField.setAccessible(true);
+            InstalledFileLocator[] instances = (InstalledFileLocator[]) instancesField.get(null);
+            if (instances == null) {
+                return ; // Not initialized yet
+            }
+            Class implClass = instances[0].getClass(); // Expecting org.netbeans.core.startup.InstalledFileLocatorImpl
+            Field dirsField = implClass.getDeclaredField("dirs");
+            dirsField.setAccessible(true);
+            File[] dirs = (File[]) dirsField.get(instances[0]);
+            if (dirs == null) {
+                return ; // Not initialized yet
+            }
+            if (!dirs[0].equals(userDir)) {
+                dirs[0] = userDir;  // Update
+            }
+        } catch (NoSuchFieldException ex) {
+            Exceptions.printStackTrace(ex);
+            throw new IllegalStateException("FIX ME.");
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+            throw new IllegalStateException("FIX ME.");
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+            throw new IllegalStateException("FIX ME.");
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+            throw new IllegalStateException("FIX ME.");
+        }
     }
 
 }

@@ -44,7 +44,7 @@ package org.netbeans.modules.tasks.ui.dashboard;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.tasks.ui.LinkButton;
+import org.netbeans.modules.team.ui.util.treelist.LinkButton;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,10 +60,10 @@ import org.netbeans.modules.tasks.ui.actions.Actions.CreateTaskAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.OpenRepositoryNodeAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.CreateQueryAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.QuickSearchAction;
-import org.netbeans.modules.tasks.ui.treelist.AsynchronousNode;
-import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
-import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.Utils;
+import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -144,7 +144,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
             btnSearch.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_SearchInRepo")); //NOI18N
             panel.add(btnSearch, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
 
-            btnAddQuery = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/query.png", true), new CreateQueryAction(this)); //NOI18N
+            btnAddQuery = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_query.png", true), new CreateQueryAction(this)); //NOI18N
             btnAddQuery.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_CreateQuery")); //NOI18N
             panel.add(btnAddQuery, new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
             

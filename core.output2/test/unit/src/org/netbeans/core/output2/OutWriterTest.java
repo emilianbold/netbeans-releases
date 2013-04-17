@@ -557,6 +557,24 @@ public class OutWriterTest extends NbTestCase {
         
     }
     
+    public void testLimitReached() throws IOException {
+        OutWriter ow = new OutWriter();
+        ((AbstractLines) ow.getLines()).setOutputLimits(
+                new OutputLimits(5, 1024, 3));
+
+        ow.println("first");
+        ow.println("second");
+        ow.println("third");
+        ow.println("fourth");
+        assertEquals(5, ow.getLines().getLineCount());
+
+        ow.println("fifth"); // sixth line, remove three lines
+        assertEquals(3, ow.getLines().getLineCount());
+        assertEquals("fourth\n", ow.getLines().getLine(0));
+        assertEquals("fifth\n", ow.getLines().getLine(1));
+        assertEquals("", ow.getLines().getLine(2));
+    }
+
     void processEQ() {
         try {
             SwingUtilities.invokeAndWait(new Runnable() {

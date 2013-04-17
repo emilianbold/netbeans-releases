@@ -76,14 +76,13 @@ public final class WebBrowserPane {
 //    }
     
     WebBrowserPane(WebBrowserFactoryDescriptor desc, 
-            boolean wrapEmbeddedBrowserInTopComponent, boolean disableNetBeansIntegration) 
+            boolean wrapEmbeddedBrowserInTopComponent) 
     {
-        this(desc, wrapEmbeddedBrowserInTopComponent, null, disableNetBeansIntegration);
+        this(desc, wrapEmbeddedBrowserInTopComponent, null);
     }
     
     private WebBrowserPane(WebBrowserFactoryDescriptor descriptor, 
-            boolean wrapEmbeddedBrowserInTopComponent, HtmlBrowserComponent comp, 
-            boolean disableNetBeansIntegration) 
+            boolean wrapEmbeddedBrowserInTopComponent, HtmlBrowserComponent comp) 
     {
         this.descriptor = descriptor;
         this.wrapEmbeddedBrowserInTopComponent = wrapEmbeddedBrowserInTopComponent;
@@ -117,10 +116,6 @@ public final class WebBrowserPane {
             }
             else {
                 impl = descriptor.getFactory().createHtmlBrowserImpl();
-                if ( impl instanceof EnhancedBrowser && !disableNetBeansIntegration
-                        && descriptor.getBrowserFamily().hasNetBeansAdvancedIntegration()){
-                    ((EnhancedBrowser) impl).setEnhancedMode( true );
-                }
                 impl.addPropertyChangeListener(listener);
             }
         }
@@ -165,6 +160,17 @@ public final class WebBrowserPane {
      */
     public boolean isEmbedded() {
         return descriptor.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW;  // NOI18N
+    }
+
+    boolean canReloadPage() {
+        if ( impl instanceof EnhancedBrowser ){
+            return ((EnhancedBrowser) impl).canReloadPage();
+        }
+        return false;
+    }
+
+    boolean hasNetBeansIntegration() {
+        return descriptor.hasNetBeansIntegration();
     }
 
     /**

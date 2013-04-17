@@ -81,6 +81,8 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         init(wizardPanel.getWizardType());
     }
 
+    // XXX remove
+    @SuppressWarnings("unchecked")
     private void init(NewPhpProjectWizardIterator.WizardType wizardType) {
         projectNameTextField.getDocument().addDocumentListener(this);
         localServerComponent.addChangeListener(this);
@@ -110,37 +112,38 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         projectNameLabel = new JLabel();
         projectNameTextField = new JTextField();
         sourcesLabel = new JLabel();
-        localServerComboBox = new JComboBox();
+        localServerComboBox = new JComboBox<LocalServer>();
         localServerButton = new JButton();
         localServerInfoLabel = new JLabel();
         phpVersionLabel = new JLabel();
-        phpVersionComboBox = new JComboBox();
+        phpVersionComboBox = new JComboBox<PhpVersion>();
         phpVersionInfoLabel = new JLabel();
         encodingLabel = new JLabel();
-        encodingComboBox = new JComboBox();
+        encodingComboBox = new JComboBox<Charset>();
         separator = new JSeparator();
         projectFolderPanel = new JPanel();
 
-        setFocusTraversalPolicy(null);
-
         projectNameLabel.setHorizontalAlignment(SwingConstants.LEFT);
         projectNameLabel.setLabelFor(projectNameTextField);
-        Mnemonics.setLocalizedText(projectNameLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_ProjectName"));
+        Mnemonics.setLocalizedText(projectNameLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_ProjectName")); // NOI18N
         projectNameLabel.setVerticalAlignment(SwingConstants.TOP);
 
         sourcesLabel.setLabelFor(localServerComboBox);
-        Mnemonics.setLocalizedText(sourcesLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_Sources"));
+        Mnemonics.setLocalizedText(sourcesLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_Sources")); // NOI18N
         sourcesLabel.setVerticalAlignment(SwingConstants.TOP);
 
         localServerComboBox.setEditable(true);
 
         Mnemonics.setLocalizedText(localServerButton, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_LocalServerBrowse")); // NOI18N
-        Mnemonics.setLocalizedText(localServerInfoLabel, "dummy");
-        Mnemonics.setLocalizedText(phpVersionLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.phpVersionLabel.text"));
-        Mnemonics.setLocalizedText(phpVersionInfoLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.phpVersionInfoLabel.text"));
+
+        Mnemonics.setLocalizedText(localServerInfoLabel, "dummy"); // NOI18N
+
+        Mnemonics.setLocalizedText(phpVersionLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.phpVersionLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(phpVersionInfoLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.phpVersionInfoLabel.text")); // NOI18N
 
         encodingLabel.setLabelFor(encodingComboBox);
-        Mnemonics.setLocalizedText(encodingLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_Encoding"));
+        Mnemonics.setLocalizedText(encodingLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_Encoding")); // NOI18N
 
         projectFolderPanel.setLayout(new BorderLayout());
 
@@ -148,7 +151,7 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addComponent(separator, GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)
+            .addComponent(separator)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(projectNameLabel)
@@ -161,17 +164,17 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
                         .addComponent(phpVersionInfoLabel)
                         .addContainerGap())
                     .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                        .addComponent(phpVersionComboBox, 0, 249, Short.MAX_VALUE)
-                        .addComponent(projectNameTextField, GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
+                        .addComponent(phpVersionComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(projectNameTextField)
                         .addGroup(layout.createSequentialGroup()
-                            .addComponent(localServerComboBox, 0, 141, Short.MAX_VALUE)
+                            .addComponent(localServerComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(localServerButton))
                         .addGroup(layout.createSequentialGroup()
                             .addComponent(localServerInfoLabel)
                             .addContainerGap())
-                        .addComponent(encodingComboBox, 0, 249, Short.MAX_VALUE))))
-            .addComponent(projectFolderPanel, GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)
+                        .addComponent(encodingComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+            .addComponent(projectFolderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -236,12 +239,12 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JComboBox encodingComboBox;
+    private JComboBox<Charset> encodingComboBox;
     private JLabel encodingLabel;
     private JButton localServerButton;
-    private JComboBox localServerComboBox;
+    private JComboBox<LocalServer> localServerComboBox;
     private JLabel localServerInfoLabel;
-    private JComboBox phpVersionComboBox;
+    private JComboBox<PhpVersion> phpVersionComboBox;
     private JLabel phpVersionInfoLabel;
     private JLabel phpVersionLabel;
     private JPanel projectFolderPanel;
@@ -273,12 +276,12 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
     }
 
     @Override
-    public MutableComboBoxModel getLocalServerModel() {
+    public MutableComboBoxModel<LocalServer> getLocalServerModel() {
         return localServerComponent.getLocalServerModel();
     }
 
     @Override
-    public void setLocalServerModel(MutableComboBoxModel localServers) {
+    public void setLocalServerModel(MutableComboBoxModel<LocalServer> localServers) {
         localServerComponent.setLocalServerModel(localServers);
     }
 

@@ -101,16 +101,19 @@ public final class EmbedderFactory {
         });
 
     static {
-        OpenProjects.getDefault().addProjectGroupChangeListener(new ProjectGroupChangeListener() {
-
+        RP.post(new Runnable() {
             @Override
-            public void projectGroupChanging(ProjectGroupChangeEvent event) {
-                resetCachedEmbedders();
-            }
+            public void run() { //#228379
+                OpenProjects.getDefault().addProjectGroupChangeListener(new ProjectGroupChangeListener() {
+                    @Override
+                    public void projectGroupChanging(ProjectGroupChangeEvent event) {
+                        resetCachedEmbedders();
+                    }
 
-            @Override
-            public void projectGroupChanged(ProjectGroupChangeEvent event) {
-                
+                    @Override
+                    public void projectGroupChanged(ProjectGroupChangeEvent event) {
+                    }
+                });
             }
         });
     }
@@ -141,8 +144,8 @@ public final class EmbedderFactory {
         return NbPreferences.root().node("org/netbeans/modules/maven");
     }
     
-    private static Preferences getGroupedPreferences() { 
-        ProjectGroup grp = OpenProjects.getDefault().getActiveProjectGroup();
+    private static Preferences getGroupedPreferences(ProjectGroup grp) { 
+        
         if (grp != null) {
             return grp.preferencesForPackage(EmbedderFactory.class);
         }
@@ -168,7 +171,17 @@ public final class EmbedderFactory {
      * @since 2.32
      */
     public static @NonNull File getEffectiveMavenHome() {
-        Preferences grPref = getGroupedPreferences();
+        ProjectGroup grp = OpenProjects.getDefault().getActiveProjectGroup();       
+        return getEffectiveMavenHome(grp);
+    } 
+    
+    /**
+     * @since 2.39
+     * @param grPref
+     * @return 
+     */
+    public static @NonNull File getEffectiveMavenHome(ProjectGroup grp) {
+        Preferences grPref = getGroupedPreferences(grp);
         String str =  grPref != null ? grPref.get(PROP_COMMANDLINE_PATH, null) : null;
         if (str == null) {
             str = getPreferences().get(PROP_COMMANDLINE_PATH, null);
@@ -178,7 +191,7 @@ public final class EmbedderFactory {
         } else {
             return getDefaultMavenHome();
         }
-    }    
+    } 
 
     public static void setMavenHome(File path) {
         File oldValue = getMavenHome();
@@ -191,6 +204,22 @@ public final class EmbedderFactory {
             getPreferences().remove(PROP_COMMANDLINE_PATH);
         } else {
             getPreferences().put(PROP_COMMANDLINE_PATH, FileUtil.normalizeFile(path).getAbsolutePath());
+        }
+        resetCachedEmbedders();
+    }
+    
+    public static void setGroupedMavenHome(ProjectGroup grp, File path) {
+        File oldValue = getEffectiveMavenHome(grp);     
+        File defValue = getMavenHome();
+        if (oldValue.equals(path) || path == null && oldValue.equals(defValue)) {
+            //no change happened, prevent resetting the embedders
+            return;
+        }
+        Preferences prefs = grp.preferencesForPackage(EmbedderFactory.class);
+        if (path == null || path.equals(defValue)) {
+            prefs.remove(PROP_COMMANDLINE_PATH);
+        } else {
+            prefs.put(PROP_COMMANDLINE_PATH, FileUtil.normalizeFile(path).getAbsolutePath());
         }
         resetCachedEmbedders();
     }

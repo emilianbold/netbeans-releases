@@ -203,22 +203,6 @@ public final class JXTableRowHeader extends JComponent {
         return header;
     }
 
-    private class HeaderResizeListener implements TableModelListener {
-
-        @Override
-        public void tableChanged(TableModelEvent e) {
-            // pack before setting preferred width.
-            headerTable.packAll();
-
-            TableColumn column = headerTable.getColumnModel().getColumn(0);
-            column.setPreferredWidth(column.getPreferredWidth() + 20);
-
-            if (column.getPreferredWidth() != getWidth()) {
-                headerTable.setPreferredScrollableViewportSize(new Dimension(
-                        column.getPreferredWidth(), 0));
-            }
-        }
-    }
     private static Icon rightArrow = new Icon() {
 
         @Override
@@ -293,8 +277,6 @@ public final class JXTableRowHeader extends JComponent {
 
         setLayout(new GridLayout(1, 1));
 
-        this.headerTable.getModel().addTableModelListener(
-                new JXTableRowHeader.HeaderResizeListener());
         this.headerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         this.headerTable.getTableHeader().setReorderingAllowed(false);
         this.headerTable.getTableHeader().setResizingAllowed(false);
@@ -305,7 +287,12 @@ public final class JXTableRowHeader extends JComponent {
         // pack before setting preferred width.
         this.headerTable.packAll();
 
-        column.setPreferredWidth(column.getPreferredWidth() + 20);
+        TableCellRenderer defaultRenderer = createDefaultRenderer();
+
+        Component c = defaultRenderer.getTableCellRendererComponent(
+                headerTable, "00000", false, false, 0, 0);              //NOI18N
+
+        column.setPreferredWidth((int) c.getMinimumSize().getWidth() + 10);
         column.setCellRenderer(createDefaultRenderer());
         this.headerTable.setPreferredScrollableViewportSize(new Dimension(
                 column.getPreferredWidth(), 0));

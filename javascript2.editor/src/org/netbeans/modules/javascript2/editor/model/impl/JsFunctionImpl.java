@@ -65,8 +65,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         this.parameters = new ArrayList<JsObject>(parameters.size());
         for (Identifier identifier : parameters) {
             JsObject parameter = new ParameterObject(this, identifier);
-            this.parametersByName.put(identifier.getName(), parameter);
-            this.parameters.add(parameter);
+            addParameter(parameter);
         }
         this.isAnonymous = false;
         this.returnTypes = new HashSet<TypeUsage>();
@@ -74,8 +73,8 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         if (parentObject != null) {
             // creating arguments variable
             JsObjectImpl arguments = new JsObjectImpl(this, 
-                    new IdentifierImpl("arguments", new OffsetRange(name.getOffsetRange().getStart(), name.getOffsetRange().getStart())), 
-                    name.getOffsetRange(),  false, EnumSet.of(Modifier.PRIVATE)); // NOI8N
+                    new IdentifierImpl(ModelUtils.ARGUMENTS, new OffsetRange(name.getOffsetRange().getStart(), name.getOffsetRange().getStart())), 
+                    name.getOffsetRange(),  false, EnumSet.of(Modifier.PRIVATE));
             arguments.addAssignment(new TypeUsageImpl("Arguments", getOffset(), true), getOffset());    // NOI18N
             this.addProperty(arguments.getName(), arguments);
         }
@@ -99,8 +98,14 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     }
     
     @Override
-    public Collection<? extends JsObject> getParameters() {
+    public final Collection<? extends JsObject> getParameters() {
         return this.parameters;
+    }
+
+    public final void addParameter(JsObject object) {
+        assert object.getParent() == this;
+        this.parametersByName.put(object.getName(), object);
+        this.parameters.add(object);
     }
 
     @Override
@@ -124,7 +129,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                         && (property.getModifiers().contains(Modifier.PROTECTED)
                         || (property.getModifiers().contains(Modifier.PUBLIC) &&  !property.getModifiers().contains(Modifier.STATIC)))
                         && !isAnonymous() && !property.isAnonymous()) {
-                    if(!getParent().getName().equals("prototype")) {
+                    if(!ModelUtils.PROTOTYPE.equals(getParent().getName())) {
                         return JsElement.Kind.CONSTRUCTOR;
                     }
                 }
@@ -184,6 +189,11 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                      }
                  } else {
                     JsObject jsObject = ModelUtils.getJsObjectByName(this,type.getType());
+                    if (jsObject == null) {
+                        // try to find according the fqn
+                        JsObject global = ModelUtils.getGlobalObject(this);
+                        jsObject = ModelUtils.findJsObjectByName(global, type.getType());
+                    }
                     if(jsObject != null) {
                        Collection<TypeUsage> resolveAssignments = resolveAssignments(jsObject, type.getOffset());
                        for (TypeUsage typeResolved: resolveAssignments) {
@@ -200,6 +210,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         return returns;
     }    
         
+    @Override
     public void addReturnType(TypeUsage type) {
         boolean isThere = false;
         for (TypeUsage typeUsage : this.returnTypes) {
@@ -269,6 +280,10 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             }
         }
     }
-    
+
+//    @Override
+//    public String toString() {
+//        return "JsFunctionImpl{" + "declarationName=" + getDeclarationName() + ", parent=" + getParent() + ", kind=" + kind + ", parameters=" + parameters + ", returnTypes=" + returnTypes + '}';
+//    }
     
 }

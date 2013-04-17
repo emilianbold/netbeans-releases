@@ -91,6 +91,9 @@ Contributor(s):
             <file name="SwitchIndexAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.trace.SwitchIndexAction"/>
             </file>
+            <file name="SwitchTraceGramaRulesAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.trace.SwitchTraceGramaRulesAction"/>
+            </file>
         </folder>
     </folder>
     <folder name="Projects">
@@ -173,6 +176,10 @@ Contributor(s):
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestProjectIndexUsageReferencesAction.instance"/>
                 <attr name="position" intvalue="3200"/>
             </file>
+            <file name="org.netbeans.modules.cnd.modelui.switcher.SwitchTraceGramaRulesAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/SwitchTraceGramaRulesAction.instance"/>
+                <attr name="position" intvalue="3300"/>
+            </file>            
         </folder>
     </folder>
     <folder name="Shortcuts">

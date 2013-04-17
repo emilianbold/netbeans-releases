@@ -89,7 +89,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     private BrowserTabDescriptor browserTabDescriptor = null;
     
     private boolean enhancedMode;
-    
+
     private boolean disablePageInspector = false;
     private boolean liveHTMLEnabled = false;
     
@@ -106,22 +106,14 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         pcs = new PropertyChangeSupport (this);
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.browser.api.EnhancedBrowser#hasEnhancedMode()
-     */
-    @Override
     public boolean hasEnhancedMode() {
         return enhancedMode;
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.browser.api.EnhancedBrowser#setEnhancedMode(boolean)
-     */
-    @Override
-    public void setEnhancedMode( boolean mode ) {
+
+    void setEnhancedMode( boolean mode ) {
         enhancedMode = mode;
     }
-    
+
     @Override
     public void disablePageInspector() {
         this.disablePageInspector = true;
@@ -131,7 +123,12 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     public void enableLiveHTML() {
         this.liveHTMLEnabled = true;
     }
-    
+
+    @Override
+    public boolean canReloadPage() {
+        return getBrowserTabDescriptor() != null;
+    }
+
     public boolean isDisablePageInspector() {
         return disablePageInspector;
     }
@@ -209,34 +206,25 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         if (url == null) {
             return;
         }
-        if ( hasEnhancedMode() ){
-            BrowserTabDescriptor tab = getBrowserTabDescriptor();
-            if (tab != null) {
-                URL u = url;
-                // if user navigated to a different URL then reload the new URL
-                // for example going from .../index.html to .../index.html#page2
-                // must reload .../index.html#page2
-                if (newURL != null) {
-                    try {
-                        URL u2 = new URL(newURL);
-                        // use new URL only if the hostname and port are the same
-                        if (u2.getAuthority() != null && u2.getAuthority().equals(u.getAuthority())) {
-                            u = u2;
-                        }
-                    } catch (MalformedURLException ex) {
-                        Exceptions.printStackTrace(ex);
+        BrowserTabDescriptor tab = getBrowserTabDescriptor();
+        if (tab != null) {
+            URL u = url;
+            // if user navigated to a different URL then reload the new URL
+            // for example going from .../index.html to .../index.html#page2
+            // must reload .../index.html#page2
+            if (newURL != null) {
+                try {
+                    URL u2 = new URL(newURL);
+                    // use new URL only if the hostname and port are the same
+                    if (u2.getAuthority() != null && u2.getAuthority().equals(u.getAuthority())) {
+                        u = u2;
                     }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                ExternalBrowserPlugin.getInstance().showURLInTab(tab, u);
             }
-            /*
-             * Do nothing in case there is no possibility to reload browser in the opened tab.
-             * Otherwise each call of this method opens new tab in the browser and 
-             * this has no relation to "reload".
-             * 
-            }*/
-        }
-        else {
+            ExternalBrowserPlugin.getInstance().showURLInTab(tab, u);
+        } else if (!hasEnhancedMode()) {
             setURL(url);
         }
     }
@@ -251,12 +239,11 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         return url;
     }
 
+    @Override
     public void close(boolean closeTab) {
-        if (hasEnhancedMode()) {
-            BrowserTabDescriptor tab = getBrowserTabDescriptor();
-            if (tab != null) {
-                ExternalBrowserPlugin.getInstance().close(tab, closeTab);
-            }
+        BrowserTabDescriptor tab = getBrowserTabDescriptor();
+        if (tab != null) {
+            ExternalBrowserPlugin.getInstance().close(tab, closeTab);
         }
     }
 
@@ -278,12 +265,11 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     @Override
     final public void setURL(final URL url) {
         newURL = null;
+        BrowserFamilyId pluginId = extBrowserFactory.getBrowserFamilyId();
+        ExtensionManager.ExtensitionStatus status = ExtensionManager.isInstalled(pluginId);
+        BrowserTabDescriptor tab = getBrowserTabDescriptor();
         if (hasEnhancedMode()) {
-            BrowserTabDescriptor tab = getBrowserTabDescriptor();
             if (tab == null) {
-                BrowserFamilyId pluginId = extBrowserFactory.getBrowserFamilyId();
-                ExtensionManager.ExtensitionStatus status = ExtensionManager
-                        .isInstalled(pluginId);
                 boolean browserPluginAvailable = true;
                 if (status == ExtensionManager.ExtensitionStatus.DISABLED) {
                     browserPluginAvailable = false;
@@ -320,7 +306,16 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
             // is opened without NB integration:
             ExternalBrowserPlugin.getInstance();
 
-            loadURLInBrowser(url);
+            if (status == ExtensionManager.ExtensitionStatus.INSTALLED) {
+                if (tab == null) {
+                    ExternalBrowserPlugin.getInstance().register(url, url, this);
+                    loadURLInBrowser(url);
+                } else {
+                    ExternalBrowserPlugin.getInstance().showURLInTab(tab, url);
+                }
+            } else {
+                loadURLInBrowser(url);
+            }
         }
         this.url = url;
     }

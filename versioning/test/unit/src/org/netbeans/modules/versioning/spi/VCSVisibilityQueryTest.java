@@ -48,7 +48,6 @@ import javax.swing.event.ChangeEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileObject;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,13 +55,9 @@ import javax.swing.event.ChangeListener;
 import junit.framework.Assert;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCSVisibilityQuery;
 import org.netbeans.spi.queries.VisibilityQueryChangeEvent;
-import org.openide.util.Lookup;
-import org.openide.util.test.MockLookup;
 
 /**
  * Versioning SPI unit tests of VCSVisibilityQuery.
@@ -76,6 +71,7 @@ public class VCSVisibilityQueryTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         File userdir = new File(getWorkDir() + "userdir");
         userdir.mkdirs();
@@ -101,17 +97,21 @@ public class VCSVisibilityQueryTest extends NbTestCase {
         VisibilityQuery.getDefault().removeChangeListener(cl);
     }
     
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
     public void testFireForAll() {
         final boolean [] received = new boolean[] {false};
-        VisibilityQuery.getDefault().addChangeListener(new ChangeListener() {
+        ChangeListener list;
+        VisibilityQuery.getDefault().addChangeListener(list = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent ce) {
                 received[0] = true;
             }
         });
-        TestVCS.getInstance().getVisibilityQuery().fireVisibilityChanged();
-        assertTrue(received[0]);
+        try {
+            TestVCS.getInstance().getVisibilityQuery().fireVisibilityChanged();
+            assertTrue(received[0]);
+        } finally {
+            VisibilityQuery.getDefault().removeChangeListener(list);
+        }
     }
     
     public void testFireForFiles() throws IOException {
@@ -119,7 +119,8 @@ public class VCSVisibilityQueryTest extends NbTestCase {
         File f2 = createVersionedFile("f2", true);
         
         final List<String> received = new ArrayList<String>();
-        VisibilityQuery.getDefault().addChangeListener(new ChangeListener() {
+        ChangeListener list;
+        VisibilityQuery.getDefault().addChangeListener(list = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent ce) {
                 Assert.assertTrue(ce instanceof VisibilityQueryChangeEvent);
@@ -129,9 +130,13 @@ public class VCSVisibilityQueryTest extends NbTestCase {
                 received.add(fos[1].getName());
             }
         });
-        TestVCS.getInstance().getVisibilityQuery().fireVisibilityChanged(new File[] {f1, f2});
-        assertTrue(received.contains(f1.getName()));
-        assertTrue(received.contains(f2.getName()));
+        try {
+            TestVCS.getInstance().getVisibilityQuery().fireVisibilityChanged(new File[] {f1, f2});
+            assertTrue(received.contains(f1.getName()));
+            assertTrue(received.contains(f2.getName()));
+        } finally {
+            VisibilityQuery.getDefault().removeChangeListener(list);
+        }
     }
 
     private File createVersionedFile(String name, boolean visible) throws IOException {

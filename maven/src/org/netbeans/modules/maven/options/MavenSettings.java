@@ -58,6 +58,7 @@ import java.util.prefs.Preferences;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -78,6 +79,7 @@ public final class MavenSettings  {
     private static final String PROP_LAST_ARCHETYPE_VERSION = "lastArchetypeVersion"; //NOI18N
     private static final String PROP_SKIP_TESTS = "skipTests"; //NOI18N
     private static final String PROP_MAVEN_RUNTIMES = "mavenRuntimes"; //NOI18N
+    public static final String PROP_PROJECTNODE_NAME_PATTERN = "project.displayName"; //NOI18N
 
     //these are from former versions (6.5) and are here only for conversion
     private static final String PROP_DEBUG = "showDebug"; // NOI18N
@@ -260,6 +262,18 @@ public final class MavenSettings  {
         putProperty(PROP_LAST_ARCHETYPE_VERSION, version); //NOI18N
     }
 
+    public void setProjectNodeNamePattern(String pattern) {
+        if (null == pattern) {
+            getPreferences().remove(PROP_PROJECTNODE_NAME_PATTERN);
+        } else {
+            putProperty(PROP_PROJECTNODE_NAME_PATTERN, pattern);
+        }
+    }
+
+    public String getProjectNodeNamePattern() {
+        return getPreferences().get(PROP_PROJECTNODE_NAME_PATTERN, null); //NOI18N
+    }
+    
     public static enum DownloadStrategy {
         NEVER,
         FIRST_OPEN,

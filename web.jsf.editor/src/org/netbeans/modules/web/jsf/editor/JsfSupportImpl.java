@@ -61,10 +61,13 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -222,7 +225,7 @@ public class JsfSupportImpl implements JsfSupport {
 
     @Override
     public Library getLibrary(String namespace) {
-        return faceletsLibrarySupport.getLibraries().get(namespace);
+        return NamespaceUtils.getForNs(faceletsLibrarySupport.getLibraries(), namespace);
     }
 
     /** Library's uri to library map 
@@ -261,6 +264,17 @@ public class JsfSupportImpl implements JsfSupport {
 
     public synchronized MetadataModel<WebBeansModel> getWebBeansModel() {
 	return webBeansModel;
+    }
+
+    @Override
+    public boolean isJsf22Plus() {
+        if (wm != null) {
+            JSFVersion version = JSFVersion.forWebModule(wm);
+            // caching is done inside the method
+            return version != null && version.isAtLeast(JSFVersion.JSF_2_2);
+        }
+        // return the latest supported one until somebody will complain about that
+        return true;
     }
 
     @Override

@@ -160,6 +160,10 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
         return queries;
     }
+    
+    public KenaiProject getKenaiProject() {
+        return kenaiProject;
+    }    
 
     public JiraQuery getMyIssuesQuery() throws MissingResourceException {
         JiraConfiguration configuration = getConfiguration();

@@ -59,6 +59,7 @@ public class ActionProviderImplTest extends NbTestCase {
         clearWorkDir();
     }
 
+    
     public void testRunSingleMethodEnabledWhenHaveCoS() throws Exception {
         TestFileUtils.writeFile(new File(getWorkDir(), "pom.xml"), "<project><modelVersion>4.0.0</modelVersion>"
                 + "<groupId>test</groupId><artifactId>prj</artifactId>"
@@ -67,7 +68,7 @@ public class ActionProviderImplTest extends NbTestCase {
                 + "<dependencies><dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>3.8.2</version><scope>test</scope></dependency></dependencies>"
                 + "<properties><netbeans.compile.on.save>all</netbeans.compile.on.save></properties>"
                 + "</project>");
-        assertSupportsRunSingleMethod(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), true);
+        assertSupportsRunSingleMethod(ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir())), false); // used to be true, but now all is run with maven, not JavaRunner.
     }
 
     public void testRunSingleMethodDisabledWhenDoNotHaveCoSExplicit() throws Exception {

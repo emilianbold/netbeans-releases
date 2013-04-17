@@ -115,6 +115,10 @@ public class AndroidDebugTransport extends MobileDebugTransport {
                 if (hash != -1) {
                     urlFromBrowser = urlFromBrowser.substring(0, hash); 
                 }
+                if (urlFromBrowser.endsWith("/")) {
+                    urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length()-1); 
+                }
+                
                 if (getConnectionURL().toString().equals(urlFromBrowser)) {
                     return new URI(object.get("webSocketDebuggerUrl").toString());
                 }

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
+import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 

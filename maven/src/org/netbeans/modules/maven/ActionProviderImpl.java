@@ -195,7 +195,7 @@ public class ActionProviderImpl implements ActionProvider {
     }
 
     boolean runSingleMethodEnabled() {
-        return RunUtils.hasTestCompileOnSaveEnabled(proj) || (usingSurefire28() && (usingJUnit4() || usingTestNG()));
+        return usingSurefire28() && (usingJUnit4() || usingTestNG());
     }
 
     @Messages("run_single_method_disabled=Surefire 2.8+ with JUnit 4.8+ or TestNG needed to run a single test method without Compile on Save.")

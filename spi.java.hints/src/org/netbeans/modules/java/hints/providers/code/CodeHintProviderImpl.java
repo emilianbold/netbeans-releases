@@ -81,6 +81,7 @@ import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.BooleanOption;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
 import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.IntegerOption;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
@@ -107,7 +108,13 @@ public class CodeHintProviderImpl implements HintProvider {
         Map<HintMetadata, Collection<HintDescription>> result = new HashMap<HintMetadata, Collection<HintDescription>>();
         
         for (ClassWrapper c : FSWrapper.listClasses()) {
-            processClass(c, result);
+            try {
+                processClass(c, result);
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                Exceptions.printStackTrace(t);
+            }
         }
 
         return result;
@@ -125,18 +132,18 @@ public class CodeHintProviderImpl implements HintProvider {
 
     public static void processClass(ClassWrapper clazz, Map<HintMetadata, Collection<HintDescription>> result) throws SecurityException {
         Hint metadata = clazz.getAnnotation(Hint.class);
+        HintMetadata hm;
+        
+        if (metadata != null) {
+            String id = metadata.id();
 
-        if (metadata == null) {
-            metadata = new EmptyHintMetadataDescription();
+            if (id == null || id.length() == 0) {
+                id = clazz.getName();
+            }
+            hm = fromAnnotation(id, clazz, null, metadata);
+        } else {
+            hm = null;
         }
-
-        String id = metadata.id();
-
-        if (id == null || id.length() == 0) {
-            id = clazz.getName();
-        }
-
-        HintMetadata hm = fromAnnotation(id, clazz, null, metadata);
         
         for (MethodWrapper m : clazz.getMethods()) {
             Hint localMetadataAnnotation = m.getAnnotation(Hint.class);
@@ -154,7 +161,9 @@ public class CodeHintProviderImpl implements HintProvider {
                 localMetadata = hm;
             }
 
-            processMethod(result, m, localMetadata);
+            if (localMetadata != null) {
+                processMethod(result, m, localMetadata);
+            }
         }
     }
 
@@ -193,21 +202,41 @@ public class CodeHintProviderImpl implements HintProvider {
 
         for (FieldWrapper fw : clazz.getFields()) {
             BooleanOption option = fw.getAnnotation(BooleanOption.class);
-
-            if (option == null) continue;
-
+            IntegerOption iOption = fw.getAnnotation(IntegerOption.class);
+            
             String key = fw.getConstantValue();
 
             if (key == null) continue;
-
             if (allowedOptions != null && !allowedOptions.contains(key)) continue;
             
-            declarativeOptions.add(new OptionDescriptor(key, option.defaultValue(), option.displayName(), option.tooltip()));
+            Object defValue;
+            String displayName;
+            String tooltip;
+            if (option != null) {
+                defValue = option.defaultValue();
+                displayName = option.displayName();
+                tooltip = option.tooltip();
+            } else if (iOption != null) {
+                defValue = iOption.defaultValue();
+                displayName = iOption.displayName();
+                tooltip = iOption.tooltip();
+            } else {
+                return null;
+            }
+            
+            declarativeOptions.add(
+                new OptionDescriptor(
+                    key, 
+                    defValue,
+                    displayName,
+                    tooltip,
+                    option != null ? option : iOption)
+            );
         }
 
         return !declarativeOptions.isEmpty() ? new ReflectiveCustomizerProvider(clazz.getName(), id, declarativeOptions) : null;
     }
-
+    
     static void processMethod(Map<HintMetadata, Collection<HintDescription>> hints, MethodWrapper m, HintMetadata metadata) {
         //XXX: combinations of TriggerTreeKind and TriggerPattern?
         processTreeKindHint(hints, m, metadata);
@@ -330,7 +359,7 @@ public class CodeHintProviderImpl implements HintProvider {
             } catch (NoSuchMethodException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (InvocationTargetException ex) {
-                LOG.log(Level.INFO, null, ex);
+                LOG.log(Level.INFO, className + "." + methodName, ex);
                 //so that the exceptions are categorized better:
                 Exceptions.printStackTrace(ex.getCause());
             }

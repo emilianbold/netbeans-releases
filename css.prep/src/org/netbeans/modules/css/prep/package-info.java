@@ -44,9 +44,9 @@
     "scss.template.displayname=Sassy CSS Source File"
 })
 @TemplateRegistrations({
-    @TemplateRegistration(folder = "Other", content = "less/style.less",
+    @TemplateRegistration(folder = "Other", content = "style.less",
             position = 660, displayName = "#less.template.displayname"),
-    @TemplateRegistration(folder = "Other", content = "scss/style.scss",
+    @TemplateRegistration(folder = "Other", content = "style.scss",
             position = 670, displayName = "#scss.template.displayname")
 })
 package org.netbeans.modules.css.prep;

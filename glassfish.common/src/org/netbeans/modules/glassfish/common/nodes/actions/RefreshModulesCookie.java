@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,6 +45,7 @@
 package org.netbeans.modules.glassfish.common.nodes.actions;
 
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -52,8 +53,20 @@ import org.openide.nodes.Node;
  */
 public interface RefreshModulesCookie extends Node.Cookie {
     
-    public void refresh();
+    /**
+     * Requests the refresh of the server state.
+     * <p/>
+     * @return Task handler when refresh is executed as asynchronous thread
+     *         or <code>null</code> otherwise.
+     */
+    public RequestProcessor.Task refresh();
 
-    public void refresh(String expectedChild, String unexpectedChild);
+    /**
+     * Requests the refresh of the server state.
+     * <p/>
+     * @return Task handler when refresh is executed as asynchronous thread
+     *         or <code>null</code> otherwise.
+     */
+    public RequestProcessor.Task refresh(String expectedChild, String unexpectedChild);
     
 }

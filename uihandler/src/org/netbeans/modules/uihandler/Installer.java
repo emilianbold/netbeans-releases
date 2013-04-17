@@ -58,6 +58,8 @@ import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -74,6 +76,12 @@ import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -97,8 +105,10 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
+import org.openide.modules.Places;
 import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -829,13 +839,15 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     static File logsDirectory(){
-        String ud = System.getProperty("netbeans.user"); // NOI18N
-        if (ud == null || "memory".equals(ud)) { // NOI18N
-            return null;
+        
+        File logDir = InstalledFileLocator.getDefault().locate("var/log", null, false); // NOI18N
+        if (logDir == null) {
+            File userDir = Places.getUserDirectory();
+            if (userDir != null) {
+                logDir = new File(new File(userDir, "var"), "log");             // NOI18N
+            }
         }
-
-        File userDir = new File(ud); // NOI18N
-        return new File(new File(userDir, "var"), "log");
+        return logDir;
     }
 
     private static File logFile(int revision) {
@@ -850,15 +862,12 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     private static File logFileMetrics (int revision) {
-        String ud = System.getProperty("netbeans.user"); // NOI18N
-        if (ud == null || "memory".equals(ud)) { // NOI18N
+        File logDir = logsDirectory();
+        if (logDir == null){
             return null;
         }
-
         String suffix = revision == 0 ? "" : "." + revision;
-
-        File userDir = new File(ud); // NOI18N
-        File logFile = new File(new File(new File(userDir, "var"), "log"), "metrics" + suffix);
+        File logFile = new File(logDir, "metrics" + suffix);                    // NOI18N
         return logFile;
     }
 
@@ -1454,9 +1463,13 @@ public class Installer extends ModuleInstall implements Runnable {
 
         final String encUTF8 = "utf-8";
         PushbackInputStream pin = new PushbackInputStream(inputStream, 4096);
-        int l = pin.read(arr);
-        pin.unread(arr, 0, l);
-        String enc = findEncoding(arr, l);
+        int len = pin.read(arr);
+        if (len < 0) {
+            // Nothing to read => nothing to copy
+            return ;
+        }
+        pin.unread(arr, 0, len);
+        String enc = findEncoding(arr, len);
         boolean replaceEnc = !enc.equalsIgnoreCase(encUTF8);
         BufferedReader br = new BufferedReader(new InputStreamReader(pin, enc));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os, encUTF8));
@@ -1631,6 +1644,25 @@ public class Installer extends ModuleInstall implements Runnable {
                     replacements.put("{org.netbeans.modules.uihandler.LoadURL}", errURL);
                     String errMsg = (errorMessage == null) ? "" : errorMessage;
                     replacements.put("{org.netbeans.modules.uihandler.LoadError}", errMsg);
+                    if(conn instanceof HttpsURLConnection){
+                        Installer.initSSL((HttpsURLConnection) conn);
+                    }
+                    //for HTTP or HTTPS: conenct and read response - redirection or not?
+                    if (conn instanceof HttpURLConnection){
+                        conn.connect();
+                        if (((HttpURLConnection) conn).getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP ) {
+                            // in case of redirection, try to obtain new URL
+                            String redirUrl = conn.getHeaderField("Location"); //NOI18N
+                            if( null != redirUrl && !redirUrl.isEmpty() ) {
+                                //create connection to redirected url and substitute original conn
+                                URL redirectedUrl = new URL(redirUrl);
+                                URLConnection connRedir = redirectedUrl.openConnection();
+                                connRedir.setRequestProperty("User-Agent", "NetBeans");
+                                connRedir.setConnectTimeout(5000);
+                                conn = (HttpURLConnection) connRedir;
+                            }
+                        }
+                    }
                     copyWithEncoding(conn.getInputStream(), os, replacements);
                     connURL = conn.getURL().toExternalForm(); // URL could change by redirect
                     os.close();
@@ -1964,12 +1996,18 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
                 if (dataType != DataType.DATA_METRICS) {
                     String txt;
-                    if (!report) {
-                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm());
-                    } else {
-                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm());
+                    String logFile = NbBundle.getMessage(Installer.class, "LOG_FILE");
+                    File log = InstalledFileLocator.getDefault().locate(logFile, null, false);
+                    if (log != null) {
+                        logFile = log.getAbsolutePath();
                     }
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(txt, NotifyDescriptor.ERROR_MESSAGE);
+                    if (!report) {
+                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm(), logFile);
+                    } else {
+                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm(), logFile);
+                    }
+                    Object dlg = ConnectionErrorDlg.get(txt);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(dlg, NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notifyLater(nd);
                 }
             }
@@ -2310,12 +2348,10 @@ public class Installer extends ModuleInstall implements Runnable {
                  os.write(slownData.getNpsContent());
                  os.close();
 
-                 File gestures = new File(new File(new File(
-                         new File(System.getProperty("netbeans.user")), // NOI18N
-                         "var"), "log"), "uigestures"); // NOI18N
+                 File gestures = InstalledFileLocator.getDefault().locate("var/log/uigestures", null, false); // NOI18N
 
                  SelfSampleVFS fs;
-                 if (gestures.exists()) {
+                 if (gestures != null && gestures.exists()) {
                      fs = new SelfSampleVFS(
                              new String[]{"selfsampler.npss", "selfsampler.log"},
                              new File[]{tempFile, gestures});
@@ -2626,5 +2662,39 @@ public class Installer extends ModuleInstall implements Runnable {
     private static boolean dontWaitForUserInputInTests = false;
     static void dontWaitForUserInputInTests(){
         dontWaitForUserInputInTests = true;
+    }
+      public static void initSSL( HttpURLConnection httpCon ) throws IOException {
+        if( httpCon instanceof HttpsURLConnection ) {
+            HttpsURLConnection https = ( HttpsURLConnection ) httpCon;
+
+            try {
+                TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return new X509Certificate[0];
+                        }
+
+                        @Override
+                        public void checkClientTrusted( X509Certificate[] certs, String authType ) {
+                        }
+
+                        @Override
+                        public void checkServerTrusted( X509Certificate[] certs, String authType ) {
+                        }
+                    } };
+                SSLContext sslContext = SSLContext.getInstance( "SSL" ); //NOI18N
+                sslContext.init( null, trustAllCerts, new SecureRandom() );
+                https.setHostnameVerifier( new HostnameVerifier() {
+                    @Override
+                    public boolean verify( String hostname, SSLSession session ) {
+                        return true;
+                    }
+                } );
+                https.setSSLSocketFactory( sslContext.getSocketFactory() );
+            } catch( Exception ex ) {
+                throw new IOException( ex );
+            }
+        }
     }
 }

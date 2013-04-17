@@ -156,7 +156,7 @@ public final class NodeUtil {
     }
 
     public static Node getAncestorByType(Node node, final NodeType type) {
-        AtomicReference<Node> found = new AtomicReference<Node>();
+        AtomicReference<Node> found = new AtomicReference<>();
         NodeVisitor visitor = new NodeVisitor<AtomicReference<Node>>(found) {
 
             @Override
@@ -174,7 +174,7 @@ public final class NodeUtil {
     
     public static List<Node> getChildrenRecursivelyByType(Node root, final NodeType... type) {
         final EnumSet<NodeType> nodeTypes = EnumSet.of(type[0], type);
-        List<Node> found = new ArrayList<Node>();
+        List<Node> found = new ArrayList<>();
         NodeVisitor<List<Node>> visitor = new NodeVisitor<List<Node>>(found) {
 
             @Override
@@ -192,7 +192,7 @@ public final class NodeUtil {
 
     /** @return list of children of the node with the specified kind. */
     public static Node[] getChildrenByType(Node node, NodeType type) {
-        ArrayList<Node> list = new ArrayList<Node>(node.children().size() / 4);
+        ArrayList<Node> list = new ArrayList<>(node.children().size() / 4);
         for (Node child : node.children()) {
             if (child.type() == type) {
                 list.add(child);

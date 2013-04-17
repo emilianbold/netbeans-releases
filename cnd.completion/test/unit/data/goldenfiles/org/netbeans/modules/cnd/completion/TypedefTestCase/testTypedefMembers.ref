@@ -1,4 +1,4 @@
-_child _ChildStruct
-a int
-b int
-child ChildStruct
+_child _ChildStruct	$	    ps._child
+a int	$	    ps.a
+b int	$	    ps.b
+child ChildStruct	$	    ps.child

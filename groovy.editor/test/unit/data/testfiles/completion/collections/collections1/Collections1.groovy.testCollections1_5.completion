@@ -211,7 +211,7 @@ METHOD     with(Closure)                              Object
 METHOD     withDefault(Closure)                       List
 METHOD     withEagerDefault(Closure)                  List
 METHOD     withLazyDefault(Closure)                   List
-FIELD      empty                                      boolean
-FIELD      from                                       Comparable
-FIELD      reverse                                    boolean
-FIELD      to                                         Comparable
+FIELD      empty                           [PUBLIC]   boolean
+FIELD      from                            [PUBLIC]   Comparable
+FIELD      reverse                         [PUBLIC]   boolean
+FIELD      to                              [PUBLIC]   Comparable

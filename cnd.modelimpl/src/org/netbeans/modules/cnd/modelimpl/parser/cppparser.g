@@ -3956,10 +3956,8 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
             |   LITERAL_alignof
             |   LITERAL___alignof
             |   LITERAL___alignof__
-            |   LITERAL___is_class
-            |   LITERAL___is_pod
-            |   LITERAL___is_base_of
-            |   LITERAL___has_trivial_constructor
+
+            |   trait_type_literals
 
             |   LITERAL_auto
             |   LITERAL_final
@@ -4203,10 +4201,8 @@ lazy_expression_predicate
     |   LITERAL_alignof
     |   LITERAL___alignof
     |   LITERAL___alignof__
-    |   LITERAL___is_class
-    |   LITERAL___is_pod
-    |   LITERAL___is_base_of
-    |   LITERAL___has_trivial_constructor
+
+    |   trait_type_literals
 
     |   LITERAL_auto
     |   LITERAL_final
@@ -4228,6 +4224,17 @@ lazy_base_close
         )*
         balanceCurlies
     ;
+
+protected
+trait_type_literals
+    :
+        LITERAL___is_pod | LITERAL___has_nothrow_assign | LITERAL___has_nothrow_copy | LITERAL___has_nothrow_constructor |
+        LITERAL___has_trivial_assign | LITERAL___has_trivial_copy | LITERAL___has_trivial_destructor | LITERAL___has_virtual_destructor |
+        LITERAL___is_abstract | LITERAL___is_empty | LITERAL___is_literal_type | LITERAL___is_polymorphic |
+        LITERAL___is_standard_layout | LITERAL___is_trivial | LITERAL___is_union | LITERAL___underlying_type | 
+        LITERAL___is_class | LITERAL___is_base_of | LITERAL___has_trivial_constructor
+    ;
+
 
 protected
 postfix_cv_qualifier

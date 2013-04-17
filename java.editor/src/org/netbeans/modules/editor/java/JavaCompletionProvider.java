@@ -75,6 +75,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndex.Symbols;
 import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -2614,6 +2615,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
             boolean isConst = parent.getKind() == Tree.Kind.VARIABLE && ((VariableTree)parent).getModifiers().getFlags().containsAll(EnumSet.of(FINAL, STATIC));
+            if (et.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+                et = ((AnnotatedTypeTree)et).getUnderlyingType();
+                exPath = new TreePath(exPath, et);
+            }
             if ((parent == null || parent.getKind() != Tree.Kind.PARENTHESIZED) &&
                     (et.getKind() == Tree.Kind.PRIMITIVE_TYPE || et.getKind() == Tree.Kind.ARRAY_TYPE || et.getKind() == Tree.Kind.PARAMETERIZED_TYPE)) {
                 TypeMirror tm = controller.getTrees().getTypeMirror(exPath);
@@ -3015,6 +3020,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         break;
                 }
             }
+            if (queryType == COMPLETION_ALL_QUERY_TYPE) {
+                addAllStaticMemberNames(env);
+            }
         }
 
         private void addLocalFieldsAndVars(final Env env) throws IOException {
@@ -3061,6 +3069,30 @@ public class JavaCompletionProvider implements CompletionProvider {
                         TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
                         results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
                         break;
+                }
+            }
+        }
+        
+        private void addAllStaticMemberNames(final Env env) {
+            String prefix = env.getPrefix();
+            if (prefix != null && prefix.length() > 0) {
+                CompilationController controller = env.getController();
+                Set<? extends Element> excludes = env.getExcludes();
+                Set<ElementHandle<Element>> excludeHandles = null;
+                if (excludes != null) {
+                    excludeHandles = new HashSet<ElementHandle<Element>>(excludes.size());
+                    for (Element el : excludes) {
+                        excludeHandles.add(ElementHandle.create(el));
+                    }
+                }
+                ClassIndex.NameKind kind = Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
+                Iterable<Symbols> declaredSymbols = controller.getClasspathInfo().getClassIndex().getDeclaredSymbols(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class));
+                for (Symbols symbols : declaredSymbols) {
+                    if (excludeHandles != null && excludeHandles.contains(symbols.getEnclosingType()) || isAnnonInner(symbols.getEnclosingType()))
+                        continue;
+                    for (String name : symbols.getSymbols()) {
+                        results.add(LazyStaticMemberCompletionItem.create(symbols.getEnclosingType(), name, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.getWhiteList()));
+                    }
                 }
             }
         }
@@ -3483,14 +3515,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                 }                
             } else {
+                String subwordsPattern = null;
                 if (!env.isCamelCasePrefix() && Utilities.isSubwordSensitive()) {
-                    prefix = Utilities.createSubwordsPattern(prefix);
+                    subwordsPattern = Utilities.createSubwordsPattern(prefix);
                 }
                 ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
                     Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
-                    Utilities.isSubwordSensitive() ? ClassIndex.NameKind.REGEXP :
+                    subwordsPattern != null ? ClassIndex.NameKind.REGEXP :
                     Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
-                Set<ElementHandle<TypeElement>> declaredTypes = controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix != null ? prefix : EMPTY, kind, EnumSet.allOf(ClassIndex.SearchScope.class));
+                Set<ElementHandle<TypeElement>> declaredTypes = controller.getClasspathInfo().getClassIndex().getDeclaredTypes(subwordsPattern != null ? subwordsPattern : prefix != null ? prefix : EMPTY, kind, EnumSet.allOf(ClassIndex.SearchScope.class));
                 results.ensureCapacity(results.size() + declaredTypes.size());
                 for(ElementHandle<TypeElement> name : declaredTypes) {
                     if (excludeHandles != null && excludeHandles.contains(name) || isAnnonInner(name))
@@ -3510,14 +3543,15 @@ public class JavaCompletionProvider implements CompletionProvider {
             Trees trees = controller.getTrees();
             Scope scope = env.getScope();
             if (prefix != null && prefix.length() > 2 && baseType.getTypeArguments().isEmpty()) {
+                String subwordsPattern = null;
                 if (!env.isCamelCasePrefix() && Utilities.isSubwordSensitive()) {
-                    prefix = Utilities.createSubwordsPattern(prefix);
+                    subwordsPattern = Utilities.createSubwordsPattern(prefix);
                 }
                 ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
                     Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
-                    Utilities.isSubwordSensitive() ? ClassIndex.NameKind.REGEXP :
+                    subwordsPattern != null ? ClassIndex.NameKind.REGEXP :
                     Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
-                for(ElementHandle<TypeElement> handle : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+                for(ElementHandle<TypeElement> handle : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(subwordsPattern != null ? subwordsPattern : prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
                     TypeElement te = handle.resolve(controller);
                     if (te != null && trees.isAccessible(scope, te) && types.isSubtype(types.getDeclaredType(te), baseType))
                         subtypes.add(types.getDeclaredType(te));
@@ -4305,7 +4339,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 for (TypeMirror smartType : smartTypes) {
                     if (smartType.getKind() == TypeKind.DECLARED) {
                         ExecutableType descriptorType = tu.getDescriptorType((DeclaredType)smartType);
-                        if (descriptorType != null && types.isSubsignature((ExecutableType)type, descriptorType)) {
+                        if (descriptorType != null && types.isSubsignature((ExecutableType)type, descriptorType)
+                                && types.isSubtype(((ExecutableType)type).getReturnType(), descriptorType.getReturnType())) {
                             return true;
                         }
                     }

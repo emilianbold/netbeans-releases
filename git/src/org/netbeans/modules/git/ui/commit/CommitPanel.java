@@ -291,9 +291,8 @@ public class CommitPanel extends javax.swing.JPanel {
         if (authors == null) {
             authors = new LinkedList<String>();
         }
-        if (!authors.contains(user)) {
-            authors.add(user);
-        }
+        authors.remove(user);
+        authors.add(0, user);
         model = new DefaultComboBoxModel(authors.toArray(new String[authors.size()]));
         return model;
     }

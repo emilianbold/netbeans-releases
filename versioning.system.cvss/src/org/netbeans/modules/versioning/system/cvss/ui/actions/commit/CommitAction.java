@@ -77,10 +77,10 @@ import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 public class CommitAction extends AbstractSystemAction {
     
     static final String RECENT_COMMIT_MESSAGES = "commitAction.commitMessage";  // NOI18N
+    private static final String ICON_RESOURCE = "org/netbeans/modules/versioning/system/cvss/resources/icons/commit.png"; //NOI18N
 
     public CommitAction() {
-        setIcon(null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        super(ICON_RESOURCE);
     }
 
     protected String getBaseName(Node [] activatedNodes) {
@@ -333,6 +333,6 @@ public class CommitAction extends AbstractSystemAction {
     }
     @Override
     protected String iconResource() {
-        return "org/netbeans/modules/versioning/system/cvss/resources/icons/commit.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 }

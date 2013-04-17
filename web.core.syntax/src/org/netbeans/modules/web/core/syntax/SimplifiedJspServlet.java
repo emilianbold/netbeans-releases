@@ -104,7 +104,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
             + "\t\tObject page,\n"
             + "\t\tPageContext pageContext,\n"
             + "\t\tThrowable exception\n"
-            + "\t) throws Throwable {\n"; //NOI18N
+            + "\t) throws Throwable {"; //NOI18N
     private static final String CLASS_FOOTER = "\n\t}\n}"; //NOI18N
     private CharSequence charSequence;
     private final Snapshot snapshot;
@@ -208,9 +208,9 @@ public class SimplifiedJspServlet extends JSPProcessor {
                 if (blockType == JavaCodeType.EXPRESSION) {
                     // the "" + (...) construction is used to preserve compatibility with pre-autoboxing java
                     // see issue #116598
-                    buff.add(snapshot.create(String.format("\t\tObject expr%1$d = \"\" + (", expressionIndex++), "text/x-java")); //NOI18N
+                    buff.add(snapshot.create(String.format("\n\t\tObject expr%1$d = \"\" + (", expressionIndex++), "text/x-java")); //NOI18N
                     buff.add(snapshot.create(blockStart, blockLength, "text/x-java"));
-                    buff.add(snapshot.create(");\n", "text/x-java")); //NOI18N
+                    buff.add(snapshot.create(");", "text/x-java")); //NOI18N
                 } else {
                     if (isUnfinishedScriptletInQueue(tokenSequence)) {
                         // see issue #213963 - we are trying to cut rest of the tag after the caret position
@@ -220,7 +220,6 @@ public class SimplifiedJspServlet extends JSPProcessor {
                         }
                     }
                     buff.add(snapshot.create(blockStart, blockLength, "text/x-java"));
-                    buff.add(snapshot.create("\n", "text/x-java")); //NOI18N
                 }
             }
         } while (tokenSequence.moveNext());
@@ -342,13 +341,40 @@ public class SimplifiedJspServlet extends JSPProcessor {
                     }
                 } else {
                     pieceOfCode = extractCodeFromTagAttribute(tokenSequence,
-                        Arrays.asList("page"), //NOI18N
-                        Arrays.asList("extends"));
+                        Arrays.asList("attribute"), //NOI18N
+                        Arrays.asList("type"));     //NOI18N
+
 
                     if (pieceOfCode != null){
-                        pageExtends = snapshot.create(pieceOfCode.startOffset,
-                                pieceOfCode.length,
-                                "text/x-java"); //NOI18N
+                        PieceOfCode name = extractCodeFromTagAttribute(tokenSequence,
+                            Arrays.asList("attribute"), //NOI18N
+                            Arrays.asList("name"));     //NOI18N
+
+                        // id may be null in broken (incomplete) code
+                        if (name != null){
+                            beanDeclarations.add(snapshot.create(
+                                    pieceOfCode.getStartOffset(),
+                                    pieceOfCode.getLength(), "text/x-java")); //NOI18N
+
+                            beanDeclarations.add(snapshot.create(" ", "text/x-java")); //NOI18N
+
+                            beanDeclarations.add(snapshot.create(
+                                    name.getContent(), "text/x-java")); //NOI18N
+
+                            beanDeclarations.add(snapshot.create(";\n", "text/x-java")); //NOI18N
+
+                            localBeansFound.add(name.getContent());
+                        }
+                    } else {
+                        pieceOfCode = extractCodeFromTagAttribute(tokenSequence,
+                            Arrays.asList("page"), //NOI18N
+                            Arrays.asList("extends"));
+
+                        if (pieceOfCode != null){
+                            pageExtends = snapshot.create(pieceOfCode.startOffset,
+                                    pieceOfCode.length,
+                                    "text/x-java"); //NOI18N
+                        }
                     }
                 }
             }

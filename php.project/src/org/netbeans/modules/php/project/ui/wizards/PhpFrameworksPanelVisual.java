@@ -365,10 +365,10 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
     private static final class FrameworksTableModel extends AbstractTableModel {
         private static final long serialVersionUID = 8082636013224696L;
 
-        private final DefaultListModel model;
+        private final DefaultListModel<FrameworkModelItem> model;
 
         public FrameworksTableModel() {
-            model = new DefaultListModel();
+            model = new DefaultListModel<FrameworkModelItem>();
         }
 
         @Override
@@ -433,7 +433,7 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
         }
 
         FrameworkModelItem getItem(int index) {
-            return (FrameworkModelItem) model.get(index);
+            return model.get(index);
         }
 
         void addItem(FrameworkModelItem item) {

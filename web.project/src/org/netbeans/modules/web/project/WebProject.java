@@ -49,14 +49,13 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -150,11 +149,7 @@ import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
-import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
-import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
@@ -162,19 +157,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.ConfigSupport.DeployOnSaveListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
-import org.netbeans.modules.web.browser.api.BrowserSupport;
-import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
-import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
-import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
-import org.netbeans.modules.web.clientproject.spi.RefreshOnSaveSupport;
-import org.netbeans.modules.web.common.api.WebUtils;
-import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.classpath.DelagatingProjectClassPathModifierImpl;
@@ -196,7 +182,6 @@ import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
-import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.loaders.DataObject;
@@ -633,6 +618,7 @@ public final class WebProject implements Project {
             QuerySupport.createBinaryForSourceQueryImplementation(getSourceRoots(), getTestSourceRoots(), helper, eval),
             new ProjectWebRootProviderImpl(),
             easelSupport,
+            new WebProjectBrowserProvider(this),
         });
 
         Lookup ee6 = Lookups.fixed(new Object[]{
@@ -991,7 +977,8 @@ public final class WebProject implements Project {
                     catch (InstanceRemovedException ire) {
                         // do nothing
                     }
-                    Utils.logUsage(WebProject.class, "USG_PROJECT_OPEN_WEB", new Object[] { serverName }); // NOI18N
+                    Profile profile = WebProject.this.getWebModule().getJ2eeProfile();
+                    Utils.logUsage(WebProject.class, "USG_PROJECT_OPEN_WEB", new Object[] { serverName, profile }); // NOI18N
                 }
                 
             } catch (IOException e) {
@@ -2394,14 +2381,6 @@ public final class WebProject implements Project {
             return evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
         }
 
-        @Override
-        public void reload(FileObject fo) {
-            if (!RefreshOnSaveSupport.canRefreshOnSaveFileFilter(fo)) {
-                return;
-            }
-            super.reload(fo);
-        }
-
+            
     }
-
 }

@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.maven.execute;
 
+import org.netbeans.modules.maven.execute.cmd.ExecutionEventObject;
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -69,6 +71,7 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import static org.netbeans.modules.maven.execute.Bundle.*;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
+import org.netbeans.modules.maven.execute.ui.ShowExecutionPanel;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
@@ -95,6 +98,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
         ReRunAction rerun;
         ReRunAction rerunDebug;
         ResumeAction resume;
+        ShowOverviewAction overview;
         StopAction stop;
         OptionsAction options;
         @Override protected TabContext clone() {
@@ -102,6 +106,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
             c.rerun = rerun;
             c.rerunDebug = rerunDebug;
             c.resume = resume;
+            c.overview = overview;
             c.stop = stop;
             c.options = options;
             return c;
@@ -193,6 +198,8 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
             @Override public void run() {
                 tabContext.rerun.setEnabled(false);
                 tabContext.rerunDebug.setEnabled(false);
+                tabContext.overview.setEnabled(false);
+                tabContext.overview.setRoot(null);
                 tabContext.resume.setFinder(null);
                 tabContext.stop.setEnabled(true);
             }
@@ -203,12 +210,16 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
         @CheckForNull NbMavenProject find(@NonNull Project root);
     }
 
-    protected final void actionStatesAtFinish(final @NullAllowed ResumeFromFinder resumeFromFinder) {
+    protected final void actionStatesAtFinish(final @NullAllowed ResumeFromFinder resumeFromFinder, final @NullAllowed ExecutionEventObject.Tree root) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
                 tabContext.rerun.setEnabled(true);
                 tabContext.rerunDebug.setEnabled(true);
                 tabContext.resume.setFinder(resumeFromFinder);
+                if (root != null) {
+                    tabContext.overview.setEnabled(true);
+                    tabContext.overview.setRoot(root);
+                }
                 tabContext.stop.setEnabled(false);
             }
         });
@@ -221,6 +232,8 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
         tabContext.rerunDebug.setConfig(config);
         tabContext.resume.setConfig(config);
         tabContext.stop.setExecutor(this);
+        tabContext.overview.setExecutor((MavenCommandLineExecutor)this);
+        tabContext.overview.setRoot(null);
     }
 
     @SuppressWarnings("element-type-mismatch")
@@ -245,6 +258,8 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
         tabContext.resume = new ResumeAction();
         tabContext.stop = new StopAction();
         tabContext.options = new OptionsAction();
+        tabContext.overview = new ShowOverviewAction();
+        tabContext.overview.setExecutor((MavenCommandLineExecutor) this);
         tabContext.rerun.setConfig(config);
         tabContext.rerunDebug.setConfig(config);
         tabContext.resume.setConfig(config);
@@ -253,6 +268,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
             tabContext.rerun,
             tabContext.rerunDebug,
             tabContext.resume,
+            tabContext.overview,
             tabContext.stop,
             tabContext.options,
         };
@@ -428,6 +444,47 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
             OptionsDisplayer.getDefault().open(JavaOptions.JAVA + "/" + MavenOptionController.OPTIONS_SUBPATH);
         }
 
+    }
+    
+    private static final class ShowOverviewAction extends AbstractAction {
+        private MavenCommandLineExecutor executor;
+        private ExecutionEventObject.Tree root;
+        private Dialog d;
+        @Messages("LBL_ShowOverviewAction=Show Build Overview")
+        ShowOverviewAction() {
+            super(LBL_ShowOverviewAction(), ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/ui/buildplangoals.png", true));
+            putValue(Action.SHORT_DESCRIPTION, LBL_ShowOverviewAction());
+        }
+
+        @Override 
+        public void actionPerformed(ActionEvent e) {
+            ShowExecutionPanel panel = new ShowExecutionPanel();
+            panel.setTreeToDisplay(root);
+            DialogDescriptor dd = new DialogDescriptor(panel, "Build execution overview");
+            dd.setOptions(new Object[] {"Close"});
+            dd.setClosingOptions(new Object[] {"Close"});
+            d = DialogDisplayer.getDefault().createDialog(dd);
+            d.setModal(false);
+            d.setVisible(true);
+        }
+
+        private void setExecutor(MavenCommandLineExecutor aThis) {
+            executor = aThis;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (d != null && d.isVisible()) {
+                        d.setVisible(false);
+                        d = null;
+                    }
+                }
+            });
+        }
+
+        private void setRoot(ExecutionEventObject.Tree root) {
+            this.root = root;
+        }
+        
     }
 
     protected class MavenItem implements BuildExecutionSupport.ActionItem {

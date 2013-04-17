@@ -102,7 +102,6 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
-import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -127,7 +126,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.FileInfoQueryImpl;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.ClassifierContainerKey;
@@ -579,7 +577,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 sb.append(parent.getNameForUnnamedElement());
             }
             if (!parent.isGlobal()) {
-                sb.insert(0, "::"); // NOI18N
+                sb.insert(0, APTUtils.SCOPE);
                 sb.insert(0, parent.getQualifiedName());
             }
         }
@@ -3700,7 +3698,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    public static void dumpProjectGrapthContainer(ProjectBase project, PrintWriter printStream) {
+    public static void dumpProjectGrapthContainer(CsmProject prj, PrintWriter printStream) {
+        ProjectBase project = (ProjectBase) prj;
         GraphContainer container = project.getGraphStorage();
         printStream.println("\n++++++++++ Dumping Graph container " + project.getDisplayName()); // NOI18N
         Map<CharSequence, CsmFile> map = new TreeMap<CharSequence, CsmFile>();

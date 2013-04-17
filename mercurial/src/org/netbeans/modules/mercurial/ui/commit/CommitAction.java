@@ -66,6 +66,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
@@ -81,15 +82,18 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.mercurial.WorkingCopyInfo;
+import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
@@ -144,7 +148,7 @@ public class CommitAction extends ContextAction {
         VCSContext context = HgUtils.getCurrentContext(nodes);
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
-            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+            OutputLogger logger = Mercurial.getInstance().getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
             logger.outputInRed( NbBundle.getMessage(CommitAction.class,"MSG_COMMIT_TITLE")); // NOI18N
             logger.outputInRed( NbBundle.getMessage(CommitAction.class,"MSG_COMMIT_TITLE_SEP")); // NOI18N
             logger.outputInRed(
@@ -608,14 +612,32 @@ public class CommitAction extends ContextAction {
                     return;
                 }
                 try {
-                    String branch = HgCommand.getBranch(repository);
-                    if (HgCommand.getOutMessages(repository, null, branch, true, false, 1,
-                            OutputLogger.getLogger(null)).length == 0) {
-                        if (!isCanceled() && HgCommand.getIncomingMessages(repository, null, branch, true, false, false, 1,
-                                OutputLogger.getLogger(null)).length > 0) {
-                            panel.setWarningMessage(Bundle.MSG_CommitAction_warning_incomingChanges());
+                    String defaultPush = new HgConfigFiles(repository).getDefaultPush(false);
+                    if (!HgUtils.isNullOrEmpty(defaultPush)) {
+                        try {
+                            HgURL pushUrl = new HgURL(defaultPush);
+                            if (pushUrl.getScheme().toString().contains("ssh")) {
+                                Mercurial.LOG.log(Level.FINE, "Commit: Cannot handle ssh authentication silently: {0}", pushUrl.toHgCommandStringWithNoPassword());
+                                return;
+                            }
+                        } catch (URISyntaxException ex) {
+                            Mercurial.LOG.log(Level.INFO, "Commit: Invalid push url: {0}, falling back to command without target", defaultPush);
                         }
                     }
+                    final String branch = HgCommand.getBranch(repository);
+                    HgCommand.runWithoutUI(new Callable<Void>() {
+                        @Override
+                        public Void call () throws HgException {
+                            if (HgCommand.getOutMessages(repository, null, branch, true, false, 1,
+                                    OutputLogger.getLogger(null)).length == 0) {
+                                if (!isCanceled() && HgCommand.getIncomingMessages(repository, null, branch, true, false, false, 1,
+                                        OutputLogger.getLogger(null)).length > 0) {
+                                    panel.setWarningMessage(Bundle.MSG_CommitAction_warning_incomingChanges());
+                                }
+                            }
+                            return null;
+                        }
+                    });
                 } catch (HgException.HgCommandCanceledException ex) {
                 } catch (HgException ex) {
                     Logger.getLogger(CommitAction.class.getName()).log(Level.FINE, null, ex);

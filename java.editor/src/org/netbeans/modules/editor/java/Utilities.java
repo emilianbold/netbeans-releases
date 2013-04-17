@@ -189,9 +189,10 @@ public final class Utilities {
             }
             if (cachedSubwordsPattern == null) {
                 cachedPrefix = prefix;
-                cachedSubwordsPattern = Pattern.compile(createSubwordsPattern(prefix));
+                String patternString = createSubwordsPattern(prefix);
+                cachedSubwordsPattern = patternString != null ? Pattern.compile(patternString) : null;
             }
-            if (cachedSubwordsPattern.matcher(theString).matches()) {
+            if (cachedSubwordsPattern != null && cachedSubwordsPattern.matcher(theString).matches()) {
                 return true;
             };
         }
@@ -205,6 +206,9 @@ public final class Utilities {
         sb.append(".*?");
         for (int i = 0; i < prefix.length(); i++) {
             char charAt = prefix.charAt(i);
+            if (!Character.isJavaIdentifierPart(charAt)) {
+                return null;
+            }
             if (Character.isLowerCase(charAt)) {
                 sb.append("[");
                 sb.append(charAt);
@@ -372,6 +376,12 @@ public final class Utilities {
         }
     }
 
+    public static int getImportanceLevel(CompilationInfo info, ReferencesCount referencesCount, @NonNull Element element) {
+        boolean isType = element.getKind().isClass() || element.getKind().isInterface();
+        
+        return Utilities.getImportanceLevel(referencesCount, isType ? ElementHandle.create((TypeElement) element) : ElementHandle.create((TypeElement) element.getEnclosingElement()));
+    }
+    
     public static int getImportanceLevel(ReferencesCount referencesCount, ElementHandle<TypeElement> handle) {
         int typeRefCount = 999 - Math.min(referencesCount.getTypeReferenceCount(handle), 999);
         int pkgRefCount = 999;
@@ -797,6 +807,7 @@ public final class Utilities {
         
         if (type.getKind() == TypeKind.WILDCARD) {
             TypeMirror tmirr = ((WildcardType) type).getExtendsBound();
+            tmirr = tmirr != null ? tmirr : ((WildcardType) type).getSuperBound();
             if (tmirr != null)
                 return tmirr;
             else { //no extends, just '?'

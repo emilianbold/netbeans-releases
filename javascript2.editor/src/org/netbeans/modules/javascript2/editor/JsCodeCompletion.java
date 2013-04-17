@@ -54,20 +54,19 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
+import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.JsCompletionItem.CompletionRequest;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCodeCompletion;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationElement;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
-import org.netbeans.modules.javascript2.editor.jquery.JQueryCodeCompletion;
-import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -87,7 +86,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private static final Logger LOGGER = Logger.getLogger(JsCodeCompletion.class.getName());
 
     private boolean caseSensitive;
-    private final JQueryCodeCompletion jqueryCC = new JQueryCodeCompletion();
 
     private static final List<String> WINDOW_EXPRESSION_CHAIN = Arrays.<String>asList("window", "@pro"); //NOI18N
 
@@ -128,98 +126,47 @@ class JsCodeCompletion implements CodeCompletionHandler {
             switch (context) {
                 case GLOBAL:
                     Collection<IndexedElement> fromIndex = JsIndex.get(fileObject).getGlobalVar(request.prefix);
-                    HashMap<String, JsElement> addedGlobal = new HashMap<String, JsElement>();
+                    HashMap<String, List<JsElement>> addedGlobal = new HashMap<String, List<JsElement>>();
                     for (IndexedElement indexElement : fromIndex) {
-                        JsElement element = addedGlobal.get(indexElement.getName());
-                        if (element == null) {
-                            if (indexElement.isDeclared()) {
-                                resultList.add(JsCompletionItem.Factory.create(indexElement, request));
-                            }
-                            addedGlobal.put(indexElement.getName(), indexElement);
-                        } else if (!element.isDeclared() && indexElement.isDeclared()) {
-                            resultList.add(JsCompletionItem.Factory.create(indexElement, request));
-                            addedGlobal.put(indexElement.getName(), indexElement);
-                        }
+                        addPropertyToMap(request, addedGlobal, indexElement);
                     }
+                    JsCompletionItem.Factory.create(addedGlobal, request, resultList);
                     break;    
                 case EXPRESSION:    
                 case OBJECT_MEMBERS:    
                 case OBJECT_PROPERTY:
                     Collection<? extends IndexResult> indexResults = JsIndex.get(fileObject).query(JsIndex.FIELD_BASE_NAME, request.prefix, QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
-                    HashMap<String, JsElement> all = new HashMap<String, JsElement>();
+                    HashMap<String, List<JsElement>> added = new HashMap<String, List<JsElement>>();
                     for (IndexResult indexResult : indexResults) {
                         IndexedElement indexElement = IndexedElement.create(indexResult);
-                        JsElement element = all.get(indexElement.getName());
-                        if (element == null) {
-                            if (indexElement.isDeclared()) {
-                                resultList.add(JsCompletionItem.Factory.create(indexElement, request));
-                            }
-                            all.put(indexElement.getName(), indexElement);
-                        } else if (!element.isDeclared() && indexElement.isDeclared()) {
-                            resultList.add(JsCompletionItem.Factory.create(indexElement, request));
-                            all.put(indexElement.getName(), indexElement);
-                        }
+                        addPropertyToMap(request, added, indexElement);
                     }
+                    JsCompletionItem.Factory.create(added, request, resultList);
                     break;
             }
         } else {
             switch (context) {
                 case GLOBAL:
-                    HashMap<String, JsElement> addedProperties = new HashMap<String, JsElement>();
-                    Map<String, JsElement> results = getDomCompletionResults(request);
-                    for (JsElement element : results.values()) {
-                        resultList.add(JsCompletionItem.Factory.create(element, request));
-                    }
-                    addedProperties.putAll(results);
-                    for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+                    HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
+                    addedProperties.putAll(getDomCompletionResults(request));
+                    for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
                         for (JsObject object : libGlobal.getProperties().values()) {
-                            if (startsWith(object.getName(), request.prefix)) {
-                                if (object.isDeclared()) {
-                                    resultList.add(JsCompletionItem.Factory.create(object, request));
-                                }
-                                addedProperties.put(object.getName(), object);
-                            }
+                            addPropertyToMap(request, addedProperties, object);
                         }
                     }
                     for (JsObject object : request.result.getModel().getVariables(caretOffset)) {
-                        if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
-                                && startsWith(object.getName(), request.prefix)) {
-                            JsElement element = addedProperties.get(object.getName());
-                            if (element == null) {
-                                if (object.isDeclared()) {
-                                    resultList.add(JsCompletionItem.Factory.create(object, request));
-                                }
-                                addedProperties.put(object.getName(), object);
-                            } else if (!element.isDeclared() && object.isDeclared()) {
-                                resultList.add(JsCompletionItem.Factory.create(object, request));
-                                addedProperties.put(object.getName(), object);
-                            }
-
+                        if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())) {
+                            addPropertyToMap(request, addedProperties, object);
                         }
                     }
                     completeKeywords(request, resultList);
                     JsIndex jsIndex = JsIndex.get(fileObject);
                     Collection<IndexedElement> fromIndex = jsIndex.getGlobalVar(request.prefix);
                     for (IndexedElement indexElement : fromIndex) {
-                        if (startsWith(indexElement.getName(), request.prefix)) {
-                            JsElement element = addedProperties.get(indexElement.getName());
-                            if (element == null) {
-                                if (indexElement.isDeclared()) {
-                                    resultList.add(JsCompletionItem.Factory.create(indexElement, request));
-                                }
-                                addedProperties.put(indexElement.getName(), indexElement);
-                            } else if (!element.isDeclared() && indexElement.isDeclared()) {
-                                resultList.add(JsCompletionItem.Factory.create(indexElement, request));
-                                addedProperties.put(indexElement.getName(), indexElement);
-                            }
-                        }
+                        addPropertyToMap(request, addedProperties, indexElement);
                     }
 
-                    for (JsElement element : addedProperties.values()) {
-                        if (!element.isDeclared()) {
-                            resultList.add(JsCompletionItem.Factory.create(element, request));
-                        }
-                    }
+                    JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
                 case EXPRESSION:
                     completeKeywords(request, resultList);
@@ -241,7 +188,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
         
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting JS CC took {0}ms ",  (end - start));
-        resultList.addAll(jqueryCC.complete(ccContext, context, pref));
+        for (CompletionProvider interceptor : EditorExtender.getDefault().getCompletionProviders()) {
+            resultList.addAll(interceptor.complete(ccContext, context, pref));
+        }
         if (!resultList.isEmpty()) {
             return new DefaultCompletionResult(resultList, false);
         }
@@ -274,8 +223,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                 }
                             }
                             
+                        } else {
+                            LOGGER.log(Level.INFO, "Not instance of JsParserResult: {0}", parserResult);
                         }
-                        LOGGER.log(Level.INFO, "Not instance of JsParserResult: {0}", parserResult);
                     }
                     
                 });
@@ -289,9 +239,11 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
         if (documentation.length() == 0) {
-            String doc = jqueryCC.getHelpDocumentation(info, element);
-            if (doc != null && !doc.isEmpty()) {
-                documentation.append(doc);
+            for (CompletionProvider interceptor : EditorExtender.getDefault().getCompletionProviders()) {
+                String doc = interceptor.getHelpDocumentation(info, element);
+                if (doc != null && !doc.isEmpty()) {
+                    documentation.append(doc);
+                }
             }
         }
         if (element instanceof JsDocumentationElement) {
@@ -447,82 +399,46 @@ class JsCodeCompletion implements CodeCompletionHandler {
     }
 
     private void completeExpression(CompletionRequest request, List<CompletionProposal> resultList) {
-        HashMap <String, JsElement> foundObjects = new HashMap<String, JsElement>();
+        HashMap <String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
         
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-        foundObjects.putAll(getDomCompletionResults(request));
+        addedProperties.putAll(getDomCompletionResults(request));
         // from index
         JsIndex index = JsIndex.get(fo);
         Collection<IndexedElement> fromIndex = index.getGlobalVar(request.prefix);
         for (IndexedElement indexedElement : fromIndex) {
-            JsElement object = foundObjects.get(indexedElement.getName());
-            if(object == null) {
-                foundObjects.put(indexedElement.getName(), indexedElement);
-            } else {
-                if (indexedElement.isDeclared()) {
-                    if (object.isDeclared()) {
-                        // put to the cc result both
-                        resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
-                    } else {
-                        // replace with the one, which is declared
-                        foundObjects.put(indexedElement.getName(), indexedElement);
-                    }
-                } 
-            }
+            addPropertyToMap(request, addedProperties, indexedElement);
         }
         
         // from libraries
-        for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
             for (JsObject object : libGlobal.getProperties().values()) {
-                if (startsWith(object.getName(), request.prefix)) {
-                    foundObjects.put(object.getName(), object);
-                }
+                addPropertyToMap(request, addedProperties, object);
             }
         }
         
         // from model
         //int offset = request.info.getSnapshot().getEmbeddedOffset(request.anchor);
         for(JsObject object : request.result.getModel().getVariables(request.anchor)) {
-            if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
-                    && startsWith(object.getName(), request.prefix)) {
-                JsElement fobject = foundObjects.get(object.getName());
-                if(fobject == null) {
-                    if (!(object.getName().equals(request.prefix)
-                            && object.getDeclarationName().getOffsetRange().getStart() == request.anchor)) {
-                        foundObjects.put(object.getName(), object);
-                    }
-                } else {
-                    if (object.isDeclared()) {
-//                        if (fobject.isDeclared()) {
-                            // put to the cc result both
-//                            resultList.add(JsCompletionItem.Factory.create(object, request));
-//                        } else {
-                            // replace with the one, which is declared
-                            foundObjects.put(object.getName(), object);
-//                        }
-                    }
-                }
+            if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())) {
+                addPropertyToMap(request, addedProperties, object);
             }
         }
 
-        for(JsElement element: foundObjects.values()) {
-            resultList.add(JsCompletionItem.Factory.create(element, request));
-        }
+        JsCompletionItem.Factory.create(addedProperties, request, resultList);
     }
 
     private int checkRecursion;
 
     private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
         List<String> expChain = resolveExpressionChain(request);
-        Map<String, JsElement> results = getCompletionFromExpressionChain(request, expChain);
+        Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
 
         // create code completion results
-        for (JsElement element : results.values()) {
-            resultList.add(JsCompletionItem.Factory.create(element, request));
-        }
+        JsCompletionItem.Factory.create(toAdd, request, resultList);
     }
 
-    private HashMap<String, JsElement> getCompletionFromExpressionChain(CompletionRequest request, List<String> expChain) {
+    private Map<String, List<JsElement>> getCompletionFromExpressionChain(CompletionRequest request, List<String> expChain) {
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
         JsIndex jsIndex = JsIndex.get(fo);
         Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
@@ -539,7 +455,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             resolveTypeFromExpression.add(new TypeUsageImpl(string));
         }
 
-        HashMap<String, JsElement> addedProperties = new HashMap<String, JsElement>();
+        HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
         boolean isFunction = false; // addding Function to the prototype chain?
         List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
         for (TypeUsage typeUsage : resolveTypeFromExpression) {
@@ -553,7 +469,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             addObjectPropertiesToCC(resolved, request, addedProperties);
             if (!resolved.isDeclared()) {
                 // if the object is not defined here, look to the index as well
-                addObjectPropertiesFromIndex(ModelUtils.createFQN(resolved), jsIndex, request, addedProperties);
+                addObjectPropertiesFromIndex(resolved.getFullyQualifiedName(), jsIndex, request, addedProperties);
             }
         }
 
@@ -573,13 +489,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
         Collection<? extends IndexResult> indexResults = jsIndex.query(JsIndex.FIELD_FQ_NAME, fqn.toString(), QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
         for (IndexResult indexResult : indexResults) {
             IndexedElement indexedElement = IndexedElement.create(indexResult);
-            JsElement element = addedProperties.get(indexedElement.getName());
-            if (startsWith(indexedElement.getName(), request.prefix)
-                    && !indexedElement.isAnonymous()
+            if (!indexedElement.isAnonymous()
                     && indexedElement.getFQN().indexOf('.', fqn.length()) == -1
-                    && indexedElement.getModifiers().contains(Modifier.PUBLIC)
-                    && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
-                addedProperties.put(indexedElement.getName(), indexedElement);
+                    && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
+                addPropertyToMap(request, addedProperties, indexedElement);
             }
         }
         return addedProperties;
@@ -663,7 +576,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private void completeObjectMember(CompletionRequest request, List<CompletionProposal> resultList) {
         JsParserResult result = (JsParserResult)request.info;
         JsObject jsObject = (JsObject)ModelUtils.getDeclarationScope(result.getModel(), request.anchor);
-        HashMap<String, JsElement> properties = new HashMap<String, JsElement>();
+        Map<String, List<JsElement>> properties = new HashMap<String, List<JsElement>>();
         
         if (jsObject.getJSKind() == JsElement.Kind.METHOD) {
             jsObject = jsObject.getParent();
@@ -671,43 +584,28 @@ class JsCodeCompletion implements CodeCompletionHandler {
         
         completeObjectMembers(jsObject, request, properties);
         
-        if (jsObject.getName().equals("prototype")) {  //NOI18N
+        if (ModelUtils.PROTOTYPE.equals(jsObject.getName())) {  //NOI18N
             completeObjectMembers(jsObject.getParent(), request, properties);
         }
         
-        for (JsElement element : properties.values()) {
-            if (element instanceof JsObject)
-                resultList.add(JsCompletionItem.Factory.create((JsObject)element, request));
-            else if (element instanceof IndexedElement){
-                resultList.add(JsCompletionItem.Factory.create((IndexedElement)element, request));
-            }
-        }
+        JsCompletionItem.Factory.create(properties, request, resultList);
     }
     
-    private void completeObjectMembers(JsObject jsObject, CompletionRequest request, HashMap<String, JsElement> properties) {
+    private void completeObjectMembers(JsObject jsObject, CompletionRequest request, Map<String, List<JsElement>> properties) {
         if (jsObject.getJSKind() == JsElement.Kind.OBJECT || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
             for (JsObject property : jsObject.getProperties().values()) {
-                if(!property.getModifiers().contains(Modifier.PRIVATE)
-                        && startsWith(property.getName(), request.prefix)) {
-                    JsElement element = properties.get(property.getName());
-                    if(element == null || (!element.isDeclared() && property.isDeclared())) {
-                        properties.put(property.getName(), property);
-                    }
+                if(!property.getModifiers().contains(Modifier.PRIVATE)) {
+                    addPropertyToMap(request, properties, property);
                 }
             }
         }
         
-        String fqn = ModelUtils.createFQN(jsObject);
+        String fqn = jsObject.getFullyQualifiedName();
         
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
         Collection<IndexedElement> indexedProperties = JsIndex.get(fo).getProperties(fqn);
         for (IndexedElement indexedElement : indexedProperties) {
-            if (startsWith(indexedElement.getName(), request.prefix)) {
-                JsElement element = properties.get(indexedElement.getName());
-                if (element == null || (!element.isDeclared() && indexedElement.isDeclared())) {
-                    properties.put(indexedElement.getName(), indexedElement);
-                }
-            }
+            addPropertyToMap(request, properties, indexedElement);
         }
     }
 
@@ -720,7 +618,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     }
     
     private boolean startsWith(String theString, String prefix) {
-        if (prefix.length() == 0) {
+        if (prefix == null || prefix.length() == 0) {
             return true;
         }
 
@@ -728,7 +626,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
 
-    private boolean processTypeInModel(CompletionRequest request, Model model, TypeUsage type, List<JsObject> lastResolvedObjects, boolean prop, JsIndex index, HashMap<String, JsElement> addedProperties) {
+    private boolean processTypeInModel(CompletionRequest request, Model model, TypeUsage type, List<JsObject> lastResolvedObjects, boolean prop, JsIndex index, Map<String, List<JsElement>> addedProperties) {
         if (++checkRecursion > 10) {
             return false;
         }
@@ -739,15 +637,11 @@ class JsCodeCompletion implements CodeCompletionHandler {
             lastResolvedObjects.add(jsObject);
         }
 
-        for (JsObject libGlobal : getLibrariesGlobalObjects()) {
-            for (JsObject object : libGlobal.getProperties().values()) {
-                if (object.getName().equals(type.getType())) {
-                    jsObject = object;
-                    lastResolvedObjects.add(jsObject);
-                    break;
-                }
-            }
-            if (jsObject != null) {
+        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+            JsObject found = ModelUtils.findJsObjectByName(libGlobal, type.getType());
+            if (found != null && found != libGlobal) {
+                jsObject = found;
+                lastResolvedObjects.add(jsObject);
                 break;
             }
         }
@@ -775,67 +669,85 @@ class JsCodeCompletion implements CodeCompletionHandler {
         return isFunction;
     }
     
-    private void addObjectPropertiesToCC(JsObject jsObject, CompletionRequest request, Map<String, JsElement> addedProperties) {
-        boolean filter = true;
-        if (request.prefix == null || request.prefix.isEmpty()) {
-            filter = false;
-        }
-        JsObject prototype = jsObject.getProperty("prototype"); // NOI18N
+    private void addObjectPropertiesToCC(JsObject jsObject, CompletionRequest request, Map<String, List<JsElement>> addedProperties) {
+        JsObject prototype = jsObject.getProperty(ModelUtils.PROTOTYPE); // NOI18N
         if (prototype != null) {
             // at first add all prototype properties
             // if the same property is declared in the project directly, then this is replaced.
             addObjectPropertiesToCC(prototype, request, addedProperties);
         }
         for (JsObject property : jsObject.getProperties().values()) {
-            String propertyName = property.getName();
             if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
                     && !property.getModifiers().contains(Modifier.PRIVATE)
-                    && (!filter || startsWith(propertyName, request.prefix))
                     && !property.getJSKind().isPropertyGetterSetter()) {
-                JsElement element = addedProperties.get(propertyName);
-                if (element == null || (!element.isDeclared() && (jsObject.isDeclared() || "prototype".equals(jsObject.getName())))) {
-                    addedProperties.put(propertyName, property);
-                }
+                addPropertyToMap(request, addedProperties, property);
             }
         }
     }
     
-    private void addObjectPropertiesFromIndex(String fqn, JsIndex jsIndex, CompletionRequest request, Map<String, JsElement> addedProperties) {
+    private void addObjectPropertiesFromIndex(String fqn, JsIndex jsIndex, CompletionRequest request, Map<String, List<JsElement>> addedProperties) {
         Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
         String prototypeFQN = null;
         for (IndexedElement indexedElement : properties) {
-            JsElement element = addedProperties.get(indexedElement.getName());
-            if (startsWith(indexedElement.getName(), request.prefix)
-                    && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
-                addedProperties.put(indexedElement.getName(), indexedElement);
-            }
-            if ("prototype".equals(indexedElement.getName())) {
+            addPropertyToMap(request, addedProperties, indexedElement);
+            if (ModelUtils.PROTOTYPE.equals(indexedElement.getName())) {
                 prototypeFQN = indexedElement.getFQN();
             }
         }
         if (prototypeFQN != null) {
             properties = jsIndex.getProperties(prototypeFQN);
             for (IndexedElement indexedElement : properties) {
-                JsElement element = addedProperties.get(indexedElement.getName());
-                if (startsWith(indexedElement.getName(), request.prefix)
-                        && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
-                    addedProperties.put(indexedElement.getName(), indexedElement);
+                addPropertyToMap(request, addedProperties, indexedElement);
+            }
+        }
+    }
+    
+    private void addPropertyToMap(CompletionRequest request, Map<String, List<JsElement>> addedProperties, JsElement property) {    
+        String name = property.getName();
+        if (startsWith(name, request.prefix)) {
+            if (!(name.equals(request.prefix) && !property.isDeclared() && request.anchor == property.getOffset())) { // don't include just the prefix
+                List<JsElement> elements = addedProperties.get(name);
+                if (elements == null || elements.isEmpty()) {
+                    List<JsElement> properties = new ArrayList<JsElement>(1);
+                    properties.add(property);
+                    addedProperties.put(name, properties);
+                } else {
+                    if (!ModelUtils.PROTOTYPE.equals(name) && property.isDeclared()) {
+                        boolean addAsNew = true;
+                        if (!elements.isEmpty()) {
+                            for (int i = 0; i < elements.size(); i++) {
+                                JsElement element = elements.get(i);
+                                FileObject fo = element.getFileObject();
+                                if (!element.isDeclared() || (fo != null && fo.equals(property.getFileObject()))) {
+                                    if (!element.isDeclared() || (element.getOffsetRange() == OffsetRange.NONE && property.getOffsetRange() != OffsetRange.NONE)) {
+                                        elements.remove(i);
+                                        elements.add(property);
+                                        addAsNew = false;
+                                        break;
+                                    } else if (fo != null && fo.equals(property.getFileObject())) {
+                                        addAsNew = false;
+                                        break;
+                                    }
+                                } else if (element.isPlatform() && property.isPlatform()) {
+                                    addAsNew = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (addAsNew) {
+                            // expect that all items are declaration -> so just add the next declaraiton
+                            elements.add(property);
+                        }
+                    }
                 }
             }
         }
     }
-                 
-    private Collection<JsObject> getLibrariesGlobalObjects() {
-        Collection<JsObject> result = new ArrayList<JsObject>();
-        JsObject libGlobal = JQueryModel.getGlobalObject();
-        if (libGlobal != null) {
-            result.add(libGlobal);
-        }
-        return result;
-    }
-
-    private Map<String, JsElement> getDomCompletionResults(CompletionRequest request) {
-        Map<String, JsElement> result = new HashMap<String, JsElement>(1);
+    
+    
+    
+    private Map<String, List<JsElement>> getDomCompletionResults(CompletionRequest request) {
+        Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);
         // default window object
         result.putAll(getCompletionFromExpressionChain(request, WINDOW_EXPRESSION_CHAIN));
         return result;

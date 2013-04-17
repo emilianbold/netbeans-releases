@@ -475,6 +475,12 @@ public final class CompletionSupport implements DocumentListener {
             if(id instanceof CppTokenId) {
                 // completion is disabled in some tokens
                 switch ((CppTokenId)id) {
+                    case RPAREN:
+                        if (queryType > 0) {
+                            return false;
+                        }
+                        break;                    
+                    
                     case LINE_COMMENT:
                     case DOXYGEN_LINE_COMMENT:
                     case CHAR_LITERAL:
@@ -484,6 +490,7 @@ public final class CompletionSupport implements DocumentListener {
                     case PREPROCESSOR_SYS_INCLUDE:
                     case PREPROCESSOR_DEFINED:
                         return false;
+                        
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
                         // ok after end of token

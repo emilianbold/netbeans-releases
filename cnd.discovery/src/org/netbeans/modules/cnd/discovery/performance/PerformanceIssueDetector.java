@@ -67,7 +67,8 @@ import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.discovery.performance.AnalyzeStat.AgregatedStat;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.modelutil.Tracer;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -176,9 +177,9 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             processCreateItem(event);
         } else if (Folder.GET_ITEM_FILE_OBJECT_PERFORMANCE_EVENT.equals(event.getId())) {
             processGetItemFileObject(event);
-        } else if (FileImpl.READ_FILE_PERFORMANCE_EVENT.equals(event.getId())) {
+        } else if (CndFileUtils.READ_FILE_PERFORMANCE_EVENT.equals(event.getId())) {
             processRead(event);
-        } else if (FileImpl.PARSE_FILE_PERFORMANCE_EVENT.equals(event.getId())) {
+        } else if (Tracer.PARSE_FILE_PERFORMANCE_EVENT.equals(event.getId())) {
             processParse(event);
         }
     }

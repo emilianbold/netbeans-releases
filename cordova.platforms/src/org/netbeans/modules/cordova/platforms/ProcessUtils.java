@@ -85,18 +85,15 @@ public class ProcessUtils {
             throw new IOException(ex);
         }
         InputStreamReader inputStreamReader = new InputStreamReader(new BufferedInputStream(call.getErrorStream()));
-        if (call.exitValue() != 0) {
-            StringBuilder error = new StringBuilder();
-            char[] ch = new char[1];
-            while (inputStreamReader.ready()) {
-                inputStreamReader.read(ch);
-                error.append(ch);
-            }
-            LOGGER.warning(error.toString());
+        StringBuilder error = new StringBuilder();
+        char[] ch = new char[1];
+        while (inputStreamReader.ready()) {
+            inputStreamReader.read(ch);
+            error.append(ch);
         }
+        LOGGER.warning(error.toString());
         inputStreamReader = new InputStreamReader(call.getInputStream());
         StringBuilder avdString = new StringBuilder();
-        char[] ch = new char[1];
         while (inputStreamReader.ready()) {
             inputStreamReader.read(ch);
             avdString.append(ch);

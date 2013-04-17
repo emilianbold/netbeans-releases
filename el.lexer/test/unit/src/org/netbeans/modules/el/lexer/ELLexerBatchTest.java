@@ -570,27 +570,21 @@ public class ELLexerBatchTest extends TestCase {
     }
 
     public void testTKeyword01() throws Exception {
-        String text = "T(Boolean).TRUE";
+        String text = "Boolean.TRUE";
         TokenSequence ts = TokenHierarchy.create(text, ELTokenId.language()).tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.T_KEYWORD, "T");
-        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.IDENTIFIER, "Boolean");
-        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.RPAREN, ")");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.DOT, ".");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.IDENTIFIER, "TRUE");
     }
 
     public void testTKeyword02() throws Exception {
-        String text = "ThisBean == T(Boolean).TRUE";
+        String text = "ThisBean == Boolean.TRUE";
         TokenSequence ts = TokenHierarchy.create(text, ELTokenId.language()).tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.IDENTIFIER, "ThisBean");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.EQ_EQ, "==");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.T_KEYWORD, "T");
-        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.IDENTIFIER, "Boolean");
-        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.RPAREN, ")");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.DOT, ".");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.IDENTIFIER, "TRUE");
     }
@@ -645,14 +639,22 @@ public class ELLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.IDENTIFIER, "list");
     }
 
-    public void testCatKeyword01() throws Exception {
-        String text = "'a' cat 'b'";
+    public void testConcatOperator01() throws Exception {
+        String text = "'a' += 'b'";
         TokenSequence ts = TokenHierarchy.create(text, ELTokenId.language()).tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.STRING_LITERAL, "'a'");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.CAT_KEYWORD, "cat");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.CONCAT, "+=");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.STRING_LITERAL, "'b'");
+    }
+
+    public void testIssue228357() throws Exception {
+        String text = "'a' +";
+        TokenSequence ts = TokenHierarchy.create(text, ELTokenId.language()).tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.STRING_LITERAL, "'a'");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.PLUS, "+");
     }
 
 }

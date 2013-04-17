@@ -86,6 +86,7 @@ import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
 import org.netbeans.modules.php.project.copysupport.CopySupport;
 import org.netbeans.modules.php.project.internalserver.InternalWebServer;
+import org.netbeans.modules.php.project.problems.CssPreprocessorsProblemsSupport;
 import org.netbeans.modules.php.project.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
@@ -103,12 +104,15 @@ import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
-import org.netbeans.modules.web.clientproject.spi.RefreshOnSaveSupport;
+import org.netbeans.modules.web.common.api.CssPreprocessor;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -198,6 +202,25 @@ public final class PhpProject implements Project {
     public static final String PROP_WEB_ROOT = "webRoot"; // NOI18N
     final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<PropertyChangeListener>();
+
+    // css preprocessors
+    final CssPreprocessorsListener cssPreprocessorsListener = new CssPreprocessorsListener() {
+        @Override
+        public void preprocessorsChanged() {
+            // noop?
+        }
+        @Override
+        public void optionsChanged(CssPreprocessor cssPreprocessor) {
+            recompileSources(cssPreprocessor);
+        }
+        @Override
+        public void customizerChanged(Project project, CssPreprocessor cssPreprocessor) {
+            if (project.equals(PhpProject.this)) {
+                recompileSources(cssPreprocessor);
+            }
+        }
+    };
+
 
     public PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -416,6 +439,16 @@ public final class PhpProject implements Project {
         }
     }
 
+    void recompileSources(CssPreprocessor cssPreprocessor) {
+        assert cssPreprocessor != null;
+        FileObject sourcesDirectory = getSourcesDirectory();
+        if (sourcesDirectory == null) {
+            return;
+        }
+        // force recompiling
+        CssPreprocessors.getDefault().process(cssPreprocessor, this, sourcesDirectory);
+    }
+
     public PhpModule getPhpModule() {
         PhpModule phpModule = getLookup().lookup(PhpModuleImpl.class);
         assert phpModule != null;
@@ -630,7 +663,7 @@ public final class PhpProject implements Project {
 
     private Lookup createLookup(AuxiliaryConfiguration configuration, PhpModule phpModule) {
         PhpProjectEncodingQueryImpl phpProjectEncodingQueryImpl = new PhpProjectEncodingQueryImpl(getEvaluator());
-        return Lookups.fixed(new Object[] {
+        Lookup base = Lookups.fixed(new Object[] {
                 this,
                 CopySupport.getInstance(this),
                 new SeleniumProvider(),
@@ -660,12 +693,15 @@ public final class PhpProject implements Project {
                 PhpSearchInfo.create(this),
                 new PhpSubTreeSearchOptions(),
                 InternalWebServer.createForProject(this),
+                CssPreprocessors.getDefault().createProjectProblemsProvider(new CssPreprocessorsProblemsSupport(this)),
                 ProjectPropertiesProblemProvider.createForProject(this),
                 UILookupMergerSupport.createProjectProblemsProviderMerger(),
                 new ProjectWebRootProviderImpl(),
                 ClientSideDevelopmentSupport.create(this),
+                ProjectBrowserProviderImpl.create(this),
                 // ?? getRefHelper()
         });
+        return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-php-project/Lookup"); // NOI18N
     }
 
     public ReferenceHelper getRefHelper() {
@@ -724,6 +760,7 @@ public final class PhpProject implements Project {
             new ProjectUpgrader(PhpProject.this).upgrade();
 
             addSourceDirListener();
+            CssPreprocessors.getDefault().addCssPreprocessorsListener(cssPreprocessorsListener);
 
             testingProviders.projectOpened();
             frameworks.projectOpened();
@@ -762,6 +799,7 @@ public final class PhpProject implements Project {
         protected void projectClosed() {
             try {
                 removeSourceDirListener();
+                CssPreprocessors.getDefault().removeCssPreprocessorsListener(cssPreprocessorsListener);
 
                 testingProviders.projectClosed();
                 frameworks.projectClosed();
@@ -878,6 +916,7 @@ public final class PhpProject implements Project {
         public void fileFolderCreated(FileEvent fe) {
             FileObject file = fe.getFile();
             frameworksReset(file);
+            processChange(file);
         }
 
         @Override
@@ -885,12 +924,14 @@ public final class PhpProject implements Project {
             FileObject file = fe.getFile();
             frameworksReset(file);
             browserReload(file);
+            processChange(file);
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
             FileObject file = fe.getFile();
             browserReload(file);
+            processChange(file);
         }
 
         @Override
@@ -898,12 +939,14 @@ public final class PhpProject implements Project {
             FileObject file = fe.getFile();
             frameworksReset(file);
             browserReload(file);
+            processChange(file);
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             FileObject file = fe.getFile();
             frameworksReset(file);
+            processChange(file);
         }
 
         @Override
@@ -926,14 +969,15 @@ public final class PhpProject implements Project {
 
         // possible browser reload, if nb integration is present
         private void browserReload(FileObject file) {
-            if (!RefreshOnSaveSupport.canRefreshOnSaveFileFilter(file)) {
-                return;
-            }
             ClientSideDevelopmentSupport easelSupport = PhpProject.this.getLookup().lookup(ClientSideDevelopmentSupport.class);
             assert easelSupport != null;
-            if (easelSupport.canReload()) {
+            if (easelSupport.canReload(file)) {
                 easelSupport.reload();
             }
+        }
+
+        private void processChange(FileObject file) {
+            CssPreprocessors.getDefault().process(PhpProject.this, file);
         }
 
     }
@@ -954,7 +998,15 @@ public final class PhpProject implements Project {
 
         @Override
         public FileObject getWebRoot(FileObject file) {
-            return ProjectPropertiesSupport.getWebRootDirectory(PhpProject.this);
+            FileObject webRoot = ProjectPropertiesSupport.getWebRootDirectory(PhpProject.this);
+            if (webRoot == null) {
+                return null;
+            }
+            if (webRoot.equals(file)
+                    || FileUtil.isParentOf(webRoot, file)) {
+                return webRoot;
+            }
+            return null;
         }
     }
 
@@ -1204,7 +1256,7 @@ public final class PhpProject implements Project {
             }
         }
 
-        public boolean canReload() {
+        public boolean canReload(FileObject fo) {
             initBrowser();
             // #226389
             DebugStarter debugStarter = DebugStarterFactory.getInstance();
@@ -1212,7 +1264,8 @@ public final class PhpProject implements Project {
                     && debugStarter.isAlreadyRunning()) {
                 return false;
             }
-            if (!WebBrowserSupport.isIntegratedBrowser(browserId)) {
+            BrowserSupport support = getBrowserSupport();
+            if (support == null || !support.canRefreshOnSaveThisFileType(fo)) {
                 return false;
             }
             // #226256
@@ -1267,13 +1320,16 @@ public final class PhpProject implements Project {
             }
             browserSupportInitialized = true;
             initBrowser();
-            WebBrowser browser = WebBrowserSupport.getBrowser(browserId);
+            if (browserId == null) {
+                browserSupport = null;
+                return null;
+            }
+            WebBrowser browser = BrowserUISupport.getBrowser(browserId);
             if (browser == null) {
                 browserSupport = null;
                 return null;
             }
-            boolean integrated = WebBrowserSupport.isIntegratedBrowser(browserId);
-            browserSupport = BrowserSupport.create(browser, !integrated);
+            browserSupport = BrowserSupport.create(browser);
             return browserSupport;
         }
 

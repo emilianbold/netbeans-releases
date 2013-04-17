@@ -50,8 +50,11 @@ import com.sun.source.util.TreePath;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.event.CaretEvent;
@@ -59,18 +62,20 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * Code selection according to syntax tree.
- *
- * TODO: javadoc selection
+ * Code selection according to syntax tree. It also supports JavaDoc.
  *
  * @author Miloslav Metelka, Jan Pokorsky
  */
@@ -175,9 +180,9 @@ final class SelectCodeElementAction extends BaseAction {
         private void select(SelectionInfo selectionInfo) {
             Caret caret = target.getCaret();
             markIgnoreNextCaretUpdate();
-            caret.setDot(selectionInfo.getStartOffset());
+            caret.setDot(selectionInfo.getEndOffset());
             markIgnoreNextCaretUpdate();
-            caret.moveDot(selectionInfo.getEndOffset());
+            caret.moveDot(selectionInfo.getStartOffset());
         }
         
         private void markIgnoreNextCaretUpdate() {
@@ -215,13 +220,58 @@ final class SelectCodeElementAction extends BaseAction {
             int caretPos = target.getCaretPosition();
             positions.add(new SelectionInfo(caretPos, caretPos));
             SourcePositions sp = ci.getTrees().getSourcePositions();
-            TreePath tp = ci.getTreeUtilities().pathFor(caretPos);
+	    final TreeUtilities treeUtilities = ci.getTreeUtilities();
+            TreePath tp = treeUtilities.pathFor(caretPos);
             for (Tree tree: tp) {
                 int startPos = (int)sp.getStartPosition(tp.getCompilationUnit(), tree);
                 int endPos = (int)sp.getEndPosition(tp.getCompilationUnit(), tree);
                 positions.add(new SelectionInfo(startPos, endPos));
+		
+		//Support selection of JavaDoc
+		int docBegin = Integer.MAX_VALUE;
+                for (Comment comment : treeUtilities.getComments(tree, true)) {
+                    docBegin = Math.min(comment.pos(), docBegin);
+                }
+		int docEnd = Integer.MIN_VALUE;
+                for (Comment comment : treeUtilities.getComments(tree, false)) {
+                    docEnd = Math.max(comment.endPos(), docEnd);
+                }
+		if (docBegin != Integer.MAX_VALUE && docEnd != Integer.MIN_VALUE) {
+		    positions.add(new SelectionInfo(docBegin, docEnd));
+		} else if (docBegin == Integer.MAX_VALUE && docEnd != Integer.MIN_VALUE) {
+		    positions.add(new SelectionInfo(startPos, docEnd));
+		} else if (docBegin != Integer.MAX_VALUE && docEnd == Integer.MIN_VALUE) {
+		    positions.add(new SelectionInfo(docBegin, endPos));
+		}
             }
-            return positions.toArray(new SelectionInfo[positions.size()]);
+	    //sort selectioninfo by their start
+	    SortedSet<SelectionInfo> orderedPositions = new TreeSet<SelectionInfo>(new Comparator<SelectionInfo>() {
+		@Override
+		public int compare(SelectionInfo o1, SelectionInfo o2) {
+                    //to support selections, which start at the same offset also compare the end offsets
+                    int offsetStartDiff = o2.getStartOffset() - o1.getStartOffset();
+                    if (0 == offsetStartDiff) {
+                        return (o1.getEndOffset() - o2.getEndOffset());
+                    }
+                    return offsetStartDiff;
+		}
+	    });
+	    orderedPositions.addAll(positions);
+	    //for each selectioninfo add its line selection
+	    if (target.getDocument() instanceof StyledDocument) {
+		StyledDocument doc = (StyledDocument) target.getDocument();
+
+		for (SelectionInfo selectionInfo : positions) {
+		    int startOffset = NbDocument.findLineOffset(doc, NbDocument.findLineNumber(doc, selectionInfo.getStartOffset()));
+		    int endOffset = doc.getLength();
+                    try {
+                        endOffset = NbDocument.findLineOffset(doc, NbDocument.findLineNumber(doc, selectionInfo.getEndOffset()) + 1);
+                    } catch (IndexOutOfBoundsException ioobe) {}
+		    orderedPositions.add(new SelectionInfo(startOffset, endOffset));
+		}
+	    }
+	    
+	    return orderedPositions.toArray(new SelectionInfo[orderedPositions.size()]);
         }
 
         public void run() {

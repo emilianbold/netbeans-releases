@@ -235,16 +235,6 @@ public class KenaiUtil {
     }
     
     /**
-     * Refreshes existing openend kenai queries
-     */
-    public static void refreshOpenedQueries() {
-        Set<QueryTopComponent> tcs = QueryTopComponent.getOpenQueries(); // XXX updates also non kenai TC
-        for (QueryTopComponent tc : tcs) {
-            tc.updateSavedQueries();
-        }
-    }
-
-    /**
      * @see KenaiAccessor#isNetbeansKenaiRegistered()
      */
     public static boolean isNetbeansKenaiRegistered() {
@@ -358,7 +348,7 @@ public class KenaiUtil {
     }
     
     public static KenaiProject getKenaiProject(Repository repository) {
-        return APIAccessor.IMPL.getImpl(repository).getLookup().lookup(KenaiProject.class);
+        return APIAccessor.IMPL.getImpl(repository).getKenaiProject();
     }
 
     public static Query getAllIssuesQuery(Repository repository) {

@@ -72,16 +72,17 @@ import org.openide.util.Exceptions;
  */
 public class JsfLibrariesSupport {
 
-    static JsfLibrariesSupport get(JTextComponent tc) {
-        return new JsfLibrariesSupport(tc);
-    }
     private JTextComponent tc;
     private Map<DefaultLibraryInfo, LibraryImport> map = new EnumMap<DefaultLibraryInfo, LibraryImport>(DefaultLibraryInfo.class);
+    private JsfSupport jsfs;
 
     public JsfLibrariesSupport(JTextComponent tc) {
         this.tc = tc;
-
         initLibraries(tc);
+    }
+
+    static JsfLibrariesSupport get(JTextComponent tc) {
+        return new JsfLibrariesSupport(tc);
     }
 
     private void initLibraries(JTextComponent tc) {
@@ -90,7 +91,7 @@ public class JsfLibrariesSupport {
         if(file == null) {
             return ;
         }
-        JsfSupport jsfs = JsfSupportProvider.get(file);
+        jsfs = JsfSupportProvider.get(file);
         if (jsfs == null) {
             return;
         }
@@ -128,6 +129,12 @@ public class JsfLibrariesSupport {
             libraryimport.lib = lib;
 
             Collection<String> prefixes = ns2prefixes.get(libraryInfo.getNamespace());
+            if (prefixes == null && libraryInfo.getLegacyNamespace() != null) {
+                prefixes = ns2prefixes.get(libraryInfo.getLegacyNamespace());
+            }
+            if (libraryInfo.getLegacyNamespace() != null && ns2prefixes.get(libraryInfo.getLegacyNamespace()) != null) {
+                prefixes.addAll(ns2prefixes.get(libraryInfo.getLegacyNamespace()));
+            }
             libraryimport.declaredPrefix = prefixes != null && !prefixes.isEmpty() ? prefixes.iterator().next() : null;
 
             map.put(libraryInfo, libraryimport);
@@ -146,13 +153,20 @@ public class JsfLibrariesSupport {
                 toimport.put(limport.lib, null); //lets use the default prefix
             }
         }
-        LibraryUtils.importLibrary(tc.getDocument(), toimport);
+        LibraryUtils.importLibrary(tc.getDocument(), toimport, jsfs.isJsf22Plus());
     }
 
     /** @return the library default prefix in the case it hasn't been declared yet or the declared prefix */
     public String getLibraryPrefix(DefaultLibraryInfo li) {
         LibraryImport limport = map.get(li);
+        if (limport == null) {
+            return li.getDefaultPrefix();
+        }
         return limport.declaredPrefix != null ? limport.declaredPrefix : limport.lib.getDefaultPrefix();
+    }
+
+    public boolean isJsf22Plus() {
+        return jsfs.isJsf22Plus();
     }
 
     private static class LibraryImport {

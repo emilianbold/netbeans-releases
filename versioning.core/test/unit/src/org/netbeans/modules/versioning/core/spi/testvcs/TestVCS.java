@@ -46,6 +46,7 @@ package org.netbeans.modules.versioning.core.spi.testvcs;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.*;
 import org.netbeans.spi.queries.CollocationQueryImplementation2;
@@ -129,7 +130,19 @@ public class TestVCS extends VersioningSystem {
     }
 
     public void fire() {
-        VCSFileProxy file = null;
+        // do not fire a null here. Some tests may fail because:
+        // java.lang.NullPointerException
+	// at org.netbeans.modules.versioning.core.VersioningAnnotationProvider.refreshAnnotations(VersioningAnnotationProvider.java:345)
+	// at org.netbeans.modules.versioning.core.VersioningAnnotationProvider.refreshAnnotations(VersioningAnnotationProvider.java:325)
+        // at org.netbeans.modules.versioning.core.VersioningManager.propertyChange(VersioningManager.java:560)
+	// at java.beans.PropertyChangeSupport.fire(PropertyChangeSupport.java:335)
+	// at java.beans.PropertyChangeSupport.firePropertyChange(PropertyChangeSupport.java:327)
+	// at java.beans.PropertyChangeSupport.firePropertyChange(PropertyChangeSupport.java:263)
+	// at org.netbeans.modules.versioning.core.spi.VersioningSystem.fireStatusChanged(VersioningSystem.java:193)
+	// at org.netbeans.modules.versioning.core.spi.VersioningSystem.fireStatusChanged(VersioningSystem.java:211)
+	// at org.netbeans.modules.versioning.core.spi.testvcs.TestVCS.fire(TestVCS.java:133)
+	// at org.netbeans.modules.versioning.core.DelegatingVCSTest.testListeners(DelegatingVCSTest.java:161)
+        VCSFileProxy file = VCSFileProxy.createFileProxy(new File("dummy"));
         super.fireStatusChanged(file);
     }
     

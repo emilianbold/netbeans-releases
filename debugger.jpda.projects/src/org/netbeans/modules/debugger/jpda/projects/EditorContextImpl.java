@@ -113,6 +113,7 @@ import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
@@ -327,8 +328,8 @@ public class EditorContextImpl extends EditorContext {
             return null;
         }
         Annotation annotation;
-        if (timeStamp instanceof Breakpoint) {
-            annotation = new DebuggerBreakpointAnnotation(annotationType, l, (Breakpoint) timeStamp);
+        if (timeStamp instanceof JPDABreakpoint) {
+            annotation = new DebuggerBreakpointAnnotation(annotationType, l, (JPDABreakpoint) timeStamp);
         } else {
             annotation = new DebuggerAnnotation (annotationType, l, thread);
         }

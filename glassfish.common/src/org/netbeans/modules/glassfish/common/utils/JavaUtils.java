@@ -42,17 +42,20 @@
 package org.netbeans.modules.glassfish.common.utils;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.glassfish.tools.ide.data.GlassFishJavaSEConfig;
 import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
 import org.glassfish.tools.ide.server.config.JavaSEPlatform;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  * Java platform utilities.
@@ -73,14 +76,11 @@ public class JavaUtils {
      * @param javaHome Java SE home currently selected.
      */
     public static boolean isJavaPlatformSupported(
-            GlassfishInstance instance, File javaHome) {
+            @NonNull final GlassfishInstance instance,
+            @NonNull final File javaHome) {
         // Avoid NPEs and troll developer a bit.
-        if (instance == null)
-            throw new IllegalArgumentException(
-                    "GlassFish server instance shall not be null!");
-        if (javaHome == null)
-            throw new IllegalArgumentException(
-                    "Java SE home shall not be null!");
+        Parameters.notNull("instance", instance);
+        Parameters.notNull("javaHome", javaHome);
         // Java SE platfofms supported by GlassFish .
         GlassFishJavaSEConfig javaSEConfig
                 = ConfigBuilderProvider.getBuilder(instance)
@@ -118,11 +118,10 @@ public class JavaUtils {
      *         provided Java SE home or <code>null</code> if no such
      *         installed platform was found.
      */
-    public static JavaPlatform findInstalledPlatform(File javaHome) {
+    public static JavaPlatform findInstalledPlatform(
+            @NonNull final File javaHome) {
         // Avoid NPEs and troll developer a bit.
-        if (javaHome == null)
-            throw new IllegalArgumentException(
-                    "Java SE home shall not be null!");
+        Parameters.notNull("javaHome", javaHome);
         // Scan all install folders of all onstalled platformsList for Java SE home.
         JavaPlatform[] platforms
                 = JavaPlatformManager.getDefault().getInstalledPlatforms();
@@ -151,14 +150,11 @@ public class JavaUtils {
      *         installed platform was found.
      */
     public static JavaPlatform findPlatformByJavaHome(
-            JavaPlatform[] javaPlatforms, File javaHome) {
+            @NonNull final JavaPlatform[] javaPlatforms,
+            @NonNull final File javaHome) {
         // Avoid NPEs and troll developer a bit.
-        if (javaHome == null)
-            throw new IllegalArgumentException(
-                    "Java SE home shall not be null!");
-        if (javaPlatforms == null)
-            throw new IllegalArgumentException(
-                    "Java platforms array shall not be null!");
+        Parameters.notNull("javaPlatforms", javaPlatforms);
+        Parameters.notNull("javaHome", javaHome);
         // Scan all install folders of all onstalled platformsList for Java SE home.
         JavaPlatform javaPlatform = null;
         for (JavaPlatform platform : javaPlatforms) {
@@ -185,11 +181,9 @@ public class JavaUtils {
      *         is no such a platform.
      */
     public static JavaPlatform[] findSupportedPlatforms(
-            GlassfishInstance instance) {
+            @NonNull final GlassfishInstance instance) {
         // Avoid NPEs and troll developer a bit.
-        if (instance == null)
-            throw new IllegalArgumentException(
-                    "GlassFish server instance shall not be null!");
+        Parameters.notNull("instance", instance);
         // Search for supported Java SE platforms.
         List<JavaPlatform> platformsList = new LinkedList<JavaPlatform>();
         JavaPlatform[] allPlatforms
@@ -212,4 +206,26 @@ public class JavaUtils {
             platforms[i++] = platform;
         return platforms;
     }
+
+    /**
+     * Search for first available installed folder in Java SE platform.
+     * <p/>
+     * @param platform Java SE platform to search for first available
+     *                 installed folder.
+     * @return First available installed folder or <code>null</code> if no such
+     *         folder exists.
+     */
+    public static String getJavaHome(JavaPlatform platform) {
+        String javaHome = null;
+        Iterator<FileObject> platformIterator
+                = platform.getInstallFolders().iterator();
+        if (platformIterator.hasNext()) {
+            FileObject javaHomeFO = (FileObject) platformIterator.next();
+            if (javaHomeFO != null) {
+                javaHome = FileUtil.toFile(javaHomeFO).getAbsolutePath();
+            }
+        }
+        return javaHome;
+    }
+
 }

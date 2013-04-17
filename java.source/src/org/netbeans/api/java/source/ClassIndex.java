@@ -48,14 +48,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -507,6 +511,88 @@ public final class ClassIndex {
         } catch (InterruptedException e) {
             return null;
         }
+    }
+    
+    /**
+     * Returns descriptions of symbols found on the given classpath and matching the additional criteria.
+     * @param name case sensitive prefix, case insensitive prefix, exact simple name,
+     * camel case or regular expression depending on the kind parameter.
+     * @param kind of the name {@see NameKind}
+     * @param scope to search in {@see SearchScope}
+     * @return iterable of {@link Symbols} describing found symbols matching the specified criteria.
+     * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
+     * inside call of this method.
+     * @since 0.117
+     */
+    public @NullUnknown Iterable<Symbols> getDeclaredSymbols(
+            final @NonNull String name,
+            final @NonNull NameKind kind,
+            final @NonNull Set<? extends SearchScopeType> scope) {
+        Parameters.notNull("name", name);
+        Parameters.notNull("kind", kind);
+        final Map<ElementHandle<TypeElement>,Set<String>> result = new HashMap<ElementHandle<TypeElement>,Set<String>>();
+        final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);        
+        final Convertor<Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
+        try {
+            for (ClassIndexImpl query : queries) {
+                try {
+                    query.getDeclaredElements(
+                        name,
+                        kind,
+                        thConvertor,
+                        result);
+                } catch (Index.IndexClosedException e) {
+                    logClosedIndex (query);
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(
+                        Level.FINE,
+                        "ClassIndex.getDeclaredTypes returned {0} elements\n",  //NOI18N
+                        result.size());
+            }
+            List<Symbols> finalResult = new ArrayList<Symbols>();
+            for (Entry<ElementHandle<TypeElement>, Set<String>> e : result.entrySet()) {
+                finalResult.add(new Symbols(e.getKey(), e.getValue()));
+            }
+            return Collections.unmodifiableList(finalResult);
+        } catch (InterruptedException e) {
+            return null;
+        }
+    }
+    
+    /**Description of found symbols (methods, constructors, fields) for one enclosing type.
+     * Returned from {@link #getDeclaredSymbols(java.lang.String, org.netbeans.api.java.source.ClassIndex.NameKind, java.util.Set) }.
+     * 
+     * @since 0.117
+     */
+    public static final class Symbols {
+        private final ElementHandle<TypeElement> enclosingType;
+        private final Set<String> symbols;
+
+        Symbols(ElementHandle<TypeElement> enclosingType, Set<String> symbols) {
+            this.enclosingType = enclosingType;
+            this.symbols = symbols;
+        }
+
+        /**The type that contains some symbols matching the required criterie.
+         * 
+         * @return enclosing type
+         */
+        public ElementHandle<TypeElement> getEnclosingType() {
+            return enclosingType;
+        }
+
+        /**The simple names of all symbols matching the criteria inside the given enclosing type.
+         * 
+         * @return simple names of matching symbols
+         */
+        public Set<String> getSymbols() {
+            return symbols;
+        }
+        
     }
     
     /**

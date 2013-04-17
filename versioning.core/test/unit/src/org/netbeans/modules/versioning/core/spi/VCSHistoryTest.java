@@ -67,32 +67,28 @@ import org.openide.util.test.MockLookup;
  */
 public class VCSHistoryTest extends NbTestCase {
     
-    private File dataRootDir;
+    private File workDir;
 
     public VCSHistoryTest(String testName) {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
-        dataRootDir = getDataDir(); 
-        File userdir = new File(dataRootDir + "userdir");
+        workDir = getDataDir(); 
+        File userdir = new File(getDataDir(), "userdir");
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
-        if(!dataRootDir.exists()) dataRootDir.mkdirs();
+        clearWorkDir();
         MockLookup.setLayersAndInstances();
         Lookup.getDefault().lookupAll(VersioningSystem.class);
-        File f = new File(dataRootDir, "workdir");
-        deleteRecursively(f);
-        f.mkdirs();
-        f = new File(dataRootDir, "workdir/root-test-versioned");
-        f.mkdirs();
+        File f = new File(workDir, "workdir/root-test-versioned");
+        new File(f, TestVCS.TEST_VCS_METADATA).mkdirs();
     }
 
     public void testHistoryProvider() throws IOException {
-        File f = new File(dataRootDir, "workdir/root-test-versioned");
-        f.createNewFile();
-        new File(f, TestVCS.TEST_VCS_METADATA).mkdir();
+        File f = new File(workDir, "workdir/root-test-versioned");
         VersioningSystem vs = VersioningSupport.getOwner(VCSFileProxy.createFileProxy(f));
         assertNotNull(vs);
         VCSHistoryProvider hp = vs.getVCSHistoryProvider();
@@ -217,7 +213,7 @@ public class VCSHistoryTest extends NbTestCase {
     }
 
     public void testHistoryGetRevisionIsReallyInvoked() throws IOException {
-        File f = new File(dataRootDir, "workdir/root-test-versioned/" + TestVCSHistoryProvider.FILE_PROVIDES_REVISIONS_SUFFIX);
+        File f = new File(workDir, "workdir/root-test-versioned/" + TestVCSHistoryProvider.FILE_PROVIDES_REVISIONS_SUFFIX);
         f.createNewFile();
         VCSFileProxy proxy = VCSFileProxy.createFileProxy(f);
         VersioningSystem vs = VersioningSupport.getOwner(proxy);

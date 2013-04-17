@@ -354,6 +354,11 @@ public interface TypedTextInterceptor {
             }
             
             @Override
+            public CamelCaseInterceptor.MutableContext createDwiContext(JTextComponent c, int offset, boolean backwardDelete) {
+                return new CamelCaseInterceptor.MutableContext(c, offset, backwardDelete);
+            }
+            
+            @Override
             public TypedBreakInterceptor.MutableContext createTbiContext(JTextComponent c, int caretOffset, int insertBreakOffset) {
                 return new TypedBreakInterceptor.MutableContext(c, caretOffset, insertBreakOffset);
             }
@@ -366,6 +371,11 @@ public interface TypedTextInterceptor {
             @Override
             public void resetTbiContextData(TypedBreakInterceptor.MutableContext context) {
                 context.resetData();
+            }
+
+            @Override
+            public Object[] getDwiContextData(CamelCaseInterceptor.MutableContext context) {
+                return context.getData();
             }
         } // End of Accessor class
 

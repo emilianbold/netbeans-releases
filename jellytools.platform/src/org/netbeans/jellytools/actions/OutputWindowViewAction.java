@@ -45,21 +45,13 @@ package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
-import org.netbeans.jellytools.Bundle;
 
-/** Used to call "Window|Output|Output" main menu item or
+/** Used to call "Window|Output" main menu item or
  * "org.netbeans.core.output.OutputWindowAction".
  * @see Action
  */
 public class OutputWindowViewAction extends Action {
-    private static final String menu =
-        Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle",
-                                "Menu/Window") +
-        "|" +
-        Bundle.getStringTrimmed("org.netbeans.core.io.ui.Bundle", "Menu/Window/Output")+
-        "|" +
-        Bundle.getStringTrimmed("org.netbeans.core.output2.Bundle",
-                                "OutputWindow");
+    private static final String menu = "Window|Output";
         
     private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
             KeyStroke.getKeyStroke(KeyEvent.VK_4, KeyEvent.META_MASK) :

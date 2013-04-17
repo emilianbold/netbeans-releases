@@ -62,7 +62,7 @@ public class FmtBlankLines extends javax.swing.JPanel {
 
     public FmtBlankLines() {
         initComponents();
-
+        scrollPane1.getVerticalScrollBar().setUnitIncrement(20);
         bNamespaceField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_NAMESPACE);
         aNamespaceField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_NAMESPACE);
         bUseField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_USE);
@@ -170,7 +170,6 @@ public class FmtBlankLines extends javax.swing.JPanel {
         setRequestFocusEnabled(false);
         setLayout(new java.awt.BorderLayout());
 
-        scrollPane1.setBackground(java.awt.SystemColor.controlLtHighlight);
         scrollPane1.setRequestFocusEnabled(false);
 
         jPanel1.setOpaque(false);

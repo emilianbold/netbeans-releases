@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import static junit.framework.Assert.assertNotNull;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
@@ -287,6 +288,10 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
 
         String libNs = "http://java.sun.com/jsp/jstl/functions";
         Library lib = instance.getLibrary(libNs);
+        assertNotNull(String.format("Library %s not found!", libNs), lib);
+
+        libNs = "http://xmlns.jcp.org/jsp/jstl/functions";
+        lib = instance.getLibrary(libNs);
         assertNotNull(String.format("Library %s not found!", libNs), lib);
 
         assertTrue(lib instanceof FaceletsLibrary);

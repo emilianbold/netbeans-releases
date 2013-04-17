@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.groovy.refactoring.utils;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
@@ -51,9 +52,9 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.control.SourceUnit;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
-import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -71,7 +72,7 @@ public final class FindPossibleMethods {
         for (FileObject fo : GroovyProjectUtil.getGroovyFilesInProject(relevantFiles)) {
             try {
                 FindPossibleTask task = new FindPossibleTask(fqn, methodName);
-                SourceUtils.runUserActionTask(fo, task);
+                ParserManager.parse(Collections.singleton(Source.create(fo)), task);
                 methods.addAll(task.getResult());
 
             } catch (Exception ex) {

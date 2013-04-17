@@ -55,6 +55,7 @@ import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.ErrorsProvider;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
@@ -90,10 +91,11 @@ public class CssAnalyser implements ErrorsProvider {
 
             @Override
             public boolean visit(Node node) {
-                if (node.type() == NodeType.declaration) {
-                    
+                if (node.type() == NodeType.propertyDeclaration) {
                     //do not check declarations in fontFace and counterStyle
-                    Node parent = node.parent();
+                    
+                    //structure: declarations/declaration/propertyDeclaration
+                    Node parent = node.parent().parent();
                     if(parent.type() == NodeType.declarations) {
                         switch(parent.parent().type()) {
                             case fontFace:

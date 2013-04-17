@@ -132,7 +132,7 @@ public final class ModuleLifecycleManager implements ErrorHandler, EntityResolve
                     NotificationDisplayer.getDefault().notify(
                             NbBundle.getMessage(ModuleLifecycleManager.class, "MSG_Install_Warning_Title"), //NOI18N
                             ImageUtilities.loadImageIcon("org/netbeans/modules/git/resources/icons/info.png", false),
-                            ballonDetails, popupDetails, NotificationDisplayer.Priority.NORMAL);
+                            ballonDetails, popupDetails, NotificationDisplayer.Priority.NORMAL, NotificationDisplayer.Category.WARNING);
                 }
             }
                         

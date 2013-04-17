@@ -72,7 +72,9 @@ public class AnnotationOnLocVarTest extends GeneratorTestMDRCompat {
     }
     
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(AnnotationOnLocVarTest.class);
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new AnnotationOnLocVarTest("testAddAnnToLocVar"));
+        suite.addTest(new AnnotationOnLocVarTest("testAddLocVarWithAnn"));
         return suite;
     }
     

@@ -65,9 +65,11 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 
 /**
  *
@@ -87,8 +89,8 @@ public class LibraryUtils {
         return library.getType() == LibraryType.COMPOSITE;
     }
 
-    public static boolean importLibrary(Document document, Library library, String prefix) {
-        return !importLibrary(document, Collections.singletonMap(library, prefix)).isEmpty();
+    public static boolean importLibrary(Document document, Library library, String prefix, boolean isJsf22Plus) {
+        return !importLibrary(document, Collections.singletonMap(library, prefix), isJsf22Plus).isEmpty();
     }
 
     /**
@@ -100,7 +102,7 @@ public class LibraryUtils {
      *
      * @return a map of library2declared prefixes which contains just the imported pairs
      */
-    public static Map<Library, String> importLibrary(Document document, Map<Library, String> libraries2prefixes) {
+    public static Map<Library, String> importLibrary(Document document, Map<Library, String> libraries2prefixes, final boolean isJsf22Plus) {
         assert document instanceof BaseDocument;
 
         final Map<Library, String> imports = new LinkedHashMap<Library, String>(libraries2prefixes);
@@ -201,7 +203,7 @@ public class LibraryUtils {
             while (librariesIterator.hasNext()) {
                 Library library = librariesIterator.next();
                 Map<String, String> declaredNamespaces = result.getNamespaces();
-                String alreadyDeclaredPrefix = declaredNamespaces.get(library.getNamespace());
+                String alreadyDeclaredPrefix = NamespaceUtils.getForNs(declaredNamespaces, library.getNamespace());
                 if (alreadyDeclaredPrefix == null) {
                     //try composite component library default prefix
                     String defaultNS = library.getDefaultNamespace();
@@ -242,8 +244,10 @@ public class LibraryUtils {
                                 String prefixToDeclare = imports.get(library);
                                 int insertPosition = originalInsertPosition + offset_shift;
 
+                                String namespace = isJsf22Plus || library.getLegacyNamespace() == null ?
+                                        library.getNamespace() : library.getLegacyNamespace();
                                 String text = (!noAttributes ? "\n" : "") + " xmlns:" + prefixToDeclare + //NOI18N
-                                        "=\"" + library.getNamespace() + "\""; //NOI18N
+                                        "=\"" + namespace + "\""; //NOI18N
 
                                 bdoc.insertString(insertPosition, text, null);
 
@@ -282,7 +286,7 @@ public class LibraryUtils {
             Map<String, ? extends Library> libs = jsfSupport.getLibraries();
 
             for (String namespace : declaredNamespaces) {
-                Library lib = libs.get(namespace);
+                Library lib = NamespaceUtils.getForNs(libs, namespace);
                 if (lib != null) {
                     declaredLibraries.put(namespace, lib);
                 }

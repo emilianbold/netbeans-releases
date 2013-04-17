@@ -132,7 +132,7 @@ public final class JavadocReader implements ContentReader {
         
         while (rowStart < contentEnd) {
             Element e = DocumentUtilities.getParagraphElement(d, rowStart);
-            int nextRow = e.getEndOffset();
+            int nextRow = Math.min(contentEnd, e.getEndOffset());
             int nonWhite = nonWhiteFwdOnRow(seq, rowStart);
             // check if the nonwhite content matches the lineStartMarker
             if (nonWhite != -1 && 

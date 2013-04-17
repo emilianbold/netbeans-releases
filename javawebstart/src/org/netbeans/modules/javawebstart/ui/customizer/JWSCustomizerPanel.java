@@ -91,20 +91,20 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         initComponents();
 
         enableCheckBox.setModel(jwsProps.enabledModel);
-        enableCheckBox.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.enableCheckBox.mnemonic").toCharArray()[0]);
+        enableCheckBox.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.enableCheckBox.mnemonic").toCharArray()[0]); //NOI18N
         offlineCheckBox.setModel(jwsProps.allowOfflineModel);
-        offlineCheckBox.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.offlineCheckBox.mnemonic").toCharArray()[0]);
+        offlineCheckBox.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.offlineCheckBox.mnemonic").toCharArray()[0]); //NOI18N
         refreshSigningLabel();
         iconTextField.setDocument(jwsProps.iconDocument);
         codebaseComboBox.setModel(jwsProps.codebaseModel);
         codebaseTextField.setDocument(jwsProps.codebaseURLDocument);
         appletClassComboBox.setModel(jwsProps.appletClassModel);
         applicationDescRadioButton.setModel(jwsProps.applicationDescButtonModel);
-        applicationDescRadioButton.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.applicationDescRadioButton.mnemonic").toCharArray()[0]);
+        applicationDescRadioButton.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.applicationDescRadioButton.mnemonic").toCharArray()[0]); //NOI18N
         appletDescRadioButton.setModel(jwsProps.appletDescButtonModel);
-        appletDescRadioButton.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletDescRadioButton.mnemonic").toCharArray()[0]);
+        appletDescRadioButton.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletDescRadioButton.mnemonic").toCharArray()[0]); //NOI18N
         compDescRadioButton.setModel(jwsProps.compDescButtonModel);
-        compDescRadioButton.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.compDescRadioButton.mnemonic").toCharArray()[0]);
+        compDescRadioButton.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.compDescRadioButton.mnemonic").toCharArray()[0]); //NOI18N
 
         setCodebaseComponents();
         boolean enableSelected = enableCheckBox.getModel().isSelected();
@@ -114,23 +114,29 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         setEnabledAppletControls(appletDescRadioButton.isSelected());
         
         extResColumnNames = new String[] {
-            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.href"),
-            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.name"),
-            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.version")
+            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.href"), //NOI18N
+            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.name"), //NOI18N
+            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.version") //NOI18N
         };
         appletParamsColumnNames = new String[] {
-            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletParams.name"),
-            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletParams.value")
+            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletParams.name"), //NOI18N
+            NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletParams.value") //NOI18N
         };
     }
 
     private void refreshSigningLabel() {
         if (JWSProjectProperties.SIGNING_GENERATED.equals(jwsProps.signing)) {
-            signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Generated"));
+            signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Generated")); //NOI18N
+            signingWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.WarnDeprecated")); //NOI18N
+            signingWarning.setVisible(true);
         } else if (JWSProjectProperties.SIGNING_KEY.equals(jwsProps.signing)) {
-            signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Key", jwsProps.signingKeyAlias));
+            signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Key", jwsProps.signingKeyAlias)); //NOI18N
+            signingWarning.setText(null);
+            signingWarning.setVisible(false);
         } else {
-            signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Unsigned"));
+            signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Unsigned")); //NOI18N
+            signingWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.WarnDeprecated")); //NOI18N
+            signingWarning.setVisible(true);
         }
     }
 
@@ -162,6 +168,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         jLabel1 = new javax.swing.JLabel();
         signingInfolabel = new javax.swing.JLabel();
         signingCustomizeButton = new javax.swing.JButton();
+        signingWarning = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         applicationDescRadioButton = new javax.swing.JRadioButton();
         appletClassLabel = new javax.swing.JLabel();
@@ -219,6 +226,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.weightx = 1.0;
@@ -234,7 +242,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
@@ -250,6 +258,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.weightx = 1.0;
@@ -272,6 +281,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.weightx = 1.0;
@@ -294,7 +304,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(panelDescLabel, gridBagConstraints);
@@ -325,6 +335,16 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(signingCustomizeButton, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(signingWarning, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.signingWarning.text")); // NOI18N
+        signingWarning.setPreferredSize(new java.awt.Dimension(400, 35));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        add(signingWarning, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -411,8 +431,8 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -451,15 +471,15 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         add(jPanel2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(jSeparator2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(jSeparator3, gridBagConstraints);
@@ -490,7 +510,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
             // workDir = FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath();
             // chooser.setSelectedFile(new File(workDir));
         }
-        chooser.setDialogTitle(NbBundle.getMessage(JWSCustomizerPanel.class, "LBL_Select_Icon_Image"));
+        chooser.setDialogTitle(NbBundle.getMessage(JWSCustomizerPanel.class, "LBL_Select_Icon_Image")); //NOI18N
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
             iconTextField.setText(file.getAbsolutePath());
@@ -508,7 +528,7 @@ private void extResButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     List<Map<String,String>> origProps = jwsProps.getExtResProperties();
     List<Map<String,String>> props = copyList(origProps);
     JPanel panel = new ExtensionResourcesPanel(new JWSProjectProperties.PropertiesTableModel(props, JWSProjectProperties.extResSuffixes, extResColumnNames));
-    DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JWSCustomizerPanel.class, "TITLE_ExtensionResources"), true, null);
+    DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JWSCustomizerPanel.class, "TITLE_ExtensionResources"), true, null); //NOI18N
     Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
     dialog.setVisible(true);
     if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
@@ -534,7 +554,7 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
     List<Map<String,String>> props = copyList(origProps);
     TableModel appletParamsTableModel = new JWSProjectProperties.PropertiesTableModel(props, JWSProjectProperties.appletParamsSuffixes, appletParamsColumnNames);
     JPanel panel = new AppletParametersPanel((PropertiesTableModel) appletParamsTableModel, jwsProps.appletWidthDocument, jwsProps.appletHeightDocument);
-    DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JWSCustomizerPanel.class, "TITLE_AppletParameters"), true, null);
+    DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JWSCustomizerPanel.class, "TITLE_AppletParameters"), true, null); //NOI18N
     Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
     dialog.setVisible(true);
     if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
@@ -546,13 +566,17 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
 
 private void signingCustomizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_signingCustomizeButtonActionPerformed
     SigningPanel panel = new SigningPanel(jwsProps);
-    DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(SigningPanel.class, "TITLE_SigningPanel"), true, null);
+    DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(SigningPanel.class, "TITLE_SigningPanel"), true, null); //NOI18N
+    panel.registerListeners();
+    panel.setDialogDescriptor(dialogDesc);
     Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
     dialog.setVisible(true);
     if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
         panel.store();
         refreshSigningLabel();
     }
+    panel.unregisterListeners();
+    dialog.dispose();
 }//GEN-LAST:event_signingCustomizeButtonActionPerformed
 
 private void manageResources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageResources
@@ -561,7 +585,7 @@ private void manageResources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
             jwsProps.runtimeCP,
             jwsProps.lazyJars);
     final DialogDescriptor dd = new DialogDescriptor(rc,
-            NbBundle.getMessage(JWSCustomizerPanel.class, "TXT_ManageResources"),
+            NbBundle.getMessage(JWSCustomizerPanel.class, "TXT_ManageResources"), //NOI18N
             true,
             DialogDescriptor.OK_CANCEL_OPTION,
             DialogDescriptor.OK_OPTION,
@@ -602,7 +626,7 @@ private void manageResources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         }
 
         public String getDescription() {
-            return NbBundle.getMessage(JWSCustomizerPanel.class, "MSG_IconFileFilter_Description");
+            return NbBundle.getMessage(JWSCustomizerPanel.class, "MSG_IconFileFilter_Description"); //NOI18N
         }
 
     }
@@ -640,6 +664,7 @@ private void manageResources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         jLabel1.setEnabled(b);
         signingInfolabel.setEnabled(b);
         signingCustomizeButton.setEnabled(b);
+        signingWarning.setEnabled(b);
         extResButton.setEnabled(b);
         applicationDescRadioButton.setEnabled(b);
         appletDescRadioButton.setEnabled(b);
@@ -692,6 +717,7 @@ private void manageResources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     private javax.swing.JLabel panelDescLabel;
     private javax.swing.JButton signingCustomizeButton;
     private javax.swing.JLabel signingInfolabel;
+    private javax.swing.JLabel signingWarning;
     // End of variables declaration//GEN-END:variables
 
 }

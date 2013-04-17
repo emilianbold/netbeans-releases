@@ -44,8 +44,10 @@ package org.netbeans.modules.web.webkit.tooling.console;
 
 import java.awt.Color;
 import java.awt.SystemColor;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -70,6 +72,7 @@ import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.IOColorPrint;
 import org.openide.windows.IOColors;
@@ -87,14 +90,18 @@ public class BrowserConsoleLogger implements Console.Listener {
     
     private static final String LEVEL_ERROR = "error";      // NOI18N
     private static final String LEVEL_DEBUG = "debug";      // NOI18N
+    
+    private static final String PROMPT = "";//> ";              // NOI18N
 
     private Lookup projectContext;
     private InputOutput io;
     private Color colorStdBrighter;
     /** The last logged message. */
     private ConsoleMessage lastMessage;
+    private Console.InputCallback input;
     //private Color colorErrBrighter;
     private final AtomicBoolean shownOnError = new AtomicBoolean(false);
+    private final RequestProcessor rp = new RequestProcessor(BrowserConsoleLogger.class);
 
     private static final Logger LOG = Logger.getLogger(BrowserConsoleLogger.class.getName());
 
@@ -116,11 +123,21 @@ public class BrowserConsoleLogger implements Console.Listener {
             colorStdBrighter = shiftTowards(colorStd, background);
             //colorErrBrighter = shiftTowards(colorErr, background);
         }
+        io.setInputVisible(true);
+        //io.getOut().print(PROMPT);
+        Reader r = io.getIn();
+        rp.post(new ConsoleReader(r));
     }
 
     public void close() {
+        LOG.fine("close() closing IO");
         io.getErr().close();
         io.getOut().close();
+        try {
+            io.getIn().close();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private static Color shiftTowards(Color c, Color b) {
@@ -139,14 +156,17 @@ public class BrowserConsoleLogger implements Console.Listener {
 
     @Override
     public void messagesCleared() {
+        LOG.fine("messagesCleared() resetting IO");
         try {
             io.getOut().reset();
-            io.getErr().reset();
         } catch (IOException ex) {}
+        io.setInputVisible(true);
+        io.getOut().print(PROMPT);
     }
 
     @Override
     public void messageRepeatCountUpdated(int count) {
+        LOG.log(Level.FINE, "messageRepeatCountUpdated({0})", count);
         try {
             logMessage(lastMessage);
         } catch (IOException ex) {
@@ -160,6 +180,7 @@ public class BrowserConsoleLogger implements Console.Listener {
     }
     
     private void logMessage(ConsoleMessage msg) throws IOException {
+        io.getOut().print("\b\b");
         String level = msg.getLevel();
         boolean isErr = LEVEL_ERROR.equals(level);
         String time = getCurrentTime();
@@ -206,7 +227,7 @@ public class BrowserConsoleLogger implements Console.Listener {
         boolean doPrintStackTrace = LEVEL_ERROR.equals(level) ||
                                     LEVEL_DEBUG.equals(level);
         
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb;
         boolean first = true;
         if (doPrintStackTrace && msg.getStackTrace() != null) {
             for (ConsoleMessage.StackFrame sf : msg.getStackTrace()) {
@@ -249,6 +270,7 @@ public class BrowserConsoleLogger implements Console.Listener {
                 ow.println(sb.toString());
             }
         }
+        io.getOut().print(PROMPT);
         if (io.isClosed() || (isErr && !shownOnError.getAndSet(true))) {
             io.select();
         }
@@ -359,12 +381,12 @@ public class BrowserConsoleLogger implements Console.Listener {
         StringBuilder logInfoBuilder = new StringBuilder(" (");
         logInfoBuilder.append(time);
         boolean separator = false;
-        if (!LOG_IGNORED.equals(level)) {
+        if (!LOG_IGNORED.equals(level) && !level.isEmpty()) {
             separator = true;
             logInfoBuilder.append(TIME_SEPARATOR);
             logInfoBuilder.append(level);
         }
-        if (!CONSOLE_API.equals(source)) {
+        if (!CONSOLE_API.equals(source) && !source.isEmpty()) {
             if (separator) {
                 logInfoBuilder.append(", ");
             } else {
@@ -405,6 +427,10 @@ public class BrowserConsoleLogger implements Console.Listener {
             }
         } catch (MalformedURLException murl) {}
         return urlStr;
+    }
+
+    void setInput(Console.InputCallback input) {
+        this.input = input;
     }
 
     public static class MyListener implements OutputListener {
@@ -501,11 +527,35 @@ public class BrowserConsoleLogger implements Console.Listener {
         try {
             DataObject dataObject = DataObject.find(fo);
             if (dataObject != null) {
-                result = dataObject.getCookie(LineCookie.class);
+                result = dataObject.getLookup().lookup(LineCookie.class);
             }
         } catch (DataObjectNotFoundException e) {
-            e.printStackTrace();
+            Exceptions.printStackTrace(Exceptions.attachSeverity(e, Level.INFO));
         }
         return result;
+    }
+    
+    private class ConsoleReader implements Runnable {
+        
+        private final BufferedReader r;
+        
+        public ConsoleReader(Reader r) {
+            this.r = new BufferedReader(r);
+        }
+
+        @Override
+        public void run() {
+            try {
+                String line;
+                while((line = r.readLine()) != null) {
+                    LOG.log(Level.FINE, "Got line from Console Reader: \"{0}\"", line);
+                    input.line(line);
+                    io.getOut().print(PROMPT);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
     }
 }

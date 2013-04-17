@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,13 +37,10 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.bugtracking.ui.query;
 
-import javax.swing.LayoutStyle;
-import java.util.Collection;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -60,121 +57,90 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.QueryImpl;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.PlaceholderPanel;
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
-import org.openide.awt.Mnemonics;
-import org.openide.util.Cancellable;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
+import javax.swing.LayoutStyle;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static javax.swing.SwingConstants.NORTH;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
-import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
-import org.netbeans.modules.bugtracking.*;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.LineBorder;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.util.*;
-import org.openide.util.actions.CallbackSystemAction;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.util.NoContentPanel;
+import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
+import org.openide.awt.Mnemonics;
+import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
-/**
- * Top component which displays something.
- */
 public final class QueryTopComponent extends TopComponent
                                      implements PropertyChangeListener, FocusListener {
 
     private static QueryTopComponent instance;
-    /** path to the icon used by the component and its open action */
-//    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
 
     /** Set of opened {@code QueryTopComponent}s. */
-    private static Set<QueryTopComponent> openQueries = new HashSet<QueryTopComponent>();
+    private static final Set<QueryTopComponent> openQueries = new HashSet<QueryTopComponent>();
 
-    private final RepoPanel repoPanel;
-    private final JPanel jPanel2;
+    private final RepoSelectorPanel repoPanel;
     private final LinkButton newButton;
-    private final PlaceholderPanel panel;
     private final JComboBox repositoryComboBox;
-    private final JScrollPane scrollPane;
 
-    private QueryImpl[] savedQueries = null;
-    
     private static final String PREFERRED_ID = "QueryTopComponent"; // NOI18N
     private QueryImpl query; // XXX synchronized
-    private static final Object LOCK = new Object();
 
-    private RequestProcessor rp = new RequestProcessor("Bugtracking query", 1, true); // NOI18N
-    private Task prepareTask;
+    private final RequestProcessor rp = new RequestProcessor("Bugtracking query", 1, true); // NOI18N
+    private RequestProcessor.Task prepareTask;
     private RepositoryComboSupport rs;
     private File context;
 
     QueryTopComponent() {
+        initComponents();
         RepositoryRegistry.getInstance().addPropertyChangeListener(this);
         repositoryComboBox = new javax.swing.JComboBox();
         newButton = new LinkButton();
 
         /* layout */
-        JLabel title = new JLabel();
         Font titleFont = title.getFont();
         title.setFont(titleFont.deriveFont(1.7f * titleFont.getSize()));
         title.setBorder(BorderFactory.createEmptyBorder(
                 0, getLeftContainerGap(title), 0, 0));
 
-        repoPanel = new RepoPanel(repositoryComboBox, newButton);
-        panel = new PlaceholderPanel();
-        jPanel2 = new ViewportWidthAwarePanel(null) {
-            @Override
-            protected void notifyChildrenOfVisibleWidth() {
-                repoPanel.setAvailableWidth(getAvailableWidth());
-            }
-        };
-        jPanel2.setLayout(new BoxLayout(jPanel2, BoxLayout.Y_AXIS));
-        jPanel2.add(createVerticalStrut(null, title));
-        jPanel2.add(title);
-        jPanel2.add(createVerticalStrut(title, repoPanel));
-        jPanel2.add(repoPanel);
-        jPanel2.add(createVerticalStrut(repoPanel, panel));
-        jPanel2.add(panel);
-
-        title    .setAlignmentX(0.0f);
-        repoPanel.setAlignmentX(0.0f);
-        panel    .setAlignmentX(0.0f);
-
-        scrollPane = new QueryTopComponentScrollPane(jPanel2);
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(scrollPane);
-
+        leftRepoPanel.setVisible(false);
+        repoPanel = new RepoSelectorPanel(repositoryComboBox, newButton);
+        
+        GroupLayout layout = (GroupLayout) headerPanel.getLayout();
+        leftRepoPanel.setVisible(true);
+        layout.replace(leftRepoPanel, repoPanel);
+                
+        addNoContentPanel();
+        
         /* texts */
         Mnemonics.setLocalizedText(
                 title,
@@ -192,36 +158,22 @@ public final class QueryTopComponent extends TopComponent
         Color editorBgColor = UIManager.getDefaults()
                               .getColor("EditorPane.background");       //NOI18N
         repoPanel.setBackground(editorBgColor);
-        panel    .setBackground(editorBgColor);
-        jPanel2  .setBackground(editorBgColor);
+        headerPanel.setBackground(editorBgColor);
+        queryPanel.setBackground(editorBgColor);
+        mainPanel.setBackground(editorBgColor);
 
         /* focus */
         repoPanel.setNextFocusableComponent(newButton);
 
         /* scrolling */
         int unitIncrement = (int) (1.5f * titleFont.getSize() + 0.5f);
-        scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
+        jScrollPane1.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
+        jScrollPane1.getVerticalScrollBar().setUnitIncrement(unitIncrement);
     }
 
     private static int getLeftContainerGap(JComponent comp) {
         LayoutStyle layoutStyle = LayoutStyle.getInstance();
         return layoutStyle.getContainerGap(comp, WEST, null);
-    }
-
-    private static Component createVerticalStrut(JComponent above,
-                                                 JComponent below) {
-        LayoutStyle layoutStyle = LayoutStyle.getInstance();
-        int height;
-        if (above == null) {
-            height = layoutStyle.getContainerGap(below, NORTH, null);
-        } else if (below == null) {
-            height = layoutStyle.getContainerGap(above, SOUTH, null);
-        } else {
-            height = layoutStyle.getPreferredGap(above, below,
-                                                 RELATED, SOUTH, null);
-        }
-        return Box.createVerticalStrut(height);
     }
 
     public static Set<QueryTopComponent> getOpenQueries() {
@@ -252,7 +204,7 @@ public final class QueryTopComponent extends TopComponent
                 }
             }
             QueryController c = getController(query);
-            panel.setComponent(c.getComponent());
+            addQueryComponent(c.getComponent());
             this.query.addPropertyChangeListener(this);
         } else {
             newButton.addActionListener(new ActionListener() {
@@ -400,8 +352,6 @@ public final class QueryTopComponent extends TopComponent
                 // removed
                 closeInAwt();
             }
-        } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
-            updateSavedQueries();
         } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
             if(query != null) {
                 Object cOld = evt.getOldValue();
@@ -476,6 +426,13 @@ public final class QueryTopComponent extends TopComponent
         });
     }
 
+    @NbBundle.Messages("LBL_NoRepositorySelected=<no repository selected>")
+    private void addNoContentPanel() {
+        NoContentPanel ncp = new NoContentPanel();
+        ncp.setText(Bundle.LBL_NoRepositorySelected());
+        queryPanel.add(ncp);
+    }
+
     final static class ResolvableHelper implements Serializable {
 
         private static final long serialVersionUID = 1L;
@@ -540,16 +497,12 @@ public final class QueryTopComponent extends TopComponent
                     }
                     query.addPropertyChangeListener(QueryTopComponent.this);
 
-                    updateSavedQueriesIntern(repo);
-
                     final QueryController addController = getController(query);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            panel.setComponent(addController.getComponent());
-
+                            addQueryComponent(addController.getComponent());
                             focusFirstEnabledComponent();
-
                         }
                     });
                 } finally {
@@ -559,6 +512,11 @@ public final class QueryTopComponent extends TopComponent
             }
 
         });
+    }
+
+    private void addQueryComponent(JComponent cmp) {
+        queryPanel.removeAll();
+        queryPanel.add(cmp);
     }
 
     private RepositoryImpl getRepository() {
@@ -595,73 +553,104 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private void setSaved() {
-        jPanel2.removeAll();
-        jPanel2.add(panel);
-        jPanel2.revalidate();
-        jPanel2.repaint();
+        headerPanel.setVisible(false);
+        mainPanel.revalidate();
+        mainPanel.repaint();
         setNameAndTooltip();
-    }
-
-    public void updateSavedQueries() {
-        final RepositoryImpl repo = getRepository();
-        if(repo == null) {
-            return;
-        }
-        rp.post(new Runnable() {
-            @Override
-            public void run() {
-                updateSavedQueriesIntern(repo);
-            }
-        });        
-    }
-
-    private void updateSavedQueriesIntern(final RepositoryImpl repo) {
-        if(repo == null) {
-            return;
-        }
-        BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} start", new Object[] {repo.getDisplayName()} );
-        Collection<QueryImpl> cq = repo.getQueries();
-        QueryImpl[] queries = cq != null ? cq.toArray(new QueryImpl[cq.size()]) : new QueryImpl[0];
-        final QueryImpl[] finQueries;
-        synchronized (LOCK) {
-            Arrays.sort(queries, new QueryComparator());
-            savedQueries = queries;
-            finQueries = savedQueries;
-        }
-
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                repoPanel.setQueries(finQueries);
-                if(finQueries == null || finQueries.length == 0) {
-                    BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. No queries.", new Object[] {repo.getDisplayName()} );
-                } else {
-                    BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. {1} saved queries.", new Object[] {repo.getDisplayName(), savedQueries.length} );
-                }
-            }
-        });
     }
 
     @Override
     public boolean requestFocusInWindow() {
-        return jPanel2.requestFocusInWindow();
+        return mainPanel.requestFocusInWindow();
     }
 
-    private class QueryComparator implements Comparator<QueryImpl> {
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
 
-        @Override
-        public int compare(QueryImpl q1, QueryImpl q2) {
-            if(q1 == null && q2 == null) {
-                return 0;
-            }
-            if(q1 == null) {
-                return -1;
-            }
-            if(q2 == null) {
-                return 1;
-            }
-            return q1.getDisplayName().compareTo(q2.getDisplayName());
-        }
-        
-    }
+        jScrollPane1 = new javax.swing.JScrollPane();
+        mainPanel = new javax.swing.JPanel();
+        headerPanel = new javax.swing.JPanel();
+        title = new javax.swing.JLabel();
+        leftRepoPanel = new javax.swing.JPanel();
+        queryPanel = new javax.swing.JPanel();
+
+        org.openide.awt.Mnemonics.setLocalizedText(title, org.openide.util.NbBundle.getMessage(QueryTopComponent.class, "QueryTopComponent.findIssuesLabel.text")); // NOI18N
+
+        leftRepoPanel.setOpaque(false);
+
+        javax.swing.GroupLayout leftRepoPanelLayout = new javax.swing.GroupLayout(leftRepoPanel);
+        leftRepoPanel.setLayout(leftRepoPanelLayout);
+        leftRepoPanelLayout.setHorizontalGroup(
+            leftRepoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 66, Short.MAX_VALUE)
+        );
+        leftRepoPanelLayout.setVerticalGroup(
+            leftRepoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 16, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(headerPanel);
+        headerPanel.setLayout(headerPanelLayout);
+        headerPanelLayout.setHorizontalGroup(
+            headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(headerPanelLayout.createSequentialGroup()
+                .addComponent(title)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 203, Short.MAX_VALUE)
+                .addComponent(leftRepoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        headerPanelLayout.setVerticalGroup(
+            headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(headerPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(leftRepoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(title))
+                .addContainerGap())
+        );
+
+        queryPanel.setLayout(new java.awt.BorderLayout());
+
+        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
+        mainPanel.setLayout(mainPanelLayout);
+        mainPanelLayout.setHorizontalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(headerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(queryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        mainPanelLayout.setVerticalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addComponent(headerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(queryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
+        );
+
+        jScrollPane1.setViewportView(mainPanel);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1)
+        );
+    }// </editor-fold>//GEN-END:initComponents
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel headerPanel;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel leftRepoPanel;
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JPanel queryPanel;
+    private javax.swing.JLabel title;
+    // End of variables declaration//GEN-END:variables
 }

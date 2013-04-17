@@ -171,6 +171,10 @@ public abstract class CsmFileInfoQuery {
      */
     public abstract long getOffset(CsmFile file, int line, int column);
 
+    public abstract int[] getLineColumnByOffset(CsmFile file, int offset);
+    
+    public abstract int getLineCount(CsmFile file);
+
     public abstract CharSequence getName(CsmUID<CsmFile> fileUID);
     
     public abstract CharSequence getAbsolutePath(CsmUID<CsmFile> fileUID);
@@ -226,6 +230,16 @@ public abstract class CsmFileInfoQuery {
             return 0;
         }
 
+        @Override
+        public int getLineCount(CsmFile file) {
+            return 0;
+        }
+
+        @Override
+        public int[] getLineColumnByOffset(CsmFile file, int offset) {
+            return new int[]{0, 0};
+        }
+        
         @Override
         public Collection<CsmInclude> getBrokenIncludes(CsmFile file) {
             return Collections.<CsmInclude>emptyList();

@@ -87,7 +87,7 @@ public interface Constants {
     static final String IMAGE_TAB_SELECTED = "org/netbeans/modules/welcome/resources/tab_selected.png"; // NOI18N
     static final String IMAGE_TAB_ROLLOVER = "org/netbeans/modules/welcome/resources/tab_rollover.png"; // NOI18N
 
-    static final String BROKEN_IMAGE = "org/netbeans/modules/welcome/resources/broken_image.png"; // NOI18N
+    static final String BROKEN_IMAGE = "org/netbeans/modules/welcome/resources/broken_image.gif"; // NOI18N
     static final String IMAGE_PICTURE_FRAME = "org/netbeans/modules/welcome/resources/picture_frame.png"; // NOI18N
 
     static final Stroke LINK_IN_FOCUS_STROKE = new BasicStroke(1, BasicStroke.CAP_SQUARE,

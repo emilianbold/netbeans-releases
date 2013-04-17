@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.php.composer.api;
 
+import java.io.File;
 import java.util.concurrent.Future;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 
@@ -59,12 +62,40 @@ public final class Composer {
     }
 
     /**
-     * Get the default, <b>valid only</b> Composer.
-     * @return the default, <b>valid only</b> Composer.
+     * Get new instance of the default, <b>valid only</b> Composer.
+     * @return new instance of the default, <b>valid only</b> Composer.
      * @throws InvalidPhpExecutableException if Composer is not valid.
      */
     public static Composer getDefault() throws InvalidPhpExecutableException {
         return new Composer(org.netbeans.modules.php.composer.commands.Composer.getDefault());
+    }
+
+    /**
+     * Get the current working directory.
+     * <p>
+     * If the directory is {@code null}, it means that source directory of the given PHP module will be used, if possible.
+     * @return current working directory, can be {@code null}
+     * @since 1.12
+     */
+    @CheckForNull
+    public File getWorkDir() {
+        return composer.getWorkDir();
+    }
+
+    /**
+     * Set current working directory. If it is not {@code null}, existing directory must be given.
+     * @param workDir existing working directory, can be {@code null}
+     * @return self instance
+     * @throws IllegalArgumentException if the given file is not {@code null} and is not existing directory
+     * @since 1.12
+     */
+    public Composer setWorkDir(@NullAllowed File workDir) {
+        if (workDir != null
+                && !workDir.isDirectory()) {
+            throw new IllegalArgumentException("Existing directory must be provided: " + workDir);
+        }
+        composer.setWorkDir(workDir);
+        return this;
     }
 
     /**

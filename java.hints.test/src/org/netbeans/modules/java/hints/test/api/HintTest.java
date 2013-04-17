@@ -119,6 +119,7 @@ import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.test.Utilities.TestLookup;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.MimeTypes;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
@@ -364,7 +365,7 @@ public class HintTest {
     public HintTest input(String fileName, String code) throws Exception {
         return input(fileName, code, true);
     }
-
+    
     /**Create a test file. Any number of files can be created for one test, but the hint
      * will be run only on the first one.
      *
@@ -454,13 +455,27 @@ public class HintTest {
         this.testPreferences.putBoolean(preferencesKey, value);
         return this;
     }
-
+    
     /**Runs the given hint(s) on the first file written by a {@code input} method.
      *
      * @param hint all hints in this class will be run on the file
      * @return a wrapper over the hint output that allows verifying results of the hint
      */
     public HintOutput run(Class<?> hint) throws Exception {
+        return run(hint, null);
+    }
+
+    /**Runs the given hint(s) on the first file written by a {@code input} method.
+     * Runs only hints with the specified {@code hintCode}. Null hintCode includes
+     * all hints from the class
+     *
+     * @param hint all hints in this class will be run on the file
+     * @param hintCode if not {@code null}, only hints with the same id will be run
+     * @return a wrapper over the hint output that allows verifying results of the hint
+     */
+    public HintOutput run(Class<?> hint, String hintCode) throws Exception {
+        IndexingManager.getDefault().refreshIndexAndWait(sourceRoot.toURL(), null);
+        
         for (FileObject file : checkCompilable) {
             ensureCompilable(file);
         }
@@ -484,6 +499,9 @@ public class HintTest {
         final Set<ErrorDescription> requiresJavaFix = Collections.newSetFromMap(new IdentityHashMap<ErrorDescription, Boolean>());
 
         for (final Entry<HintMetadata, Collection<HintDescription>> e : hints.entrySet()) {
+            if (null != hintCode && !e.getKey().id.equals(hintCode)) {
+                continue;
+            }
             if (   e.getKey().options.contains(Options.NO_BATCH)
                 || e.getKey().options.contains(Options.QUERY)
                 || e.getKey().kind == Kind.ACTION) {
@@ -851,7 +869,7 @@ public class HintTest {
 
             return this;
         }
-
+        
         /**Find a specific warning.
          *
          * @param warning the warning to find - must be equivalent to {@code toString()}
@@ -1065,7 +1083,7 @@ public class HintTest {
         public AppliedFix assertOutput(String fileName, String code) throws Exception {
             FileObject toCheck = sourceRoot.getFileObject(fileName);
 
-            assertNotNull(toCheck);
+            assertNotNull("Required file: " + fileName + " not found", toCheck);
 
             DataObject toCheckDO = DataObject.find(toCheck);
             EditorCookie ec = toCheckDO.getLookup().lookup(EditorCookie.class);

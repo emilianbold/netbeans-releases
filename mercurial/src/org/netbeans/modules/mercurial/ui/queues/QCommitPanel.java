@@ -390,7 +390,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
                     cache.refreshAllRoots(Collections.<File, Set<File>>singletonMap(repository, toRefresh));
                     
                     Map<File, FileInformation> statuses = getLocalChanges(roots, cache);
-                    statuses.keySet().retainAll(HgUtils.flattenFiles(roots, statuses.keySet()));
+                    statuses.keySet().retainAll(Utils.flattenFiles(roots, statuses.keySet()));
                     Set<File> patchChangesUnderSelection = getPatchChangesUnderSelection(patchChanges, roots);
                     
                     for (Map.Entry<File, FileInformation> e : patchChanges.entrySet()) {
@@ -449,7 +449,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
                     it.remove();
                 }
             }
-            patchChangesUnderSelection = HgUtils.flattenFiles(roots, patchChangesUnderSelection);
+            patchChangesUnderSelection = Utils.flattenFiles(roots, patchChangesUnderSelection);
             return patchChangesUnderSelection;
         }
 
