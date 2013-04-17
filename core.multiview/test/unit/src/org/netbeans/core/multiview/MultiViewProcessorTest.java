@@ -62,6 +62,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -128,8 +129,15 @@ public class MultiViewProcessorTest extends NbTestCase {
         MultiViewHandler handler = MultiViews.findMultiViewHandler(mvc);
         assertNotNull("Handler found", handler);
         MultiViewPerspective[] arr = handler.getPerspectives();
-        assertEquals("One perspetive found", 1, arr.length);
+        assertEquals("Two perspetives found", 2, arr.length);
         assertEquals("Figaro", arr[0].getDisplayName());
+        assertEquals("Figaro", arr[1].getDisplayName());
+	MultiViewDescription description = Accessor.DEFAULT.extractDescription(arr[0]);
+	assertTrue(description instanceof ContextAwareDescription);
+        assertFalse("First one is not for split", ((ContextAwareDescription)description).isSplitDescription());
+	description = Accessor.DEFAULT.extractDescription(arr[1]);
+	assertTrue(description instanceof ContextAwareDescription);
+        assertTrue("Second one is for split", ((ContextAwareDescription)description).isSplitDescription());
 
         CloseH.retValue = true;
         MVE.closeState = MultiViewFactory.createUnsafeCloseState("warn", null, null);
@@ -202,8 +210,15 @@ public class MultiViewProcessorTest extends NbTestCase {
         MultiViewHandler handler = MultiViews.findMultiViewHandler(mvc);
         assertNotNull("Handler found", handler);
         MultiViewPerspective[] arr = handler.getPerspectives();
-        assertEquals("One perspetive found", 1, arr.length);
+        assertEquals("Two perspetives found", 2, arr.length);
         assertEquals("Contextual", arr[0].getDisplayName());
+	assertEquals("Contextual", arr[1].getDisplayName());
+	MultiViewDescription description = Accessor.DEFAULT.extractDescription(arr[0]);
+	assertTrue(description instanceof ContextAwareDescription);
+        assertFalse("First one is not for split", ((ContextAwareDescription)description).isSplitDescription());
+	description = Accessor.DEFAULT.extractDescription(arr[1]);
+	assertTrue(description instanceof ContextAwareDescription);
+        assertTrue("Second one is for split", ((ContextAwareDescription)description).isSplitDescription());
 
         assertPersistence("Always", TopComponent.PERSISTENCE_ALWAYS, mvc);
         
@@ -215,6 +230,13 @@ public class MultiViewProcessorTest extends NbTestCase {
         assertNull("No integer now", mvc.getLookup().lookup(Integer.class));
         ic.add(1);
         assertEquals("1 now", Integer.valueOf(1), mvc.getLookup().lookup(Integer.class));
+
+	((MultiViewCloneableTopComponent)mvc).splitComponent(JSplitPane.HORIZONTAL_SPLIT);
+	handler.requestActive(arr[0]);
+	ic.remove(1);
+        assertNull("No integer now", mvc.getLookup().lookup(Integer.class));
+        ic.add(2);
+        assertEquals("2 now", Integer.valueOf(2), mvc.getLookup().lookup(Integer.class));
     }
     
     
@@ -370,8 +392,15 @@ public class MultiViewProcessorTest extends NbTestCase {
         assertNull("No icon yet", tc.getIcon());
         MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
         final MultiViewPerspective[] two = handler.getPerspectives();
-        assertEquals("One element only" + Arrays.asList(two), 1, handler.getPerspectives().length);
+        assertEquals("Two elements only" + Arrays.asList(two), 2, handler.getPerspectives().length);
         assertEquals("First one is source", "source", two[0].preferredID());
+	MultiViewDescription description = Accessor.DEFAULT.extractDescription(two[0]);
+	assertTrue(description instanceof ContextAwareDescription);
+        assertFalse("First one is not for split", ((ContextAwareDescription)description).isSplitDescription());
+        assertEquals("Second one is source", "source", two[1].preferredID());
+	description = Accessor.DEFAULT.extractDescription(two[1]);
+	assertTrue(description instanceof ContextAwareDescription);
+        assertTrue("Second one is for split", ((ContextAwareDescription)description).isSplitDescription());
         handler.requestVisible(two[0]);
         
         
@@ -393,6 +422,16 @@ public class MultiViewProcessorTest extends NbTestCase {
         ic.remove(img);
         assertEquals("Second change in listener", 2, listener.cnt);
         assertNull("No icon again", tc.getIcon());
+
+	((MultiViewCloneableTopComponent)tc).splitComponent(JSplitPane.HORIZONTAL_SPLIT);
+	handler.requestVisible(two[1]);
+        ic.add(img);
+        assertEquals("Third change in listener", 3, listener.cnt);
+        assertEquals("Image changed", img, tc.getIcon());
+
+	ic.remove(img);
+        assertEquals("Forth change in listener", 4, listener.cnt);
+        assertNull("No icon again", tc.getIcon());
     }
 
     public void testMultiViewsContextCreate() {
@@ -404,8 +443,15 @@ public class MultiViewProcessorTest extends NbTestCase {
         MultiViewHandler handler = MultiViews.findMultiViewHandler(mvc);
         assertNotNull("Handler found", handler);
         MultiViewPerspective[] arr = handler.getPerspectives();
-        assertEquals("One perspetive found", 1, arr.length);
+        assertEquals("Two perspetives found", 2, arr.length);
         assertEquals("Contextual", arr[0].getDisplayName());
+	assertEquals("Contextual", arr[1].getDisplayName());
+	MultiViewDescription description = Accessor.DEFAULT.extractDescription(arr[0]);
+	assertTrue(description instanceof ContextAwareDescription);
+        assertFalse("First one is not for split", ((ContextAwareDescription)description).isSplitDescription());
+	description = Accessor.DEFAULT.extractDescription(arr[1]);
+	assertTrue(description instanceof ContextAwareDescription);
+        assertTrue("Second one is for split", ((ContextAwareDescription)description).isSplitDescription());
         
         mvc.open();
         mvc.requestActive();
@@ -415,6 +461,13 @@ public class MultiViewProcessorTest extends NbTestCase {
         assertNull("No integer now", mvc.getLookup().lookup(Integer.class));
         ic.add(1);
         assertEquals("1 now", Integer.valueOf(1), mvc.getLookup().lookup(Integer.class));
+	
+	((MultiViewTopComponent)mvc).splitComponent(JSplitPane.HORIZONTAL_SPLIT);
+	ic.remove(1);
+	handler.requestActive(arr[1]);
+        assertNull("No integer now", mvc.getLookup().lookup(Integer.class));
+        ic.add(2);
+        assertEquals("2 now", Integer.valueOf(2), mvc.getLookup().lookup(Integer.class));
     }
 
     @MimeRegistration(mimeType="text/figaro", service=CloseOperationHandler.class)
