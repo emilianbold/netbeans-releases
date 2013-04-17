@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.prep.editor.CPUtils;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
+import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
@@ -64,6 +65,10 @@ public final class SassProcessor extends BaseProcessor {
 
     private static final Logger LOGGER = Logger.getLogger(SassProcessor.class.getName());
 
+
+    public SassProcessor(SassCssPreprocessor cssPreprocessor) {
+        super(cssPreprocessor);
+    }
 
     @Override
     protected boolean isEnabledInternal(Project project) {
@@ -108,8 +113,8 @@ public final class SassProcessor extends BaseProcessor {
     }
 
     @Override
-    protected void compileInternal(File source, File target) {
-        SassExecutable sass = getSass();
+    protected void compileInternal(Project project, File source, File target) {
+        SassExecutable sass = getSass(project);
         if (sass == null) {
             return;
         }
@@ -123,11 +128,11 @@ public final class SassProcessor extends BaseProcessor {
     }
 
     @CheckForNull
-    private SassExecutable getSass() {
+    private SassExecutable getSass(Project project) {
         try {
             return SassExecutable.getDefault();
         } catch (InvalidExternalExecutableException ex) {
-            // ignored, project problems will catch it
+            cssPreprocessor.fireProcessingErrorOccured(project, ex.getLocalizedMessage());
         }
         return null;
     }

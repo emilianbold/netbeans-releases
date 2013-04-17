@@ -39,59 +39,37 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.less;
+package org.netbeans.modules.css.prep.util;
 
-import org.netbeans.modules.css.prep.process.LessProcessor;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.problems.LessProjectProblemsProvider;
-import org.netbeans.modules.css.prep.ui.customizer.LessCustomizer;
-import org.netbeans.modules.css.prep.ui.options.LessOptions;
-import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
-import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation.Customizer;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation.Options;
-import org.netbeans.spi.project.ui.ProjectProblemsProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.web.common.spi.CssPreprocessorImplementationListener;
 
-@ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200)
-public final class LessCssPreprocessor extends BaseCssPreprocessor {
+public abstract class BaseCssPreprocessor implements CssPreprocessorImplementation {
 
-    private static final String IDENTIFIER = "LESS"; // NOI18N
+    protected final CssPreprocessorImplementationListener.Support listenersSupport = new CssPreprocessorImplementationListener.Support();
 
 
     @Override
-    public String getIdentifier() {
-        return IDENTIFIER;
-    }
-
-    @NbBundle.Messages("LessCssPreprocessor.displayName=LESS")
-    @Override
-    public String getDisplayName() {
-        return Bundle.LessCssPreprocessor_displayName();
+    public void addCssPreprocessorListener(CssPreprocessorImplementationListener listener) {
+        listenersSupport.addCssPreprocessorListener(listener);
     }
 
     @Override
-    public void process(Project project, FileObject fileObject) {
-        new LessProcessor(this).process(project, fileObject);
+    public void removeCssPreprocessorListener(CssPreprocessorImplementationListener listener) {
+        listenersSupport.removeCssPreprocessorListener(listener);
     }
 
-    @Override
-    public Customizer createCustomizer(Project project) {
-        return new LessCustomizer(this, project);
+    public void fireOptionsChanged() {
+        listenersSupport.fireOptionsChanged(this);
     }
 
-    @Override
-    public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        return new LessProjectProblemsProvider(support);
+    public void fireCustomizerChanged(Project project) {
+        listenersSupport.fireCustomizerChanged(project, this);
     }
 
-    @Override
-    public Options createOptions() {
-        return new LessOptions(this);
+    public void fireProcessingErrorOccured(Project project, String error) {
+        listenersSupport.fireProcessingErrorOccured(project, this, error);
     }
 
 }

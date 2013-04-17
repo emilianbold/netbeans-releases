@@ -49,10 +49,12 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
 import org.netbeans.modules.css.prep.util.MappingUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * Process file/folder changes.
@@ -61,6 +63,13 @@ abstract class BaseProcessor {
 
     private static final Logger LOGGER = Logger.getLogger(BaseProcessor.class.getName());
 
+    protected final BaseCssPreprocessor cssPreprocessor;
+
+
+    BaseProcessor(BaseCssPreprocessor cssPreprocessor) {
+        assert cssPreprocessor != null;
+        this.cssPreprocessor = cssPreprocessor;
+    }
 
     protected abstract boolean isEnabledInternal(@NonNull Project project);
 
@@ -68,7 +77,7 @@ abstract class BaseProcessor {
 
     protected abstract List<String> getMappings(Project project);
 
-    protected abstract void compileInternal(File source, File target);
+    protected abstract void compileInternal(Project project, File source, File target);
 
     public void process(Project project, FileObject fileObject) {
         if (fileObject.isData()) {
@@ -135,7 +144,7 @@ abstract class BaseProcessor {
             // not found
             return;
         }
-        compileInternal(file, target);
+        compileInternal(project, file, target);
     }
 
     private void fileDeleted(Project project, FileObject fileObject) {
@@ -153,6 +162,10 @@ abstract class BaseProcessor {
         }
     }
 
+    @NbBundle.Messages({
+        "# {0} - preprocessor name",
+        "BaseProcessor.error.mappings.empty=No mappings found for {0} preprocessor",
+    })
     @CheckForNull
     protected File getTargetFile(Project project, FileObject fileObject) {
         FileObject webRoot = getWebRoot(project, fileObject);
@@ -163,8 +176,8 @@ abstract class BaseProcessor {
         }
         List<String> mappings = getMappings(project);
         if (mappings.isEmpty()) {
-            // project problems know about it
             LOGGER.log(Level.INFO, "Not compiling, no mappings for project {0}", FileUtil.getFileDisplayName(project.getProjectDirectory()));
+            cssPreprocessor.fireProcessingErrorOccured(project, Bundle.BaseProcessor_error_mappings_empty(cssPreprocessor.getDisplayName()));
             return null;
         }
         File target = MappingUtils.resolveTarget(webRoot, mappings, fileObject);
