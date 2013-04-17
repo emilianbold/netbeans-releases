@@ -41,7 +41,13 @@
  */
 package org.netbeans.modules.cordova.platforms.ios;
  
+import java.util.logging.Logger;
+
+
 public class WebInspectorJNIBinding {
+    
+    private static final Logger LOG = Logger.getLogger(WebInspectorJNIBinding.class.getName());
+    
     private native void nstart();
 
     private native void nstop();
@@ -49,30 +55,56 @@ public class WebInspectorJNIBinding {
     private native String nreceiveMessage(Integer timeout);
 
     private native void nsendMessage(String xml);
+    
+    private boolean started = false;
+    
+    private static WebInspectorJNIBinding instance;
 
-    static {
+    private WebInspectorJNIBinding() {
         System.loadLibrary("iDeviceNativeBinding");
     }
-
-    public WebInspectorJNIBinding() {
+    
+    public static synchronized WebInspectorJNIBinding getDefault() {
+        if (instance==null) {
+            instance = new WebInspectorJNIBinding();
+        }
+        return instance;
     }
 
-    public void start() {
-        nstart();
+    public synchronized void start() {
+        if (!started) {
+            nstart();
+            started = true;
+        } else {
+            LOG.info("WebKit Debugging Service already started");
+        }
     }
 
-    public void stop() {
-        nstop();
+    public synchronized void stop() {
+        if (started) {
+            nstop();
+            started = false;
+        } else {
+            LOG.info("WebKit Debugging Service not started");
+        }
     }
 
-    public String receiveMessage() {
+    public synchronized String receiveMessage() {
+        if (!started) {
+            LOG.info("WebKit Debugging Service not started");
+            return null;
+        }
         final String receiveMessage = nreceiveMessage(100);
 //        System.out.println("receiving ");
 //        System.out.println(receiveMessage);
         return receiveMessage;
     }
 
-    public void sendMessage(String message) {
+    public synchronized void sendMessage(String message) {
+        if (!started) {
+            LOG.info("WebKit Debugging Service not started");
+            return;
+        }
 //        System.out.println("sending ");
 //        System.out.println(message);
         nsendMessage(message);

@@ -56,7 +56,7 @@ public class DeviceDebugTransport extends IOSDebugTransport implements Transport
 
     public DeviceDebugTransport() {
         super();
-        nativeCall = new WebInspectorJNIBinding();
+        nativeCall = WebInspectorJNIBinding.getDefault();
     }
 
     public static void runWhenReady(Runnable run, long timeout) {
