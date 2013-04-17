@@ -2545,6 +2545,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             TypeBuilder typeBuilder = sdb.getTypeBuilder();
             if (typeBuilder != null) {
                 switch (kind) {
+                    case PTR_OPERATOR__STAR2:
                     case PTR_OPERATOR__STAR:
                         typeBuilder.incPointerDepth();
                         break;
