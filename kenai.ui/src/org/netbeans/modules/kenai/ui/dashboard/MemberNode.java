@@ -51,10 +51,10 @@ import javax.swing.JPanel;
 import org.netbeans.modules.kenai.ui.MemberAccessorImpl;
 import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
 import org.netbeans.modules.team.ui.common.LinkButton;
-import org.netbeans.modules.team.ui.treelist.LeafNode;
-import org.netbeans.modules.team.ui.treelist.TreeListNode;
-import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.spi.MemberHandle;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -78,7 +78,7 @@ public class MemberNode extends LeafNode {
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
         synchronized (LOCK) {
             if (null == panel) {
                 panel = new JPanel(new BorderLayout());

@@ -75,28 +75,21 @@ public class CategoryNode extends LeafNode {
 
     @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
-            if (null == panel) {
-                panel = new JPanel(new BorderLayout());
-                panel.setBorder(new EmptyBorder(0, 0, 0, 0));
-                panel.setOpaque(false);
+        if (null == panel) {
+            panel = new JPanel(new BorderLayout());
+            panel.setBorder(new EmptyBorder(0, 0, 0, 0));
+            panel.setOpaque(false);
 
-                if (icon != null) {
-                    panel.add(new JLabel(icon), BorderLayout.EAST);
-                }
-                name = new TreeLabel(categoryName);
-                name.setBorder(new EmptyBorder(0,0,0,5));
-                panel.add(name, BorderLayout.WEST);
-                name.setFont(name.getFont().deriveFont(Font.BOLD));
+            if (icon != null) {
+                panel.add(new JLabel(icon), BorderLayout.EAST);
             }
-
-
-        synchronized (LOCK) {
-            if (isSelected) {
-                name.setForeground(ColorManager.getDefault().getDisabledColor().darker().darker());
-            } else {
-                name.setForeground(ColorManager.getDefault().getDefaultBackground());
-            }
+            name = new TreeLabel(categoryName);
+            name.setBorder(new EmptyBorder(0, 0, 0, 5));
+            panel.add(name, BorderLayout.WEST);
+            name.setFont(name.getFont().deriveFont(Font.BOLD));
         }
+
+        name.setForeground(foreground);
         return panel;
     }
 

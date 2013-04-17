@@ -61,8 +61,8 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.QueryListNode;
-import org.netbeans.modules.team.ui.treelist.LeafNode;
-import org.netbeans.modules.team.ui.treelist.TreeListNode;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -84,7 +84,7 @@ public class OpenNetBeansIDEProjects extends LeafNode {
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
         if (null == panel) {
             panel = new JPanel(new GridBagLayout());
             panel.setOpaque(false);
