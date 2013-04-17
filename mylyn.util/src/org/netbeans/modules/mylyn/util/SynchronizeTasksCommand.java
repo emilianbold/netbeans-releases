@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,68 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.mylyn.util;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeTasksJob;
+import org.eclipse.mylyn.tasks.core.ITask;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Ondrej Vrabec
  */
-public abstract class BugtrackingCommand {
-    private boolean failed = false;
-    private String errorMessage;
+public class SynchronizeTasksCommand extends BugtrackingCommand {
+    private final SynchronizeTasksJob job;
+    private String stringValue;
+    private final TaskRepository taskRepository;
+    private final Set<ITask> tasks;
+    private final CancelableProgressMonitor monitor;
 
-    public abstract void execute() throws CoreException, IOException, MalformedURLException;
-
-    public boolean hasFailed() {
-        return failed;
+    SynchronizeTasksCommand (SynchronizeTasksJob job, TaskRepository taskRepository, Set<ITask> tasks) {
+        this.taskRepository = taskRepository;
+        this.tasks = tasks;
+        this.job = job;
+        this.monitor = new CancelableProgressMonitor();
     }
 
-    public void setFailed(boolean failed) {
-        this.failed = failed;
+    @Override
+    public void execute () throws CoreException, IOException, MalformedURLException {
+        Logger log = Logger.getLogger(this.getClass().getName());
+        if(log.isLoggable(Level.FINE)) {
+            log.log(
+                Level.FINE, 
+                "executing SynchronizeTasksCommand for tasks {0}:{1}", //NOI18N
+                new Object[] { taskRepository.getUrl(), tasks });
+        }
+        
+        job.run(monitor);
     }
 
-    public void setErrorMessage(String msg) {
-        this.errorMessage = msg;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
+    @Override
+    public void cancel () {
+        monitor.setCanceled(true);
     }
     
-    public void cancel () {
-        
+    @Override
+    public String toString () {
+        if(stringValue == null) {
+            StringBuilder sb = new StringBuilder()
+            .append("Synchronizing tasks ") //NOI18N
+            .append(tasks)
+            .append(",repository=") //NOI18N
+            .append(taskRepository.getUrl())
+            .append("]"); //NOI18N
+            stringValue = sb.toString();
+        }
+        return stringValue;
     }
+    
 }

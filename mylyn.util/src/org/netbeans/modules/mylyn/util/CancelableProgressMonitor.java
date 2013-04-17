@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.mylyn.util;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Ondrej Vrabec
  */
-public abstract class BugtrackingCommand {
-    private boolean failed = false;
-    private String errorMessage;
+public class CancelableProgressMonitor implements IProgressMonitor {
 
-    public abstract void execute() throws CoreException, IOException, MalformedURLException;
-
-    public boolean hasFailed() {
-        return failed;
+    private volatile boolean canceled;
+    
+    @Override
+    public void beginTask (String string, int i) {
     }
 
-    public void setFailed(boolean failed) {
-        this.failed = failed;
+    @Override
+    public void done () {
     }
 
-    public void setErrorMessage(String msg) {
-        this.errorMessage = msg;
+    @Override
+    public void internalWorked (double d) {
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
+    @Override
+    public synchronized boolean isCanceled () {
+        return canceled;
+    }
+
+    @Override
+    public synchronized void setCanceled (boolean canceled) {
+        this.canceled = canceled;
+    }
+
+    @Override
+    public void setTaskName (String string) {
+    }
+
+    @Override
+    public void subTask (String string) {
+    }
+
+    @Override
+    public void worked (int i) {
     }
     
-    public void cancel () {
-        
-    }
 }
