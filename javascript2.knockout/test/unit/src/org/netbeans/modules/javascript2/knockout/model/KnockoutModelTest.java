@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.javascript2.knockout.model;
 
+import java.io.StringWriter;
+import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -60,7 +63,25 @@ public class KnockoutModelTest extends ModelTestBase {
     }
 
     public void testKnockout() throws Exception {
-        //checkModel("testfiles/model/knockout-2.2.1.debug.js");
+        String file = "testfiles/model/knockout-2.2.1.debug.js";
+        FileObject fo = getTestFile(file);
+        Model model = getModel(file);
+
+        final StringWriter sw = new StringWriter();
+        Model.Printer p = new Model.Printer() {
+
+            @Override
+            public void println(String str) {
+                // XXX hacks improving the model
+                String real = str;
+//                real = real.replaceAll("_L21.ko", "ko");
+//                real = real.replaceAll("@exp;ko@call;hasPrototype, RESOLVED: false",
+//                        "Boolean, RESOLVED: true");
+                sw.append(real).append("\n");
+            }
+        };
+        model.writeModel(p, true);
+        assertDescriptionMatches(fo, sw.toString(), false, ".model", true);
     }
 
     public void testExtend1() throws Exception {
