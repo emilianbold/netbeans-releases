@@ -86,7 +86,7 @@ public final class SassCssPreprocessor implements CssPreprocessorImplementation 
 
     @Override
     public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        return new SassProjectProblemsProvider(support, createCustomizer(support.getProject()));
+        return new SassProjectProblemsProvider(support);
     }
 
     @Override

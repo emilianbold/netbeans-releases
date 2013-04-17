@@ -141,18 +141,8 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
     }
 
     private ValidationResult getValidationResult() {
-        boolean enabled;
-        List<String> mappings;
-        if (customizerPanel == null) {
-            // ui not shown (yet)
-            enabled = SassPreferences.isEnabled(project);
-            mappings = SassPreferences.getMappings(project);
-        } else {
-            enabled = getComponent().isSassEnabled();
-            mappings = getComponent().getMappings();
-        }
         return new SassPreferencesValidator()
-                .validate(enabled, mappings)
+                .validate(getComponent().isSassEnabled(), getComponent().getMappings())
                 .getResult();
     }
 

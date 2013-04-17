@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.prep.preferences;
 
 import java.util.List;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.util.MappingUtils;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 
@@ -52,6 +53,10 @@ public final class SassPreferencesValidator {
 
     public ValidationResult getResult() {
         return result;
+    }
+
+    public SassPreferencesValidator validate(Project project) {
+        return validate(SassPreferences.isEnabled(project), SassPreferences.getMappings(project));
     }
 
     public SassPreferencesValidator validate(boolean enabled, List<String> mappings) {

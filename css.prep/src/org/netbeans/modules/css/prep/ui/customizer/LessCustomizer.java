@@ -141,18 +141,8 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
     }
 
     private ValidationResult getValidationResult() {
-        boolean enabled;
-        List<String> mappings;
-        if (customizerPanel == null) {
-            // ui not shown (yet)
-            enabled = LessPreferences.isEnabled(project);
-            mappings = LessPreferences.getMappings(project);
-        } else {
-            enabled = getComponent().isLessEnabled();
-            mappings = getComponent().getMappings();
-        }
         return new LessPreferencesValidator()
-                .validate(enabled, mappings)
+                .validate(getComponent().isLessEnabled(), getComponent().getMappings())
                 .getResult();
     }
 

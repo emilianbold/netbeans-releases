@@ -86,7 +86,7 @@ public final class LessCssPreprocessor implements CssPreprocessorImplementation 
 
     @Override
     public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        return new LessProjectProblemsProvider(support, createCustomizer(support.getProject()));
+        return new LessProjectProblemsProvider(support);
     }
 
     @Override
