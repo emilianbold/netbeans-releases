@@ -42,8 +42,17 @@
 
 package org.netbeans.modules.websvc.rest.spi;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.*;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 
 import java.beans.PropertyChangeEvent;
@@ -143,6 +152,15 @@ public abstract class WebRestSupport extends RestSupport {
     /** Creates a new instance of WebProjectRestSupport */
     public WebRestSupport(Project project) {
         super(project);
+        REST_APP_MODIFICATION_RP.post(new Runnable() {
+            @Override
+            public void run() {
+                String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
+                if (CONFIG_TYPE_IDE.equals(configType)) {
+                    initListener();
+                }
+            }
+        });
     }
 
     @Override
@@ -573,41 +591,46 @@ public abstract class WebRestSupport extends RestSupport {
      * - Update deployment descriptor with Jersey specific options
      */
     @Override
-    public void configure(String... packages) throws IOException{
+    public void configure(String... packages) throws IOException {
         String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
         if ( CONFIG_TYPE_DD.equals( configType)){
             configRestPackages(packages);
         }
         else if (CONFIG_TYPE_IDE.equals(configType)) {
-            RestApplicationModel restAppModel = getRestApplicationsModel();
-            if (restAppModel != null) {
-                try {
-                    restAppModel.runReadActionWhenReady(
-                            new MetadataModelAction<RestApplications, Void>() {
+            initListener();
+            scheduleReconfigAppClass();
+        }
+    }
 
-                                @Override
-                                public Void run(final RestApplications metadata)
-                                        throws IOException 
+    private void doReconfigure() throws IOException {
+        RestApplicationModel restAppModel = getRestApplicationsModel();
+        if (restAppModel != null) {
+            try {
+                restAppModel.runReadAction(
+                        new MetadataModelAction<RestApplications, Void>() {
+
+                            @Override
+                            public Void run(final RestApplications metadata)
+                                    throws IOException
+                            {
+                                List<RestApplication> applications =
+                                        metadata.getRestApplications();
+                                if ( applications!= null &&
+                                        !applications.isEmpty())
                                 {
-                                    List<RestApplication> applications = 
-                                            metadata.getRestApplications();
-                                    if ( applications!= null && 
-                                            !applications.isEmpty())
-                                    {
-                                        RestApplication application = 
-                                                applications.get(0);
-                                        String clazz = application.
-                                                getApplicationClass();
-                                        reconfigApplicationClass(clazz);
-                                    }
-                                    return null;
+                                    RestApplication application =
+                                            applications.get(0);
+                                    String clazz = application.
+                                            getApplicationClass();
+                                    reconfigApplicationClass(clazz);
                                 }
-                            });
-                } 
+                                return null;
+                            }
+                        });
+            }
                 catch (MetadataModelException ex) {
-                    Logger.getLogger(WebRestSupport.class.getName()).log(
-                            Level.INFO, ex.getLocalizedMessage(), ex);
-                } 
+                Logger.getLogger(WebRestSupport.class.getName()).log(
+                        Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
     }
@@ -967,38 +990,45 @@ public abstract class WebRestSupport extends RestSupport {
 
     }
     
-    protected void reconfigApplicationClass( final String appClassFqn ) {
-        scheduleReconfigAppClass(appClassFqn);
+    private void initListener() {
         if ( restModelListener == null ){
             restModelListener = new PropertyChangeListener() {
-                
+
                 @Override
                 public void propertyChange( PropertyChangeEvent evt ) {
-                    scheduleReconfigAppClass(appClassFqn);
+                    scheduleReconfigAppClass();
                 }
             };
             addModelListener(restModelListener);
         }
     }
-    
-    private void scheduleReconfigAppClass(final String fqn ){
-        Runnable runnable = new Runnable() {
-            
-            @Override
-            public void run() {
-                try {
-                    doReconfigApplicationClass(fqn);
+
+    private RequestProcessor.Task refreshTask = null;
+
+    private synchronized RequestProcessor.Task getRefreshTask() {
+        if (refreshTask == null) {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        doReconfigure();
+                    }
+                    catch(IOException e ){
+                        Logger.getLogger(WebRestSupport.class.getName()).log(
+                                Level.INFO, e.getLocalizedMessage(), e);
+                    }
                 }
-                catch(IOException e ){
-                    Logger.getLogger(WebRestSupport.class.getName()).log(
-                            Level.INFO, e.getLocalizedMessage(), e);
-                }                
-            }
-        };
-        REST_APP_MODIFICATION_RP.post(runnable);
+            };
+            refreshTask = REST_APP_MODIFICATION_RP.create(runnable);
+        }
+        return refreshTask;
     }
 
-    protected void doReconfigApplicationClass( String appClassFqn ) throws IOException{
+    private void scheduleReconfigAppClass(){
+        getRefreshTask().schedule(1000);
+    }
+
+    protected void reconfigApplicationClass( String appClassFqn ) throws IOException{
         JavaSource javaSource = getJavaSourceFromClassName(appClassFqn);
         if ( javaSource == null ){
             return;
@@ -1281,10 +1311,6 @@ public abstract class WebRestSupport extends RestSupport {
     private void collectRestResources( final StringBuilder builder , 
             final CompilationController controller, final boolean oldVersion) throws IOException
     {
-        builder.append('{');
-        if (oldVersion) {
-            builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
-        }
         RestServicesModel model = getRestServicesModel();
         try {
             model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>()
@@ -1294,23 +1320,16 @@ public abstract class WebRestSupport extends RestSupport {
                 public Void run( RestServicesMetadata metadata )
                         throws Exception
                 {
+                    builder.append('{');
+                    if (oldVersion) {
+                        builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
+                    }
                     RestServices services = metadata.getRoot();
-                    RestServiceDescription[] descriptions = services.
-                        getRestServiceDescription();
-                    for (RestServiceDescription description : descriptions){
-                        String className = description.getClassName();
-                        // Fix for BZ#216168 
-                        TypeElement typeElement = controller.getElements().getTypeElement(className);
-                        if ( typeElement != null ){
-                            FileObject file = SourceUtils.getFile(ElementHandle.
-                                    create(typeElement), controller.getClasspathInfo());
-                            if ( file == null ){
-                                continue;
-                            }
-                        }
-                        builder.append("resources.add(");       // NOI18N
-                        builder.append( className );
-                        builder.append(".class);");             // NOI18N
+                    for (RestServiceDescription description : services.getRestServiceDescription()){
+                        handleResource(controller, description.getClassName(), builder);
+                    }
+                    for (RestProviderDescription provider : services.getProviders()){
+                        handleResource(controller, provider.getClassName(), builder);
                     }
                     if (oldVersion) {
                         if (isJersey2()) {
@@ -1319,6 +1338,10 @@ public abstract class WebRestSupport extends RestSupport {
                             builder.append(getJacksonProviderSnippet());
                         }
                     }
+                    if (oldVersion) {
+                        builder.append("return resources;");                // NOI18N
+                    }
+                    builder.append('}');
                     return null;
                 }
 
@@ -1328,14 +1351,24 @@ public abstract class WebRestSupport extends RestSupport {
             Logger.getLogger(WebRestSupport.class.getName()).log(Level.INFO,
                     e.getLocalizedMessage(), e);
         }
-        finally{
-            if (oldVersion) {
-                builder.append("return resources;");                // NOI18N
-            }
-            builder.append('}');
-        }
     }
     
+    private boolean handleResource(CompilationController controller, String className, StringBuilder builder) throws IllegalArgumentException {
+        // Fix for BZ#216168
+        TypeElement typeElement = controller.getElements().getTypeElement(className);
+        if (typeElement != null) {
+            FileObject file = SourceUtils.getFile(ElementHandle.
+                    create(typeElement), controller.getClasspathInfo());
+            if (file == null) {
+                return false;
+            }
+        }
+        builder.append("resources.add(");       // NOI18N
+        builder.append( className );
+        builder.append(".class);");             // NOI18N
+        return true;
+    }
+
     private String getJacksonProviderSnippet(){
         boolean addJacksonProvider = hasResource(
                 "org/codehaus/jackson/jaxrs/JacksonJsonProvider.class");    // NOI18N

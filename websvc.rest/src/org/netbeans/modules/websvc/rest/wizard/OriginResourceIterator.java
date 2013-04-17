@@ -239,10 +239,6 @@ public class OriginResourceIterator implements
             if (addResponseFilter) {
                 support.addInitParam(WebRestSupport.CONTAINER_RESPONSE_FILTER,
                         fqn);
-            } else {
-                if (support.isEE7() || support.isJersey2()) {
-                    support.configure();
-                }
             }
         }
         
