@@ -205,7 +205,7 @@ SYNTAX_PYTHON_END="%}"
 %state ST_HIGHLIGHTING_ERROR
 
 %%
-<YYINITIAL, ST_COMMENT, ST_LATTE, ST_DOUBLE>{WHITESPACE}+ {
+<ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON>{WHITESPACE}+ {
 }
 
 <YYINITIAL> {
@@ -263,7 +263,7 @@ SYNTAX_PYTHON_END="%}"
             return LatteTopTokenId.T_LATTE_DELIMITER;
         }
     }
-    . {
+    {WHITESPACE}+ | . {
         return LatteTopTokenId.T_HTML;
     }
 }
