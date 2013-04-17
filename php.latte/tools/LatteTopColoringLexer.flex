@@ -234,6 +234,10 @@ SYNTAX_PYTHON_END="%}"
             pushState(ST_PYTHON);
             return LatteTopTokenId.T_LATTE_DELIMITER;
         }
+        if (syntax == Syntax.LATTE) {
+            yypushback(1);
+            return LatteTopTokenId.T_HTML;
+        }
     }
     {ASP_COMMENT_START} {
         if (syntax == Syntax.ASP) {
