@@ -107,6 +107,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+        <change id="typinghooks-CamelCase-spi-added">
+            <summary>Typing Hooks Camel Case SPI added</summary>
+            <version major="1" minor="79"/>
+            <date day="16" month="4" year="2013"/>
+            <author login="mkristofic"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                Typing Hooks Camel Case SPI is addition to Typing Hooks. it allows interception of various key events
+                that are processed in the editor. The SPI is a replacement for
+                subclassing editor actions such as <code>RemoveWordNextAction</code>, <code>PreviousCamelCasePosition</code>, etc.
+            </description>
+            <issue number="217163"/>
+        </change>
         <change id="EditorLibDeprecation.SidebarFactory">
             <summary>SidebarFactory interface adopted</summary>
             <version major="1" minor="77"/>

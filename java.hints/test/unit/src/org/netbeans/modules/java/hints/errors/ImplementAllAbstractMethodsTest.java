@@ -120,6 +120,45 @@ public class ImplementAllAbstractMethodsTest extends ErrorHintsTestBase {
                        "IAAM");
     }
     
+    public void test178153a() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public enum Test implements Runnable {\n" +
+                       "     A {\n" +
+                       "     };\n" +
+                       "}\n",
+                       -1,
+                       "IAAM",
+                       ("package test;\n" +
+                        "public enum Test implements Runnable {\n" +
+                        "     A {\n" +
+                        "         public void run() {\n" +
+                        "             throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
+                        "         }\n" +
+                        "     };\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "));
+    }
+    
+    public void test178153b() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public enum Test implements Runnable {\n" +
+                       "     A { public void run() {} },\n" +
+                       "     B;\n" +
+                       "}\n",
+                       -1,
+                       "IAAM",
+                       ("package test;\n" +
+                        "public enum Test implements Runnable {\n" +
+                        "     A { public void run() {} },\n" +
+                        "     B {\n" +
+                        "         public void run() {\n" +
+                        "             throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
+                        "         }\n" +
+                        "     };\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "));
+    }
+    
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new ImplementAllAbstractMethods().run(info, null, pos, path, null);

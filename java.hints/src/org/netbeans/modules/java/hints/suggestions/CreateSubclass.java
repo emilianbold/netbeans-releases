@@ -62,9 +62,12 @@ import javax.swing.text.JTextComponent;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import javax.lang.model.element.TypeParameterElement;
 
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -116,7 +119,7 @@ public class CreateSubclass {
         CompilationInfo info = context.getInfo();
         SourcePositions sourcePositions = info.getTrees().getSourcePositions();
         int startPos = (int) sourcePositions.getStartPosition(tp.getCompilationUnit(), cls);
-        int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(context.getInfo().getFileObject());
+        int caret = context.getCaretLocation();
         String code = context.getInfo().getText();
         if (startPos < 0 || caret < 0 || caret < startPos || caret >= code.length()) {
             return null;
@@ -144,6 +147,9 @@ public class CreateSubclass {
                 ? typeElement.getModifiers().contains(Modifier.ABSTRACT) ? "ERR_ImplementAbstractClass" : "ERR_CreateSubclass" : "ERR_ImplementInterface"), fix); //NOI18N
     }
 
+    //for tests:
+    static String[] overrideNameAndPackage;
+    
     private static final class CreateSubclassFix implements Fix, PropertyChangeListener {
 
         private FileObject targetSourceRoot;
@@ -171,23 +177,28 @@ public class CreateSubclass {
         public ChangeInfo implement() throws Exception {
             IndexingController.getDefault().enterProtectedMode();
             try {
-                final NameAndPackagePanel panel = new NameAndPackagePanel(simpleName, packageName);
-                final DialogDescriptor desc = new DialogDescriptor(panel, getText());
-                panel.addPropertyChangeListener(new PropertyChangeListener() {
+                if (overrideNameAndPackage == null) {
+                    final NameAndPackagePanel panel = new NameAndPackagePanel(simpleName, packageName);
+                    final DialogDescriptor desc = new DialogDescriptor(panel, getText());
+                    panel.addPropertyChangeListener(new PropertyChangeListener() {
 
-                    @Override
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if (NameAndPackagePanel.IS_VALID.equals(evt.getPropertyName())) {
-                            desc.setValid(panel.isValidData());
+                        @Override
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            if (NameAndPackagePanel.IS_VALID.equals(evt.getPropertyName())) {
+                                desc.setValid(panel.isValidData());
+                            }
                         }
+                    });
+                    desc.setValid(panel.isValidData());
+                    if (DialogDisplayer.getDefault().notify(desc) != DialogDescriptor.OK_OPTION) {
+                        return null;
                     }
-                });
-                desc.setValid(panel.isValidData());
-                if (DialogDisplayer.getDefault().notify(desc) != DialogDescriptor.OK_OPTION) {
-                    return null;
+                    simpleName = panel.getClassName();
+                    packageName = panel.getPackageName();
+                } else {
+                    simpleName = overrideNameAndPackage[0];
+                    packageName = overrideNameAndPackage[1];
                 }
-                simpleName = panel.getClassName();
-                packageName = panel.getPackageName();
 
                 EditorRegistry.addPropertyChangeListener(this);
 
@@ -216,7 +227,15 @@ public class CreateSubclass {
                                         return;
                                     }
                                 }
-                                parameter.rewrite(source, make.Class(source.getModifiers(), simpleName, source.getTypeParameters(), make.Type(superTypeElement.asType()), source.getImplementsClause(), source.getMembers()));
+                                List<TypeParameterTree> typeParameters = new ArrayList<>();
+                                for (TypeParameterElement origTP : superTypeElement.getTypeParameters()) {
+                                    List<ExpressionTree> bounds = new ArrayList<>();
+                                    for (TypeMirror b : origTP.getBounds()) {
+                                        bounds.add((ExpressionTree) make.Type(b));
+                                    }
+                                    typeParameters.add(make.TypeParameter(origTP.getSimpleName(), bounds));
+                                }
+                                parameter.rewrite(source, make.Class(source.getModifiers(), simpleName, typeParameters, make.Type(superTypeElement.asType()), source.getImplementsClause(), source.getMembers()));
                                 for (ExecutableElement ctor : ElementFilter.constructorsIn(superTypeElement.getEnclosedElements())) {
                                     if (!ctor.getParameters().isEmpty()) {
                                         hasNonDefaultConstructor = true;
