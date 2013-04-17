@@ -46,12 +46,10 @@
 package org.netbeans.core.windows.view;
 
 
-import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.DefaultSeparateContainer;
 import org.netbeans.core.windows.view.ui.DefaultSplitContainer;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.view.ui.slides.SlideBarContainer;
 import org.openide.windows.TopComponent;
 
 import java.awt.*;
