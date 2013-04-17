@@ -508,6 +508,14 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    /**
+     * @since 0.120
+     */
+    public WrapStyle wrapCaseStatements() {
+        String wrap = preferences.get(wrapCaseStatements, getDefaultAsString(wrapCaseStatements));
+        return WrapStyle.valueOf(wrap);
+    }
+
     public WrapStyle wrapAssert() {
         String wrap = preferences.get(wrapAssert, getDefaultAsString(wrapAssert));
         return WrapStyle.valueOf(wrap);

@@ -94,6 +94,8 @@ public class FmtAlignment extends javax.swing.JPanel {
                 new String[] { FmtOptions.wrapLambdaParams, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapTernaryOps, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapThrowsList, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapTryResources, WrapStyle.WRAP_ALWAYS.name() },
+                new String[] { FmtOptions.wrapDisjunctiveCatchTypes, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.blankLinesBeforeClass, "0" });
     }
     

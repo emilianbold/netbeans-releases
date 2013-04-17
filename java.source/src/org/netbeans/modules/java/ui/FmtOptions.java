@@ -174,6 +174,7 @@ public class FmtOptions {
     public static final String wrapIfStatement = "wrapIfStatement"; //NOI18N
     public static final String wrapWhileStatement = "wrapWhileStatement"; //NOI18N
     public static final String wrapDoWhileStatement = "wrapDoWhileStatement"; //NOI18N
+    public static final String wrapCaseStatements = "wrapCaseStatements"; //NOI18N
     public static final String wrapAssert = "wrapAssert"; //NOI18N
     public static final String wrapEnumConstants = "wrapEnumConstants"; //NOI18N
     public static final String wrapAnnotations = "wrapAnnotations"; //NOI18N
@@ -454,6 +455,7 @@ public class FmtOptions {
             { wrapIfStatement, WRAP_ALWAYS}, //NOI18N
             { wrapWhileStatement, WRAP_ALWAYS}, //NOI18N
             { wrapDoWhileStatement, WRAP_ALWAYS}, //NOI18N
+            { wrapCaseStatements, WRAP_ALWAYS}, //NOI18N
             { wrapAssert, WRAP_NEVER}, //NOI18N
             { wrapEnumConstants, WRAP_NEVER}, //NOI18N
             { wrapAnnotations, WRAP_ALWAYS}, //NOI18N

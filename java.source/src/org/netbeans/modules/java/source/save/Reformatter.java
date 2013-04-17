@@ -2237,14 +2237,15 @@ public class Reformatter implements ReformatTask {
             accept(COLON);
             int old = indent;
             indent = lastIndent + indentSize;
+            boolean first = true;
             for (StatementTree stat : node.getStatements()) {
-                if (stat.getKind() == Tree.Kind.BLOCK) {
-                    indent = old;
-                    scan(stat, p);
+                if (first) {
+                    wrapStatement(cs.wrapCaseStatements(), CodeStyle.BracesGenerationStyle.LEAVE_ALONE, 1, stat);
                 } else {
                     blankLines(0, cs.getMaximumBlankLinesInCode());
                     scan(stat, p);
                 }
+                first = false;
             }
             indent = old;
             return true;
