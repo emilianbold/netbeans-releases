@@ -3427,17 +3427,7 @@ public class Term extends JComponent implements Accessible {
             if (debugOps()) {
                 System.out.println("op_line_feed"); // NOI18N
             }
-            boolean old_atw = cursor_line().setAboutToWrap(false);
-
-            st.cursor.row++;
-            if (possiblyScrollDown()) {
-                buf.addLineAt(st.cursor.row);
-                limit_lines();
-                if (debugOps()) {
-                    System.out.println("op_line_feed ADJUSTED"); // NOI18N
-                }
-            }
-            cursor_line().setAboutToWrap(old_atw);
+            op_ind(1);
 
             n_linefeeds++;
         }
@@ -3880,6 +3870,7 @@ public class Term extends JComponent implements Accessible {
         @Override
         public void op_ri(int count) {
             // cursor up - scroll
+            // Opposite of op_ind()
             if (debugOps()) {
                 System.out.printf("op_ri(%d)\n", count);
             }
@@ -3903,25 +3894,103 @@ public class Term extends JComponent implements Accessible {
         @Override
         public void op_cuu(int count) {
             // cursor up - no scroll
+            // Opposite of op_cud()
             if (debugOps()) {
                 System.out.printf("op_cu(%d)\n", count);
             }
             boolean old_atw = cursor_line().setAboutToWrap(false);
 
-            st.cursor.row -= count;
 
-            if (topMargin() == 0) {
+            if (top_margin == 0) {
+                st.cursor.row -= count;
                 if (st.cursor.row < st.firstx)
                     st.cursor.row = st.firstx;
             } else {
-                // only adjust if we were below the margin to begin with.
-                // if we were above the margin it's OK to go up but still
-                // need to test against absolute top of screen.
-                if (st.cursor.row == st.firstx + topMargin() - 1)
-                    st.cursor.row += 1;
-                else if (st.cursor.row < st.firstx)
-                    st.cursor.row = st.firstx;
+                // Only check against margin if we were below it to begin with.
+                // This is true xterm behaviour. gnome term for example
+                // will always honor the margin
+                boolean was_above_margin = (st.cursor.row < st.firstx + topMargin());
+                st.cursor.row -= count;
+                if (!was_above_margin) {
+                    if (st.cursor.row < st.firstx + topMargin())
+                        st.cursor.row = st.firstx + topMargin();
+                } else {
+                    if (st.cursor.row < st.firstx)
+                        st.cursor.row = st.firstx;
+                }
             }
+            cursor_line().setAboutToWrap(old_atw);
+        }
+
+        @Override
+        public void op_cud(int count) {
+            // cursor down - no scroll
+            // Opposite of op_cuu()
+            if (debugOps()) {
+                System.out.printf("op_cud(%d)", count); // NOI18N
+            }
+            boolean old_atw = cursor_line().setAboutToWrap(false);
+
+            if (bot_margin == 0) {
+                st.cursor.row += count;
+                if (st.cursor.row > st.firstx + st.rows - 1)
+                    st.cursor.row = st.firstx + st.rows - 1;
+            } else {
+                // Only check against margin if we were above it to begin with
+                // This is true xterm behaviour. gnome term for example
+                // will always honor the margin
+                boolean was_below_margin = (st.cursor.row > st.firstx + botMargin());
+                st.cursor.row += count;
+                if (!was_below_margin) {
+                    if (st.cursor.row > st.firstx + botMargin())
+                        st.cursor.row = st.firstx + botMargin();
+                } else {
+                    if (st.cursor.row > st.firstx + st.rows - 1)
+                        st.cursor.row = st.firstx + st.rows - 1;
+                }
+            }
+
+            cursor_line().setAboutToWrap(old_atw);
+        }
+
+        @Override
+        public void op_ind(int count) {
+            // cursor down - scroll
+            // Opposite of op_ri()
+            // \ESCD
+            if (debugOps()) {
+                System.out.printf("op_ind(%d)", count); // NOI18N
+            }
+            boolean old_atw = cursor_line().setAboutToWrap(false);
+            boolean noMargins = topMargin() == 0 && botMargin() == st.rows-1;
+
+            if (noMargins) {
+                while (count-- > 0) {
+                    st.cursor.row++;
+                    if (st.cursor.row >= buf.nlines) {
+                        if (scroll_on_output || cursor_was_visible() && track_cursor) {
+                            st.firstx++;
+                        }
+                        buf.addLineAt(st.cursor.row);
+                        limit_lines();
+                    }
+                }
+            } else {
+                while (count-- > 0) {
+                    if (st.cursor.row == st.firstx + botMargin()) {
+                        // scroll up, Rotate a line from top to bottom
+                        Line l;
+                        l = buf.moveLineFromTo(st.firstx + topMargin(), st.cursor.row);
+                        l.reset();
+                    } else {
+                        st.cursor.row++;
+                        if (st.cursor.row > st.firstx + st.rows - 1)
+                            st.cursor.row = st.firstx + st.rows - 1;
+                    }
+
+                }
+            }
+
             cursor_line().setAboutToWrap(old_atw);
         }
 
@@ -4113,6 +4182,7 @@ public class Term extends JComponent implements Accessible {
         public void op_full_reset() {
             op_soft_reset();
             op_cl();	// clear screen, home cursor
+            clearHistoryNoRefresh();
             reverse_video = false;
             repaint(false);
         }

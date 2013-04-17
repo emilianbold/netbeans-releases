@@ -91,7 +91,7 @@ class InterpProtoANSI extends InterpDumb {
 		st_esc_lb.setAction(c, st_esc_lb, act_remember_digit);
 	    st_esc_lb.setAction(';', st_esc_lb, act_push_number);
 	    st_esc_lb.setAction('A', st_base, new ACT_UP());
-	    st_esc_lb.setAction('B', st_base, new ACT_DO());
+	    st_esc_lb.setAction('B', st_base, new ACT_CUD());
 	    st_esc_lb.setAction('C', st_base, new ACT_ND());
 	    st_esc_lb.setAction('D', st_base, new ACT_BC());
 	    st_esc_lb.setAction('G', st_base, new ACT_CHA());
@@ -288,14 +288,14 @@ class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
-	static final class ACT_DO implements Actor {
+	static final class ACT_CUD implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
                 // no scroll
 		if (ai.noNumber())
-		    ai.ops.op_do(1);
+		    ai.ops.op_cud(1);
 		else
-		    ai.ops.op_do(ai.numberAt(0));
+		    ai.ops.op_cud(ai.numberAt(0));
 		return null;
 	    }
 	}

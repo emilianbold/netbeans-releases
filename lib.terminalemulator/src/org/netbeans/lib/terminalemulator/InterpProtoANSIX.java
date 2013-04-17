@@ -59,7 +59,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	protected final State st_esc_lb_q = new State("esc_lb_q");// NOI18N
 	protected final State st_esc_lb_b = new State("esc_lb_b");// NOI18N
 
-	protected final Actor act_D = new ACT_D();
+	protected final Actor act_ind = new ACT_IND();
 
 	protected final Actor act_start_collect = new ACT_START_COLLECT();
 	protected final Actor act_collect = new ACT_COLLECT();
@@ -72,7 +72,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
             st_esc.setAction('>', st_base, new ACT_PNM());
             st_esc.setAction('=', st_base, new ACT_PAM());
 
-	    st_esc.setAction('D', st_base, act_D);
+	    st_esc.setAction('D', st_base, act_ind);
 
             // \ESC]%d;%s\BEL
 	    st_esc.setAction(']', st_esc_rb, act_start_collect);
@@ -132,11 +132,11 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	    }
 	}
 
-	static final class ACT_D implements Actor {
+	static final class ACT_IND implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
                 // scroll
-		ai.ops.op_do(1);
+		ai.ops.op_ind(1);
 		return null;
 	    }
 	};

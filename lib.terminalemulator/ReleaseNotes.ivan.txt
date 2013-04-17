@@ -1,6 +1,20 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
 
+	op_ind() and op_cud() are now part of Ops.
+
+	op_line_feed() now implemented in terms of op_ind().
+
+	Fine tune op_cuu(0 and op_cud().
+
+	op_full-reset() clears history.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset   : 242713:1841c687fb7b	Refactoring before tackling
+						IND and CUD.
+
 	Implement
 		IND (Index)		\ESCD		scrolls
 		line feed		\LF		== IND

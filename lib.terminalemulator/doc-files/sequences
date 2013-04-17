@@ -53,7 +53,7 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 ----------------------------------------------------------------------------------------------------------------------------------------
 \ESC7		DECSC (Save Cursor)	sc		sc		-		--	ST	ST	ansix
 \ESC8		DECRC (Restore Cursor)	rc		rc		-		--	ST	ST	ansix
-\ESCD		IND (Index)		-				?	?	--	S-	S-	dtterm
+\ESCD		IND (Index)		-				?	?	--	S-	S-	ansix
 \ESCH		HTS (Horiz Tab Set)	st		hts		-	-	ST	ST	ST	N -> xterm?
 \ESCM		RI (Reverse Index/LF)	sr		ri		?	?	S	ST	ST	protoansi
 
