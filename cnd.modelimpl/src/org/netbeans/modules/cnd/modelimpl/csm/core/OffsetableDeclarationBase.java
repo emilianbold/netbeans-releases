@@ -364,7 +364,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         
         protected SimpleDeclarationBuilder(SimpleDeclarationBuilder builder) {
             super(builder);
-            typedefSpecifier = builder.typeSpecifier;
+            typedefSpecifier = builder.typedefSpecifier;
             friendSpecifier = builder.friendSpecifier;
             typeSpecifier = builder.typeSpecifier;
             inDeclSpecifiers = builder.inDeclSpecifiers;

@@ -330,6 +330,8 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     }
     
     public static class TypedefBuilder extends SimpleDeclarationBuilder implements CsmObjectBuilder {
+        public TypedefBuilder() {
+        }
         
         public TypedefBuilder(SimpleDeclarationBuilder builder) {
             super(builder);
