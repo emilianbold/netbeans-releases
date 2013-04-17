@@ -70,6 +70,7 @@ import org.openide.windows.WindowManager;
  *
  * @author  Jarda Tulach
  */
+@RandomlyFails // NB-Core-Build #9876, #9889, #9924, #9968, #10010
 public class InitializeOnBackgroundTest extends NbTestCase implements CloneableEditorSupport.Env {
 
     public static Test suite() {
