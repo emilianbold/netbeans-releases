@@ -1502,10 +1502,10 @@ greedy_declarator returns [declarator_type_t type]
 @init                                                                           {if(state.backtracking == 0){action.greedy_declarator(input.LT(1));}}
     :   
     (
-        greedy_nonptr_declarator //{{ type = $greedy_nonptr_declarator.type; }}
-    |
         (ptr_operator)=>
             ptr_operator gnu_attribute_specifier* decl=greedy_declarator
+    |
+        greedy_nonptr_declarator //{{ type = $greedy_nonptr_declarator.type; }}
 //            {{ type = $decl.type;
 //               type.apply_ptr($ptr_operator.type);
 //            }}

@@ -98,6 +98,10 @@ public class FileModelNewGrammarTest extends TraceModelTestBase {
         performTest("accessModifiers.cpp");
     }
     
+    public void testClassForwardScope() throws Exception { 
+        performTest("classForwardScope.cpp");
+    }
+    
 //    public void testMultipleMemberDeclaration() throws Exception {
 //        performTest("typedefEnum.cpp");
 //    } 
