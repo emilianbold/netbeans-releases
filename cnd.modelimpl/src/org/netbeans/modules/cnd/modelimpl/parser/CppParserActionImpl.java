@@ -2237,8 +2237,41 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
     }
     
-    @Override public void alias_declaration(Token usingToken, Token identToken, Token assignequalToken) {}
-    @Override public void end_alias_declaration(Token token) {}
+    @Override 
+    public void alias_declaration(Token usingToken, Token identToken, Token assignequalToken) {
+        try {
+             alias_declaration_impl(usingToken, identToken, assignequalToken);
+        } catch (Exception ex) {
+            registerException(ex, usingToken);
+        }
+    }
+    
+    private void alias_declaration_impl(Token usingToken, Token identToken, Token assignequalToken) {
+        TypedefBuilder builder = new TypedefBuilder();
+        builder.setName(((APTToken) identToken).getText());
+        builder.setFile(currentContext.file);
+        builder.setStartOffset(((APTToken)usingToken).getOffset());
+        builderContext.push(builder);
+    }
+
+    @Override 
+    public void end_alias_declaration(Token token) {
+        try {
+            end_alias_declaration_impl(token);
+        } catch (Exception ex) {
+            registerException(ex, token);
+        }
+    }
+    
+    private void end_alias_declaration_impl(Token token) {
+        if(builderContext.top() instanceof TypedefBuilder) {
+            TypedefBuilder builder = (TypedefBuilder)builderContext.top();
+            builderContext.pop();
+            builder.setEndOffset(((APTToken)token).getOffset());
+            builder.create();
+        }
+    }
+
     @Override public void function_specifier(int kind, Token token) {}
     
     @Override
@@ -2545,6 +2578,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             TypeBuilder typeBuilder = sdb.getTypeBuilder();
             if (typeBuilder != null) {
                 switch (kind) {
+                    case PTR_OPERATOR__STAR2:
                     case PTR_OPERATOR__STAR:
                         typeBuilder.incPointerDepth();
                         break;
@@ -2634,7 +2668,11 @@ public class CppParserActionImpl implements CppParserActionEx {
         TypeBuilder typeBuilder = new TypeBuilder();
         typeBuilder.setFile(currentContext.file);
         typeBuilder.setStartOffset(((APTToken)token).getOffset());
-        builderContext.push(typeBuilder);    
+        if (builderContext.top() instanceof TypedefBuilder) {
+            TypedefBuilder parent = (TypedefBuilder) builderContext.top();
+            parent.setTypeBuilder(typeBuilder);
+        }
+        builderContext.push(typeBuilder);
     }
     
     @Override
@@ -3113,31 +3151,33 @@ public class CppParserActionImpl implements CppParserActionEx {
                 
                 CharSequence name = declBuilder.getTypeBuilder().getNameBuilder().getName();
                 
-                SymTabEntry entry = globalSymTab.lookupLocal(name);
-
-                if (entry == null) {
-                    if(declBuilder.isFriend()) {
-                        builder = new FriendClassBuilder(declBuilder);
-                    } else {
-                        builder = new ClassMemberForwardDeclarationBuilder(declBuilder);
-                    }
-                    
-                    builder.setParent(parent);
-                    builder.setEndOffset(((APTToken)token).getOffset());
-                    builder.setName(name);
-                    builder.setFile(currentContext.file);
-                    
-                    if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                        builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                        builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                    }
-                    
-                    if(builder instanceof FriendClassBuilder) {
-                        parent.addFriendBuilder(builder);
-                    } else {
-                        parent.addMemberBuilder((ClassMemberForwardDeclarationBuilder)builder);
-                    }                    
-                    
+                if(declBuilder.isFriend()) {
+                    builder = new FriendClassBuilder(declBuilder);
+                } else {
+                    builder = new ClassMemberForwardDeclarationBuilder(declBuilder);
+                }
+                
+                builder.setParent(parent);
+                builder.setEndOffset(((APTToken)token).getOffset());
+                builder.setName(name);
+                builder.setFile(currentContext.file);
+                
+                if(declBuilder.getTemplateDescriptorBuilder() != null) {
+                    builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
+                    builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
+                }
+                
+                if(builder instanceof FriendClassBuilder) {
+                    parent.addFriendBuilder(builder);
+                } else {
+                    parent.addMemberBuilder((ClassMemberForwardDeclarationBuilder)builder);
+                }               
+                
+                // Let's try to find definition
+                SymTabEntry definitionEntry = globalSymTab.lookup(name);
+                
+                // If it is unavailable then we need to add new entry into local symtab
+                if (definitionEntry == null) {
                     SymTabEntry classEntry = globalSymTab.enterLocal(name);
                     classEntry.setAttribute(CppAttributes.TYPE, true);
                 }
