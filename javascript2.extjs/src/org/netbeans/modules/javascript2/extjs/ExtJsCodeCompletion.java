@@ -54,7 +54,7 @@ import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
  *
  * @author Petr Pisl
  */
-@CompletionProvider.Registration(priority=10)
+@CompletionProvider.Registration(priority=11)
 public class ExtJsCodeCompletion implements CompletionProvider {
 
     @Override
