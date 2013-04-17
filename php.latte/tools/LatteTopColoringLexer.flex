@@ -209,14 +209,14 @@ SYNTAX_PYTHON_END="%}"
 }
 
 <YYINITIAL> {
-    {LATTE_COMMENT_START} {
-        if (syntax == Syntax.LATTE) {
+    {PYTHON_COMMENT_START} {
+        if (syntax == Syntax.PYTHON) {
             pushState(ST_COMMENT);
         }
     }
-    {SYNTAX_LATTE_START} {
-        if (syntax == Syntax.LATTE) {
-            pushState(ST_LATTE);
+    {SYNTAX_PYTHON_START} {
+        if (syntax == Syntax.PYTHON) {
+            pushState(ST_PYTHON);
             return LatteTopTokenId.T_LATTE_DELIMITER;
         }
     }
@@ -225,7 +225,8 @@ SYNTAX_PYTHON_END="%}"
             pushState(ST_COMMENT);
         }
     }
-    {SYNTAX_DOUBLE_START} {
+    {SYNTAX_DOUBLE_START}[^{] {
+        yypushback(1);
         if (syntax == Syntax.DOUBLE) {
             pushState(ST_DOUBLE);
             return LatteTopTokenId.T_LATTE_DELIMITER;
@@ -250,14 +251,15 @@ SYNTAX_PYTHON_END="%}"
             return LatteTopTokenId.T_LATTE_DELIMITER;
         }
     }
-    {PYTHON_COMMENT_START} {
-        if (syntax == Syntax.PYTHON) {
+    {LATTE_COMMENT_START} {
+        if (syntax == Syntax.LATTE) {
             pushState(ST_COMMENT);
         }
     }
-    {SYNTAX_PYTHON_START} {
-        if (syntax == Syntax.PYTHON) {
-            pushState(ST_PYTHON);
+    {SYNTAX_LATTE_START}[^{] {
+        yypushback(1);
+        if (syntax == Syntax.LATTE) {
+            pushState(ST_LATTE);
             return LatteTopTokenId.T_LATTE_DELIMITER;
         }
     }

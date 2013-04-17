@@ -82,6 +82,14 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
         performTest("syntax-off");
     }
 
+    public void testSyntaxDoubleInCurly() throws Exception {
+        performTest("syntax-double-in-curly");
+    }
+
+    public void testSyntaxLatteInCurly() throws Exception {
+        performTest("syntax-latte-in-curly");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".latte"));
