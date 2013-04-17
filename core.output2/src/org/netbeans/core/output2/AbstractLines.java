@@ -519,6 +519,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
         if (charsPerLine >= longestLineLen || (getLineCount() < 1)) {
             //The doc is empty, or there are no lines long enough to wrap anyway
+            info[0] = visibleToRealLine(logicalLineIdx);
             info[1] = 0;
             info[2] = 1;
             return;
@@ -556,7 +557,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             return 0;
         }
         if (charsPerLine >= longestLineLen) {
-            return line;
+            return realToVisibleLine(line);
         }
         if (charsPerLine != knownCharsPerLine || knownLogicalLineCounts == null) {
             calcLogicalLineCount(charsPerLine);
@@ -700,6 +701,10 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
             int val = 0;
             for (int i = 0; i < lineCount; i++) {
+                if (!isVisible(i)) {
+                    knownLogicalLineCounts.add(i, val);
+                    continue;
+                }
                 int len = lengthWithTabs(i);
 
                 if (len > width) {
@@ -1275,7 +1280,9 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 }
                 hiddenLines += expanded ? -changed : changed;
                 updateVisibleToRealLines(foldStartIndex);
-                calcLogicalLineCount(knownCharsPerLine);
+                if (knownCharsPerLine > 0) {
+                    calcLogicalLineCount(knownCharsPerLine);
+                }
                 markDirty();
                 delayedFire();
             }

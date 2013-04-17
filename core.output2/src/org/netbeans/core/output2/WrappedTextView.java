@@ -50,6 +50,11 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import static javax.swing.SwingConstants.EAST;
+import static javax.swing.SwingConstants.NORTH;
+import static javax.swing.SwingConstants.SOUTH;
+import static javax.swing.SwingConstants.WEST;
+import javax.swing.text.Position.Bias;
 import org.openide.util.Exceptions;
 
 /**
@@ -301,6 +306,10 @@ public class WrappedTextView extends View implements TabExpander {
                     if (y > clip.y + clip.height) {
                         return;
                     }
+                    int visibleLine = lines.realToVisibleLine(i);
+                    if (visibleLine < 0) {
+                        continue;
+                    }
                     int lineStart = doc.getLineStart(i);
                     int lineEnd = doc.getLineEnd (i);
                     int length = lineEnd - lineStart;
@@ -550,7 +559,7 @@ public class WrappedTextView extends View implements TabExpander {
         result.setBounds (0, 0, charWidth, charHeight);
         OutputDocument od = odoc();
         if (od != null) {
-            int line = Math.max(0, od.getElementIndex(pos));
+            int line = Math.max(0, od.getLines().getLineAt(pos));
             int start = od.getLineStart(line);
 
             int column = pos - start;
@@ -558,10 +567,17 @@ public class WrappedTextView extends View implements TabExpander {
             column = od.getLines().getNumLogicalChars(start, column);
 
             int row = od.getLines().getLogicalLineCountAbove(line, charsPerLine);
+            int end = getLineEnd(line, od.getLines());
+            int len = end - start;
             //#104307
-            if (column > charsPerLine && charsPerLine != 0) {
-                row += (column / charsPerLine);
-                column %= charsPerLine;
+            if ((column >= charsPerLine)
+                    && charsPerLine != 0) {
+                row += (column % charsPerLine == 0 && column == len)
+                        ? column / charsPerLine - 1
+                        : column / charsPerLine;
+                column = (column % charsPerLine == 0 && column == len)
+                        ? charsPerLine
+                        : column % charsPerLine;
             }
             result.y = (row * charHeight) + fontDescent;
             result.x = margin() + (column * charWidth);
@@ -582,7 +598,7 @@ public class WrappedTextView extends View implements TabExpander {
             int logicalLine = ln[0];
             int wraps = ln[2] - 1;
 
-            int totalLines = od.getElementCount();
+            int totalLines = od.getLines().getLineCount();
             if (totalLines == 0) {
                 return 0;
             }
@@ -647,5 +663,157 @@ public class WrappedTextView extends View implements TabExpander {
             i--;
         }
         return i - charpos;
+    }
+
+    /**
+     * Replaces usage of slow
+     * Utilities.getPositionAbove()/Utilities.getPositionBelow(), skips hidden
+     * lines.
+     */
+    @Override
+    public int getNextVisualPositionFrom(int pos, Bias b, Shape a,
+            int direction, Bias[] biasRet) throws BadLocationException {
+        Element elem = getElement();
+        if (pos == -1) {
+            pos = (direction == SOUTH || direction == EAST)
+                    ? getStartOffset()
+                    : (getEndOffset() - 1);
+        }
+
+        int lineIndex;
+        int visibleLineIndex;
+        int origLineIndex;
+        Lines lines = odoc().getLines();
+        switch (direction) {
+            case NORTH:
+                getPositionInfo(pos, ln);
+                lineIndex = ln[0];
+                if (lineIndex > 0 || ln[1] > 0) {
+                    if (ln[1] > 0) {
+                        return jumpAboveInLine(pos, lines, lineIndex);
+                    }
+                    return jumpToLine(pos, direction, lines);
+                }
+                break;
+            case SOUTH:
+                getPositionInfo(pos, ln);
+                lineIndex = ln[0];
+                if (ln[1] < ln[2] - 1) {
+                    return Math.min(pos + charsPerLine,
+                            getLineEnd(lineIndex, lines));
+                }
+                visibleLineIndex = lines.realToVisibleLine(lineIndex);
+                if (visibleLineIndex < elem.getElementCount() - 1) {
+                    return jumpToLine(pos, direction, lines);
+                }
+                break;
+            case WEST:
+                origLineIndex = lines.getLineAt(pos);
+                pos = Math.max(0, pos - 1);
+                lineIndex = lines.getLineAt(pos);
+                if (origLineIndex != lineIndex) {
+                    int origVisibleLine = lines.realToVisibleLine(origLineIndex);
+                    pos = elem.getElement(origVisibleLine - 1).getEndOffset() - 1;
+                }
+                break;
+            case EAST:
+                origLineIndex = lines.getLineAt(pos);
+                pos = Math.min(pos + 1, elem.getEndOffset() - 1);
+                lineIndex = lines.getLineAt(pos);
+                if (origLineIndex != lineIndex) {
+                    int origVisibleLine = lines.realToVisibleLine(origLineIndex);
+                    pos = elem.getElement(origVisibleLine + 1).getStartOffset();
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Bad direction");    //NOI18N
+        }
+        return pos;
+    }
+
+    /**
+     * Get info about a position and store it to the passed array.
+     *
+     * result[0] will be physical line; result[1] will be index of wrapped line
+     * (for the physical line); result[2] will be total number of wrapped lines
+     */
+    private void getPositionInfo(int offset, int[] result) {
+        Lines lines = odoc().getLines();
+        int lineIndex = lines.getLineAt(offset);
+        int lineStart = lines.getLineStart(lineIndex);
+        int lineEnd = getLineEnd(lineIndex, lines);
+        int lineLen = lineEnd - lineStart;
+        int column = offset - lineStart;
+        int logicalColumn = lines.getNumLogicalChars(lineStart, column);
+        int logicalLen = lines.getNumLogicalChars(lineStart, lineLen);
+        int rows = (logicalLen / charsPerLine)
+                + (logicalLen % charsPerLine > 0 ? 1 : 0);
+        int row = logicalColumn / charsPerLine
+                - (logicalLen > 0 && logicalColumn == logicalLen
+                && logicalColumn % charsPerLine == 0
+                ? 1 : 0);
+        result[0] = lineIndex;
+        result[1] = row;
+        result[2] = Math.max(1, rows);
+    }
+
+    /**
+     * Jump to appropriate position from a position in a neighboring line. The
+     * line above/below is assumed to exist.
+     *
+     * @param pos Position from which to jump to next/previous line.
+     * @param direction SwingConstants.NORTH for jumping to line above,
+     * SwingConstants.SOUTH for line below.
+     * @param lines The lines object.
+     */
+    private int jumpToLine(int pos, int direction, Lines lines) {
+        assert direction == NORTH || direction == SOUTH;
+        int oldRealLine = lines.getLineAt(pos);
+        int oldLineStart = lines.getLineStart(oldRealLine);
+        int oldLineEnd = getLineEnd(oldRealLine, lines);
+        int oldLineLen = oldLineEnd - oldLineStart;
+
+        int newVisibleLine = lines.realToVisibleLine(oldRealLine)
+                + ((direction == SOUTH) ? 1 : -1);
+        int newRealLine = lines.visibleToRealLine(newVisibleLine);
+        int newLineStart = lines.getLineStart(newRealLine);
+
+        getPositionInfo(newLineStart, ln);
+        int rowCount = ln[2];
+        int column = oldLineLen > 0 && oldLineEnd == pos
+                && oldLineLen % charsPerLine == 0
+                ? charsPerLine - (rowCount > 1 ? 1 : 0)
+                : (pos - oldLineStart) % charsPerLine;
+
+        int logicalLine = direction == NORTH ? rowCount - 1 : 0;
+
+        int logicalLineStart = newLineStart + logicalLine * charsPerLine;
+        int lineEnd = getLineEnd(newRealLine, lines);
+        return Math.min(logicalLineStart + column, lineEnd);
+    }
+
+    /**
+     * Jump to a logical line above a wrapped line. Ensure that if jumping from
+     * the last position in the last line the position is not set to start of
+     * the same line.
+     */
+    private int jumpAboveInLine(int pos, Lines lines, int lineIndex) {
+        int lineStart = lines.getLineStart(lineIndex);
+        int lineEnd = getLineEnd(lineIndex, lines);
+        int lineLen = lineEnd - lineStart;
+        if (pos < lineEnd || lineLen % charsPerLine > 0) {
+            return pos - charsPerLine;
+        } else {
+            return pos - charsPerLine - 1;
+        }
+    }
+
+    /**
+     * Find position of the last char in line.
+     */
+    private int getLineEnd(int realLineIndex, Lines lines) {
+        return realLineIndex + 1 < lines.getLineCount()
+                ? lines.getLineStart(realLineIndex + 1) - 1
+                : lines.getCharCount();
     }
 }

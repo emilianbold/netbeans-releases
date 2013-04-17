@@ -234,6 +234,10 @@ final class SparseIntList {
             int key = val - values[pos - 1] + keys[pos - 1] + 1;
             return lastGetNextKeyResult = pos < used ? Math.min(key, keys[pos]) : key;
         } else {
+            while (pos >= 0 && pos + 1 < values.length
+                    && values[pos] == values[pos + 1]) {
+                pos++;
+            }
             return lastGetNextKeyResult = keys[pos] + 1;
         }
     }
