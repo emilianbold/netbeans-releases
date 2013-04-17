@@ -21,15 +21,28 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="cpCategories" pref="206" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="lBackground" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="lForeground" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="lBackground" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="lForeground" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="lEffectColor" min="-2" max="-2" attributes="0"/>
+                                  <Component id="lEffects" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="cbBackground" alignment="1" pref="49" max="32767" attributes="1"/>
                           <Component id="cbForeground" alignment="1" pref="49" max="32767" attributes="1"/>
+                          <Component id="cbEffects" max="32767" attributes="1"/>
+                          <Component id="cbEffectColor" max="32767" attributes="1"/>
                       </Group>
                   </Group>
                   <Component id="lCategory" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -55,6 +68,17 @@
                           <Component id="lBackground" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="cbBackground" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="cbEffects" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="lEffects" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="cbEffectColor" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="lEffectColor" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
                   <Component id="cpCategories" alignment="0" pref="189" max="32767" attributes="0"/>
               </Group>
@@ -120,6 +144,46 @@
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ColorComboBox();"/>
       </AuxValues>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="cbEffects">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="0"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="cbEffectColor">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="0"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ColorComboBox();"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lEffects">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="cbEffects"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/options/colors/Bundle.properties" key="CTL_Effects_label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="HighlightingPanel_lEffects"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lEffectColor">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="cbEffectColor"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/options/colors/Bundle.properties" key="CTL_Effects_color" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>
