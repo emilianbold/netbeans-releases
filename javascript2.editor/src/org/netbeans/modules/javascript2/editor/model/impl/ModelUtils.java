@@ -533,6 +533,7 @@ public class ModelUtils {
                     }
 
                     for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+                        assert libGlobal != null;
                         for (JsObject object : libGlobal.getProperties().values()) {
                             if (object.getName().equals(name)) {
                                 //localObjects.add(object);
