@@ -45,12 +45,12 @@ package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "Window|Palette" main menu item.
+/** Used to call "Window|IDE Tools|Palette" main menu item.
  * @see Action
  * @author mmirilovic@netbeans.org */
 public class PaletteViewAction extends Action {
     private static final String projectMenu = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
-                                           + "|"
+                                           + "|IDE Tools|"
                                            + Bundle.getStringTrimmed("org.netbeans.modules.palette.Bundle", "CTL_PaletteAction");
 
     /** creates new PaletteViewAction instance */    
