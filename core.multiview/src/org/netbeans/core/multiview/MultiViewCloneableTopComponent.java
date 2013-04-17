@@ -106,7 +106,7 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
     
     private void setDeserializedMultiViewDescriptions(MultiViewDescription[] descriptions, 
                                                       MultiViewDescription defaultDesc, Map existingElements) {
-        peer.setDeserializedMultiViewDescriptions(descriptions, defaultDesc, existingElements);
+        peer.setDeserializedMultiViewDescriptions(-1, descriptions, defaultDesc, null, existingElements);
     }
     
     MultiViewModel getModel() {
@@ -173,9 +173,10 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         Action[] superActions = super.getActions();
         Action[] acts = peer.peerGetActions(superActions);
         
-        Action[] myActions = new Action[acts.length + 2];
+        Action[] myActions = new Action[acts.length + 3];
         System.arraycopy(acts, 0, myActions, 0, acts.length);
         myActions[acts.length + 1] = new EditorsAction();
+        myActions[acts.length + 2] = new SplitAction(true);
         return myActions;
     }
     
@@ -198,10 +199,48 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
     @Override
     protected CloneableTopComponent createClonedObject() {
         MultiViewCloneableTopComponent tc = new MultiViewCloneableTopComponent();
-        tc.setMultiViewDescriptions(peer.model.getDescriptions(), peer.model.getActiveDescription());;
+	tc.setMultiViewDescriptions(peer.model.getDescriptions(), getActiveDescription());
         tc.setCloseOperationHandler(peer.closeHandler);
         tc.peer.copyMimeContext(peer);
+	if(getSplitOrientation() != -1) {
+	    tc.splitComponent(getSplitOrientation());
+	    tc.updateName();
+	}
         return tc;
+    }
+
+    private MultiViewDescription getActiveDescription() {
+	int splitOrientation = getSplitOrientation();
+	MultiViewDescription activeDescription = peer.model.getActiveDescription();
+	if (splitOrientation != -1) {
+	    boolean isSplitDescription = false;
+	    if (activeDescription instanceof ContextAwareDescription) {
+		isSplitDescription = ((ContextAwareDescription) activeDescription).isSplitDescription();
+	    }
+	    if (isSplitDescription) {
+		for (MultiViewDescription descr : peer.model.getDescriptions()) {
+		    if (descr.getDisplayName().equals(activeDescription.getDisplayName())) {
+			activeDescription = descr;
+			break;
+		    }
+		}
+	    }
+	}
+	return activeDescription;
+    }
+
+    public TopComponent splitComponent(int orientation) {
+	peer.peerSplitComponent(orientation);
+	return this;
+    }
+
+    public TopComponent clearSplit() {
+	peer.peerClearSplit();
+	return this;
+    }
+
+    public int getSplitOrientation() {
+	return peer.getSplitOrientation();
     }
     
     /** Serialize this top component.

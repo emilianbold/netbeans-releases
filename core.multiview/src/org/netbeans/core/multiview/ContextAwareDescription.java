@@ -51,5 +51,6 @@ import org.openide.util.Lookup;
  */
 @MimeLocation(subfolderName="MultiView")
 public interface ContextAwareDescription extends MultiViewDescription {
-    public ContextAwareDescription createContextAwareDescription(Lookup context);
+    public ContextAwareDescription createContextAwareDescription(Lookup context, boolean isSplitDescription);
+    public boolean isSplitDescription();
 }

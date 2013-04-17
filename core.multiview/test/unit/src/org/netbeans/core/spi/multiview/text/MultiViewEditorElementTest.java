@@ -140,8 +140,9 @@ public class MultiViewEditorElementTest extends NbTestCase {
         assertNull("No icon yet", tc.getIcon());
         MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
         final MultiViewPerspective[] one = handler.getPerspectives();
-        assertEquals("One element only" + Arrays.asList(one), 1, handler.getPerspectives().length);
+        assertEquals("Two elements only" + Arrays.asList(one), 2, handler.getPerspectives().length);
         assertEquals("First one is source", "source", one[0].preferredID());
+        assertEquals("Second one is also source", "source", one[1].preferredID());
         handler.requestVisible(one[0]);
         
         List<Lookup.Provider> arr = new ArrayList<Provider>();
