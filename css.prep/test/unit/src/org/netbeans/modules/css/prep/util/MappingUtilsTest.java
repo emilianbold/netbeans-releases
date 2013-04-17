@@ -39,63 +39,55 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.problems;
+package org.netbeans.modules.css.prep.util;
 
-import java.util.Collection;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CPFileType;
-import org.netbeans.modules.css.prep.less.LessExecutable;
-import org.netbeans.modules.css.prep.preferences.LessPreferences;
-import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
-import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
-import org.netbeans.modules.css.prep.util.ValidationResult;
-import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-public final class LessProjectProblemsProvider extends BaseProjectProblemsProvider {
+public class MappingUtilsTest {
 
-    public LessProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        super(support);
+    @Test
+    public void testResolveTarget() {
+        File root = new File("/root");
+        List<String> mappings = Arrays.asList(
+                "/scss:/css",
+                "/another/scss:/another/css");
+        File file1 = new File(root, "scss/file1.scss");
+        assertEquals(new File(root, "css/file1.css"), MappingUtils.resolveTarget(root, mappings, file1, "file1"));
+        File file2 = new File(root, "another/scss/file2.scss");
+        assertEquals(new File(root, "another/css/file2.css"), MappingUtils.resolveTarget(root, mappings, file2, "file2"));
+        File file3 = new File(root, "file3.scss");
+        assertEquals(new File(root, "file3.css"), MappingUtils.resolveTarget(root, mappings, file3, "file3"));
+        File file4 = new File("/file4.scss");
+        assertEquals(null, MappingUtils.resolveTarget(root, mappings, file4, "file4"));
     }
 
-    @NbBundle.Messages("LessProjectProblemsProvider.displayName=LESS")
-    @Override
-    String getDisplayName() {
-        return Bundle.LessProjectProblemsProvider_displayName();
-    }
-
-    @Override
-    boolean isEnabled(Project project) {
-        return LessPreferences.isEnabled(project);
-    }
-
-    @Override
-    CPFileType getFileType() {
-        return CPFileType.LESS;
-    }
-
-    @NbBundle.Messages({
-        "LessProjectProblemsProvider.invalidCompiler.title=Invalid LESS compiler",
-        "LessProjectProblemsProvider.invalidCompiler.description=The provided LESS compiler is not valid.",
-    })
-    @Override
-    void checkCompiler(Collection<ProjectProblem> currentProblems) {
-        try {
-            LessExecutable.getDefault();
-        } catch (InvalidExternalExecutableException ex) {
-            ProjectProblem problem = ProjectProblem.createError(
-                    Bundle.LessProjectProblemsProvider_invalidCompiler_title(),
-                    Bundle.LessProjectProblemsProvider_invalidCompiler_description(),
-                    OPTIONS_PROBLEM_RESOLVER);
-            currentProblems.add(problem);
-        }
-    }
-
-    @Override
-    ValidationResult validatePreferences(Project project) {
-        return new LessPreferencesValidator()
-                .validate(project)
+    @Test
+    public void testValidMappingsFormat() {
+        List<String> mappings = Arrays.asList(
+                "/scss:/css",
+                "/another/scss:/another/css",
+                ".:.");
+        ValidationResult validationResult = new MappingUtils.MappingsValidator()
+                .validate(mappings)
                 .getResult();
+        assertTrue(validationResult.isFaultless());
+    }
+
+    @Test
+    public void testInvalidMappingsFormat() {
+        String mapping = "/sc:ss:/css";
+        List<String> mappings = Arrays.asList(mapping);
+        ValidationResult validationResult = new MappingUtils.MappingsValidator()
+                .validate(mappings)
+                .getResult();
+        assertTrue(validationResult.hasErrors());
+        ValidationResult.Message error = validationResult.getErrors().get(0);
+        assertEquals("mapping." + mapping, error.getSource());
+        assertTrue(error.getMessage(), error.getMessage().contains(mapping));
     }
 
 }

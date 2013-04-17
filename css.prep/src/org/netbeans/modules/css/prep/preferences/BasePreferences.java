@@ -39,63 +39,43 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.problems;
+package org.netbeans.modules.css.prep.preferences;
 
-import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CPFileType;
-import org.netbeans.modules.css.prep.less.LessExecutable;
-import org.netbeans.modules.css.prep.preferences.LessPreferences;
-import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
-import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
-import org.netbeans.modules.css.prep.util.ValidationResult;
-import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.openide.util.NbBundle;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.css.prep.util.MappingUtils;
 
-public final class LessProjectProblemsProvider extends BaseProjectProblemsProvider {
+abstract class BasePreferences {
 
-    public LessProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        super(support);
+    BasePreferences() {
     }
 
-    @NbBundle.Messages("LessProjectProblemsProvider.displayName=LESS")
-    @Override
-    String getDisplayName() {
-        return Bundle.LessProjectProblemsProvider_displayName();
+    public static boolean isEnabled(Project project, String propertyName) {
+        return getPreferences(project).getBoolean(propertyName, true);
     }
 
-    @Override
-    boolean isEnabled(Project project) {
-        return LessPreferences.isEnabled(project);
+    public static void setEnabled(Project project, String propertyName, boolean enabled) {
+        getPreferences(project).putBoolean(propertyName, enabled);
     }
 
-    @Override
-    CPFileType getFileType() {
-        return CPFileType.LESS;
-    }
-
-    @NbBundle.Messages({
-        "LessProjectProblemsProvider.invalidCompiler.title=Invalid LESS compiler",
-        "LessProjectProblemsProvider.invalidCompiler.description=The provided LESS compiler is not valid.",
-    })
-    @Override
-    void checkCompiler(Collection<ProjectProblem> currentProblems) {
-        try {
-            LessExecutable.getDefault();
-        } catch (InvalidExternalExecutableException ex) {
-            ProjectProblem problem = ProjectProblem.createError(
-                    Bundle.LessProjectProblemsProvider_invalidCompiler_title(),
-                    Bundle.LessProjectProblemsProvider_invalidCompiler_description(),
-                    OPTIONS_PROBLEM_RESOLVER);
-            currentProblems.add(problem);
+    public static List<String> getMappings(Project project, String propertyName) {
+        String mappings = getPreferences(project).get(propertyName, null);
+        if (mappings == null) {
+            return Collections.emptyList();
         }
+        return MappingUtils.decode(mappings);
     }
 
-    @Override
-    ValidationResult validatePreferences(Project project) {
-        return new LessPreferencesValidator()
-                .validate(project)
-                .getResult();
+    public static void setMappings(Project project, String propertyName, List<String> mappings) {
+        getPreferences(project).put(propertyName, MappingUtils.encode(mappings));
+    }
+
+    protected static Preferences getPreferences(Project project) {
+        assert project != null;
+        return ProjectUtils.getPreferences(project, BasePreferences.class, true);
     }
 
 }

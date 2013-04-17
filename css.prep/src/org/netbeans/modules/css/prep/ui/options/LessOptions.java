@@ -125,7 +125,7 @@ public class LessOptions implements CssPreprocessorImplementation.Options {
         String path = getComponent().getLessPath();
         CssPrepOptions.getInstance().setLessPath(path);
         CssPrepOptions.getInstance().setLessOutpuOnError(getComponent().getLessOutputOnError());
-        if (!originalPath.equals(path)) {
+        if (!path.equals(originalPath)) {
             lessCssPreprocessor.fireOptionsChanged();
         }
     }

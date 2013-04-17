@@ -39,63 +39,33 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.problems;
+package org.netbeans.modules.css.prep.preferences;
 
-import java.util.Collection;
+import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CPFileType;
-import org.netbeans.modules.css.prep.less.LessExecutable;
-import org.netbeans.modules.css.prep.preferences.LessPreferences;
-import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
-import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
+import org.netbeans.modules.css.prep.util.MappingUtils;
 import org.netbeans.modules.css.prep.util.ValidationResult;
-import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.openide.util.NbBundle;
 
-public final class LessProjectProblemsProvider extends BaseProjectProblemsProvider {
+public final class SassPreferencesValidator {
 
-    public LessProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        super(support);
+    private final ValidationResult result = new ValidationResult();
+
+
+    public ValidationResult getResult() {
+        return result;
     }
 
-    @NbBundle.Messages("LessProjectProblemsProvider.displayName=LESS")
-    @Override
-    String getDisplayName() {
-        return Bundle.LessProjectProblemsProvider_displayName();
+    public SassPreferencesValidator validate(Project project) {
+        return validate(SassPreferences.isEnabled(project), SassPreferences.getMappings(project));
     }
 
-    @Override
-    boolean isEnabled(Project project) {
-        return LessPreferences.isEnabled(project);
-    }
-
-    @Override
-    CPFileType getFileType() {
-        return CPFileType.LESS;
-    }
-
-    @NbBundle.Messages({
-        "LessProjectProblemsProvider.invalidCompiler.title=Invalid LESS compiler",
-        "LessProjectProblemsProvider.invalidCompiler.description=The provided LESS compiler is not valid.",
-    })
-    @Override
-    void checkCompiler(Collection<ProjectProblem> currentProblems) {
-        try {
-            LessExecutable.getDefault();
-        } catch (InvalidExternalExecutableException ex) {
-            ProjectProblem problem = ProjectProblem.createError(
-                    Bundle.LessProjectProblemsProvider_invalidCompiler_title(),
-                    Bundle.LessProjectProblemsProvider_invalidCompiler_description(),
-                    OPTIONS_PROBLEM_RESOLVER);
-            currentProblems.add(problem);
+    public SassPreferencesValidator validate(boolean enabled, List<String> mappings) {
+        if (enabled) {
+            result.merge(new MappingUtils.MappingsValidator()
+                    .validate(mappings)
+                    .getResult());
         }
-    }
-
-    @Override
-    ValidationResult validatePreferences(Project project) {
-        return new LessPreferencesValidator()
-                .validate(project)
-                .getResult();
+        return this;
     }
 
 }

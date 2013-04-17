@@ -39,63 +39,37 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.problems;
+package org.netbeans.modules.css.prep.util;
 
-import java.util.Collection;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CPFileType;
-import org.netbeans.modules.css.prep.less.LessExecutable;
-import org.netbeans.modules.css.prep.preferences.LessPreferences;
-import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
-import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
-import org.netbeans.modules.css.prep.util.ValidationResult;
-import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.netbeans.modules.web.common.spi.CssPreprocessorImplementationListener;
 
-public final class LessProjectProblemsProvider extends BaseProjectProblemsProvider {
+public abstract class BaseCssPreprocessor implements CssPreprocessorImplementation {
 
-    public LessProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        super(support);
-    }
+    protected final CssPreprocessorImplementationListener.Support listenersSupport = new CssPreprocessorImplementationListener.Support();
 
-    @NbBundle.Messages("LessProjectProblemsProvider.displayName=LESS")
+
     @Override
-    String getDisplayName() {
-        return Bundle.LessProjectProblemsProvider_displayName();
+    public void addCssPreprocessorListener(CssPreprocessorImplementationListener listener) {
+        listenersSupport.addCssPreprocessorListener(listener);
     }
 
     @Override
-    boolean isEnabled(Project project) {
-        return LessPreferences.isEnabled(project);
+    public void removeCssPreprocessorListener(CssPreprocessorImplementationListener listener) {
+        listenersSupport.removeCssPreprocessorListener(listener);
     }
 
-    @Override
-    CPFileType getFileType() {
-        return CPFileType.LESS;
+    public void fireOptionsChanged() {
+        listenersSupport.fireOptionsChanged(this);
     }
 
-    @NbBundle.Messages({
-        "LessProjectProblemsProvider.invalidCompiler.title=Invalid LESS compiler",
-        "LessProjectProblemsProvider.invalidCompiler.description=The provided LESS compiler is not valid.",
-    })
-    @Override
-    void checkCompiler(Collection<ProjectProblem> currentProblems) {
-        try {
-            LessExecutable.getDefault();
-        } catch (InvalidExternalExecutableException ex) {
-            ProjectProblem problem = ProjectProblem.createError(
-                    Bundle.LessProjectProblemsProvider_invalidCompiler_title(),
-                    Bundle.LessProjectProblemsProvider_invalidCompiler_description(),
-                    OPTIONS_PROBLEM_RESOLVER);
-            currentProblems.add(problem);
-        }
+    public void fireCustomizerChanged(Project project) {
+        listenersSupport.fireCustomizerChanged(project, this);
     }
 
-    @Override
-    ValidationResult validatePreferences(Project project) {
-        return new LessPreferencesValidator()
-                .validate(project)
-                .getResult();
+    public void fireProcessingErrorOccured(Project project, String error) {
+        listenersSupport.fireProcessingErrorOccured(project, this, error);
     }
 
 }

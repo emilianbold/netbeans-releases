@@ -64,6 +64,7 @@ import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
@@ -132,13 +133,18 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
         return result;
     }
 
+    @NbBundle.Messages({
+        "# {0} - customizer name",
+        "# {1} - message",
+        "CssPreprocessorsCustomizerPanel.error={0}: {1}",
+    })
     void validateCustomizers() {
         String warning = null; // NOI18N
         for (CssPreprocessorImplementation.Customizer customizer : customizers) {
             if (!customizer.isValid()) {
                 String errorMessage = customizer.getErrorMessage();
                 Parameters.notNull("errorMessage", errorMessage); // NOI18N
-                category.setErrorMessage(errorMessage);
+                category.setErrorMessage(Bundle.CssPreprocessorsCustomizerPanel_error(customizer.getDisplayName(), errorMessage));
                 category.setValid(false);
                 return;
             }
