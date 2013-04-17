@@ -85,12 +85,9 @@ public class JspLexer implements Lexer<JspTokenId> {
     
     private final TokenFactory<JspTokenId> tokenFactory;
     
+    @Override
     public Object state() {
-        //encode each state in 6 bits = 2^6 = 64 which is the maximum of the state value
-        return lexerState + 
-                (lexerStateBeforeEL << 6) +
-                (lexerStateBeforeScriptlet << 12) +
-                (lexerStateJspScriptlet << 18);
+        return new JspState(lexerState, lexerStateBeforeEL, lexerStateBeforeScriptlet, lexerStateJspScriptlet, lexerStateCurlyNestedLevel);
     }
     
     //main internal lexer state
@@ -107,6 +104,9 @@ public class JspLexer implements Lexer<JspTokenId> {
     
     //internal state signalling whether the lexer is in <jsp:scriptlet> tag
     private int lexerStateJspScriptlet = INIT;
+
+    //internal state signalling deep of the curly bracket nested level
+    private int lexerStateCurlyNestedLevel = 0;
     
     // Internal analyzer states
     // general
@@ -192,14 +192,16 @@ public class JspLexer implements Lexer<JspTokenId> {
         if (info.state() == null) {
             lexerState = INIT;
             lexerStateBeforeEL = INIT;
+            lexerStateBeforeScriptlet = INIT;
             lexerStateJspScriptlet = INIT;
+            lexerStateCurlyNestedLevel = 0;
         } else {
-            int encoded = ((Integer) info.state()).intValue();
-            //the state is encoded in 6 bits, decode using bits shifting
-            lexerStateJspScriptlet = encoded >> 18;
-            lexerStateBeforeScriptlet = encoded << 14 >>> 26; //encoded << (32-18) >>> (32-6)
-            lexerStateBeforeEL = encoded << 20 >>> 26; //encoded << (32-12) >>> (32-6)
-            lexerState = encoded << 26 >>> 26; //encoded << (32-6) >>> (32-6)
+            JspState state = (JspState) info.state();
+            lexerStateJspScriptlet = state.getLexerStateJspScriptlet();
+            lexerStateBeforeScriptlet = state.getLexerStateBeforeScriptlet();
+            lexerStateBeforeEL = state.getLexerStateBeforeEL();
+            lexerState = state.getLexerState();
+            lexerStateCurlyNestedLevel = state.getLexerStateCurlyNestedLevel();
         }
         if(inputAttributes != null) {
             jspParseData = (JspParseData)inputAttributes.getValue(LanguagePath.get(JspTokenId.language()), JspParseData.class);
@@ -406,11 +408,18 @@ public class JspLexer implements Lexer<JspTokenId> {
                         case '"':
                             lexerState = ISI_EL_DOUBLE_QUOTE;
                             break;
+                        case '{':
+                            lexerStateCurlyNestedLevel++;
+                            break;
                         case '}':
-                            //return EL token
-                            lexerState = lexerStateBeforeEL;
-                            lexerStateBeforeEL = INIT;
-                            return token(JspTokenId.EL);
+                            if (lexerStateCurlyNestedLevel > 0) {
+                                lexerStateCurlyNestedLevel--;
+                            } else {
+                                //return EL token
+                                lexerState = lexerStateBeforeEL;
+                                lexerStateBeforeEL = INIT;
+                                return token(JspTokenId.EL);
+                            }
                     }
                     break;
 

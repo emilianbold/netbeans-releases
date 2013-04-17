@@ -68,6 +68,10 @@ public class ModelTestBase extends JsTestBase {
     }
 
     public void checkModel(String file) throws Exception {
+        checkModel(file, false);
+    }
+
+    public void checkModel(String file, boolean resolve) throws Exception {
         FileObject fo = getTestFile(file);
         Model model = getModel(file);
 
@@ -79,7 +83,7 @@ public class ModelTestBase extends JsTestBase {
                 sw.append(str).append("\n");
             }
         };
-        model.writeModel(p);
+        model.writeModel(p, resolve);
         assertDescriptionMatches(fo, sw.toString(), false, ".model", true);
     }
 

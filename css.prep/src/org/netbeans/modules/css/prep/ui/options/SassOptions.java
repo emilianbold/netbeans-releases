@@ -125,7 +125,7 @@ public class SassOptions implements CssPreprocessorImplementation.Options {
         String path = getComponent().getSassPath();
         CssPrepOptions.getInstance().setSassPath(path);
         CssPrepOptions.getInstance().setSassOutpuOnError(getComponent().getSassOutputOnError());
-        if (!originalPath.equals(path)) {
+        if (!path.equals(originalPath)) {
             sassCssPreprocessor.fireOptionsChanged();
         }
     }
