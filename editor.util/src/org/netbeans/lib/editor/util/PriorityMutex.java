@@ -44,6 +44,9 @@
 
 package org.netbeans.lib.editor.util;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Mutex that allows only one thread to proceed
  * other threads must wait until that one finishes.
@@ -61,12 +64,23 @@ package org.netbeans.lib.editor.util;
  */
 
 public class PriorityMutex {
+    
+    // -J-Dorg.netbeans.lib.editor.util.PriorityMutex.level=FINEST
+    // FINE:  When TIMEOUTS_BEFORE_LOGGING reached start to dump the thread that acquired the lock
+    // FINER: In addition store the stack trace of the lock() call (expensive - calls new Exception())
+    private static final Logger LOG = Logger.getLogger(PriorityMutex.class.getName());
+    
+    private static final int WAIT_TIMEOUT = 2000;
+    
+    private static final int TIMEOUTS_BEFORE_LOGGING = 5;
 
     private Thread lockThread;
 
     private int lockDepth;
     
     private Thread waitingPriorityThread;
+    
+    private Exception logLockStackTrace;
     
     /**
      * Acquire the ownership of the mutex.
@@ -83,7 +97,9 @@ public class PriorityMutex {
      * </pre>
      */
     public synchronized void lock() {
+        boolean log = LOG.isLoggable(Level.FINE);
         Thread thread = Thread.currentThread();
+        int waitTimeouts = 0;
         try {
             if (thread != lockThread) { // not nested locking
                 // Will wait if either there is another thread already holding the lock
@@ -91,17 +107,30 @@ public class PriorityMutex {
                 while (lockThread != null
                     || (waitingPriorityThread != null && waitingPriorityThread != thread)
                 ) {
-                        if (waitingPriorityThread == null && isPriorityThread()) {
-                            waitingPriorityThread = thread;
+                    if (waitingPriorityThread == null && isPriorityThread()) {
+                        waitingPriorityThread = thread;
+                    }
+                    wait(WAIT_TIMEOUT);
+                    if (log && ++waitTimeouts > TIMEOUTS_BEFORE_LOGGING) {
+                        LOG.fine("PriorityMutex: Timeout expired for thread " + // NOI18N
+                                thread + "\n  waiting for lockThread=" + lockThread + "\n");
+                        if (logLockStackTrace != null) {
+                            LOG.log(Level.INFO, "Locker thread's lock() call follows:", logLockStackTrace);
                         }
-                        wait();
+                        waitTimeouts = 0;
+                    }
                 }
-
                 lockThread = thread;
+                if (log && LOG.isLoggable(Level.FINER)) {
+                    logLockStackTrace = new Exception();
+                    logLockStackTrace.fillInStackTrace();
+                }
                 assert (lockDepth == 0);
                 if (thread == waitingPriorityThread) {
                     waitingPriorityThread = null; // it's now allowed to enter
                 }
+            } else {
+                
             }
             lockDepth++;
         } catch (InterruptedException e) {
@@ -121,6 +150,7 @@ public class PriorityMutex {
         }
         if (--lockDepth == 0) {
             lockThread = null;
+            logLockStackTrace = null;
             notifyAll(); // must all to surely notify waitingPriorityThread too
         }
     }

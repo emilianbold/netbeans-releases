@@ -72,9 +72,14 @@ public class CompletionContextFinder {
         new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
     );
     
+    private static final List<Object[]> OBJECT_PROPERTY_NAME_TOKENCHAINS = Arrays.asList(
+        new Object[]{JsTokenId.OPERATOR_COMMA, JsTokenId.IDENTIFIER},
+        new Object[]{JsTokenId.OPERATOR_COMMA, JsTokenId.IDENTIFIER, JsTokenId.OPERATOR_COLON}
+    );
+    
     @NonNull
     static CompletionContext findCompletionContext(ParserResult info, int caretOffset){
-         TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
+        TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
         if (th == null) {
             return CompletionContext.NONE;
         }
@@ -117,6 +122,28 @@ public class CompletionContextFinder {
         if (tokenId == JsTokenId.DOC_COMMENT) {
             return CompletionContext.DOCUMENTATION;
         }
+        ts.move(offset); ts.moveNext();
+        List<JsTokenId> listIds = Arrays.asList(JsTokenId.OPERATOR_COMMA, JsTokenId.OPERATOR_COLON, JsTokenId.BRACKET_LEFT_CURLY,
+                JsTokenId.OPERATOR_SEMICOLON);
+        token = LexUtilities.findPreviousToken(ts, listIds);
+        tokenId = token.id();
+        if (tokenId == JsTokenId.OPERATOR_COMMA) {
+            ts.movePrevious();
+            token = LexUtilities.findPreviousToken(ts, listIds);
+            tokenId = token.id();
+            if (tokenId == JsTokenId.OPERATOR_COLON) {
+                // we are in the previous property definition
+                return CompletionContext.OBJECT_PROPERTY_NAME;
+            } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
+                // check whether it's the first property in the object literal definion
+                token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL));
+                tokenId = token.id();
+                if (tokenId == JsTokenId.OPERATOR_COLON ) {
+                    return CompletionContext.OBJECT_PROPERTY_NAME;
+                }
+            }
+        }
+        
         return CompletionContext.EXPRESSION;
     }
     

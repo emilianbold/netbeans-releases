@@ -218,18 +218,6 @@ public class JavaKit extends NbEditorKit {
 
     public static final String selectPreviousElementAction = "select-element-previous"; //NOI18N
 
-    /* package */ static final String previousCamelCasePosition = "previous-camel-case-position"; //NOI18N
-
-    /* package */ static final String nextCamelCasePosition = "next-camel-case-position"; //NOI18N
-
-    /* package */ static final String selectPreviousCamelCasePosition = "select-previous-camel-case-position"; //NOI18N
-
-    /* package */ static final String selectNextCamelCasePosition = "select-next-camel-case-position"; //NOI18N
-
-    /* package */ static final String deletePreviousCamelCasePosition = "delete-previous-camel-case-position"; //NOI18N
-
-    /* package */ static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
-
 //    public static Action create(FileObject file) {
 //        initialize();
 //
@@ -273,13 +261,6 @@ public class JavaKit extends NbEditorKit {
             new JavaMoveCodeElementAction(EditorActionNames.moveCodeElementUp, false),
             new JavaMoveCodeElementAction(EditorActionNames.moveCodeElementDown, true),
 
-            new JavaNextWordAction(nextWordAction),
-            new JavaPreviousWordAction(previousWordAction),
-            new JavaNextWordAction(selectionNextWordAction),
-            new JavaPreviousWordAction(selectionPreviousWordAction),
-            new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)),
-            new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)),
-
             new FastImportAction(),
             new GoToSuperTypeAction(),
 
@@ -289,16 +270,6 @@ public class JavaKit extends NbEditorKit {
         };
 
         return TextAction.augmentList(superActions, actions);
-    }
-
-    private static Action findAction(Action [] actions, String name) {
-        for(Action a : actions) {
-            Object nameObj = a.getValue(Action.NAME);
-            if (nameObj instanceof String && name.equals(nameObj)) {
-                return a;
-            }
-        }
-        return null;
     }
 
     @Override
@@ -837,38 +808,4 @@ public class JavaKit extends NbEditorKit {
         }
 
     }
-
-    private static boolean isUsingCamelCase() {
-        return NbPreferences.root().getBoolean("useCamelCaseStyleNavigation", true); // NOI18N
-    }
-
-    public static class JavaNextWordAction extends NextWordAction {
-
-        JavaNextWordAction(String name) {
-            super(name);
-        }
-        
-        @Override
-        protected int getNextWordOffset(JTextComponent target) throws BadLocationException {
-            return isUsingCamelCase()
-                    ? CamelCaseOperations.nextCamelCasePosition(target)
-                    : super.getNextWordOffset(target);
-        }
-
-    }
-
-    public static class JavaPreviousWordAction extends PreviousWordAction {
-
-        JavaPreviousWordAction(String name) {
-            super(name);
-        }
-
-        protected int getPreviousWordOffset(JTextComponent target) throws BadLocationException {
-            return isUsingCamelCase()
-                    ? CamelCaseOperations.previousCamelCasePosition(target)
-                    : super.getPreviousWordOffset(target);
-        }
-
-    }
-
 }

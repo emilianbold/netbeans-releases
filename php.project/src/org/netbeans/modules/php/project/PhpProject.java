@@ -219,6 +219,10 @@ public final class PhpProject implements Project {
                 recompileSources(cssPreprocessor);
             }
         }
+        @Override
+        public void processingErrorOccured(Project project, CssPreprocessor cssPreprocessor, String error) {
+            // noop
+        }
     };
 
 

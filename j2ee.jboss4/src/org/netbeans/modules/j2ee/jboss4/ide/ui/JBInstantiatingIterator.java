@@ -149,7 +149,7 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
         JBPluginUtils.Version version = JBPluginUtils.getServerVersion(new File(installLocation));
         String url = JBDeploymentFactory.URI_PREFIX;
         if(version != null && "7".equals(version.getMajorNumber())){
-            url += "//"+host + ":" + port+"?targetType=as7&serverPort="+port;    // NOI18N
+            url += "//"+host + ":" + port+"?targetType=as7";    // NOI18N
         } else {
             url += host + ":" + port;    // NOI18N
         }

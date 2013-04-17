@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,34 +34,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.editor.java;
-
-import javax.swing.Action;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-
-/**
  *
- * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-/* package */ class PreviousCamelCasePosition extends AbstractCamelCasePosition {
+package org.netbeans.modules.css.prep.preferences;
 
-    public PreviousCamelCasePosition(Action originalAction) {
-        this(JavaKit.previousCamelCasePosition, originalAction);
+import java.util.Collections;
+import java.util.List;
+import java.util.prefs.Preferences;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.css.prep.util.MappingUtils;
+
+abstract class BasePreferences {
+
+    BasePreferences() {
     }
 
-    protected PreviousCamelCasePosition(String name, Action originalAction) {
-        super(name, originalAction);
+    public static boolean isEnabled(Project project, String propertyName) {
+        return getPreferences(project).getBoolean(propertyName, true);
     }
 
-    protected int newOffset(JTextComponent textComponent) throws BadLocationException {
-        return CamelCaseOperations.previousCamelCasePosition(textComponent);
+    public static void setEnabled(Project project, String propertyName, boolean enabled) {
+        getPreferences(project).putBoolean(propertyName, enabled);
     }
 
-    protected void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException {
-        textComponent.setCaretPosition(offset);
+    public static List<String> getMappings(Project project, String propertyName) {
+        String mappings = getPreferences(project).get(propertyName, null);
+        if (mappings == null) {
+            return Collections.emptyList();
+        }
+        return MappingUtils.decode(mappings);
     }
+
+    public static void setMappings(Project project, String propertyName, List<String> mappings) {
+        getPreferences(project).put(propertyName, MappingUtils.encode(mappings));
+    }
+
+    protected static Preferences getPreferences(Project project) {
+        assert project != null;
+        return ProjectUtils.getPreferences(project, BasePreferences.class, true);
+    }
+
 }
-
