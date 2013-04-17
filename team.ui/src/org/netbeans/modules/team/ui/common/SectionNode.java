@@ -44,7 +44,6 @@ package org.netbeans.modules.team.ui.common;
 
 
 
-import org.netbeans.modules.team.ui.treelist.*;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -58,6 +57,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.util.treelist.ProgressLabel;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -92,7 +94,7 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
         if( null == panel ) {
             panel = new JPanel( new GridBagLayout() );
             panel.setOpaque(false);
