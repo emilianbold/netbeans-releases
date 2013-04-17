@@ -124,7 +124,7 @@ public class ExpressionLang30Test extends GeneralJSF {
         cjo = completion.listItself;
         checkCompletionItems(cjo, new String[]{"map", "max", "min"});
         checkCompletionDoesntContainItems(cjo, new String[]{"distinct"});
-        type(eo, "ap.().");
+        type(eo, "ap().");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
         completion = getCompletion();
