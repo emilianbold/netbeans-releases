@@ -2237,8 +2237,41 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
     }
     
-    @Override public void alias_declaration(Token usingToken, Token identToken, Token assignequalToken) {}
-    @Override public void end_alias_declaration(Token token) {}
+    @Override 
+    public void alias_declaration(Token usingToken, Token identToken, Token assignequalToken) {
+        try {
+             alias_declaration_impl(usingToken, identToken, assignequalToken);
+        } catch (Exception ex) {
+            registerException(ex, usingToken);
+        }
+    }
+    
+    private void alias_declaration_impl(Token usingToken, Token identToken, Token assignequalToken) {
+        TypedefBuilder builder = new TypedefBuilder();
+        builder.setName(((APTToken) identToken).getText());
+        builder.setFile(currentContext.file);
+        builder.setStartOffset(((APTToken)usingToken).getOffset());
+        builderContext.push(builder);
+    }
+
+    @Override 
+    public void end_alias_declaration(Token token) {
+        try {
+            end_alias_declaration_impl(token);
+        } catch (Exception ex) {
+            registerException(ex, token);
+        }
+    }
+    
+    private void end_alias_declaration_impl(Token token) {
+        if(builderContext.top() instanceof TypedefBuilder) {
+            TypedefBuilder builder = (TypedefBuilder)builderContext.top();
+            builderContext.pop();
+            builder.setEndOffset(((APTToken)token).getOffset());
+            builder.create();
+        }
+    }
+
     @Override public void function_specifier(int kind, Token token) {}
     
     @Override
@@ -2635,7 +2668,11 @@ public class CppParserActionImpl implements CppParserActionEx {
         TypeBuilder typeBuilder = new TypeBuilder();
         typeBuilder.setFile(currentContext.file);
         typeBuilder.setStartOffset(((APTToken)token).getOffset());
-        builderContext.push(typeBuilder);    
+        if (builderContext.top() instanceof TypedefBuilder) {
+            TypedefBuilder parent = (TypedefBuilder) builderContext.top();
+            parent.setTypeBuilder(typeBuilder);
+        }
+        builderContext.push(typeBuilder);
     }
     
     @Override
