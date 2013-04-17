@@ -3114,31 +3114,33 @@ public class CppParserActionImpl implements CppParserActionEx {
                 
                 CharSequence name = declBuilder.getTypeBuilder().getNameBuilder().getName();
                 
-                SymTabEntry entry = globalSymTab.lookupLocal(name);
-
-                if (entry == null) {
-                    if(declBuilder.isFriend()) {
-                        builder = new FriendClassBuilder(declBuilder);
-                    } else {
-                        builder = new ClassMemberForwardDeclarationBuilder(declBuilder);
-                    }
-                    
-                    builder.setParent(parent);
-                    builder.setEndOffset(((APTToken)token).getOffset());
-                    builder.setName(name);
-                    builder.setFile(currentContext.file);
-                    
-                    if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                        builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                        builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                    }
-                    
-                    if(builder instanceof FriendClassBuilder) {
-                        parent.addFriendBuilder(builder);
-                    } else {
-                        parent.addMemberBuilder((ClassMemberForwardDeclarationBuilder)builder);
-                    }                    
-                    
+                if(declBuilder.isFriend()) {
+                    builder = new FriendClassBuilder(declBuilder);
+                } else {
+                    builder = new ClassMemberForwardDeclarationBuilder(declBuilder);
+                }
+                
+                builder.setParent(parent);
+                builder.setEndOffset(((APTToken)token).getOffset());
+                builder.setName(name);
+                builder.setFile(currentContext.file);
+                
+                if(declBuilder.getTemplateDescriptorBuilder() != null) {
+                    builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
+                    builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
+                }
+                
+                if(builder instanceof FriendClassBuilder) {
+                    parent.addFriendBuilder(builder);
+                } else {
+                    parent.addMemberBuilder((ClassMemberForwardDeclarationBuilder)builder);
+                }               
+                
+                // Let's try to find definition
+                SymTabEntry definitionEntry = globalSymTab.lookup(name);
+                
+                // If it is unavailable then we need to add new entry into local symtab
+                if (definitionEntry == null) {
                     SymTabEntry classEntry = globalSymTab.enterLocal(name);
                     classEntry.setAttribute(CppAttributes.TYPE, true);
                 }
