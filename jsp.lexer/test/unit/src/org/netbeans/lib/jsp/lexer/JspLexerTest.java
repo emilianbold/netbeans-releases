@@ -256,6 +256,21 @@ public class JspLexerTest extends CslTestBase {
 
     }
 
+    public void testEmbeddedCurlyBracketInEL() throws BadLocationException {
+        String code = "<jsp:tag attr=\"#{v = {\"one\":1}}\"";
+        TokenHierarchy th = TokenHierarchy.create(code, JspTokenId.language());
+        TokenSequence<JspTokenId> ts = th.tokenSequence(JspTokenId.language());
+
+        assertToken(ts, "<", JspTokenId.SYMBOL);
+        assertToken(ts, "jsp:tag", JspTokenId.TAG);
+        assertToken(ts, " ", JspTokenId.WHITESPACE);
+        assertToken(ts, "attr", JspTokenId.ATTRIBUTE);
+        assertToken(ts, "=", JspTokenId.SYMBOL);
+        assertToken(ts, "\"", JspTokenId.ATTR_VALUE);
+        assertToken(ts, "#{v = {\"one\":1}}", JspTokenId.EL);
+        assertToken(ts, "\"", JspTokenId.ATTR_VALUE);
+    }
+
     private void assertToken(TokenSequence ts, String tokenText, JspTokenId tokenId) {
         assertTrue(ts.moveNext());
         assertEquals(tokenId, ts.token().id());
