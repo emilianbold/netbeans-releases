@@ -269,8 +269,24 @@ SYNTAX_PYTHON_END="%}"
 }
 
 <ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON> {
-    {MACRO_SYNTAX_START} {
-        pushState(ST_SYNTAX_CHANGE);
+    {MACRO_SYNTAX_START} "latte" {
+        syntax = Syntax.LATTE;
+        return LatteTopTokenId.T_LATTE;
+    }
+    {MACRO_SYNTAX_START} "double" {
+        syntax = Syntax.DOUBLE;
+        return LatteTopTokenId.T_LATTE;
+    }
+    {MACRO_SYNTAX_START} "asp" {
+        syntax = Syntax.ASP;
+        return LatteTopTokenId.T_LATTE;
+    }
+    {MACRO_SYNTAX_START} "python" {
+        syntax = Syntax.PYTHON;
+        return LatteTopTokenId.T_LATTE;
+    }
+    {MACRO_SYNTAX_START} "off" {
+        syntax = Syntax.OFF;
         return LatteTopTokenId.T_LATTE;
     }
     {MACRO_SYNTAX_END} {
@@ -322,38 +338,6 @@ SYNTAX_PYTHON_END="%}"
         return LatteTopTokenId.T_LATTE_DELIMITER;
     }
     [^"}"] | }[^"}"] {
-        return LatteTopTokenId.T_LATTE;
-    }
-}
-
-<ST_SYNTAX_CHANGE> {
-    "latte" {
-        syntax = Syntax.LATTE;
-        popState();
-        return LatteTopTokenId.T_LATTE;
-    }
-    "double" {
-        syntax = Syntax.DOUBLE;
-        popState();
-        return LatteTopTokenId.T_LATTE;
-    }
-    "asp" {
-        syntax = Syntax.ASP;
-        popState();
-        return LatteTopTokenId.T_LATTE;
-    }
-    "python" {
-        syntax = Syntax.PYTHON;
-        popState();
-        return LatteTopTokenId.T_LATTE;
-    }
-    "off" {
-        syntax = Syntax.OFF;
-        popState();
-        return LatteTopTokenId.T_LATTE;
-    }
-    . {
-        popState();
         return LatteTopTokenId.T_LATTE;
     }
 }
