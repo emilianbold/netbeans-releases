@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.tasks.ui;
 
+import org.netbeans.modules.team.ui.util.treelist.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -53,9 +54,9 @@ import javax.swing.*;
 import org.netbeans.modules.tasks.ui.actions.Actions.ActivateTaskAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.OpenTaskAction;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
-import org.netbeans.modules.tasks.ui.treelist.ColorManager;
-import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.utils.Utils;
+import org.netbeans.modules.team.ui.util.treelist.ColorManager;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 

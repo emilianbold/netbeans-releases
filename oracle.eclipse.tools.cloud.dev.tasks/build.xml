@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="oracle.eclipse.tools.cloud.dev.tasks" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+        <target name="jar">
+<!--        <jar jarfile="${cluster}/${module.jar} exclude=ORACLE_C.RSA,ORACLE_C.RSA">
+            <zipfileset src="external/oracle.eclipse.tools.cloud.dev.tasks_5.2.1.201303120823.jar"/>
+            <manifest>
+                <attribute name="Manifest-Version" value="1.0"/>
+                <attribute name="Export-Package" value="oracle.eclipse.tools.cloud.dev.tasks,oracle.eclipse.tools.cloud.dev.tasks.data"/>
+                <attribute name="Require-Bundle" value="org.eclipse.core.runtime,org.eclipse.mylyn.tasks.core,org.eclipse.mylyn.commons.net,org.codehaus.jackson.core,org.codehaus.jackson.mapper,com.tasktop.c2c.server.tasks.api,com.tasktop.c2c.server.common.api"/>
+                <attribute name="Bundle-Version" value="5.2.1.201303120823"/>
+                <attribute name="Bundle-Localization" value="bundle"/>
+                <attribute name="Bundle-SymbolicName" value="oracle.eclipse.tools.cloud.dev.tasks"/>
+            </manifest>
+        </jar>-->
+    </target>   
+</project>
+

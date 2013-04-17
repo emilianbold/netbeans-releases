@@ -56,7 +56,7 @@ import static javax.swing.Action.NAME;
 import javax.swing.tree.TreeSelectionModel;
 import org.apache.maven.execution.ExecutionEvent;
 import org.netbeans.modules.maven.api.ModelUtils;
-import org.netbeans.modules.maven.execute.ExecutionEventObject;
+import org.netbeans.modules.maven.execute.cmd.ExecutionEventObject;
 import org.netbeans.modules.maven.execute.cmd.ExecMojo;
 import org.netbeans.modules.maven.execute.cmd.ExecProject;
 import org.openide.explorer.ExplorerManager;
@@ -77,6 +77,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
 
     private final ExplorerManager manager;
     private boolean showPhases = false;
+    private boolean showOnlyErrors = false;
 
     /**
      * Creates new form ShowExecutionPanel
@@ -98,7 +99,18 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
 
             }
         });
-        
+        btnFailedToggle.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/ui/error.png", true));
+        btnFailedToggle.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showOnlyErrors = btnFailedToggle.isSelected();
+                ExecutionEventObject.Tree item = manager.getRootContext().getLookup().lookup(ExecutionEventObject.Tree.class);
+                manager.setRootContext(createNodeForExecutionEventTree(item));
+                expandCollapseChildNodes(manager.getRootContext(), false, false);
+                
+            }
+        });
     }
 
     /**
@@ -113,6 +125,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         btvExec = new BeanTreeView();
         jToolBar1 = new javax.swing.JToolBar();
         btnPhaseToggle = new javax.swing.JToggleButton();
+        btnFailedToggle = new javax.swing.JToggleButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
         btnCollapse = new javax.swing.JButton();
         btnExpand = new javax.swing.JButton();
@@ -124,6 +137,11 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         btnPhaseToggle.setToolTipText(org.openide.util.NbBundle.getMessage(ShowExecutionPanel.class, "ShowExecutionPanel.btnPhaseToggle.toolTipText")); // NOI18N
         btnPhaseToggle.setFocusable(false);
         jToolBar1.add(btnPhaseToggle);
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnFailedToggle, org.openide.util.NbBundle.getMessage(ShowExecutionPanel.class, "ShowExecutionPanel.btnFailedToggle.text")); // NOI18N
+        btnFailedToggle.setToolTipText(org.openide.util.NbBundle.getMessage(ShowExecutionPanel.class, "ShowExecutionPanel.btnFailedToggle.toolTipText")); // NOI18N
+        btnFailedToggle.setFocusable(false);
+        jToolBar1.add(btnFailedToggle);
         jToolBar1.add(jSeparator1);
 
         org.openide.awt.Mnemonics.setLocalizedText(btnCollapse, org.openide.util.NbBundle.getMessage(ShowExecutionPanel.class, "ShowExecutionPanel.btnCollapse.text")); // NOI18N
@@ -182,6 +200,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCollapse;
     private javax.swing.JButton btnExpand;
+    private javax.swing.JToggleButton btnFailedToggle;
     private javax.swing.JToggleButton btnPhaseToggle;
     private javax.swing.JScrollPane btvExec;
     private javax.swing.JToolBar.Separator jSeparator1;
@@ -250,7 +269,24 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         return Children.create(new ChildFactory<ExecutionEventObject.Tree>() {
             @Override
             protected boolean createKeys(List<ExecutionEventObject.Tree> toPopulate) {
-                toPopulate.addAll(childrenNodes);
+                if (showOnlyErrors) {
+                    for (ExecutionEventObject.Tree item : childrenNodes) {
+                        ExecutionEventObject end = item.endEvent;
+                        if (end != null) {
+                            if (
+                                ExecutionEvent.Type.ProjectFailed.equals(end.type) || 
+                                ExecutionEvent.Type.MojoFailed.equals(end.type) ||
+                                ExecutionEvent.Type.ForkedProjectFailed.equals(end.type) ||    
+                                ExecutionEvent.Type.ForkFailed.equals(end.type))
+                            {
+                                toPopulate.add(item);
+                            }
+                        }
+                    }
+                } else {
+                    toPopulate.addAll(childrenNodes);
+                }
+
                 return true;
             }
             
@@ -298,7 +334,30 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
     }
 
     private Node createPhaseNode(Tuple key) {
-        AbstractNode nd = new AbstractNode(createChildren(key.items), Lookup.EMPTY);
+        Children childs;
+        if (showOnlyErrors) {
+            boolean atLeastOne = false;
+            for (ExecutionEventObject.Tree ch : key.items) {
+                ExecutionEventObject end = ch.endEvent;
+                if (end != null) {
+                    if (ExecutionEvent.Type.ProjectFailed.equals(end.type)
+                            || ExecutionEvent.Type.MojoFailed.equals(end.type)
+                            || ExecutionEvent.Type.ForkedProjectFailed.equals(end.type)
+                            || ExecutionEvent.Type.ForkFailed.equals(end.type)) {
+                        atLeastOne = true;
+                        break;
+                    }
+                }
+            }
+            if (atLeastOne) {
+                childs = createChildren(key.items);
+            } else {
+                childs = Children.LEAF;
+            }
+        } else {
+            childs = createChildren(key.items);
+        }
+        AbstractNode nd = new AbstractNode(childs, Lookup.EMPTY);
         nd.setName(key.phase);
         nd.setDisplayName(key.phase);
         nd.setIconBaseWithExtension("org/netbeans/modules/maven/execute/ui/phase.png");

@@ -105,8 +105,10 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
+import org.openide.modules.Places;
 import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -837,13 +839,15 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     static File logsDirectory(){
-        String ud = System.getProperty("netbeans.user"); // NOI18N
-        if (ud == null || "memory".equals(ud)) { // NOI18N
-            return null;
+        
+        File logDir = InstalledFileLocator.getDefault().locate("var/log", null, false); // NOI18N
+        if (logDir == null) {
+            File userDir = Places.getUserDirectory();
+            if (userDir != null) {
+                logDir = new File(new File(userDir, "var"), "log");             // NOI18N
+            }
         }
-
-        File userDir = new File(ud); // NOI18N
-        return new File(new File(userDir, "var"), "log");
+        return logDir;
     }
 
     private static File logFile(int revision) {
@@ -858,15 +862,12 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     private static File logFileMetrics (int revision) {
-        String ud = System.getProperty("netbeans.user"); // NOI18N
-        if (ud == null || "memory".equals(ud)) { // NOI18N
+        File logDir = logsDirectory();
+        if (logDir == null){
             return null;
         }
-
         String suffix = revision == 0 ? "" : "." + revision;
-
-        File userDir = new File(ud); // NOI18N
-        File logFile = new File(new File(new File(userDir, "var"), "log"), "metrics" + suffix);
+        File logFile = new File(logDir, "metrics" + suffix);                    // NOI18N
         return logFile;
     }
 
@@ -1995,12 +1996,18 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
                 if (dataType != DataType.DATA_METRICS) {
                     String txt;
-                    if (!report) {
-                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm());
-                    } else {
-                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm());
+                    String logFile = NbBundle.getMessage(Installer.class, "LOG_FILE");
+                    File log = InstalledFileLocator.getDefault().locate(logFile, null, false);
+                    if (log != null) {
+                        logFile = log.getAbsolutePath();
                     }
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(txt, NotifyDescriptor.ERROR_MESSAGE);
+                    if (!report) {
+                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm(), logFile);
+                    } else {
+                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm(), logFile);
+                    }
+                    Object dlg = ConnectionErrorDlg.get(txt);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(dlg, NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notifyLater(nd);
                 }
             }
@@ -2341,12 +2348,10 @@ public class Installer extends ModuleInstall implements Runnable {
                  os.write(slownData.getNpsContent());
                  os.close();
 
-                 File gestures = new File(new File(new File(
-                         new File(System.getProperty("netbeans.user")), // NOI18N
-                         "var"), "log"), "uigestures"); // NOI18N
+                 File gestures = InstalledFileLocator.getDefault().locate("var/log/uigestures", null, false); // NOI18N
 
                  SelfSampleVFS fs;
-                 if (gestures.exists()) {
+                 if (gestures != null && gestures.exists()) {
                      fs = new SelfSampleVFS(
                              new String[]{"selfsampler.npss", "selfsampler.log"},
                              new File[]{tempFile, gestures});

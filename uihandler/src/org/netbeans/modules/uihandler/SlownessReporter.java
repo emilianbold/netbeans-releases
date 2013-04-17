@@ -87,7 +87,7 @@ class SlownessReporter {
         assert (defPrio = 10000) > 0;
         PRIORITY = Integer.getInteger("org.netbeans.modules.uihandler.SlownessReporter.priority", defPrio);
     } // NOI18N
-    private static final int CLEAR = Integer.getInteger("org.netbeans.modules.uihandler.SlownessReporter.clear", 60000); // NOI18N
+    private static final int CLEAR = Integer.getInteger("org.netbeans.modules.uihandler.SlownessReporter.clear", 0); // NOI18N
     private static final RequestProcessor IO_RP = new RequestProcessor(SlownessReporter.class);
     
     public SlownessReporter() {

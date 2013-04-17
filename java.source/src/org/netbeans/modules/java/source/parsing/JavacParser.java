@@ -871,10 +871,11 @@ public class JavacParser extends Parser {
         return task;
     }
 
-    private static @NonNull com.sun.tools.javac.code.Source validateSourceLevel(
+    static @NonNull com.sun.tools.javac.code.Source validateSourceLevel(
             @NullAllowed String sourceLevel,
             @NonNull final ClasspathInfo cpInfo) {
         ClassPath bootClassPath = cpInfo.getClassPath(PathKind.BOOT);
+        ClassPath classPath = null;
         ClassPath srcClassPath = cpInfo.getClassPath(PathKind.SOURCE);
         com.sun.tools.javac.code.Source[] sources = com.sun.tools.javac.code.Source.values();
         Level warnLevel;
@@ -889,23 +890,31 @@ public class JavacParser extends Parser {
             if (source.name.equals(sourceLevel)) {
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_4) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/AssertionError.class") == null) { //NOI18N
-                        if (srcClassPath != null && srcClassPath.findResource("java/lang/AssertionError.java") == null) {
-                            LOGGER.log(warnLevel,
-                                       "Even though the source level of {0} is set to: {1}, java.lang.AssertionError cannot be found on the bootclasspath: {2}\n" +
-                                       "Changing source level to 1.3",
-                                       new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
-                            return com.sun.tools.javac.code.Source.JDK1_3;
+                        if (bootClassPath.findResource("java/lang/Object.class") == null) { // NOI18N
+                            // empty bootClassPath also check classpath
+                            classPath = cpInfo.getClassPath(PathKind.COMPILE);
+                        }
+                        if (srcClassPath != null && srcClassPath.findResource("java/lang/AssertionError.java") == null) { // NOI18N
+                            if (classPath == null || classPath.findResource("java/lang/AssertionError.class") == null) { // NOI18N
+                                LOGGER.log(warnLevel,
+                                           "Even though the source level of {0} is set to: {1}, java.lang.AssertionError cannot be found on the bootclasspath: {2}\n" +
+                                           "Changing source level to 1.3",
+                                           new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                                return com.sun.tools.javac.code.Source.JDK1_3;
+                            }
                         }
                     }
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_5) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/StringBuilder.class") == null) { //NOI18N
                         if (srcClassPath != null && srcClassPath.findResource("java/lang/StringBuilder.java")==null) {
-                            LOGGER.log(warnLevel,
-                                       "Even though the source level of {0} is set to: {1}, java.lang.StringBuilder cannot be found on the bootclasspath: {2}\n" +
-                                       "Changing source level to 1.4",
-                                       new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
-                            return com.sun.tools.javac.code.Source.JDK1_4;
+                            if (classPath == null || classPath.findResource("java/lang/StringBuilder.class") == null) { // NOI18N
+                                LOGGER.log(warnLevel,
+                                           "Even though the source level of {0} is set to: {1}, java.lang.StringBuilder cannot be found on the bootclasspath: {2}\n" +
+                                           "Changing source level to 1.4",
+                                           new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                                return com.sun.tools.javac.code.Source.JDK1_4;
+                            }
                         }
                     }
                 }

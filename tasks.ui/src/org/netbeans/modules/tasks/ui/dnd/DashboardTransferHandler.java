@@ -52,8 +52,8 @@ import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 import org.netbeans.modules.tasks.ui.model.Category;
-import org.netbeans.modules.tasks.ui.treelist.TreeList;
-import org.netbeans.modules.tasks.ui.treelist.TreeListModel;
+import org.netbeans.modules.team.ui.util.treelist.TreeList;
+import org.netbeans.modules.team.ui.util.treelist.TreeListModel;
 
 /**
  *
@@ -77,10 +77,10 @@ public class DashboardTransferHandler extends TransferHandler {
         if (c instanceof JList) {
             JList list = (JList) c;
             Object[] values = list.getSelectedValues();
-            List<TaskNode> nodes = new ArrayList<TaskNode>(values.length);
             if (values == null || values.length == 0) {
                 return null;
             }
+            List<TaskNode> nodes = new ArrayList<TaskNode>(values.length);
             for (int i = 0; i < values.length; i++) {
                 Object val = values[i];
                 if (val instanceof TaskNode) {

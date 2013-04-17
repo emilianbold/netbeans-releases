@@ -50,11 +50,11 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
-import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -296,7 +296,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         }
         
         @Override
-        public EnumImpl create() {
+        public EnumImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
             EnumImpl impl = getEnumDefinitionInstance();
             if(impl == null) {
                 impl = new EnumImpl(getName(), getName().toString(), stronglyTyped, getFile(), getStartOffset(), getEndOffset());
