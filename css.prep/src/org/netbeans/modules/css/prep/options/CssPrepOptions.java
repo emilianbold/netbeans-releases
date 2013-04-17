@@ -43,6 +43,7 @@ package org.netbeans.modules.css.prep.options;
 
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.FileUtils;
@@ -74,6 +75,7 @@ public final class CssPrepOptions {
         return INSTANCE;
     }
 
+    @CheckForNull
     public String getSassPath() {
         String path = getPreferences().get(SASS_PATH, null);
         if (path == null && !sassSearched) {
@@ -99,6 +101,7 @@ public final class CssPrepOptions {
         getPreferences().putBoolean(SASS_OUTPUT_ON_ERROR, outputOnError);
     }
 
+    @CheckForNull
     public String getLessPath() {
         String path = getPreferences().get(LESS_PATH, null);
         if (path == null && !lessSearched) {

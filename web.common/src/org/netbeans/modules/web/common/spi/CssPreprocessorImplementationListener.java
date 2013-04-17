@@ -69,6 +69,15 @@ public interface CssPreprocessorImplementationListener extends EventListener {
     void customizerChanged(@NonNull Project project, @NonNull CssPreprocessorImplementation cssPreprocessor);
 
     /**
+     * This method is called when processing error occurs.
+     * @param project project where processing error occured
+     * @param cssPreprocessor CSS preprocessor where processing error occured
+     * @param error error message
+     * @since 1.45
+     */
+    void processingErrorOccured(@NonNull Project project, @NonNull CssPreprocessorImplementation cssPreprocessor, @NonNull String error);
+
+    /**
      * Support class for working with {@link CssPreprocessorImplementationListener}.
      * <p>
      * This class is thread safe.
@@ -124,6 +133,19 @@ public interface CssPreprocessorImplementationListener extends EventListener {
             Parameters.notNull("cssPreprocessor", cssPreprocessor); // NOI18N
             for (CssPreprocessorImplementationListener listener : listeners) {
                 listener.customizerChanged(project, cssPreprocessor);
+            }
+        }
+
+        /**
+         * Fire an event in processing the given project and CSS preprocessor.
+         * @since 1.45
+         */
+        public void fireProcessingErrorOccured(@NonNull Project project, @NonNull CssPreprocessorImplementation cssPreprocessor, @NonNull String error) {
+            Parameters.notNull("project", project); // NOI18N
+            Parameters.notNull("cssPreprocessor", cssPreprocessor); // NOI18N
+            Parameters.notNull("error", error); // NOI18N
+            for (CssPreprocessorImplementationListener listener : listeners) {
+                listener.processingErrorOccured(project, cssPreprocessor, error);
             }
         }
 

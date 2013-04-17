@@ -84,6 +84,14 @@ public class CompletionContextFinderTest extends JsTestBase {
        checkCompletionContext("testfiles/model/simpleObject.js", " ^   },", CompletionContext.GLOBAL);
     }
     
+    public void testObjectPropertyName01() throws Exception {
+        checkCompletionContext("testfiles/completion/objectPropertyNameContext.js", "autoCr^ea : \"sranda\"", CompletionContext.OBJECT_PROPERTY_NAME);
+    }
+
+//    public void testObjectPropertyName02() throws Exception {
+//        checkCompletionContext("testfiles/completion/objectPropertyNameContext.js", "   nam^e: 'Panda',", CompletionContext.OBJECT_PROPERTY_NAME);
+//    }
+
     private void checkCompletionContext(final String file, final String caretLine, final CompletionContext expected) throws Exception {
         
         Source testSource = getTestSource(getTestFile(file));

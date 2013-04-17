@@ -241,11 +241,14 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         for (TypeUsage type : returnTypes) {
             if (!(type.getType().equals(Type.UNRESOLVED) && returnTypes.size() > 1)) {
                 if (!type.isResolved()) {
-                    for(TypeUsage rType : ModelUtils.resolveTypeFromSemiType(this, type)) {
-                        if(!nameReturnTypes.contains(type.getType())) {
+                    for (TypeUsage rType : ModelUtils.resolveTypeFromSemiType(this, type)) {
+                        if (!nameReturnTypes.contains(rType.getType())) {
+                            if ("@this".equals(type.getType())) { // NOI18N
+                                rType = new TypeUsageImpl(rType.getType(), -1, rType.isResolved());
+                            }
                             resolved.add(rType);
                             nameReturnTypes.add(rType.getType());
-                        } 
+                        }
                     }
 //                    resolved.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
                 } else {
@@ -260,8 +263,14 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         for (TypeUsage type : resolved) {
             if (type.getOffset() > 0) {
                 JsObject jsObject = ModelUtils.findJsObjectByName(this, type.getType());
+                if (jsObject == null) {
+                    JsObject global = ModelUtils.getGlobalObject(this);
+                    jsObject = ModelUtils.findJsObjectByName(global, type.getType());
+                }
                 if (jsObject != null) {
-                    ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + type.getType().length()));
+                    int index = type.getType().lastIndexOf('.');
+                    int typeLength = (index > -1) ? type.getType().length() - index - 1 : type.getType().length();
+                    ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + typeLength));
                 }
             }
         }
