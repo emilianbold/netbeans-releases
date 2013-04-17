@@ -175,8 +175,16 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %}
 
 WHITESPACE=[ \t\r\n]+
-COMMENT_START="{*"
-COMMENT_END=~"*}"
+COMMENT_START="*"
+COMMENT_END=~"*"
+LATTE_COMMENT_START={SYNTAX_LATTE_START}{COMMENT_START}
+LATTE_COMMENT_END={COMMENT_END}{SYNTAX_LATTE_END}
+DOUBLE_COMMENT_START={SYNTAX_DOUBLE_START}{COMMENT_START}
+DOUBLE_COMMENT_END={COMMENT_END}{SYNTAX_DOUBLE_END}
+ASP_COMMENT_START={SYNTAX_ASP_START}{COMMENT_START}
+ASP_COMMENT_END={COMMENT_END}{SYNTAX_ASP_END}
+PYTHON_COMMENT_START={SYNTAX_PYTHON_START}{COMMENT_START}
+PYTHON_COMMENT_END={COMMENT_END}{SYNTAX_PYTHON_END}
 MACRO_SYNTAX_START="syntax"[ \t]+
 MACRO_SYNTAX_END="/syntax"
 SYNTAX_LATTE_START="{"
@@ -201,8 +209,8 @@ SYNTAX_PYTHON_END="%}"
 }
 
 <YYINITIAL> {
-    {COMMENT_START} {
-        if (syntax != Syntax.OFF) {
+    {LATTE_COMMENT_START} {
+        if (syntax == Syntax.LATTE) {
             pushState(ST_COMMENT);
         }
     }
@@ -210,6 +218,11 @@ SYNTAX_PYTHON_END="%}"
         if (syntax == Syntax.LATTE) {
             pushState(ST_LATTE);
             return LatteTopTokenId.T_LATTE_DELIMITER;
+        }
+    }
+    {DOUBLE_COMMENT_START} {
+        if (syntax == Syntax.DOUBLE || syntax == Syntax.PYTHON) {
+            pushState(ST_COMMENT);
         }
     }
     {SYNTAX_DOUBLE_START} {
@@ -222,10 +235,20 @@ SYNTAX_PYTHON_END="%}"
             return LatteTopTokenId.T_LATTE_DELIMITER;
         }
     }
+    {ASP_COMMENT_START} {
+        if (syntax == Syntax.ASP) {
+            pushState(ST_COMMENT);
+        }
+    }
     {SYNTAX_ASP_START} {
         if (syntax == Syntax.ASP) {
             pushState(ST_ASP);
             return LatteTopTokenId.T_LATTE_DELIMITER;
+        }
+    }
+    {PYTHON_COMMENT_START} {
+        if (syntax == Syntax.PYTHON) {
+            pushState(ST_COMMENT);
         }
     }
     {SYNTAX_PYTHON_START} {
@@ -330,9 +353,29 @@ SYNTAX_PYTHON_END="%}"
 }
 
 <ST_COMMENT> {
-    {COMMENT_END} {
-        popState();
-        return LatteTopTokenId.T_LATTE_COMMENT;
+    {LATTE_COMMENT_END} {
+        if (syntax == Syntax.LATTE) {
+            popState();
+            return LatteTopTokenId.T_LATTE_COMMENT;
+        }
+    }
+    {DOUBLE_COMMENT_END} {
+        if (syntax == Syntax.DOUBLE || syntax == Syntax.PYTHON) {
+            popState();
+            return LatteTopTokenId.T_LATTE_COMMENT;
+        }
+    }
+    {ASP_COMMENT_END} {
+        if (syntax == Syntax.ASP) {
+            popState();
+            return LatteTopTokenId.T_LATTE_COMMENT;
+        }
+    }
+    {PYTHON_COMMENT_END} {
+        if (syntax == Syntax.PYTHON) {
+            popState();
+            return LatteTopTokenId.T_LATTE_COMMENT;
+        }
     }
     . {
         popState();
