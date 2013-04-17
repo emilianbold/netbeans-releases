@@ -296,8 +296,6 @@ public class HgCommand {
     private static final String HG_FETCH_CMD = "fetch"; // NOI18N
     public static final String HG_PROXY_ENV = "http_proxy="; // NOI18N
 
-    private static final String HG_MERGE_NEEDED_ERR = "(run 'hg heads' to see heads, 'hg merge' to merge)"; // NOI18N
-    private static final String HG_HEADS_NEEDED_ERR = "(run 'hg heads' to see heads)"; //NOI18N
     private static final String HG_UPDATE_NEEDED_ERR = "(run 'hg update' to get a working copy)"; //NOI18N
     public static final String HG_MERGE_CONFLICT_ERR = "conflicts detected in "; // NOI18N
     public static final String HG_MERGE_FAILED1_ERR = "merging"; // NOI18N
@@ -4375,8 +4373,12 @@ public class HgCommand {
                 || msg.contains(HG_AUTHORIZATION_FAILED_ERR);
     }
 
-    public static boolean isMergeNeededMsg(String msg) {
-        return msg.indexOf(HG_MERGE_NEEDED_ERR) > -1;                       // NOI18N
+    public static boolean isMergeNeededMsg (String msg) {
+        return msg.contains("run") //NOI18N
+                && msg.contains("hg heads") //NOI18N
+                && msg.contains("to see heads") //NOI18N
+                && msg.contains("hg merge") //NOI18N
+                && msg.contains("to merge"); //NOI18N
     }
 
     public static boolean isUpdateNeededMsg (String msg) {
@@ -4384,7 +4386,9 @@ public class HgCommand {
     }
 
     public static boolean isHeadsNeededMsg (String msg) {
-        return msg.contains(HG_HEADS_NEEDED_ERR);
+        return msg.contains("run") //NOI18N
+                && msg.contains("hg heads") //NOI18N
+                && msg.contains("to see heads"); //NOI18N
     }
 
     public static boolean isBackoutMergeNeededMsg(String msg) {

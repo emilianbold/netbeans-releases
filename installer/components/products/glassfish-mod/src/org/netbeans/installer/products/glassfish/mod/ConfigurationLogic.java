@@ -84,12 +84,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public void install(final Progress progress)
             throws InstallationException {
         File directory = getProduct().getInstallationLocation();
-        File jdk4GF4Executable = null;
+        File jdk4GF4Home = null;
         String jdk4GF4Path = getProduct().getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY);
         if (! jdk4GF4Path.isEmpty()) {
             File jdk4GF4 = new File(jdk4GF4Path);
             if (JavaUtils.isJavaHome(jdk4GF4)) {
-                jdk4GF4Executable = JavaUtils.getExecutable(jdk4GF4);
+                jdk4GF4Home = jdk4GF4;
             }
         }
 
@@ -144,10 +144,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 final File location = productToIntegrate.getInstallationLocation();
                 registerJavaDB(location, new File(directory, "javadb"));
                 LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
-                if (jdk4GF4Executable != null) {
-                    LogManager.log("... setting Java Executable " + jdk4GF4Executable + " with " + getProduct().getDisplayName());
+                if (jdk4GF4Home != null) {
+                    LogManager.log("... setting Java Home " + jdk4GF4Home + " with " + getProduct().getDisplayName());
                 }
-                if(!registerGlassFish(location, directory, jdk4GF4Executable)) {
+                if(!registerGlassFish(location, directory, jdk4GF4Home)) {
                     continue;
                 }
                 
@@ -207,7 +207,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         return SystemUtils.executeCommand(nbLocation, commands.toArray(new String [] {})).getErrorCode() == 0;
     }
 
-    private boolean registerGlassFish(File nbLocation, File gfLocation, File jdk4GF4Executable) throws IOException {
+    private boolean registerGlassFish(File nbLocation, File gfLocation, File jdk4GF4Home) throws IOException {
         File javaExe = JavaUtils.getExecutable(new File(System.getProperty("java.home")));
         String [] cp = {
             "platform/core/core.jar",
@@ -234,8 +234,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         commands.add(mainClass);
         commands.add(nbCluster.getAbsolutePath());
         commands.add(new File(gfLocation, "glassfish").getAbsolutePath());
-        if (jdk4GF4Executable != null) {
-            commands.add(jdk4GF4Executable.getAbsolutePath());
+        if (jdk4GF4Home != null) {
+            commands.add(jdk4GF4Home.getAbsolutePath());
         }
         
         return SystemUtils.executeCommand(nbLocation, commands.toArray(new String[]{})).getErrorCode() == 0;

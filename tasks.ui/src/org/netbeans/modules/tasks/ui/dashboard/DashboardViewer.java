@@ -57,7 +57,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.tasks.ui.LinkButton;
+import org.netbeans.modules.team.ui.util.treelist.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
 import org.netbeans.modules.tasks.ui.actions.Actions.CreateCategoryAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.CreateRepositoryAction;
@@ -69,12 +69,12 @@ import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
 import org.netbeans.modules.tasks.ui.filter.DashboardFilter;
 import org.netbeans.modules.tasks.ui.model.Category;
 import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
-import org.netbeans.modules.tasks.ui.treelist.ColorManager;
-import org.netbeans.modules.tasks.ui.treelist.TreeList;
-import org.netbeans.modules.tasks.ui.treelist.TreeListModel;
-import org.netbeans.modules.tasks.ui.treelist.TreeListModelListener;
-import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.DashboardRefresher;
+import org.netbeans.modules.team.ui.util.treelist.ColorManager;
+import org.netbeans.modules.team.ui.util.treelist.TreeList;
+import org.netbeans.modules.team.ui.util.treelist.TreeListModel;
+import org.netbeans.modules.team.ui.util.treelist.TreeListModelListener;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.ImageUtilities;
@@ -105,7 +105,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             return null;
         }
     };
-    private RequestProcessor requestProcessor = new RequestProcessor("Dashboard"); // NOI18N
+    private final RequestProcessor requestProcessor = new RequestProcessor("Dashboard"); // NOI18N
     private final TreeList treeList = new TreeList(model);
     public final JScrollPane dashboardComponent;
     private boolean opened = false;

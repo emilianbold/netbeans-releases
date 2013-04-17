@@ -51,8 +51,8 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.tasks.ui.LinkButton;
-import org.netbeans.modules.tasks.ui.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.LinkButton;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
 import org.openide.util.NbBundle;
 
 /**

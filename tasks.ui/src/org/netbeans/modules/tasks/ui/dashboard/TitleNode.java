@@ -47,10 +47,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.modules.tasks.ui.LinkButton;
-import org.netbeans.modules.tasks.ui.treelist.ColorManager;
-import org.netbeans.modules.tasks.ui.treelist.LeafNode;
-import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.LinkButton;
+import org.netbeans.modules.team.ui.util.treelist.ColorManager;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.ProgressLabel;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,10 +63,10 @@ public class TitleNode extends LeafNode {
 
     private JPanel panel;
     private JLabel lblName;
-    private String titleName;
-    private LinkButton[] buttons;
+    private final String titleName;
+    private final LinkButton[] buttons;
     private final Object LOCK = new Object();
-    private ProgressLabel lblProgress;
+    private final ProgressLabel lblProgress;
 
     public TitleNode(String titleName, LinkButton... buttons) {
         super(null);
@@ -116,5 +117,10 @@ public class TitleNode extends LeafNode {
                 }
             });
         }
+    }
+
+    @Override
+    protected Type getType() {
+        return Type.TITLE;
     }
 }

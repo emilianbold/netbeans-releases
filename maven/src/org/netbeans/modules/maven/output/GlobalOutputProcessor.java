@@ -57,7 +57,7 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.modules.maven.execute.CommandLineOutputHandler;
-import org.netbeans.modules.maven.execute.ExecutionEventObject;
+import org.netbeans.modules.maven.execute.cmd.ExecutionEventObject;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import static org.netbeans.modules.maven.output.Bundle.*;
 import org.netbeans.modules.options.java.api.JavaOptions;

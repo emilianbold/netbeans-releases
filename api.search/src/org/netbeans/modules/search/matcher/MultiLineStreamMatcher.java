@@ -262,7 +262,6 @@ public class MultiLineStreamMatcher extends AbstractMatcher {
                         case BufferedCharSequence.UnicodeLineTerminator.LF:
                         case BufferedCharSequence.UnicodeLineTerminator.PS:
                         case BufferedCharSequence.UnicodeLineTerminator.LS:
-                        case BufferedCharSequence.UnicodeLineTerminator.FF:
                         case BufferedCharSequence.UnicodeLineTerminator.NEL:
                             lineNumber++;
                             lineStartOffset = bcs.position();
