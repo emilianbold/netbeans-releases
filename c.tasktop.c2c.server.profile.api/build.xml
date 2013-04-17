@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="c.tasktop.c2c.server.profile.api" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="jar">
+        <jar jarfile="${cluster}/${module.jar}">
+            <zipfileset src="external/com.tasktop.c2c.server.profile.api_1.1.0.20121207-000120.jar" includes="com/tasktop/c2c/server/profile/domain/**"/>
+            <manifest>
+                <attribute name="Export-Package" value="com.tasktop.c2c.server.profile.domain,com.tasktop.c2c.server.profile.domain.activity"/>
+                <attribute name="Bundle-Name" value="Profile API"/>
+                <attribute name="Require-Bundle" value="com.tasktop.c2c.server.common.api;bundle-version=&quot;0.1.0&quot;,com.tasktop.c2c.server.tasks.api;bundle-version=&quot;0.1.0&quot;,com.tasktop.c2c.server.wiki.api;bundle-version=&quot;1.0.0&quot;,com.tasktop.c2c.server.cloud.api;bundle-version=&quot;0.1.0&quot;,com.tasktop.c2c.server.scm.api;bundle-version=&quot;0.1.0&quot;,org.apache.commons.httpclient;bundle-version=&quot;3.1.0&quot;,org.codehaus.jackson.core;bundle-version=&quot;1.7.4&quot;,org.codehaus.jackson.mapper;bundle-version=&quot;1.7.4&quot;"/>
+                <attribute name="Bundle-Version" value="1.1.0.20121113-105133"/>
+                <attribute name="Bundle-ManifestVersion" value="2"/>    
+                <attribute name="Bundle-SymbolicName" value="com.tasktop.c2c.server.profile.api"/>
+            </manifest>            
+        </jar>
+    </target>      
+</project>

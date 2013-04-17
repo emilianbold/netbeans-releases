@@ -90,24 +90,24 @@ import org.openide.util.NbBundle.Messages;
 @OptionsPanelController.Keywords(keywords={"maven"}, location=JavaOptions.JAVA, tabTitle= "#TIT_Maven_Category")
 public class SettingsPanel extends javax.swing.JPanel {
     private static final String SEPARATOR = "SEPARATOR";
-    private static final String BUNDLED_RUNTIME_VERSION =
+    public  static final String BUNDLED_RUNTIME_VERSION =
             MavenSettings.getCommandLineMavenVersion(EmbedderFactory.getDefaultMavenHome());
-    private static final int RUNTIME_COUNT_LIMIT = 5;
+    public static final int RUNTIME_COUNT_LIMIT = 5;
     private boolean changed;
     private boolean valid;
-    private ActionListener listener;
-    private MavenOptionController controller;
-    private TextValueCompleter completer;
-    private ActionListener   listItemChangedListener;
-    private List<String>       userDefinedMavenRuntimes = new ArrayList<String>();
-    private List<String>       predefinedRuntimes = new ArrayList<String>();
-    private DefaultComboBoxModel mavenHomeDataModel = new DefaultComboBoxModel();
+    private final ActionListener listener;
+    private final MavenOptionController controller;
+    private final TextValueCompleter completer;
+    private final ActionListener   listItemChangedListener;
+    private final List<String>       userDefinedMavenRuntimes = new ArrayList<String>();
+    private final List<String>       predefinedRuntimes = new ArrayList<String>();
+    private final DefaultComboBoxModel mavenHomeDataModel = new DefaultComboBoxModel();
     private String             mavenRuntimeHome = null;
     private int                lastSelected = -1;
 
     private static class ComboBoxRenderer extends DefaultListCellRenderer {
 
-        private JSeparator separator;
+        private final JSeparator separator;
 
         public ComboBoxRenderer() {
             super();
@@ -238,10 +238,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         if (selected < 0) {
             return null;
         }
-        
+
         if (selected < predefinedRuntimes.size()) {
             return predefinedRuntimes.get(selected);
-
+    
         } else if (!userDefinedMavenRuntimes.isEmpty() &&
                 selected - predefinedRuntimes.size() <= userDefinedMavenRuntimes.size()) {
             return userDefinedMavenRuntimes.get(selected - 1 - predefinedRuntimes.size());
@@ -650,7 +650,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         comMavenHome.removeActionListener(listItemChangedListener);
         mavenHomeDataModel.removeAllElements();
         File command = EmbedderFactory.getMavenHome();
-        String bundled = null;
         for (String runtime : predefinedRuntimes) {
             boolean bundledRuntime = runtime.isEmpty();
             String desc = bundledRuntime ? MAVEN_RUNTIME_Bundled() :
@@ -668,7 +667,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         
         mavenHomeDataModel.addElement(SEPARATOR);
         mavenHomeDataModel.addElement(MAVEN_RUNTIME_Browse());
-        comMavenHome.setSelectedItem(command != null ? command.getAbsolutePath() : bundled); //NOI18N
+        comMavenHome.setSelectedItem(command.getAbsolutePath()); //NOI18N
         listDataChanged();
         lastSelected = comMavenHome.getSelectedIndex();
         comMavenHome.addActionListener(listItemChangedListener);

@@ -44,7 +44,6 @@ package org.netbeans.modules.maven.execute.cmd;
 
 import org.apache.maven.execution.ExecutionEvent;
 import org.json.simple.JSONObject;
-import org.netbeans.modules.maven.execute.ExecutionEventObject;
 
 /**
  *
