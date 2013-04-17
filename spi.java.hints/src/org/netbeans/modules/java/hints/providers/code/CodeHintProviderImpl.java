@@ -108,7 +108,13 @@ public class CodeHintProviderImpl implements HintProvider {
         Map<HintMetadata, Collection<HintDescription>> result = new HashMap<HintMetadata, Collection<HintDescription>>();
         
         for (ClassWrapper c : FSWrapper.listClasses()) {
-            processClass(c, result);
+            try {
+                processClass(c, result);
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                Exceptions.printStackTrace(t);
+            }
         }
 
         return result;
@@ -126,18 +132,18 @@ public class CodeHintProviderImpl implements HintProvider {
 
     public static void processClass(ClassWrapper clazz, Map<HintMetadata, Collection<HintDescription>> result) throws SecurityException {
         Hint metadata = clazz.getAnnotation(Hint.class);
+        HintMetadata hm;
+        
+        if (metadata != null) {
+            String id = metadata.id();
 
-        if (metadata == null) {
-            metadata = new EmptyHintMetadataDescription();
+            if (id == null || id.length() == 0) {
+                id = clazz.getName();
+            }
+            hm = fromAnnotation(id, clazz, null, metadata);
+        } else {
+            hm = null;
         }
-
-        String id = metadata.id();
-
-        if (id == null || id.length() == 0) {
-            id = clazz.getName();
-        }
-
-        HintMetadata hm = fromAnnotation(id, clazz, null, metadata);
         
         for (MethodWrapper m : clazz.getMethods()) {
             Hint localMetadataAnnotation = m.getAnnotation(Hint.class);
@@ -155,7 +161,9 @@ public class CodeHintProviderImpl implements HintProvider {
                 localMetadata = hm;
             }
 
-            processMethod(result, m, localMetadata);
+            if (localMetadata != null) {
+                processMethod(result, m, localMetadata);
+            }
         }
     }
 

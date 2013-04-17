@@ -44,12 +44,15 @@
 
 package org.netbeans.modules.xml.retriever.impl;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLConnection;
+import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
@@ -59,6 +62,7 @@ import javax.net.ssl.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -141,9 +145,32 @@ public class SecureURLResourceRetriever extends URLResourceRetriever {
             }
         };
 
+        // #208324: proper key managers need to be passed, so let's configure at least the defaults...
+        KeyManager[] mgrs;
+        if (System.getProperty("javax.net.ssl.keyStorePassword") != null &&  // NOI18N
+            System.getProperty("javax.net.ssl.keyStore") != null) { // NOI18N
+            try {
+                KeyStore ks = KeyStore.getInstance("JKS"); // NOI18N
+                    ks.load(new FileInputStream(System.getProperty("javax.net.ssl.keyStore")), //NOI18N
+                    System.getProperty("javax.net.ssl.keyStorePassword").toCharArray() //NOI18N
+                );
+                // Set up key manager factory to use our key store
+                KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                kmf.init(ks,System.getProperty("javax.net.ssl.keyStorePassword").toCharArray()); // NOI18N
+                mgrs = kmf.getKeyManagers();
+            } catch (IOException ex) {
+                // this is somewhat expected, i.e. JKS file not present
+                mgrs = null;
+            } catch (java.security.GeneralSecurityException e) {
+                ErrorManager.getDefault().notify(e);
+                return;
+            }
+        } else {
+            mgrs = null;
+        }
         try {
             SSLContext sslContext = SSLContext.getInstance("SSL"); //NOI18N
-            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+            sslContext.init(mgrs, trustAllCerts, new java.security.SecureRandom());
             con.setSSLSocketFactory(sslContext.getSocketFactory());
             con.setHostnameVerifier(new HostnameVerifier() {
                 public boolean verify(String string, SSLSession sSLSession) {

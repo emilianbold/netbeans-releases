@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,29 +34,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.editor.java;
-
-import javax.swing.Action;
-import javax.swing.text.JTextComponent;
-
-/**
  *
- * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-/* package */ class SelectPreviousCamelCasePosition extends PreviousCamelCasePosition {
+package org.netbeans.modules.css.prep.preferences;
 
-    public SelectPreviousCamelCasePosition(Action originalAction) {
-        this(JavaKit.selectPreviousCamelCasePosition, originalAction);
+import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.util.MappingUtils;
+import org.netbeans.modules.css.prep.util.ValidationResult;
+
+public class LessPreferencesValidator {
+
+    private final ValidationResult result = new ValidationResult();
+
+
+    public ValidationResult getResult() {
+        return result;
     }
-    
-    protected SelectPreviousCamelCasePosition(String name, Action originalAction) {
-        super(name, originalAction);
+
+    public LessPreferencesValidator validate(Project project) {
+        return validate(LessPreferences.isEnabled(project), LessPreferences.getMappings(project));
     }
-    
-    protected void moveToNewOffset(JTextComponent textComponent, int offset) {
-        textComponent.getCaret().moveDot(offset);
+
+    public LessPreferencesValidator validate(boolean enabled, List<String> mappings) {
+        if (enabled) {
+            result.merge(new MappingUtils.MappingsValidator()
+                    .validate(mappings)
+                    .getResult());
+        }
+        return this;
     }
+
 }
-
