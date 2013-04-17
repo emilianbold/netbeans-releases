@@ -2651,12 +2651,13 @@ public class FormatingTest extends NbTestCase {
         preferences.putBoolean("spaceAroundAssignOps", true);
 
         preferences.put("wrapAssignOps", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        preferences.putBoolean("wrapAfterAssignOps", true);
         testSource.runModificationTask(task).commit();
 
         preferences.putBoolean("alignMultilineAssignment", true);
         testSource.runModificationTask(task).commit();
         preferences.put("wrapAssignOps", CodeStyle.WrapStyle.WRAP_NEVER.name());
-        preferences.put("wrapAssignOps", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putBoolean("wrapAfterAssignOps", false);
         preferences.putBoolean("alignMultilineAssignment", false);
 
         preferences.put("wrapBinaryOps", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
@@ -2800,16 +2801,31 @@ public class FormatingTest extends NbTestCase {
                 + "    }\n"
                 + "}\n";
         preferences.put("wrapAssignOps", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        preferences.putBoolean("wrapAfterAssignOps", true);
         reformat(doc, content, golden);
 
         golden =
                 "package hierbas.del.litoral;\n\n"
                 + "public class Test {\n\n"
                 + "    public void taragui(int x, int y) {\n"
-                + "        for (int i =\n"
-                + "                 0; i < x; i++) {\n"
-                + "            y +=\n"
-                + "            (y ^ 123) << 2;\n"
+                + "        for (int i\n"
+                + "                = 0; i < x; i++) {\n"
+                + "            y\n"
+                + "                    += (y ^ 123) << 2;\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n";
+        preferences.putBoolean("wrapAfterAssignOps", false);
+        reformat(doc, content, golden);
+
+        golden =
+                "package hierbas.del.litoral;\n\n"
+                + "public class Test {\n\n"
+                + "    public void taragui(int x, int y) {\n"
+                + "        for (int i\n"
+                + "                 = 0; i < x; i++) {\n"
+                + "            y\n"
+                + "            += (y ^ 123) << 2;\n"
                 + "        }\n"
                 + "    }\n"
                 + "}\n";

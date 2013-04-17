@@ -158,6 +158,10 @@ public class ClientSideProject implements Project {
                 recompileSources(cssPreprocessor);
             }
         }
+        @Override
+        public void processingErrorOccured(Project project, CssPreprocessor cssPreprocessor, String error) {
+            // noop
+        }
     };
 
 

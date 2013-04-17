@@ -46,15 +46,22 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CPFileType;
 import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
+import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
+import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.util.NbBundle;
 
 public final class LessProjectProblemsProvider extends BaseProjectProblemsProvider {
 
-    public LessProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support, CssPreprocessorImplementation.Customizer customizer) {
-        super(support, customizer);
+    public LessProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
+        super(support);
+    }
+
+    @NbBundle.Messages("LessProjectProblemsProvider.displayName=LESS")
+    @Override
+    String getDisplayName() {
+        return Bundle.LessProjectProblemsProvider_displayName();
     }
 
     @Override
@@ -82,6 +89,13 @@ public final class LessProjectProblemsProvider extends BaseProjectProblemsProvid
                     OPTIONS_PROBLEM_RESOLVER);
             currentProblems.add(problem);
         }
+    }
+
+    @Override
+    ValidationResult validatePreferences(Project project) {
+        return new LessPreferencesValidator()
+                .validate(project)
+                .getResult();
     }
 
 }

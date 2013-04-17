@@ -329,18 +329,22 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     if(assignment.isResolved()) {
                         result.add(assignment);
                     } else {
-                        DeclarationScope scope = ModelUtils.getDeclarationScope(jsObject);
-                        JsObject object = ModelUtils.getJsObjectByName(scope, assignment.getType());
-                        if (object == null) {
-                            JsObject gloal = ModelUtils.getGlobalObject(jsObject);
-                            object = ModelUtils.findJsObjectByName(gloal, assignment.getType());
-                        }
-                        if(object != null) {
-                            Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, found != null ? found.getKey() : -1, visited);
-                            if(resolvedFromObject.isEmpty()) {
-                                result.add(new TypeUsageImpl(object.getFullyQualifiedName(), assignment.getOffset(), true));
-                            } else {
-                                result.addAll(resolvedFromObject);
+                        if (assignment.getType().startsWith("@")) {
+                            result.addAll(ModelUtils.resolveTypeFromSemiType(jsObject, assignment));
+                        } else {
+                            DeclarationScope scope = ModelUtils.getDeclarationScope(jsObject);
+                            JsObject object = ModelUtils.getJsObjectByName(scope, assignment.getType());
+                            if (object == null) {
+                                JsObject gloal = ModelUtils.getGlobalObject(jsObject);
+                                object = ModelUtils.findJsObjectByName(gloal, assignment.getType());
+                            }
+                            if(object != null) {
+                                Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, found != null ? found.getKey() : -1, visited);
+                                if(resolvedFromObject.isEmpty()) {
+                                    result.add(new TypeUsageImpl(object.getFullyQualifiedName(), assignment.getOffset(), true));
+                                } else {
+                                    result.addAll(resolvedFromObject);
+                                }
                             }
                         }
                     }
