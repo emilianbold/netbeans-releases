@@ -169,9 +169,9 @@ function MyApplication() {
     }
 
     function getContactName(contact) {
-        if (typeof contact.displayName === null || contact.displayName === "null") {
+        if (!contact.displayName) {
             var contact_name = "";
-            if (typeof contact.name === "undefined" || contact.name === null) {
+            if (!contact.name) {
                 return (contact.nickname || "unknown");
             } else {
                 var contact_name = (contact.name.givenName + " " + contact.name.familyName);
@@ -721,7 +721,7 @@ function ContactsCtrl() {
         var options = new ContactFindOptions();
         options.filter = "";
         options.multiple = true;
-        var filter = ["addresses"];
+        var filter = ["name", "addresses"];
         window.navigator.contacts.find(filter, onSuccess, onError, options);
     };
 }
