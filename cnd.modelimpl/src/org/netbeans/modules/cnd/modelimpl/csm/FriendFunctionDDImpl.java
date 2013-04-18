@@ -45,6 +45,11 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -55,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -142,6 +148,7 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
     }
 
     public static class FriendFunctionDDBuilder extends FunctionDDBuilder {
+        private List<Token> bodyTokens = new ArrayList<Token>();
     
         @Override
         public CsmScope getScope() {
@@ -181,6 +188,33 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
             
             addDeclaration(fun);
         }        
+
+        public void addBodyToken(Token token) {
+            if (!APTUtils.isEOF(token)) {
+                bodyTokens.add(token);
+            }
+        }
+        
+        public TokenStream getBodyTokenStream() {
+            if(bodyTokens.isEmpty()) {
+                return null;
+            } else {
+                return new TokenStream() {
+
+                    int index = 0;
+
+                    @Override
+                    public Token nextToken() throws TokenStreamException {
+                        if(bodyTokens.size() > index) {
+                            index++;
+                            return bodyTokens.get(index - 1);                        
+                        } else {
+                            return null;
+                        }
+                    }
+                };
+            }
+        }
     }    
     
     @Override

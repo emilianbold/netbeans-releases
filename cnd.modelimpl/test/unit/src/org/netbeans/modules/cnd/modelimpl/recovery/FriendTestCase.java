@@ -41,28 +41,65 @@
  */
 package org.netbeans.modules.cnd.modelimpl.recovery;
 
-import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoverySuiteTestBase;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import java.io.File;
+import org.junit.Test;
+import org.netbeans.junit.Manager;
+import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Diff;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Diffs;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Golden;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammar;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.Grammars;
+import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
 
 /**
  *
  * @author Alexander Simon
  */
-public class RecoverySuiteTest extends RecoverySuiteTestBase {
-
-    public RecoverySuiteTest() {
-        super("Recovery Test Suite");
-        addTest(FriendTestCase.class);
-        addTest(TypedefTestCase.class);
-        addTest(DeclarationsTestCase.class);
-        addTest(ClassTestCase.class);
-        addTest(MemberTestCase.class);
-        addTest(NamespaceTestCase.class);
+@RandomlyFails
+public class FriendTestCase extends RecoveryTestCaseBase {
+    private static final String SOURCE = "friend.cc";
+    public FriendTestCase(String testName, Grammar gramma, Diff diff, Golden golden) {
+        super(testName, gramma, diff, golden);
     }
 
-    public static Test suite() {
-        TestSuite suite = new RecoverySuiteTest();
-        return suite;
+    @Override
+    protected File getTestCaseDataDir() {
+        return Manager.normalizeFile(new File(getDataDir(), "common/recovery/friend"));
     }
+
+    @Grammar(newGrammar = false)
+    @Golden
+    @Test
+    public void A_Golden() throws Exception {
+        implTest(SOURCE);
+    }
+
+    @Grammar(newGrammar = true)
+    @Diff(file=SOURCE)
+    @Test
+    public void friend() throws Exception {
+        implTest(SOURCE);
+    }
+    
+    @Grammars({
+        @Grammar(newGrammar = false),
+        @Grammar(newGrammar = true)
+    })
+    @Diffs({
+        @Diff(file=SOURCE, line = 14, column = 1, length = 0, insert = "ID"),
+        @Diff(file=SOURCE, line = 14, column = 1, length = 0, insert = "ID()"),
+        //@Diff(file=SOURCE, line = 14, column = 1, length = 0, insert = "ID<E>"),
+        @Diff(file=SOURCE, line = 14, column = 1, length = 0, insert = "*"),
+        @Diff(file=SOURCE, line = 14, column = 1, length = 0, insert = "&"),
+        //@Diff(file=SOURCE, line = 14, column = 1, length = 0, insert = "{"),
+        @Diff(file=SOURCE, line = 14, column = 1, length = 0, insert = "}"),
+        @Diff(file=SOURCE, line = 14, column = 1, length = 0, insert = "+"),
+        //@Diff(file=SOURCE, line = 14, column = 1, length = 0, type = "int*a()"),
+    })
+    @Test
+    public void beforeInlineFriend1() throws Exception {
+        implTest(SOURCE);
+    }
+    
 }
