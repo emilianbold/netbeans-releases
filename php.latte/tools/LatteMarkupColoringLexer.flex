@@ -166,6 +166,12 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %}
 
 WHITESPACE=[ \t\r\n]+
+KEYWORD="true"|"false"|"null"|"and"|"or"|"xor"|"clone"|"new"|"instanceof"|"return"|"continue"|"break"
+CAST="(" ("expand"|"string"|"array"|"int"|"integer"|"float"|"bool"|"boolean"|"object") ")"
+VARIABLE="$"[a-zA-Z0-9_]+
+NUMBER=["+""-"]?[0-9]+(\.[0-9]+)?(e[0-9]+)?
+CHAR="::"|"=>"|[^\"']
+SYMBOL=[a-zA-Z0-9_]+(\-[a-zA-Z0-9_]+)*
 
 
 %state ST_HIGHLIGHTING_ERROR
@@ -176,8 +182,23 @@ WHITESPACE=[ \t\r\n]+
 }
 
 <YYINITIAL> {
-    .* {
+    {NUMBER} {
+        return LatteMarkupTokenId.T_NUMBER;
+    }
+    {KEYWORD} {
+        return LatteMarkupTokenId.T_KEYWORD;
+    }
+    {CAST} {
+        return LatteMarkupTokenId.T_CAST;
+    }
+    {VARIABLE} {
+        return LatteMarkupTokenId.T_VARIABLE;
+    }
+    {SYMBOL} {
         return LatteMarkupTokenId.T_SYMBOL;
+    }
+    {CHAR} {
+        return LatteMarkupTokenId.T_CHAR;
     }
 }
 
