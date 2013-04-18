@@ -204,7 +204,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         }
         
         // check javadoc
-        DocCommentTree docCommentTree = ((DocTrees) javac.getTrees()).getDocCommentTree(currentPath);
+        DocCommentTree docCommentTree = javac.getDocTrees().getDocCommentTree(currentPath);
         if (docCommentTree != null) {
             errors = new ArrayList<ErrorDescription>();
             if (node.getKind() == Tree.Kind.METHOD) {
@@ -897,7 +897,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     public Void visitThrows(ThrowsTree tree, List<ErrorDescription> errors) {
         ReferenceTree exName = tree.getExceptionName();
         try {
-            Element ex = ((DocTrees) javac.getTrees()).getElement(currentPath, exName);
+            Element ex = javac.getDocTrees().getElement(getCurrentPath());
             Types types = javac.getTypes();
             Elements elements = javac.getElements();
             TypeMirror throwable = elements.getTypeElement("java.lang.Throwable").asType();

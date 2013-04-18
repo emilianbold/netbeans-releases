@@ -809,7 +809,7 @@ public final class TreeUtilities {
             return null;
         }
         
-        int pos = (int) ((DocTrees) info.getTrees()).getSourcePositions().getStartPosition(info.getCompilationUnit(), docTree, ref);
+        int pos = (int) info.getDocTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), docTree, ref);
         
         if (pos < 0)
             return null;

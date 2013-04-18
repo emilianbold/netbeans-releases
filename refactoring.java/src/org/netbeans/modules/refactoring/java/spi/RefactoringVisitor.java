@@ -333,7 +333,7 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> implement
     }
 
     private void scanJavadoc(TreePath path, Element p) {
-        DocCommentTree docCommentTree = ((DocTrees) workingCopy.getTrees()).getDocCommentTree(path);
+        DocCommentTree docCommentTree = workingCopy.getDocTrees().getDocCommentTree(path);
         if(docCommentTree != null) {
             DocTreePath docTreePath = new DocTreePath(path, docCommentTree);
             docScanner.scan(docTreePath, p);

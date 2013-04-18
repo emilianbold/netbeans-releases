@@ -111,7 +111,7 @@ public final class JavadocImports {
      * @return referenced elements.
      */
     public static Set<TypeElement> computeReferencedElements(CompilationInfo javac, final TreePath tp) {
-        final DocTrees trees = (DocTrees) javac.getTrees();
+        final DocTrees trees = javac.getDocTrees();
         DocCommentTree docComment = trees.getDocCommentTree(tp);
         final Set<TypeElement> result = new HashSet<TypeElement>();
         
@@ -153,8 +153,8 @@ public final class JavadocImports {
      * @return referenced elements.
      */
     public static List<Token> computeTokensOfReferencedElements(final CompilationInfo javac, final TreePath forElement, final Element toFind) {
-        final DocTrees trees = (DocTrees) javac.getTrees();
-        final DocCommentTree docComment = ((DocTrees) javac.getTrees()).getDocCommentTree(forElement);
+        final DocTrees trees = javac.getDocTrees();
+        final DocCommentTree docComment = javac.getDocTrees().getDocCommentTree(forElement);
         final List<Token> result = new ArrayList<Token>();
         
         new DocTreeScanner<Void, Void>() {
@@ -185,7 +185,7 @@ public final class JavadocImports {
                         return null;
                     }
                 }.scan(referenceEmbeddedSourceNodes(forElement, node), null);
-                if (toFind.equals(trees.getElement(forElement, node))) {
+                if (toFind.equals(trees.getElement(getCurrentPath()))) {
                     int[] span = javac.getTreeUtilities().findNameSpan(docComment, node);
                     if (span != null) {
                         handleUsage(span[0]);
@@ -260,12 +260,12 @@ public final class JavadocImports {
      * @return the found element or {@code null}.
      */
     public static Element findReferencedElement(final CompilationInfo javac, final int offset) {
-        final DocTrees trees = (DocTrees) javac.getTrees();
+        final DocTrees trees = javac.getDocTrees();
         final TreePath tp = JavadocCompletionUtils.findJavadoc(javac, offset);
         
         if (tp == null) return null;
         
-        final DocCommentTree docComment = ((DocTrees) javac.getTrees()).getDocCommentTree(tp);
+        final DocCommentTree docComment = javac.getDocTrees().getDocCommentTree(tp);
         final DocSourcePositions positions = trees.getSourcePositions();
         final Element[] result = new Element[1];
         
@@ -338,12 +338,12 @@ public final class JavadocImports {
     }
     
     public static Token findNameTokenOfReferencedElement(final CompilationInfo javac, final int offset) {
-        final DocTrees trees = (DocTrees) javac.getTrees();
+        final DocTrees trees = javac.getDocTrees();
         final TreePath tp = JavadocCompletionUtils.findJavadoc(javac, offset);
         
         if (tp == null) return null;
         
-        final DocCommentTree docComment = ((DocTrees) javac.getTrees()).getDocCommentTree(tp);
+        final DocCommentTree docComment = javac.getDocTrees().getDocCommentTree(tp);
         final DocSourcePositions positions = trees.getSourcePositions();
         final Token[] result = new Token[1];
         
@@ -552,7 +552,7 @@ public final class JavadocImports {
         }
         
         private void resolveElement() {
-            final DocTrees trees = (DocTrees) javac.getTrees();
+            final DocTrees trees = javac.getDocTrees();
             DocCommentTree dcComment = trees.getDocCommentTree(getCurrentPath());
             new DocTreeScanner<Void, Void>() {
                 @Override public Void visitReference(ReferenceTree node, Void p) {

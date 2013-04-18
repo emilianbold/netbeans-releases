@@ -311,7 +311,7 @@ public final class DocTreePathHandle {
                 throw new IllegalArgumentException("treePathHandle.resolve(compilationInfo) returned null for treePathHandle " + treePathHandle);    //NOI18N
             }
             DocTreePath tp = null;
-            DocCommentTree doc = ((DocTrees)javac.getTrees()).getDocCommentTree(treePath);
+            DocCommentTree doc = javac.getDocTrees().getDocCommentTree(treePath);
             int pos = position.getOffset();
             tp = resolvePathForPos(javac, treePath, doc, pos + 1);
             if (tp != null) {
@@ -421,7 +421,7 @@ public final class DocTreePathHandle {
                 return null;
             }
             
-            DocCommentTree docCommentTree = ((DocTrees)javac.getTrees()).getDocCommentTree(p);
+            DocCommentTree docCommentTree = javac.getDocTrees().getDocCommentTree(p);
             return new DocTreePath(p, docCommentTree);
         }
 
@@ -459,7 +459,7 @@ public final class DocTreePathHandle {
                 return null;
             }
             
-            DocCommentTree docCommentTree = ((DocTrees)javac.getTrees()).getDocCommentTree(p);
+            DocCommentTree docCommentTree = javac.getDocTrees().getDocCommentTree(p);
             return getChild(docCommentTree, index);
         }
 

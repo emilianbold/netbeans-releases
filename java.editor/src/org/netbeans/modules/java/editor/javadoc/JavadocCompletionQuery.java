@@ -231,7 +231,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
     private boolean resolveContext(CompilationInfo javac, JavadocContext jdctx) throws IOException {
         jdctx.doc = javac.getDocument();
         // find class context: class, method, ...
-        DocTrees trees = (DocTrees) javac.getTrees();
+        DocTrees trees = javac.getDocTrees();
         TreePath javadocFor = JavadocCompletionUtils.findJavadoc(javac, this.caretOffset);
         if (javadocFor == null) {
             return false;
@@ -537,7 +537,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 if (ref.getClassReference() == null) {
                     addLocalMembersAndVars(jdctx, prefix, substitutionOffset);
                 } else {
-                    Element elm = ((DocTrees) jdctx.javac.getTrees()).getElement(new TreePath(jdctx.javadocFor, ref.getClassReference()));
+                    Element elm = jdctx.javac.getDocTrees().getElement(new TreePath(jdctx.javadocFor, ref.getClassReference()));
                     if (elm != null) {
                         addMembers(jdctx, prefix, substitutionOffset, elm.asType(), elm,
                                 EnumSet.<ElementKind>of(ENUM_CONSTANT, FIELD, METHOD, CONSTRUCTOR),
