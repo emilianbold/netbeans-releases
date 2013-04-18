@@ -202,10 +202,12 @@ SYNTAX_PYTHON_END="%}"
 %state ST_ASP
 %state ST_PYTHON
 %state ST_SYNTAX_CHANGE
+%state ST_N_ATTR_DOUBLE
+%state ST_N_ATTR_SINGLE
 %state ST_HIGHLIGHTING_ERROR
 
 %%
-<ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON>{WHITESPACE}+ {
+<ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_N_ATTR_DOUBLE, ST_N_ATTR_SINGLE>{WHITESPACE}+ {
 }
 
 <YYINITIAL> {
@@ -262,6 +264,14 @@ SYNTAX_PYTHON_END="%}"
             pushState(ST_LATTE);
             return LatteTopTokenId.T_LATTE_DELIMITER;
         }
+    }
+    "<"([^>])*"n:"[a-zA-Z0-9\-_]+=\" {
+        pushState(ST_N_ATTR_DOUBLE);
+        return LatteTopTokenId.T_HTML;
+    }
+    "<"([^>])*"n:"[a-zA-Z0-9\-_]+=' {
+        pushState(ST_N_ATTR_SINGLE);
+        return LatteTopTokenId.T_HTML;
     }
     {WHITESPACE}+ | . {
         return LatteTopTokenId.T_HTML;
@@ -373,6 +383,22 @@ SYNTAX_PYTHON_END="%}"
     }
 }
 
+<ST_N_ATTR_DOUBLE> {
+    ~\" {
+        yypushback(1);
+        popState();
+        return LatteTopTokenId.T_LATTE;
+    }
+}
+
+<ST_N_ATTR_SINGLE> {
+    ~' {
+        yypushback(1);
+        popState();
+        return LatteTopTokenId.T_LATTE;
+    }
+}
+
 /* ============================================
    Stay in this state until we find a whitespace.
    After we find a whitespace we go the the prev state and try again from the next token.
@@ -390,7 +416,7 @@ SYNTAX_PYTHON_END="%}"
    This rule must be the last in the section!!
    it should contain all the states.
    ============================================ */
-<YYINITIAL, ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON> {
+<YYINITIAL, ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_N_ATTR_DOUBLE, ST_N_ATTR_SINGLE> {
     . {
         yypushback(yylength());
         pushState(ST_HIGHLIGHTING_ERROR);

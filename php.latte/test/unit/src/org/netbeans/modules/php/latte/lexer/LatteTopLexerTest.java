@@ -90,6 +90,14 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
         performTest("syntax-latte-in-curly");
     }
 
+    public void testNHrefDouble() throws Exception {
+        performTest("n-href-double");
+    }
+
+    public void testNHrefSingle() throws Exception {
+        performTest("n-href-single");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".latte"));
