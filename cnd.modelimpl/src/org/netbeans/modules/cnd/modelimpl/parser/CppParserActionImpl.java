@@ -771,6 +771,18 @@ public class CppParserActionImpl implements CppParserActionEx {
                     }
                 }
             }
+            for (SimpleDeclarationBuilder freiendBuilder : classBuilder.getFriendBuilders()) {
+                if(freiendBuilder instanceof FriendFunctionDDBuilder) {
+                    org.netbeans.modules.cnd.antlr.TokenStream bodyTokenStream = ((FriendFunctionDDBuilder)freiendBuilder).getBodyTokenStream();
+                    if(bodyTokenStream != null) {
+                        builderContext.push((FriendFunctionDDBuilder)freiendBuilder);
+                        ParserProviderImpl.Antlr3CXXParser aParser = new ParserProviderImpl.Antlr3CXXParser(params);
+                        aParser.init(null, bodyTokenStream, wrapper);
+                        aParser.parse(CsmParserProvider.CsmParser.ConstructionKind.FUNCTION_DEFINITION_AFTER_DECLARATOR);
+                        builderContext.pop();
+                    }
+                }
+            }
         }
         globalSymTab.pop();
     }
@@ -2455,7 +2467,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
     }
     
-    private void end_declarator_impl(Token token) {
+    private void end_declarator_impl(Token token) throws MyRecognitionException {
         DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
         if(declaratorBuilder.isTopDeclarator()) {
             builderContext.pop();
@@ -2466,15 +2478,18 @@ public class CppParserActionImpl implements CppParserActionEx {
                 
                 if(declBuilder.getTemplateDescriptorBuilder() != null &&
                         !declBuilder.isConstructor() && !declBuilder.isDestructor()) {
-                    SymTabEntry classEntry = globalSymTab.lookupLocal(declaratorBuilder.getName());
-                    if (classEntry == null) {
-                        classEntry = globalSymTab.enterLocal(declaratorBuilder.getName());
-                        classEntry.setAttribute(CppAttributes.TEMPLATE, true);
+                    if (declaratorBuilder.getName() != null) {
+                        SymTabEntry classEntry = globalSymTab.lookupLocal(declaratorBuilder.getName());
+                        if (classEntry == null) {
+                            classEntry = globalSymTab.enterLocal(declaratorBuilder.getName());
+                            classEntry.setAttribute(CppAttributes.TEMPLATE, true);
+                        } else {
+                            classEntry.setAttribute(CppAttributes.TEMPLATE, true);
+                        }
                     } else {
-                        classEntry.setAttribute(CppAttributes.TEMPLATE, true);
+                        throw new MyRecognitionException("Expected not empty declarator name at '"+token.getText()+"'", token); // NOI18N
                     }
                 }
-                
             }
         } else {
             declaratorBuilder.leaveDeclarator();
@@ -2919,9 +2934,13 @@ public class CppParserActionImpl implements CppParserActionEx {
             FunctionDDBuilder builder = (FunctionDDBuilder)top;
             builder.setEndOffset(((APTToken)token).getEndOffset());
             builderContext.pop();
-            FunctionDDImpl create = builder.create();
-            if (create == null) {
-                throw new MyRecognitionException("Unrecognized function definition at '"+token.getText()+"'", token); // NOI18N
+            if (builder instanceof FriendFunctionDDBuilder) {
+                ((ClassBuilder)builderContext.top(1)).addFriendBuilder(builder);
+            } else {
+                FunctionDDImpl create = builder.create();
+                if (create == null) {
+                    throw new MyRecognitionException("Unrecognized function definition at '"+token.getText()+"'", token); // NOI18N
+                }
             }
         } else if(top instanceof FunctionDefinitionBuilder) {
             FunctionDefinitionBuilder builder = (FunctionDefinitionBuilder)top;
@@ -3519,6 +3538,9 @@ public class CppParserActionImpl implements CppParserActionEx {
     private void skip_balanced_curlies_impl(Token token) {
         if (builderContext.top() instanceof MethodDDBuilder) {
             MethodDDBuilder builder = (MethodDDBuilder) builderContext.top();
+            builder.addBodyToken(token);
+        } else if (builderContext.top() instanceof FriendFunctionDDBuilder) {
+            FriendFunctionDDBuilder builder = (FriendFunctionDDBuilder) builderContext.top();
             builder.addBodyToken(token);
         }
     }    
