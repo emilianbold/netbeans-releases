@@ -53,10 +53,10 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
-import org.netbeans.modules.team.ui.treelist.LeafNode;
-import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,7 +79,7 @@ public class OpenFavoritesNode<S extends TeamServer, P> extends LeafNode {
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
         if( null == panel ) {
             panel = new JPanel(new GridBagLayout());
             panel.setOpaque(false);

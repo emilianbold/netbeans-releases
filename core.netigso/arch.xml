@@ -594,6 +594,24 @@ made subject to such option by the copyright holder.
    <a href="@TOP@/org/netbeans/core/netigso/spi/NetigsoArchive.html">NetigsoArchive</a>.
    </api>
   </p>
+  <p>
+   <api name="netigso-bundles" group="java.io.File" category="friend" type="export">
+       <p>
+       List of registered OSGi bundles as well as mapping of their packages
+       to individual bundles is stored in <code>var/cache/netigso-bundles</code>.
+       This file works in orchestration with content of <code>var/cache/netigso</code>
+       directory where the OSGi framework usually stores its own information
+       about bundles.
+       </p>
+       <p>
+       The content of the cache file is <em>private</em>, but the location 
+       is well known (including its relation with <code>netigso</code> directory),
+       so <a href="@org-netbeans-bootstrap@/architecture-summary.html#java.io.File-installation.cache">
+       the installer</a> can store necessary data and speed first start of
+       the application up.
+       </p>
+   </api>
+  </p>
  </answer>
 
 

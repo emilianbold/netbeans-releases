@@ -158,6 +158,58 @@ public class CXXParserEx extends CXXParser {
         endResync();
     }
     
+    /**
+     * Use the current stacked followset to work out the valid tokens that can
+     * follow on from the current point in the parse, then recover by eating
+     * tokens that are not a member of the follow set we compute.
+     *
+     * This method is used whenever we wish to force a sync, even though the
+     * parser has not yet checked LA(1) for alt selection. This is useful in
+     * situations where only a subset of tokens can begin a new construct (such
+     * as the start of a new statement in a block) and we want to proactively
+     * detect garbage so that the current rule does not exit on on an exception.
+     *
+     * We could override recover() to make this the default behavior but that is
+     * too much like using a sledge hammer to crack a nut. We want finer grained
+     * control of the recovery and error mechanisms.
+     */
+    @Override
+    protected void syncToSet() {
+        // Compute the followset that is in context wherever we are in the
+        // rule chain/stack
+        BitSet follow = state.following[state._fsp]; //computeContextSensitiveRuleFOLLOW();
+        syncToSet(follow);
+    }
+
+    protected void syncToSet(BitSet follow) {
+        beginResync();
+        try {
+            // Consume all tokens in the stream until we find a member of the follow
+            // set, which means the next production should be guaranteed to be happy.
+            while (!follow.member(input.LA(1))) {
+                if (input.LA(1) == org.antlr.runtime.Token.EOF) {
+                    // Looks like we didn't find anything at all that can help us here
+                    // so we need to rewind to where we were and let normal error handling
+                    // bail out.
+                    return;
+                }
+                final Token token = ParserProviderImpl.convertToken(input.LT(1));
+                reportError(new MyRecognitionException("Skip unexpected token at '"+token.getText()+"'", token)); // NOI18N
+                input.consume();
+                // Now here, because you are consuming some tokens, yu will probably want
+                // to raise an error message such as "Spurious elements after the class member were discarded"
+                // using whatever your override of displayRecognitionError() routine does to record
+                // error messages. The exact error my depend on context etc.
+            }
+        } catch (Exception e) {
+            // Just ignore any errors here, we will just let the recognizer
+            // try to resync as normal - something must be very screwed.
+        } finally {
+            // Always release the mark we took
+            endResync();
+        }
+    }
+    
 //    @Override
 //    public void consumeUntil(IntStream input, int tokenType) {
 //        //System.out.println("consumeUntil "+tokenType);

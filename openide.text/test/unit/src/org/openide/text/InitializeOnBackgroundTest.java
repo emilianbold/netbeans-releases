@@ -209,11 +209,15 @@ public class InitializeOnBackgroundTest extends NbTestCase implements CloneableE
             JEditorPane p;
             Document doc;
             
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
-                   CloneableEditor ed = (CloneableEditor)WindowManager.getDefault().getRegistry().getActivated();
-                   p = ed.getEditorPane();
-                   doc = ed.getEditorPane().getDocument();
+                    final TopComponent atc = WindowManager.getDefault().getRegistry().getActivated();
+                    if (atc instanceof CloneableEditor) {
+                        CloneableEditor ed = (CloneableEditor)atc;
+                        p = ed.getEditorPane();
+                        doc = ed.getEditorPane().getDocument();
+                    }
                 }
             }
         }
