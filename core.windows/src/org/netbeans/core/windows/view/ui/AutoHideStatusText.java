@@ -1,0 +1,119 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ */
+package org.netbeans.core.windows.view.ui;
+
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.openide.awt.StatusDisplayer;
+
+/**
+ * Status line text that shows at the bottom of the main IDE window only when 
+ * there's any status text available and auto-hides when the status text is empty.
+ * 
+ * @author S. Aubrecht
+ */
+final class AutoHideStatusText implements ChangeListener, Runnable {
+    
+    private final JPanel panel = new JPanel( new BorderLayout() );
+    private final JLabel lblStatus = new JLabel();
+    
+    private AutoHideStatusText( JFrame frame  ) {
+        Border outerBorder = UIManager.getBorder( "Nb.ScrollPane.border" ); //NOI18N
+        if( null == outerBorder ) {
+            outerBorder = BorderFactory.createEtchedBorder();
+        }
+        panel.setBorder( BorderFactory.createCompoundBorder( outerBorder, 
+                BorderFactory.createEmptyBorder(3,3,3,3) ) );
+        panel.add( lblStatus, BorderLayout.CENTER );
+        frame.getLayeredPane().add( panel, Integer.valueOf( 101 ) );
+        StatusDisplayer.getDefault().addChangeListener( this );
+    }
+    
+    static void install( JFrame frame ) {
+        new AutoHideStatusText( frame );
+    }
+
+    @Override
+    public void stateChanged( ChangeEvent e ) {
+        if( SwingUtilities.isEventDispatchThread() ) {
+            run();
+        } else {
+            SwingUtilities.invokeLater( this );
+        }
+    }
+    
+    @Override
+    public void run() {
+        String text = StatusDisplayer.getDefault().getStatusText();
+        lblStatus.setText( text );
+        if( null == text || text.isEmpty() ) {
+            panel.setVisible( false );
+            Container parent = panel.getParent();
+            if( parent instanceof JLayeredPane ) {
+                JLayeredPane pane = (JLayeredPane) parent;
+                pane.moveToBack( panel );
+            }
+        } else {
+            panel.setVisible( true );
+            Container parent = panel.getParent();
+            Dimension dim = panel.getPreferredSize();
+            Rectangle rect = parent.getBounds();
+            panel.setBounds( rect.x-1, rect.y+rect.height-dim.height+1, dim.width, dim.height );
+            if( parent instanceof JLayeredPane ) {
+                JLayeredPane pane = (JLayeredPane) parent;
+                pane.moveToFront( panel );
+            }
+        }
+    }
+}
