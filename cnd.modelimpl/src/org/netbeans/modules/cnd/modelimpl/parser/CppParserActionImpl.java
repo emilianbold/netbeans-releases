@@ -1507,10 +1507,9 @@ public class CppParserActionImpl implements CppParserActionEx {
                 kind == TYPE_PARAMETER__TYPENAME) {
             TemplateParameterBuilder builder = (TemplateParameterBuilder) builderContext.top();            
             if(token3 != null) {
-                builder.setName(((APTToken) token3).getText());
-                
                 APTToken aToken = (APTToken) token3;
                 final CharSequence name = aToken.getTextID();
+                builder.setName(name);
                 SymTabEntry classEntry = globalSymTab.lookupLocal(name);
                 if (classEntry == null) {
                     classEntry = globalSymTab.enterLocal(name);
@@ -1521,10 +1520,9 @@ public class CppParserActionImpl implements CppParserActionEx {
                 kind == TYPE_PARAMETER__TYPENAME_ASSIGNEQUAL) {
             TemplateParameterBuilder builder = (TemplateParameterBuilder) builderContext.top();            
             if(token2 != null) {
-                builder.setName(((APTToken) token2).getText());                
-                
                 APTToken aToken = (APTToken) token2;
                 final CharSequence name = aToken.getTextID();
+                builder.setName(name);                
                 SymTabEntry classEntry = globalSymTab.lookupLocal(name);
                 if (classEntry == null) {
                     classEntry = globalSymTab.enterLocal(name);
@@ -2248,7 +2246,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     private void alias_declaration_impl(Token usingToken, Token identToken, Token assignequalToken) {
         TypedefBuilder builder = new TypedefBuilder();
-        builder.setName(((APTToken) identToken).getText());
+        builder.setName(((APTToken) identToken).getTextID());
         builder.setFile(currentContext.file);
         builder.setStartOffset(((APTToken)usingToken).getOffset());
         builderContext.push(builder);
@@ -2797,7 +2795,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         builder.setEndOffset(((APTToken)token).getEndOffset());
         builder.setTypeBuilder(declBuilder.getTypeBuilder());
         if(declBuilder.getDeclaratorBuilder() == null || declBuilder.getDeclaratorBuilder().getName() == null) {
-            builder.setName(""); // NOI18N
+            builder.setName(CharSequences.empty());
         } else {
             builder.setName(declBuilder.getDeclaratorBuilder().getName());
         }
