@@ -435,6 +435,9 @@ public class ProfileSupport {
             }
             final Enumeration<? extends FileObject> children = rootFo.getChildren(true);
             while (children.hasMoreElements()) {
+                if (context.isCancelled()) {
+                    break;
+                }
                 final FileObject fo = children.nextElement();
                 if (isImportant(fo)) {
                     validateBinaryFile(fo, collector);
@@ -505,6 +508,9 @@ public class ProfileSupport {
 
             @Override
             protected void validate(@NonNull final ViolationCollector collector) {
+                if (context.isCancelled()) {
+                    return;
+                }
                 Profile current = null;
                 if (context.shouldValidate(Validation.BINARIES_BY_MANIFEST)) {
                     final Union2<Profile,String> res = findProfileInManifest(root);
@@ -592,7 +598,10 @@ public class ProfileSupport {
             }
 
             @Override
-            protected void validate(@NonNull final ViolationCollector collector) {                
+            protected void validate(@NonNull final ViolationCollector collector) {
+                if (context.isCancelled()) {
+                    return;
+                }
                 try {
                     if (cacheRoot != null) {
                         validateBinaryRoot(Utilities.toURI(cacheRoot).toURL(), collector);
