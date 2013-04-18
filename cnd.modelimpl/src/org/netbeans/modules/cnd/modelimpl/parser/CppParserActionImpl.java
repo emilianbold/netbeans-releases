@@ -771,6 +771,18 @@ public class CppParserActionImpl implements CppParserActionEx {
                     }
                 }
             }
+            for (SimpleDeclarationBuilder freiendBuilder : classBuilder.getFriendBuilders()) {
+                if(freiendBuilder instanceof FriendFunctionDDBuilder) {
+                    org.netbeans.modules.cnd.antlr.TokenStream bodyTokenStream = ((FriendFunctionDDBuilder)freiendBuilder).getBodyTokenStream();
+                    if(bodyTokenStream != null) {
+                        builderContext.push((FriendFunctionDDBuilder)freiendBuilder);
+                        ParserProviderImpl.Antlr3CXXParser aParser = new ParserProviderImpl.Antlr3CXXParser(params);
+                        aParser.init(null, bodyTokenStream, wrapper);
+                        aParser.parse(CsmParserProvider.CsmParser.ConstructionKind.FUNCTION_DEFINITION_AFTER_DECLARATOR);
+                        builderContext.pop();
+                    }
+                }
+            }
         }
         globalSymTab.pop();
     }
@@ -1507,10 +1519,9 @@ public class CppParserActionImpl implements CppParserActionEx {
                 kind == TYPE_PARAMETER__TYPENAME) {
             TemplateParameterBuilder builder = (TemplateParameterBuilder) builderContext.top();            
             if(token3 != null) {
-                builder.setName(((APTToken) token3).getText());
-                
                 APTToken aToken = (APTToken) token3;
                 final CharSequence name = aToken.getTextID();
+                builder.setName(name);
                 SymTabEntry classEntry = globalSymTab.lookupLocal(name);
                 if (classEntry == null) {
                     classEntry = globalSymTab.enterLocal(name);
@@ -1521,10 +1532,9 @@ public class CppParserActionImpl implements CppParserActionEx {
                 kind == TYPE_PARAMETER__TYPENAME_ASSIGNEQUAL) {
             TemplateParameterBuilder builder = (TemplateParameterBuilder) builderContext.top();            
             if(token2 != null) {
-                builder.setName(((APTToken) token2).getText());                
-                
                 APTToken aToken = (APTToken) token2;
                 final CharSequence name = aToken.getTextID();
+                builder.setName(name);                
                 SymTabEntry classEntry = globalSymTab.lookupLocal(name);
                 if (classEntry == null) {
                     classEntry = globalSymTab.enterLocal(name);
@@ -2248,7 +2258,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     private void alias_declaration_impl(Token usingToken, Token identToken, Token assignequalToken) {
         TypedefBuilder builder = new TypedefBuilder();
-        builder.setName(((APTToken) identToken).getText());
+        builder.setName(((APTToken) identToken).getTextID());
         builder.setFile(currentContext.file);
         builder.setStartOffset(((APTToken)usingToken).getOffset());
         builderContext.push(builder);
@@ -2457,7 +2467,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
     }
     
-    private void end_declarator_impl(Token token) {
+    private void end_declarator_impl(Token token) throws MyRecognitionException {
         DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
         if(declaratorBuilder.isTopDeclarator()) {
             builderContext.pop();
@@ -2468,15 +2478,18 @@ public class CppParserActionImpl implements CppParserActionEx {
                 
                 if(declBuilder.getTemplateDescriptorBuilder() != null &&
                         !declBuilder.isConstructor() && !declBuilder.isDestructor()) {
-                    SymTabEntry classEntry = globalSymTab.lookupLocal(declaratorBuilder.getName());
-                    if (classEntry == null) {
-                        classEntry = globalSymTab.enterLocal(declaratorBuilder.getName());
-                        classEntry.setAttribute(CppAttributes.TEMPLATE, true);
+                    if (declaratorBuilder.getName() != null) {
+                        SymTabEntry classEntry = globalSymTab.lookupLocal(declaratorBuilder.getName());
+                        if (classEntry == null) {
+                            classEntry = globalSymTab.enterLocal(declaratorBuilder.getName());
+                            classEntry.setAttribute(CppAttributes.TEMPLATE, true);
+                        } else {
+                            classEntry.setAttribute(CppAttributes.TEMPLATE, true);
+                        }
                     } else {
-                        classEntry.setAttribute(CppAttributes.TEMPLATE, true);
+                        throw new MyRecognitionException("Expected not empty declarator name at '"+token.getText()+"'", token); // NOI18N
                     }
                 }
-                
             }
         } else {
             declaratorBuilder.leaveDeclarator();
@@ -2797,7 +2810,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         builder.setEndOffset(((APTToken)token).getEndOffset());
         builder.setTypeBuilder(declBuilder.getTypeBuilder());
         if(declBuilder.getDeclaratorBuilder() == null || declBuilder.getDeclaratorBuilder().getName() == null) {
-            builder.setName(""); // NOI18N
+            builder.setName(CharSequences.empty());
         } else {
             builder.setName(declBuilder.getDeclaratorBuilder().getName());
         }
@@ -2921,9 +2934,13 @@ public class CppParserActionImpl implements CppParserActionEx {
             FunctionDDBuilder builder = (FunctionDDBuilder)top;
             builder.setEndOffset(((APTToken)token).getEndOffset());
             builderContext.pop();
-            FunctionDDImpl create = builder.create();
-            if (create == null) {
-                throw new MyRecognitionException("Unrecognized function definition at '"+token.getText()+"'", token); // NOI18N
+            if (builder instanceof FriendFunctionDDBuilder) {
+                ((ClassBuilder)builderContext.top(1)).addFriendBuilder(builder);
+            } else {
+                FunctionDDImpl create = builder.create();
+                if (create == null) {
+                    throw new MyRecognitionException("Unrecognized function definition at '"+token.getText()+"'", token); // NOI18N
+                }
             }
         } else if(top instanceof FunctionDefinitionBuilder) {
             FunctionDefinitionBuilder builder = (FunctionDefinitionBuilder)top;
@@ -3345,7 +3362,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             NameBuilder nameBuilder = (NameBuilder) top;
             APTToken aToken = (APTToken) token;
             CharSequence part = aToken.getTextID();
-            nameBuilder.addNamePart("operator " + part); // NOI18N
+            nameBuilder.addNamePart(CharSequences.create("operator " + part)); // NOI18N
         }        
     }
     @Override public void end_operator_id(Token token) {}
@@ -3521,6 +3538,9 @@ public class CppParserActionImpl implements CppParserActionEx {
     private void skip_balanced_curlies_impl(Token token) {
         if (builderContext.top() instanceof MethodDDBuilder) {
             MethodDDBuilder builder = (MethodDDBuilder) builderContext.top();
+            builder.addBodyToken(token);
+        } else if (builderContext.top() instanceof FriendFunctionDDBuilder) {
+            FriendFunctionDDBuilder builder = (FriendFunctionDDBuilder) builderContext.top();
             builder.addBodyToken(token);
         }
     }    

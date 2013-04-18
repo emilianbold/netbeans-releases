@@ -144,6 +144,7 @@ final class LazyLoader {
                 lazyMode.selectedTCposition = index;
             }
         } else {
+            mode.addUnloadedTopComponent(tcRefConfig.tc_id);
             LazyMode lazyMode = getLazyMode( mode );
             lazyMode.add( tcRefConfig.tc_id, index );
         }
