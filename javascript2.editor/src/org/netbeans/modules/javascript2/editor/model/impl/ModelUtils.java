@@ -57,11 +57,16 @@ import jdk.nashorn.internal.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import java.util.StringTokenizer;
+import jdk.nashorn.internal.ir.TernaryNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
@@ -661,7 +666,7 @@ public class ModelUtils {
                             if ("@mtd".equals(kind) && jsKind.isFunction()) {
                                 //Collection<TypeUsage> resolved = resolveTypeFromSemiType(model, ModelUtils.findJsObject(model, offset), IndexedElement.getReturnTypes(indexResult));
                                 Collection<TypeUsage> resolvedTypes = IndexedElement.getReturnTypes(indexResult);
-                                ModelUtils.addUnigueType(newResolvedTypes, resolvedTypes);
+                                ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
                             } else {
                                 checkProperty = true;
                             }
@@ -671,9 +676,9 @@ public class ModelUtils {
                             List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
                             resolveAssignments(jsIndex, propertyFQN, fromAssignment);
                             if (fromAssignment.isEmpty()) {
-                                ModelUtils.addUnigueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
+                                ModelUtils.addUniqueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
                             } else {
-                                ModelUtils.addUnigueType(newResolvedTypes, fromAssignment);
+                                ModelUtils.addUniqueType(newResolvedTypes, fromAssignment);
                             }
                         }
                         // from libraries look for top level types
@@ -719,6 +724,7 @@ public class ModelUtils {
 
     public static Collection<TypeUsage> resolveTypes(Collection<? extends TypeUsage> unresolved, JsParserResult parserResult) {
         Collection<TypeUsage> types = new ArrayList<TypeUsage>(unresolved);
+        Set<String> original = null;
         Model model = parserResult.getModel();
         FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
         JsIndex jsIndex = JsIndex.get(fo);
@@ -730,6 +736,12 @@ public class ModelUtils {
             Collection<TypeUsage> resolved = new ArrayList<TypeUsage>();
             for (TypeUsage typeUsage : types) {
                 if (!typeUsage.isResolved()) {
+                    if (original == null) {
+                        original = new HashSet<String>(unresolved.size());
+                        for (TypeUsage t : unresolved) {
+                            original.add(t.getType());
+                        }
+                    }
                     resolvedAll = false;
                     String sexp = typeUsage.getType();
                     if (sexp.startsWith("@exp;")) {
@@ -745,12 +757,14 @@ public class ModelUtils {
                                 nExp.add("@pro");
                             }
                         }
-                        ModelUtils.addUnigueType(resolved, ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, typeUsage.getOffset()));
+                        // passing original prevents the unresolved return types
+                        // when recursion in place
+                        ModelUtils.addUniqueType(resolved, original, ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, typeUsage.getOffset()));
                     } else {
-                        ModelUtils.addUnigueType(resolved, new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
+                        ModelUtils.addUniqueType(resolved, new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
                     }
                 } else {
-                    ModelUtils.addUnigueType(resolved, (TypeUsage) typeUsage);
+                    ModelUtils.addUniqueType(resolved, (TypeUsage) typeUsage);
                 }
             }
             types.clear();
@@ -813,10 +827,10 @@ public class ModelUtils {
                     
                     
                 if(!hasAssignments || isType) {
-                    ModelUtils.addUnigueType(resolved, new TypeUsageImpl(fqn, -1, true));
+                    ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, -1, true));
                 }
             } else {
-                ModelUtils.addUnigueType(resolved, new TypeUsageImpl(fqn, -1, false));
+                ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, -1, false));
             }
 //            Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(fqn);
 //            resolved.add(new TypeUsageImpl(fqn, -1, true));
@@ -871,24 +885,31 @@ public class ModelUtils {
         return result;
     }
     
-    public static void addUnigueType(Collection <TypeUsage> where, TypeUsage type) {
-        boolean isThere = false;
+    public static void addUniqueType(Collection <TypeUsage> where, Set<String> forbidden, TypeUsage type) {
         String typeName = type.getType();
-        for(TypeUsage utype : where) {
+        if (forbidden.contains(typeName)) {
+            return;
+        }
+        for (TypeUsage utype : where) {
             if (utype.getType().equals(typeName)) {
-                isThere = true;
-                break;
+                return;
             }
         }
-        if (!isThere) {
-            where.add(type);
+        where.add(type);
+    }
+
+    public static void addUniqueType(Collection <TypeUsage> where, TypeUsage type) {
+        addUniqueType(where, Collections.<String>emptySet(), type);
+    }
+
+    public static void addUniqueType(Collection <TypeUsage> where, Set<String> forbidden, Collection <TypeUsage> what) {
+        for (TypeUsage type: what) {
+            addUniqueType(where, forbidden, type);
         }
     }
-    
-    public static void addUnigueType(Collection <TypeUsage> where, Collection <TypeUsage> what) {
-        for(TypeUsage type: what) {
-            addUnigueType(where, type);
-        }
+
+    public static void addUniqueType(Collection <TypeUsage> where, Collection <TypeUsage> what) {
+        addUniqueType(where, Collections.<String>emptySet(), what);
     }
     
     private static class SemiTypeResolverVisitor extends PathNodeVisitor {
@@ -900,8 +921,9 @@ public class ModelUtils {
         private static TypeUsage REGEXP_TYPE = new TypeUsageImpl(Type.REGEXP, -1, true);
         
         private final Set<TypeUsage> result = new HashSet<TypeUsage>();
+        private final Deque<StringBuilder> sbDeque = new LinkedList<StringBuilder>();
         private StringBuilder sb = new StringBuilder();
-        final private JsParserResult parserResult;
+        private final JsParserResult parserResult;
         
         public SemiTypeResolverVisitor(JsParserResult parserResult) {
             this.parserResult = parserResult;
@@ -926,16 +948,32 @@ public class ModelUtils {
 
         @Override
         public Node enter(AccessNode aNode) {
-            if (aNode.getBase() instanceof IdentNode) {
-                IdentNode iNode = (IdentNode)aNode.getBase();
-                if (iNode.getName().equals("this")) {
-                    List<? extends Node> path = getPath();
-                    if (!(path.size() > 0 && path.get(path.size() - 1) instanceof CallNode)) {
-                        sb.append("@this."); //NOI18N
-                        sb.append(aNode.getProperty().getName());
-                        add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
-                        // plus five due to this.
+            sbDeque.offerLast(sb);
+            sb = new StringBuilder(sb);
+
+            try {
+                if (aNode.getBase() instanceof IdentNode) {
+                    IdentNode iNode = (IdentNode)aNode.getBase();
+                    if (iNode.getName().equals("this")) {
+                        List<? extends Node> path = getPath();
+                        if (!(path.size() > 0 && path.get(path.size() - 1) instanceof CallNode)) {
+                            sb.append("@this."); //NOI18N
+                            sb.append(aNode.getProperty().getName());
+                            add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                            // plus five due to this.
+                        }
+                    } else {
+                        if ("@call;".equals(sb.toString())) {
+                            sb.append(aNode.getProperty().getName());
+                        } else {
+                            sb.insert(0, aNode.getProperty().getName());
+                            sb.insert(0, "@pro;");
+                        }
+                        sb.insert(0, ((IdentNode)aNode.getBase()).getName());
+                        sb.insert(0, "@exp;");
+                        add(new TypeUsageImpl(sb.toString(), aNode.getStart()));
                     }
+                    return null;
                 } else {
                     if ("@call;".equals(sb.toString())) {
                         sb.append(aNode.getProperty().getName());
@@ -943,20 +981,11 @@ public class ModelUtils {
                         sb.insert(0, aNode.getProperty().getName());
                         sb.insert(0, "@pro;");
                     }
-                    sb.insert(0, ((IdentNode)aNode.getBase()).getName());
-                    sb.insert(0, "@exp;");
-                    add(new TypeUsageImpl(sb.toString(), aNode.getStart()));
                 }
-                return null;
-            } else {
-                if ("@call;".equals(sb.toString())) {
-                    sb.append(aNode.getProperty().getName());
-                } else {
-                    sb.insert(0, aNode.getProperty().getName());
-                    sb.insert(0, "@pro;");
-                }
+                return super.enter(aNode);
+            } finally {
+                sb = sbDeque.pollLast();
             }
-            return super.enter(aNode);
         }
 
         @Override
@@ -998,68 +1027,89 @@ public class ModelUtils {
             }
             return result;
         }
-        
+
         @Override
-        public Node enter(CallNode callNode) {
-            super.enter(callNode);
-            if (callNode.getFunction() instanceof ReferenceNode) {
-                FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
-                String name = function.getIdent().getName();
-                add(new TypeUsageImpl("@call;" + name, LexUtilities.getLexerOffset(parserResult, function.getStart()), false)); //NOI18N
-            } else {
-                int pathSize = getPath().size();
-                if (pathSize > 1) {
-                    Node previousNode = getPath().get(pathSize - 2);
-                    if (previousNode instanceof AccessNode
-                            && callNode.getFunction() instanceof IdentNode) {
-                        String name = ((IdentNode)callNode.getFunction()).getName();
-                        sb.insert(0, name);
-                        sb.insert(0, "@call;"); //NOI18N
-                        return null;
-                    }
-                }
-                if (sb.length() < 6) {
-                    sb.append("@call;");    //NOI18N
-                } else {
-                    sb.insert(6, "@call;"); //NOI18N
-                }
-                // don't visit arguments, just name the name of function.
-                callNode.getFunction().accept(this);
-            }
+        public Node enter(TernaryNode ternaryNode) {
+            super.enter(ternaryNode);
+            ternaryNode.rhs().accept(this);
+            ternaryNode.third().accept(this);
             return null;
         }
 
         @Override
-        public Node enter(IdentNode iNode) {
-            if (getPath().isEmpty()) {
-                if (iNode.getName().equals("this")) {   //NOI18N
-                    add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+        public Node enter(CallNode callNode) {
+            sbDeque.offerLast(sb);
+            sb = new StringBuilder(sb);
+
+            try {
+                super.enter(callNode);
+                if (callNode.getFunction() instanceof ReferenceNode) {
+                    FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
+                    String name = function.getIdent().getName();
+                    add(new TypeUsageImpl("@call;" + name, LexUtilities.getLexerOffset(parserResult, function.getStart()), false)); //NOI18N
                 } else {
-                    add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
-                }
-            } else {
-                int pathSize = getPath().size();
-                Node lastNode = getPath().get(pathSize - 1);
-                if (lastNode instanceof CallNode) {
-                    boolean addFunctionName = true;
+                    int pathSize = getPath().size();
                     if (pathSize > 1) {
-                        lastNode = getPath().get(pathSize - 2);
-                        addFunctionName = !(lastNode instanceof AccessNode);
-                        sb.insert(0, "@exp;"); //NOI18N
+                        Node previousNode = getPath().get(pathSize - 2);
+                        if (previousNode instanceof AccessNode
+                                && callNode.getFunction() instanceof IdentNode) {
+                            String name = ((IdentNode)callNode.getFunction()).getName();
+                            sb.insert(0, name);
+                            sb.insert(0, "@call;"); //NOI18N
+                            return null;
+                        }
                     }
-                    if (addFunctionName) {
-                        sb.append(iNode.getName());
+                    if (sb.length() < 6) {
+                        sb.append("@call;");    //NOI18N
+                    } else {
+                        sb.insert(6, "@call;"); //NOI18N
                     }
-                    add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
-                } else if (!(lastNode instanceof AccessNode)) {
+                    // don't visit arguments, just name the name of function.
+                    callNode.getFunction().accept(this);
+                }
+                return null;
+            } finally {
+                sb = sbDeque.pollLast();
+            }
+        }
+
+        @Override
+        public Node enter(IdentNode iNode) {
+            sbDeque.offerLast(sb);
+            sb = new StringBuilder(sb);
+            try {
+                if (getPath().isEmpty()) {
                     if (iNode.getName().equals("this")) {   //NOI18N
                         add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
                     } else {
                         add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
                     }
+                } else {
+                    int pathSize = getPath().size();
+                    Node lastNode = getPath().get(pathSize - 1);
+                    if (lastNode instanceof CallNode) {
+                        boolean addFunctionName = true;
+                        if (pathSize > 1) {
+                            lastNode = getPath().get(pathSize - 2);
+                            addFunctionName = !(lastNode instanceof AccessNode);
+                            sb.insert(0, "@exp;"); //NOI18N
+                        }
+                        if (addFunctionName) {
+                            sb.append(iNode.getName());
+                        }
+                        add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                    } else if (!(lastNode instanceof AccessNode)) {
+                        if (iNode.getName().equals("this")) {   //NOI18N
+                            add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                        } else {
+                            add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                        }
+                    }
                 }
+                return null;
+            } finally {
+                sb = sbDeque.pollLast();
             }
-            return null;
         }
 
         @Override

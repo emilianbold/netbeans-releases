@@ -94,6 +94,14 @@ public class ModelTest extends ModelTestBase {
         checkModel("testfiles/model/kolo.js");
     }
 
+    public void testRecursion() throws Exception {
+        checkModel("testfiles/model/recursion.js", true);
+    }
+
+    public void testTernary() throws Exception {
+        checkModel("testfiles/model/ternary.js");
+    }
+
     public void testjQueryFragment01() throws Exception {
         checkModel("testfiles/model/jQueryFragment01.js");
     }
