@@ -196,7 +196,7 @@ public final class SlideBarContainer extends AbstractModeContainer {
             top = 1; left = 1; bottom = 1; right = 2; 
         }
         if (Constants.BOTTOM.equals(orientation)) {
-            top = 2; left = 1; bottom = 1; right = 1; 
+            top = 2; left = 5; bottom = 1; right = 1;
         }
         if (Constants.TOP.equals(orientation)) {
             top = 1; left = 1; bottom = 2; right = 1; 
