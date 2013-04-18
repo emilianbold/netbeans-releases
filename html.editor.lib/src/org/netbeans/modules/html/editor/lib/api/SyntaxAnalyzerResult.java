@@ -181,7 +181,7 @@ public class SyntaxAnalyzerResult {
     }
 
     public Collection<ParseResult> getAllParseResults() throws ParseException {
-        Collection<ParseResult> all = new ArrayList<ParseResult>();
+        Collection<ParseResult> all = new ArrayList<>();
         all.add(parseHtml());
         for (String ns : getAllDeclaredNamespaces().keySet()) {
             all.add(parseEmbeddedCode(ns));
@@ -300,7 +300,7 @@ public class SyntaxAnalyzerResult {
 
     public synchronized ParseResult parseEmbeddedCode(String namespace) throws ParseException {
         if (embeddedCodeParseResults == null) {
-            embeddedCodeParseResults = new HashMap<String, ParseResult>();
+            embeddedCodeParseResults = new HashMap<>();
         }
         ParseResult result = embeddedCodeParseResults.get(namespace);
         if (result == null) {
@@ -459,7 +459,7 @@ public class SyntaxAnalyzerResult {
             //so following content needs to be filtere out:
             //1. xmlns non default declarations <html xmlns:f="http:/...
             //2. the prefixed tags and attributes <f:if ...
-            List<MaskedArea> ignoredAreas = new ArrayList<MaskedArea>();
+            List<MaskedArea> ignoredAreas = new ArrayList<>();
 
             Iterator<Element> itr = getElementsIterator();
             while (itr.hasNext()) {
@@ -536,7 +536,7 @@ public class SyntaxAnalyzerResult {
                         break;
                     }
                 }
-                declaration = new AtomicReference<Declaration>(declarationElement);
+                declaration = new AtomicReference<>(declarationElement);
 
             }
             return declaration.get();
@@ -558,7 +558,7 @@ public class SyntaxAnalyzerResult {
     @Deprecated
     public Map<String, String> getDeclaredNamespaces() {
         Map<String, Collection<String>> all = getAllDeclaredNamespaces();
-        Map<String, String> firstPrefixOnly = new HashMap<String, String>();
+        Map<String, String> firstPrefixOnly = new HashMap<>();
         for (String namespace : all.keySet()) {
             Collection<String> prefixes = all.get(namespace);
             if (prefixes != null && prefixes.size() > 0) {
@@ -576,7 +576,7 @@ public class SyntaxAnalyzerResult {
     }
 
     private Set<String> findAllDeclaredPrefixes() {
-        HashSet<String> all = new HashSet<String>();
+        HashSet<String> all = new HashSet<>();
         for (Collection<String> prefixes : getAllDeclaredNamespaces().values()) {
             all.addAll(prefixes);
         }
@@ -624,7 +624,7 @@ public class SyntaxAnalyzerResult {
         long start = System.currentTimeMillis();
         try {
             if (namespaces == null) {
-                this.namespaces = new HashMap<String, Collection<String>>();
+                this.namespaces = new HashMap<>();
 
                 //add the artificial namespaces to prefix map to the physically declared results
                 if (resolver != null) {
@@ -647,7 +647,7 @@ public class SyntaxAnalyzerResult {
                                     //do not overwrite already existing entry
                                     Collection<String> prefixes = namespaces.get(key);
                                     if (prefixes == null) {
-                                        prefixes = new LinkedList<String>();
+                                        prefixes = new LinkedList<>();
                                         prefixes.add(nsPrefix);
                                         namespaces.put(key, prefixes);
                                     } else {
