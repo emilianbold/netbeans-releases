@@ -62,7 +62,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum LatteMarkupTokenId implements TokenId {
     T_WHITESPACE("latte-markup-whitespace"), //NOI18N
-    T_COMMENT("latte-comment"), //NOI18N
     T_SYMBOL("latte-markup-symbol"), //NOI18N
     T_NUMBER("latte-markup-number"), //NOI18N
     T_VARIABLE("latte-markup-variable"), //NOI18N
