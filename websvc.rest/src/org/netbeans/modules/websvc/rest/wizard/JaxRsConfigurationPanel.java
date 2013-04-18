@@ -64,16 +64,17 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author den
  */
-public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, Settings {
+public class JaxRsConfigurationPanel extends javax.swing.JPanel implements ChangeListener, Settings {
     
     private static final long serialVersionUID = 5841706512529345806L;
+    private String parentPackageName = null;
     
-    public JerseyPanel( SourcePanel sourcePanel ) {
+    public JaxRsConfigurationPanel( SourcePanel sourcePanel ) {
         initComponents();
         listeners = new ArrayList<ChangeListener>(1);
         this.sourcePanel = sourcePanel;
+        updatePackageName();
         
         useJersey.addActionListener( new ActionListener() {
             
@@ -120,6 +121,7 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
             sourceGroup = group;
             updateSourceGroupPackages();
         }
+        updatePackageName();
     }
     
     /* (non-Javadoc)
@@ -140,19 +142,26 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
         Project project = Templates.getProject(wizard);
         final WebRestSupport restSupport = project.getLookup().
                 lookup(WebRestSupport.class);
-        boolean hideJerseyChoice = restSupport.isEE7();
+        // do not show Jersey option for Jersey 2.0 and/or EE7:
+        boolean hideJerseyChoice = restSupport.isEE7() || restSupport.isJersey2();
         useJersey.setVisible(!hideJerseyChoice);
         useJersey.setSelected(false);
 
+        // in case of EE7 and/or Jersey2 it is not necessary to ask user for
+        // Application subclass name and a package - just use default values:
+        boolean useDefaultConfiguration = restSupport.isEE7() || restSupport.isJersey2();
+        if (useDefaultConfiguration) {
+            jSeparator1.setVisible(false);
+            restAppClass.setVisible(false);
+            restAppClassLbl.setVisible(false);
+            restAppPackage.setVisible(false);
+            restAppPckgLbl.setVisible(false);
+        }
         String appPackage = (String) wizard.getProperty(
                 WizardProperties.APPLICATION_PACKAGE);
         if (appPackage != null) {
             ((JTextComponent) restAppPackage.getEditor().getEditorComponent()).
                 setText(appPackage);
-        }
-        else {
-            ((JTextComponent) restAppPackage.getEditor().getEditorComponent()).
-                setText("org.netbeans.rest.application.config");        // NOI18N
         }
         String appClass = (String) wizard.getProperty(
                 WizardProperties.APPLICATION_CLASS);
@@ -220,9 +229,9 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
     }
     
     private void updateSourceGroupPackages() {
-        SourceGroup sourceGroup = getSourceGroup();
-        if (sourceGroup != null) {
-            ComboBoxModel model = PackageView.createListView(sourceGroup);
+        SourceGroup sg = getSourceGroup();
+        if (sg != null) {
+            ComboBoxModel model = PackageView.createListView(sg);
             if (model.getSelectedItem()!= null && model.getSelectedItem().toString().startsWith("META-INF")
                     && model.getSize() > 1) { // NOI18N
                 model.setSelectedItem(model.getElementAt(1));
@@ -268,18 +277,18 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
 
         setPreferredSize(new java.awt.Dimension(450, 115));
 
-        org.openide.awt.Mnemonics.setLocalizedText(useJersey, org.openide.util.NbBundle.getMessage(JerseyPanel.class, "LBL_UseJersey")); // NOI18N
-        useJersey.setActionCommand(org.openide.util.NbBundle.getMessage(JerseyPanel.class, "JerseyPanel.useJersey.actionCommand")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(useJersey, org.openide.util.NbBundle.getMessage(JaxRsConfigurationPanel.class, "LBL_UseJersey")); // NOI18N
+        useJersey.setActionCommand(org.openide.util.NbBundle.getMessage(JaxRsConfigurationPanel.class, "JaxRsConfigurationPanel.useJersey.actionCommand")); // NOI18N
 
         restAppPckgLbl.setLabelFor(restAppPackage);
-        org.openide.awt.Mnemonics.setLocalizedText(restAppPckgLbl, org.openide.util.NbBundle.getMessage(JerseyPanel.class, "LBL_AppConfigPackage")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(restAppPckgLbl, org.openide.util.NbBundle.getMessage(JaxRsConfigurationPanel.class, "LBL_AppConfigPackage")); // NOI18N
 
         restAppPackage.setEditable(true);
 
         restAppClassLbl.setLabelFor(restAppClass);
-        org.openide.awt.Mnemonics.setLocalizedText(restAppClassLbl, org.openide.util.NbBundle.getMessage(JerseyPanel.class, "LBL_AppConfigClass")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(restAppClassLbl, org.openide.util.NbBundle.getMessage(JaxRsConfigurationPanel.class, "LBL_AppConfigClass")); // NOI18N
 
-        restAppClass.setText(org.openide.util.NbBundle.getMessage(JerseyPanel.class, "JerseyPanel.restAppClass.text")); // NOI18N
+        restAppClass.setText(org.openide.util.NbBundle.getMessage(JaxRsConfigurationPanel.class, "JaxRsConfigurationPanel.restAppClass.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -292,7 +301,7 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(restAppPckgLbl)
                         .addGap(25, 25, 25)
-                        .addComponent(restAppPackage, 0, 288, Short.MAX_VALUE)))
+                        .addComponent(restAppPackage, 0, 235, Short.MAX_VALUE)))
                 .addGap(0, 10, 10))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(restAppClassLbl)
@@ -318,16 +327,16 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        useJersey.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JerseyPanel.class, "ACSN_UseJersey")); // NOI18N
-        useJersey.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JerseyPanel.class, "ACSD_UseJersey")); // NOI18N
+        useJersey.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JaxRsConfigurationPanel.class, "ACSN_UseJersey")); // NOI18N
+        useJersey.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JaxRsConfigurationPanel.class, "ACSD_UseJersey")); // NOI18N
         restAppPckgLbl.getAccessibleContext().setAccessibleName(restAppPackage.getAccessibleContext().getAccessibleName());
         restAppPckgLbl.getAccessibleContext().setAccessibleDescription(restAppPackage.getAccessibleContext().getAccessibleDescription());
-        restAppPackage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JerseyPanel.class, "ACSN_AppConfigPackage")); // NOI18N
-        restAppPackage.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JerseyPanel.class, "ACSD_AppConfigPackage")); // NOI18N
+        restAppPackage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JaxRsConfigurationPanel.class, "ACSN_AppConfigPackage")); // NOI18N
+        restAppPackage.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JaxRsConfigurationPanel.class, "ACSD_AppConfigPackage")); // NOI18N
         restAppClassLbl.getAccessibleContext().setAccessibleName(restAppClass.getAccessibleContext().getAccessibleName());
         restAppClassLbl.getAccessibleContext().setAccessibleDescription(restAppClass.getAccessibleContext().getAccessibleDescription());
-        restAppClass.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JerseyPanel.class, "ACSN_AppConfigClass")); // NOI18N
-        restAppClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JerseyPanel.class, "ACSD_AppConfigClass")); // NOI18N
+        restAppClass.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JaxRsConfigurationPanel.class, "ACSN_AppConfigClass")); // NOI18N
+        restAppClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JaxRsConfigurationPanel.class, "ACSD_AppConfigClass")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -342,4 +351,12 @@ public class JerseyPanel extends javax.swing.JPanel implements ChangeListener, S
     private SourcePanel sourcePanel;
     private SourceGroup sourceGroup;
     private List<ChangeListener> listeners;
+
+    private void updatePackageName() {
+        String pkg = sourcePanel.getPackageName();
+        if (parentPackageName == null || !parentPackageName.equals(pkg)) {
+            parentPackageName = pkg;
+            ((JTextComponent)restAppPackage.getEditor().getEditorComponent()).setText(pkg);
+        }
+    }
 }

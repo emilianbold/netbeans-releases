@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,13 +23,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -41,34 +41,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package helloworld;
 
-package org.netbeans.modules.websvc.rest.model.spi;
+import javax.ws.rs.core.Application;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
-import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
-import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
-import org.netbeans.modules.websvc.rest.model.impl.RestApplicationMetadataModelImpl;
-import org.netbeans.modules.websvc.rest.model.impl.RestServicesMetadataModelImpl;
+@javax.ws.rs.ApplicationPath("resources")
+public class ApplicationConfig extends Application {
 
-/**
- *
- * @author Milan Kuchtiak
- */
-public class RestServicesMetadataModelFactory {
-    
-    private RestServicesMetadataModelFactory() {
-    }
-    
-    public static RestServicesModel createMetadataModel(MetadataUnit metadataUnit, Project project) {
-        RestServicesModel impl = new RestServicesMetadataModelImpl(metadataUnit, project);
-        MetadataModelFactory.createMetadataModel(impl);
-        return impl;
-    }
-    public static RestApplicationModel createApplicationMetadataModel(MetadataUnit metadataUnit, Project project) {
-        RestApplicationModel impl = new RestApplicationMetadataModelImpl(metadataUnit, project);
-        return impl;
-    }
-    
 }

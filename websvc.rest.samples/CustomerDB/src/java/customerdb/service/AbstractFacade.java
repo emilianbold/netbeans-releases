@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,13 +23,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -41,26 +41,61 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package customerdb.service;
 
-
-
-package customerdb.controller.exceptions;
-
-import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.EntityManager;
 
-public class IllegalOrphanException extends Exception {
-    private List<String> messages;
-    public IllegalOrphanException(List<String> messages) {
-        super((messages != null && messages.size() > 0 ? messages.get(0) : null));
-        if (messages == null) {
-            this.messages = new ArrayList<String>();
-        }
-        else {
-            this.messages = messages;
-        }
+/**
+ *
+ * @author __USER__
+ */
+public abstract class AbstractFacade<T> {
+    private Class<T> entityClass;
+
+    public AbstractFacade(Class<T> entityClass) {
+        this.entityClass = entityClass;
     }
-    public List<String> getMessages() {
-        return messages;
+
+    protected abstract EntityManager getEntityManager();
+
+    public void create(T entity) {
+        getEntityManager().persist(entity);
     }
+
+    public void edit(T entity) {
+        getEntityManager().merge(entity);
+    }
+
+    public void remove(T entity) {
+        getEntityManager().remove(getEntityManager().merge(entity));
+    }
+
+    public T find(Object id) {
+        return getEntityManager().find(entityClass, id);
+    }
+
+    public List<T> findAll() {
+        javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
+        cq.select(cq.from(entityClass));
+        return getEntityManager().createQuery(cq).getResultList();
+    }
+
+    public List<T> findRange(int[] range) {
+        javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
+        cq.select(cq.from(entityClass));
+        javax.persistence.Query q = getEntityManager().createQuery(cq);
+        q.setMaxResults(range[1] - range[0]);
+        q.setFirstResult(range[0]);
+        return q.getResultList();
+    }
+
+    public int count() {
+        javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
+        javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
+        cq.select(getEntityManager().getCriteriaBuilder().count(rt));
+        javax.persistence.Query q = getEntityManager().createQuery(cq);
+        return ((Long) q.getSingleResult()).intValue();
+    }
+
 }

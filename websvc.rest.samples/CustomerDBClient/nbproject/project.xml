@@ -49,7 +49,7 @@
             <name>CustomerDBClient</name>
             <minimum-ant-version>1.6</minimum-ant-version>
             <web-module-libraries>
-                <library files="1">
+                <library dirs="200">
                     <file>${libs.restapi.classpath}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>

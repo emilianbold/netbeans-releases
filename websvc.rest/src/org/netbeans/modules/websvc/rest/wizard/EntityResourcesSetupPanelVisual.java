@@ -50,6 +50,8 @@ import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -104,10 +106,33 @@ public class EntityResourcesSetupPanelVisual extends JPanel
                 }
             });
         }
+        ((JTextComponent) resourcePackageComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(
+                new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
     
     public SourceGroup getSourceGroup() {
         return (SourceGroup) locationComboBox.getSelectedItem();
+    }
+
+    @Override
+    public String getPackageName() {
+        return ((JTextComponent) resourcePackageComboBox.getEditor().getEditorComponent()).getText();
     }
 
     /** This method is called from within the constructor to

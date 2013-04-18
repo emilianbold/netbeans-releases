@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,13 +23,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -41,16 +41,32 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package customerdb.service;
 
+import java.util.Set;
+import javax.ws.rs.core.Application;
 
+@javax.ws.rs.ApplicationPath("resources")
+public class ApplicationConfig extends Application {
 
-package customerdb.controller.exceptions;
+    @Override
+    public Set<Class<?>> getClasses() {
+        Set<Class<?>> resources = new java.util.HashSet<Class<?>>();
+        resources.add(customerdb.service.CustomerFacadeREST.class);
+        resources.add(customerdb.service.DiscountCodeFacadeREST.class);
 
-public class NonexistentEntityException extends Exception {
-    public NonexistentEntityException(String message, Throwable cause) {
-        super(message, cause);
+        Class jsonProvider = null;
+        try {
+            // Jersey 2.x:
+            jsonProvider = Class.forName("org.glassfish.jersey.jettison.JettisonFeature");
+        } catch (ClassNotFoundException ex) {
+            // ignore
+        }
+        if (jsonProvider != null) {
+            resources.add(jsonProvider);
+        }
+        
+        return resources;
     }
-    public NonexistentEntityException(String message) {
-        super(message);
-    }
+
 }
