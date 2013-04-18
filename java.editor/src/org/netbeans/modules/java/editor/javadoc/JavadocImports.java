@@ -55,6 +55,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.DocSourcePositions;
+import com.sun.source.util.DocTreePath;
 import com.sun.source.util.DocTreePathScanner;
 import com.sun.source.util.DocTreeScanner;
 import com.sun.source.util.DocTrees;
@@ -225,7 +226,7 @@ public final class JavadocImports {
             @Override public Void visitSee(SeeTree node, Void p) {
                 return super.visitSee(node, p);
             }
-        }.scan(docComment, null);
+        }.scan(new DocTreePath(forElement, docComment), null);
         
         return result;
     }
@@ -333,7 +334,7 @@ public final class JavadocImports {
             @Override public Void visitSee(SeeTree node, Void p) {
                 return super.visitSee(node, p);
             }
-        }.scan(docComment, null);
+        }.scan(new DocTreePath(tp, docComment), null);
         
         return result[0];
     }
