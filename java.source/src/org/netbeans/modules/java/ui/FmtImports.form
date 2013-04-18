@@ -28,48 +28,60 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="singleClassImportsRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="21" pref="21" max="21" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane2" pref="0" max="32767" attributes="1"/>
-                          <Component id="separateStaticImportsCheckBox" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Component id="jScrollPane1" alignment="0" pref="0" max="32767" attributes="1"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="21" pref="21" max="21" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jScrollPane1" alignment="0" pref="0" max="32767" attributes="1"/>
-                                  <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="starImportTresholdCheckBox" min="-2" max="-2" attributes="0"/>
-                                          <Component id="starImportPackagesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="importInnerClassesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="starStaticImportTresholdCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                  </Group>
+                                  <Component id="starImportTresholdCheckBox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="starImportPackagesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="starStaticImportTresholdCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
                               <Component id="addStarImportPackageButton" alignment="0" max="32767" attributes="1"/>
-                              <Component id="removeStarImportPackageButton" alignment="0" max="32767" attributes="1"/>
-                              <Component id="addButton" alignment="0" max="32767" attributes="1"/>
-                              <Component id="moveUpButton" alignment="0" max="32767" attributes="1"/>
-                              <Component id="removeButton" alignment="0" max="32767" attributes="1"/>
-                              <Component id="moveDownButton" alignment="0" max="32767" attributes="1"/>
+                              <Component id="removeStarImportPackageButton" alignment="0" min="-2" pref="108" max="-2" attributes="1"/>
                           </Group>
                           <Group type="103" alignment="1" groupAlignment="0" max="-2" attributes="0">
                               <Component id="starImportTresholdSpinner" alignment="1" max="32767" attributes="1"/>
-                              <Component id="startStaticImportTresholdSpinner" alignment="1" pref="38" max="32767" attributes="1"/>
+                              <Component id="startStaticImportTresholdSpinner" alignment="1" min="-2" pref="38" max="-2" attributes="1"/>
                           </Group>
                       </Group>
                   </Group>
-                  <Component id="importLayoutLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="packageImportsRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="fqnRadioButton" alignment="0" min="-2" max="-2" attributes="1"/>
-                  <Component id="separateGroupsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jScrollPane2" pref="0" max="32767" attributes="1"/>
+                          <Component id="separateStaticImportsCheckBox" alignment="0" min="-2" max="-2" attributes="1"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Component id="addButton" alignment="0" max="32767" attributes="1"/>
+                          <Component id="moveUpButton" alignment="0" max="32767" attributes="1"/>
+                          <Component id="removeButton" alignment="0" max="32767" attributes="1"/>
+                          <Component id="moveDownButton" alignment="0" min="-2" max="-2" attributes="1"/>
+                      </Group>
+                  </Group>
                   <Component id="jSeparator1" alignment="0" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="singleClassImportsRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="21" pref="21" max="21" attributes="0"/>
+                              <Component id="importInnerClassesCheckBox" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="packageImportsRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="fqnRadioButton" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Component id="preferStaticImportsCheckBox" min="-2" max="-2" attributes="0"/>
+                          <Component id="importLayoutLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="separateGroupsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -81,7 +93,7 @@
               <Component id="singleClassImportsRadioButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="importInnerClassesCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="starImportTresholdSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="starImportTresholdCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -100,13 +112,15 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeStarImportPackageButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jScrollPane1" alignment="1" min="0" pref="0" max="32767" attributes="1"/>
+                  <Component id="jScrollPane1" alignment="1" min="-2" pref="56" max="-2" attributes="1"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="packageImportsRadioButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="fqnRadioButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="preferStaticImportsCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="jSeparator1" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
               <Component id="importLayoutLabel" min="-2" max="-2" attributes="0"/>
@@ -114,7 +128,7 @@
               <Component id="separateStaticImportsCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Group type="102" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <Component id="addButton" min="-2" pref="25" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="moveUpButton" min="-2" pref="25" max="-2" attributes="0"/>
@@ -123,7 +137,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jScrollPane2" min="0" pref="0" max="32767" attributes="1"/>
+                  <Component id="jScrollPane2" min="-2" pref="118" max="-2" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="separateGroupsCheckBox" min="-2" max="-2" attributes="0"/>
@@ -249,6 +263,13 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fqnRadioButtonActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="preferStaticImportsCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_imp_preferStaticImports" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator1">
     </Component>
