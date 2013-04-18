@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -41,16 +41,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package com.abien.business.orderprocessor;
 
+import javax.ws.rs.core.Application;
 
+@javax.ws.rs.ApplicationPath("resources")
+public class ApplicationConfig extends Application {
 
-package customerdb.controller.exceptions;
-
-public class RollbackFailureException extends Exception {
-    public RollbackFailureException(String message, Throwable cause) {
-        super(message, cause);
-    }
-    public RollbackFailureException(String message) {
-        super(message);
-    }
 }

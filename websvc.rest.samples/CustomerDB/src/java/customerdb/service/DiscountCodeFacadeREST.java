@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,13 +23,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -41,103 +41,87 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
-
 package customerdb.service;
-import customerdb.controller.DiscountCodeJpaController;
-import javax.naming.NamingException;
-import javax.persistence.EntityManagerFactory;import javax.transaction.UserTransaction;
-import javax.naming.InitialContext;
+
 import customerdb.DiscountCode;
-import java.net.URI;
 import java.util.List;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
-
-
+import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 
 /**
  *
  * @author __USER__
  */
+@Stateless
 @Path("customerdb.discountcode")
-public class DiscountCodeRESTFacade {
+public class DiscountCodeFacadeREST extends AbstractFacade<DiscountCode> {
+    @PersistenceContext(unitName = "CustomerDBPU")
+    private EntityManager em;
 
-    private EntityManagerFactory getEntityManagerFactory() throws NamingException {
-        return (EntityManagerFactory) new InitialContext().lookup("java:comp/env/persistence-factory");
-    }
-
-    private DiscountCodeJpaController getJpaController() {
-        try {
-            UserTransaction utx = (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
-            return new DiscountCodeJpaController(utx, getEntityManagerFactory());
-        } catch (NamingException ex) {
-            throw new RuntimeException(ex);
-        }    }
-
-    public DiscountCodeRESTFacade() {
+    public DiscountCodeFacadeREST() {
+        super(DiscountCode.class);
     }
 
     @POST
+    @Override
     @Consumes({"application/xml", "application/json"})
-    public Response create(DiscountCode entity) {
-        try {
-            getJpaController().create(entity);
-            return Response.created(URI.create(entity.getDiscountCode().toString())).build();
-        } catch (Exception ex) {
-            return Response.notModified(ex.getMessage()).build();
-        }
+    public void create(DiscountCode entity) {
+        super.create(entity);
     }
 
     @PUT
+    @Override
     @Consumes({"application/xml", "application/json"})
-    public Response edit(DiscountCode entity) {
-        try {
-            getJpaController().edit(entity);
-            return Response.ok().build();
-        } catch (Exception ex) {
-            return Response.notModified(ex.getMessage()).build();
-        }
+    public void edit(DiscountCode entity) {
+        super.edit(entity);
     }
 
     @DELETE
     @Path("{id}")
-    public Response remove(@PathParam("id") String id) {
-        try {
-            getJpaController().destroy(id.charAt(0));
-            return Response.ok().build();
-        } catch (Exception ex) {
-            return Response.notModified(ex.getMessage()).build();
-        }
+    public void remove(@PathParam("id") String id) {
+        super.remove(super.find(id.charAt(0)));
     }
 
     @GET
     @Path("{id}")
     @Produces({"application/xml", "application/json"})
     public DiscountCode find(@PathParam("id") String id) {
-        return getJpaController().findDiscountCode(id.charAt(0));
+        return super.find(id.charAt(0));
     }
 
     @GET
+    @Override
     @Produces({"application/xml", "application/json"})
     public List<DiscountCode> findAll() {
-        return getJpaController().findDiscountCodeEntities();
+        return super.findAll();
     }
 
     @GET
-    @Path("{max}/{first}")
+    @Path("{from}/{to}")
     @Produces({"application/xml", "application/json"})
-    public List<DiscountCode> findRange(@PathParam("max") Integer max, @PathParam("first") Integer first) {
-        return getJpaController().findDiscountCodeEntities(max, first);
+    public List<DiscountCode> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
+        return super.findRange(new int[]{from, to});
     }
 
     @GET
     @Path("count")
     @Produces("text/plain")
-    public String count() {
-        return String.valueOf(getJpaController().getDiscountCodeCount());
-
+    public String countREST() {
+        return String.valueOf(super.count());
     }
-    
+
+    @Override
+    protected EntityManager getEntityManager() {
+        return em;
+    }
+
 }
