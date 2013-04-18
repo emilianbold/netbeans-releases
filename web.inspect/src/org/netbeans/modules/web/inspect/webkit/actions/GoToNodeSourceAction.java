@@ -402,7 +402,7 @@ public class GoToNodeSourceAction extends NodeAction  {
                     String name = attribute.name().toString().toUpperCase();
                     String domValue = attributes.get(name);
                     CharSequence sourceSeq = attribute.unquotedValue();
-                    String sourceValue = (sourceSeq == null) ? null : sourceSeq.toString();
+                    String sourceValue = (sourceSeq == null) ? "" : sourceSeq.toString(); // NOI18N
                     if (domValue == null || !domValue.equals(sourceValue)) {
                         return false;
                     }
