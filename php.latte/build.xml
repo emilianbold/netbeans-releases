@@ -8,4 +8,7 @@
     <target name="gen-toplexer" >
         <jflex file="tools/LatteTopColoringLexer.flex" destdir="src" skel="tools/skeleton.netbeans" />
     </target>
+    <target name="gen-markuplexer" >
+        <jflex file="tools/LatteMarkupColoringLexer.flex" destdir="src" skel="tools/skeleton.netbeans" />
+    </target>
 </project>

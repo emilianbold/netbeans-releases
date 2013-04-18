@@ -45,7 +45,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -61,15 +60,20 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public enum LatteTopTokenId implements TokenId {
-    T_HTML("html"),
-    T_LATTE("latte-markup"),
-    T_LATTE_ERROR("latte-error"),
-    T_LATTE_DELIMITER("latte-delimiter"),
-    T_LATTE_COMMENT("latte-comment");
+public enum LatteMarkupTokenId implements TokenId {
+    T_WHITESPACE("latte-markup-whitespace"), //NOI18N
+    T_COMMENT("latte-comment"), //NOI18N
+    T_SYMBOL("latte-markup-symbol"), //NOI18N
+    T_NUMBER("latte-markup-number"), //NOI18N
+    T_VARIABLE("latte-markup-variable"), //NOI18N
+    T_STRING("latte-markup-string"), //NOI18N
+    T_CAST("latte-markup-cast"), //NOI18N
+    T_KEYWORD("latte-markup-keyword"), //NOI18N
+    T_CHAR("latte-markup-char"), //NOI18N
+    T_ERROR("latte-error"); //NOI18N
     private String primaryCategory;
 
-    private LatteTopTokenId(String primaryCategory) {
+    private LatteMarkupTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
     }
 
@@ -78,43 +82,36 @@ public enum LatteTopTokenId implements TokenId {
         return primaryCategory;
     }
 
-    private static final Language<LatteTopTokenId> language =
-            new LanguageHierarchy<LatteTopTokenId>() {
+    private static final Language<LatteMarkupTokenId> language =
+            new LanguageHierarchy<LatteMarkupTokenId>() {
                 @Override
-                protected Collection<LatteTopTokenId> createTokenIds() {
-                    return EnumSet.allOf(LatteTopTokenId.class);
+                protected Collection<LatteMarkupTokenId> createTokenIds() {
+                    return EnumSet.allOf(LatteMarkupTokenId.class);
                 }
 
                 @Override
-                protected Map<String, Collection<LatteTopTokenId>> createTokenCategories() {
-                    Map<String, Collection<LatteTopTokenId>> cats = new HashMap<>();
+                protected Map<String, Collection<LatteMarkupTokenId>> createTokenCategories() {
+                    Map<String, Collection<LatteMarkupTokenId>> cats = new HashMap<>();
                     return cats;
                 }
 
                 @Override
-                protected Lexer<LatteTopTokenId> createLexer(LexerRestartInfo<LatteTopTokenId> info) {
-                    return new LatteTopLexer(info);
+                protected Lexer<LatteMarkupTokenId> createLexer(LexerRestartInfo<LatteMarkupTokenId> info) {
+                    return new LatteMarkupLexer(info);
                 }
 
                 @Override
                 protected String mimeType() {
-                    return LatteLanguage.LATTE_MIME_TYPE;
+                    return LatteLanguage.LATTE_MIME_TYPE + "-markup"; //NOI18N
                 }
 
                 @Override
-                protected LanguageEmbedding<?> embedding(Token<LatteTopTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-                    LanguageEmbedding<?> result = null;
-                    LatteTopTokenId tokenId = token.id();
-                    if (tokenId == LatteTopTokenId.T_HTML)  {
-                        result = LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
-                    } else if (tokenId == LatteTopTokenId.T_LATTE) {
-                        result = LanguageEmbedding.create(LatteMarkupTokenId.language(), 0, 0);
-                    }
-                    return result;
+                protected LanguageEmbedding<?> embedding(Token<LatteMarkupTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+                    return null;
                 }
             }.language();
 
-    public static Language<LatteTopTokenId> language() {
+    public static Language<LatteMarkupTokenId> language() {
         return language;
     }
 
