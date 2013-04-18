@@ -278,6 +278,24 @@ SYNTAX_PYTHON_END="%}"
     }
 }
 
+<ST_N_ATTR_DOUBLE> {
+    ([^\"] | \\\")+ ~\" {
+        yypushback(1);
+        popState();
+        return LatteTopTokenId.T_LATTE;
+    }
+
+}
+
+<ST_N_ATTR_SINGLE> {
+    ([^'] | \\')+ ~' {
+        yypushback(1);
+        popState();
+        return LatteTopTokenId.T_LATTE;
+    }
+    
+}
+
 <ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON> {
     {MACRO_SYNTAX_START} "latte" {
         syntax = Syntax.LATTE;
@@ -380,22 +398,6 @@ SYNTAX_PYTHON_END="%}"
     . {
         popState();
         return LatteTopTokenId.T_HTML;
-    }
-}
-
-<ST_N_ATTR_DOUBLE> {
-    ~\" {
-        yypushback(1);
-        popState();
-        return LatteTopTokenId.T_LATTE;
-    }
-}
-
-<ST_N_ATTR_SINGLE> {
-    ~' {
-        yypushback(1);
-        popState();
-        return LatteTopTokenId.T_LATTE;
     }
 }
 

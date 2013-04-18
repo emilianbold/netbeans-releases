@@ -98,6 +98,10 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
         performTest("n-href-single");
     }
 
+    public void testEscapedQuotes() throws Exception {
+        performTest("escaped-quotes");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".latte"));
