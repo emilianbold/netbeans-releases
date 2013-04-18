@@ -102,6 +102,9 @@ public final class MainWindow {
 
    private static MainWindow theInstance;
 
+   private JPanel statusBarContainer = null;
+   private JComponent statusBar;
+
    private static final Logger LOGGER = Logger.getLogger(MainWindow.class.getName());
 
    /** Constructs main window. */
@@ -212,13 +215,7 @@ public final class MainWindow {
 
        if(!Constants.SWITCH_STATUSLINE_IN_MENUBAR) {
            if (Constants.CUSTOM_STATUS_LINE_PATH == null) {
-               JLabel status = new StatusLine();
-               // XXX #19910 Not to squeeze status line.
-               status.setText(" "); // NOI18N
-               status.setPreferredSize(new Dimension(0, status.getPreferredSize().height));
-               // text in line should be shifted for 4pix.
-               status.setBorder (BorderFactory.createEmptyBorder (0, 4, 0, 0));
-
+               final boolean separateStatusLine = null == statusBarContainer;
                final JPanel statusLinePanel = new JPanel(new BorderLayout());
                if( isShowCustomBackground() )
                    statusLinePanel.setOpaque( false);
@@ -229,9 +226,13 @@ public final class MainWindow {
                    magicConstant = 12;
 
                    if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                       if( separateStatusLine ) {
                        statusLinePanel.setBorder( BorderFactory.createCompoundBorder(
                                BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbBrushedMetal.darkShadow")), //NOI18N
                                BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbBrushedMetal.lightShadow") ) ) ); //NOI18N
+                       } else {
+                           statusLinePanel.setBorder( BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbBrushedMetal.darkShadow")) );
+                       }
                    }
                }
 
@@ -241,10 +242,20 @@ public final class MainWindow {
                        BorderFactory.createEmptyBorder (0, 0, 0, magicConstant)));
 
                if( !"Aqua".equals(UIManager.getLookAndFeel().getID())
-                       && !UIManager.getBoolean( "NbMainWindow.StatusBar.HideSeparator" ) ) { //NOI18N
+                       && !UIManager.getBoolean( "NbMainWindow.StatusBar.HideSeparator" )
+                       && separateStatusLine ) { //NOI18N
                    statusLinePanel.add(new JSeparator(), BorderLayout.NORTH);
                }
-               statusLinePanel.add(status, BorderLayout.CENTER);
+               if( separateStatusLine ) {
+                    JLabel status = new StatusLine();
+                    // XXX #19910 Not to squeeze status line.
+                    status.setText(" "); // NOI18N
+                    status.setPreferredSize(new Dimension(0, status.getPreferredSize().height));
+                    // text in line should be shifted for 4pix.
+                    status.setBorder (BorderFactory.createEmptyBorder (0, 15, 0, 0));
+
+                    statusLinePanel.add(status, BorderLayout.CENTER);
+               }
 
                WindowManager.getDefault().invokeWhenUIReady( new Runnable() {
                    @Override
@@ -253,7 +264,13 @@ public final class MainWindow {
                    }
                });
                statusLinePanel.setName("statusLine"); //NOI18N
-               frame.getContentPane().add (statusLinePanel, BorderLayout.SOUTH);
+               statusBar = statusLinePanel;
+               if( separateStatusLine ) {
+                    frame.getContentPane().add (statusLinePanel, BorderLayout.SOUTH);
+               } else {
+                   statusBarContainer.add( statusLinePanel, BorderLayout.CENTER );
+                   AutoHideStatusText.install( frame );
+               }
            } else { // custom status line provided
                JComponent status = getCustomStatusLine();
                if (status != null) {
@@ -438,6 +455,15 @@ public final class MainWindow {
        return frame.getJMenuBar();
    }
 
+    void setStatusBarContainer( JPanel panel ) {
+        assert null != panel;
+        assert panel.getLayout() instanceof BorderLayout;
+        this.statusBarContainer = panel;
+        if( null != statusBar ) {
+            statusBarContainer.add( statusBar, BorderLayout.CENTER );
+        }
+    }
+    
    static private class StatusLineElementsListener implements LookupListener {
        private JPanel decoratingPanel;
        StatusLineElementsListener (JPanel decoratingPanel) {
