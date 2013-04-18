@@ -62,11 +62,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public enum LatteTopTokenId implements TokenId {
-    T_HTML("html"),
-    T_LATTE("latte-markup"),
-    T_LATTE_ERROR("latte-error"),
-    T_LATTE_DELIMITER("latte-delimiter"),
-    T_LATTE_COMMENT("latte-comment");
+    T_HTML("html"), //NOI18N
+    T_LATTE("latte-markup"), //NOI18N
+    T_LATTE_ERROR("latte-error"), //NOI18N
+    T_LATTE_DELIMITER("latte-delimiter"), //NOI18N
+    T_LATTE_COMMENT("latte-comment"); //NOI18N
     private String primaryCategory;
 
     private LatteTopTokenId(String primaryCategory) {
