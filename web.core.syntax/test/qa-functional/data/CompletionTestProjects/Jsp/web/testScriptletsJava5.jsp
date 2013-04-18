@@ -43,9 +43,9 @@ Boolean element ()
 
 <%-- For Each Loop --%>
 <%--CC
-<% for (Boolean b : list)  b.F|
-Boolean FALSE
-<% for (Boolean b : list)  b.FALSE
+<% for (Boolean b : list)  b.|
+boolean booleanValue ()
+<% for (Boolean b : list)  b.booleanValue();
 --%>
 
 <%--CC
@@ -72,14 +72,7 @@ RequestForEnhancement
 <%--CC
 <% @Card.RequestForEnhancement(|)%>
 String date = "[unimplemented]"
-<% @Card.RequestForEnhancement(date=)%>
---%>
-
-<%-- StaticImports --%>
-<%--CC
-<%@ page import="|" %>
-static
-<%@ page import="static " %>
+<% @Card.RequestForEnhancement(date = )%>
 --%>
 
 <%--CC
@@ -96,7 +89,7 @@ Calendar getInstance
 
 <%-- issue 90718: [cc] class attribute of jsp:useBean should not offer static --%>
 <%--CC
-<jsp:useBean id="bean" scope="application" class="|"
+<jsp:useBean id="bean" scope="application" class="B|"
 Boolean
 <jsp:useBean id="bean" scope="application" class="Boolean"
 --%>

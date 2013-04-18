@@ -313,6 +313,8 @@ public final class Git {
             for (;file != null; file = file.getParentFile()) {
                 if (GitUtils.isAdministrative(file)) {
                     file = file.getParentFile();
+                    // the parent folder of .hg metadata cannot be unversioned, it's nonsense
+                    unversionedParents.remove(file);
                     break;
                 }
             }
@@ -367,6 +369,7 @@ public final class Git {
     public void clearAncestorCaches() {
         unversionedParents.clear();
         knownRoots.clear();
+        rootsToFile.clear();
     }
     
     /**

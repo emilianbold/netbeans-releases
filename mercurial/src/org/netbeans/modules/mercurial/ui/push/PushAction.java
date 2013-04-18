@@ -54,6 +54,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import javax.swing.JOptionPane;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -208,6 +209,10 @@ public class PushAction extends ContextAction {
      * @param logger
      * @param showSaveCredsOption
      */
+    @NbBundle.Messages({
+        "# {0} - names of new branches", "MSG_PushAction.questionPushNewBranches=Push would create new remote branches: {0}.\n"
+            + "Do you still want to continue and push also the local branches?"
+    })
     static void performPush(File root, HgURL pushUrl, String fromPrjName,
             String toPrjName, String revision, String branch,
             OutputLogger logger, boolean showSaveCredsOption) {
@@ -263,6 +268,7 @@ public class PushAction extends ContextAction {
             List<String> list;
             HgHookContext context = null;
             Collection<HgHook> hooks = null;
+            boolean newHeadsExpected = false;
             if (bNoChanges) {
                 list = listOutgoing;
             } else {
@@ -287,17 +293,28 @@ public class PushAction extends ContextAction {
                         // XXX handle veto
                     }
                 }
-                list = HgCommand.doPush(root, pushUrl, revision, branch, 
+                list = HgCommand.doPush(root, pushUrl, revision, branch, branch != null,
                         logger, showSaveCredsOption);
-            }
-            if (!list.isEmpty() && (HgCommand.isErrorAbortPush(list.get(list.size() - 1))
-                    || list.size() > 1 && HgCommand.isErrorAbortPush(list.get(list.size() - 2)))) {
-                logger.output(list);
-                logger.output("");
-                HgUtils.warningDialog(PushAction.class,
-                        "MSG_PUSH_ERROR_TITLE", "MSG_PUSH_ERROR_QUERY"); // NOI18N
-                logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_ERROR_CANCELED")); // NOI18N
-                return;
+                String newBranches = failedNewBranch(list);
+                if (newBranches != null) {
+                    if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(null, 
+                            Bundle.MSG_PushAction_questionPushNewBranches(newBranches),
+                            NbBundle.getMessage(PushAction.class, "MSG_PUSH_ERROR_TITLE"), //NOI18N
+                            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+                        newHeadsExpected = true;
+                        list = HgCommand.doPush(root, pushUrl, revision, branch,
+                                true, logger, showSaveCredsOption);
+                    }
+                }
+                if (!list.isEmpty() && (HgCommand.isErrorAbortPush(list.get(list.size() - 1))
+                        || list.size() > 1 && HgCommand.isErrorAbortPush(list.get(list.size() - 2)))) {
+                    logger.output(list);
+                    logger.output("");
+                    HgUtils.warningDialog(PushAction.class,
+                            "MSG_PUSH_ERROR_TITLE", "MSG_PUSH_ERROR_QUERY"); // NOI18N
+                    logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_ERROR_CANCELED")); // NOI18N
+                    return;
+                }
             }
 
             if(hooks != null && context != null) {
@@ -355,7 +372,7 @@ public class PushAction extends ContextAction {
 
                 boolean bMergeNeeded = false;
                 if (bLocalPush) {
-                    bMergeNeeded = HgCommand.isHeadsCreated(list.get(list.size() - 1));
+                    bMergeNeeded = !newHeadsExpected && HgCommand.isHeadsCreated(list.get(list.size() - 1));
                 }
                 boolean bConfirmMerge = false;
                 // Push does not do an Update of the target Working Dir
@@ -416,6 +433,21 @@ public class PushAction extends ContextAction {
 
     private static String getMessage(String msgKey, String... args) {
         return NbBundle.getMessage(PushAction.class, msgKey, args);
+    }
+
+    private static final String FAILURE_NEW_BRANCHES = "abort: push creates new remote branches:"; //NOI18N
+    private static String failedNewBranch (List<String> output) {
+        for (String line : output) {
+            if (line.startsWith(FAILURE_NEW_BRANCHES)) {
+                line = line.substring(FAILURE_NEW_BRANCHES.length());
+                if (line.endsWith("!")) {
+                    line = line.substring(0, line.length() - 1);
+                }
+                line = line.trim();
+                return line;
+            }
+        }
+        return null;
     }
 
 }
