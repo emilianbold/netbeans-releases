@@ -76,6 +76,22 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="JDK8-profiles-2">
+            <api name="queries"/>
+            <summary>The <code>SourceLevelQuery</code> supports JDK 8 profiles</summary>
+            <version major="1" minor="47"/>
+            <date day="10" month="4" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility semantic="compatible" source="incompatible" binary="incompatible">
+                Incompatible change of not released API.
+            </compatibility>
+            <description>
+                <p>
+                    The JDK Profile was changed to enum type.
+                </p>
+            </description>
+            <issue number="228278"/>
+        </change>
         <change id="JDK8-profiles">
             <api name="queries"/>
             <summary>The <code>SourceLevelQuery</code> supports JDK 8 profiles</summary>

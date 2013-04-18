@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.analysis;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.analysis.RunAnalysisPanel.FutureWarnings;
-import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.nodes.Node;
+package org.netbeans.modules.java.j2seprofiles;
 
 /**
- *
- * @author lahvac
+ * Just another copy of Pair.
+ * @author Tomas Zezula
  */
-public class AnalysisResult {
+final class Pair<P,K> {
 
-    public final Map<AnalyzerFactory, List<ErrorDescription>> provider2Hints;
-    public final Map<ErrorDescription, Project> errorsToProjects;
-    public final FutureWarnings analyzerId2Description;
-    public final Collection<Node> extraNodes;
+    public final P first;
+    public final K second;
 
-    public AnalysisResult(Map<AnalyzerFactory, List<ErrorDescription>> provider2Hints, Map<ErrorDescription, Project> errorsToProjects, FutureWarnings analyzerId2Description, Collection<Node> extraNodes) {
-        this.provider2Hints = provider2Hints;
-        this.errorsToProjects = errorsToProjects;
-        this.analyzerId2Description = analyzerId2Description;
-        this.extraNodes = extraNodes;
+    private Pair (P first, K second) {
+        this.first = first;
+        this.second = second;
     }
-    
+
+
+    public static <P,K> Pair<P,K> of (P first, K second) {
+        return new Pair<P,K> (first,second);
+    }
+
+
+    @Override
+    public int hashCode () {
+        int hashCode  = 0;
+        hashCode ^= first == null ? 0 : first.hashCode();
+        hashCode ^= second == null ? 0: second.hashCode();
+        return hashCode;
+    }
+
+    @Override
+    public boolean equals (final Object other) {
+        if (other instanceof Pair) {
+            Pair<?,?> otherPair = (Pair<?,?>) other;
+            return (this.first == null ? otherPair.first == null : this.first.equals(otherPair.first)) &&
+                   (this.second == null ? otherPair.second == null : this.second.equals(otherPair.second));
+        }
+        return false;
+    }
+
+    @Override
+    public String toString () {
+        return String.format("Pair[%s,%s]", first,second);
+    }
 }
