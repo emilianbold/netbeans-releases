@@ -154,12 +154,9 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
             } else if( dataModel.getOrientation() == SlideBarDataModel.NORTH ) {
                 setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, bkColor));
             } else if( dataModel.getOrientation() == SlideBarDataModel.WEST ) {
-                setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, bkColor), 
-                        BorderFactory.createEmptyBorder(1, 0, 0, 3)));
+                setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, bkColor));
             } else if( dataModel.getOrientation() == SlideBarDataModel.EAST ) {
-                setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(0, 1, 0, 0, bkColor),
-                        BorderFactory.createEmptyBorder(1, 3, 0, 0)));
+                setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, bkColor));
             }
         }
         if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
