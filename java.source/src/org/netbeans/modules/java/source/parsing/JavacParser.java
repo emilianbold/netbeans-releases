@@ -139,6 +139,7 @@ import org.netbeans.lib.nbjavac.services.NBMemberEnter;
 import org.netbeans.lib.nbjavac.services.NBParserFactory;
 import org.netbeans.lib.nbjavac.services.NBClassWriter;
 import org.netbeans.lib.nbjavac.services.NBJavacTrees;
+import org.netbeans.lib.nbjavac.services.NBMessager;
 import org.netbeans.lib.nbjavac.services.NBTreeMaker;
 import org.netbeans.lib.nbjavac.services.PartialReparser;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
@@ -835,7 +836,7 @@ public class JavacParser extends Parser {
 
         Context context = new Context();
         //need to preregister the Messages here, because the getTask below requires Log instance:
-        Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
+        NBMessager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
         JavacTaskImpl task = (JavacTaskImpl)JavacTool.create().getTask(null, 
                 ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo),
                 diagnosticListener, options, null, Collections.<JavaFileObject>emptySet(),

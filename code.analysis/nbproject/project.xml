@@ -218,6 +218,7 @@
                 <friend>org.netbeans.modules.findbugs.installer</friend>
                 <friend>org.netbeans.modules.java.hints</friend>
                 <friend>org.netbeans.modules.java.hints.ui</friend>
+                <friend>org.netbeans.modules.java.j2seprofiles</friend>
                 <friend>org.netbeans.modules.latex.hints</friend>
                 <friend>org.netbeans.modules.php.code.analysis</friend>
                 <friend>org.netbeans.spi.java.hints</friend>

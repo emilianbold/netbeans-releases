@@ -44,6 +44,7 @@ package org.netbeans.api.java.source.support;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayDeque;
@@ -68,8 +69,11 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery.Profile;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.classfile.Annotation;
 import org.netbeans.modules.classfile.AnnotationComponent;
 import org.netbeans.modules.classfile.CPEntry;
@@ -82,6 +86,7 @@ import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.Archive;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -437,7 +442,7 @@ public class ProfileSupport {
             }
         }
 
-        @NonNull
+        @CheckForNull
         protected URL map(@NonNull final FileObject fo) {
             return fo.toURL();
         }
@@ -508,12 +513,12 @@ public class ProfileSupport {
                         collector.reportProfileViolation(new Violation(root, null, null, null));
                         return;
                     }
-                    if (res.first().compareTo(context.getRequredProfile()) > 0) {
+                    current = res.first();
+                    if (current != Profile.DEFAULT && current.compareTo(context.getRequredProfile()) > 0) {
                         //Hiher profile in manifest of dependent jar
                         collector.reportProfileViolation(new Violation(root, res.first(), null, null));
                         return;
-                    }
-                    current = res.first();
+                    }                    
                 }
                 if (context.shouldValidate(Validation.BINARIES_BY_CLASS_FILES)) {
                     if (current == null || current == Profile.DEFAULT) {
@@ -565,24 +570,49 @@ public class ProfileSupport {
         }
 
         private final static class SourceValidator extends Validator {
+
+            private final File cacheRoot;
+            private final ClasspathInfo resolveCps;
+
             private SourceValidator(
                @NonNull final URL root,
                @NonNull final Context context) {
                 super(root, context);
+                File f;
+                try {
+                    f = JavaIndex.getClassFolder(root, true);
+                } catch (IOException ioe) {
+                    f = null;
+                }
+                cacheRoot = f;
+                resolveCps = ClasspathInfo.create(
+                    ClassPath.EMPTY,
+                    ClassPath.EMPTY,
+                    ClassPathSupport.createClassPath(root));
             }
 
             @Override
-            protected void validate(@NonNull final ViolationCollector collector) {
+            protected void validate(@NonNull final ViolationCollector collector) {                
                 try {
-                    final File cacheRoot = JavaIndex.getClassFolder(root, true);
                     if (cacheRoot != null) {
                         validateBinaryRoot(Utilities.toURI(cacheRoot).toURL(), collector);
                     }
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
-        }
+
+            @Override
+            @CheckForNull
+            protected URL map(@NonNull final FileObject fo) {
+                final String relative = FileObjects.convertFolder2Package(
+                        FileObjects.stripExtension(FileObjects.getRelativePath(cacheRoot, FileUtil.toFile(fo))));
+                final FileObject sourceFile = SourceUtils.getFile(
+                    ElementHandleAccessor.getInstance().create(ElementKind.CLASS, relative),
+                    resolveCps);
+                return sourceFile == null ? null : sourceFile.toURL();
+            }            
+        }        
     }
     
 
