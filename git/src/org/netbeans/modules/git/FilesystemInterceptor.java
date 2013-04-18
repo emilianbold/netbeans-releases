@@ -72,6 +72,7 @@ import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
@@ -95,6 +96,7 @@ class FilesystemInterceptor extends VCSInterceptor {
     private final Map<File, Set<File>> lockedRepositories = new HashMap<File, Set<File>>(5);
 
     private RequestProcessor.Task refreshTask, lockedRepositoryRefreshTask;
+    private final RequestProcessor.Task refreshOwnersTask;
 
     private static final RequestProcessor rp = new RequestProcessor("GitRefresh", 1, true);
     private final GitFolderEventsHandler gitFolderEventsHandler;
@@ -111,6 +113,15 @@ class FilesystemInterceptor extends VCSInterceptor {
         lockedRepositoryRefreshTask = rp.create(new LockedRepositoryRefreshTask());
         gitFolderEventsHandler = new GitFolderEventsHandler();
         commandLogger = new CommandUsageLogger();
+        refreshOwnersTask = rp.create(new Runnable() {
+            @Override
+            public void run() {
+                Git git = Git.getInstance();
+                git.clearAncestorCaches();
+                git.versionedFilesChanged();
+                VersioningSupport.versionedRootsChanged();
+            }
+        });
     }
 
     @Override
@@ -175,6 +186,10 @@ class FilesystemInterceptor extends VCSInterceptor {
         if (GitUtils.isPartOfGitMetadata(file) && GitUtils.INDEX_LOCK.equals(file.getName())) {
             commandLogger.locked(file);
         }
+        if (GitUtils.isAdministrative(file)) {
+            // new metadata created, we should refresh owners
+            refreshOwnersTask.schedule(0);
+        }
         // There is no point in refreshing the cache for ignored files.
         addToCreated(file);
         if (!cache.getStatus(file).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
@@ -233,6 +248,10 @@ class FilesystemInterceptor extends VCSInterceptor {
         if (file == null) return;
         if (GitUtils.isPartOfGitMetadata(file) && GitUtils.INDEX_LOCK.equals(file.getName())) {
             commandLogger.unlocked(file);
+        }
+        if (GitUtils.DOT_GIT.equals(file.getName())) {
+            // new metadata created, we should refresh owners
+            refreshOwnersTask.schedule(3000);
         }
         // we don't care about ignored files
         if (!cache.getStatus(file).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
