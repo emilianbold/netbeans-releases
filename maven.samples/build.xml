@@ -30,6 +30,13 @@
         <zip basedir="samples_src/javaee7/batch/payroll" destfile="${examples}/Payroll.zip"/>
         
         <!--
+            Concurrency subsection:
+        -->
+        <zip basedir="samples_src/javaee7/concurrency/executor" destfile="${examples}/Executor.zip"/>
+        <zip basedir="samples_src/javaee7/concurrency/schedule" destfile="${examples}/Schedule.zip"/>
+        <zip basedir="samples_src/javaee7/concurrency/threads" destfile="${examples}/Threads.zip"/>
+        
+        <!--
             CDI subsection:
         -->
         <zip basedir="samples_src/javaee7/cdi/bean-validation" destfile="${examples}/BeanValidation.zip"/>

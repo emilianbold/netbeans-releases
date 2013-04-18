@@ -66,6 +66,34 @@
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
+                    
+                    <!--
+                        Concurrency subsection:
+                    -->
+                    <file name="Executor" url="Executor.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/Executor"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Executor.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="Schedule" url="Schedule.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/Schedule"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Schedule.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="Threads" url="Threads.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/Threads"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Threads.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
                        
                     <!--
                         EJB subsection:
