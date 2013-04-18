@@ -57,6 +57,7 @@ import jdk.nashorn.internal.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -661,7 +662,7 @@ public class ModelUtils {
                             if ("@mtd".equals(kind) && jsKind.isFunction()) {
                                 //Collection<TypeUsage> resolved = resolveTypeFromSemiType(model, ModelUtils.findJsObject(model, offset), IndexedElement.getReturnTypes(indexResult));
                                 Collection<TypeUsage> resolvedTypes = IndexedElement.getReturnTypes(indexResult);
-                                ModelUtils.addUnigueType(newResolvedTypes, resolvedTypes);
+                                ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
                             } else {
                                 checkProperty = true;
                             }
@@ -671,9 +672,9 @@ public class ModelUtils {
                             List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
                             resolveAssignments(jsIndex, propertyFQN, fromAssignment);
                             if (fromAssignment.isEmpty()) {
-                                ModelUtils.addUnigueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
+                                ModelUtils.addUniqueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
                             } else {
-                                ModelUtils.addUnigueType(newResolvedTypes, fromAssignment);
+                                ModelUtils.addUniqueType(newResolvedTypes, fromAssignment);
                             }
                         }
                         // from libraries look for top level types
@@ -719,6 +720,7 @@ public class ModelUtils {
 
     public static Collection<TypeUsage> resolveTypes(Collection<? extends TypeUsage> unresolved, JsParserResult parserResult) {
         Collection<TypeUsage> types = new ArrayList<TypeUsage>(unresolved);
+        Set<String> original = null;
         Model model = parserResult.getModel();
         FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
         JsIndex jsIndex = JsIndex.get(fo);
@@ -730,6 +732,12 @@ public class ModelUtils {
             Collection<TypeUsage> resolved = new ArrayList<TypeUsage>();
             for (TypeUsage typeUsage : types) {
                 if (!typeUsage.isResolved()) {
+                    if (original == null) {
+                        original = new HashSet<String>(unresolved.size());
+                        for (TypeUsage t : unresolved) {
+                            original.add(t.getType());
+                        }
+                    }
                     resolvedAll = false;
                     String sexp = typeUsage.getType();
                     if (sexp.startsWith("@exp;")) {
@@ -745,12 +753,14 @@ public class ModelUtils {
                                 nExp.add("@pro");
                             }
                         }
-                        ModelUtils.addUnigueType(resolved, ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, typeUsage.getOffset()));
+                        // passing original prevents the unresolved return types
+                        // when recursion in place
+                        ModelUtils.addUniqueType(resolved, original, ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, typeUsage.getOffset()));
                     } else {
-                        ModelUtils.addUnigueType(resolved, new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
+                        ModelUtils.addUniqueType(resolved, new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
                     }
                 } else {
-                    ModelUtils.addUnigueType(resolved, (TypeUsage) typeUsage);
+                    ModelUtils.addUniqueType(resolved, (TypeUsage) typeUsage);
                 }
             }
             types.clear();
@@ -813,10 +823,10 @@ public class ModelUtils {
                     
                     
                 if(!hasAssignments || isType) {
-                    ModelUtils.addUnigueType(resolved, new TypeUsageImpl(fqn, -1, true));
+                    ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, -1, true));
                 }
             } else {
-                ModelUtils.addUnigueType(resolved, new TypeUsageImpl(fqn, -1, false));
+                ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, -1, false));
             }
 //            Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(fqn);
 //            resolved.add(new TypeUsageImpl(fqn, -1, true));
@@ -871,24 +881,31 @@ public class ModelUtils {
         return result;
     }
     
-    public static void addUnigueType(Collection <TypeUsage> where, TypeUsage type) {
-        boolean isThere = false;
+    public static void addUniqueType(Collection <TypeUsage> where, Set<String> forbidden, TypeUsage type) {
         String typeName = type.getType();
-        for(TypeUsage utype : where) {
+        if (forbidden.contains(typeName)) {
+            return;
+        }
+        for (TypeUsage utype : where) {
             if (utype.getType().equals(typeName)) {
-                isThere = true;
-                break;
+                return;
             }
         }
-        if (!isThere) {
-            where.add(type);
+        where.add(type);
+    }
+
+    public static void addUniqueType(Collection <TypeUsage> where, TypeUsage type) {
+        addUniqueType(where, Collections.<String>emptySet(), type);
+    }
+
+    public static void addUniqueType(Collection <TypeUsage> where, Set<String> forbidden, Collection <TypeUsage> what) {
+        for (TypeUsage type: what) {
+            addUniqueType(where, forbidden, type);
         }
     }
-    
-    public static void addUnigueType(Collection <TypeUsage> where, Collection <TypeUsage> what) {
-        for(TypeUsage type: what) {
-            addUnigueType(where, type);
-        }
+
+    public static void addUniqueType(Collection <TypeUsage> where, Collection <TypeUsage> what) {
+        addUniqueType(where, Collections.<String>emptySet(), what);
     }
     
     private static class SemiTypeResolverVisitor extends PathNodeVisitor {
