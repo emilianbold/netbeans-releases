@@ -144,6 +144,9 @@ import org.netbeans.modules.cnd.modelimpl.parser.*;
     }
     void println(Object o1,Object o2) {
     }
+    
+    protected void syncToSet() {
+    }
 
     pCXX_grammar CTX;
 
@@ -235,7 +238,11 @@ compilation_unit: translation_unit;
 translation_unit
 @init                                                                           {if(state.backtracking == 0){action.translation_unit(input.LT(1));}}
     :
-        declaration[object_decl]* EOF
+        syncDeclaration 
+        (
+            declaration[object_decl]
+            syncDeclaration 
+        )* EOF
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_translation_unit(input.LT(0));}}
 
@@ -490,7 +497,7 @@ finally                                                                         
  */
 declaration [decl_kind kind] 
 @init                                                                           {if(state.backtracking == 0){action.declaration(input.LT(1));}}
-    :                                                                           
+    :
     (
         block_declaration
     |
@@ -510,6 +517,11 @@ declaration [decl_kind kind]
     )                                                                           
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_declaration(input.LT(0));}}
+
+syncDeclaration
+@init                                                                           {syncToSet();}
+    :   // Deliberately match nothing, causing this rule always to be entered.
+    ;
 
 block_declaration
 @init                                                                           {if(state.backtracking == 0){action.block_declaration(input.LT(1));}}
@@ -1884,11 +1896,14 @@ class_key:
 member_specification[boolean class_late_binding]
 @init                                                                           {if(state.backtracking == 0){action.member_specification(input.LT(1));}}
     :
-        member_declaration[field_decl, class_late_binding] member_specification[class_late_binding]?
-    |
-        access_specifier 
-        COLON                                                                   {action.member_specification(action.MEMBER_SPECIFICATION__COLON, input.LT(0));}
-        member_specification[class_late_binding]?
+        syncDeclaration
+        (    
+            member_declaration[field_decl, class_late_binding] member_specification[class_late_binding]?
+            |
+            access_specifier 
+            COLON                                                               {action.member_specification(action.MEMBER_SPECIFICATION__COLON, input.LT(0));}
+            member_specification[class_late_binding]?
+        )
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_member_specification(input.LT(0));}}
 
