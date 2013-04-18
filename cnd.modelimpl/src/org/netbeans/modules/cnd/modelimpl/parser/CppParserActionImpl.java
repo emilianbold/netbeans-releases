@@ -1011,6 +1011,13 @@ public class CppParserActionImpl implements CppParserActionEx {
                     } else {
                         builder.create();
                     }
+                    
+                    // todo: decide what builders could be here
+                    if ((builder instanceof FunctionBuilder || builder instanceof VariableBuilder)) {
+                        CharSequence name = builder.getName();
+                        globalSymTab.enterLocal(name);
+                    }
+                    
                 } else if (declBuilder.getTypeBuilder() != null) {
                     // Here we will register forward declarations
 
@@ -3163,6 +3170,12 @@ public class CppParserActionImpl implements CppParserActionEx {
                     ((MemberBuilder)builder).setVisibility(parent.getCurrentMemberVisibility());
                     parent.addMemberBuilder((MemberBuilder)builder);
                 }
+                
+                // todo: decide what builders could be here
+                if (builder instanceof FieldBuilder) {
+                    SymTabEntry classEntry = globalSymTab.enterLocal(builder.getName());
+                }
+                
             } else if (declBuilder.getTypeBuilder() != null && declBuilder.getTypeBuilder().getNameBuilder() != null) {
                 // Here we will register forward declarations inside class/struct
                 
