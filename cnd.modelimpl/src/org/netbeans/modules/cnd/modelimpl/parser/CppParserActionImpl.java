@@ -3172,7 +3172,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                 }
                 
                 // todo: decide what builders could be here
-                if (builder instanceof FieldBuilder || builder instanceof MethodBuilder) {
+                if (builder instanceof FieldBuilder) {
                     SymTabEntry classEntry = globalSymTab.enterLocal(builder.getName());
                 }
                 
