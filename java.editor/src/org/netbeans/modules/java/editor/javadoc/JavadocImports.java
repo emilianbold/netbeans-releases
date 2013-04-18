@@ -55,6 +55,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.DocSourcePositions;
+import com.sun.source.util.DocTreePathScanner;
 import com.sun.source.util.DocTreeScanner;
 import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
@@ -157,7 +158,7 @@ public final class JavadocImports {
         final DocCommentTree docComment = javac.getDocTrees().getDocCommentTree(forElement);
         final List<Token> result = new ArrayList<Token>();
         
-        new DocTreeScanner<Void, Void>() {
+        new DocTreePathScanner<Void, Void>() {
             @Override public Void visitReference(ReferenceTree node, Void p) {
                 new TreePathScanner<Void, Void>() {
                     @Override public Void visitIdentifier(IdentifierTree node, Void p) {
@@ -269,7 +270,7 @@ public final class JavadocImports {
         final DocSourcePositions positions = trees.getSourcePositions();
         final Element[] result = new Element[1];
         
-        new DocTreeScanner<Void, Void>() {
+        new DocTreePathScanner<Void, Void>() {
             @Override public Void scan(DocTree node, Void p) {
                 if (   node != null
                     && positions.getStartPosition(javac.getCompilationUnit(), docComment, node) <= offset
@@ -284,7 +285,7 @@ public final class JavadocImports {
                 if (   span != null
                     && span[0] <= offset
                     && span[1] >= offset) {
-                    result[0] = trees.getElement(tp, node);
+                    result[0] = trees.getElement(getCurrentPath());
                     return null;
                 }
                 new TreePathScanner<Void, Void>() {

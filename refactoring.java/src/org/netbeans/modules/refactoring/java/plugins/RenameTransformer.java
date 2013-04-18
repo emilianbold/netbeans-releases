@@ -385,7 +385,7 @@ public class RenameTransformer extends RefactoringVisitor {
     public DocTree visitReference(ReferenceTree node, Element elementToFind) {
         DocTreePath currentDocPath = getCurrentDocPath();
         DocTrees trees = workingCopy.getDocTrees();
-        Element el = trees.getElement(currentDocPath.getTreePath(), node);
+        Element el = trees.getElement(getCurrentDocPath());
         if (el != null && (el.equals(elementToFind) || isMethodMatch(el))) {
             ReferenceTree newRef;
             if(el.getKind().isClass() || el.getKind().isInterface()) {

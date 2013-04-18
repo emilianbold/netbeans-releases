@@ -45,6 +45,7 @@ import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.util.DocTreePathScanner;
 import com.sun.source.util.DocTreeScanner;
 import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
@@ -77,14 +78,14 @@ public class DocTreeNode extends AbstractNode implements OffsetProvider {
     private static List<Node> children(final CompilationInfo info, final TreePath declaration, final DocCommentTree docComment, DocTree tree) {
         final List<Node> result = new ArrayList<Node>();
         
-        tree.accept(new DocTreeScanner<Void, Void>() {
+        tree.accept(new DocTreePathScanner<Void, Void>() {
             @Override public Void scan(DocTree node, Void p) {
                 result.add(new DocTreeNode(info, declaration, docComment, node));
                 return null;
             }
             @Override
             public Void visitReference(ReferenceTree node, Void p) {
-                result.add(TreeNode.nodeForElement(info, ((DocTrees) info.getTrees()).getElement(declaration, node)));
+                result.add(TreeNode.nodeForElement(info, ((DocTrees) info.getTrees()).getElement(getCurrentPath())));
                 if (node.getClassReference() != null) {
                     result.add(TreeNode.getTree(info, new TreePath(declaration, node.getClassReference()), /*TODO: cancel*/new AtomicBoolean()));
                 }
