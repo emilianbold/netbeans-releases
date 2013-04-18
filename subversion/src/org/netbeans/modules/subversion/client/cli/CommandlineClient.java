@@ -355,7 +355,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     @Override
     public void remove(File[] files, boolean force) throws SVNClientException {
-        RemoveCommand cmd = new RemoveCommand(files, user, force);
+        RemoveCommand cmd = new RemoveCommand(files, force);
         exec(cmd);
     }
 
