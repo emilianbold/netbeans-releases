@@ -128,15 +128,7 @@ public class ProfilesAnalyzer implements Analyzer {
     @Override
     @NonNull
     @NbBundle.Messages ({
-        "MSG_AnalyzingRoot=Analyzing root {0}",
-        "MSG_ProjectHigherProfile=Project requires profile: {0}",
-        "DESC_ProjectHigherProfile=The project {0} located in {1} requires profile: {2}",
-        "MSG_LibraryHigherProfile=Library requires profile: {0}",
-        "DESC_LibraryHigherProfile=The Profile attribute in the manifest of the library {0} requires profile: {1}",
-        "MSG_LibraryInvalidProfile=Library has invalid profile",
-        "DESC_LibraryInvalidProfile=The library Manifest of the library {0} has invalid value of the Profile attribute",
-        "MSG_ClassFileHigherProfile={0} requires profile: {1}",
-        "DESC_ClassFileHigherProfile=The {0} used in class {1} of library {2} requires profile: {3}"
+        "MSG_AnalyzingRoot=Analyzing root {0}"        
     })
     public Iterable<? extends ErrorDescription> analyze() {
         final Scope scope = context.getScope();
@@ -171,23 +163,7 @@ public class ProfilesAnalyzer implements Analyzer {
                         ProfileSupport.Validation.BINARIES_BY_CLASS_FILES,
                         ProfileSupport.Validation.SOURCES),
                     cf);
-                for (Project p : projectRefs) {
-                    final FileObject pHome = p.getProjectDirectory();
-                    final SourceLevelQuery.Profile pProfile = SourceLevelQuery.getSourceLevel2(pHome).getProfile();
-                    if (pProfile.compareTo(profile) > 0) {
-                        result.reportError(owner, ErrorDescriptionFactory.createErrorDescription(
-                                null,
-                                Severity.ERROR,
-                                Bundle.MSG_ProjectHigherProfile(pProfile.getDisplayName()),
-                                Bundle.DESC_ProjectHigherProfile(
-                                    ProjectUtils.getInformation(p).getDisplayName(),
-                                    FileUtil.getFileDisplayName(pHome),
-                                    profile.getDisplayName()),
-                                ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()),
-                                p.getProjectDirectory(),
-                                null));
-                    }
-                }
+                verifySubProjects(projectRefs, owner, profile, result);
             }            
         }
         if (!canceled.get()) {
@@ -216,81 +192,11 @@ public class ProfilesAnalyzer implements Analyzer {
                     }
                     if (binary) {
                         //Binary roots
-                        for (ProfileSupport.Violation violation : violations) {
-                            final URL fileURL = violation.getFile();
-                            FileObject target;
-                            String message;
-                            String description;
-                            final SourceLevelQuery.Profile requiredProfile = violation.getRequiredProfile();                            
-                            if (fileURL == null) {
-                                target = root;
-                                if (requiredProfile != null) {
-                                    message = Bundle.MSG_LibraryHigherProfile(requiredProfile.getDisplayName());
-                                    description = Bundle.DESC_LibraryHigherProfile(
-                                            FileUtil.getFileDisplayName(archiveFileOrFolder(target)),
-                                            requiredProfile.getDisplayName());
-                                } else {
-                                    message = Bundle.MSG_LibraryInvalidProfile();
-                                    description = Bundle.DESC_LibraryInvalidProfile(FileUtil.getFileDisplayName(archiveFileOrFolder(target)));
-                                }
-                            } else {
-                                final ElementHandle<TypeElement> usedType = violation.getUsedType();
-                                assert usedType != null;
-                                assert requiredProfile != null;
-                                target = URLMapper.findFileObject(fileURL);
-                                message = Bundle.MSG_ClassFileHigherProfile(
-                                        simpleName(usedType),
-                                        requiredProfile.getDisplayName());
-                                description = Bundle.DESC_ClassFileHigherProfile(
-                                        usedType.getQualifiedName(),
-                                        stripExtension(FileUtil.getRelativePath(root, target)),
-                                        FileUtil.getFileDisplayName(archiveFileOrFolder(root)),
-                                        requiredProfile.getDisplayName());
-                            }
-                            for (Project p : projects) {
-                                result.reportError(p, ErrorDescriptionFactory.createErrorDescription(
-                                    null,
-                                    Severity.ERROR,
-                                    message,
-                                    description,
-                                    ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()),
-                                    target,
-                                    null));
-                            }
-                        }
+                        verifyBinaryRoot(root, violations, projects, result);
                     } else {
                         //Source roots
-                        try {                            
-                            if (root != null) {
-                                final ClasspathInfo cpInfo = ClasspathInfo.create(root);
-                                final Map<FileObject,Collection<ProfileSupport.Violation>> violationsByFiles =
-                                    new HashMap<>();
-                                final JavaSource js = JavaSource.create(
-                                    cpInfo,
-                                    violationsToFileObjects(violations, violationsByFiles));
-                                if (js != null) {
-                                    js.runUserActionTask(
-                                        new Task<CompilationController>(){
-                                            @Override
-                                            public void run(@NonNull final CompilationController cc) throws Exception {
-                                                cc.toPhase(JavaSource.Phase.RESOLVED);
-                                                final FileObject currentFile = cc.getFileObject();
-                                                final FindPosScanner fps = new FindPosScanner(
-                                                        currentFile,
-                                                        cc.getTrees(),
-                                                        cc.getElements(),
-                                                        cc.getTreeUtilities(),
-                                                        violationsByFiles.get(currentFile),
-                                                        result);
-                                                fps.scan(cc.getCompilationUnit(), null);
-
-                                            }
-                                        },
-                                        true);
-                                }
-                            }
-                        } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
+                        if (root != null) {
+                            verifySourceRoot(root, violations, result);
                         }
                     }
                     context.progress(++count);
@@ -310,6 +216,129 @@ public class ProfilesAnalyzer implements Analyzer {
         canceled.set(true);
         return true;
     }
+
+    @NbBundle.Messages ({
+        "MSG_ProjectHigherProfile=Project requires profile: {0}",
+        "DESC_ProjectHigherProfile=The project {0} located in {1} requires profile: {2}",
+    })
+    private static void verifySubProjects(
+        @NonNull final Collection<? extends Project> projectRefs,
+        @NonNull final Project owner,
+        @NonNull final SourceLevelQuery.Profile profile,
+        @NonNull final Result result) {
+        for (Project p : projectRefs) {
+            final FileObject pHome = p.getProjectDirectory();
+            final SourceLevelQuery.Profile pProfile = SourceLevelQuery.getSourceLevel2(pHome).getProfile();
+            if (pProfile.compareTo(profile) > 0) {
+                result.reportError(owner, ErrorDescriptionFactory.createErrorDescription(
+                        null,
+                        Severity.ERROR,
+                        Bundle.MSG_ProjectHigherProfile(pProfile.getDisplayName()),
+                        Bundle.DESC_ProjectHigherProfile(
+                            ProjectUtils.getInformation(p).getDisplayName(),
+                            FileUtil.getFileDisplayName(pHome),
+                            profile.getDisplayName()),
+                        ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()),
+                        p.getProjectDirectory(),
+                        null));
+            }
+        }
+    }
+
+    @NbBundle.Messages ({
+        "MSG_LibraryHigherProfile=Library requires profile: {0}",
+        "DESC_LibraryHigherProfile=The Profile attribute in the manifest of the library {0} requires profile: {1}",
+        "MSG_LibraryInvalidProfile=Library has invalid profile",
+        "DESC_LibraryInvalidProfile=The library Manifest of the library {0} has invalid value of the Profile attribute",
+        "MSG_ClassFileHigherProfile={0} requires profile: {1}",
+        "DESC_ClassFileHigherProfile=The {0} used in class {1} of library {2} requires profile: {3}"
+    })
+    private static void verifyBinaryRoot(
+            @NonNull final FileObject root,
+            @NonNull final Collection<? extends ProfileSupport.Violation> violations,
+            @NonNull final Set<Project> projects,
+            @NonNull final Result result) {
+        for (ProfileSupport.Violation violation : violations) {
+            final URL fileURL = violation.getFile();
+            FileObject target;
+            String message;
+            String description;
+            final SourceLevelQuery.Profile requiredProfile = violation.getRequiredProfile();
+            if (fileURL == null) {
+                target = root;
+                if (requiredProfile != null) {
+                    message = Bundle.MSG_LibraryHigherProfile(requiredProfile.getDisplayName());
+                    description = Bundle.DESC_LibraryHigherProfile(
+                            FileUtil.getFileDisplayName(archiveFileOrFolder(target)),
+                            requiredProfile.getDisplayName());
+                } else {
+                    message = Bundle.MSG_LibraryInvalidProfile();
+                    description = Bundle.DESC_LibraryInvalidProfile(FileUtil.getFileDisplayName(archiveFileOrFolder(target)));
+                }
+            } else {
+                final ElementHandle<TypeElement> usedType = violation.getUsedType();
+                assert usedType != null;
+                assert requiredProfile != null;
+                target = URLMapper.findFileObject(fileURL);
+                message = Bundle.MSG_ClassFileHigherProfile(
+                        simpleName(usedType),
+                        requiredProfile.getDisplayName());
+                description = Bundle.DESC_ClassFileHigherProfile(
+                        usedType.getQualifiedName(),
+                        stripExtension(FileUtil.getRelativePath(root, target)),
+                        FileUtil.getFileDisplayName(archiveFileOrFolder(root)),
+                        requiredProfile.getDisplayName());
+            }
+            for (Project p : projects) {
+                result.reportError(p, ErrorDescriptionFactory.createErrorDescription(
+                    null,
+                    Severity.ERROR,
+                    message,
+                    description,
+                    ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()),
+                    target,
+                    null));
+            }
+        }
+    }
+
+    private static void verifySourceRoot(
+            @NonNull final FileObject root,
+            @NonNull final Collection<? extends ProfileSupport.Violation> violations,
+            @NonNull final Result result) {
+        try {
+            final ClasspathInfo cpInfo = ClasspathInfo.create(root);
+            final Map<FileObject,Collection<ProfileSupport.Violation>> violationsByFiles =
+                new HashMap<>();
+            final JavaSource js = JavaSource.create(
+                cpInfo,
+                violationsToFileObjects(violations, violationsByFiles));
+            if (js != null) {
+                js.runUserActionTask(
+                    new Task<CompilationController>(){
+                        @Override
+                        public void run(@NonNull final CompilationController cc) throws Exception {
+                            cc.toPhase(JavaSource.Phase.RESOLVED);
+                            final FileObject currentFile = cc.getFileObject();
+                            final FindPosScanner fps = new FindPosScanner(
+                                    currentFile,
+                                    cc.getTrees(),
+                                    cc.getElements(),
+                                    cc.getTreeUtilities(),
+                                    violationsByFiles.get(currentFile),
+                                    result);
+                            fps.scan(cc.getCompilationUnit(), null);
+
+                        }
+                    },
+                    true);
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+    }
+
+
 
     @NonNull
     private static FileObject archiveFileOrFolder(@NonNull final FileObject root) {
@@ -462,7 +491,7 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
     }
 
     //@NonThreadSafe
-    private final class FindPosScanner extends TreePathScanner<Void, Void> {
+    private static final class FindPosScanner extends TreePathScanner<Void, Void> {
 
         private final FileObject target;
         private final Elements elements;
