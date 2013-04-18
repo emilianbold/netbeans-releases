@@ -215,6 +215,9 @@ public class FileChangedManager extends SecurityManager {
             if (ChildrenSupport.isLock() || Thread.holdsLock(NamingFactory.class)) {
                 return;
             }
+            if (isClassLoading()) {
+                return;
+            }
             Runnable goingToSleep = IDLE_CALL.get();
             if (goingToSleep != null) {
                 goingToSleep.run();
@@ -247,7 +250,7 @@ public class FileChangedManager extends SecurityManager {
         }
 
         Integer maxLoad = IDLE_IO.get();
-        if (maxLoad != null && !isClassLoading()) {
+        if (maxLoad != null) {
             try {
                 waitIOLoadLowerThan(maxLoad);
             } catch (InterruptedException ex) {
