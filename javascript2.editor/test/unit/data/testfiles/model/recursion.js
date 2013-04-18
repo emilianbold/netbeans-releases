@@ -1,7 +1,7 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.recovery;
 
-import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoverySuiteTestBase;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
-/**
- *
- * @author Alexander Simon
- */
-public class RecoverySuiteTest extends RecoverySuiteTestBase {
+koo.test = function(instance) {
+    if (a) return false;
+    if (b) return true;
+    return koo.test(instance['test']);
+};
 
-    public RecoverySuiteTest() {
-        super("Recovery Test Suite");
-        addTest(FriendTestCase.class);
-        addTest(TypedefTestCase.class);
-        addTest(DeclarationsTestCase.class);
-        addTest(ClassTestCase.class);
-        addTest(MemberTestCase.class);
-        addTest(NamespaceTestCase.class);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new RecoverySuiteTest();
-        return suite;
-    }
+koo.test_test = function() {
+    return koo.test("pislik");
 }
