@@ -51,26 +51,27 @@ import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
-import org.netbeans.modules.team.ui.treelist.AsynchronousLeafNode;
-import org.netbeans.modules.team.ui.treelist.TreeListNode;
-import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 
 /**
  * Node query results.
  *
  * @author S. Aubrecht
  */
-public class QueryNode<S extends TeamServer, P> extends AsynchronousLeafNode<List<QueryResultHandle>> implements PropertyChangeListener {
+public class QueryNode<S extends TeamServer, P> extends AsynchronousNode<List<QueryResultHandle>> implements PropertyChangeListener {
 
     private final DashboardProvider<S, P> dashboard;
     private final QueryHandle query;
@@ -81,7 +82,7 @@ public class QueryNode<S extends TeamServer, P> extends AsynchronousLeafNode<Lis
     private final Object LOCK = new Object();
 
     public QueryNode( QueryHandle query, TreeListNode parent, DashboardProvider<S, P> dashboard ) {
-        super( parent, query.getDisplayName() );
+        super(false, parent, query.getDisplayName());
         this.query = query;
         this.dashboard = dashboard;
         query.addPropertyChangeListener(this);
@@ -162,5 +163,10 @@ public class QueryNode<S extends TeamServer, P> extends AsynchronousLeafNode<Lis
     @Override
     protected List<QueryResultHandle> load() {
         return dashboard.getQueryAccessor().getQueryResults(query);
+    }
+
+    @Override
+    protected List<TreeListNode> createChildren() {
+        return Collections.emptyList();
     }
 }

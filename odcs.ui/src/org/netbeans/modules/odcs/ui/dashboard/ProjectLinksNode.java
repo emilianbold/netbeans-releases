@@ -49,16 +49,16 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.team.ui.treelist.AsynchronousLeafNode;
-import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  * @author S. Aubrecht
  * @author Jan Becicka
  */
-public class ProjectLinksNode extends AsynchronousLeafNode<MessagingHandle> {
+public class ProjectLinksNode extends AsynchronousNode<MessagingHandle> {
 
     private final ProjectHandle<ODCSProject> project;
     private JPanel panel;
@@ -77,7 +77,7 @@ public class ProjectLinksNode extends AsynchronousLeafNode<MessagingHandle> {
     private final DashboardProviderImpl dashboardProvider;
 
     public ProjectLinksNode( TreeListNode parent, ProjectHandle<ODCSProject> project, DashboardProviderImpl dashboardProvider ) {
-        super( parent, null );
+        super(false, parent, null );
         this.project = project;
         this.dashboardProvider = dashboardProvider;
     }
@@ -131,4 +131,9 @@ public class ProjectLinksNode extends AsynchronousLeafNode<MessagingHandle> {
         @Override
         public void removePropertyChangeListener(PropertyChangeListener l) { }
     };
+
+    @Override
+    protected List<TreeListNode> createChildren() {
+        return Collections.emptyList();
+    }
 }

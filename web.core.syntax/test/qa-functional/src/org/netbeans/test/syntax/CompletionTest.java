@@ -127,6 +127,7 @@ public class CompletionTest extends J2eeTestCase {
     private static boolean projectsOpened = false;//open test projects
     protected final static List XML_EXTS = Arrays.asList(new String[]{"html", "tld", "xhtml"});
     protected final static List JSP_EXTS = Arrays.asList(new String[]{"jsp", "tag", "jspf", "tagf", "jspx", "tagx"});
+    protected static List ignored_tests = Arrays.asList(new String[]{"testJS.js", "testJS2.js"});
     protected final static List JS_EXTS = Arrays.asList(new String[]{"js"/*,"java"*/});
     public final static Logger LOG = Logger.getLogger(CompletionTest.class.getName());
     protected FileObject testFileObj;
@@ -172,7 +173,8 @@ public class CompletionTest extends J2eeTestCase {
                     String ext = fo.getExt();
                     String name = fo.getName();
                     return (name.startsWith("test") || name.startsWith("Test"))
-                            && (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext) || JS_EXTS.contains(ext));
+                            && (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext) || JS_EXTS.contains(ext))
+                            && !CompletionTest.ignored_tests.contains(name + "." + ext);
                 }
             };
             addTest(RecurrentSuiteFactory.createSuite(CompletionTest.class,

@@ -50,6 +50,7 @@ import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -59,14 +60,13 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
-import org.netbeans.modules.kenai.ui.api.KenaiServer;
-import org.netbeans.modules.team.ui.treelist.AsynchronousLeafNode;
-import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
-import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
  * @author S. Aubrecht
  * @author Jan Becicka
  */
-public class ProjectLinksNode extends AsynchronousLeafNode<MessagingHandle> implements PropertyChangeListener {
+public class ProjectLinksNode extends AsynchronousNode<MessagingHandle> implements PropertyChangeListener {
 
     private final ProjectHandle<KenaiProject> project;
     private MessagingHandle messaging;
@@ -85,7 +85,7 @@ public class ProjectLinksNode extends AsynchronousLeafNode<MessagingHandle> impl
     private final Object LOCK = new Object();
 
     public ProjectLinksNode( TreeListNode parent, ProjectHandle<KenaiProject> project ) {
-        super( parent, null );
+        super(false, parent, null);
         this.project = project;
         messaging = load();
         messaging.addPropertyChangeListener(this);
@@ -196,5 +196,10 @@ public class ProjectLinksNode extends AsynchronousLeafNode<MessagingHandle> impl
             messaging.removePropertyChangeListener(this);
         }
         project.getTeamProject().getKenai().removePropertyChangeListener(this);
+    }
+
+    @Override
+    protected List<TreeListNode> createChildren() {
+        return Collections.emptyList();
     }
 }

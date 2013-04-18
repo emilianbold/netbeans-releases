@@ -6,11 +6,11 @@
 <h5 >
 <h6 >
 <handler >
+<head >
 <header >
 <hgroup >
 <hkern >
 <hr >
-<head >
 <html >
 End cursor position = 98
 [<a |, href, <a href="", 167]
@@ -112,11 +112,11 @@ End cursor position = 255
 End cursor position = 320
 [<b|, body, <body, 380]
 <b >
+<base >
 <bdo >
 <blockquote >
+<body >
 <br >
 <button >
 <bvar >
-<base >
-<body >
 End cursor position = 386
