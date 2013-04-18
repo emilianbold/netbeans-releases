@@ -129,16 +129,14 @@ public class FoldingSideBar extends JComponent {
         int size = lines.getLineCount();
         int logLine = 0; // logical line (including wrapped lines)
         int nextLogLine;
-        int line = 0;
         for (int i = 0; i < size - 1; i++) {
             if (!lines.isVisible(i)) {
                 continue;
             }
-            nextLogLine = findLogicalLineIndex(line + 1, size);
+            nextLogLine = findLogicalLineIndex(findNextVisibleLine(i), size);
             drawLineGraphics(g, i, logLine, nextLogLine, offset, lineHeight,
                     descent);
             logLine = nextLogLine;
-            line++;
         }
     }
 
@@ -250,6 +248,25 @@ public class FoldingSideBar extends JComponent {
             }
         } else {
             return physicalLineIndex;
+        }
+    }
+
+    /**
+     * Find next visible line below a line.
+     *
+     * @param physicalLine Physical index of a visible line.
+     * @return Physical index of the nearest visible line below
+     * {@code physicalLine}.
+     */
+    private int findNextVisibleLine(int physicalLine) {
+        int visibleLineIndex = lines.realToVisibleLine(physicalLine);
+        if (visibleLineIndex < 0) {
+            return lines.getVisibleLineCount() - 1;
+        }
+        if (visibleLineIndex + 1 < lines.getVisibleLineCount()) {
+            return lines.visibleToRealLine(visibleLineIndex + 1);
+        } else {
+            return lines.getVisibleLineCount() - 1;
         }
     }
 
