@@ -166,6 +166,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %}
 
 WHITESPACE=[ \t\r\n]+
+D_STRING="\""([^"\r""\n""\r\n""\""])*"\""
+S_STRING="'"([^"\r""\n""\r\n""'"])*"'"
+STRING = {D_STRING} | {S_STRING}
 KEYWORD="true"|"false"|"null"|"and"|"or"|"xor"|"clone"|"new"|"instanceof"|"return"|"continue"|"break"
 CAST="(" ("expand"|"string"|"array"|"int"|"integer"|"float"|"bool"|"boolean"|"object") ")"
 VARIABLE="$"[a-zA-Z0-9_]+
@@ -193,6 +196,9 @@ SYMBOL=[a-zA-Z0-9_]+(\-[a-zA-Z0-9_]+)*
     }
     {VARIABLE} {
         return LatteMarkupTokenId.T_VARIABLE;
+    }
+    {STRING} {
+        return LatteMarkupTokenId.T_STRING;
     }
     {SYMBOL} {
         return LatteMarkupTokenId.T_SYMBOL;
