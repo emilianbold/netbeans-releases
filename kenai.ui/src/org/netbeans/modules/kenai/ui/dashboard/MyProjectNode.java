@@ -54,7 +54,6 @@ import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
-import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
@@ -63,7 +62,8 @@ import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
@@ -182,13 +182,13 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
         synchronized( LOCK ) {
             if( null == component ) {
                 component = new JPanel( new GridBagLayout() );
                 component.setOpaque(false);
                 lbl = new TreeLabel(project.getDisplayName());
-                component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,16,0,3), 0,0) );
+                component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,3), 0,0) );
 
                 int count = mh.getMessageCount();
 
@@ -359,5 +359,10 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
     @Override
     public String toString () {
         return project.getDisplayName();
+    }
+
+    @Override
+    protected Type getType() {
+        return Type.CLOSED;
     }
 }

@@ -24,6 +24,7 @@
 < jsp:text >
 < jsp:useBean >
 <a >
+<a >
 <abbr >
 <abs >
 <address >
@@ -53,6 +54,7 @@
 <arg >
 <article >
 <aside >
+<audio >
 <audio >
 <b >
 <base >
@@ -157,6 +159,7 @@
 <i >
 <ident >
 <iframe >
+<image >
 <image >
 <imaginary >
 <imaginaryi >
@@ -297,6 +300,7 @@
 <samp >
 <scalarproduct >
 <script >
+<script >
 <sdev >
 <sec >
 <sech >
@@ -305,6 +309,7 @@
 <selector >
 <semantics >
 <sep >
+<set >
 <set >
 <setdiff >
 <sin >
@@ -339,6 +344,7 @@
 <time >
 <times >
 <title >
+<title >
 <tr >
 <track >
 <transpose >
@@ -352,6 +358,7 @@
 <variance >
 <vector >
 <vectorproduct >
+<video >
 <video >
 <wbr >
 <xor >

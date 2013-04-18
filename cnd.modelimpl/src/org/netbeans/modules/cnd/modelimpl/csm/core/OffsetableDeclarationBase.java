@@ -555,6 +555,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         private NameBuilder nameBuilder;
         
         public void setName(CharSequence name) {
+            assert CharSequences.isCompact(name) : "only compact strings allowed";
             this.name = name;
         }
 

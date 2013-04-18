@@ -210,7 +210,7 @@ public final class Model {
     }
 
     public void writeModel(Printer printer, boolean resolve) {
-        writeObject(printer, getGlobalObject(), parserResult);
+        writeObject(printer, getGlobalObject(), resolve ? parserResult : null);
     }
 
     public static void writeObject(Printer printer, JsObject object, @NullAllowed JsParserResult parseResult) {

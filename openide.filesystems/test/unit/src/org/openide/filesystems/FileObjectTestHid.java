@@ -3555,6 +3555,9 @@ public class FileObjectTestHid extends TestBaseHid {
         } catch (IOException iex) {
             fsAssert  ("Expected that FS provides InputStream ",fo1.getSize () == 0);
         } finally {
+            if (t.lock != null) {
+                t.lock.releaseLock();
+            }
             fo1.removeFileChangeListener(t);
         }
         if (t.ex != null) {

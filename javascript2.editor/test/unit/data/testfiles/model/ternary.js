@@ -1,7 +1,7 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.team.ui.treelist;
-
-import javax.swing.JLabel;
-import javax.swing.UIManager;
-
-/**
- * Use Tree font for rendering of Dashboard items
- *
- * @author S. Aubrecht
- */
-public class TreeLabel extends JLabel {
-
-
-    public TreeLabel() {
-        setFont(UIManager.getFont("Tree.font")); //NOI18N
-    }
-
-    public TreeLabel( String text ) {
-        super( text );
-        setFont(UIManager.getFont("Tree.font")); //NOI18N
+x = function() {
+    return {
+        a: function(co) {
+            return false || co;
+        },
+        b: function(value) {
+            return a("pislik") ? value() : value;
+        }
     }
 }
