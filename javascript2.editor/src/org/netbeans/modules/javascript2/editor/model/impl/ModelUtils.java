@@ -58,11 +58,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import java.util.StringTokenizer;
+import jdk.nashorn.internal.ir.TernaryNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
@@ -917,8 +921,9 @@ public class ModelUtils {
         private static TypeUsage REGEXP_TYPE = new TypeUsageImpl(Type.REGEXP, -1, true);
         
         private final Set<TypeUsage> result = new HashSet<TypeUsage>();
+        private final Deque<StringBuilder> sbDeque = new LinkedList<StringBuilder>();
         private StringBuilder sb = new StringBuilder();
-        final private JsParserResult parserResult;
+        private final JsParserResult parserResult;
         
         public SemiTypeResolverVisitor(JsParserResult parserResult) {
             this.parserResult = parserResult;
@@ -943,16 +948,32 @@ public class ModelUtils {
 
         @Override
         public Node enter(AccessNode aNode) {
-            if (aNode.getBase() instanceof IdentNode) {
-                IdentNode iNode = (IdentNode)aNode.getBase();
-                if (iNode.getName().equals("this")) {
-                    List<? extends Node> path = getPath();
-                    if (!(path.size() > 0 && path.get(path.size() - 1) instanceof CallNode)) {
-                        sb.append("@this."); //NOI18N
-                        sb.append(aNode.getProperty().getName());
-                        add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
-                        // plus five due to this.
+            sbDeque.offerLast(sb);
+            sb = new StringBuilder(sb);
+
+            try {
+                if (aNode.getBase() instanceof IdentNode) {
+                    IdentNode iNode = (IdentNode)aNode.getBase();
+                    if (iNode.getName().equals("this")) {
+                        List<? extends Node> path = getPath();
+                        if (!(path.size() > 0 && path.get(path.size() - 1) instanceof CallNode)) {
+                            sb.append("@this."); //NOI18N
+                            sb.append(aNode.getProperty().getName());
+                            add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                            // plus five due to this.
+                        }
+                    } else {
+                        if ("@call;".equals(sb.toString())) {
+                            sb.append(aNode.getProperty().getName());
+                        } else {
+                            sb.insert(0, aNode.getProperty().getName());
+                            sb.insert(0, "@pro;");
+                        }
+                        sb.insert(0, ((IdentNode)aNode.getBase()).getName());
+                        sb.insert(0, "@exp;");
+                        add(new TypeUsageImpl(sb.toString(), aNode.getStart()));
                     }
+                    return null;
                 } else {
                     if ("@call;".equals(sb.toString())) {
                         sb.append(aNode.getProperty().getName());
@@ -960,20 +981,11 @@ public class ModelUtils {
                         sb.insert(0, aNode.getProperty().getName());
                         sb.insert(0, "@pro;");
                     }
-                    sb.insert(0, ((IdentNode)aNode.getBase()).getName());
-                    sb.insert(0, "@exp;");
-                    add(new TypeUsageImpl(sb.toString(), aNode.getStart()));
                 }
-                return null;
-            } else {
-                if ("@call;".equals(sb.toString())) {
-                    sb.append(aNode.getProperty().getName());
-                } else {
-                    sb.insert(0, aNode.getProperty().getName());
-                    sb.insert(0, "@pro;");
-                }
+                return super.enter(aNode);
+            } finally {
+                sb = sbDeque.pollLast();
             }
-            return super.enter(aNode);
         }
 
         @Override
@@ -1015,68 +1027,89 @@ public class ModelUtils {
             }
             return result;
         }
-        
+
         @Override
-        public Node enter(CallNode callNode) {
-            super.enter(callNode);
-            if (callNode.getFunction() instanceof ReferenceNode) {
-                FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
-                String name = function.getIdent().getName();
-                add(new TypeUsageImpl("@call;" + name, LexUtilities.getLexerOffset(parserResult, function.getStart()), false)); //NOI18N
-            } else {
-                int pathSize = getPath().size();
-                if (pathSize > 1) {
-                    Node previousNode = getPath().get(pathSize - 2);
-                    if (previousNode instanceof AccessNode
-                            && callNode.getFunction() instanceof IdentNode) {
-                        String name = ((IdentNode)callNode.getFunction()).getName();
-                        sb.insert(0, name);
-                        sb.insert(0, "@call;"); //NOI18N
-                        return null;
-                    }
-                }
-                if (sb.length() < 6) {
-                    sb.append("@call;");    //NOI18N
-                } else {
-                    sb.insert(6, "@call;"); //NOI18N
-                }
-                // don't visit arguments, just name the name of function.
-                callNode.getFunction().accept(this);
-            }
+        public Node enter(TernaryNode ternaryNode) {
+            super.enter(ternaryNode);
+            ternaryNode.rhs().accept(this);
+            ternaryNode.third().accept(this);
             return null;
         }
 
         @Override
-        public Node enter(IdentNode iNode) {
-            if (getPath().isEmpty()) {
-                if (iNode.getName().equals("this")) {   //NOI18N
-                    add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+        public Node enter(CallNode callNode) {
+            sbDeque.offerLast(sb);
+            sb = new StringBuilder(sb);
+
+            try {
+                super.enter(callNode);
+                if (callNode.getFunction() instanceof ReferenceNode) {
+                    FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
+                    String name = function.getIdent().getName();
+                    add(new TypeUsageImpl("@call;" + name, LexUtilities.getLexerOffset(parserResult, function.getStart()), false)); //NOI18N
                 } else {
-                    add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
-                }
-            } else {
-                int pathSize = getPath().size();
-                Node lastNode = getPath().get(pathSize - 1);
-                if (lastNode instanceof CallNode) {
-                    boolean addFunctionName = true;
+                    int pathSize = getPath().size();
                     if (pathSize > 1) {
-                        lastNode = getPath().get(pathSize - 2);
-                        addFunctionName = !(lastNode instanceof AccessNode);
-                        sb.insert(0, "@exp;"); //NOI18N
+                        Node previousNode = getPath().get(pathSize - 2);
+                        if (previousNode instanceof AccessNode
+                                && callNode.getFunction() instanceof IdentNode) {
+                            String name = ((IdentNode)callNode.getFunction()).getName();
+                            sb.insert(0, name);
+                            sb.insert(0, "@call;"); //NOI18N
+                            return null;
+                        }
                     }
-                    if (addFunctionName) {
-                        sb.append(iNode.getName());
+                    if (sb.length() < 6) {
+                        sb.append("@call;");    //NOI18N
+                    } else {
+                        sb.insert(6, "@call;"); //NOI18N
                     }
-                    add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
-                } else if (!(lastNode instanceof AccessNode)) {
+                    // don't visit arguments, just name the name of function.
+                    callNode.getFunction().accept(this);
+                }
+                return null;
+            } finally {
+                sb = sbDeque.pollLast();
+            }
+        }
+
+        @Override
+        public Node enter(IdentNode iNode) {
+            sbDeque.offerLast(sb);
+            sb = new StringBuilder(sb);
+            try {
+                if (getPath().isEmpty()) {
                     if (iNode.getName().equals("this")) {   //NOI18N
                         add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
                     } else {
                         add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
                     }
+                } else {
+                    int pathSize = getPath().size();
+                    Node lastNode = getPath().get(pathSize - 1);
+                    if (lastNode instanceof CallNode) {
+                        boolean addFunctionName = true;
+                        if (pathSize > 1) {
+                            lastNode = getPath().get(pathSize - 2);
+                            addFunctionName = !(lastNode instanceof AccessNode);
+                            sb.insert(0, "@exp;"); //NOI18N
+                        }
+                        if (addFunctionName) {
+                            sb.append(iNode.getName());
+                        }
+                        add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                    } else if (!(lastNode instanceof AccessNode)) {
+                        if (iNode.getName().equals("this")) {   //NOI18N
+                            add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                        } else {
+                            add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                        }
+                    }
                 }
+                return null;
+            } finally {
+                sb = sbDeque.pollLast();
             }
-            return null;
         }
 
         @Override
