@@ -3343,7 +3343,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             NameBuilder nameBuilder = (NameBuilder) top;
             APTToken aToken = (APTToken) token;
             CharSequence part = aToken.getTextID();
-            nameBuilder.addNamePart("operator " + part); // NOI18N
+            nameBuilder.addNamePart(CharSequences.create("operator " + part)); // NOI18N
         }        
     }
     @Override public void end_operator_id(Token token) {}
