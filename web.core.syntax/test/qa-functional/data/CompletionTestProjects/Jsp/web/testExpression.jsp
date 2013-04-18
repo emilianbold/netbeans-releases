@@ -38,7 +38,7 @@ ${date
 
 <%--CC
 ${i|
-initParam[]
+initParam
 ${initParam
 --%>
 
@@ -56,7 +56,7 @@ ${pageContext.request
 
 <%--CC
 #{|
-sessionScope[]
+sessionScope
 #{sessionScope
 --%>
 

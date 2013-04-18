@@ -49,6 +49,7 @@ readonly
 rendered
 required
 requiredMessage
+role
 size
 style
 styleClass
