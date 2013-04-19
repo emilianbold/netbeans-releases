@@ -79,7 +79,17 @@ import org.w3c.dom.NodeList;
 public abstract class AbstractDocumentModel<T extends DocumentComponent<T>> 
         extends AbstractModel<T> implements DocumentModel<T> {
 
-    protected volatile DocumentModelAccess access;
+    /**
+     * Do not assign to this field. And do not read from it either. Its initialization is not synchronized
+     * by 'this' instance from 6.x, there's no guarantee that the field's value will be visible to the
+     * reading thread.
+     * <p/>
+     * The field will be soon deprecated
+     */
+    protected DocumentModelAccess access;
+    
+    private volatile DocumentModelAccess accessPrivate;
+    
     /**
      * needsSync contains timestamp of the last dirtying operation. Non-zero
      * value means dirty status.
@@ -151,7 +161,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
 	if (!isIntransaction()) {
             DocumentModelAccess acc;
             synchronized (getAccessLock) {
-                acc = access;
+                acc = accessPrivate;
                 needsSync = System.currentTimeMillis();
             }
             // if the access was not yet created, the needsSync will keep
@@ -581,18 +591,18 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     
     @Override
     public DocumentModelAccess getAccess() {
-        DocumentModelAccess acc = access;
+        DocumentModelAccess acc = accessPrivate;
         if (acc == null) {
             acc = getEffectiveAccessProvider().createModelAccess(this);
             long ts;
             synchronized (getAccessLock) {
-                if (access != null) {
+                if (accessPrivate != null) {
                     // already loaded and initialized
-                    return access;
+                    return accessPrivate;
                 }
-                access = acc;
-                if (! (access instanceof ReadOnlyAccess)) {
-                    access.addUndoableEditListener(this);
+                accessPrivate = access = acc;
+                if (! (acc instanceof ReadOnlyAccess)) {
+                    acc.addUndoableEditListener(this);
                     setIdentifyingAttributes();
                 }
                 ts = needsSync;
@@ -600,7 +610,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
             if (ts != 0) {
                 // delayed setDirty, access was not present when documentChanged was called
                 // was called.
-                access.setDirty();
+                acc.setDirty();
             }
         }
         return acc;
