@@ -184,7 +184,7 @@ final class FoldView extends EditorView {
     
     @NbBundle.Messages({
         "# {0} - number of lines",
-        "FMT_contentSummary={0} line(s)"
+        "FMT_contentSummary={0} {0,choice,0#lines|1#line|1<lines}"
     })
     private String resolvePlaceholder(String text, int at) {
         if ((options & 3) == 0) {
