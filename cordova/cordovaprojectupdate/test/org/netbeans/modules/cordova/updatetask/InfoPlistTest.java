@@ -78,8 +78,8 @@ public class InfoPlistTest {
     @Test
     public void testOut() throws Exception{
         InfoPlist instance = new InfoPlist(InfoPlistTest.class.getResourceAsStream("Info-plist.xml"));
-        assertEquals(instance.getPackage(), "com");
-        instance.setPackage("org.netbeans");
+        assertEquals(instance.getBundleIdentifier(), "com");
+        instance.setBundleIdentifier("org.netbeans");
         instance.printDocument(System.out);
     }
 }
