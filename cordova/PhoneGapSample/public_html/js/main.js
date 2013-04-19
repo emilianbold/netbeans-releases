@@ -3,6 +3,8 @@ var contactsWithAddress = [];
 var contactAddresses = [];
 var compassWatchId = -1;
 var locationWatchId = -1;
+var map_with_pos = {};
+var previous_pos_marker = {};
 
 $(document).ready(function() {
     document.addEventListener("deviceready", onDeviceReady, false);
@@ -32,10 +34,21 @@ function onDeviceReady() {
         app.mylocation();
     });
 
-    $("#cancelMyLocationBt").click(function(e) { // stop watching my location button
+    $("#cancelMyLocationBt").click(function(e) { // stop/resume watching my location button
         e.stopImmediatePropagation();
         e.preventDefault();
-        window.navigator.geolocation.clearWatch(locationWatchId);
+        var $icon = $($(this).find(".ui-icon")[0]);
+        var oldClass = $icon.attr("class");
+        if ($(this).text() === "Stop") {
+            $($(this).find(".ui-btn-text")[0]).text("Resume");
+            $icon.attr("class", oldClass.replace("delete", "star"));
+            window.navigator.geolocation.clearWatch(locationWatchId);
+        } else {
+            $($(this).find(".ui-btn-text")[0]).text("Stop");
+            $icon.attr("class", oldClass.replace("star", "delete"));
+            var map = new MapCtrl();
+            map.syncPositionWithMap();
+        }
     });
 
     $("#refreshPhotoBt").click(function(e) { // refresh my photo button
@@ -169,9 +182,9 @@ function MyApplication() {
     }
 
     function getContactName(contact) {
-        if (typeof contact.displayName === null || contact.displayName === "null") {
+        if (!contact.displayName) {
             var contact_name = "";
-            if (typeof contact.name === "undefined" || contact.name === null) {
+            if (!contact.name) {
                 return (contact.nickname || "unknown");
             } else {
                 var contact_name = (contact.name.givenName + " " + contact.name.familyName);
@@ -186,7 +199,7 @@ function MyApplication() {
     }
 
     this.about = function() {
-        $("#aboutContent").html("<h1>Sample Map App</h1><div>Sample map application built with PhoneGap in NetBeans IDE. Visit <a href='#' id='externalLink' rel='//www.netbeans.org'>netbeans.org</a> for more information</div><br/><div><b>Device: </b>" + window.device.name + "(" + window.device.platform + ": " + window.device.version + ")</div><div><b>Connection: </b>" + states[navigator.connection.type] + "</div>");
+        $("#aboutContent").html("<h1>Sample Map App</h1><div>Sample map application built with PhoneGap in NetBeans IDE. Visit <a href='#' id='externalLink' target='_blank' rel='https://www.netbeans.org'>netbeans.org</a> for more information</div><br/><div><b>Device: </b>" + window.device.name + "(" + window.device.platform + ": " + window.device.version + ")</div><div><b>Connection: </b>" + states[navigator.connection.type] + "</div>");
         $("#externalLink").live('tap', function() {
             window.navigator.app.loadUrl($(this).attr("rel"), {openExternal: true});
             return false;
@@ -379,6 +392,7 @@ function MyApplication() {
     };
 
     this.mylocation = function() {
+        resetStopButton();
         var mapHandler = new MapCtrl(function(error) {
             window.console.error(error.message);
         });
@@ -386,6 +400,13 @@ function MyApplication() {
         mapHandler.locateMe();
     };
 
+    function resetStopButton() {
+        var $stopButton = $($("#cancelMyLocationBt")[0]);
+        var $icon = $($stopButton.find(".ui-icon")[0]);
+        var oldClass = $icon.attr("class");
+        $($stopButton.find(".ui-btn-text")[0]).text("Stop");
+        $icon.attr("class", oldClass.replace("star", "delete"));
+    }
 
     function init() {
         self.route();
@@ -444,6 +465,12 @@ function MapCtrl(onFail) {
         });
     }
 
+    this.syncPositionWithMap = function() {
+        locationWatchId = window.navigator.geolocation.watchPosition(function(position) {
+            showOnMap(position, self.headerID);
+        }, onFail, {maximumAge: 10000, timeout: 10000, enableHighAccuracy: true});
+    };
+
     /**
      * Loads new map
      * @param {Function} callback function to be called when map is loaded
@@ -461,6 +488,7 @@ function MapCtrl(onFail) {
 
         map = new google.maps.Map(document.getElementById(mapContainer), myOptions);
         self.map = map;
+        map_with_pos = map;
         google.maps.event.trigger(map, 'resize');
 
         google.maps.event.addListener(map, 'tilesloaded', function() {
@@ -546,6 +574,7 @@ function MapCtrl(onFail) {
                     zoomControl: true
                 };
                 map = new google.maps.Map(document.getElementById(mapContainter), myOptions);
+                self.map = map;
                 map.setCenter(results[0].geometry.location);
                 map.setZoom(13);
 
@@ -575,6 +604,16 @@ function MapCtrl(onFail) {
         });
     }
 
+    function reuseOldMap() {
+        try {
+            if (!self.map && map_with_pos && previous_pos_marker) {
+                self.map = map_with_pos; // use previous map (instead of loading a new one)
+                previous_pos_marker.setMap(null); // remove previous marker
+            }
+        } catch (e) {
+            window.console.log("nothing to reuse");
+        }
+    }
 
     /**
      * Shows reader's position on map
@@ -582,8 +621,9 @@ function MapCtrl(onFail) {
     function showOnMap(position, headerID) {
         $(headerID).html("You Are Here");
         $.mobile.hidePageLoadingMsg();
-        map.setCenter(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
-        map.setZoom(15);
+        reuseOldMap();
+        self.map.setCenter(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+        self.map.setZoom(15);
 
         var info =
                 ('Latitude: ' + position.coords.latitude + '<br>' +
@@ -599,11 +639,12 @@ function MapCtrl(onFail) {
         if (!marker) {
             marker = new google.maps.Marker({
                 position: point,
-                map: map
+                map: self.map
             });
         } else {
             marker.setPosition(point);
         }
+        previous_pos_marker = marker;
         if (!infoWindow) {
             infoWindow = new google.maps.InfoWindow({
                 content: info
@@ -612,7 +653,7 @@ function MapCtrl(onFail) {
             infoWindow.setContent(info);
         }
         google.maps.event.addListener(marker, 'click', function() {
-            infoWindow.open(map, marker);
+            infoWindow.open(self.map, marker);
         });
     }
 
@@ -721,7 +762,7 @@ function ContactsCtrl() {
         var options = new ContactFindOptions();
         options.filter = "";
         options.multiple = true;
-        var filter = ["addresses"];
+        var filter = ["name", "addresses"];
         window.navigator.contacts.find(filter, onSuccess, onError, options);
     };
 }

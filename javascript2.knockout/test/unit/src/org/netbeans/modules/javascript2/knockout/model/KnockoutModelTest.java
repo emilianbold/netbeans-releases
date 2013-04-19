@@ -41,7 +41,21 @@
  */
 package org.netbeans.modules.javascript2.knockout.model;
 
+import java.io.File;
+import java.io.StringWriter;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -59,9 +73,27 @@ public class KnockoutModelTest extends ModelTestBase {
         KnockoutModelInterceptor.disabled = true;
     }
 
-    public void testKnockout() throws Exception {
-        //checkModel("testfiles/model/knockout-2.2.1.debug.js");
-    }
+//    public void testKnockout() throws Exception {
+//        String file = "testfiles/model/knockout-2.2.1.debug.js";
+//        FileObject fo = getTestFile(file);
+//        Model model = getModel(file);
+//        JsObject ko = model.getGlobalObject().getProperty("ko");
+//        ko.getProperties().remove("ko"); // remove ko.ko
+//
+//        final StringWriter sw = new StringWriter();
+//        Model.Printer p = new Model.Printer() {
+//
+//            @Override
+//            public void println(String str) {
+//                // XXX hacks improving the model
+//                String real = str;
+////                real = real.replaceAll("_L21.ko", "ko");
+//                sw.append(real).append("\n");
+//            }
+//        };
+//        model.writeModel(p, true);
+//        assertDescriptionMatches(fo, sw.toString(), false, ".model", true);
+//    }
 
     public void testExtend1() throws Exception {
         checkModel("testfiles/model/extend1.js");
@@ -70,4 +102,14 @@ public class KnockoutModelTest extends ModelTestBase {
     public void testExtend2() throws Exception {
         checkModel("testfiles/model/extend2.js");
     }
+
+//    @Override
+//    protected Map<String, ClassPath> createClassPathsForTest() {
+//        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+//        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/model")));
+//        return Collections.singletonMap(
+//            JS_SOURCE_ID,
+//            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+//        );
+//    }
 }

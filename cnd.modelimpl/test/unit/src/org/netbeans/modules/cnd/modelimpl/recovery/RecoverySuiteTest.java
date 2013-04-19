@@ -53,6 +53,8 @@ public class RecoverySuiteTest extends RecoverySuiteTestBase {
 
     public RecoverySuiteTest() {
         super("Recovery Test Suite");
+        addTest(FriendTestCase.class);
+        addTest(TypedefTestCase.class);
         addTest(DeclarationsTestCase.class);
         addTest(ClassTestCase.class);
         addTest(MemberTestCase.class);

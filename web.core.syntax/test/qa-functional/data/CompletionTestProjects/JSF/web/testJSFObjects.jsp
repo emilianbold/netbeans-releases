@@ -9,7 +9,7 @@
 
 <%--CC
 <h:inputText value="#{|}"/>
-cookie[]
+cookie
 <h:inputText value="#{cookie}"/>
 --%>
 

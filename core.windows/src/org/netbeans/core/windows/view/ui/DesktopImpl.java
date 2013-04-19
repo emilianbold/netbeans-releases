@@ -72,6 +72,7 @@ import org.openide.windows.TopComponent;
 
 /** Implementation of compact mode desktop, containing split views as well
  * as slide bars.
+ 
  *
  * @author  Dafe Simonek
  */
@@ -196,20 +197,20 @@ public final class DesktopImpl {
         GridBagConstraints constraint = new GridBagConstraints();
         constraint.fill = GridBagConstraints.BOTH;
         if (Constants.BOTTOM.equals(view.getSide())) {
-            constraint.gridx = 1;
+            constraint.gridx = 0;
             constraint.gridy = 2;
-            constraint.gridwidth = 1;
+            constraint.gridwidth = 3;
             constraint.anchor = GridBagConstraints.SOUTHWEST;
             
         } else if (Constants.LEFT.equals(view.getSide())) {
             constraint.gridx = 0;
             constraint.gridy = 1;
-            constraint.gridheight = 2;
+            constraint.gridheight = 1;
             constraint.anchor = GridBagConstraints.NORTHWEST;
         } else if (Constants.RIGHT.equals(view.getSide())) {
             constraint.gridx = 2;
             constraint.gridy = 1;
-            constraint.gridheight = 2;
+            constraint.gridheight = 1;
             constraint.anchor = GridBagConstraints.NORTHEAST;
         } else if (Constants.TOP.equals(view.getSide())) {
             constraint.gridx = 1;
@@ -219,6 +220,10 @@ public final class DesktopImpl {
             constraint.anchor = GridBagConstraints.NORTHWEST;
         }
         desktop.add(view.getComponent(), constraint);
+        if( Constants.BOTTOM.equals( view.getSide()) && view.getComponent() instanceof JPanel ) {
+            JPanel panel = ( JPanel ) view.getComponent();
+            MainWindow.getInstance().setStatusBarContainer( panel );
+        }
         // #45033 fix - invalidate isn't enough, revalidate is correct
         layeredPane.revalidate();
     }

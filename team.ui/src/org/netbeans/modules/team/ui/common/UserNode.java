@@ -51,8 +51,9 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
-import org.netbeans.modules.team.ui.treelist.LeafNode;
-import org.netbeans.modules.team.ui.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.ProgressLabel;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -97,7 +98,7 @@ public class UserNode extends LeafNode {
     }
 
     @Override
-    public JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    public JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
         synchronized(this) { // ensure panel and it's components created before accessing them
             if( null == panel ) {
                 panel = new JPanel( new GridBagLayout() );

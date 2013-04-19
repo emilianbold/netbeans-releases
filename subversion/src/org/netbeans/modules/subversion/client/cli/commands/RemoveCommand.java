@@ -53,13 +53,11 @@ import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
  */
 public class RemoveCommand extends SvnCommand {
        
-    private File[] files;    
-    private String msg;
-    private boolean force;
+    private final File[] files;    
+    private final boolean force;
 
-    public RemoveCommand(File[] files, String msg, boolean force) {        
+    public RemoveCommand(File[] files, boolean force) {        
         this.files = files;
-        this.msg = msg;
         this.force = force;
     }
 
@@ -71,7 +69,6 @@ public class RemoveCommand extends SvnCommand {
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
         arguments.add("remove");                
-	arguments.addMessage(msg);
         if (force) {
             arguments.add("--force");
         }                
