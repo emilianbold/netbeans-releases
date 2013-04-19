@@ -90,6 +90,10 @@ public class ModelTest extends ModelTestBase {
         checkModel("testfiles/model/property01.js");
     }
 
+    public void testProperty03() throws Exception {
+        checkModel("testfiles/model/property03.js");
+    }
+
     public void testKolo() throws Exception {
         checkModel("testfiles/model/kolo.js");
     }
