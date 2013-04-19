@@ -37,6 +37,11 @@
         <zip basedir="samples_src/javaee7/concurrency/threads" destfile="${examples}/Threads.zip"/>
         
         <!--
+            Connectors subsection:
+        -->
+        <zip basedir="samples_src/javaee7/connectors/mailconnector" destfile="${examples}/MailConnector.zip"/>
+        
+        <!--
             CDI subsection:
         -->
         <zip basedir="samples_src/javaee7/cdi/bean-validation" destfile="${examples}/BeanValidation.zip"/>
