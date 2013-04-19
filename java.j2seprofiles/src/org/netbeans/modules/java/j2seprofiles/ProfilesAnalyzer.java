@@ -66,12 +66,12 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
-import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -162,7 +162,7 @@ public class ProfilesAnalyzer implements Analyzer {
                 filterForRoot.second.add(f);
             }
         }
-
+        final ProfileProvider pp = new ProfileProvider(context);
         final HashMap<URI,Set<Project>> submittedBinaries = new HashMap<>();
         final Set<URI> submittedSources = new HashSet<>();
         final CollectorFactory cf = new CollectorFactory();
@@ -170,7 +170,7 @@ public class ProfilesAnalyzer implements Analyzer {
             if (canceled.get()) {
                 break;
             }
-            final SourceLevelQuery.Profile profile = SourceLevelQuery.getSourceLevel2(root).getProfile();
+            final SourceLevelQuery.Profile profile = pp.findProfile(root);
             if (profile != SourceLevelQuery.Profile.DEFAULT) {
                 final ClassPath boot = ClassPath.getClassPath(root, ClassPath.BOOT);
                 final ClassPath compile = ClassPath.getClassPath(root, ClassPath.COMPILE);
@@ -494,6 +494,28 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
         return false;
     }
 
+    private final class ProfileProvider {
+
+        private final SourceLevelQuery.Profile profile;
+
+        ProfileProvider (@NonNull Context ctx) {
+            final Preferences prefs = ctx.getSettings();
+            final String profileName = prefs == null ?
+                    null :
+                    prefs.get(ProfilesCustomizerProvider.PROP_PROFILE_TO_CHECK, null);
+            profile = profileName == null ?
+                    null :
+                    SourceLevelQuery.Profile.forName(profileName);
+        }
+
+        @NonNull
+        public SourceLevelQuery.Profile findProfile (@NonNull final FileObject root) {
+            return profile != null ?
+                    profile :
+                    SourceLevelQuery.getSourceLevel2(root).getProfile();
+        }
+
+    }
 
     //@ThreadSafe
     private final class CollectorFactory implements ProfileSupport.ViolationCollectorFactory {
@@ -665,8 +687,8 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
 
         @CheckForNull
         @Override
-        public <D, C extends JComponent> CustomizerProvider<D, C> getCustomizerProvider() {
-            return null;
+        public CustomizerProvider<Void, ProfilesCustomizer> getCustomizerProvider() {
+            return new ProfilesCustomizerProvider();
         }
     }
 
