@@ -1053,7 +1053,7 @@ made subject to such option by the copyright holder.
                 installation is over. Such caches are stored in the installation,
                 in first cluster listed by <a href="#systemproperty-netbeans.dirs">
                 netbeans.dirs</a> and have the same layout as user caches 
-                (including here in described caches like <a href="#java.io.File-all-resources.dat">all-resources.dat</a>, 
+                (including here in described caches like <a href="@TOP@/architecture-summary.html#java.io.File-all-resources.dat">all-resources.dat</a>, 
                 as well as caches provided by other subsystems like 
                 <a href="@org-netbeans-core-netigso@/architecture-summary.html#java.io.File-netigso-bundles">
                 netigso-bundles</a>)
@@ -1078,7 +1078,7 @@ made subject to such option by the copyright holder.
             <code>org.netbeans.Archive</code>. The file content uses magic header
             and versioning to allow evolution of its (private) format.
             The location is however well known for 
-            <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            <a href="@TOP@/architecture-summary.html#java.io.File-installation.cache">purposes of installer</a>.
             </p>
         </api>
         <api category="friend" group="java.io.File" name="all-files.dat" type="export">
@@ -1387,9 +1387,9 @@ made subject to such option by the copyright holder.
         </p>
         <p>
             There are various caches (like 
-                <a href="#java.io.File-all-layers.dat">all-layers.dat</a>,
-                <a href="#java.io.File-all-manifests.dat">all-manifests.dat</a>,
-                <a href="#java.io.File-all-resources.dat">all-resources.dat</a>,
+                <a href="@TOP@/architecture-summary.html#java.io.File-all-layers.dat">all-layers.dat</a>,
+                <a href="@TOP@/architecture-summary.html#java.io.File-all-manifests.dat">all-manifests.dat</a>,
+                <a href="@TOP@/architecture-summary.html#java.io.File-all-resources.dat">all-resources.dat</a>,
                 <a href="@org-netbeans-core-netigso@/architecture-summary.html#java.io.File-netigso-bundles">netigso-bundles</a>,
                 etc.
             ) provided by the module system or by other subsystems of the application.
@@ -1412,9 +1412,9 @@ made subject to such option by the copyright holder.
             the whole purpose of using caches.
         </p>
         <p>
-            As such we have the <a href="#java.io.File-.lastModified">lastModified API</a>.
-            Every cluster (as enumerated by <a href="#systemproperty-netbeans.dirs">netbeans.dirs</a>
-            and <a href="#systemproperty-netbeans.home">netbeans.home</a> properties)
+            As such we have the <a href="@TOP@/architecture-summary.html#java.io.File-.lastModified">lastModified API</a>.
+            Every cluster (as enumerated by <a href="@TOP@/architecture-summary.html#systemproperty-netbeans.dirs">netbeans.dirs</a>
+            and <a href="@TOP@/architecture-summary.html#systemproperty-netbeans.home">netbeans.home</a> properties)
             is supposed to contain such file. Whenever an external tool changes something
             inside some cluster, it is supposed to touch the file and change its 
             timestamp. That will tell the system that caches are invalid 
@@ -1423,8 +1423,8 @@ made subject to such option by the copyright holder.
      </usecase>
      <usecase id="shared.cache" name="Generating Shared Cache">
          <p>
-             The caches (as introduced in <a href="#usecase-invalidate.cache">
-             invalidating cache</a>) are optimized to reflect the state of 
+             The caches (as introduced in <a href="@TOP@/architecture-summary.html#usecase-invalidate.cache">
+             invalidating caches</a> section) are optimized to reflect the state of 
              previous start. However that means, the very first start runs
              without them. This may not be a problem (if the start follows
              immediately after installation), however in <a href="http://wiki.apidesign.org/wiki/Startup#Multi_User_Initial_Launch">
@@ -1433,7 +1433,7 @@ made subject to such option by the copyright holder.
          </p>
          <p>
              To mitigate that the system offers support for <em>shared caches</em>.
-             As part of installation, one can also copy <a href="#java.io.File-installation.cache">
+             As part of installation, one can also copy <a href="@TOP@/architecture-summary.html#java.io.File-installation.cache">
              certain cache files
              </a> into the shared location. Those files will then be used
              on a first start of the system (when the user directory is empty).
@@ -1452,7 +1452,7 @@ $ rm -r /tmp/nb/
          </pre>
          <p>
              The meaning of <code>populate.zip</code> and list of known cache
-             files is described <a href="#java.io.File-installation.cache">here</a>.
+             files is described <a href="@TOP@/architecture-summary.html#java.io.File-installation.cache">here</a>.
              Additional modules and subsystems may add new files however. The 
              ultimate knowledge is available only to those who understand overall
              product installation structure.
