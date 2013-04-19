@@ -61,7 +61,7 @@ public class InfoPlist extends XMLFile {
         super(resourceAsStream);
     }
     
-    public String getPackage() {
+    public String getBundleIdentifier() {
         Node n = getPackageNode();
         if (n==null) {
             return null;
@@ -82,7 +82,7 @@ public class InfoPlist extends XMLFile {
     }
     
     
-    public void setPackage(String pkg) {
+    public void setBundleIdentifier(String pkg) {
         Node n = getPackageNode();
         if (n!=null) {
              n.setTextContent(pkg);

@@ -148,7 +148,7 @@ public abstract class CsmParserProvider {
 
         @Override
         public String toString() {
-            return message + " :" + (eof ? "<EOF>" : tokenText); // NOI18N
+            return message;// + " :" + (eof ? "<EOF>" : tokenText); // NOI18N
         }
     }
     

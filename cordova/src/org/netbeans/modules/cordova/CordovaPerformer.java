@@ -88,7 +88,10 @@ public class CordovaPerformer implements BuildPerformer {
     public static final String NAME_CONFIG_XML = "config.xml";
     public static final String PATH_BUILD_XML = "nbproject/" + NAME_BUILD_XML;
     public static final String PATH_EXTRA_ANT_JAR = "ant/extra/org-netbeans-modules-cordova-projectupdate.jar";
-    public static final String DEFAULT_PACKAGE_NAME = "com.company";
+    public static final String DEFAULT_ID_PREFIX = "com.coolappz";
+    public static final String DEFAULT_EMAIL = "info@com.coolappz";
+    public static final String DEFAULT_WWW = "http://www.coolappz.com";
+    public static final String DEFAULT_VERSION = "1.0.0";
     public static final String DEFAULT_DESCRIPTION = "PhoneGap Application";
     public static final String PROP_BUILD_SCRIPT_VERSION = "cordova_build_script_version";
 
@@ -153,8 +156,9 @@ public class CordovaPerformer implements BuildPerformer {
            PATH_EXTRA_ANT_JAR, 
            "org.netbeans.modules.cordova" , true);
         props.put(PROP_UPDATE_TASK_JAR, antTaskJar.getAbsolutePath());
-        final String name = getConfig(p).getName();
-        props.put(PROP_ANDROID_PROJECT_ACTIVITY, name);//NOI18N
+        final String id = getConfig(p).getId();
+        String activity = id.substring(id.lastIndexOf(".")+1, id.length());
+        props.put(PROP_ANDROID_PROJECT_ACTIVITY, activity);//NOI18N
         
 
         String debug = ClientProjectUtilities.getProperty(p, PROP_DEBUG_ENABLE);//NOI18N
@@ -211,10 +215,14 @@ public class CordovaPerformer implements BuildPerformer {
             FileObject config = project.getProjectDirectory().getFileObject(configPath);
             SourceConfig conf = new SourceConfig(FileUtil.toFile(config));
             if (fresh) {
-                conf.setId(DEFAULT_PACKAGE_NAME);
-                conf.setName(ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));
+                final String appName = ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", "");
+                conf.setId(DEFAULT_ID_PREFIX + "." + appName);
+                conf.setName(appName);
                 conf.setDescription(DEFAULT_DESCRIPTION);
                 conf.setAuthor(System.getProperty("user.name"));
+                conf.setAuthorEmail(DEFAULT_EMAIL);
+                conf.setAuthorHref(DEFAULT_WWW);
+                conf.setVersion(DEFAULT_VERSION);
                 conf.save();
             }
             return conf;
