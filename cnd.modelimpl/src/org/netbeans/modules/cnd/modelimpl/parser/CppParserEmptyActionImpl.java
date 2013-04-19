@@ -225,6 +225,10 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     }
     
     @Override
+    public void type_parameter(int kind, Token token, Token token2, Token token3, Token token4) {
+    }
+
+    @Override
     public void elaborated_type_specifier(Token token) {
     }    
     
