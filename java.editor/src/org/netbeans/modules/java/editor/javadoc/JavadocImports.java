@@ -157,6 +157,9 @@ public final class JavadocImports {
     public static List<Token> computeTokensOfReferencedElements(final CompilationInfo javac, final TreePath forElement, final Element toFind) {
         final DocTrees trees = javac.getDocTrees();
         final DocCommentTree docComment = javac.getDocTrees().getDocCommentTree(forElement);
+        
+        if (docComment == null) return Collections.emptyList();
+        
         final List<Token> result = new ArrayList<Token>();
         
         new DocTreePathScanner<Void, Void>() {
@@ -268,6 +271,9 @@ public final class JavadocImports {
         if (tp == null) return null;
         
         final DocCommentTree docComment = javac.getDocTrees().getDocCommentTree(tp);
+        
+        if (docComment == null) return null;
+        
         final DocSourcePositions positions = trees.getSourcePositions();
         final Element[] result = new Element[1];
         
