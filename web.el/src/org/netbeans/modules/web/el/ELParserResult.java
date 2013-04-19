@@ -99,6 +99,16 @@ public final class ELParserResult extends ParserResult {
         }
         return null;
     }
+
+    public List<ELElement> getElementsTo(int offset) {
+        List<ELElement> result = new ArrayList<ELElement>();
+        for (ELElement each : elements) {
+            if (each.getOriginalOffset().getStart() < offset) {
+                result.add(each);
+            }
+        }
+        return result;
+    }
     
     private boolean add(ELElement element) {
         return elements.add(element);
