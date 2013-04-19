@@ -173,7 +173,8 @@ KEYWORD="true"|"false"|"null"|"and"|"or"|"xor"|"clone"|"new"|"instanceof"|"retur
 CAST="(" ("expand"|"string"|"array"|"int"|"integer"|"float"|"bool"|"boolean"|"object") ")"
 VARIABLE="$"[a-zA-Z0-9_]+
 NUMBER=["+""-"]?[0-9]+(\.[0-9]+)?(e[0-9]+)?
-CHAR="::"|"=>"|[^\"']
+STRICT_CHAR="::"|"=>"|"as"
+GLOBAL_CHAR=[^\"']
 SYMBOL=[a-zA-Z0-9_]+(\-[a-zA-Z0-9_]+)*
 
 
@@ -200,10 +201,13 @@ SYMBOL=[a-zA-Z0-9_]+(\-[a-zA-Z0-9_]+)*
     {STRING} {
         return LatteMarkupTokenId.T_STRING;
     }
+    {STRICT_CHAR} {
+        return LatteMarkupTokenId.T_CHAR;
+    }
     {SYMBOL} {
         return LatteMarkupTokenId.T_SYMBOL;
     }
-    {CHAR} {
+    {GLOBAL_CHAR} {
         return LatteMarkupTokenId.T_CHAR;
     }
 }
