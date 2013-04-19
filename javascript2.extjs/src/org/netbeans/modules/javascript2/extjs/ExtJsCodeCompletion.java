@@ -139,7 +139,7 @@ public class ExtJsCodeCompletion implements CompletionProvider {
                 sb.insert(0, token.text());
             }
         }
-        System.out.println(sb.toString());
+        
         String fqn = sb.toString();
         Map<String, Collection<ExtJsDataItem>> data = getData();
         Collection<ExtJsDataItem> items = data.get(fqn);
