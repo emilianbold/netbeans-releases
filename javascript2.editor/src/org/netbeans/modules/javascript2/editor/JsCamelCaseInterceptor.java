@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,73 +37,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.util.Collections;
-import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.KeystrokeHandler;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.spi.editor.typinghooks.CamelCaseInterceptor;
 
 /**
- * This should be temporary keystroke handler used till issue #217163 will be resolved.
+ * Replaced old KeystrokeHandler and takes care about delete word actions.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsKeystrokeHandler implements KeystrokeHandler {
+public class JsCamelCaseInterceptor implements CamelCaseInterceptor {
 
     @Override
-    public boolean beforeCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+    public boolean beforeChange(MutableContext context) throws BadLocationException {
         return false;
     }
 
     @Override
-    public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
-        return false;
-    }
-
-    @Override
-    public boolean charBackspaced(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
-        return false;
-    }
-
-    @Override
-    public int beforeBreak(Document doc, int caretOffset, JTextComponent target) throws BadLocationException {
-        return -1;
-    }
-
-    @Override
-    public OffsetRange findMatching(Document doc, int caretOffset) {
-        return OffsetRange.NONE;
-    }
-
-    @Override
-    public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
-        return Collections.<OffsetRange>emptyList();
-    }
-
-    @Override
-    public int getNextWordOffset(final Document doc, final int offset, final boolean reverse) {
-        final int[] ret = new int[1];
+    public void change(final MutableContext context) throws BadLocationException {
+        final Document doc = context.getDocument();
+        final int offset = context.getOffset();
+        final boolean reverse = context.isBackward();
         doc.render(new Runnable() {
             @Override
             public void run() {
-                ret[0] = getWordOffset(doc, offset, reverse);
+                int nextOffset = getWordOffset(doc, offset, reverse);
+                context.setNextWordOffset(nextOffset);
             }
         });
-        return ret[0];
     }
 
-    private static int getWordOffset(Document doc, int offset, boolean reverse) {
+    @Override
+    public void afterChange(MutableContext context) throws BadLocationException {
+    }
+
+    @Override
+    public void cancelled(MutableContext context) {
+    }
+
+    protected static int getWordOffset(Document doc, int offset, boolean reverse) {
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
         if (ts == null) {
             return -1;
@@ -197,4 +179,12 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         return -1;
     }
 
+    @MimeRegistration(mimeType = "text/javascript", service = CamelCaseInterceptor.Factory.class)
+    public static class Factory implements CamelCaseInterceptor.Factory {
+
+        @Override
+        public CamelCaseInterceptor createCamelCaseInterceptor(MimePath mimePath) {
+            return new JsCamelCaseInterceptor();
+        }
+    }
 }
