@@ -95,12 +95,12 @@ public class CXXParserEx extends CXXParser {
             if (APTUtils.isEOF(ex.getToken())) {
                 parserError = new CsmParserProvider.ParserError(hdr+" "+ex.getMessage(), -1, -1, ex.getToken().getText(), true);
             } else {
-                parserError = new CsmParserProvider.ParserError(hdr+":"+ex.getToken().getLine()+": error: "+ex.getMessage(), ex.getToken().getLine(), ex.getToken().getColumn(), ex.getToken().getText(), false); // NOI18N
+                parserError = new CsmParserProvider.ParserError(hdr+":"+ex.getToken().getLine()+":"+ex.getToken().getColumn()+": error: "+ex.getMessage(), ex.getToken().getLine(), ex.getToken().getColumn(), ex.getToken().getText(), false); // NOI18N
             }
         } else {
             String hdr = getSourceName();
             String msg = getErrorMessage(e, tokenNames);
-            parserError = new CsmParserProvider.ParserError(hdr+":"+e.line+": error: "+msg, e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1); // NOI18N
+            parserError = new CsmParserProvider.ParserError(hdr+":"+e.line+":"+e.charPositionInLine+": error: "+msg, e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1); // NOI18N
         }
         if (errorDelegate != null) {
             errorDelegate.onError(parserError);
