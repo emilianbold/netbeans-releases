@@ -62,6 +62,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.openide.filesystems.FileObject;
@@ -187,12 +188,19 @@ public class GoToNodeSourceAction extends NodeAction  {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            HtmlParsingResult result = (HtmlParsingResult)resultIterator.getParserResult();
-            final Node nodeToShow = findNode(result, node);
+            ResultIterator htmlResultIterator = WebUtils.getResultIterator(resultIterator, "text/html"); // NOI18N
+            final int offsetToShow;
+            if (htmlResultIterator == null) {
+                offsetToShow = 0;
+            } else {
+                HtmlParsingResult result = (HtmlParsingResult)htmlResultIterator.getParserResult();
+                Node nodeToShow = findNode(result, node);
+                offsetToShow = nodeToShow.from();
+            }
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    CSSUtils.openAtOffset(fob, nodeToShow.from());
+                    CSSUtils.openAtOffset(fob, offsetToShow);
                 }
             });
         }
