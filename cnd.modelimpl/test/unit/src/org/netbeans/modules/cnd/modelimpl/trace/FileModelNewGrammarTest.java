@@ -102,6 +102,10 @@ public class FileModelNewGrammarTest extends TraceModelTestBase {
         performTest("classForwardScope.cpp");
     }
     
+    public void testConstructorImportSymbols() throws Exception {
+        performTest("constructorImportSymbols.cpp");
+    }
+    
 //    public void testMultipleMemberDeclaration() throws Exception {
 //        performTest("typedefEnum.cpp");
 //    } 
