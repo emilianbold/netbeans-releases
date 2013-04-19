@@ -143,6 +143,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     }
                     JsCompletionItem.Factory.create(added, request, resultList);
                     break;
+                default:
+                    break;
             }
         } else {
             switch (context) {
