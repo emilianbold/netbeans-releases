@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
  */
 public class CXXParserEx extends CXXParser {
     
-    private static final int RECOVERY_LIMIT = 20;
+    private static final int RECOVERY_LIMIT = 3;
     private static final BitSet stopSet = new BitSet();
     static {
         stopSet.add(LCURLY);
@@ -95,12 +95,12 @@ public class CXXParserEx extends CXXParser {
             if (APTUtils.isEOF(ex.getToken())) {
                 parserError = new CsmParserProvider.ParserError(hdr+" "+ex.getMessage(), -1, -1, ex.getToken().getText(), true);
             } else {
-                parserError = new CsmParserProvider.ParserError(hdr+":"+ex.getToken().getLine()+": error: "+ex.getMessage(), ex.getToken().getLine(), ex.getToken().getColumn(), ex.getToken().getText(), false); // NOI18N
+                parserError = new CsmParserProvider.ParserError(hdr+":"+ex.getToken().getLine()+":"+ex.getToken().getColumn()+": error: "+ex.getMessage(), ex.getToken().getLine(), ex.getToken().getColumn(), ex.getToken().getText(), false); // NOI18N
             }
         } else {
             String hdr = getSourceName();
             String msg = getErrorMessage(e, tokenNames);
-            parserError = new CsmParserProvider.ParserError(hdr+":"+e.line+": error: "+msg, e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1); // NOI18N
+            parserError = new CsmParserProvider.ParserError(hdr+":"+e.line+":"+e.charPositionInLine+": error: "+msg, e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1); // NOI18N
         }
         if (errorDelegate != null) {
             errorDelegate.onError(parserError);
@@ -142,7 +142,7 @@ public class CXXParserEx extends CXXParser {
             //input.consume();
             //</editor-fold>
             // our solution:
-            if (recoveryCounter > RECOVERY_LIMIT) {
+            if (recoveryCounter >= RECOVERY_LIMIT) {
                 input.consume();
                 recoveryCounter = 0;
                 //followSet.orInPlace(stopSet);

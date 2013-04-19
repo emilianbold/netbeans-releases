@@ -1549,9 +1549,35 @@ public class CppParserActionImpl implements CppParserActionEx {
                 }
             }
         }
-
     }
     
+    @Override
+    public void type_parameter(int kind, Token token, Token token2, Token token3, Token token4) {
+        try {
+            type_parameter_impl(kind, token, token2, token3, token4);
+        } catch (Exception ex) {
+            registerException(ex, token);
+        }
+    }
+    
+    private void type_parameter_impl(int kind, Token token, Token token2, Token token3, Token token4) {
+        if(kind == TYPE_PARAMETER__TEMPLATE_CLASS_ASSIGNEQUAL) {
+            TemplateDescriptorBuilder nested = (TemplateDescriptorBuilder) builderContext.top();
+            builderContext.pop();
+            TemplateParameterBuilder parameter = (TemplateParameterBuilder) builderContext.top();            
+            if(token3 != null) {
+                APTToken aToken = (APTToken) token3;
+                final CharSequence name = aToken.getTextID();
+                parameter.setName(name);
+                parameter.setTemplateDescriptorBuilder(nested);
+                SymTabEntry classEntry = globalSymTab.lookupLocal(name);
+                if (classEntry == null) {
+                    classEntry = globalSymTab.enterLocal(name);
+                    classEntry.setAttribute(CppAttributes.TYPE, true);
+                }
+            }
+        }
+    }
     
     @Override
     public void using_directive(Token usingToken, Token namespaceToken) {
