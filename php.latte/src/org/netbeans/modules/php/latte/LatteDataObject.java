@@ -62,7 +62,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 @Messages("LatteResolver=Latte Templates")
-@MIMEResolver.ExtensionRegistration(displayName = "#LatteResolver", position = 130, extension = "latte", mimeType = LatteLanguage.LATTE_MIME_TYPE)
+@MIMEResolver.ExtensionRegistration(displayName = "#LatteResolver", position = 1983, extension = "latte", mimeType = LatteLanguage.LATTE_MIME_TYPE)
 @DataObject.Registration(displayName = "LATTE", iconBase = LatteDataObject.LATTE_ICON, mimeType = LatteLanguage.LATTE_MIME_TYPE, position = 1983)
 @ActionReferences(value = {
     @ActionReference(id =
