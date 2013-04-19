@@ -75,6 +75,7 @@ import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -132,7 +133,36 @@ public class ProfilesAnalyzer implements Analyzer {
     })
     public Iterable<? extends ErrorDescription> analyze() {
         final Scope scope = context.getScope();
-        final Set<FileObject> roots = scope.getSourceRoots();        
+        final Set<FileObject> roots = new HashSet<>();
+        final Set<FileObject> completeRoots = scope.getSourceRoots();
+        final Map<FileObject, Pair<Set<FileObject>,Set<FileObject>>> filter = new HashMap<>();
+        roots.addAll(completeRoots);
+        for (NonRecursiveFolder nrf : scope.getFolders()) {
+            final FileObject f = nrf.getFolder();
+            final FileObject ownerRoot = findOwnerRoot(f);
+            if (ownerRoot != null && !completeRoots.contains(ownerRoot)) {
+                roots.add(ownerRoot);
+                Pair<Set<FileObject>,Set<FileObject>> filterForRoot = filter.get(ownerRoot);
+                if (filterForRoot == null) {
+                    filterForRoot = Pair.<Set<FileObject>,Set<FileObject>>of(new HashSet<FileObject>(), new HashSet<FileObject>());
+                    filter.put(ownerRoot, filterForRoot);
+                }
+                filterForRoot.first.add(f);
+            }
+        }
+        for (FileObject f : scope.getFiles()) {
+            final FileObject ownerRoot = findOwnerRoot(f);
+            if (ownerRoot != null && !completeRoots.contains(ownerRoot)) {
+                roots.add(ownerRoot);
+                Pair<Set<FileObject>,Set<FileObject>> filterForRoot = filter.get(ownerRoot);
+                if (filterForRoot == null) {
+                    filterForRoot = Pair.<Set<FileObject>,Set<FileObject>>of(new HashSet<FileObject>(), new HashSet<FileObject>());
+                    filter.put(ownerRoot, filterForRoot);
+                }
+                filterForRoot.second.add(f);
+            }
+        }
+
         final HashMap<URI,Set<Project>> submittedBinaries = new HashMap<>();
         final Set<URI> submittedSources = new HashSet<>();
         final CollectorFactory cf = new CollectorFactory();
@@ -196,7 +226,7 @@ public class ProfilesAnalyzer implements Analyzer {
                     } else {
                         //Source roots
                         if (root != null) {
-                            verifySourceRoot(root, violations, result);
+                            verifySourceRoot(root, filter, violations, result);
                         }
                     }
                     context.progress(++count);
@@ -304,6 +334,7 @@ public class ProfilesAnalyzer implements Analyzer {
 
     private static void verifySourceRoot(
             @NonNull final FileObject root,
+            @NonNull final Map<? extends FileObject,Pair<Set<FileObject>,Set<FileObject>>> filter,
             @NonNull final Collection<? extends ProfileSupport.Violation> violations,
             @NonNull final Result result) {
         try {
@@ -312,7 +343,7 @@ public class ProfilesAnalyzer implements Analyzer {
                 new HashMap<>();
             final JavaSource js = JavaSource.create(
                 cpInfo,
-                violationsToFileObjects(violations, violationsByFiles));
+                violationsToFileObjects(violations, filter.get(root), violationsByFiles));
             if (js != null) {
                 js.runUserActionTask(
                     new Task<CompilationController>(){
@@ -339,6 +370,12 @@ public class ProfilesAnalyzer implements Analyzer {
     }
 
 
+    
+    @CheckForNull
+    private static FileObject findOwnerRoot(@NonNull final FileObject file) {
+        final ClassPath sourcePath = ClassPath.getClassPath(file, ClassPath.SOURCE);
+        return sourcePath == null ? null : sourcePath.findOwnerRoot(file);
+    }
 
     @NonNull
     private static FileObject archiveFileOrFolder(@NonNull final FileObject root) {
@@ -414,13 +451,14 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
 
     private static FileObject[] violationsToFileObjects(
             @NonNull final Collection<? extends ProfileSupport.Violation> violations,
+            @NullAllowed final Pair<Set<FileObject>,Set<FileObject>> filter,
             @NullAllowed final Map<FileObject,Collection<ProfileSupport.Violation>> violationsByFiles) {
         final Collection<FileObject> fos = new HashSet<>(violations.size());
         for (ProfileSupport.Violation v : violations) {
             final URL fileURL = v.getFile();
             if (fileURL != null) {
                 final FileObject fo = URLMapper.findFileObject(fileURL);
-                if (fo != null) {
+                if (shouldProcessViolationsInSource(fo, filter)) {
                     fos.add(fo);
                     if (violationsByFiles != null) {
                         Collection<ProfileSupport.Violation> violationsInFile = violationsByFiles.get(fo);
@@ -434,6 +472,26 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
             }
         }
         return fos.toArray(new FileObject[fos.size()]);
+    }
+
+    private static boolean shouldProcessViolationsInSource(
+            @NullAllowed final FileObject source,
+            @NullAllowed final Pair<Set<FileObject>,Set<FileObject>> filter) {
+        if (source == null) {
+            return false;
+        }
+        if (filter == null) {
+            return true;
+        }
+        if (filter.second.contains(source)) {
+            return true;
+        }
+        for (FileObject folder : filter.first) {
+            if (folder.equals(source.getParent())) {
+                return true;
+            }            
+        }
+        return false;
     }
 
 
