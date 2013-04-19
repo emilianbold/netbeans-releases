@@ -434,9 +434,9 @@ public class JsCompletionItem implements CompletionProposal {
                                 }
                                 // count parameters type
                                 LinkedHashMap<String, Collection<String>> parameters = ((IndexedElement.FunctionIndexedElement) element).getParameters();
-                                for (String paramName : parameters.keySet()) {
+                                for (Map.Entry<String, Collection<String>> paramEntry : parameters.entrySet()) {
                                     Set<String> paramTypes = new HashSet<String>();
-                                    for (String type : parameters.get(paramName)) {
+                                    for (String type : paramEntry.getValue()) {
                                         Set<String> resolvedType = resolvedTypes.get(type);
                                         if (resolvedType == null) {
                                             resolvedType = new HashSet(1);
@@ -448,7 +448,7 @@ public class JsCompletionItem implements CompletionProposal {
                                         }
                                         paramTypes.addAll(resolvedType);
                                     }
-                                    allParameters.put(paramName, paramTypes);
+                                    allParameters.put(paramEntry.getKey(), paramTypes);
                                 }
                             }
                             // create signature
