@@ -60,7 +60,7 @@ import org.netbeans.modules.tasks.ui.actions.Actions.CreateTaskAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.OpenRepositoryNodeAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.CreateQueryAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.QuickSearchAction;
-import org.netbeans.modules.tasks.ui.utils.Utils;
+import org.netbeans.modules.tasks.ui.Utils;
 import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;

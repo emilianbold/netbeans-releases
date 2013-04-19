@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.dnd;
+package org.netbeans.modules.tasks.ui;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -51,7 +51,6 @@ import javax.swing.TransferHandler;
 import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
-import org.netbeans.modules.tasks.ui.model.Category;
 import org.netbeans.modules.team.ui.util.treelist.TreeList;
 import org.netbeans.modules.team.ui.util.treelist.TreeListModel;
 

@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.tasks.ui.filter.DisplayTextTaskFilter;
-import org.netbeans.modules.tasks.ui.model.Category;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
@@ -70,8 +69,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
-import org.netbeans.modules.tasks.ui.utils.DashboardRefresher;
-import org.netbeans.modules.tasks.ui.utils.Utils;
 import org.openide.awt.ActionReferences;
 
 /**
@@ -91,9 +88,9 @@ persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_DashboardAction",
 preferredID = "DashboardTopComponent")
 @NbBundle.Messages({
-    "CTL_DashboardAction=Tas&k Dashboard",
-    "CTL_DashboardTopComponent=Task Dashboard",
-    "HINT_DashboardTopComponent=This is a Task Dashboard"
+    "CTL_DashboardAction=Tas&ks",
+    "CTL_DashboardTopComponent=Tasks",
+    "HINT_DashboardTopComponent=This is a Tasks window"
 })
 public final class DashboardTopComponent extends TopComponent {
 
