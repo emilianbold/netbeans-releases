@@ -60,9 +60,9 @@ public class SourcesVisibilityQuery implements ChangeListener {
     private final ChangeSupport cs = new ChangeSupport(this);
     private static SourcesVisibilityQuery INSTANCE = new SourcesVisibilityQuery();
     private Pattern acceptedFilesPattern = null;
-    private static final String DEFAULT_IGNORE_BYNARY_PATTERN = ".*\\.(il|o|so|so\\.1|a|dll|dylib|lib|lo|la|Po|Plo)$"; // NOI18N
+    private static final String DEFAULT_IGNORE_BYNARY_PATTERN = ".*\\.(il|o|a|dll|dylib|lib|lo|la|Po|Plo|so(\\.[0-9]*)*)$"; // NOI18N
     private Pattern ignoredFilesPattern = Pattern.compile(DEFAULT_IGNORE_BYNARY_PATTERN);
-
+    
     /** Default instance for lookup. */
     private SourcesVisibilityQuery() {
         MIMEExtensions.get(MIMENames.C_MIME_TYPE).addChangeListener(this);
