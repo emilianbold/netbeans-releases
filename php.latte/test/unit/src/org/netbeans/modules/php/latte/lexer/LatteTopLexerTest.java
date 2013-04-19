@@ -102,6 +102,10 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
         performTest("escaped-quotes");
     }
 
+    public void testVariable() throws Exception {
+        performTest("variable");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".latte"));

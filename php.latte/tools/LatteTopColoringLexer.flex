@@ -201,13 +201,14 @@ SYNTAX_PYTHON_END="%}"
 %state ST_DOUBLE
 %state ST_ASP
 %state ST_PYTHON
+%state ST_PYTHON_DOUBLE
 %state ST_SYNTAX_CHANGE
 %state ST_N_ATTR_DOUBLE
 %state ST_N_ATTR_SINGLE
 %state ST_HIGHLIGHTING_ERROR
 
 %%
-<ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_N_ATTR_DOUBLE, ST_N_ATTR_SINGLE>{WHITESPACE}+ {
+<ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_PYTHON_DOUBLE, ST_N_ATTR_DOUBLE, ST_N_ATTR_SINGLE>{WHITESPACE}+ {
 }
 
 <YYINITIAL> {
@@ -234,7 +235,7 @@ SYNTAX_PYTHON_END="%}"
             return LatteTopTokenId.T_LATTE_DELIMITER;
         }
         if (syntax == Syntax.PYTHON) {
-            pushState(ST_PYTHON);
+            pushState(ST_PYTHON_DOUBLE);
             return LatteTopTokenId.T_LATTE_DELIMITER;
         }
         if (syntax == Syntax.LATTE) {
@@ -293,10 +294,10 @@ SYNTAX_PYTHON_END="%}"
         popState();
         return LatteTopTokenId.T_LATTE;
     }
-    
+
 }
 
-<ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON> {
+<ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_PYTHON_DOUBLE> {
     {MACRO_SYNTAX_START} "latte" {
         syntax = Syntax.LATTE;
         return LatteTopTokenId.T_LATTE;
@@ -328,7 +329,8 @@ SYNTAX_PYTHON_END="%}"
         popState();
         return LatteTopTokenId.T_LATTE_DELIMITER;
     }
-    [^"}"] {
+
+    [^"}"]+ {
         return LatteTopTokenId.T_LATTE;
     }
 }
@@ -338,7 +340,7 @@ SYNTAX_PYTHON_END="%}"
         popState();
         return LatteTopTokenId.T_LATTE_DELIMITER;
     }
-    [^"}"] | }[^"}"] {
+    ([^"}"] | }[^"}"])+ {
         return LatteTopTokenId.T_LATTE;
     }
 }
@@ -348,7 +350,7 @@ SYNTAX_PYTHON_END="%}"
         popState();
         return LatteTopTokenId.T_LATTE_DELIMITER;
     }
-    [^"%"] | %[^">"] {
+    ([^"%"] | %[^">"])+ {
         return LatteTopTokenId.T_LATTE;
     }
 }
@@ -358,14 +360,17 @@ SYNTAX_PYTHON_END="%}"
         popState();
         return LatteTopTokenId.T_LATTE_DELIMITER;
     }
-    [^"%"] | %[^"}"] {
+    ([^"%"] | %[^"}"])+ {
         return LatteTopTokenId.T_LATTE;
     }
+}
+
+<ST_PYTHON_DOUBLE> {
     {SYNTAX_DOUBLE_END} {
         popState();
         return LatteTopTokenId.T_LATTE_DELIMITER;
     }
-    [^"}"] | }[^"}"] {
+    ([^"}"] | }[^"}"])+ {
         return LatteTopTokenId.T_LATTE;
     }
 }
