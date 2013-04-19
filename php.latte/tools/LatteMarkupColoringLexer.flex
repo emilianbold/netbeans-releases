@@ -178,14 +178,29 @@ GLOBAL_CHAR=[^\"']
 SYMBOL=[a-zA-Z0-9_]+(\-[a-zA-Z0-9_]+)*
 
 
+%state ST_OTHER
 %state ST_HIGHLIGHTING_ERROR
 
 %%
-<YYINITIAL>{WHITESPACE}+ {
+<YYINITIAL, ST_OTHER>{WHITESPACE}+ {
     return LatteMarkupTokenId.T_WHITESPACE;
 }
-
 <YYINITIAL> {
+    "/"{SYMBOL} {
+        pushState(ST_OTHER);
+        return LatteMarkupTokenId.T_MACRO_END;
+    }
+    {SYMBOL} {
+        pushState(ST_OTHER);
+        return LatteMarkupTokenId.T_MACRO_START;
+    }
+    . {
+        yypushback(yylength());
+        pushState(ST_OTHER);
+    }
+}
+
+<ST_OTHER> {
     {NUMBER} {
         return LatteMarkupTokenId.T_NUMBER;
     }
@@ -229,7 +244,7 @@ SYMBOL=[a-zA-Z0-9_]+(\-[a-zA-Z0-9_]+)*
    This rule must be the last in the section!!
    it should contain all the states.
    ============================================ */
-<YYINITIAL> {
+<YYINITIAL, ST_OTHER> {
     . {
         yypushback(yylength());
         pushState(ST_HIGHLIGHTING_ERROR);
