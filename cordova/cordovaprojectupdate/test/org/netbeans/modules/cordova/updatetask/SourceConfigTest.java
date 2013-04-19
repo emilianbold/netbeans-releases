@@ -92,6 +92,8 @@ public class SourceConfigTest {
         assertEquals(instance.getPreference("target-device"), "universal");
         assertEquals(instance.getSplash("ios", 320, 480), "res/screen/ios/screen-iphone-portrait.png");
         assertEquals(instance.getId(), "$id");
+        
+        instance.setSplash("ios", 32, 48, "test");
         instance.printDocument(System.out);
     }
     

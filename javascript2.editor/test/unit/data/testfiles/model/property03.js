@@ -1,7 +1,7 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.updatetask;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
-/**
- *
- * @author Jan Becicka
- */
-public class InfoPlistTest {
-    
-    public InfoPlistTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
+x = {
+    parseJson: function(jsonString) {
 
-    /**
-     * Test of getName method, of class Config.
-     */
-    @Test
-    public void testOut() throws Exception{
-        InfoPlist instance = new InfoPlist(InfoPlistTest.class.getResourceAsStream("Info-plist.xml"));
-        assertEquals(instance.getBundleIdentifier(), "com");
-        instance.setBundleIdentifier("org.netbeans");
-        instance.printDocument(System.out);
+        if (window.JSON && window.JSON.parse) // Use native parsing where available
+            return window.JSON.parse(jsonString);
+
     }
 }

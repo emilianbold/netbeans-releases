@@ -87,7 +87,7 @@ public class KnockoutModelTest extends ModelTestBase {
 //            public void println(String str) {
 //                // XXX hacks improving the model
 //                String real = str;
-////                real = real.replaceAll("_L21.ko", "ko");
+//                real = real.replaceAll("_L21.ko", "ko");
 //                sw.append(real).append("\n");
 //            }
 //        };
@@ -103,13 +103,13 @@ public class KnockoutModelTest extends ModelTestBase {
         checkModel("testfiles/model/extend2.js");
     }
 
-//    @Override
-//    protected Map<String, ClassPath> createClassPathsForTest() {
-//        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
-//        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/model")));
-//        return Collections.singletonMap(
-//            JS_SOURCE_ID,
-//            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
-//        );
-//    }
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/model")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
+    }
 }
