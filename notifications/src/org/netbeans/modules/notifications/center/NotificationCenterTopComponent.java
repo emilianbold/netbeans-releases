@@ -54,6 +54,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -68,9 +69,11 @@ import javax.swing.table.TableColumnModel;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.notifications.NotificationImpl;
 import org.netbeans.modules.notifications.NotificationSettings;
+import org.netbeans.modules.notifications.Utils;
 import org.netbeans.swing.etable.ETable;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.QuickSearch;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -108,7 +111,7 @@ public final class NotificationCenterTopComponent extends TopComponent {
     private JToggleButton btnSearch;
     private QuickSearch quickSearch;
     private final QuickSearch.Callback filterCallback;
-    private boolean updateColumnsSize = true;
+    private JLabel lblEmptyDetails;
 
     public NotificationCenterTopComponent() {
         notificationManager = NotificationCenterManager.getInstance();
@@ -124,6 +127,11 @@ public final class NotificationCenterTopComponent extends TopComponent {
     private void init() {
         initComponents();
         detailsPanel = new JPanel(new GridLayout(1, 1));
+        detailsPanel.setBackground(Utils.getTextBackground());
+        lblEmptyDetails = new JLabel(NbBundle.getMessage(NotificationCenterTopComponent.class, "LBL_EmptyDetails"), JLabel.CENTER);
+        lblEmptyDetails.setFont(lblEmptyDetails.getFont().deriveFont(Font.ITALIC));
+        lblEmptyDetails.setEnabled(false);
+
         splitPane.setRightComponent(detailsPanel);
 
         toolBar.setFocusable(false);
@@ -133,8 +141,8 @@ public final class NotificationCenterTopComponent extends TopComponent {
         btnSearch.setFocusable(false);
         btnSearch.setSelected(NotificationSettings.isSearchVisible());
         //TODO delete 2 lines then quick search API clear text correctly
-        btnSearch.setToolTipText("Disabled due to Quick Search API defects");
-        btnSearch.setEnabled(false);
+//        btnSearch.setToolTipText("Disabled due to Quick Search API defects");
+//        btnSearch.setEnabled(false);
         btnSearch.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -145,6 +153,7 @@ public final class NotificationCenterTopComponent extends TopComponent {
         toolBar.add(new FiltersMenuButton(notificationManager.getActiveFilter()));
 
         initLeft();
+        showDetails();
     }
 
     private void initLeft() {
@@ -238,20 +247,21 @@ public final class NotificationCenterTopComponent extends TopComponent {
             selected.markAsRead(true);
             JComponent popupComponent = selected.getDetailsComponent();
             detailsPanel.add(popupComponent);
+        } else {
+            detailsPanel.add(lblEmptyDetails);
         }
         detailsPanel.revalidate();
         detailsPanel.repaint();
     }
 
     private void setSearchVisible(boolean visible) {
-        //TODO uncomment when bugs the quick search API - allow search panel to be toggleable from toolbar
-//        quickSearch.setAlwaysShown(visible);
-//        if (visible != btnSearch.isSelected()) {
-//            btnSearch.setSelected(visible);
-//        }
-//        this.revalidate();
-//        this.repaint();
-//        NotificationSettings.setSearchVisible(visible);
+        quickSearch.setAlwaysShown(visible);
+        if (visible != btnSearch.isSelected()) {
+            btnSearch.setSelected(visible);
+        }
+        this.revalidate();
+        this.repaint();
+        NotificationSettings.setSearchVisible(visible);
     }
 
     /**
@@ -294,7 +304,24 @@ public final class NotificationCenterTopComponent extends TopComponent {
     public void componentOpened() {
         removeAll();
         init();
+        String dummyText = "<html>The Netbeans IDE has detected that your system is using most of your available system resources. We recommend shutting down other applications and windows.</html>";
+        NotificationDisplayer.getDefault().notify("Test notification aaaaaa ",
+                new ImageIcon(ImageUtilities.loadImage("org/openide/awt/resources/unknown.gif")),
+                new JLabel(dummyText), new JLabel(dummyText),
+                NotificationDisplayer.Priority.NORMAL,
+                NotificationDisplayer.Category.INFO);
+        NotificationDisplayer.getDefault().notify("IMPORTANT Test notification aaaaaa",
+                new ImageIcon(ImageUtilities.loadImage("org/openide/awt/resources/unknown.gif")),
+                new JLabel(dummyText), new JLabel(dummyText),
+                NotificationDisplayer.Priority.HIGH,
+                NotificationDisplayer.Category.WARNING);
+        NotificationDisplayer.getDefault().notify("LESS IMPORTANT Test notification cccc",
+                new ImageIcon(ImageUtilities.loadImage("org/openide/awt/resources/unknown.gif")),
+                new JLabel(dummyText), new JLabel(dummyText),
+                NotificationDisplayer.Priority.HIGH,
+                NotificationDisplayer.Category.INFO);
         notificationTable.addProcessKeyEventListener(tableKeyListener);
+        this.addKeyListener(escSearchKeyListener);
         tableRefreshTimer.restart();
     }
 
@@ -302,6 +329,7 @@ public final class NotificationCenterTopComponent extends TopComponent {
     public void componentClosed() {
         NotificationCenterManager.tcClosed();
         notificationTable.removeProcessKeyEventListener(tableKeyListener);
+        this.removeKeyListener(escSearchKeyListener);
         tableRefreshTimer.stop();
     }
 
@@ -313,7 +341,6 @@ public final class NotificationCenterTopComponent extends TopComponent {
                 splitPane.setDividerLocation(0.6);
                 splitPane.validate(); // Have to validate to properly update column sizes
                 updateTableColumnSizes();
-                updateColumnsSize = false;
             }
         });
         super.addNotify();
@@ -353,7 +380,7 @@ public final class NotificationCenterTopComponent extends TopComponent {
         @Override
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == Event.ESCAPE) {
-                if (notificationManager.isQuickFilter()) {
+                if (!notificationManager.isQuickFilter()) {
                     setSearchVisible(false);
                 }
             }
@@ -387,6 +414,13 @@ public final class NotificationCenterTopComponent extends TopComponent {
         @Override
         public void quickSearchCanceled() {
             notificationManager.setMessageFilter(null);
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    notificationTable.requestFocusInWindow();
+                }
+            });
         }
     }
 }
