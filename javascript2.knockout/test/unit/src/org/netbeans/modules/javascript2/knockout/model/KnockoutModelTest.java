@@ -87,7 +87,7 @@ public class KnockoutModelTest extends ModelTestBase {
 //            public void println(String str) {
 //                // XXX hacks improving the model
 //                String real = str;
-////                real = real.replaceAll("_L21.ko", "ko");
+//                real = real.replaceAll("_L21.ko", "ko");
 //                sw.append(real).append("\n");
 //            }
 //        };
