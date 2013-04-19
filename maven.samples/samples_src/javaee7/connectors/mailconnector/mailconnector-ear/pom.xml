@@ -47,7 +47,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-      	<groupId>org.glassfish-samples</groupId>
+        <groupId>org.glassfish-samples</groupId>
         <artifactId>mailconnector-app</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -73,17 +73,17 @@
                     <defaultLibBundleDir>lib</defaultLibBundleDir>
                     <modules>
                         <ejbModule>
-                    	      <groupId>org.glassfish-samples</groupId>
+                            <groupId>org.glassfish-samples</groupId>
                             <artifactId>mailconnector-mdb</artifactId>
                             <bundleFileName>mailconnector-mdb.jar</bundleFileName>
                         </ejbModule>
                         <webModule>
-                    	      <groupId>org.glassfish-samples</groupId>
+                            <groupId>org.glassfish-samples</groupId>
                             <artifactId>mailconnector-web</artifactId>
                             <bundleFileName>mailconnector-web.war</bundleFileName>
                         </webModule>
                         <rarModule>
-                    	      <groupId>org.glassfish-samples</groupId>
+                            <groupId>org.glassfish-samples</groupId>
                             <artifactId>mailconnector-ra</artifactId>
                             <bundleFileName>mailconnector.rar</bundleFileName>
                         </rarModule>
@@ -114,49 +114,49 @@
             </plugin>
 
             <plugin>
-               <groupId>org.codehaus.cargo</groupId>
-               <artifactId>cargo-maven2-plugin</artifactId>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-maven2-plugin</artifactId>
 
-               <configuration>
-                 <container>
-                    <containerId>${integration.container.id}</containerId>
-                    <type>installed</type>
-                    <home>${cargo.container.install}/latest-glassfish/glassfish4</home>
-                    <zipUrlInstaller>
-                        <url>${cargo.maven.containerUrl}</url>
-                    </zipUrlInstaller>
-                 </container>
-                 <deployables>
-                    <deployable>
-                      <location>${project.build.directory}/mailconnector-ear.ear</location>
-                    </deployable>
-                 </deployables>
+                <configuration>
+                    <container>
+                        <containerId>${integration.container.id}</containerId>
+                        <type>installed</type>
+                        <home>${cargo.container.install}/latest-glassfish/glassfish4</home>
+                        <zipUrlInstaller>
+                            <url>${cargo.maven.containerUrl}</url>
+                        </zipUrlInstaller>
+                    </container>
+                    <deployables>
+                        <deployable>
+                            <location>${project.build.directory}/mailconnector-ear.ear</location>
+                        </deployable>
+                    </deployables>
 
-                  <configuration>
-                     <type>standalone</type>
-                     <home>${cargo.container.install}/glassfish/domains</home>
-                  </configuration>
+                    <configuration>
+                        <type>standalone</type>
+                        <home>${cargo.container.install}/glassfish/domains</home>
+                    </configuration>
 
-               </configuration>
+                </configuration>
             </plugin>
         </plugins>
     </build>
   
     <dependencies>
         <dependency>
-          	<groupId>org.glassfish-samples</groupId>
+            <groupId>org.glassfish-samples</groupId>
             <artifactId>mailconnector-mdb</artifactId>
             <version>4.0-SNAPSHOT</version>
             <type>ejb</type>
         </dependency>
         <dependency>
-          	<groupId>org.glassfish-samples</groupId>
+            <groupId>org.glassfish-samples</groupId>
             <artifactId>mailconnector-web</artifactId>
             <version>4.0-SNAPSHOT</version>
             <type>war</type>
         </dependency>
         <dependency>
-          	<groupId>org.glassfish-samples</groupId>
+            <groupId>org.glassfish-samples</groupId>
             <artifactId>mailconnector-ra</artifactId>
             <version>4.0-SNAPSHOT</version>
             <type>rar</type>

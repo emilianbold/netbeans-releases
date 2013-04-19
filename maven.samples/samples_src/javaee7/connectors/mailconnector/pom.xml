@@ -43,54 +43,58 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" 
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
+    <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish-samples</groupId>
-    <artifactId>connector-samples</artifactId>
+    <artifactId>mailconnector-app</artifactId>
     <version>4.0-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
-  <artifactId>mailconnector-app</artifactId>
-  <version>4.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <name>mailconnector application</name>
+    <packaging>pom</packaging>
+    <name>mailconnector application</name>
 
-  <dependencies>
-    <dependency>
-      <groupId>javax</groupId>
-      <artifactId>javaee-api</artifactId>
-    </dependency>
-  </dependencies>
+    <repositories>
+        <repository>
+            <id>maven.java.net</id>
+            <url>https://maven.java.net/content/groups/promoted/</url>
+        </repository>
+    </repositories>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.2</version>
-        <executions>
-          <execution>
-            <id>enforce-versions</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireJavaVersion>
-                  <version>1.7</version>
-                </requireJavaVersion>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+    <dependencies>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0-b84</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
-  <modules>
-    <module>mailconnector-ra</module>
-    <module>mailconnector-mdb</module>
-    <module>mailconnector-web</module>
-    <module>mailconnector-ear</module>
-  </modules>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>1.2</version>
+                <executions>
+                    <execution>
+                        <id>enforce-versions</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>1.7</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <modules>
+        <module>mailconnector-ra</module>
+        <module>mailconnector-mdb</module>
+        <module>mailconnector-web</module>
+        <module>mailconnector-ear</module>
+    </modules>
 </project>
