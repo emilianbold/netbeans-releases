@@ -159,13 +159,16 @@ automatically.
       action immediately after running the launch function. Return false to prevent this behavior.
                 ]]>
             </doc>
-            <template>
-                <![CDATA[
-                function (profile) {
-                    ${cursor}
-                }
-                ]]>
+            <template><![CDATA[function (profile) {
+    // This is fired as soon as the page is ready
+    ${cursor}
+}]]>
             </template>
         </property>
+    </object>
+    <object name="Ext.define">
+        <property name="extend"></property>
+        <property name="alias"></property>
+        <property name="store"></property>
     </object>
 </ext>

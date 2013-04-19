@@ -143,7 +143,7 @@ public class ExtJsCompletionItem implements CompletionProposal {
     @Override
     public String getCustomInsertTemplate() {
         if (dataItem.getTemplate() != null) {
-            return getName() + ": " + dataItem.getTemplate(); //NOI18N
+            return getName() + ": " + dataItem.getTemplate().trim(); //NOI18N
         }
         return null;
     }
