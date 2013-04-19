@@ -189,12 +189,18 @@ public class GoToNodeSourceAction extends NodeAction  {
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
             ResultIterator htmlResultIterator = WebUtils.getResultIterator(resultIterator, "text/html"); // NOI18N
-            HtmlParsingResult result = (HtmlParsingResult)htmlResultIterator.getParserResult();
-            final Node nodeToShow = findNode(result, node);
+            final int offsetToShow;
+            if (htmlResultIterator == null) {
+                offsetToShow = 0;
+            } else {
+                HtmlParsingResult result = (HtmlParsingResult)htmlResultIterator.getParserResult();
+                Node nodeToShow = findNode(result, node);
+                offsetToShow = nodeToShow.from();
+            }
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    CSSUtils.openAtOffset(fob, nodeToShow.from());
+                    CSSUtils.openAtOffset(fob, offsetToShow);
                 }
             });
         }
