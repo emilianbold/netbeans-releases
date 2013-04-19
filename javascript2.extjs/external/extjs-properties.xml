@@ -167,8 +167,14 @@ automatically.
         </property>
     </object>
     <object name="Ext.define">
-        <property name="extend"></property>
-        <property name="alias"></property>
-        <property name="store"></property>
+        <property name="extend">
+            <template>'${cursor}'</template>
+        </property>
+        <property name="alias">
+            <template>'${cursor}'</template>
+        </property>
+        <property name="store">
+            <template>'${cursor}'</template>
+        </property>
     </object>
 </ext>
