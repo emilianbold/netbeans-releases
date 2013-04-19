@@ -5,6 +5,9 @@
 <!--    <taskdef name="jflex"
         classname="JFlex.anttask.JFlexTask"
         classpath="/usr/share/ant/lib/jflex.jar" />-->
+<!--    <taskdef name="jflex"
+        classname="JFlex.anttask.JFlexTask"
+        classpath="/Users/Shared/jflex-1.4.3/jflex-1.4.3/lib/JFlex.jar" />-->
     <target name="gen-toplexer" >
         <jflex file="tools/LatteTopColoringLexer.flex" destdir="src" skel="tools/skeleton.netbeans" />
     </target>
