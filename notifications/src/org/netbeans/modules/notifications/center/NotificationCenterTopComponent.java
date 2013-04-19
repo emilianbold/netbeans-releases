@@ -304,22 +304,6 @@ public final class NotificationCenterTopComponent extends TopComponent {
     public void componentOpened() {
         removeAll();
         init();
-        String dummyText = "<html>The Netbeans IDE has detected that your system is using most of your available system resources. We recommend shutting down other applications and windows.</html>";
-        NotificationDisplayer.getDefault().notify("Test notification aaaaaa ",
-                new ImageIcon(ImageUtilities.loadImage("org/openide/awt/resources/unknown.gif")),
-                new JLabel(dummyText), new JLabel(dummyText),
-                NotificationDisplayer.Priority.NORMAL,
-                NotificationDisplayer.Category.INFO);
-        NotificationDisplayer.getDefault().notify("IMPORTANT Test notification aaaaaa",
-                new ImageIcon(ImageUtilities.loadImage("org/openide/awt/resources/unknown.gif")),
-                new JLabel(dummyText), new JLabel(dummyText),
-                NotificationDisplayer.Priority.HIGH,
-                NotificationDisplayer.Category.WARNING);
-        NotificationDisplayer.getDefault().notify("LESS IMPORTANT Test notification cccc",
-                new ImageIcon(ImageUtilities.loadImage("org/openide/awt/resources/unknown.gif")),
-                new JLabel(dummyText), new JLabel(dummyText),
-                NotificationDisplayer.Priority.HIGH,
-                NotificationDisplayer.Category.INFO);
         notificationTable.addProcessKeyEventListener(tableKeyListener);
         this.addKeyListener(escSearchKeyListener);
         tableRefreshTimer.restart();
