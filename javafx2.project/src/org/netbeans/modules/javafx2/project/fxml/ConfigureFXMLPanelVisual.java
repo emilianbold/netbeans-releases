@@ -45,16 +45,14 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
-import java.util.StringTokenizer;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
+import org.netbeans.modules.javafx2.project.fxml.SourceGroupSupport.SourceGroupProxy;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -67,37 +65,25 @@ import org.openide.util.*;
 /**
  *
  * @author Anton Chechel <anton.chechel@oracle.com>
+ * @author Petr Somol
  */
 public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, DocumentListener {
     
     private Panel observer;
     private Project project;
-    private SourceGroup groups[];
+    private SourceGroupSupport support;
 
-    private File[] srcRoots;
-    private File rootFolder;
     private boolean ignoreRootCombo;
     private RequestProcessor.Task updatePackagesTask;
-    private static final ComboBoxModel WAIT_MODEL;
+    private static final ComboBoxModel WAIT_MODEL = SourceGroupSupport.getWaitModel();
+    private final boolean isMaven;
     
-    static {
-        WAIT_MODEL = new DefaultComboBoxModel(
-                new String[]{
-                    NbBundle.getMessage(ConfigureFXMLPanelVisual.class,
-                        "LBL_ConfigureFXMLPanel_PackageName_PleaseWait") // NOI18N
-                });
-    }
-
-    private ConfigureFXMLPanelVisual(Panel observer, Project project, SourceGroup[] groups) {
+    private ConfigureFXMLPanelVisual(Panel observer, Project project, SourceGroupSupport support, boolean isMaven) {
         this.observer = observer;
         this.project = project;
-        this.groups = groups;
-        
-        srcRoots = new File[groups.length];
-        for (int i = 0; i < groups.length; i++) {
-            srcRoots[i] = FileUtil.toFile(groups[i].getRootFolder());
-        }
-        
+        this.support = support;
+        this.isMaven = isMaven;
+    
         setName(NbBundle.getMessage(ConfigureFXMLPanelVisual.class,"TXT_FXMLNameAndLoc")); // NOI18N
         initComponents(); // Matisse
         initComponents2(); // My own
@@ -116,7 +102,7 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
             ((JTextField) packageEditor).getDocument().addDocumentListener(this);
         }
 
-        locationComboBox.setRenderer(new GroupListCellRenderer());
+        locationComboBox.setRenderer(new SourceGroupSupport.GroupListCellRenderer());
         packageComboBox.setRenderer(PackageView.listRenderer());
         locationComboBox.addActionListener(this);
     }
@@ -141,23 +127,35 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
         putClientProperty("NewFileWizard_Title", displayName); // NOI18N        
 
         // Setup comboboxes 
-        locationComboBox.setModel(new DefaultComboBoxModel(groups));
-        SourceGroup preselectedGroup = getPreselectedGroup(preselectedFolder);
+        locationComboBox.setModel(new DefaultComboBoxModel(support.getSourceGroups().toArray()));
+        SourceGroupProxy preselectedGroup = SourceGroupSupport.getContainingSourceGroup(support, preselectedFolder);
         ignoreRootCombo = true;
         locationComboBox.setSelectedItem(preselectedGroup);
         ignoreRootCombo = false;
-        Object preselectedPackage = FXMLTemplateWizardIterator.getPreselectedPackage(preselectedGroup, preselectedFolder);
-        if (preselectedPackage != null) {
-            packageComboBox.getEditor().setItem(preselectedPackage);
+        FileObject targetFolder = preselectedFolder;
+        if(isMaven) {
+            packageComboBox.getEditor().setItem(FXMLTemplateWizardIterator.defaultMavenFXMLPackage);
+            targetFolder = null;
+            if(preselectedGroup.isReal()) {
+                File f = new File(preselectedGroup.getRootFolder().getPath() + File.separator + FXMLTemplateWizardIterator.defaultMavenFXMLPackage);
+                if(f.exists()) {
+                    targetFolder = FileUtil.toFileObject(f);
+                }
+            }
+        } else {
+            Object preselectedPackage = FXMLTemplateWizardIterator.getPreselectedPackage(preselectedGroup, preselectedFolder);
+            if (preselectedPackage != null) {
+                packageComboBox.getEditor().setItem(preselectedPackage);
+            }
         }
         if (template != null) {
             if (fxmlNameTextField.getText().trim().length() == 0) { // To preserve the fxml name on back in the wiazard
                 final String baseName = template.getName();
                 String activeName = baseName;
-                if (preselectedFolder != null) {
+                if (targetFolder != null) {
                     int index = 0;
                     while (true) {
-                        FileObject fo = preselectedFolder.getFileObject(activeName, JFXProjectProperties.FXML_EXTENSION);
+                        FileObject fo = targetFolder.getFileObject(activeName, JFXProjectProperties.FXML_EXTENSION);
                         if (fo == null) {
                             break;
                         }
@@ -173,17 +171,9 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
         updateText();
     }
     
-    private File[] getSrcRoots() {
-        return srcRoots;
-    }
-    
-    private File getRootFolder() {
-        return rootFolder;
-    }
-    
     public FileObject getLocationFolder() {
         final Object selectedItem  = locationComboBox.getSelectedItem();
-        return (selectedItem instanceof SourceGroup) ? ((SourceGroup)selectedItem).getRootFolder() : null;
+        return (selectedItem instanceof SourceGroupProxy) ? ((SourceGroupProxy)selectedItem).getRootFolder() : null;
     }
 
     public String getPackageFileName() {
@@ -351,7 +341,7 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
     // Private methods ---------------------------------------------------------
     private void updatePackages() {
         final Object item = locationComboBox.getSelectedItem();
-        if (!(item instanceof SourceGroup)) {
+        if (!(item instanceof SourceGroupProxy)) {
             return;
         }
         WAIT_MODEL.setSelectedItem(packageComboBox.getEditor().getItem());
@@ -364,7 +354,7 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
         updatePackagesTask = new RequestProcessor("ComboUpdatePackages").post(new Runnable() { // NOI18N
             @Override
             public void run() {
-                final ComboBoxModel model = PackageView.createListView((SourceGroup) item);
+                final ComboBoxModel model = ((SourceGroupProxy) item).getPackagesComboBoxModel();
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -375,23 +365,22 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
             }
         });
     }
-
+    
     private void updateText() {
         final Object selectedItem = locationComboBox.getSelectedItem();
         String createdFileName;
-        if (selectedItem instanceof SourceGroup) {
-            SourceGroup g = (SourceGroup) selectedItem;
-            FileObject rf = g.getRootFolder();
-            String packageName = getPackageFileName();
+        if (selectedItem instanceof SourceGroupProxy) {
+            SourceGroupProxy g = (SourceGroupProxy) selectedItem;
+            String packageName = getPackageName();
             String fxmlName = getFXMLName();
+            support.setCurrentSourceGroup(g);
+            support.setCurrentPackageName(packageName);
+            support.setCurrentFileName(fxmlName);
             if (fxmlName != null && fxmlName.length() > 0) {
                 fxmlName = fxmlName + FXMLTemplateWizardIterator.FXML_FILE_EXTENSION;
             }
-            String packagePath = (packageName.startsWith("/") || packageName.startsWith(File.separator) ? "" : "/") + // NOI18N
-                    packageName
-                    + (packageName.endsWith("/") || packageName.endsWith(File.separator) || packageName.length() == 0 ? "" : "/"); // NOI18N
-            createdFileName = FileUtil.getFileDisplayName(rf) + packagePath + fxmlName;
-            rootFolder = new File(rf.getPath() + packagePath);
+            String path = support.getCurrentPackagePath();
+            createdFileName = path == null ? "" : path.replace(".", "/") + fxmlName;
         } else {
             //May be null if nothing selected
             createdFileName = "";   //NOI18N
@@ -399,51 +388,19 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
         resultTextField.setText(createdFileName.replace('/', File.separatorChar)); // NOI18N
     }
 
-    private SourceGroup getPreselectedGroup(FileObject folder) {
-        for(int i = 0; folder != null && i < groups.length; i++) {
-            FileObject root = groups[i].getRootFolder();
-            if (root.equals(folder) || FileUtil.isParentOf(root, folder)) {
-                return groups[i];
-            }
-        }
-        return groups[0];
-    }
-    
+
     // Private innerclasses ----------------------------------------------------
-
-    /**
-     * Displays a {@link SourceGroup} in {@link #rootComboBox}.
-     */
-    private static final class GroupListCellRenderer extends DefaultListCellRenderer {
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            String name;
-            Icon icon;
-            if (value == null) {
-                name = ""; //NOI18N
-                icon = null;
-            } else {
-                assert value instanceof SourceGroup;
-                SourceGroup g = (SourceGroup) value;
-                name = g.getDisplayName();
-                icon = g.getIcon(false);
-            }
-            super.getListCellRendererComponent(list, name, index, isSelected, cellHasFocus);
-            setIcon(icon);
-            
-            return this;
-        }
-    }
     
     static class Panel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
         
         private ConfigureFXMLPanelVisual component;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private WizardDescriptor settings;
+        SourceGroupSupport support;
 
-        public Panel(Project project, SourceGroup[] groups) {
-            component = new ConfigureFXMLPanelVisual(this, project, groups);
+        public Panel(Project project, SourceGroupSupport support, boolean isMaven) {
+            this.support = support;
+            component = new ConfigureFXMLPanelVisual(this, project, support, isMaven);
         }
 
         @Override
@@ -480,12 +437,6 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
                     || WizardDescriptor.CLOSED_OPTION.equals(value)) {
                 return;
             }
-            if (isValid()) {
-                Templates.setTargetFolder(settings, getTargetFolderFromView());
-                Templates.setTargetName(settings, component.getFXMLName());
-                settings.putProperty(FXMLTemplateWizardIterator.PROP_SRC_ROOTS, component.getSrcRoots());
-                settings.putProperty(FXMLTemplateWizardIterator.PROP_ROOT_FOLDER, component.getRootFolder());
-            }
             settings.putProperty("NewFileWizard_Title", null); // NOI18N
         }
 
@@ -506,6 +457,12 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
                 return false;
             }
 
+            // test for illegal characters in file name
+            if (!FXMLTemplateWizardIterator.validFileName(component.getFXMLName())) {
+                FXMLTemplateWizardIterator.setErrorMessage("MSG_invalid_file_name", settings); // NOI18N
+                return false;
+            }
+            
             FileObject rootFolder = component.getLocationFolder();
             String errorMessage = FXMLTemplateWizardIterator.canUseFileName(rootFolder, 
                     component.getPackageFileName(), component.getFXMLName(), JFXProjectProperties.FXML_EXTENSION);
@@ -529,35 +486,6 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
 
         private void fireChangeEvent() {
             changeSupport.fireChange();
-        }
-
-        private FileObject getTargetFolderFromView() {
-            FileObject rootFolder = component.getLocationFolder();
-            String packageFileName = component.getPackageFileName();
-            FileObject folder = rootFolder.getFileObject(packageFileName);
-            if (folder == null) {
-                try {
-                    folder = rootFolder;
-                    StringTokenizer tk = new StringTokenizer(packageFileName, "/"); // NOI18N
-                    String name = null;
-                    while (tk.hasMoreTokens()) {
-                        name = tk.nextToken();
-                        FileObject fo = folder.getFileObject(name, ""); // NOI18N
-                        if (fo == null) {
-                            break;
-                        }
-                        folder = fo;
-                    }
-                    folder = folder.createFolder(name);
-                    while (tk.hasMoreTokens()) {
-                        name = tk.nextToken();
-                        folder = folder.createFolder(name);
-                    }
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-            return folder;
         }
 
         @Override

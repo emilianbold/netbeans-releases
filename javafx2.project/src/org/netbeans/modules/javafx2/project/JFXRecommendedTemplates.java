@@ -50,7 +50,7 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
  */
 @ProjectServiceProvider(
     service=RecommendedTemplates.class,
-    projectType={"org-netbeans-modules-java-j2seproject"})
+    projectType={"org-netbeans-modules-java-j2seproject", "org-netbeans-modules-maven"})
 public class JFXRecommendedTemplates implements RecommendedTemplates {
 
     private static final String[] RECOMMENDED_TEMPLATES = {
@@ -59,7 +59,8 @@ public class JFXRecommendedTemplates implements RecommendedTemplates {
 
     /**
      * Returns template types for JFX.
-     * todo: Should it be disabled for non JFX J2SE?
+     * This makes JavaFX file templates intentionally available in JavaSE, JavaFX and Maven projects.
+     * (many users prefer to use FX classes without the FX deployment model provided in JavaFX project type)
      * @return JFX template tape
      */
     @Override
