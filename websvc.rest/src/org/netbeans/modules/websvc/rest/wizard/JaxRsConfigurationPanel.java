@@ -236,7 +236,11 @@ public class JaxRsConfigurationPanel extends javax.swing.JPanel implements Chang
                     && model.getSize() > 1) { // NOI18N
                 model.setSelectedItem(model.getElementAt(1));
             }
+            String oldValue = ((JTextComponent)restAppPackage.getEditor().getEditorComponent()).getText();
             restAppPackage.setModel(model);
+            if (oldValue.length() > 0) {
+                ((JTextComponent)restAppPackage.getEditor().getEditorComponent()).setText(oldValue);
+            }
         }
     }
     

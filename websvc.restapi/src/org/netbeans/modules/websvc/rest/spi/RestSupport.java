@@ -340,8 +340,11 @@ public abstract class RestSupport {
             if (jsr311Jars != null && jsr311Jars.length>0) {
                 FileObject fo = FileUtil.toFileObject(jsr311Jars[0]);
                 if (fo != null) {
-                    return ClassPathSupport.createProxyClassPath(classPath,
-                            ClassPathSupport.createClassPath(fo));
+                    fo = FileUtil.getArchiveRoot(fo);
+                    if (fo != null) {
+                        return ClassPathSupport.createProxyClassPath(classPath,
+                                ClassPathSupport.createClassPath(fo));
+                    }
                 }
             }
         }
