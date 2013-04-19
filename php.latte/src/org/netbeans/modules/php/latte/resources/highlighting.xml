@@ -49,7 +49,7 @@ Portions Copyrighted 2010 Sun Microsystems, Inc.
     <fontcolor name="latte-markup-macro" default="identifier" foreColor="00A0A0">
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="latte-markup-symbol" default="identifier" foreColor="00A0A0" />
+    <fontcolor name="latte-markup-symbol" default="identifier" />
     <fontcolor name="latte-markup-number" default="number" foreColor="ff00ff" />
     <fontcolor name="latte-markup-variable" foreColor="6D3206" />
     <fontcolor name="latte-markup-string" default="string" />
