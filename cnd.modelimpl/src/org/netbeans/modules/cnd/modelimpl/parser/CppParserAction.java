@@ -113,6 +113,7 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     public static int SIMPLE_TYPE_SPECIFIER__AUTO = 14;
     public static int SIMPLE_TYPE_SPECIFIER__ID = 15;
     public static int SIMPLE_TYPE_SPECIFIER__SCOPE = 16;
+    public static int SIMPLE_TYPE_SPECIFIER__BI_VA_LIST = 17;
     public static int DECLTYPE_SPECIFIER__LPAREN = 48;
     public static int DECLTYPE_SPECIFIER__RPAREN = 49;
     public static int QUALIFIED_NAMESPACE_SPECIFIER__SCOPE = 50;

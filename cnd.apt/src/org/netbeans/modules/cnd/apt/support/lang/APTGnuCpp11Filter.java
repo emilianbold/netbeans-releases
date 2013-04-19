@@ -203,7 +203,8 @@ class APTGnuCpp11Filter extends APTBaseLanguageFilter {
         filter("__is_standard_layout", APTTokenTypes.LITERAL___is_standard_layout); // NOI18N
         filter("__is_trivial", APTTokenTypes.LITERAL___is_trivial); // NOI18N
         filter("__is_union", APTTokenTypes.LITERAL___is_union); // NOI18N
-        filter("__underlying_type", APTTokenTypes.LITERAL___underlying_type); // NOI18N        
+        filter("__underlying_type", APTTokenTypes.LITERAL___underlying_type); // NOI18N                
+        filter("__builtin_va_list", APTTokenTypes.LITERAL___builtin_va_list); // NOI18N        
         
         // C++11
         filter("final", APTTokenTypes.LITERAL_final); // NOI18N

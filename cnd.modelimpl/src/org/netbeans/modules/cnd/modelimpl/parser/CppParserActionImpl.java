@@ -1210,7 +1210,8 @@ public class CppParserActionImpl implements CppParserActionEx {
                 || kind == SIMPLE_TYPE_SPECIFIER__UNSIGNED
                 || kind == SIMPLE_TYPE_SPECIFIER__FLOAT
                 || kind == SIMPLE_TYPE_SPECIFIER__DOUBLE
-                || kind == SIMPLE_TYPE_SPECIFIER__VOID) {
+                || kind == SIMPLE_TYPE_SPECIFIER__VOID
+                || kind == SIMPLE_TYPE_SPECIFIER__BI_VA_LIST) {
             CsmObjectBuilder top = builderContext.top();
             if(top instanceof TypeBuilder) {
                 ((TypeBuilder)top).setSimpleTypeSpecifier(((APTToken)token).getTextID());
