@@ -1013,9 +1013,8 @@ public class CppParserActionImpl implements CppParserActionEx {
                     }
                     
                     // todo: decide what builders could be here
-                    if ((builder instanceof FunctionBuilder || builder instanceof VariableBuilder)) {
-                        CharSequence name = builder.getName();
-                        globalSymTab.enterLocal(name);
+                    if (builder instanceof VariableBuilder) {
+                        declareSymbol(true, builder.getName(), builder);
                     }
                     
                 } else if (declBuilder.getTypeBuilder() != null) {
@@ -1037,12 +1036,8 @@ public class CppParserActionImpl implements CppParserActionEx {
                         
                         builder.create();
 
-                        CharSequence name = builder.getName();
-                        SymTabEntry classEntry = globalSymTab.lookup(name);
-                        if (classEntry == null) {
-                            classEntry = globalSymTab.enterLocal(name);
-                            classEntry.setAttribute(CppAttributes.TYPE, true);
-                        }                
+                        declareSymbol(false, builder.getName(), builder);
+                        
                     } else if (declBuilder.getTypeBuilder().getClassifier() == null && declBuilder.getTypeBuilder().getNameBuilder() == null) {
                         registerException(new MyRecognitionException("Unexpected missing namebuilder!", token), token); // NOI18N
                     }
@@ -3199,7 +3194,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                 
                 // todo: decide what builders could be here
                 if (builder instanceof FieldBuilder) {
-                    SymTabEntry classEntry = globalSymTab.enterLocal(builder.getName());
+                    declareSymbol(true, builder.getName(), builder);
                 }
                 
             } else if (declBuilder.getTypeBuilder() != null && declBuilder.getTypeBuilder().getNameBuilder() != null) {
@@ -3229,14 +3224,8 @@ public class CppParserActionImpl implements CppParserActionEx {
                     parent.addMemberBuilder((ClassMemberForwardDeclarationBuilder)builder);
                 }               
                 
-                // Let's try to find definition
-                SymTabEntry definitionEntry = globalSymTab.lookup(name);
-                
-                // If it is unavailable then we need to add new entry into local symtab
-                if (definitionEntry == null) {
-                    SymTabEntry classEntry = globalSymTab.enterLocal(name);
-                    classEntry.setAttribute(CppAttributes.TYPE, true);
-                }
+                // FIXME: probably always must be redeclared (in different ways for different builders)
+                declareSymbol(false, builder.getName(), builder);
             }
         }    
     }
@@ -3671,6 +3660,22 @@ public class CppParserActionImpl implements CppParserActionEx {
         @Override
         public void onError(ParserError e) {
             currentContext.file.getParsingFileContent().addParsingError(e);
+        }
+    }
+    
+    private void declareSymbol(boolean redeclare, CharSequence name, SimpleDeclarationBuilder declBuilder) {
+        if (!redeclare && globalSymTab.lookup(name) != null) {
+            return;
+        }
+        
+        SymTabEntry entry = globalSymTab.enterLocal(name);
+        
+        if (declBuilder.getTypeBuilder() != null && declBuilder.getDeclaratorBuilder() == null) {
+            entry.setAttribute(CppAttributes.TYPE, true);
+        }
+                
+        if (declBuilder.getTemplateDescriptorBuilder() != null) {
+            entry.setAttribute(CppAttributes.TEMPLATE, true);
         }
     }
     
