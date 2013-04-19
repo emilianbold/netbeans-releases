@@ -238,10 +238,10 @@ compilation_unit: translation_unit;
 translation_unit
 @init                                                                           {if(state.backtracking == 0){action.translation_unit(input.LT(1));}}
     :
-        syncDeclaration 
+        sync_declaration 
         (
             declaration[object_decl]
-            syncDeclaration 
+            sync_declaration 
         )* EOF
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_translation_unit(input.LT(0));}}
@@ -324,7 +324,13 @@ compound_statement[boolean lazy]
     :
         {lazy}? skip_balanced_Curl
     |
-        LCURLY statement* RCURLY
+        LCURLY 
+        sync_declaration 
+        (
+            statement
+            sync_declaration 
+        )* 
+        RCURLY
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_compound_statement(input.LT(0));}}
 
@@ -518,7 +524,7 @@ declaration [decl_kind kind]
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_declaration(input.LT(0));}}
 
-syncDeclaration
+sync_declaration
 @init                                                                           {syncToSet();}
     :   // Deliberately match nothing, causing this rule always to be entered.
     ;
@@ -1896,7 +1902,7 @@ class_key:
 member_specification[boolean class_late_binding]
 @init                                                                           {if(state.backtracking == 0){action.member_specification(input.LT(1));}}
     :
-        syncDeclaration
+        sync_declaration
         (    
             member_declaration[field_decl, class_late_binding] member_specification[class_late_binding]?
             |
@@ -2303,8 +2309,19 @@ type_parameter:
     |
         LITERAL_typename IDENT? ASSIGNEQUAL type_id                             {action.type_parameter(action.TYPE_PARAMETER__TYPENAME_ASSIGNEQUAL, $LITERAL_typename, $IDENT, $ASSIGNEQUAL);}
     |
-        LITERAL_template LESSTHAN template_parameter_list GREATERTHAN LITERAL_class ELLIPSIS? IDENT? (ASSIGNEQUAL id_expression)?
+        template_parameter_type
+        LITERAL_class ELLIPSIS? IDENT? (ASSIGNEQUAL id_expression)?             {action.type_parameter(action.TYPE_PARAMETER__TEMPLATE_CLASS_ASSIGNEQUAL, $LITERAL_class, $ELLIPSIS, $IDENT, $ASSIGNEQUAL);}
     ;
+
+template_parameter_type
+@init                                                                           {if(state.backtracking == 0){action.template_declaration(input.LT(1));}}
+    :                                                                           
+        LITERAL_template                                                        {action.template_declaration(action.TEMPLATE_DECLARATION__TEMPLATE, $LITERAL_template);}
+        LESSTHAN                                                                {action.template_declaration(action.TEMPLATE_DECLARATION__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+        template_parameter_list 
+        GREATERTHAN                                                             {action.template_declaration(action.TEMPLATE_DECLARATION__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
+;
+finally                                                                         {if(state.backtracking == 0){action.end_template_declaration(input.LT(0));}}
 
 simple_template_id
     :

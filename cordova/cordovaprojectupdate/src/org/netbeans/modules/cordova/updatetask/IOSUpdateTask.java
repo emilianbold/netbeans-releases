@@ -83,7 +83,7 @@ public class IOSUpdateTask extends CordovaTask {
             
             File infoPlist = new File(root.getPath() + "/" + name + "/" + name + "-Info.plist");
             InfoPlist plist = new InfoPlist(infoPlist);
-            plist.setPackage(getProject().getProperty("android.project.package"));
+            plist.setBundleIdentifier(getProject().getProperty("android.project.package"));
             plist.save();
             
             DeviceConfig androidConfig = new DeviceConfig(androidConfigFile);
@@ -142,8 +142,8 @@ public class IOSUpdateTask extends CordovaTask {
             return;
         }
         String name = getProject().getProperty("xcode.project.name");
-        
-        String ext = source.substring(source.indexOf("."));
+        final int i = source.indexOf(".");
+        String ext = i<0?"":source.substring(i);
         final String prjPath = getProject().getBaseDir().getPath();
         FileUtils.getFileUtils().copyFile(
                 prjPath + "/" + getProperty("site.root") + "/" + source, 

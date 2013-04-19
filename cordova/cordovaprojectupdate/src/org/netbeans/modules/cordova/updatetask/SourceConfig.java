@@ -44,6 +44,8 @@ package org.netbeans.modules.cordova.updatetask;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -52,6 +54,9 @@ import org.w3c.dom.NodeList;
  * @author Jan Becicka
  */
 public class SourceConfig extends XMLFile {
+    
+    public static final String ANDROID_PLATFORM = "android";
+    public static final String IOS_PLATFORM = "ios";
 
     public SourceConfig(InputStream resource) throws IOException {
         super(resource);
@@ -82,7 +87,7 @@ public class SourceConfig extends XMLFile {
     }
 
     public void setAuthor(String author) {
-        getTextContent("/widget/author");
+        setTextContent("/widget/author", author);
     }
     
     public String getAuthorHref() {
@@ -105,6 +110,10 @@ public class SourceConfig extends XMLFile {
         return getAttributeText("/widget", "id");
     }
     
+    public String getVersion() {
+        return getAttributeText("/widget", "version");
+    }
+    
     public String getAccess() {
         return getAttributeText("/widget/access", "origin");
     }
@@ -116,26 +125,70 @@ public class SourceConfig extends XMLFile {
     public void setId(String id) {
         setAttributeText("/widget", "id", id);
     }
+    
+    public void setVersion(String version) {
+        setAttributeText("/widget", "version", version);
+    }
 
     public String getIcon(String platform, int width, int height) {
         return getSplashOrIcon("icon", platform, width, height);
     }
+
+    public void setIcon(String platform, int width, int height, String value) {
+        setSplashOrIcon("icon", platform, width, height, value);
+    }
+    
     
     private String getSplashOrIcon(String name, String platform, int width, int height) {
+        Node node = getSplashOrIconNode(name, platform, width, height);
+        if (node == null) {
+            return null;
+        }
+        return getAttributeText(node, "src");
+    }
+    
+    private Node getSplashOrIconNode(String name, String platform, int width, int height) {
         final NodeList icons = doc.getElementsByTagName(name);
         for (int i=0; i < icons.getLength();i++) {
             Node n = icons.item(i);
             if (platform.equals(getAttributeText(n, "gap:platform")) &&
                     Integer.toString(width).equals(getAttributeText(n, "width")) &&
                     Integer.toString(height).equals(getAttributeText(n, "height"))) {
-                return getAttributeText(n, "src");
+                return n;
             }
         }
         return null;
     }
     
+    private void setSplashOrIcon(String name, String platform, int width, int height, String value) {
+        Node n = getSplashOrIconNode(name, platform, width, height);
+        if (n!=null) {
+            final Attr src = doc.createAttribute("src");
+            src.setValue(value);
+            n.getAttributes().setNamedItem(src);
+        } else {
+            Element element = doc.createElement(name);
+            element.setAttribute("src", value);
+            element.setAttribute("width", Integer.toString(width));
+            element.setAttribute("height", Integer.toString(height));
+            element.setAttribute("gap:platform", platform);
+            NodeList elementsByTagName = doc.getElementsByTagName(name);
+            Node widget = getNode("/widget");
+            if (elementsByTagName!=null && elementsByTagName.getLength()>0) {
+                widget.insertBefore(element, elementsByTagName.item(0));
+            } else {
+                widget.appendChild(element);
+            }
+        }
+    }
+
+    
     public String getSplash(String platform, int width, int height) {
         return getSplashOrIcon("gap:splash", platform, width, height);
+    }
+    
+    public void setSplash(String platform, int width, int height, String value) {
+        setSplashOrIcon("gap:splash", platform, width, height, value);
     }
     
     public String getPreference(String name) {
@@ -157,5 +210,12 @@ public class SourceConfig extends XMLFile {
             return getIcon(platform, 96,96);
         }
     }    
-
+    
+    public void setIcon(String platform, String value) {
+        if (platform.equals("ios")) {
+            setIcon(platform, 144, 144, value);
+        } else {
+            setIcon(platform, 96, 96, value);
+        }
+    }
 }
