@@ -1014,7 +1014,11 @@ public class CppParserActionImpl implements CppParserActionEx {
                     
                     // todo: decide what builders could be here
                     if (builder instanceof VariableBuilder) {
-                        declareSymbol(true, builder.getName(), builder);
+                        if (builder.getName() != null) {
+                            declareSymbol(true, builder.getName(), builder);
+                        } else {
+                            registerException(new MyRecognitionException("Missing name for variable", token), token); // NOI18N
+                        }
                     }
                     
                 } else if (declBuilder.getTypeBuilder() != null) {
@@ -1080,6 +1084,35 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     private void compound_statement_impl(Token token) {
         globalSymTab.push();
+        
+        CsmObjectBuilder parent = builderContext.top();
+        
+        if (parent instanceof ConstructorDefinitionBuilder || parent instanceof FunctionDefinitionBuilder) {
+            CharSequence[] scopeNames = ((SimpleDeclarationBuilder) parent).getScopeNames();
+            
+            if (scopeNames != null && scopeNames.length > 0) {
+                int firstSignificantNamePart = 0;
+                
+                if (scopeNames[0].length() == 0) {
+                    // Name is a fully qualified name. Since it is possible to define function or constructor only in enclosing namespace,
+                    // we could just skip common part
+                    firstSignificantNamePart = globalSymTab.getSize() - 1;
+                }
+                
+                for (int i = firstSignificantNamePart; i < scopeNames.length; i++) {
+                    CharSequence part = scopeNames[i];
+
+                    SymTabEntry classEntry = globalSymTab.lookup(part);
+                    SymTab st = null;
+                    if (classEntry != null) {
+                        st = (SymTab)classEntry.getAttribute(CppAttributes.SYM_TAB);
+                    }
+                    if(st != null) {
+                        globalSymTab.importToLocal(st);
+                    }
+                }
+            }            
+        }
         
         CompoundStatementBuilder builder = new CompoundStatementBuilder();
         builder.setFile(currentContext.file);
@@ -2349,22 +2382,6 @@ public class CppParserActionImpl implements CppParserActionEx {
             builderContext.pop();
             SimpleDeclarationBuilder declarationBuilder = (SimpleDeclarationBuilder) builderContext.top();
             declarationBuilder.setTypeBuilder(typeBuilder);
-
-            final NameBuilder nameBuilder = typeBuilder.getNameBuilder();
-            if (nameBuilder != null) {
-                for (int i = 0; i < nameBuilder.getNameParts().size() - 1; i++) {
-                    CharSequence part = nameBuilder.getNameParts().get(i);
-
-                    SymTabEntry classEntry = globalSymTab.lookup(part);
-                    SymTab st = null;
-                    if (classEntry != null) {
-                        st = (SymTab)classEntry.getAttribute(CppAttributes.SYM_TAB);
-                    }
-                    if(st != null) {
-                        globalSymTab.importToLocal(st);
-                    }
-                }
-            }
         }
     }
     
@@ -3194,7 +3211,11 @@ public class CppParserActionImpl implements CppParserActionEx {
                 
                 // todo: decide what builders could be here
                 if (builder instanceof FieldBuilder) {
-                    declareSymbol(true, builder.getName(), builder);
+                    if (builder.getName() != null) {
+                        declareSymbol(true, builder.getName(), builder);
+                    } else {
+                        registerException(new MyRecognitionException("Missing name for field", token), token); // NOI18N
+                    }
                 }
                 
             } else if (declBuilder.getTypeBuilder() != null && declBuilder.getTypeBuilder().getNameBuilder() != null) {
