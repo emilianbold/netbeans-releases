@@ -948,6 +948,8 @@ scope QualName;
     |
         LITERAL_auto                                                            {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__AUTO, input.LT(0));}
     |
+        LITERAL___builtin_va_list                                               {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__BI_VA_LIST, input.LT(0));}
+    |
         decltype_specifier
     |
         /*

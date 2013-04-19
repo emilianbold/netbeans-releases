@@ -64,12 +64,12 @@ import org.netbeans.modules.tasks.ui.actions.Actions.CreateRepositoryAction;
 import org.netbeans.modules.tasks.ui.cache.CategoryEntry;
 import org.netbeans.modules.tasks.ui.cache.DashboardStorage;
 import org.netbeans.modules.tasks.ui.cache.TaskEntry;
-import org.netbeans.modules.tasks.ui.dnd.DashboardTransferHandler;
+import org.netbeans.modules.tasks.ui.DashboardTransferHandler;
 import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
 import org.netbeans.modules.tasks.ui.filter.DashboardFilter;
-import org.netbeans.modules.tasks.ui.model.Category;
+import org.netbeans.modules.tasks.ui.Category;
 import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
-import org.netbeans.modules.tasks.ui.utils.DashboardRefresher;
+import org.netbeans.modules.tasks.ui.DashboardRefresher;
 import org.netbeans.modules.team.ui.util.treelist.ColorManager;
 import org.netbeans.modules.team.ui.util.treelist.TreeList;
 import org.netbeans.modules.team.ui.util.treelist.TreeListModel;
@@ -82,7 +82,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * Singleton providing access to Task Dashboard window.
+ * Singleton providing access to Tasks window.
  *
  * @author S. Aubrecht
  * @author J. Peska

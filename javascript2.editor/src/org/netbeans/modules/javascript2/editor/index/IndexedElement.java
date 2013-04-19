@@ -110,14 +110,14 @@ public class IndexedElement extends JsElementImpl {
 //        elementDocument.addPair(JsIndex.FIELD_IS_GLOBAL, (isGlobal ? "1" : "0"), true, true);
         elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
         elementDocument.addPair(JsIndex.FIELD_FLAG, Integer.toString(Flag.getFlag(object)), false, true);
-        StringBuilder sb = new StringBuilder();
+//        StringBuilder sb = new StringBuilder();
 //        for (JsObject property : object.getProperties().values()) {
 //            if (!property.getModifiers().contains(Modifier.PRIVATE)) {
 //                sb.append(codeProperty(property)).append("#@#");
 //            }
 //        }
 //        elementDocument.addPair(JsIndex.FIELD_PROPERTY, sb.toString(), false, true);
-        sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         for (TypeUsage type : object.getAssignments()) {
             sb.append(type.getType());
             sb.append(":"); //NOI18N

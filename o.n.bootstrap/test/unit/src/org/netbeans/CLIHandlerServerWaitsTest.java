@@ -163,6 +163,7 @@ public class CLIHandlerServerWaitsTest extends NbTestCase {
         
     }
 
+    @RandomlyFails // core-main: #10025
     public void testReadingMoreThanAvailableIsOk () throws Exception {
         final byte[] template = { 1, 2, 3, 4 };
         

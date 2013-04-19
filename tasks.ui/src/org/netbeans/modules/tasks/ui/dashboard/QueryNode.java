@@ -103,6 +103,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             boolean showChanged = getChangedTaskCount() > 0;
             lblSeparator.setVisible(showChanged);
             btnChanged.setVisible(showChanged);
+            fireContentChanged();
         }
     }
 

@@ -51,8 +51,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.tasks.ui.model.Category;
-import org.netbeans.modules.tasks.ui.utils.Utils;
+import org.netbeans.modules.tasks.ui.Category;
+import org.netbeans.modules.tasks.ui.Utils;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 
