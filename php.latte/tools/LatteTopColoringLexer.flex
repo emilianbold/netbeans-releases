@@ -217,7 +217,8 @@ SYNTAX_PYTHON_END="%}"
             pushState(ST_COMMENT);
         }
     }
-    {SYNTAX_PYTHON_START} {
+    {SYNTAX_PYTHON_START}[^ \t\r\n] {
+        yypushback(1);
         if (syntax == Syntax.PYTHON) {
             pushState(ST_PYTHON);
             return LatteTopTokenId.T_LATTE_DELIMITER;
@@ -228,7 +229,7 @@ SYNTAX_PYTHON_END="%}"
             pushState(ST_COMMENT);
         }
     }
-    {SYNTAX_DOUBLE_START}[^{] {
+    {SYNTAX_DOUBLE_START}[^ \t\r\n{] {
         yypushback(1);
         if (syntax == Syntax.DOUBLE) {
             pushState(ST_DOUBLE);
@@ -248,7 +249,8 @@ SYNTAX_PYTHON_END="%}"
             pushState(ST_COMMENT);
         }
     }
-    {SYNTAX_ASP_START} {
+    {SYNTAX_ASP_START}[^ \t\r\n] {
+        yypushback(1);
         if (syntax == Syntax.ASP) {
             pushState(ST_ASP);
             return LatteTopTokenId.T_LATTE_DELIMITER;
@@ -259,7 +261,7 @@ SYNTAX_PYTHON_END="%}"
             pushState(ST_COMMENT);
         }
     }
-    {SYNTAX_LATTE_START}[^{] {
+    {SYNTAX_LATTE_START}[^ \t\r\n{] {
         yypushback(1);
         if (syntax == Syntax.LATTE) {
             pushState(ST_LATTE);

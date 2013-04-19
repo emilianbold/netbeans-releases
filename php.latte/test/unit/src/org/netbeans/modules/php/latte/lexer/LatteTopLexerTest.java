@@ -106,6 +106,10 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
         performTest("variable");
     }
 
+    public void testWsAfterOpeningDelim() throws Exception {
+        performTest("ws-after-opening-delim");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".latte"));
