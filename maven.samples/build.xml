@@ -68,5 +68,11 @@
             JSON-P subsection:
         -->
         <zip basedir="samples_src/javaee7/jsonp/jaxrs" destfile="${examples}/JSONP.zip"/>
+        
+        <!--
+            REST subsection:
+        -->
+        <zip basedir="samples_src/javaee7/rest/async-chat" destfile="${examples}/AsyncChat.zip"/>
+        <zip basedir="samples_src/javaee7/rest/message-board" destfile="${examples}/MessageBoard.zip"/>
     </target>
 </project>

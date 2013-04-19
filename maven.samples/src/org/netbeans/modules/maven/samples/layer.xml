@@ -259,6 +259,26 @@
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
+                    
+                    <!--
+                        REST subsection:
+                    -->
+                    <file name="AsyncChat" url="AsyncChat.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/AsyncChat"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/AsyncChat.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="MessageBoard" url="MessageBoard.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/MessageBoard"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/MessageBoard.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
