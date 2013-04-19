@@ -62,6 +62,7 @@ public enum CompletionContext {
      */
     OBJECT_PROPERTY_NAME, 
     DOCUMENTATION, // inside documentation blocks
-    GLOBAL
+    GLOBAL,
+    STRING      // inside a string
 
 }

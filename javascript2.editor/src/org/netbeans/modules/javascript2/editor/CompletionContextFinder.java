@@ -71,12 +71,7 @@ public class CompletionContextFinder {
         new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT},
         new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
     );
-    
-    private static final List<Object[]> OBJECT_PROPERTY_NAME_TOKENCHAINS = Arrays.asList(
-        new Object[]{JsTokenId.OPERATOR_COMMA, JsTokenId.IDENTIFIER},
-        new Object[]{JsTokenId.OPERATOR_COMMA, JsTokenId.IDENTIFIER, JsTokenId.OPERATOR_COLON}
-    );
-    
+        
     @NonNull
     static CompletionContext findCompletionContext(ParserResult info, int caretOffset){
         TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
@@ -97,6 +92,10 @@ public class CompletionContextFinder {
                
         Token<? extends JsTokenId> token = ts.token();
         JsTokenId tokenId =token.id();
+        
+        if (tokenId == JsTokenId.STRING || tokenId == JsTokenId.STRING_END) {
+            return CompletionContext.STRING;
+        }
         
         if (acceptTokenChains(ts, OBJECT_THIS_TOKENCHAINS, true)) {
             return CompletionContext.OBJECT_MEMBERS;
