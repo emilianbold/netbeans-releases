@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.model;
+package org.netbeans.modules.tasks.ui;
 
 import java.util.ArrayList;
 import java.util.HashMap;

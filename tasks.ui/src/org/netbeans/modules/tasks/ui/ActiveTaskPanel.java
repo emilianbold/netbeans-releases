@@ -54,7 +54,6 @@ import javax.swing.*;
 import org.netbeans.modules.tasks.ui.actions.Actions.ActivateTaskAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.OpenTaskAction;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
-import org.netbeans.modules.tasks.ui.utils.Utils;
 import org.netbeans.modules.team.ui.util.treelist.ColorManager;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
