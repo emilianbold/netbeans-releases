@@ -203,6 +203,7 @@ SYNTAX_PYTHON_END="%}"
 %state ST_PYTHON
 %state ST_PYTHON_DOUBLE
 %state ST_SYNTAX_CHANGE
+%state ST_IN_HTML_TAG
 %state ST_N_ATTR_DOUBLE
 %state ST_N_ATTR_SINGLE
 %state ST_HIGHLIGHTING_ERROR
@@ -268,11 +269,11 @@ SYNTAX_PYTHON_END="%}"
             return LatteTopTokenId.T_LATTE_DELIMITER;
         }
     }
-    "<"([^>])*"n:"[a-zA-Z0-9\-_]+=\" {
+    "n:"[a-zA-Z0-9\-_]+=\" {
         pushState(ST_N_ATTR_DOUBLE);
         return LatteTopTokenId.T_HTML;
     }
-    "<"([^>])*"n:"[a-zA-Z0-9\-_]+=' {
+    "n:"[a-zA-Z0-9\-_]+=' {
         pushState(ST_N_ATTR_SINGLE);
         return LatteTopTokenId.T_HTML;
     }

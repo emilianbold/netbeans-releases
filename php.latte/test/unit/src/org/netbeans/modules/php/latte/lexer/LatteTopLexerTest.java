@@ -110,6 +110,10 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
         performTest("ws-after-opening-delim");
     }
 
+    public void testNMultipleInOneElement() throws Exception {
+        performTest("n-multiple-in-one-element");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".latte"));
