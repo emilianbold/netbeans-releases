@@ -168,7 +168,6 @@ public class JsDeletedTextInterceptorTest extends JsTestBase {
 
     public void testBackwardsDeletion() throws Exception {
         String s = "alert('hello')  \n  nextline";
-        JsKeystrokeHandler bc = new JsKeystrokeHandler();
         for (int i = s.length(); i >= 1; i--) {
             String shortened = s.substring(0, i);
             BaseDocument doc = getDocument(shortened);
@@ -177,7 +176,7 @@ public class JsDeletedTextInterceptorTest extends JsTestBase {
             Caret caret = ta.getCaret();
             int dot = i;
             caret.setDot(dot);
-            int begin = bc.getNextWordOffset(doc, dot, true);
+            int begin = JsCamelCaseInterceptor.getWordOffset(doc, dot, true);
             if (begin == -1) {
                 begin = Utilities.getPreviousWord(ta, dot);
             }
