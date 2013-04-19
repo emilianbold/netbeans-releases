@@ -2309,8 +2309,19 @@ type_parameter:
     |
         LITERAL_typename IDENT? ASSIGNEQUAL type_id                             {action.type_parameter(action.TYPE_PARAMETER__TYPENAME_ASSIGNEQUAL, $LITERAL_typename, $IDENT, $ASSIGNEQUAL);}
     |
-        LITERAL_template LESSTHAN template_parameter_list GREATERTHAN LITERAL_class ELLIPSIS? IDENT? (ASSIGNEQUAL id_expression)?
+        template_parameter_type
+        LITERAL_class ELLIPSIS? IDENT? (ASSIGNEQUAL id_expression)?             {action.type_parameter(action.TYPE_PARAMETER__TEMPLATE_CLASS_ASSIGNEQUAL, $LITERAL_class, $ELLIPSIS, $IDENT, $ASSIGNEQUAL);}
     ;
+
+template_parameter_type
+@init                                                                           {if(state.backtracking == 0){action.template_declaration(input.LT(1));}}
+    :                                                                           
+        LITERAL_template                                                        {action.template_declaration(action.TEMPLATE_DECLARATION__TEMPLATE, $LITERAL_template);}
+        LESSTHAN                                                                {action.template_declaration(action.TEMPLATE_DECLARATION__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+        template_parameter_list 
+        GREATERTHAN                                                             {action.template_declaration(action.TEMPLATE_DECLARATION__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
+;
+finally                                                                         {if(state.backtracking == 0){action.end_template_declaration(input.LT(0));}}
 
 simple_template_id
     :

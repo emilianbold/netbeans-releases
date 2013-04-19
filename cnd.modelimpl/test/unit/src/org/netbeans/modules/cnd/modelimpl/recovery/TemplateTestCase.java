@@ -56,15 +56,15 @@ import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
  * @author Alexander Simon
  */
 //@RandomlyFails
-public class TypedefTestCase extends RecoveryTestCaseBase {
-    private static final String SOURCE = "typedef.cc";
-    public TypedefTestCase(String testName, Grammar gramma, Diff diff, Golden golden) {
+public class TemplateTestCase extends RecoveryTestCaseBase {
+    private static final String SOURCE = "template.cc";
+    public TemplateTestCase(String testName, Grammar gramma, Diff diff, Golden golden) {
         super(testName, gramma, diff, golden);
     }
 
     @Override
     protected File getTestCaseDataDir() {
-        return Manager.normalizeFile(new File(getDataDir(), "common/recovery/typedef"));
+        return Manager.normalizeFile(new File(getDataDir(), "common/recovery/template"));
     }
 
     @Grammar(newGrammar = false)
@@ -77,7 +77,7 @@ public class TypedefTestCase extends RecoveryTestCaseBase {
     @Grammar(newGrammar = true)
     @Diff(file=SOURCE)
     @Test
-    public void typeDefs() throws Exception {
+    public void template() throws Exception {
         implTest(SOURCE);
     }
     
@@ -86,38 +86,18 @@ public class TypedefTestCase extends RecoveryTestCaseBase {
         @Grammar(newGrammar = true)
     })
     @Diffs({
-        @Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "ID"),
+        //@Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "ID"),
         @Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "ID()"),
         //@Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "ID<E>"),
         @Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "*"),
         @Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "&"),
-        @Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "{"),
+        //@Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "{"),
         @Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "}"),
         @Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "+"),
         //@Diff(file=SOURCE, line = 1, column = 1, length = 0, type = "int*a()"),
     })
     @Test
-    public void beforeTypeDefs1() throws Exception {
-        implTest(SOURCE);
-    }
-
-    @Grammars({
-        @Grammar(newGrammar = false),
-        @Grammar(newGrammar = true)
-    })
-    @Diffs({
-        @Diff(file=SOURCE, line = 5, column = 1, length = 0, insert = "ID"),
-        @Diff(file=SOURCE, line = 5, column = 1, length = 0, insert = "ID()"),
-        //@Diff(file=SOURCE, line = 1, column = 1, length = 0, insert = "ID<E>"),
-        @Diff(file=SOURCE, line = 5, column = 1, length = 0, insert = "*"),
-        @Diff(file=SOURCE, line = 5, column = 1, length = 0, insert = "&"),
-        @Diff(file=SOURCE, line = 5, column = 1, length = 0, insert = "{"),
-        @Diff(file=SOURCE, line = 5, column = 1, length = 0, insert = "}"),
-        @Diff(file=SOURCE, line = 5, column = 1, length = 0, insert = "+"),
-        //@Diff(file=SOURCE, line = 1, column = 1, length = 0, type = "int*a()"),
-    })
-    @Test
-    public void beforeTypeDefs2() throws Exception {
+    public void beforeTemplate1() throws Exception {
         implTest(SOURCE);
     }
 }
