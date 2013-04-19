@@ -119,6 +119,10 @@ public final class SymTabStack {
     public void importToLocal(SymTab symTab) {
         getLocal().importSymTab(symTab);
     }
+    
+    public int getSize() {
+        return stack.size();
+    }
 
     private SymTab getLocal() {
         return stack.get(stack.size() - 1);

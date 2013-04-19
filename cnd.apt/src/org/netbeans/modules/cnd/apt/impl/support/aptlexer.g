@@ -346,6 +346,7 @@ tokens {
     LITERAL___is_trivial="__is_trivial"; // NOI18N
     LITERAL___is_union="__is_union"; // NOI18N
     LITERAL___underlying_type="__underlying_type"; // NOI18N
+    LITERAL___builtin_va_list="__builtin_va_list"; // NOI18N
 
     LAST_LITERAL_TOKEN;
 
