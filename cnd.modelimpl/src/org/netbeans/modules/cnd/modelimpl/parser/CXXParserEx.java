@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
  */
 public class CXXParserEx extends CXXParser {
     
-    private static final int RECOVERY_LIMIT = 20;
+    private static final int RECOVERY_LIMIT = 3;
     private static final BitSet stopSet = new BitSet();
     static {
         stopSet.add(LCURLY);
@@ -142,7 +142,7 @@ public class CXXParserEx extends CXXParser {
             //input.consume();
             //</editor-fold>
             // our solution:
-            if (recoveryCounter > RECOVERY_LIMIT) {
+            if (recoveryCounter >= RECOVERY_LIMIT) {
                 input.consume();
                 recoveryCounter = 0;
                 //followSet.orInPlace(stopSet);
