@@ -91,9 +91,16 @@ public final class AstPath {
     }
 
     public List<Node> rootToNode(Node target) {
+        return rootToNode(target, false);
+    }
+
+    public List<Node> rootToNode(Node target, boolean inclusive) {
         List<Node> result = new ArrayList<Node>();
         for (Node each : nodes) {
             if (equalsNodes(each, target)) {
+                if (inclusive) {
+                    result.add(each);
+                }
                 break;
             }
             result.add(each);
