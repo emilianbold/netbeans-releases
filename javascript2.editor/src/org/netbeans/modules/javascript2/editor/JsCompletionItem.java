@@ -375,12 +375,12 @@ public class JsCompletionItem implements CompletionProposal {
             // This maps unresolved types to the display name of the resolved type. 
             // It should save time to not resolve one type more times
             HashMap<String, Set<String>> resolvedTypes = new HashMap<String, Set<String>>();
-            
-            for (String name: items.keySet()) {
+
+            for (Map.Entry<String, List<JsElement>> entry: items.entrySet()) {
 
                 // this helps to eleminate items that will look as the same items in the cc
                 HashMap<String, JsCompletionItem> signatures = new HashMap<String, JsCompletionItem>();
-                for (JsElement element : items.get(name)) {
+                for (JsElement element : entry.getValue()) {
                     switch (element.getJSKind()) {
                         case CONSTRUCTOR:
                         case FUNCTION:
@@ -452,7 +452,7 @@ public class JsCompletionItem implements CompletionProposal {
                                 }
                             }
                             // create signature
-                            String signature = createFnSignature(name, allParameters, returnTypes);
+                            String signature = createFnSignature(entry.getKey(), allParameters, returnTypes);
                             if (!signatures.containsKey(signature)) {
                                 JsCompletionItem item = new JsFunctionCompletionItem(element, request, returnTypes, allParameters);
                                 signatures.put(signature, item);
@@ -521,9 +521,9 @@ public class JsCompletionItem implements CompletionProposal {
         private static String createFnSignature(String name, HashMap<String, Set<String>> params, Set<String> returnTypes) {
             StringBuilder sb = new StringBuilder();
             sb.append(name).append('(');
-            for(String paramName: params.keySet()) {
-                sb.append(paramName).append(':');
-                sb.append(createTypeSignature(params.get(paramName)));
+            for (Map.Entry<String, Set<String>> entry : params.entrySet()) {
+                sb.append(entry.getKey()).append(':');
+                sb.append(createTypeSignature(entry.getValue()));
                 sb.append(',');
             }
             sb.append(')');
