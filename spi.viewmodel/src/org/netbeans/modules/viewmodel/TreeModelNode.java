@@ -2147,6 +2147,12 @@ public class TreeModelNode extends AbstractNode {
                 return pe;
             }
         }
+
+        @Override
+        public String toString() {
+            return super.toString() + ", Value = "+properties.get(id);
+        }
+        
     }
 
     /** The single-threaded evaluator of lazy models. *//*
