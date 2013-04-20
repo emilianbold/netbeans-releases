@@ -39,30 +39,76 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.spi;
+package org.netbeans.modules.javascript2.extjs;
+
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Petr Hejl
+ * @author Petr Pisl
  */
-public enum CompletionContext {
-    NONE, // There shouldn't be any code completion
-    EXPRESSION, // usually, we will offer everything what we know in the context
-    OBJECT_PROPERTY, // object property that are visible outside the object
-    OBJECT_MEMBERS, // usually after this.
-    /**
-     * This context is before ':' in an object literal definition, when a property
-     * is defined. Typically 
-     * var object_listeral = {
-     *  property_name : value
-     * }
-     * 
-     * This context can be used by frameworks to suggest the names of properties
-     * to define for example various configuration objects.
-     */
-    OBJECT_PROPERTY_NAME, 
-    DOCUMENTATION, // inside documentation blocks
-    GLOBAL,
-    STRING      // inside a string
+public class ExtJsElement implements ElementHandle {
 
-}
+        private final String name;
+        private final ElementKind kind;
+        private final String documentation;
+
+        public ExtJsElement(String name, String documentation, ElementKind kind) {
+            this.name = name;
+            this.kind = kind;
+            this.documentation = documentation;
+        }
+        
+        
+        @Override
+        public FileObject getFileObject() {
+            return null;
+        }
+
+        @Override
+        public String getMimeType() {
+            return "";
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getIn() {
+            return "";
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return kind;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.<Modifier>emptySet();
+        }
+
+        @Override
+        public boolean signatureEquals(ElementHandle handle) {
+            return false;
+        }
+
+        @Override
+        public OffsetRange getOffsetRange(ParserResult result) {
+            return OffsetRange.NONE;
+        }
+
+        public String getDocumentation() {
+            return documentation;
+        }
+        
+    }
