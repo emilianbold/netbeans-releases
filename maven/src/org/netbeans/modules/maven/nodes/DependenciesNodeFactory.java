@@ -67,11 +67,11 @@ public class DependenciesNodeFactory implements NodeFactory {
     }
     
     private static class NList extends AbstractMavenNodeList<DependenciesNode.DependenciesSet> implements PropertyChangeListener {
-        private NbMavenProjectImpl project;
-        private DependenciesNode.DependenciesSet compile;
-        private DependenciesNode.DependenciesSet runtime;
-        private DependenciesNode.DependenciesSet test;
-        private DependenciesNode.DependenciesSet noncp;
+        private final NbMavenProjectImpl project;
+        private final DependenciesNode.DependenciesSet compile;
+        private final DependenciesNode.DependenciesSet runtime;
+        private final DependenciesNode.DependenciesSet test;
+        private final DependenciesNode.DependenciesSet noncp;
         NList(NbMavenProjectImpl prj) {
             project = prj;
             compile = new DependenciesNode.DependenciesSet(project, DependenciesNode.Type.COMPILE);
@@ -88,7 +88,8 @@ public class DependenciesNodeFactory implements NodeFactory {
         
         @Override public List<DependenciesNode.DependenciesSet> keys() {
             List<DependenciesNode.DependenciesSet> list = new ArrayList<DependenciesNode.DependenciesSet>();
-            if (!compile.list().isEmpty() || !project.getProjectWatcher().getPackagingType().equals(NbMavenProject.TYPE_POM)) {
+            //#228780 have always at least one dependencies node shown so that users can add Dependencies from projects UI.
+            if (!compile.list().isEmpty() || (runtime.list().isEmpty() && test.list().isEmpty() && noncp.list().isEmpty())) {
                 list.add(compile);
             }
             if (!runtime.list().isEmpty()) {
