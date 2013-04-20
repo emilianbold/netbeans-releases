@@ -44,10 +44,6 @@
 
 package org.netbeans.spi.viewmodel;
 
-import java.beans.PropertyEditor;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-
 
 /**
  * Adds support for columns to basic {@link TreeModel}.
