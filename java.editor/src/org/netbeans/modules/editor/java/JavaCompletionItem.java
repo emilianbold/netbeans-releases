@@ -241,12 +241,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new AttributeValueItem(info, value, documentation, element, substitutionOffset, referencesCount, whiteList);
     }
 
-    public static JavaCompletionItem createStaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, boolean addSemicolon, WhiteListQuery.WhiteList whiteList) {
+    public static JavaCompletionItem createStaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, boolean multipleVersions, int substitutionOffset, boolean isDeprecated, boolean addSemicolon, WhiteListQuery.WhiteList whiteList) {
         switch (memberElem.getKind()) {
             case METHOD:
             case ENUM_CONSTANT:
             case FIELD:
-                return new StaticMemberItem(info, type, memberElem, memberType, substitutionOffset, isDeprecated, addSemicolon, whiteList);
+                return new StaticMemberItem(info, type, memberElem, memberType, multipleVersions, substitutionOffset, isDeprecated, addSemicolon, whiteList);
             default:
                 throw new IllegalArgumentException("kind=" + memberElem.getKind());
         }
@@ -2907,7 +2907,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
 
-        private StaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, boolean addSemicolon, WhiteListQuery.WhiteList whiteList) {
+        private StaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, boolean multipleVersions, int substitutionOffset, boolean isDeprecated, boolean addSemicolon, WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset, ElementHandle.create(memberElem), whiteList);
             type = (DeclaredType) info.getTypes().erasure(type);
             this.typeHandle = TypeMirrorHandle.create(type);
@@ -2918,7 +2918,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.memberTypeName = Utilities.getTypeName(info, mtm, false).toString();
             this.addSemicolon = addSemicolon && mtm.getKind() == TypeKind.VOID;
             this.modifiers = memberElem.getModifiers();
-            if (!memberElem.getKind().isField()) {
+            if (!memberElem.getKind().isField() && !multipleVersions) {
                 this.params = new ArrayList<ParamDesc>();
                 Iterator<? extends VariableElement> it = ((ExecutableElement)memberElem).getParameters().iterator();
                 Iterator<? extends TypeMirror> tIt = ((ExecutableType)memberType).getParameterTypes().iterator();
@@ -2931,25 +2931,29 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return (params == null ? 700 : 750) - SMART_TYPE;
+            return (getElementHandle().getKind().isField() ? 700 : 750) - SMART_TYPE;
         }
 
         @Override
         public CharSequence getSortText() {
             if (sortText == null) {
-                if (params == null) {
+                if (getElementHandle().getKind().isField()) {
                     sortText = memberName + "#" + typeName; //NOI18N
                 } else {
                     StringBuilder sortParams = new StringBuilder();
                     sortParams.append('(');
                     int cnt = 0;
-                    for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
-                        ParamDesc paramDesc = it.next();
-                        sortParams.append(paramDesc.typeName);
-                        if (it.hasNext()) {
-                            sortParams.append(',');
+                    if (params == null) {
+                        sortParams.append("..."); //NOI18N
+                    } else {
+                        for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                            ParamDesc paramDesc = it.next();
+                            sortParams.append(paramDesc.typeName);
+                            if (it.hasNext()) {
+                                sortParams.append(',');
+                            }
+                            cnt++;
                         }
-                        cnt++;
                     }
                     sortParams.append(')');
                     sortText = memberName + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString() + "#" + typeName; //NOI18N
@@ -2988,17 +2992,21 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     lText.append(STRIKE_END);
                 }
                 lText.append(COLOR_END);
-                if (params != null) {
+                if (!getElementHandle().getKind().isField()) {
                     lText.append('(');
-                    for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
-                        ParamDesc paramDesc = it.next();
-                        lText.append(escape(paramDesc.typeName));
-                        lText.append(' '); //NOI18N
-                        lText.append(PARAMETER_NAME_COLOR);
-                        lText.append(paramDesc.name);
-                        lText.append(COLOR_END);
-                        if (it.hasNext()) {
-                            lText.append(", "); //NOI18N
+                    if (params == null) {
+                        lText.append("..."); //NOI18N
+                    } else {
+                        for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                            ParamDesc paramDesc = it.next();
+                            lText.append(escape(paramDesc.typeName));
+                            lText.append(' '); //NOI18N
+                            lText.append(PARAMETER_NAME_COLOR);
+                            lText.append(paramDesc.name);
+                            lText.append(COLOR_END);
+                            if (it.hasNext()) {
+                                lText.append(", "); //NOI18N
+                            }
                         }
                     }
                     lText.append(')');
@@ -3066,6 +3074,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
+            super.substituteText(c, offset, length, null, null);
             final BaseDocument doc = (BaseDocument)c.getDocument();
             final StringBuilder template = new StringBuilder();
             final AtomicBoolean cancel = new AtomicBoolean();
@@ -3073,83 +3082,94 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 @Override
                 public void run() {
                     try {
-                        ParserManager.parse(Collections.singletonList(Source.create(doc)), new UserTask() {
+                         ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
                             @Override
                             public void run(ResultIterator resultIterator) throws Exception {
                                 if (cancel.get()) {
                                     return;
                                 }
-                                final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
-                                controller.toPhase(Phase.RESOLVED);
+                                final WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult(offset));
+                                copy.toPhase(Phase.RESOLVED);
                                 if (cancel.get()) {
                                     return;
                                 }
-                                DeclaredType type = typeHandle.resolve(controller);
-                                int cnt = 1;
-                                template.append("${PAR#"); //NOI18N
-                                template.append(cnt++);
-                                template.append(" type=\""); //NOI18N
-                                template.append(((TypeElement)type.asElement()).getQualifiedName());
-                                template.append("\" default=\""); //NOI18N
-                                template.append(((TypeElement)type.asElement()).getSimpleName());
-                                template.append("\" editable=false}"); //NOI18N
-                                Iterator<? extends TypeMirror> tas = type.getTypeArguments().iterator();
-                                if (tas.hasNext()) {
-                                    template.append('<'); //NOI18N
-                                    while (tas.hasNext()) {
-                                        TypeMirror ta = tas.next();
-                                        template.append("${PAR#"); //NOI18N
-                                        template.append(cnt++);
-                                        if (ta.getKind() == TypeKind.TYPEVAR) {
-                                            template.append(" type=\""); //NOI18N
-                                            ta = ((TypeVariable)ta).getUpperBound();
-                                            template.append(Utilities.getTypeName(controller, ta, true));
-                                            template.append("\" default=\""); //NOI18N
-                                            template.append(Utilities.getTypeName(controller, ta, false));
-                                            template.append("\"}"); //NOI18N
-                                        } else if (ta.getKind() == TypeKind.WILDCARD) {
-                                            template.append(" type=\""); //NOI18N
-                                            TypeMirror bound = ((WildcardType)ta).getExtendsBound();
-                                            if (bound == null) {
-                                                bound = ((WildcardType)ta).getSuperBound();
-                                            }
-                                            template.append(bound != null ? Utilities.getTypeName(controller, bound, true) : "Object"); //NOI18N
-                                            template.append("\" default=\""); //NOI18N
-                                            template.append(bound != null ? Utilities.getTypeName(controller, bound, false) : "Object"); //NOI18N
-                                            template.append("\"}"); //NOI18N
-                                        } else if (ta.getKind() == TypeKind.ERROR) {
-                                            template.append(" default=\""); //NOI18N
-                                            template.append(((ErrorType)ta).asElement().getSimpleName());
-                                            template.append("\"}"); //NOI18N
-                                        } else {
-                                            template.append(" type=\""); //NOI18N
-                                            template.append(Utilities.getTypeName(controller, ta, true));
-                                            template.append("\" default=\""); //NOI18N
-                                            template.append(Utilities.getTypeName(controller, ta, false));
-                                            template.append("\" editable=false}"); //NOI18N
-                                        }
-                                        if (tas.hasNext()) {
-                                            template.append(", "); //NOI18N
-                                        }
+                                if (CodeStyle.getDefault(doc).preferStaticImports()) {
+                                    Element e = getElementHandle().resolve(copy);
+                                    if (e != null) {
+                                        copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(copy.getCompilationUnit(), Collections.singleton(e)));
                                     }
-                                    template.append('>'); //NOI18N
-                                }
-                                template.append('.'); //NOI18N
-                                template.append(memberName);
-                                if (params != null) {
-                                    boolean guessArgs = Utilities.guessMethodArguments();
-                                    template.append("("); //NOI18N
-                                    for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
-                                        ParamDesc paramDesc = it.next();
-                                        template.append("${"); //NOI18N
-                                        template.append(paramDesc.name);
-                                        if (guessArgs) {
-                                            template.append(" named instanceof="); //NOI18N
-                                            template.append(paramDesc.fullTypeName);
+                                } else {
+                                    DeclaredType type = typeHandle.resolve(copy);
+                                    int cnt = 1;
+                                    template.append("${PAR#"); //NOI18N
+                                    template.append(cnt++);
+                                    template.append(" type=\""); //NOI18N
+                                    template.append(((TypeElement)type.asElement()).getQualifiedName());
+                                    template.append("\" default=\""); //NOI18N
+                                    template.append(((TypeElement)type.asElement()).getSimpleName());
+                                    template.append("\" editable=false}"); //NOI18N
+                                    Iterator<? extends TypeMirror> tas = type.getTypeArguments().iterator();
+                                    if (tas.hasNext()) {
+                                        template.append('<'); //NOI18N
+                                        while (tas.hasNext()) {
+                                            TypeMirror ta = tas.next();
+                                            template.append("${PAR#"); //NOI18N
+                                            template.append(cnt++);
+                                            if (ta.getKind() == TypeKind.TYPEVAR) {
+                                                template.append(" type=\""); //NOI18N
+                                                ta = ((TypeVariable)ta).getUpperBound();
+                                                template.append(Utilities.getTypeName(copy, ta, true));
+                                                template.append("\" default=\""); //NOI18N
+                                                template.append(Utilities.getTypeName(copy, ta, false));
+                                                template.append("\"}"); //NOI18N
+                                            } else if (ta.getKind() == TypeKind.WILDCARD) {
+                                                template.append(" type=\""); //NOI18N
+                                                TypeMirror bound = ((WildcardType)ta).getExtendsBound();
+                                                if (bound == null) {
+                                                    bound = ((WildcardType)ta).getSuperBound();
+                                                }
+                                                template.append(bound != null ? Utilities.getTypeName(copy, bound, true) : "Object"); //NOI18N
+                                                template.append("\" default=\""); //NOI18N
+                                                template.append(bound != null ? Utilities.getTypeName(copy, bound, false) : "Object"); //NOI18N
+                                                template.append("\"}"); //NOI18N
+                                            } else if (ta.getKind() == TypeKind.ERROR) {
+                                                template.append(" default=\""); //NOI18N
+                                                template.append(((ErrorType)ta).asElement().getSimpleName());
+                                                template.append("\"}"); //NOI18N
+                                            } else {
+                                                template.append(" type=\""); //NOI18N
+                                                template.append(Utilities.getTypeName(copy, ta, true));
+                                                template.append("\" default=\""); //NOI18N
+                                                template.append(Utilities.getTypeName(copy, ta, false));
+                                                template.append("\" editable=false}"); //NOI18N
+                                            }
+                                            if (tas.hasNext()) {
+                                                template.append(", "); //NOI18N
+                                            }
                                         }
-                                        template.append("}"); //NOI18N
-                                        if (it.hasNext()) {
-                                            template.append(", "); //NOI18N
+                                        template.append('>'); //NOI18N
+                                    }
+                                    template.append('.'); //NOI18N
+                                }
+                                template.append(memberName);
+                                if (!getElementHandle().getKind().isField()) {
+                                    template.append("("); //NOI18N
+                                    if (params == null) {
+                                        template.append("${cursor completionInvoke}"); // NOI18N
+                                    } else {
+                                        boolean guessArgs = Utilities.guessMethodArguments();
+                                        for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                                            ParamDesc paramDesc = it.next();
+                                            template.append("${"); //NOI18N
+                                            template.append(paramDesc.name);
+                                            if (guessArgs) {
+                                                template.append(" named instanceof="); //NOI18N
+                                                template.append(paramDesc.fullTypeName);
+                                            }
+                                            template.append("}"); //NOI18N
+                                            if (it.hasNext()) {
+                                                template.append(", "); //NOI18N
+                                            }
                                         }
                                     }
                                     template.append(")");//NOI18N
@@ -3158,12 +3178,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     template.append(toAdd);
                                 }
                             }
-                        });
-                    } catch (ParseException pe) {
+                        }).commit();
+                    } catch (Exception ex) {
                     }
                 }
             }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-import_resolve"), cancel, false); //NOI18N
-            super.substituteText(c, offset, length, null, null);
             return template;
         }
 
@@ -3179,15 +3198,19 @@ public abstract class JavaCompletionItem implements CompletionItem {
             sb.append(typeName);
             sb.append('.');
             sb.append(memberName);
-            if (params != null) {
+            if (!getElementHandle().getKind().isField()) {
                 sb.append('('); //NOI18N
-                for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
-                    ParamDesc paramDesc = it.next();
-                    sb.append(paramDesc.typeName);
-                    sb.append(' ');
-                    sb.append(paramDesc.name);
-                    if (it.hasNext()) {
-                        sb.append(", "); //NOI18N
+                if (params == null) {
+                    sb.append("..."); //NOI18N
+                } else {
+                    for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                        ParamDesc paramDesc = it.next();
+                        sb.append(paramDesc.typeName);
+                        sb.append(' ');
+                        sb.append(paramDesc.name);
+                        if (it.hasNext()) {
+                            sb.append(", "); //NOI18N
+                        }
                     }
                 }
                 sb.append(')');

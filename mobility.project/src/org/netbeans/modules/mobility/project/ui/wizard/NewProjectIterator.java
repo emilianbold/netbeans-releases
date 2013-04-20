@@ -156,6 +156,7 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
         templateWizard.putProperty(Utils.IS_LIBRARY, !create);
         templateWizard.putProperty(Utils.IS_EMBEDDED, embedded);
         final DataObject dao = templateWizard.getTemplate();
+        templateWizard.putProperty(ProjectPanel.PROJECT_LOCATION, null);
         templateWizard.putProperty(ProjectPanel.PROJECT_NAME, dao != null ? dao.getPrimaryFile().getName()+'1' : null);
         currentIndex = 0;
         updateStepsList();

@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.editor.java;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.event.KeyEvent;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -51,7 +54,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
-import javax.swing.ImageIcon;
 import javax.swing.text.JTextComponent;
 
 import com.sun.source.tree.Scope;
@@ -59,21 +61,15 @@ import com.sun.source.util.Trees;
 
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.ReferencesCount;
-import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.LazyCompletionItem;
-import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -81,25 +77,21 @@ import org.openide.util.NbBundle;
  */
 public class LazyStaticMemberCompletionItem extends JavaCompletionItem.WhiteListJavaCompletionItem<TypeElement> implements LazyCompletionItem {
 
-    private static final String LOCAL_VARIABLE = "org/netbeans/modules/editor/resources/completion/localVariable.gif"; //NOI18N
-    private static final String PARAMETER_COLOR = "<font color=#00007c>"; //NOI18N
-    private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
-    private static ImageIcon icon;
-
-    public static final LazyStaticMemberCompletionItem create(ElementHandle<TypeElement> handle, String name, int substitutionOffset, ReferencesCount referencesCount, Source source, WhiteListQuery.WhiteList whiteList) {
-        return new LazyStaticMemberCompletionItem(handle, name, substitutionOffset, referencesCount, source, whiteList);
+    public static final LazyStaticMemberCompletionItem create(ElementHandle<TypeElement> handle, String name, int substitutionOffset, boolean addSemicolon, ReferencesCount referencesCount, Source source, WhiteListQuery.WhiteList whiteList) {
+        return new LazyStaticMemberCompletionItem(handle, name, substitutionOffset, addSemicolon, referencesCount, source, whiteList);
     }
 
     private Source source;
+    private boolean addSemicolon;
     private String name;
     private CharSequence sortText;
-    private String leftText;
-    private ElementHandle<Element> memberHandle;
+    private StaticMemberItem delegate = null;
 
-    private LazyStaticMemberCompletionItem(ElementHandle<TypeElement> handle, String name, int substitutionOffset, ReferencesCount referencesCount, Source source, WhiteListQuery.WhiteList whiteList) {
+    private LazyStaticMemberCompletionItem(ElementHandle<TypeElement> handle, String name, int substitutionOffset, boolean addSemicolon, ReferencesCount referencesCount, Source source, WhiteListQuery.WhiteList whiteList) {
         super(substitutionOffset, handle, whiteList);
         this.name = name;
         this.sortText = new LazySortText(this.name, handle.getQualifiedName(), handle, referencesCount);
+        this.addSemicolon = addSemicolon;
         this.source = source;
     }
 
@@ -118,16 +110,24 @@ public class LazyStaticMemberCompletionItem extends JavaCompletionItem.WhiteList
                         Scope scope = controller.getTrees().getScope(controller.getTreeUtilities().pathFor(substitutionOffset));
                         TypeElement te = getElementHandle().resolve(controller);
                         if (te != null) {
+                            Element element = null;
+                            boolean multiVersion = false;
                             for (Element e : te.getEnclosedElements()) {
                                 if ((e.getKind().isField() || e.getKind() == ElementKind.METHOD)
                                         && name.contentEquals(Utilities.isCaseSensitive() ? e.getSimpleName() : e.getSimpleName().toString().toLowerCase())
                                         && e.getModifiers().contains(Modifier.STATIC)
                                         && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))
                                         && trees.isAccessible(scope, e, (DeclaredType) te.asType())) {
-                                    memberHandle = ElementHandle.create(e);
-                                    name = e.getSimpleName().toString();
-                                    break;
+                                    if (element != null) {
+                                        multiVersion = true;
+                                        break;
+                                    }
+                                    element = e;
                                 }
+                            }
+                            if (element != null) {
+                                delegate = (StaticMemberItem) createStaticMemberItem(controller, (DeclaredType)te.asType(), element, element.asType(), multiVersion, substitutionOffset, elements.isDeprecated(element), addSemicolon, getWhiteList());
+                                name = element.getSimpleName().toString();
                             }
                         }
                     }
@@ -135,7 +135,46 @@ public class LazyStaticMemberCompletionItem extends JavaCompletionItem.WhiteList
             } catch (Throwable t) {
             }
         }
-        return memberHandle != null;
+        return delegate != null;
+    }
+
+    @Override
+    public void defaultAction(JTextComponent component) {
+        if (delegate != null)
+            delegate.defaultAction(component);
+    }
+
+    @Override
+    public void processKeyEvent(KeyEvent evt) {
+        if (delegate != null)
+            delegate.processKeyEvent(evt);
+    }
+
+    @Override
+    public int getPreferredWidth(Graphics g, Font defaultFont) {
+        if (delegate != null)
+            return delegate.getPreferredWidth(g, defaultFont);
+        return 0;
+    }
+
+    @Override
+    public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
+        if (delegate != null)
+            delegate.render(g, defaultFont, defaultColor, backgroundColor, width, height, selected);
+    }
+
+    @Override
+    public CompletionTask createDocumentationTask() {
+        if (delegate != null)
+            return delegate.createDocumentationTask();
+        return null;
+    }
+
+    @Override
+    public CompletionTask createToolTipTask() {
+        if (delegate != null)
+            return delegate.createToolTipTask();
+        return null;
     }
 
     @Override
@@ -151,65 +190,5 @@ public class LazyStaticMemberCompletionItem extends JavaCompletionItem.WhiteList
     @Override
     public CharSequence getInsertPrefix() {
         return name;
-    }
-
-    @Override
-    protected String getLeftHtmlText() {
-        if (leftText == null) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(PARAMETER_COLOR).append(BOLD);
-            sb.append(name);
-            sb.append(BOLD_END).append(COLOR_END).append(PKG_COLOR);
-            sb.append(" ("); //NOI18N
-            sb.append(getElementHandle().getQualifiedName());
-            sb.append(")"); //NOI18N
-            sb.append(COLOR_END);
-            leftText = sb.toString();
-        }
-        return leftText;
-    }
-
-    @Override
-    protected ImageIcon getBaseIcon() {
-        if (icon == null) {
-            icon = ImageUtilities.loadImageIcon(LOCAL_VARIABLE, false);
-        }
-        return icon;
-    }
-
-    @Override
-    protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
-        CharSequence cs = super.substituteText(c, offset, length, text, toAdd);
-        final AtomicBoolean cancel = new AtomicBoolean();
-        ProgressUtils.runOffEventDispatchThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    ModificationResult.runModificationTask(Collections.singletonList(Source.create(c.getDocument())), new UserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            if (cancel.get()) {
-                                return;
-                            }
-                            final WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult(offset));
-                            copy.toPhase(JavaSource.Phase.RESOLVED);
-                            if (cancel.get()) {
-                                return;
-                            }
-                            Element e = memberHandle.resolve(copy);
-                            if (e != null) {
-                                copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(copy.getCompilationUnit(), Collections.singleton(e)));
-                            }
-                        }
-                    }).commit();
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }, NbBundle.getMessage(LazyStaticMemberCompletionItem.class, "JCI-import_resolve"), cancel, false); //NOI18N
-        if (cs == null) {
-            cs = "${cursor completionInvoke}"; //NOI18N
-        }
-        return cs;
     }
 }

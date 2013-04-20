@@ -914,6 +914,14 @@ public final class CodeStyle {
     }
 
     /**
+     * Returns whether to create static imports for the static class members.
+     * @since 0.121
+     */
+    public boolean preferStaticImports() {
+        return preferences.getBoolean(preferStaticImports, getDefaultAsBoolean(preferStaticImports));
+    }
+
+    /**
      * Returns the number of classes that have to be imported from a package
      * to convert the single class imports to a 'star' import of the entire package.
      */
