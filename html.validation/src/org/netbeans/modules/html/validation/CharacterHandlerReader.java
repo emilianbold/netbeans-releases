@@ -42,7 +42,7 @@
 package org.netbeans.modules.html.validation;
 
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.Reader;
 import java.nio.CharBuffer;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,13 +53,15 @@ import org.xml.sax.SAXException;
  *
  * @author marekfukala
  */
-public class CharacterHandlerReader extends StringReader {
+public class CharacterHandlerReader extends Reader {
 
-    private List<CharacterHandler> handlers = new LinkedList<CharacterHandler>();
+    private List<CharacterHandler> handlers = new LinkedList<>();
     private boolean reading = false;
+    
+    private Reader reader;
 
-    public CharacterHandlerReader(String s) {
-        super(s);
+    public CharacterHandlerReader(Reader reader) {
+        this.reader = reader;
     }
 
     public void addCharacterHandler(CharacterHandler handler) {
@@ -72,14 +74,14 @@ public class CharacterHandlerReader extends StringReader {
 
     @Override
     public void mark(int readAheadLimit) throws IOException {
-        super.mark(readAheadLimit);
+        reader.mark(readAheadLimit);
     }
 
     @Override
     public int read() throws IOException {
         reading();
 
-        int read = super.read();
+        int read = reader.read();
         characters(new char[]{(char) read}, 0, 1);
         return read;
     }
@@ -88,19 +90,19 @@ public class CharacterHandlerReader extends StringReader {
     public int read(char[] cbuf, int off, int len) throws IOException {
         reading();
 
-        int read = super.read(cbuf, off, len);
+        int read = reader.read(cbuf, off, len);
         characters(cbuf, off, len);
         return read;
     }
 
     @Override
     public void reset() throws IOException {
-        super.reset();
+        reader.reset();
     }
 
     @Override
     public long skip(long ns) throws IOException {
-        return super.skip(ns);
+        return reader.skip(ns);
     }
 
     //implementation copied from the StringReader
@@ -124,8 +126,8 @@ public class CharacterHandlerReader extends StringReader {
     }
 
     @Override
-    public void close() {
-        super.close();
+    public void close() throws IOException {
+        reader.close();
         end();
     }
 

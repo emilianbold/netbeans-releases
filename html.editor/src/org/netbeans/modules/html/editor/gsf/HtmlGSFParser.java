@@ -52,7 +52,9 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
-import org.netbeans.modules.html.editor.lib.api.UndeclaredContentResolver;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Named;
+import org.netbeans.modules.html.editor.lib.api.foreign.UndeclaredContentResolver;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
@@ -66,7 +68,7 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
  */
 public class HtmlGSFParser extends Parser {
 
-    private static class AggregatedUndeclaredContentResolver extends UndeclaredContentResolver {
+    private static class AggregatedUndeclaredContentResolver implements UndeclaredContentResolver {
 
         private Collection<UndeclaredContentResolver> resolvers;
 
@@ -76,12 +78,34 @@ public class HtmlGSFParser extends Parser {
 
         @Override
         public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
-            Map<String, List<String>> aggregated = new HashMap<String, List<String>>();
+            Map<String, List<String>> aggregated = new HashMap<>();
             for (UndeclaredContentResolver resolver : resolvers) {
                 aggregated.putAll(resolver.getUndeclaredNamespaces(source));
             }
             return aggregated;
         }
+
+        @Override
+        public boolean isCustomTag(Named element) {
+            for(UndeclaredContentResolver r : resolvers) {
+                if(r.isCustomTag(element)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean isCustomAttribute(Attribute attr) {
+            for(UndeclaredContentResolver r : resolvers) {
+                if(r.isCustomAttribute(attr)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        
     }
     private HtmlParserResult lastResult;
 
@@ -129,12 +153,26 @@ public class HtmlGSFParser extends Parser {
         String sourceMimetype = snapshotSource != null ? snapshotSource.getMimeType() : snapshot.getMimeType(); //prefer source mimetype
         
         Collection<? extends HtmlExtension> exts = HtmlExtensions.getRegisteredExtensions(sourceMimetype);
-        Collection<UndeclaredContentResolver> resolvers = new ArrayList<UndeclaredContentResolver>();
-        for (HtmlExtension ex : exts) {
-            UndeclaredContentResolver resolver = ex.getUndeclaredContentResolver();
-            if (resolver != null) {
-                resolvers.add(resolver);
-            }
+        Collection<UndeclaredContentResolver> resolvers = new ArrayList<>();
+        for (final HtmlExtension ex : exts) {
+            resolvers.add(new UndeclaredContentResolver() {
+
+                @Override
+                public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
+                    return ex.getUndeclaredNamespaces(source); 
+                }
+
+                @Override
+                public boolean isCustomTag(Named element) {
+                    return ex.isCustomTag(element);
+                }
+
+                @Override
+                public boolean isCustomAttribute(Attribute attribute) {
+                    return ex.isCustomAttribute(attribute);
+                }
+                
+            });
         }
 
         SyntaxAnalyzerResult spresult = SyntaxAnalyzer.create(source).analyze(new AggregatedUndeclaredContentResolver(resolvers));

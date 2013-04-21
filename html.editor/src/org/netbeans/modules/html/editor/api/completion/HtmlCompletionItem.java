@@ -60,7 +60,6 @@ import org.netbeans.spi.editor.completion.*;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
-import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
@@ -71,8 +70,6 @@ import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
-import org.openide.explorer.propertysheet.PropertySheet;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.xml.XMLUtil;
 
@@ -624,11 +621,17 @@ public class HtmlCompletionItem implements CompletionItem {
         private boolean required;
         private boolean autocompleteQuotes;
         private HtmlTagAttribute attr;
-        protected static final String ATTR_NAME_COLOR = hexColorCode(Color.green.darker());
+        private final String ATTR_NAME_COLOR = hexColorCode(getAttributeColor());
 
         public Attribute(HtmlTagAttribute attr, String value, int offset, boolean required, String helpId) {
-            super(attr.getHelp(), value, offset, helpId);
+            super(attr != null ? attr.getHelp() : null, value, offset, helpId);
             this.attr = attr;
+            this.required = required;
+            this.autocompleteQuotes = HtmlPreferences.autocompleteQuotesAfterEqualSign();
+        }
+        
+        public Attribute(String value, int offset, boolean required, HelpItem helpItem) {
+            super(helpItem, value, offset, null);
             this.required = required;
             this.autocompleteQuotes = HtmlPreferences.autocompleteQuotesAfterEqualSign();
         }
@@ -638,7 +641,26 @@ public class HtmlCompletionItem implements CompletionItem {
             this.required = required;
             this.autocompleteQuotes = HtmlPreferences.autocompleteQuotesAfterEqualSign();
         }
+        
+        /**
+         * @since 2.18
+         * 
+         * @param value
+         * @param offset
+         * @param required
+         * @param helpId
+         * @param autoCompleteValue S
+         */
+        public Attribute(String value, int offset, boolean required, String helpId, boolean autoCompleteValue) {
+            super(value, offset, helpId);
+            this.required = required;
+            this.autocompleteQuotes = autoCompleteValue && HtmlPreferences.autocompleteQuotesAfterEqualSign();
+        }
 
+        protected Color getAttributeColor() {
+            return Color.green.darker();
+        }
+        
         @Override
         protected String getSubstituteText() {
             return getItemText() + (autocompleteQuotes ? "=\"\"" : ""); //NOI18N

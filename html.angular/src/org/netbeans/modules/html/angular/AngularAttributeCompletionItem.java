@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.angular;
 
-package org.netbeans.modules.html.editor.lib.api.validation;
-
-import java.io.Reader;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
-import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
-import org.openide.filesystems.FileObject;
+import java.awt.Color;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
+import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 
 /**
  *
- * Possible features: filter.foreign.namespaces
- *
  * @author marekfukala
  */
-public final class ValidationContext {
+public class AngularAttributeCompletionItem extends HtmlCompletionItem.Attribute {
 
-    private Reader source;
-    private FileObject file;
-    private HtmlVersion version;
-    private SyntaxAnalyzerResult result;
-    private Map<String, Boolean> features = new HashMap<>();
-
-    public ValidationContext(Reader source, HtmlVersion version, FileObject file, SyntaxAnalyzerResult result) {
-        this.source = source;
-        this.file = file;
-        this.version = version;
-        this.result = result;
+    private boolean isInAngularPage;
+    
+//    public AngularAttributeCompletionItem(String value, int offset, boolean required, String helpId, boolean autoCompleteValue, boolean isInAngularPage) {
+    public AngularAttributeCompletionItem(CustomAttribute ca, int offset, boolean isInAngularPage) {
+        super(ca.getName(), offset, ca.isValueRequired(), ca.getHelp());
+        this.isInAngularPage = isInAngularPage;
     }
 
-    public FileObject getFile() {
-        return file;
+    @Override
+    protected ImageIcon getIcon() {
+        return Constants.ANGULAR_ICON;
     }
 
-    public Reader getSourceReader() {
-        return source;
+    @Override
+    protected Color getAttributeColor() {
+        return Constants.ANGULAR_COLOR;
     }
 
-    public HtmlVersion getVersion() {
-        return version;
+    //move the angular results to the top of the completion list if the page
+    //already contains angular stuff
+    @Override
+    public int getSortPriority() {
+        return super.getSortPriority() - (isInAngularPage ? 10 : 0);
     }
 
-    public SyntaxAnalyzerResult getSyntaxAnalyzerResult() {
-        return result;
+    @Override
+    public boolean hasHelp() {
+        return true;
     }
-
-    public boolean isFeatureEnabled(String featureName) {
-        Boolean val = features != null ? features.get(featureName) : null;
-        return val != null ? val : false;
-    }
-
-    public void enableFeature(String featureName, boolean enabled) {
-        features.put(featureName, enabled);
-    }
-
+    
 }

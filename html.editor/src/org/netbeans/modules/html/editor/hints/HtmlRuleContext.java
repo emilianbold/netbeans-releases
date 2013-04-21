@@ -81,9 +81,9 @@ public class HtmlRuleContext {
         this.parserResult = parserResult;
         this.syntaxAnalyzerResult = syntaxAnalyzerResult;
         this.defaultFixes = defaultFixes;
-        this.leftDiagnostics = new ArrayList<Error>(parserResult.getDiagnostics(EnumSet.allOf(Severity.class)));
+        this.leftDiagnostics = new ArrayList<>(parserResult.getDiagnostics(EnumSet.allOf(Severity.class)));
         this.lines = new Lines(parserResult.getSnapshot().getText());
-        this.linesWithHints = new HashSet<Integer>();
+        this.linesWithHints = new HashSet<>();
     }
 
     public boolean isFirstHintForPosition(int offset) {
@@ -138,9 +138,9 @@ public class HtmlRuleContext {
     
     public synchronized DependenciesGraph getCssDependenciesGraph() throws IOException {
         if(cssDependencies == null) {
-            CssIndex cssIndex = getCssIndex();
-            if(cssIndex != null) {
-                cssDependencies = cssIndex.getDependencies(getFile());
+            CssIndex index = getCssIndex();
+            if(index != null) {
+                cssDependencies = index.getDependencies(getFile());
             }
         }
         return cssDependencies;
