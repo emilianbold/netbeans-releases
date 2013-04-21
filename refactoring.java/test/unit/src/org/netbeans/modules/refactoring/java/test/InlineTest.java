@@ -66,6 +66,35 @@ public class InlineTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test228769() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "     public String concat(String a, String b) {\n"
+                + "        return a+\":\"+b;\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethodB(A a) {\n"
+                + "        a.concat(\"1\", a.concat(\"2\", \"3\"));\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r, new Problem(false, "WRN_InlineChangeReturn"));
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethodB(A a) {\n"
+                + "        ;\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void test228771() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

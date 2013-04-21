@@ -219,7 +219,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
 
             Tree parent = methodInvocationPath.getParentPath().getLeaf();
             Tree grandparent = null;
-            final Tree methodInvocation;
+            Tree methodInvocation;
 
             if (parent.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
                 methodInvocation = node;
@@ -272,6 +272,38 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     addedStatementsForBlock.put(statementTree, stats = new LinkedList<>());
                 }
                 stats.addAll(newStatementList);
+                /*
+                 * Assignment
+                 * PreIncrementExpression
+                 * PreDecrementExpression
+                 * PostIncrementExpression
+                 * PostDecrementExpression
+                 * MethodInvocation
+                 * ClassInstanceCreationExpression
+                 */
+                if (parent.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
+                    switch (lastStatement.getKind()) {
+                        case ASSIGNMENT:
+                        case PREFIX_INCREMENT:
+                        case PREFIX_DECREMENT:
+                        case POSTFIX_DECREMENT:
+                        case POSTFIX_INCREMENT:
+                        case METHOD_INVOCATION:
+                        case NEW_CLASS:
+                        case NEW_ARRAY:
+                            break;
+                        default:
+                            lastStatement = make.EmptyStatement();
+                            methodInvocation = parent;
+                            SourcePositions positions = workingCopy.getTrees().getSourcePositions();
+                            long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
+                            long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
+                            String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
+                            problem = JavaPluginUtils.chainProblems(problem,
+                                      new Problem(false, NbBundle.getMessage(InlineMethodTransformer.class, "WRN_InlineChangeReturn", source)));
+                            break;
+                    }
+                }
                 translateMap.put(methodInvocation, lastStatement);
             }
         }
