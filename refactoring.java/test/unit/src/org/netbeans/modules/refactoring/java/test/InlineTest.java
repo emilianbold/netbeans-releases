@@ -66,6 +66,41 @@ public class InlineTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test228771() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public String getName(int x, int y) {\n"
+                + "        int local = 1;\n"
+                + "        System.out.println(\"method called\");\n"
+                + "        return \" \"+x;\n"
+                + "    }\n"
+                + "    public void usage() {\n"
+                + "        String name = getName(1, 3);\n"
+                + "        if(Math.random()>1) {\n"
+                + "            name = getName(1, 3);\n"
+                + "        }\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void usage() {\n"
+                + "        int local = 1;\n"
+                + "        System.out.println(\"method called\");\n"
+                + "        String name = \" \" + 1;\n"
+                + "        if(Math.random()>1) {\n"
+                + "            int local1 = 1;\n"
+                + "            System.out.println(\"method called\");\n"
+                + "            name = \" \" + 1;\n"
+                + "        }\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void test228772a() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
