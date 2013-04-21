@@ -1062,6 +1062,7 @@ public class ModelUtils {
                         String name = ((IdentNode)callNode.getFunction()).getName();
                         sb.insert(0, name);
                         sb.insert(0, "@call;"); //NOI18N
+                        sbDeque.offerLast(sb);
                         return stopTraversing();
                     }
                 }
