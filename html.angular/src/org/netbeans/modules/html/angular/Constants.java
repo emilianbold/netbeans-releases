@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.angular;
 
-package org.netbeans.modules.html.editor.lib.api.validation;
-
-import java.io.Reader;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
-import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
-import org.openide.filesystems.FileObject;
+import java.awt.Color;
+import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 
 /**
  *
- * Possible features: filter.foreign.namespaces
- *
  * @author marekfukala
  */
-public final class ValidationContext {
-
-    private Reader source;
-    private FileObject file;
-    private HtmlVersion version;
-    private SyntaxAnalyzerResult result;
-    private Map<String, Boolean> features = new HashMap<>();
-
-    public ValidationContext(Reader source, HtmlVersion version, FileObject file, SyntaxAnalyzerResult result) {
-        this.source = source;
-        this.file = file;
-        this.version = version;
-        this.result = result;
-    }
-
-    public FileObject getFile() {
-        return file;
-    }
-
-    public Reader getSourceReader() {
-        return source;
-    }
-
-    public HtmlVersion getVersion() {
-        return version;
-    }
-
-    public SyntaxAnalyzerResult getSyntaxAnalyzerResult() {
-        return result;
-    }
-
-    public boolean isFeatureEnabled(String featureName) {
-        Boolean val = features != null ? features.get(featureName) : null;
-        return val != null ? val : false;
-    }
-
-    public void enableFeature(String featureName, boolean enabled) {
-        features.put(featureName, enabled);
-    }
-
+public class Constants {
+    
+    public static final ImageIcon ANGULAR_ICON =
+                ImageUtilities.loadImageIcon("org/netbeans/modules/html/angular/resources/AngularJS_icon_16.png", false); // NOI18N
+    
+    public static final Color ANGULAR_COLOR = Color.red.darker();
+    
 }

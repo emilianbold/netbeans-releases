@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.lib.api.foreign;
 
-package org.netbeans.modules.html.editor.lib.api.validation;
-
-import java.io.Reader;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
-import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.html.editor.lib.api.HtmlSource;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Named;
 
 /**
- *
- * Possible features: filter.foreign.namespaces
- *
+ * Allows to resolve undeclared content in html sources.
+ * 
  * @author marekfukala
  */
-public final class ValidationContext {
-
-    private Reader source;
-    private FileObject file;
-    private HtmlVersion version;
-    private SyntaxAnalyzerResult result;
-    private Map<String, Boolean> features = new HashMap<>();
-
-    public ValidationContext(Reader source, HtmlVersion version, FileObject file, SyntaxAnalyzerResult result) {
-        this.source = source;
-        this.file = file;
-        this.version = version;
-        this.result = result;
-    }
-
-    public FileObject getFile() {
-        return file;
-    }
-
-    public Reader getSourceReader() {
-        return source;
-    }
-
-    public HtmlVersion getVersion() {
-        return version;
-    }
-
-    public SyntaxAnalyzerResult getSyntaxAnalyzerResult() {
-        return result;
-    }
-
-    public boolean isFeatureEnabled(String featureName) {
-        Boolean val = features != null ? features.get(featureName) : null;
-        return val != null ? val : false;
-    }
-
-    public void enableFeature(String featureName, boolean enabled) {
-        features.put(featureName, enabled);
-    }
+public interface UndeclaredContentResolver {
+    
+     /**
+     * This method allows to bind some prefixed html source 
+     * elements and attributes to a physically undeclared namespace.
+     * 
+     * @param the html source which is being processed
+     * @return a map of namespace to prefix collection
+     */
+    public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source);
+    
+    /**
+     * Returns true if the given element is a custom tag known to this resolver.
+     * @param element
+     * @return 
+     */
+    public boolean isCustomTag(Named element);
+   
+    /**
+     * Returns true if the given element's attribute is a custom attribute known to this resolver.
+     * 
+     * @param attribute
+     * @return 
+     */
+    public boolean isCustomAttribute(Attribute attribute);
 
 }

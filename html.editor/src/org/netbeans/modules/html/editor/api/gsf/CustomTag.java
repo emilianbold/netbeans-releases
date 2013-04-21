@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.parser;
+package org.netbeans.modules.html.editor.api.gsf;
 
-import java.io.IOException;
+import java.util.Collection;
+import org.netbeans.modules.html.editor.lib.api.HelpItem;
 
 /**
  *
  * @author marekfukala
  */
-public class MaskingChSReader extends SimpleMaskingChSReader {
-
-    private int[] positions;
-    private int[] lens;
-    private int positionIndex;
-
-    public MaskingChSReader(CharSequence immutableCharSequence, int[] positions, int[] lens) {
-        super(immutableCharSequence);
-        this.positions = positions;
-        this.lens = lens;
-    }
-
-    @Override
-    public int read() throws IOException {
-        synchronized (lock) {
-            if (next >= length) {
-                return -1;
-            }
-            
-            if (positions.length > positionIndex) {
-                //some more masked areas found
-                
-                int pos = positions[positionIndex];
-                
-                if (pos <= next) {
-                    //the actual position is after or at the masked area start
-                    int len = lens[positionIndex];
-                    int end = pos + len;
-                    
-                    if (end < next) {
-                        //after end of the masked area
-                        return read();
-                    } else if ( end == next) {
-                        positionIndex++;
-                        //end exclusive
-                        return read();
-                    } else {
-                        //next < end
-                        //inside masked area
-                        next++; //swallow the char
-                        return MASK_CHAR;
-                    }
-                }
-
-            }
-
-            return super.read();
-        }
-    }
-
+public interface CustomTag {
+    
+    public String getName();
+    
+    public HelpItem getHelp();
+    
+    public Collection<CustomAttribute> getAttributes();
+    
 }
