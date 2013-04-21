@@ -111,7 +111,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         FileObject folder = primFile.getParent();
         FileObject[] children = folder.getChildren();
         for (FileObject child: children) {
-            if (!child.isVirtual() && child.getName().equals(newName) && "java".equals(child.getExt())) { // NOI18N
+            if (!child.isVirtual() && child.getName().equalsIgnoreCase(newName) && "java".equalsIgnoreCase(child.getExt())) { // NOI18N
                 result = createProblem(result, true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ClassClash", newName, pkgName)); // NOI18N
                 return result;
             }
