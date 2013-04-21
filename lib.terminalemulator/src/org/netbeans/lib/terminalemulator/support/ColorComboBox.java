@@ -63,7 +63,7 @@ public class ColorComboBox {
     
     public static final String PROP_COLOR = "color"; //NOI18N
     
-    private static Object[] content = new Object[] {
+    private static ColorValue[] content = new ColorValue[] {
 	new ColorValue (Color.BLACK), 
 	new ColorValue (Color.BLUE), 
 	new ColorValue (Color.CYAN), 
@@ -83,8 +83,8 @@ public class ColorComboBox {
     
     
     /** Creates a new instance of ColorChooser */
-    static void init (final JComboBox combo) {
-        combo.setModel (new DefaultComboBoxModel (content));
+    static void init (final JComboBox<ColorValue> combo) {
+        combo.setModel (new DefaultComboBoxModel<> (content));
         combo.setRenderer (new ColorComboBoxRenderer (combo));
         combo.setEditable (true);
         combo.setEditor (new ColorComboBoxRenderer (combo));
@@ -92,8 +92,8 @@ public class ColorComboBox {
         combo.addActionListener (new ComboBoxListener (combo));
     }
     
-    static void setInheritedColor (JComboBox combo, Color color) {
-	Object[] ncontent = new Object [content.length];
+    static void setInheritedColor (JComboBox<ColorValue> combo, Color color) {
+	ColorValue[] ncontent = new ColorValue [content.length];
 	System.arraycopy (content, 0, ncontent, 0, content.length);
         if (color != null)
             ncontent [content.length - 1] = new ColorValue (
@@ -103,10 +103,10 @@ public class ColorComboBox {
             ncontent [content.length - 1] = new ColorValue (
                 loc ("CTL_None_Color"), null                       //NOI18N
             );
-	combo.setModel (new DefaultComboBoxModel (ncontent));
+	combo.setModel (new DefaultComboBoxModel<> (ncontent));
     }
     
-    static void setColor (JComboBox combo, Color color) {
+    static void setColor (JComboBox<ColorValue> combo, Color color) {
         if (color == null) {
             combo.setSelectedIndex (content.length - 1);
         } else {
@@ -114,7 +114,7 @@ public class ColorComboBox {
         }
     }
     
-    static Color getColor (JComboBox combo) {
+    static Color getColor (JComboBox<ColorValue> combo) {
         // The last item is Inherited Color or None
         if (combo.getSelectedIndex() < combo.getItemCount() - 1) {
             return ((ColorValue) combo.getSelectedItem()).color;
@@ -130,14 +130,15 @@ public class ColorComboBox {
     // ..........................................................................
     private static class ComboBoxListener implements ActionListener {
         
-        private JComboBox combo;
+        private JComboBox<ColorValue> combo;
         private Object lastSelection;
         
-        ComboBoxListener(JComboBox combo) {
+        ComboBoxListener(JComboBox<ColorValue> combo) {
             this.combo = combo;
             lastSelection = combo.getSelectedItem();
         }
         
+        @Override
         public void actionPerformed(ActionEvent ev) {
             if (combo.getSelectedItem() == ColorValue.CUSTOM_COLOR) {
                 Color c = JColorChooser.showDialog(

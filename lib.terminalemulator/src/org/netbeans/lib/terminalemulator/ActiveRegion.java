@@ -97,7 +97,7 @@ public class ActiveRegion {
 
     void addChild(ActiveRegion child) {
         if (children == null) {
-            children = new LinkedList<ActiveRegion>();
+            children = new LinkedList<>();
         }
         children.add(child);
     }
@@ -141,11 +141,8 @@ public class ActiveRegion {
         this.begin.row += delta;
         this.end.row += delta;
         if (children != null) {
-            ListIterator iter = children.listIterator();
-            while (iter.hasNext()) {
-                ActiveRegion child = (ActiveRegion) iter.next();
+            for (ActiveRegion child : children)
                 child.relocate(delta);
-            }
         }
     }
 
@@ -160,9 +157,9 @@ public class ActiveRegion {
 
         int nculled = 0;
 
-        ListIterator iter = children.listIterator();
+        ListIterator<ActiveRegion> iter = children.listIterator();
         while (iter.hasNext()) {
-            ActiveRegion child = (ActiveRegion) iter.next();
+            ActiveRegion child = iter.next();
             if (child.begin.row < origin) {
                 iter.remove();
                 nculled++;
@@ -309,10 +306,8 @@ public class ActiveRegion {
     }
 
     private ActiveRegion previous_sibling_of(ActiveRegion child) {
-        ListIterator iter = children.listIterator();
         ActiveRegion previousChild = null;
-        while (iter.hasNext()) {
-            ActiveRegion candidate = (ActiveRegion) iter.next();
+        for (ActiveRegion candidate : children) {
             if (candidate == child) {
                 // bug: iterator is already shifted, so following command
                 // returns again child
@@ -325,11 +320,11 @@ public class ActiveRegion {
     }
 
     private ActiveRegion next_sibling_of(ActiveRegion child) {
-        ListIterator iter = children.listIterator();
+        ListIterator<ActiveRegion> iter = children.listIterator();
         while (iter.hasNext()) {
-            ActiveRegion candidate = (ActiveRegion) iter.next();
+            ActiveRegion candidate = iter.next();
             if (candidate == child) {
-                return (ActiveRegion) (iter.hasNext() ? iter.next() : null);
+                return iter.hasNext() ? iter.next() : null;
             }
         }
         return null;

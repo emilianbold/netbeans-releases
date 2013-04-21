@@ -56,7 +56,7 @@ import java.util.Map;
  */
 final class ColorValue {
 
-    private final static Map<Color, String> colorMap = new HashMap<Color, String>();
+    private final static Map<Color, String> colorMap = new HashMap<>();
     static {
         colorMap.put (Color.BLACK,      loc ("Black"));         //NOI18N
         colorMap.put (Color.BLUE,       loc ("Blue"));          //NOI18N

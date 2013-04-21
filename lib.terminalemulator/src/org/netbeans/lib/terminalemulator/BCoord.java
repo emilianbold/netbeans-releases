@@ -59,7 +59,7 @@ package org.netbeans.lib.terminalemulator;
  * </ul>
  */
 
-final class BCoord implements Comparable {
+final class BCoord implements Comparable<BCoord> {
     public int row;
     public int col;
 
@@ -89,10 +89,12 @@ final class BCoord implements Comparable {
 
     // Overrides of Object:
 
+    @Override
     public Object clone() {
 	return new BCoord(row, col);
     } 
 
+    @Override
     public String toString() {
 	return "(r=" + row + ",c=" + col + ")";	// NOI18N
     } 
@@ -106,19 +108,18 @@ final class BCoord implements Comparable {
      * a &gt= b	=== a.compareTo(b) &gt= 0
      * </pre>
      */
-    public int compareTo(Object o) throws ClassCastException {
-	BCoord target = (BCoord) o;
-
+    @Override
+    public int compareTo(BCoord that) throws ClassCastException {
 	// -1 or negative  -> this < o
 	//  0              -> this == o
 	// +1 or positive  -> this > o
 
-	if (this.row < target.row)
+	if (this.row < that.row)
 	    return -1;
-	else if (this.row > target.row)
+	else if (this.row > that.row)
 	    return +1;
 	else {
-	    return this.col - target.col;
+	    return this.col - that.col;
 	}
     } 
 

@@ -45,7 +45,6 @@ package org.netbeans.lib.terminalemulator.support;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -257,11 +256,11 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         fontSizeLabel = new javax.swing.JLabel();
         fontSizeSpinner = new javax.swing.JSpinner();
         foregroundLabel = new javax.swing.JLabel();
-        foregroundComboBox = new javax.swing.JComboBox();
+        foregroundComboBox = new javax.swing.JComboBox<ColorValue>();
         backgroundLabel = new javax.swing.JLabel();
-        backgroundComboBox = new javax.swing.JComboBox();
+        backgroundComboBox = new javax.swing.JComboBox<ColorValue>();
         selectionLabel = new javax.swing.JLabel();
-        selectionComboBox = new javax.swing.JComboBox();
+        selectionComboBox = new javax.swing.JComboBox<ColorValue>();
         historySizeLabel = new javax.swing.JLabel();
         historySizeSpinner = new javax.swing.JSpinner();
         tabSizeLabel = new javax.swing.JLabel();
@@ -562,28 +561,25 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_restoreActionPerformed
 
     private void fontSizeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_fontSizeSpinnerStateChanged
-        int fontSize = termOptions.getFontSize();
         Object fontSizeObj = fontSizeSpinner.getValue();
         if (fontSizeObj instanceof Integer) {
-            fontSize = ((Integer) fontSizeObj).intValue();
+            int fontSize = ((Integer) fontSizeObj).intValue();
             termOptions.setFontSize(fontSize);
         }
     }//GEN-LAST:event_fontSizeSpinnerStateChanged
 
     private void historySizeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_historySizeSpinnerStateChanged
-        int historySize = termOptions.getHistorySize();
         Object historySizeObj = historySizeSpinner.getValue();
         if (historySizeObj instanceof Integer) {
-            historySize = ((Integer) historySizeObj).intValue();
+            int historySize = ((Integer) historySizeObj).intValue();
             termOptions.setHistorySize(historySize);
         }
 }//GEN-LAST:event_historySizeSpinnerStateChanged
 
     private void tabSizeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tabSizeSpinnerStateChanged
-        int tabSize = termOptions.getTabSize();
         Object tabSizeObj = tabSizeSpinner.getValue();
         if (tabSizeObj instanceof Integer) {
-            tabSize = ((Integer) tabSizeObj).intValue();
+            int tabSize = ((Integer) tabSizeObj).intValue();
             termOptions.setTabSize(tabSize);
         }
 }//GEN-LAST:event_tabSizeSpinnerStateChanged
@@ -663,7 +659,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox backgroundComboBox;
+    private javax.swing.JComboBox<ColorValue> backgroundComboBox;
     private javax.swing.JLabel backgroundLabel;
     private javax.swing.JCheckBox clickToTypeCheckBox;
     private javax.swing.JLabel descriptionLabel;
@@ -672,7 +668,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel fontSizeLabel;
     private javax.swing.JSpinner fontSizeSpinner;
     private javax.swing.JTextField fontText;
-    private javax.swing.JComboBox foregroundComboBox;
+    private javax.swing.JComboBox<ColorValue> foregroundComboBox;
     private javax.swing.JLabel foregroundLabel;
     private javax.swing.JLabel historySizeLabel;
     private javax.swing.JSpinner historySizeSpinner;
@@ -683,7 +679,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JButton restoreButton;
     private javax.swing.JCheckBox scrollOnInputCheckBox;
     private javax.swing.JCheckBox scrollOnOutputCheckBox;
-    private javax.swing.JComboBox selectionComboBox;
+    private javax.swing.JComboBox<ColorValue> selectionComboBox;
     private javax.swing.JLabel selectionLabel;
     private javax.swing.JLabel tabSizeLabel;
     private javax.swing.JSpinner tabSizeSpinner;

@@ -50,10 +50,12 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Point2D;
+import java.io.IOException;
 import java.util.*;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
@@ -607,7 +609,7 @@ public class Term extends JComponent implements Accessible {
             l.sendChars(buf, offset, count);
         }
     }
-    private LinkedList<TermInputListener> input_listeners = new LinkedList<TermInputListener>();
+    private LinkedList<TermInputListener> input_listeners = new LinkedList<>();
 
     /**
      * Set/unset misc listener.
@@ -643,7 +645,7 @@ public class Term extends JComponent implements Accessible {
             l.sizeChanged(cells, pixels);
         }
     }
-    private LinkedList<TermListener> listeners = new LinkedList<TermListener>();
+    private LinkedList<TermListener> listeners = new LinkedList<>();
 
     /**
      * Set/unset focus policy.
@@ -788,7 +790,7 @@ public class Term extends JComponent implements Accessible {
      * KeyStroke.getKeyStroke(new Character((char)('T'-64)), Event.CTRL_MASK)
      * </pre>
      */
-    public HashSet getKeyStrokeSet() {
+    public HashSet<KeyStroke> getKeyStrokeSet() {
         return keystroke_set;
     }
 
@@ -798,20 +800,18 @@ public class Term extends JComponent implements Accessible {
      * While Term has a KeyStroke set set up by default, often many Terms
      * share the same keystroke. This method allows this sharing.
      */
-    public void setKeyStrokeSet(HashSet keystroke_set) {
+    public void setKeyStrokeSet(HashSet<KeyStroke> keystroke_set) {
         this.keystroke_set = keystroke_set;
 
 	if (debugKeypass()) {
 	    System.out.println("---- setKeyStrokeSet --------------------");//NOI18N
-	    java.util.Iterator i = keystroke_set.iterator();
-	    while (i.hasNext()) {
-		KeyStroke ks = (KeyStroke) i.next();
-		System.out.println("--- " + ks);	// NOI18N
-	    }
+            for (KeyStroke ks : keystroke_set) {
+                System.out.println("--- " + ks);
+            }
 	}
     }
 
-    private HashSet keystroke_set = new HashSet();
+    private HashSet<KeyStroke> keystroke_set = new HashSet<>();
     // attempted partial fix for IZ 17337
     // 'keystroke_set' is a collection of KeyStrokes in the form:
     //	ks3 = getKeyStroke(VK_C, CTRL_MASK)
@@ -2232,7 +2232,7 @@ public class Term extends JComponent implements Accessible {
              */
             char ca[] = string.toCharArray();
             sendChars(ca, 0, ca.length);
-        } catch (Exception e) {
+        } catch (UnsupportedFlavorException | IOException e) {
             //
         }
     }
@@ -4615,21 +4615,18 @@ public class Term extends JComponent implements Accessible {
         System.out.println("but I want "+new_size.height+" "+new_size.width); // NOI18N
          */
 
-        if (false) {
-            // Setting size is a bad idea. the potential for getting into
-            // a looping tug-of-war with our containers' layout manager
-            // is too high and unpredictable. One nasty example we ran
-            // into was JTabbedPane.
-            screen.setSize(new_size);
+        // Setting size is a bad idea. the potential for getting into
+        // a looping tug-of-war with our containers' layout manager
+        // is too high and unpredictable. One nasty example we ran
+        // into was JTabbedPane.
+        // screen.setSize(new_size);
 
-        } else {
-            screen.setPreferredSize(new_size);
+        screen.setPreferredSize(new_size);
 
-            // Do we really need these?
-            invalidate();
-            if (getParent() != null) {
-                getParent().validate();
-            }
+        // Do we really need these?
+        invalidate();
+        if (getParent() != null) {
+            getParent().validate();
         }
 
 
@@ -5872,7 +5869,7 @@ public class Term extends JComponent implements Accessible {
         if (!sequenceLogging)
             return;
         if (completedSequences == null)
-            completedSequences = new HashSet<String>();
+            completedSequences = new HashSet<>();
         completedSequences.add(sequence);
     }
 
@@ -5880,7 +5877,7 @@ public class Term extends JComponent implements Accessible {
         if (!sequenceLogging)
             return;
         if (unrecognizedSequences == null)
-            unrecognizedSequences = new HashSet<String>();
+            unrecognizedSequences = new HashSet<>();
         unrecognizedSequences.add(sequence);
     }
 }
