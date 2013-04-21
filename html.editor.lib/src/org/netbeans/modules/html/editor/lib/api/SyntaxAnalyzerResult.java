@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.html.editor.lib.api;
 
+import org.netbeans.modules.html.editor.lib.api.foreign.UndeclaredContentResolver;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -83,9 +85,12 @@ public class SyntaxAnalyzerResult {
     private UndeclaredContentResolver resolver;
     private HtmlSource source;
     private ElementsParserCache elementsParserCache;
+    private MaskedAreas maskedAreas;
+    
+    private static final UndeclaredContentResolver EMPTY_RESOLVER = new EmptyUndeclaredContentResolver();
 
     SyntaxAnalyzerResult(HtmlSource source) {
-        this(source, null);
+        this(source, EMPTY_RESOLVER);
     }
 
     SyntaxAnalyzerResult(HtmlSource source, UndeclaredContentResolver resolver) {
@@ -207,18 +212,23 @@ public class SyntaxAnalyzerResult {
         return parser;
     }
 
+    @NonNull
+    private Collection<String> getNamespacePrefixes() {
+        HtmlVersion version = getHtmlVersion();
+        return version.getDefaultNamespace() != null
+                ? getAllDeclaredNamespaces().get(version.getDefaultNamespace())
+                : Collections.<String>emptyList();
+
+    }
+
     private HtmlParseResult doParseHtml() throws ParseException {
         log("doParseHtml()...");
-        
+
         long start = System.currentTimeMillis();
         long justParsingStart = 0;
         try {
-            HtmlVersion version = getHtmlVersion();
+            final Collection<String> prefixes = getNamespacePrefixes();
             HtmlParser parser = findParser();
-
-            final Collection<String> prefixes = version.getDefaultNamespace() != null
-                    ? getAllDeclaredNamespaces().get(version.getDefaultNamespace())
-                    : null;
 
             Iterator<Element> original = getElementsIterator();
             final Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
@@ -228,6 +238,10 @@ public class SyntaxAnalyzerResult {
                         case OPEN_TAG:
                         case CLOSE_TAG:
                             Named named = (Named) node;
+                            if (resolver.isCustomTag(named)) {
+                                return false;
+                            }
+
                             CharSequence prefix = named.namespacePrefix();
 
                             if (prefix == null) {
@@ -247,23 +261,6 @@ public class SyntaxAnalyzerResult {
                 }
             });
 
-            MaskedAreas maskedAreas = findMaskedAreas(new TagsFilter() {
-                @Override
-                public boolean accepts(Named tag, CharSequence prefix) {
-                    if (prefix == null) {
-                        return true; //default namespace, should be html in most cases
-                    }
-                    if (prefixes != null) {
-                        if (prefixes.contains(prefix.toString())) {
-                            //the prefix is mapped to the html namespace
-                            return true;
-                        }
-                    }
-
-                    return false;
-                }
-            });
-
             //create a new html source with the cleared areas
             HtmlSource newSource = new HtmlSource(
                     source.getSourceCode(),
@@ -272,10 +269,10 @@ public class SyntaxAnalyzerResult {
 
             //add the syntax elements to the lookup since the old html4 parser needs them
             InstanceContent content = new InstanceContent();
-            
+
             //for html5 parser
-            content.add(maskedAreas);
-            
+            content.add(getMaskedAreas());
+
             //for SimpleXHTMLParser
             content.add(new ElementsIteratorHandle() {
                 @Override
@@ -283,7 +280,7 @@ public class SyntaxAnalyzerResult {
                     return filteredIterator;
                 }
             });
-            
+
             Lookup lookup = new AbstractLookup(content);
 
             justParsingStart = System.currentTimeMillis();
@@ -366,7 +363,7 @@ public class SyntaxAnalyzerResult {
         });
         return new AbstractLookup(ic);
     }
-    
+
     /**
      * Parse the content as a plain xml-like tree. Any validity checks are not
      * done, just the tag elements are transformed to the tree structure.
@@ -447,8 +444,24 @@ public class SyntaxAnalyzerResult {
 
     }
 
-    private MaskedAreas findMaskedAreas(TagsFilter filter) {
+    /**
+     * Gets an instance of {@link MaskedAreas} which represents parts of the
+     * code which should be masked from the default html parser.
+     *
+     * @since 3.13
+     * @return
+     */
+    public synchronized MaskedAreas getMaskedAreas() {
+        if (maskedAreas == null) {
+            maskedAreas = findMaskedAreas();
+        }
+        return maskedAreas;
+    }
+
+    private MaskedAreas findMaskedAreas() {
         log("findMaskedAreas...");
+        ElementContentFilter filter = new ElementContentFilter();
+
         long start = System.currentTimeMillis();
         try {
             //html5 parser:
@@ -459,33 +472,13 @@ public class SyntaxAnalyzerResult {
             //so following content needs to be filtere out:
             //1. xmlns non default declarations <html xmlns:f="http:/...
             //2. the prefixed tags and attributes <f:if ...
+            //3. non prefixed foreign elements and attributes
             List<MaskedArea> ignoredAreas = new ArrayList<>();
 
             Iterator<Element> itr = getElementsIterator();
             while (itr.hasNext()) {
                 Element e = itr.next();
-                if (e.type() == ElementType.OPEN_TAG || e.type() == ElementType.CLOSE_TAG) {
-                    Named tag = (Named) e;
-                    CharSequence tagNamePrefix = tag.namespacePrefix();
-
-                    if (filter.accepts(tag, tagNamePrefix)) {
-                        //check for the xmlns attributes
-                        if (e.type() == ElementType.OPEN_TAG) {
-                            OpenTag ot = (OpenTag) tag;
-                            for (Attribute a : ot.attributes()) {
-                                if (LexerUtils.startsWith(a.name(), "xmlns:", true, false)) { //NOI18N
-                                    CharSequence value = a.value();
-                                    if (value != null) {
-                                        ignoredAreas.add(new MaskedArea(a.nameOffset(), a.valueOffset() + value.length()));
-                                    }
-                                }
-                            }
-                        }
-
-                    } else {
-                        ignoredAreas.add(new MaskedArea(e.from(), e.to()));
-                    }
-                }
+                ignoredAreas.addAll(filter.getMasks(e));
             }
 
             int[] positions = new int[ignoredAreas.size()];
@@ -677,9 +670,69 @@ public class SyntaxAnalyzerResult {
         LOG.log(Level.FINE, new StringBuilder().append("HtmlSource(").append(source.hashCode()).append("):").append(message).toString());
     }
 
-    private static interface TagsFilter {
+    private class ElementContentFilter {
 
-        public boolean accepts(Named tag, CharSequence prefix);
+        private Collection<String> prefixes;
+
+        public ElementContentFilter() {
+            this.prefixes = getNamespacePrefixes();
+        }
+
+        @NonNull
+        public Collection<MaskedArea> getMasks(Element element) {
+            switch (element.type()) {
+                case OPEN_TAG:
+                    OpenTag openTag = (OpenTag) element;
+                    if (shouldBeFiltered(openTag)) {
+                        return Collections.singleton(new MaskedArea(element.from(), element.to()));
+                    } else {
+                        //should not be masked, but still it may contain
+                        //some foreign attributes which needs to be masked
+                            List<MaskedArea> masks = null;
+                            for (Attribute attr : openTag.attributes()) {
+                                String name = attr.unqualifiedName().toString();
+                                //1. check for xmlns prefixed attrs
+                                //2. check for custom attributes
+                                if (LexerUtils.startsWith(name, "xmlns:", true, false)
+                                    || resolver.isCustomAttribute(attr)) {
+                                    if (masks == null) {
+                                        masks = new ArrayList<>();
+                                    }
+                                    masks.add(new MaskedArea(attr.from(), attr.to()));
+                                }
+                            }
+                            return masks == null ? Collections.<MaskedArea>emptySet() : masks;
+                    }
+
+                case CLOSE_TAG:
+                    if (shouldBeFiltered((Named) element)) {
+                        return Collections.singleton(new MaskedArea(element.from(), element.to()));
+                    }
+                    break;
+            }
+            return Collections.emptySet(); //do not mask
+        }
+
+        private boolean shouldBeFiltered(Named named) {
+            //1. first check the custom tags, can be with or w/o ns prefix
+            if (resolver.isCustomTag(named)) {
+                return true;
+            }
+
+            if (named.namespacePrefix() == null) {
+                //default namespace, should be html in most cases
+                return false;
+            }
+
+            String prefix = named.namespacePrefix().toString();
+            if (prefixes.contains(prefix.toString())) {
+                //the prefix is mapped to the html namespace
+                return false;
+            }
+
+            //filter out
+            return true;
+        }
     }
 
     private static class FilteredIterator implements Iterator<Element> {
@@ -729,7 +782,23 @@ public class SyntaxAnalyzerResult {
             this.to = to;
         }
     }
-    //it seems to be better (more memory/but much faster) to create a clone of the source
-    //sequence w/ the specifed areas being ws-paced than doing this dynamically.
-    private static final char REPLACE_CHAR = ' '; //ws //NOI18N
+    
+    private static final class EmptyUndeclaredContentResolver implements UndeclaredContentResolver {
+
+        @Override
+        public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
+            return Collections.emptyMap();
+        }
+
+        @Override
+        public boolean isCustomTag(Named element) {
+            return false;
+        }
+
+        @Override
+        public boolean isCustomAttribute(Attribute attribute) {
+            return false;
+        }
+    
+    }
 }

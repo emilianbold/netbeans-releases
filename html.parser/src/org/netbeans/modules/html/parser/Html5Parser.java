@@ -57,6 +57,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.editor.lib.api.foreign.MaskingChSReader;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;

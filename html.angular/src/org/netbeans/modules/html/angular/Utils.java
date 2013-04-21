@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api;
+package org.netbeans.modules.html.angular;
 
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.html.editor.lib.api.HtmlSource;
+import java.awt.Color;
 
 /**
- * Allows to resolve undeclared content in html sources.
- * 
+ *
  * @author marekfukala
  */
-public abstract class UndeclaredContentResolver {
-    
-     /**
-     * This method allows to bind some prefixed html source 
-     * elements and attributes to an physically undeclared namespace.
-     * 
-     * @param the html source which is being processed
-     * @return a map of namespace to prefix collection
-     */
-    public abstract Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source);
+public class Utils {
+ 
+    public static String hexColorCode(Color c) {
+        return Integer.toHexString(c.getRGB()).substring(2);
+    }
     
 }

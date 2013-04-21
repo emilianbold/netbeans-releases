@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.html.editor.lib.api;
 
+import org.netbeans.modules.html.editor.lib.api.foreign.UndeclaredContentResolver;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;

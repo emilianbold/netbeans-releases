@@ -68,7 +68,9 @@ import org.netbeans.modules.html.editor.lib.api.validation.ValidationContext;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationResult;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidatorService;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
+import org.netbeans.modules.html.editor.lib.api.MaskedAreas;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.foreign.MaskingChSReader;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -270,7 +272,11 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
             if(validator == null) {
                 return Collections.emptyList();
             }
-            ValidationContext context = new ValidationContext(getSnapshot().getText().toString(), getHtmlVersion(), file, result);
+            MaskedAreas maskedAreas = result.getMaskedAreas();
+            CharSequence original = getSnapshot().getText().toString();
+            MaskingChSReader masker = new MaskingChSReader(original, maskedAreas.positions(), maskedAreas.lens());
+            
+            ValidationContext context = new ValidationContext(masker, getHtmlVersion(), file, result);
 
             //XXX possibly make it configurable via hints
             context.enableFeature("filter.foreign.namespaces", true); //NOI18N
