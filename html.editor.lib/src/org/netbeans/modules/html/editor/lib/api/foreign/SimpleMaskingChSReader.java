@@ -39,113 +39,71 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.parser;
+package org.netbeans.modules.html.editor.lib.api.foreign;
 
 import java.io.IOException;
-import java.io.Reader;
 
+/**
+ * An implementations which reads a CharSequence, and masks all @@@ chars by
+ * whistespaces
+ *
+ * Note: if one skips the reader into middle of the templating mark, it will not
+ * be masked!
+ *
+ * @author marekfukala
+ */
+public class SimpleMaskingChSReader extends CharSequenceReader {
 
-public class CharSequenceReader extends Reader {
+    private int maskPos = 0;
+    private int markMaskPos = 0;
 
-    protected CharSequence source;
-    protected int length;
-    protected int next = 0;
-    private int mark = 0;
+    private char PATTERN_CHAR = '@'; //NOI18N
+    protected char MASK_CHAR = ' '; //NOI18N
     
-    public CharSequenceReader(CharSequence immutableCharSequence) {
-        this.source = immutableCharSequence;
-        this.length = source.length();
+    public SimpleMaskingChSReader(CharSequence immutableCharSequence) {
+        super(immutableCharSequence);
     }
 
     @Override
-    public int read() throws IOException {
-        synchronized (lock) {
-            if (next >= length) {
-                return -1;
-            }
-            char c = source.charAt(next++);
-            return processReadChar(c);
-        }
-    }
-    
     protected char processReadChar(char c) throws IOException {
+        if (c == PATTERN_CHAR) {
+            char r[] = new char[2];
+            r[0] = next < length ? source.charAt(next) : 0;
+            r[1] = next + 1 < length ? source.charAt(next + 1) : 0;
+            
+            switch (maskPos) {
+                case 0:
+                    if (r[0] == PATTERN_CHAR && r[1] == PATTERN_CHAR) {
+                        c = MASK_CHAR;
+                        maskPos = 1;
+                    }
+                    break;
+                case 1:
+                    if (r[0] == PATTERN_CHAR) {
+                        c = MASK_CHAR;
+                        maskPos = 2;
+                    }
+                    break;
+                case 2:
+                    c = MASK_CHAR;
+                    maskPos = 0;
+                    break;
+            }
+        } else {
+            maskPos = 0;
+        }
+
         return c;
-    }
 
-     public int read(char cbuf[], int off, int len) throws IOException {
-	synchronized (lock) {
-            if ((off < 0) || (off > cbuf.length) || (len < 0) ||
-                ((off + len) > cbuf.length) || ((off + len) < 0)) {
-                throw new IndexOutOfBoundsException();
-            } else if (len == 0) {
-                return 0;
-            }
-	    if (next >= length)
-		return -1;
-	    int n = Math.min(length - next, len);
-            for(int i = 0; i < n; i++) {
-//                cbuf[i + off] = source.charAt(next + i);
-                cbuf[i + off] = (char)read();
-            }
-//	    next += n;
-	    return n;
-	}
     }
 
     @Override
-    public long skip(long ns) throws IOException {
-        synchronized (lock) {
-            if (next >= length) {
-                return 0;
-            }
-            // Bound skip by beginning and end of the source
-            long n = Math.min(length - next, ns);
-            n = Math.max(-next, n);
-            next += n;
-                        
-            return n;
-        }
-    }
-
-    @Override
-    public boolean ready() throws IOException {
-        synchronized (lock) {
-            return true;
-        }
-    }
-
-    @Override
-    public boolean markSupported() {
-        return true;
-    }
-    
     protected void markedAt(int mark) {
+        markMaskPos = maskPos;
     }
 
     @Override
-    public void mark(int readAheadLimit) throws IOException {
-        if (readAheadLimit < 0) {
-            throw new IllegalArgumentException("Read-ahead limit < 0");
-        }
-        synchronized (lock) {
-            mark = next;
-            markedAt(mark);
-        }
-    }
-
     protected void inputReset() {
+        maskPos = markMaskPos;
     }
-    
-    @Override
-    public void reset() throws IOException {
-        synchronized (lock) {
-            next = mark;
-            inputReset();
-        }
-    }
-
-    @Override
-    public void close() {
-    }
-    
 }

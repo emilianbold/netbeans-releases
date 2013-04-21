@@ -39,71 +39,62 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.parser;
+package org.netbeans.modules.html.editor.lib.api.foreign;
 
 import java.io.IOException;
 
 /**
- * An implementations which reads a CharSequence, and masks all @@@ chars by
- * whistespaces
- *
- * Note: if one skips the reader into middle of the templating mark, it will not
- * be masked!
  *
  * @author marekfukala
  */
-public class SimpleMaskingChSReader extends CharSequenceReader {
+public class MaskingChSReader extends SimpleMaskingChSReader {
 
-    private int maskPos = 0;
-    private int markMaskPos = 0;
+    private int[] positions;
+    private int[] lens;
+    private int positionIndex;
 
-    private char PATTERN_CHAR = '@'; //NOI18N
-    protected char MASK_CHAR = ' '; //NOI18N
-    
-    public SimpleMaskingChSReader(CharSequence immutableCharSequence) {
+    public MaskingChSReader(CharSequence immutableCharSequence, int[] positions, int[] lens) {
         super(immutableCharSequence);
+        this.positions = positions;
+        this.lens = lens;
     }
 
     @Override
-    protected char processReadChar(char c) throws IOException {
-        if (c == PATTERN_CHAR) {
-            char r[] = new char[2];
-            r[0] = next < length ? source.charAt(next) : 0;
-            r[1] = next + 1 < length ? source.charAt(next + 1) : 0;
-            
-            switch (maskPos) {
-                case 0:
-                    if (r[0] == PATTERN_CHAR && r[1] == PATTERN_CHAR) {
-                        c = MASK_CHAR;
-                        maskPos = 1;
-                    }
-                    break;
-                case 1:
-                    if (r[0] == PATTERN_CHAR) {
-                        c = MASK_CHAR;
-                        maskPos = 2;
-                    }
-                    break;
-                case 2:
-                    c = MASK_CHAR;
-                    maskPos = 0;
-                    break;
+    public int read() throws IOException {
+        synchronized (lock) {
+            if (next >= length) {
+                return -1;
             }
-        } else {
-            maskPos = 0;
+            
+            if (positions.length > positionIndex) {
+                //some more masked areas found
+                
+                int pos = positions[positionIndex];
+                
+                if (pos <= next) {
+                    //the actual position is after or at the masked area start
+                    int len = lens[positionIndex];
+                    int end = pos + len;
+                    
+                    if (end < next) {
+                        //after end of the masked area
+                        return read();
+                    } else if ( end == next) {
+                        positionIndex++;
+                        //end exclusive
+                        return read();
+                    } else {
+                        //next < end
+                        //inside masked area
+                        next++; //swallow the char
+                        return MASK_CHAR;
+                    }
+                }
+
+            }
+
+            return super.read();
         }
-
-        return c;
-
     }
 
-    @Override
-    protected void markedAt(int mark) {
-        markMaskPos = maskPos;
-    }
-
-    @Override
-    protected void inputReset() {
-        maskPos = markMaskPos;
-    }
 }

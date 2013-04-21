@@ -87,7 +87,6 @@ public class ValidatorImpl implements Validator {
 //                validatorTransaction.setBodyFragmentContextMode(true);
 //            }
 
-            String source = maskTemplatingMarks(context.getSource());
             FileObject file = context.getFile();
             URL sourceFileURL = file != null ? URLMapper.findURL(file, URLMapper.EXTERNAL) : null;
 
@@ -99,9 +98,12 @@ public class ValidatorImpl implements Validator {
 
             String encoding = file != null ? FileEncodingQuery.getEncoding(file).name() : "UTF-8"; //NOI18N
 
-            validatorTransaction.validateCode(source, sourceFileURL != null ? sourceFileURL.toExternalForm() : null, filteredNamespaces, encoding);
+            validatorTransaction.validateCode(context.getSourceReader(), 
+                    sourceFileURL != null ? sourceFileURL.toExternalForm() : null, 
+                    filteredNamespaces, 
+                    encoding);
 
-            Collection<ProblemDescription> problems = new LinkedList<ProblemDescription>(validatorTransaction.getFoundProblems(ProblemDescription.WARNING));
+            Collection<ProblemDescription> problems = new LinkedList<>(validatorTransaction.getFoundProblems(ProblemDescription.WARNING));
             
             if(context.getSyntaxAnalyzerResult().getDetectedHtmlVersion() == null) {
                 //1. unknown doctype, the HtmlSourceVersionQuery is used
