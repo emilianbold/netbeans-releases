@@ -66,6 +66,67 @@ public class InlineTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test228772a() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "     public String concat(String a, String b) {\n"
+                + "        return a+\":\"+b;\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethodB(A a) {\n"
+                + "        String s = a.concat(\"1\", a.concat(\"2\", \"3\"));\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethodB(A a) {\n"
+                + "        String s = \"1\" + \":\" + \"2\" + \":\" + \"3\";\n"
+                + "    }\n"
+                + "}"));
+    }
+    
+    public void test228772b() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "     public String concat(String a, String b) {\n"
+                + "        String value = a+\":\"+b;\n"
+                + "        return value;\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethodB(A a) {\n"
+                + "        String s = a.concat(\"1\", a.concat(\"2\", \"3\"));\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethodB(A a) {\n"
+                + "        String value = \"2\" + \":\" + \"3\";\n"
+                + "        String value1 = \"1\" + \":\" + value;\n"
+                + "        String s = value1;\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void test228776() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -1007,7 +1068,7 @@ public class InlineTest extends RefactoringTestBase {
                 + "}"));
     }
 
-    public void testInlineNoUsageInFile() throws Exception {
+    public void testInlineNoUsageInFilea() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -1037,7 +1098,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        }\n"
                 + "    }\n"
                 + "}"));
+    }
 
+    public void testInlineNoUsageInFileb() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -1438,7 +1501,16 @@ public class InlineTest extends RefactoringTestBase {
                 + "}"));
         final InlineRefactoring[] r = new InlineRefactoring[1];
         createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
-        performRefactoring(r, new Problem(true, "ERR_InlineMethodNameClash"));
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void testMethod() {\n"
+                + "        String message = \"Hello\";\n"
+                + "        String message1 = \"Hello World!\";\n"
+                + "        System.out.println(message1);\n"
+                + "    }\n"
+                + "}"));
     }
 
     public void test198821() throws Exception {
