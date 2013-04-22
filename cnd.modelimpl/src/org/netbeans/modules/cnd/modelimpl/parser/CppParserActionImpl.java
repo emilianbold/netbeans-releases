@@ -730,6 +730,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         SymTab st;
         if(name != null) {
             st = globalSymTab.push(name);
+            importSymbolsByQualifiedName((SimpleDeclarationBuilder) top);
         } else {
             st = globalSymTab.push();
         }
@@ -1088,30 +1089,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         CsmObjectBuilder parent = builderContext.top();
         
         if (parent instanceof ConstructorDefinitionBuilder || parent instanceof FunctionDefinitionBuilder) {
-            CharSequence[] scopeNames = ((SimpleDeclarationBuilder) parent).getScopeNames();
-            
-            if (scopeNames != null && scopeNames.length > 0) {
-                int firstSignificantNamePart = 0;
-                
-                if (scopeNames[0].length() == 0) {
-                    // Name is a fully qualified name. Since it is possible to define function or constructor only in enclosing namespace,
-                    // we could just skip common part
-                    firstSignificantNamePart = globalSymTab.getSize() - 1;
-                }
-                
-                for (int i = firstSignificantNamePart; i < scopeNames.length; i++) {
-                    CharSequence part = scopeNames[i];
-
-                    SymTabEntry classEntry = globalSymTab.lookup(part);
-                    SymTab st = null;
-                    if (classEntry != null) {
-                        st = (SymTab)classEntry.getAttribute(CppAttributes.SYM_TAB);
-                    }
-                    if(st != null) {
-                        globalSymTab.importToLocal(st);
-                    }
-                }
-            }            
+            importSymbolsByQualifiedName((SimpleDeclarationBuilder) parent);
         }
         
         CompoundStatementBuilder builder = new CompoundStatementBuilder();
@@ -3692,6 +3670,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         
         SymTabEntry entry = globalSymTab.enterLocal(name);
         
+        // elaborated type
         if (declBuilder.getTypeBuilder() != null && declBuilder.getDeclaratorBuilder() == null) {
             entry.setAttribute(CppAttributes.TYPE, true);
         }
@@ -3699,6 +3678,33 @@ public class CppParserActionImpl implements CppParserActionEx {
         if (declBuilder.getTemplateDescriptorBuilder() != null) {
             entry.setAttribute(CppAttributes.TEMPLATE, true);
         }
+    }
+    
+    private void importSymbolsByQualifiedName(SimpleDeclarationBuilder declaration) {
+        CharSequence[] scopeNames = ((SimpleDeclarationBuilder) declaration).getScopeNames();
+        
+        if (scopeNames != null && scopeNames.length > 0) {
+            int firstSignificantNamePart = 0;
+            
+            if (scopeNames[0].length() == 0) {
+                // Name is a fully qualified name. Since it is possible to define function or constructor only in enclosing namespace,
+                // we could just skip common part
+                firstSignificantNamePart = globalSymTab.getSize() - 1;
+            }
+            
+            for (int i = firstSignificantNamePart; i < scopeNames.length; i++) {
+                CharSequence part = scopeNames[i];
+
+                SymTabEntry classEntry = globalSymTab.lookup(part);
+                SymTab st = null;
+                if (classEntry != null) {
+                    st = (SymTab)classEntry.getAttribute(CppAttributes.SYM_TAB);
+                }
+                if(st != null) {
+                    globalSymTab.importToLocal(st);
+                }
+            }
+        }        
     }
     
 }
