@@ -800,35 +800,43 @@ public class WebKitPageModel extends PageModel {
         return external;
     }
 
+    /** Request processor for {@code WebPaneSynchronizer}. */
+    private static final RequestProcessor WPRP = new RequestProcessor(WebPaneSynchronizer.class);
+    
     class WebPaneSynchronizer implements PropertyChangeListener {
         private final Object LOCK_HIGHLIGHT = new Object();
         private final Object LOCK_SELECTION = new Object();
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            String propName = evt.getPropertyName();
-            if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
-                if (shouldSynchronizeHighlight()) {
-                    updateHighlight();
+        public void propertyChange(final PropertyChangeEvent evt) {
+            WPRP.post(new Runnable() {
+                @Override
+                public void run() {
+                    String propName = evt.getPropertyName();
+                    if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
+                        if (shouldSynchronizeHighlight()) {
+                            updateHighlight();
+                        }
+                    } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
+                        if (shouldSynchronizeSelection()) {
+                            updateSelection();
+                        }
+                    } else if (propName.equals(PageModel.PROP_SELECTED_RULE)) {
+                        if (shouldSynchronizeSelection()) {
+                            updateSelectedRule(getNodesMatchingSelectedRule());
+                        }
+                    } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
+                        updateSelectionMode();
+                        updateSynchronization();
+                    } else if (propName.equals(PageModel.PROP_SYNCHRONIZE_SELECTION)) {
+                        updateSelectionMode();
+                        updateSynchronization();
+                    } else if (propName.equals(PageModel.PROP_DOCUMENT)) {
+                        initializePage();
+                        updateSelectionMode();
+                    }
                 }
-            } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
-                if (shouldSynchronizeSelection()) {
-                    updateSelection();
-                }
-            } else if (propName.equals(PageModel.PROP_SELECTED_RULE)) {
-                if (shouldSynchronizeSelection()) {
-                    updateSelectedRule(getNodesMatchingSelectedRule());
-                }
-            } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
-                updateSelectionMode();
-                updateSynchronization();
-            } else if (propName.equals(PageModel.PROP_SYNCHRONIZE_SELECTION)) {
-                updateSelectionMode();
-                updateSynchronization();
-            } else if (propName.equals(PageModel.PROP_DOCUMENT)) {
-                initializePage();
-                updateSelectionMode();
-            }
+            });
         }
 
         private boolean shouldSynchronizeSelection() {

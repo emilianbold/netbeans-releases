@@ -44,13 +44,9 @@
 
 package org.netbeans.modules.websvc.rest.wizard;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.wizard.PersistenceClientEntitySelectionVisual;
-import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.spi.project.ui.templates.support.Templates;
