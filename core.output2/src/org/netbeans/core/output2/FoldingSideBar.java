@@ -47,6 +47,9 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -86,8 +89,17 @@ public class FoldingSideBar extends JComponent {
                         FoldingSideBar.this.lines = getLines();
                     }
                 });
+        textView.addComponentListener(new ComponentAdapter() {
+
+            @Override
+            public void componentResized(ComponentEvent e) {
+                setPreferredSize(new Dimension(BAR_WIDTH,
+                        FoldingSideBar.this.textView.getHeight()));
+                repaint();
+            }
+        });
         setMinimumSize(new Dimension(BAR_WIDTH, 0));
-        setPreferredSize(new Dimension(BAR_WIDTH, 1024));
+        setPreferredSize(new Dimension(BAR_WIDTH, textView.getHeight()));
         setMaximumSize(new Dimension(BAR_WIDTH, Integer.MAX_VALUE));
         wrapped = outputPane.isWrapped();
         addMouseListener(new FoldingMouseListener());
