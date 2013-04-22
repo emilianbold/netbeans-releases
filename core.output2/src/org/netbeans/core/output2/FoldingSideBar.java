@@ -259,7 +259,7 @@ public class FoldingSideBar extends JComponent {
                 return lines.getLogicalLineCountIfWrappedAt(charsPerLine);
             }
         } else {
-            return physicalLineIndex;
+            return lines.realToVisibleLine(physicalLineIndex);
         }
     }
 
