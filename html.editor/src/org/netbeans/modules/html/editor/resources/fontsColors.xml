@@ -61,6 +61,10 @@ made subject to such option by the copyright holder.
     <fontcolor name="css-embedded" bgColor="FFE3F2E1" default="default"/>
     <fontcolor name="javascript-embedded" bgColor="FFE3F2E1" default="default"/>
 
+    <fontcolor name="el-delimiter" foreColor="000000" default="default">
+        <font style="bold" />
+    </fontcolor>
+    
     <!--"semantic" highlighting:-->
 
     <!-- used for foreign tags ( <h:button ... /> ) -->

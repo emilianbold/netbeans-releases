@@ -59,6 +59,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -195,7 +196,9 @@ public class GoToNodeSourceAction extends NodeAction  {
             } else {
                 HtmlParsingResult result = (HtmlParsingResult)htmlResultIterator.getParserResult();
                 Node nodeToShow = findNode(result, node);
-                offsetToShow = nodeToShow.from();
+                Snapshot snapshot = htmlResultIterator.getSnapshot();
+                int snapshotOffset = nodeToShow.from();
+                offsetToShow = snapshot.getOriginalOffset(snapshotOffset);
             }
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -219,7 +222,7 @@ public class GoToNodeSourceAction extends NodeAction  {
             Node nearestNode = root;
 
             // Find a root of our search. The possible roots
-            // are either nodes with ID or BODY and HTML tags.
+            // are either the HTML tag or nodes with ID.
             while (domParent != null) {
                 String tagName = domParent.getNodeName();
                 org.netbeans.modules.web.webkit.debugging.api.dom.Node.Attribute attribute
@@ -233,11 +236,7 @@ public class GoToNodeSourceAction extends NodeAction  {
                     }
                     break;
                 }
-                if ("body".equalsIgnoreCase(tagName)) { // NOI18N
-                    sourceParent = findElementByTagName(root, "body"); // NOI18N
-                    nearestNode = findNode(node, domParent, sourceParent);
-                    break;
-                } else if ("html".equalsIgnoreCase(tagName)) { // NOI18N
+                if ("html".equalsIgnoreCase(tagName)) { // NOI18N
                     sourceParent = findElementByTagName(root, "html"); // NOI18N
                     nearestNode = findNode(node, domParent, sourceParent);
                     break;
@@ -383,6 +382,19 @@ public class GoToNodeSourceAction extends NodeAction  {
             if (sourceNode instanceof OpenTag) {
                 OpenTag tag = (OpenTag)sourceNode;
 
+                // Check the tag names
+                String sourceTagName = tag.name().toString();
+                if (!domNode.getNodeName().equalsIgnoreCase(sourceTagName)) {
+                    return false;
+                }
+                // Some tags are unique - no need to check anything besides their name.
+                if ("html".equalsIgnoreCase(sourceTagName) // NOI18N
+                        || "body".equalsIgnoreCase(sourceTagName) // NOI18N
+                        || "head".equalsIgnoreCase(sourceTagName) // NOI18N
+                        || "title".equalsIgnoreCase(sourceTagName)) { // NOI18N
+                    return true;
+                }
+
                 // Check the ID
                 org.netbeans.modules.web.webkit.debugging.api.dom.Node.Attribute domAttr = domNode.getAttribute("id"); // NOI18N
                 String domID = (domAttr == null) ? null : domAttr.getValue();
@@ -394,11 +406,6 @@ public class GoToNodeSourceAction extends NodeAction  {
                 }
                 if ((domID != null) && domID.equals(sourceID)) {
                     return true;
-                }
-                
-                // Check the tag names
-                if (!domNode.getNodeName().equalsIgnoreCase(tag.name().toString())) {
-                    return false;
                 }
                 
                 // Check if attributes are the same

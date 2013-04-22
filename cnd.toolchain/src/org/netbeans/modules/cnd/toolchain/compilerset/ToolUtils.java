@@ -229,15 +229,20 @@ public final class ToolUtils {
     }
 
     public static int computeLocalPlatform() {
-        String os = System.getProperty("os.name"); // NOI18N
+        String os = System.getProperty("os.name").toLowerCase(); // NOI18N
 
-        if (os.equals("SunOS")) { // NOI18N
-            return System.getProperty("os.arch").equals("x86") ? PlatformTypes.PLATFORM_SOLARIS_INTEL : PlatformTypes.PLATFORM_SOLARIS_SPARC; // NOI18N
-        } else if (os.startsWith("Windows ")) { // NOI18N
+        if (os.contains("sunos")) { // NOI18N
+            String os_arch = System.getProperty("os.arch", "");	// NOI18N
+            int platform_arch = PlatformTypes.PLATFORM_SOLARIS_INTEL;
+            if (os_arch.toLowerCase().contains("sparc")) {// NOI18N
+                platform_arch = PlatformTypes.PLATFORM_SOLARIS_SPARC;		// NOI18N
+            }
+            return platform_arch;
+        } else if (os.contains("windows")) { // NOI18N
             return PlatformTypes.PLATFORM_WINDOWS;
-        } else if (os.toLowerCase().contains("linux")) { // NOI18N
+        } else if (os.contains("linux")) { // NOI18N
             return PlatformTypes.PLATFORM_LINUX;
-        } else if (os.toLowerCase().contains("mac") || os.startsWith("Darwin")) { // NOI18N
+        } else if (os.contains("mac") || os.contains("darwin")) { // NOI18N
             return PlatformTypes.PLATFORM_MACOSX;
         } else {
             return PlatformTypes.PLATFORM_GENERIC;

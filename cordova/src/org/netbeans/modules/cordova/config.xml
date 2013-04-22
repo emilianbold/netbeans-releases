@@ -39,6 +39,7 @@
     <preference name="orientation"      value="default" />
     <preference name="target-device"    value="universal" />
     <preference name="fullscreen"       value="false" />
+    <preference name="webviewbounce"    value="false" />
 
     <access origin="*" />
 </widget>
