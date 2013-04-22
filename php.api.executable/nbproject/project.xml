@@ -122,6 +122,7 @@
                 <friend>org.netbeans.modules.hudson.php</friend>
                 <friend>org.netbeans.modules.php.api.framework</friend>
                 <friend>org.netbeans.modules.php.apigen</friend>
+                <friend>org.netbeans.modules.php.atoum</friend>
                 <friend>org.netbeans.modules.php.code.analysis</friend>
                 <friend>org.netbeans.modules.php.composer</friend>
                 <friend>org.netbeans.modules.php.dbgp</friend>
