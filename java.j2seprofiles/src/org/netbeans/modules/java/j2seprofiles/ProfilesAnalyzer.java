@@ -537,7 +537,7 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
         return false;
     }
 
-    private final class ProfileProvider {
+    private static final class ProfileProvider {
 
         private final SourceLevelQuery.Profile profile;
 
