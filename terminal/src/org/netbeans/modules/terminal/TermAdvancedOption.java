@@ -114,8 +114,10 @@ public final class TermAdvancedOption extends OptionsPanelController {
     // implement OptionsPanelController
     @Override
     public void applyChanges()  {
-	if (termOptions == null)
-	    return;		// update wasn't called
+	if (termOptions == null) {
+	    // update wasn't called
+	    return;
+	}
 	// assign will fire a property change
 	termOptions.assign(clonedTermOptions);
 	termOptions.storeTo(prefs);
@@ -124,6 +126,10 @@ public final class TermAdvancedOption extends OptionsPanelController {
     // implement OptionsPanelController
     @Override
     public boolean isChanged() {
+	if (termOptions == null) {
+	    // update wasn't called => no changes
+	    return false;
+	}
 	clonedTermOptions = termOptions.makeCopy();
 	if (clonedTermOptions == null) {
 	    return false;
