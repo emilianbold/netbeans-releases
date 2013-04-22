@@ -487,7 +487,6 @@ public class OutputDocument implements Document, Element, ChangeListener {
             if (lastFiredLineCount == lineCount
                     && lastVisibleLineCount != visibleLineCount) {
                 lastEvent = new DO(0);
-                pane.getFoldingSideBar().repaint();
             } else {
                 lastEvent = new DO(
                         lastLineChanged
@@ -500,6 +499,7 @@ public class OutputDocument implements Document, Element, ChangeListener {
 
             if (Controller.VERBOSE) Controller.log("Firing document event on EQ with start index " + lastEvent.first);
             fireDocumentEvent(lastEvent);
+            pane.getFoldingSideBar().repaint();
         } else {
             if (Controller.VERBOSE) Controller.log("Writer says it is not dirty, firing no change");
         }
