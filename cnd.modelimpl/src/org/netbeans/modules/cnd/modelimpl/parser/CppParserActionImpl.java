@@ -1781,10 +1781,21 @@ public class CppParserActionImpl implements CppParserActionEx {
 
     private SymTabStack createGlobal() {
         SymTabStack out = SymTabStack.create();
-        // TODO: need to push symtab for predefined types
+        // TODO: need to push symtab for predefined types                      
         
         // create global level 
-        out.push();
+        out.push();               
+        
+        // 1. Add namespace std to global level
+        CharSequence stdName = CharSequences.create("std");  // NOI18N
+        SymTabEntry entry = out.enterLocal(stdName); 
+        
+        out.push(stdName);
+        SymTab st = out.pop();
+        
+        entry.setAttribute(CppAttributes.SYM_TAB, st);        
+        entry.setAttribute(CppAttributes.TYPE, true);        
+        
         return out;
     }
 
