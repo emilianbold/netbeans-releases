@@ -45,21 +45,14 @@ package org.netbeans.modules.websvc.rest.wizard.fromdb;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
@@ -75,11 +68,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGeneratorProvider;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGenerator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGeneratorProvider;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
@@ -91,13 +81,10 @@ import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.DisabledReason;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.ExistingDisabledReason;
 import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
-import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
-import org.netbeans.modules.websvc.rest.codegen.model.TypeUtil;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
@@ -128,7 +115,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel<?>[] panels;
     private static final String PROP_CMP = "wizard-is-cmp"; //NOI18N
-    private static final String PROP_HELPER = "wizard-helper"; //NOI18N
+    public static final String PROP_HELPER = "wizard-helper"; //NOI18N
     private static final Lookup.Result<PersistenceGeneratorProvider> PERSISTENCE_PROVIDERS =
             Lookup.getDefault().lookupResult(PersistenceGeneratorProvider.class);
     private RelatedCMPHelper helper;

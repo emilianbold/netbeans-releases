@@ -1,4 +1,4 @@
-<library id="http://java.sun.com/jsf/ui">
+<library id="http://java.sun.com/jsf/facelets">
     <tag name="debug">
         <attr name="rendered">
             <type name="bool"/>

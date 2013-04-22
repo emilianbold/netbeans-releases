@@ -471,13 +471,13 @@ public class RestUtils {
         return false;
     }
     
-    public static void createApplicationConfigClass(FileObject packageFolder, 
+    public static FileObject createApplicationConfigClass(FileObject packageFolder,
             String name ) throws IOException
     {   
         FileObject appClass = GenerationUtils.createClass(packageFolder,name, null );
         JavaSource javaSource = JavaSource.forFileObject(appClass);
         if ( javaSource == null ){
-            return;
+            return null;
         }
         javaSource.runModificationTask( new Task<WorkingCopy>(){
 
@@ -495,6 +495,7 @@ public class RestUtils {
             }
             
         }).commit();
+        return appClass;
     }
 
     public static boolean isJavaEE6AndHigher(Project project) {

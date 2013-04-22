@@ -197,8 +197,8 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
     }//GEN-LAST:event_jtfTemplateKeyReleased
 
     @Messages({
-        "TemplateClientPanelVisual.lbl.resource.library.contract=Resource library contract",
-        "TemplateClientPanelVisual.lbl.document.root=Document root"
+        "TemplateClientPanelVisual.lbl.resource.library.contract=Resource Library Contract",
+        "TemplateClientPanelVisual.lbl.web.pages=Web Pages"
     })
     private void jbBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbBrowseActionPerformed
         String projectDirPath = Templates.getProject(wizardDescriptor).getProjectDirectory().getPath();
@@ -214,9 +214,9 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
                     isContract = path.contains(JsfConstants.CONTRACTS_FOLDER);
                 }
                 if (isContract) {
-                    return folderName + " :" + Bundle.TemplateClientPanelVisual_lbl_resource_library_contract(); //NOI18N
+                    return Bundle.TemplateClientPanelVisual_lbl_resource_library_contract() + " : " + folderName; //NOI18N
                 } else {
-                    return folderName + " :" + Bundle.TemplateClientPanelVisual_lbl_document_root(); //NOI18N
+                    return Bundle.TemplateClientPanelVisual_lbl_web_pages();
                 }
             }
         });
