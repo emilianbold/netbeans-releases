@@ -48,6 +48,7 @@ import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collection;
@@ -134,6 +135,14 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
         }
     }
     
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        for (ComponentListener l : getComponentListeners()) {
+            super.removeComponentListener(l);
+        }
+    }
+  
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

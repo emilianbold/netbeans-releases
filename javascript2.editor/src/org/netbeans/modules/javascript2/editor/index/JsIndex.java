@@ -45,6 +45,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -91,6 +94,16 @@ public class JsIndex {
 
     private static WeakHashMap<FileObject, JsIndex> cache = new WeakHashMap<FileObject, JsIndex>();
 
+    private static final int MAX_ENTRIES_CACHE_INDEX_RESULT = 300;
+    // cache to keep latest index results. The cache is cleaned if a file is saved 
+    // or a file has to be reindexed due to an external change
+    public static Map <String, Collection<? extends IndexResult>> cacheIndexResult = new LinkedHashMap<String, Collection<? extends IndexResult>>(MAX_ENTRIES_CACHE_INDEX_RESULT + 1, 0.75F, true) {
+        @Override
+        public boolean removeEldestEntry(Map.Entry eldest) {
+            return size() > MAX_ENTRIES_CACHE_INDEX_RESULT;
+        }
+    };
+            
     private static AtomicBoolean isIndexChanged = new AtomicBoolean(true);
 
     public static synchronized void changeInIndex() {
@@ -112,7 +125,16 @@ public class JsIndex {
             final QuerySupport.Kind kind, final String... fieldsToLoad) {
         if (querySupport != null) {
             try {
-                Collection<? extends IndexResult> result = querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
+                if (isIndexChanged.get()) {
+                    cacheIndexResult.clear();
+                    isIndexChanged.set(false);
+                }
+                String key = fieldName + fieldValue + kind;
+                Collection<? extends IndexResult> result = cacheIndexResult.get(key);
+                if (result == null) {
+                    result = querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
+                    cacheIndexResult.put(key, result);
+                }
                 return result;
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, null, ioe);
