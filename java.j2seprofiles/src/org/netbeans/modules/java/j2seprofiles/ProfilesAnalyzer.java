@@ -63,8 +63,11 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
@@ -92,6 +95,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.analysis.spi.Analyzer;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.netbeans.modules.refactoring.api.Scope;
@@ -112,6 +119,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class ProfilesAnalyzer implements Analyzer {
 
     private static final String ICON = "org/netbeans/modules/java/j2seprofiles/resources/profile.gif"; //NOI18N
+    private static final String JAVA_MIME = "text/x-java";  //NOI18N
     
     private final Context context;
     private final Result result;
@@ -129,9 +137,42 @@ public class ProfilesAnalyzer implements Analyzer {
     @Override
     @NonNull
     @NbBundle.Messages ({
-        "MSG_AnalyzingRoot=Analyzing root {0}"        
+        "MSG_BuildingClasses=Building Classes..."
     })
     public Iterable<? extends ErrorDescription> analyze() {
+        context.progress(Bundle.MSG_BuildingClasses());
+        try {
+            final Future<Void> f = ParserManager.parseWhenScanFinished(
+                    JAVA_MIME,
+                    new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            analyzeImpl();
+                        }
+                    });
+            while (!f.isDone()) {
+                try {
+                    f.get(2500, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException ex) {
+                    break;
+                } catch (ExecutionException ex) {
+                    throw new ParseException(ex.getMessage(), ex);
+                } catch (TimeoutException ex) {
+                    if (canceled.get()) {
+                        break;
+                    }
+                }
+            }
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return Collections.<ErrorDescription>emptySet();
+    }
+
+    @NbBundle.Messages ({
+        "MSG_AnalyzingRoot=Analyzing root {0}"
+    })
+    private void  analyzeImpl() {
         final Scope scope = context.getScope();
         final Set<FileObject> roots = new HashSet<>();
         final Set<FileObject> completeRoots = scope.getSourceRoots();
@@ -237,8 +278,7 @@ public class ProfilesAnalyzer implements Analyzer {
                 }
             }
             context.finish();
-        }
-        return Collections.<ErrorDescription>emptySet();
+        }        
     }
 
     @Override
