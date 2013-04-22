@@ -118,6 +118,10 @@ public class FileModelNewGrammarTest extends TraceModelTestBase {
         performTest("nestedClassScope.cpp");
     }    
     
+    public void testConstructorInitializerListScope() throws Exception {
+        performTest("constructorInitializerListScope.cpp");
+    }    
+    
 //    public void testMultipleMemberDeclaration() throws Exception {
 //        performTest("typedefEnum.cpp");
 //    } 
