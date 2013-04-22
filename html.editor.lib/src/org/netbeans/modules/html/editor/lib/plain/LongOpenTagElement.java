@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,36 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.html.editor.lib.plain;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 
 /**
- *
+ * Used for unusually long open tags.
+ * 
+ * For an example take a look the following bug:
+ * https://netbeans.org/bugzilla/show_bug.cgi?id=228101
+ * 
+ * Note: this class wastes one "short" fied which is unused, 
+ * but this will not hurt as instances of this class will be pretty rare.
+ * 
  * @author marekfukala
  */
-public class ProblematicOpenTagElement extends LongOpenTagElement {
+public class LongOpenTagElement extends OpenTagElement {
 
-    private ProblemDescription problem;
-
-    public ProblematicOpenTagElement(CharSequence document, int from, int length,
-            byte nameLen,
-            List<Attribute> attribs,
-            boolean isEmpty,
-            ProblemDescription problem) {
-        super(document, from, length, nameLen, attribs, isEmpty);
-        this.problem = problem;
+    private int length;
+    
+    public LongOpenTagElement(CharSequence document, int from, int length, byte nameLen, List<Attribute> attribs, boolean isEmpty) {
+        super(document, from, (short)0, nameLen, attribs, isEmpty);
+        assert length >=0 : "element length must be positive!"; //NOI18N
+        this.length = length;
     }
 
     @Override
-    public Collection<ProblemDescription> problems() {
-        return Collections.singleton(problem);
+    public int to() {
+        return from() + length;
     }
-
+    
 }
