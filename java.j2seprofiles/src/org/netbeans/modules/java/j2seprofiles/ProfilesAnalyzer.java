@@ -80,6 +80,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
@@ -95,10 +96,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.analysis.spi.Analyzer;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.netbeans.modules.refactoring.api.Scope;
@@ -119,7 +116,6 @@ import org.openide.util.lookup.ServiceProvider;
 public class ProfilesAnalyzer implements Analyzer {
 
     private static final String ICON = "org/netbeans/modules/java/j2seprofiles/resources/profile.gif"; //NOI18N
-    private static final String JAVA_MIME = "text/x-java";  //NOI18N
     
     private final Context context;
     private final Result result;
@@ -142,28 +138,32 @@ public class ProfilesAnalyzer implements Analyzer {
     public Iterable<? extends ErrorDescription> analyze() {
         context.progress(Bundle.MSG_BuildingClasses());
         try {
-            final Future<Void> f = ParserManager.parseWhenScanFinished(
-                    JAVA_MIME,
-                    new UserTask() {
+            final JavaSource js = JavaSource.create(
+            ClasspathInfo.create(
+                JavaPlatform.getDefault().getBootstrapLibraries() ,
+                ClassPath.EMPTY,
+                ClassPath.EMPTY));
+            final Future<Void> f = js.runWhenScanFinished(
+                    new Task<CompilationController>() {
                         @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
+                        public void run(CompilationController parameter) throws Exception {
                             analyzeImpl();
                         }
-                    });
+                    }, true);
             while (!f.isDone()) {
                 try {
                     f.get(2500, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException ex) {
                     break;
                 } catch (ExecutionException ex) {
-                    throw new ParseException(ex.getMessage(), ex);
+                    throw new IOException(ex);
                 } catch (TimeoutException ex) {
                     if (canceled.get()) {
                         break;
                     }
                 }
             }
-        } catch (ParseException ex) {
+        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         return Collections.<ErrorDescription>emptySet();
@@ -250,25 +250,26 @@ public class ProfilesAnalyzer implements Analyzer {
                         break;
                     }
                     final URI rootURI = violationsPair.first.toURI();
-                    final FileObject root = URLMapper.findFileObject(rootURI.toURL());
-                    context.progress(Bundle.MSG_AnalyzingRoot(FileUtil.getFileDisplayName(archiveFileOrFolder(root))), count);
-                    final Collection<? extends ProfileSupport.Violation> violations = violationsPair.second;
                     final Set<Project> projects = submittedBinaries.remove(rootURI);
                     final boolean binary = projects != null;
                     if (!binary) {
                         submittedSources.remove(rootURI);
                     }
+                    final Collection<? extends ProfileSupport.Violation> violations = violationsPair.second;
                     if (violations.isEmpty()) {
                         continue;
                     }
+                    final FileObject root = URLMapper.findFileObject(rootURI.toURL());
+                    if (root == null) {
+                        continue;
+                    }
+                    context.progress(Bundle.MSG_AnalyzingRoot(FileUtil.getFileDisplayName(archiveFileOrFolder(root))), count);
                     if (binary) {
                         //Binary roots
                         verifyBinaryRoot(root, violations, projects, result);
                     } else {
                         //Source roots
-                        if (root != null) {
-                            verifySourceRoot(root, filter, violations, result);
-                        }
+                        verifySourceRoot(root, filter, violations, result);
                     }
                     context.progress(++count);
                 } catch (InterruptedException ex) {
