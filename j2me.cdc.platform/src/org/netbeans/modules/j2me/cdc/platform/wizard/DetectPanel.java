@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,11 +87,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.util.Utilities;
 
 /**
  * This Panel launches autoconfiguration during the New J2SE Platform sequence.
@@ -434,14 +437,18 @@ public class DetectPanel extends javax.swing.JPanel {
         //removeJavadocButton.setEnabled(javadocList.getModel().getSize() != 0);
     }
 
-    void setJavadoc (List jdocFolders) {
-        ((DefaultListModel)javadocList.getModel()).removeAllElements();
-        if (jdocFolders == null){
+    void setJavadoc(List<URL> jdocFolders) {
+        ((DefaultListModel) javadocList.getModel()).removeAllElements();
+        if (jdocFolders == null) {
             return;
         }
-        Iterator it = jdocFolders.iterator();
-        while(it.hasNext()){
-            ((DefaultListModel)javadocList.getModel()).addElement(FileUtil.toFile((FileObject)it.next()).getAbsolutePath());
+        Iterator<URL> it = jdocFolders.iterator();
+        while (it.hasNext()) {
+            try {
+                ((DefaultListModel) javadocList.getModel()).addElement(Utilities.toFile(it.next().toURI()).getAbsolutePath());
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         //removeJavadocButton.setEnabled(javadocList.getModel().getSize() != 0);
     }

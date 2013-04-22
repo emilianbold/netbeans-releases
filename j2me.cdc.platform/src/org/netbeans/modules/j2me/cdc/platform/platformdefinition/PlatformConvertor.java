@@ -100,8 +100,8 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     private Lookup  lookup;
     
-    private static RequestProcessor  RP;
-    private RequestProcessor.Task    saveTask;
+    private static final RequestProcessor RP = new RequestProcessor(PlatformConvertor.class);
+    private final RequestProcessor.Task saveTask = RP.create(this);
     
     private Reference<CDCPlatform>   refPlatform = new WeakReference<CDCPlatform>(null);
     
@@ -208,12 +208,6 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     static int DELAY = 2000;
     
     public void propertyChange(PropertyChangeEvent evt) {
-        synchronized (this) {
-            if (saveTask == null) {
-                RP = new RequestProcessor(PlatformConvertor.class);
-                saveTask = RP.create(this);
-            }
-        }
         synchronized (this) {
             keepAlive.add(evt);
         }
@@ -695,11 +689,13 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     private static void updateBuildProperties(final CDCPlatform p) {
         final String name = p.getAntName();
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     ProjectManager.mutex().writeAccess(
                             new Mutex.ExceptionAction() {
+                        @Override
                         public Object run() throws Exception{
                             EditableProperties props = PropertyUtils.getGlobalProperties();
                             Iterator it = props.entrySet().iterator();
