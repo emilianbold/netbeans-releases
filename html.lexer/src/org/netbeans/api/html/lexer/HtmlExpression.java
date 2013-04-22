@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,51 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.api.html.lexer;
 
-package org.netbeans.lib.html.lexer;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
-import junit.framework.TestCase;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
- * HTMLLanguage test
+ * <b>NOT FOR PUBLIC USE!!!</b> Prototype - not final version!!! An API review will run, this is a public API.
+ * 
+ * HtmlLexer extension - allows to inject custom expression languages into html content.
+ * 
+ * To be registered in mime lookup.
  *
- * @author Marek Fukala
+ * @author marekfukala
  */
-public class HtmlLanguageTest extends TestCase {
-
-    private static final int IDS_SIZE = 10;
+public interface HtmlExpression {
     
-    public HtmlLanguageTest(String testName) {
-        super(testName);
-    }
+    /**
+     * "{{"
+     */
+    @NonNull
+    public String getOpenDelimiter();
+
+    /**
+     * "}}"
+     */
+    @NonNull
+    public String getCloseDelimiter();
     
-    protected void setUp() throws java.lang.Exception {
-    }
-
-    protected void tearDown() throws java.lang.Exception {
-    }
-
-    public void testTokenIds() {
-        // Check that token ids are all present and correctly ordered
-        Language language = HTMLTokenId.language();
-
-        // Check token categories
-        Set testTids = language.tokenCategories();
-        Collection tids = Arrays.asList(new String[] {
-            "text", "script", "style", "ws", "error", "tag", "tag", "argument",
-            "operator", "value", "block-comment", "sgml-comment", "sgml-declaration", 
-            "character", "text", "tag", "tag", "xml-pi", "el"
-        });
-        LexerTestUtilities.assertCollectionsEqual("Invalid token ids", tids, testTids);
-                
-    }
-
+    /**
+     * "text/javascript"
+     */
+    @NonNull
+    public String getContentMimeType();
+    
 }

@@ -356,14 +356,14 @@ public class HtmlLexerTest extends NbTestCase {
     
     //--------------------------------------------------------------------------
     
-    private void checkTokens(String text, String... descriptions) {
+    public static void checkTokens(String text, String... descriptions) {
         TokenHierarchy<String> th = TokenHierarchy.create(text, HTMLTokenId.language());
         TokenSequence<HTMLTokenId> ts = th.tokenSequence(HTMLTokenId.language());
 //        System.out.println(ts);
         checkTokens(ts, descriptions);
     }
 
-    private void checkTokens(TokenSequence<HTMLTokenId> ts, String... descriptions) {
+    public static void checkTokens(TokenSequence<HTMLTokenId> ts, String... descriptions) {
         ts.moveStart();
         for(String descr : descriptions) {
             //parse description
@@ -452,4 +452,4 @@ public class HtmlLexerTest extends NbTestCase {
         assertTrue("Couldn't find any SCRIPT token!", false);
     }
     
-}
+    }
