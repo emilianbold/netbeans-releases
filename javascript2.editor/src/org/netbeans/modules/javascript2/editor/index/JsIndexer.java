@@ -80,7 +80,9 @@ public class JsIndexer extends EmbeddingIndexer {
     @Override
     protected void index(Indexable indexable, Result result, Context context) {
         LOG.log(Level.FINE, "Indexing: {0}, fullPath: {1}", new Object[]{indexable.getRelativePath(), result.getSnapshot().getSource().getFileObject().getPath()});
-        JsIndex.changeInIndex();
+        if (!context.checkForEditorModifications()) {
+            JsIndex.changeInIndex();
+        }
         JsParserResult parserResult = (JsParserResult) result;
         Model model = parserResult.getModel();
 
