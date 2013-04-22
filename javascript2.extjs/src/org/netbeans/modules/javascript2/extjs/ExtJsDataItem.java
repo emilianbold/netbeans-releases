@@ -39,30 +39,40 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.spi;
+package org.netbeans.modules.javascript2.extjs;
 
 /**
  *
- * @author Petr Hejl
+ * @author Petr Pisl
  */
-public enum CompletionContext {
-    NONE, // There shouldn't be any code completion
-    EXPRESSION, // usually, we will offer everything what we know in the context
-    OBJECT_PROPERTY, // object property that are visible outside the object
-    OBJECT_MEMBERS, // usually after this.
-    /**
-     * This context is before ':' in an object literal definition, when a property
-     * is defined. Typically 
-     * var object_listeral = {
-     *  property_name : value
-     * }
-     * 
-     * This context can be used by frameworks to suggest the names of properties
-     * to define for example various configuration objects.
-     */
-    OBJECT_PROPERTY_NAME, 
-    DOCUMENTATION, // inside documentation blocks
-    GLOBAL,
-    STRING      // inside a string
+public class ExtJsDataItem {
+    
+    private final String name;
+    private final String type;
+    private final String documentation;
+    private final String template;
 
+    public ExtJsDataItem(String name, String type, String documentation, String template) {
+        this.name = name;
+        this.type = type;
+        this.documentation = documentation;
+        this.template = template;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getDocumentation() {
+        return documentation;
+    }
+
+    public String getTemplate() {
+        return template;
+    }
+    
 }

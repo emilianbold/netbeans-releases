@@ -92,6 +92,7 @@ public class JQueryCodeCompletion implements CompletionProvider {
         int offset = ccContext.getCaretOffset();
         lastTsOffset = ccContext.getParserResult().getSnapshot().getEmbeddedOffset(offset);
         switch (jsCompletionContext) {
+            case STRING:
             case GLOBAL:
             case EXPRESSION:
             case OBJECT_PROPERTY:
