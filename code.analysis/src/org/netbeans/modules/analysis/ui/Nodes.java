@@ -50,11 +50,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -282,7 +284,7 @@ public class Nodes {
 
     private static List<Node> constructSemiLogicalViewNodes(LogicalViewCache lvc, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors, Map<ErrorDescription, Project> errorsToProjects) {
         Map<Project, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>>> projects = new IdentityHashMap<Project, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>>>();
-        
+        Map<FileObject,Set<Project>> file2Projects = new HashMap<>();
         for (Map.Entry<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> fileEntry : errors.entrySet()) {
             if (!errorsToProjects.isEmpty()) {
                 for (Iterator<Map.Entry<AnalyzerFactory,List<ErrorDescription>>> analyzerEntryIt = fileEntry.getValue().entrySet().iterator(); analyzerEntryIt.hasNext();) {
@@ -291,6 +293,12 @@ public class Nodes {
                         final ErrorDescription error = errorIt.next();
                         Project project = errorsToProjects.get(error);
                         if (project != null) {
+                            Set<Project> inProjects = file2Projects.get(fileEntry.getKey());
+                            if (inProjects == null) {
+                                inProjects = new HashSet<>();
+                                file2Projects.put(fileEntry.getKey(), inProjects);
+                            }
+                            inProjects.add(project);
                             Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> projectErrors = projects.get(project);
                             if (projectErrors == null) {
                                 projects.put(project, projectErrors = new HashMap<>());
@@ -333,10 +341,26 @@ public class Nodes {
         }
         
         projects.remove(null);
-        
+        Map<Project,Set<FileObject>> needsCacheClean = new HashMap<>();
+        for (Map.Entry<FileObject,Set<Project>> f2p : file2Projects.entrySet()) {
+            if (f2p.getValue().size() > 1) {
+                for (Project p : f2p.getValue()) {
+                    Set<FileObject> filesToClear = needsCacheClean.get(p);
+                    if (filesToClear == null) {
+                        filesToClear = new HashSet<>();
+                        needsCacheClean.put(p, filesToClear);
+                    }
+                    filesToClear.add(f2p.getKey());
+                }
+            }
+        }
         List<Node> nodes = new ArrayList<Node>(projects.size());
         
         for (Project p : projects.keySet()) {
+            final Set<FileObject> filesToClear = needsCacheClean.get(p);
+            if (filesToClear != null) {
+                lvc.file2FileNode.keySet().removeAll(filesToClear);
+            }
             nodes.add(constructSemiLogicalView(p, lvc, projects.get(p)));
         }
 

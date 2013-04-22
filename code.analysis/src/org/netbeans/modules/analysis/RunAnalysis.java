@@ -149,7 +149,7 @@ public class RunAnalysis {
                         progress.switchToDeterminate(MAX_WORK);
 
                         final Map<AnalyzerFactory, List<ErrorDescription>> result = new HashMap<AnalyzerFactory, List<ErrorDescription>>();
-                        final Map<ErrorDescription, Project> errorsToProjects = new HashMap<>();
+                        final Map<ErrorDescription, Project> errorsToProjects = new IdentityHashMap<>();
                         Collection<MissingPlugin> missingPlugins = new ArrayList<MissingPlugin>();
                         Collection<AnalysisProblem> additionalProblems = new ArrayList<AnalysisProblem>();
                         
