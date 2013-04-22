@@ -330,7 +330,10 @@ public class JBDeploymentFactory implements DeploymentFactory {
 
                 String jbURI = uri;
                 try {
-                    jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
+                    int index1 = uri.indexOf('#'); // NOI18N
+                    int index2 = uri.indexOf('&'); // NOI18N
+                    int index = Math.min(index1, index2);
+                    jbURI = uri.substring(0, index); // NOI18N
                 } catch (Exception e) {
                     LOGGER.log(Level.INFO, null, e);
                 }
