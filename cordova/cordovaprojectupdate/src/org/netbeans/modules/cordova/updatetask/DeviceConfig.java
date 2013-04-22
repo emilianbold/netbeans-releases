@@ -44,6 +44,9 @@ package org.netbeans.modules.cordova.updatetask;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * API for android res/xml/config.xml
@@ -53,18 +56,13 @@ public class DeviceConfig extends XMLFile {
 
     public DeviceConfig(InputStream resource) throws IOException {
         super(resource);
+        init();
     }
 
     private String root;
     public DeviceConfig(File androidConfigFile) throws IOException {
         super(androidConfigFile);
-        if (getNode("/cordova") != null) {
-            root = "/cordova";
-            //version 2.4
-        } else {
-            root = "/widget";
-            //version 2.5
-        }
+        init();
     }
 
     public String getAccess() {
@@ -82,4 +80,36 @@ public class DeviceConfig extends XMLFile {
     public void setContent(String src) {
         setAttributeText(root + "/content", "src", src);
     }
+    
+    public void setPreference(String name, String value) {
+        NodeList nodes = getXpathNodes(root + "/preference");
+        for (int i = 0; i<nodes.getLength();i++) {
+            Node n = nodes.item(i);
+            String nameAttr = getAttributeText(n, "name");
+            if (name.equals(nameAttr)) {
+                ((Element) n).setAttribute("name", name);
+                ((Element) n).setAttribute("value", value);
+                return;
+            }
+        }
+        Element createElement = doc.createElement("preference");
+        createElement.setAttribute("name", name);
+        createElement.setAttribute("value", value);
+        getXpathNode(root).appendChild(createElement);
+    }
+
+    public String getPreference(String name) {
+        return getAttributeText(root + "/preference", name);
+    }
+
+    private void init() {
+        if (getNode("/cordova") != null) {
+            root = "/cordova";
+            //version 2.4
+        } else {
+            root = "/widget";
+            //version 2.5
+        }
+    }
+    
 }

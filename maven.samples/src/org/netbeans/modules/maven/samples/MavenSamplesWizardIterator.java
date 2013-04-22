@@ -75,7 +75,10 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
     private int index;
     private WizardDescriptor.Panel[] panels;
     protected WizardDescriptor wiz;
-    private final String title;
+    private String title;
+
+    public MavenSamplesWizardIterator() {
+    }
     
     public MavenSamplesWizardIterator(String title) {
         this.title = title;
@@ -88,8 +91,13 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
     public static MavenSamplesWizardIterator createCalculatorClientIterator() {
         return new MavenSamplesWizardIterator(NbBundle.getMessage(MavenSamplesWizardIterator.class, "Templates/Project/Samples/Maven/MavenCalculatorClient"));
     }
+    
     public static MavenSamplesWizardIterator createScrumToysIterator() {
         return new MavenSamplesWizardIterator(NbBundle.getMessage(MavenSamplesWizardIterator.class, "Templates/Project/Samples/Maven/MavenScrumToys"));
+    }
+    
+    public static MavenSamplesWizardIterator createIterator() {
+        return new MavenSamplesWizardIterator();
     }
     
     protected WizardDescriptor.Panel[] createPanels() {

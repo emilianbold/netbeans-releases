@@ -12,5 +12,67 @@
         <zip basedir="samples_src/MavenCalculatorClient"  destfile="${examples}/MavenCalculatorClient.zip"/>
         <zip basedir="samples_src/MavenScrumToys"  destfile="${examples}/MavenScrumToys.zip"/>
         <zip basedir="samples_src/MavenCRUDSample"  destfile="${examples}/MavenCRUDSample.zip"/>
+        
+        <!--
+            Samples from the https://svn.java.net/svn/glassfish-samples~svn/trunk/ws/javaee7
+            EJB subsection:
+        -->
+        <zip basedir="samples_src/javaee7/ejb/hello-stateless-ejb" destfile="${examples}/HelloStatelessEjb.zip"/>
+        <zip basedir="samples_src/javaee7/ejb/ejb32-war" destfile="${examples}/HelloStatelessWar.zip"/>
+        <zip basedir="samples_src/javaee7/ejb/automatic-timer" destfile="${examples}/AutomaticTimer.zip"/>
+        <zip basedir="samples_src/javaee7/ejb/ejb-embedded" destfile="${examples}/EjbEmbedded.zip"/>
+        
+        <!--
+            Batch subsection:
+        -->
+        <zip basedir="samples_src/javaee7/batch/joboperator-api" destfile="${examples}/JoboperatorAPI.zip"/>
+        <zip basedir="samples_src/javaee7/batch/partition" destfile="${examples}/Partition.zip"/>
+        <zip basedir="samples_src/javaee7/batch/payroll" destfile="${examples}/Payroll.zip"/>
+        
+        <!--
+            Concurrency subsection:
+        -->
+        <zip basedir="samples_src/javaee7/concurrency/executor" destfile="${examples}/Executor.zip"/>
+        <zip basedir="samples_src/javaee7/concurrency/schedule" destfile="${examples}/Schedule.zip"/>
+        <zip basedir="samples_src/javaee7/concurrency/threads" destfile="${examples}/Threads.zip"/>
+        
+        <!--
+            Connectors subsection:
+        -->
+        <zip basedir="samples_src/javaee7/connectors/mailconnector" destfile="${examples}/MailConnector.zip"/>
+        
+        <!--
+            CDI subsection:
+        -->
+        <zip basedir="samples_src/javaee7/cdi/bean-validation" destfile="${examples}/BeanValidation.zip"/>
+        <zip basedir="samples_src/javaee7/cdi/cdi-guess" destfile="${examples}/CDIGuess.zip"/>
+        <zip basedir="samples_src/javaee7/cdi/cdi-servlet" destfile="${examples}/CDIServlet.zip"/>
+        <zip basedir="samples_src/javaee7/cdi/events" destfile="${examples}/Events.zip"/>
+        <zip basedir="samples_src/javaee7/cdi/interceptors" destfile="${examples}/Interceptors.zip"/>
+        <zip basedir="samples_src/javaee7/cdi/transactional" destfile="${examples}/Transactional.zip"/>
+        <zip basedir="samples_src/javaee7/cdi/transaction-scoped" destfile="${examples}/TransactionScoped.zip"/>
+        
+        <!--
+            EL subsection:
+        -->
+        <zip basedir="samples_src/javaee7/el" destfile="${examples}/EL.zip"/>
+        
+        <!--
+            JSF subsection:
+        -->
+        <zip basedir="samples_src/javaee7/jsf/contracts" destfile="${examples}/Contracts.zip"/>
+        <zip basedir="samples_src/javaee7/jsf/fileUpload" destfile="${examples}/FileUpload.zip"/>
+        <zip basedir="samples_src/javaee7/jsf/scrumtoys" destfile="${examples}/Scrumtoys.zip"/>
+        
+        <!--
+            JSON-P subsection:
+        -->
+        <zip basedir="samples_src/javaee7/jsonp/jaxrs" destfile="${examples}/JSONP.zip"/>
+        
+        <!--
+            REST subsection:
+        -->
+        <zip basedir="samples_src/javaee7/rest/async-chat" destfile="${examples}/AsyncChat.zip"/>
+        <zip basedir="samples_src/javaee7/rest/message-board" destfile="${examples}/MessageBoard.zip"/>
     </target>
 </project>
