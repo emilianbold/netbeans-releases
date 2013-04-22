@@ -172,7 +172,7 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
 
     @Override
     @NbBundle.Messages({
-        "LBL_InvalidProfile=Invalid Profile",
+        "LBL_InvalidProfile=Invalid JRE 8 Profile",
         "DESC_InvalidProfile=The project profile ({0}) is lower than the profile of used libraries ({1}).",
         "DESC_IllegalProfile=The project libraries have illegal value of profile."
     })
