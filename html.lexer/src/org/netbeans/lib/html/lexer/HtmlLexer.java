@@ -547,7 +547,10 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             //return the open symbol token and switch to "in el" state
                             lexerState = ISI_EL;
                             customELIndex = (byte)(delimiterIndex + 1); //0 is reserved for "no delimiter", 1 means delimiter with index 0
-                            return token(HTMLTokenId.EL_OPEN_DELIMITER);
+                            //save the provider's index in the delimiter token's property so once can recognize what should be 
+                            //the delimiters' content if it is empty
+                            //TODO "contentMimetype" INTO API???
+                            return token(HTMLTokenId.EL_OPEN_DELIMITER, new HtmlTokenPropertyProvider("contentMimetype", customELQuery.getMimeTypes()[delimiterIndex])); 
                         }
                         
                     }
