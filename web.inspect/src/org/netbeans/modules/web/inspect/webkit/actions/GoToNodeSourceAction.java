@@ -219,7 +219,7 @@ public class GoToNodeSourceAction extends NodeAction  {
             Node nearestNode = root;
 
             // Find a root of our search. The possible roots
-            // are either nodes with ID or BODY and HTML tags.
+            // are either the HTML tag or nodes with ID.
             while (domParent != null) {
                 String tagName = domParent.getNodeName();
                 org.netbeans.modules.web.webkit.debugging.api.dom.Node.Attribute attribute
@@ -233,11 +233,7 @@ public class GoToNodeSourceAction extends NodeAction  {
                     }
                     break;
                 }
-                if ("body".equalsIgnoreCase(tagName)) { // NOI18N
-                    sourceParent = findElementByTagName(root, "body"); // NOI18N
-                    nearestNode = findNode(node, domParent, sourceParent);
-                    break;
-                } else if ("html".equalsIgnoreCase(tagName)) { // NOI18N
+                if ("html".equalsIgnoreCase(tagName)) { // NOI18N
                     sourceParent = findElementByTagName(root, "html"); // NOI18N
                     nearestNode = findNode(node, domParent, sourceParent);
                     break;
