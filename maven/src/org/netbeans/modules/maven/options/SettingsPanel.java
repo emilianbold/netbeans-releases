@@ -545,6 +545,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 FileObject dir = FileUtil.getConfigFile("Projects/org-netbeans-modules-maven"); //NOI18N
                 // just make sure the name of the file is always nbactions.xml
                 CustomizerProviderImpl.writeNbActionsModel(dir, mappings, M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
+                panel.applyToolbarChanges();
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
