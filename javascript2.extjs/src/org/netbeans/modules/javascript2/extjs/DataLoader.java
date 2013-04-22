@@ -140,6 +140,7 @@ public class DataLoader extends DefaultHandler {
             case template:
                 template = template + new String(ch, start, length);
                 break;
+            default:
         }
     }
 }
