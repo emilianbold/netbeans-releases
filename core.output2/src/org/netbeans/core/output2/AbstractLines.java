@@ -596,11 +596,13 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         synchronized (readLock()) {
             int tabIndex1 = tabCharOffsets.findNearest(offset);
             int tabSum1;
-            if (tabIndex1 > 0) {
+            if (tabIndex1 >= 0) {
                 if (tabCharOffsets.get(tabIndex1) < offset) {
                     tabSum1 = tabLengthSums.get(tabIndex1);
-                } else {
+                } else if (tabIndex1 > 0) {
                     tabSum1 = tabLengthSums.get(tabIndex1 - 1);
+                } else {
+                    tabSum1 = 0;
                 }
             } else {
                 tabSum1 = 0;
