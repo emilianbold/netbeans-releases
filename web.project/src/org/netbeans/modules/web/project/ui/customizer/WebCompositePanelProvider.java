@@ -51,6 +51,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraryCustomizerPanel;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
@@ -266,6 +267,12 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
     @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=350)
     public static WebCompositePanelProvider createJavaScriptLibraries() {
         return new WebCompositePanelProvider(JS_LIBRARIES);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = "org-netbeans-modules-web-project", position = 375)
+    public static ProjectCustomizer.CompositeCategoryProvider createCssPreprocessors() {
+        return CssPreprocessors.getDefault().createCustomizer();
     }
 
     private static boolean showWebServicesCategory(WebProjectProperties uiProperties) {
