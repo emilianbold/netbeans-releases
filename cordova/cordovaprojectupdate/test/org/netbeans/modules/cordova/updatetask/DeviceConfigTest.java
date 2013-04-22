@@ -79,6 +79,7 @@ public class DeviceConfigTest {
     @Test
     public void testOut() throws Exception{
         DeviceConfig instance = new DeviceConfig(DeviceConfig.class.getResourceAsStream("dev_config.xml"));
+        instance.setPreference("UIWebViewBounce", "false");
         
         assertEquals(instance.getAccess(), "*");
         assertEquals(instance.getContent(), "index.html");

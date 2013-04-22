@@ -38,6 +38,7 @@ Other names may be trademarks of their respective owners.
  */
 package org.netbeans.modules.web.jsf.editor.facelets;
 
+import com.sun.faces.facelets.tag.TagLibraryImpl;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
@@ -46,11 +47,12 @@ import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 
-public abstract class AbstractFaceletsLibrary implements Library {
+public abstract class AbstractFaceletsLibrary extends TagLibraryImpl implements Library {
 
     protected FaceletsLibrarySupport support;
 
-    public AbstractFaceletsLibrary(FaceletsLibrarySupport support) {
+    public AbstractFaceletsLibrary(FaceletsLibrarySupport support, String namespace) {
+        super(namespace);
         this.support = support;
     }
 
