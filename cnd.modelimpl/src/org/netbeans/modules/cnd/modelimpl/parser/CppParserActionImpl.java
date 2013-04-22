@@ -3404,8 +3404,32 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void end_conversion_function_id(Token token) {}
     @Override public void conversion_type_id(Token token) {}
     @Override public void end_conversion_type_id(Token token) {}
-    @Override public void ctor_initializer(Token token) {}
-    @Override public void end_ctor_initializer(Token token) {}
+    
+    @Override 
+    public void ctor_initializer(Token token) {
+        CsmObjectBuilder parent = builderContext.top();
+        
+        if (parent instanceof ConstructorDefinitionBuilder) { // paranoia
+            CharSequence[] scopeNames = ((SimpleDeclarationBuilder) parent).getScopeNames();
+            if (scopeNames != null && scopeNames.length > 0) {
+                globalSymTab.push();
+                enterNestedScopes(((SimpleDeclarationBuilder) parent).getScopeNames());
+            }
+        }
+    }
+    
+    @Override 
+    public void end_ctor_initializer(Token token) {
+        CsmObjectBuilder parent = builderContext.top();
+        
+        if (parent instanceof ConstructorDefinitionBuilder) {
+            CharSequence[] scopeNames = ((SimpleDeclarationBuilder) parent).getScopeNames();
+            if (scopeNames != null && scopeNames.length > 0) {
+                globalSymTab.pop(); // pop symtab only if it has been added                
+            }
+        }        
+    }
+    
     @Override public void mem_initializer_list(Token token) {}
     @Override public void mem_initializer_list(int kind, Token token) {}
     @Override public void end_mem_initializer_list(Token token) {}
