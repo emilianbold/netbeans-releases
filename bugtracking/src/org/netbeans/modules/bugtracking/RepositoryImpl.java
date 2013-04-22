@@ -54,9 +54,6 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.ui.nodes.RepositoryNode;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 
 
 /**
