@@ -114,6 +114,10 @@ public class FileModelNewGrammarTest extends TraceModelTestBase {
         performTest("multipleDeclarativeRegions.cpp");
     }
     
+    public void testNestedClassScope() throws Exception {
+        performTest("nestedClassScope.cpp");
+    }    
+    
 //    public void testMultipleMemberDeclaration() throws Exception {
 //        performTest("typedefEnum.cpp");
 //    } 
