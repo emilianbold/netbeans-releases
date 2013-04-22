@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.el.completion;
 
+import com.sun.el.parser.AstAssign;
 import com.sun.el.parser.AstDeferredExpression;
 import com.sun.el.parser.AstDotSuffix;
 import com.sun.el.parser.AstDynamicExpression;
@@ -56,6 +57,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -157,6 +159,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
 
         final Node nodeToResolve = getNodeToResolve(target, rootToNode);
+        final Map<AstIdentifier, Node> assignments = getAssignments(context.getParserResult(), context.getCaretOffset());
         final FileObject file = context.getParserResult().getSnapshot().getSource().getFileObject();
         JavaSource jsource = JavaSource.create(ClasspathInfo.create(file));
         try {
@@ -166,19 +169,23 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 public void run(CompilationController info) throws Exception {
                     info.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationContext ccontext = CompilationContext.create(file, info);
-                    Element resolved = ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve);
+                    Element resolved = ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve, assignments);
 
-                    if (ELTypeUtilities.isStaticIterableElement(ccontext, nodeToResolve)) {
+                    // assignments to resolve
+                    Node node = nodeToResolve instanceof AstIdentifier && assignments.containsKey((AstIdentifier) nodeToResolve) ?
+                            assignments.get((AstIdentifier) nodeToResolve) : nodeToResolve;
+
+                    if (ELTypeUtilities.isStaticIterableElement(ccontext, node)) {
                         proposeStream(ccontext, context, prefixMatcher, proposals);
-                    } else if (ELTypeUtilities.isRawObjectReference(ccontext, nodeToResolve)) {
-                        proposeRawObjectProperties(ccontext, context, prefixMatcher, nodeToResolve, proposals);
-                    } else if (ELTypeUtilities.isScopeObject(ccontext, nodeToResolve)) {
+                    } else if (ELTypeUtilities.isRawObjectReference(ccontext, node)) {
+                        proposeRawObjectProperties(ccontext, context, prefixMatcher, node, proposals);
+                    } else if (ELTypeUtilities.isScopeObject(ccontext, node)) {
                         // seems to be something like "sessionScope.^", so complete beans from the scope
-                        proposeBeansFromScope(ccontext, context, prefixMatcher, element, nodeToResolve, proposals);
-                    } else if (ELTypeUtilities.isResourceBundleVar(ccontext, nodeToResolve)) {
-                        proposeBundleKeysInDotNotation(context, prefixMatcher, element, nodeToResolve, proposals);
+                        proposeBeansFromScope(ccontext, context, prefixMatcher, element, node, proposals);
+                    } else if (ELTypeUtilities.isResourceBundleVar(ccontext, node)) {
+                        proposeBundleKeysInDotNotation(context, prefixMatcher, element, node, proposals);
                     } else if (resolved == null) {
-                        if (target instanceof AstDotSuffix == false && nodeToResolve instanceof AstFunction == false) {
+                        if (target instanceof AstDotSuffix == false && node instanceof AstFunction == false) {
                             proposeFunctions(ccontext, context, prefixMatcher, element, proposals);
                             proposeManagedBeans(ccontext, context, prefixMatcher, element, proposals);
                             proposeBundles(ccontext, context, prefixMatcher, element, proposals);
@@ -186,7 +193,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                             proposeImpicitObjects(ccontext, context, prefixMatcher, proposals);
                             proposeKeywords(context, prefixMatcher, proposals);
                         }
-                        if (ELStreamCompletionItem.STREAM_METHOD.equals(nodeToResolve.getImage())) {
+                        if (ELStreamCompletionItem.STREAM_METHOD.equals(node.getImage())) {
                             proposeOperators(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode);
                         }
                         ELJavaCompletion.propose(ccontext, context, element, target, proposals);
@@ -207,12 +214,13 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return proposals.isEmpty() ? CodeCompletionResult.NONE : result;
     }
 
-    private Node getNodeToResolve(Node target, List<Node> rootToNode) {
+    private static Node getNodeToResolve(Node target, List<Node> rootToNode) {
         Node previous = rootToNode.get(rootToNode.size() - 1);
         // due to the ast structure in the case of identifiers we need to try to resolve the type of the identifier,
         // otherwise the type of the preceding node.
         if (target instanceof AstIdentifier
-                && (previous instanceof AstIdentifier || previous instanceof AstDotSuffix || NodeUtil.isMethodCall(previous))) {
+                && ((previous instanceof AstIdentifier || previous instanceof AstDotSuffix || NodeUtil.isMethodCall(previous))
+                    || target.jjtGetParent() instanceof AstSemiColon)) {
             return target;
         } else {
             for (int i = rootToNode.size() - 1; i >= 0; i--) {
@@ -230,7 +238,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
     }
 
-    private ELElement getElementAt(ParserResult parserResult, int offset) {
+    private static ELElement getElementAt(ParserResult parserResult, int offset) {
         ELParserResult elParserResult = (ELParserResult) parserResult;
         ELElement result = elParserResult.getElementAt(offset);
         if (result == null || result.isValid()) {
@@ -239,6 +247,46 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         // try to sanitize
         ELSanitizer sanitizer = new ELSanitizer(result, offset - result.getOriginalOffset().getStart());
         return sanitizer.sanitized();
+    }
+
+    private static Map<AstIdentifier, Node> getAssignments(ParserResult parserResult, int offset) {
+        Map<AstIdentifier, Node> result = new HashMap<AstIdentifier, Node>();
+        ELParserResult elParserResult = (ELParserResult) parserResult;
+        for (ELElement elElement : elParserResult.getElementsTo(offset)) {
+            if (elElement.getError() != null) {
+                elElement = getElementAt(parserResult, elElement.getOriginalOffset().getEnd());
+            }
+            if (elElement.getNode() == null) {
+                continue;
+            }
+
+            Node leaf = getFirstLeaf(elElement.getNode());
+            AstPath astPath = new AstPath(elElement.getNode());
+            for (Node node : astPath.rootToLeaf()) {
+                if (node instanceof AstAssign) {
+                    Node leftSide = node.jjtGetChild(0);
+                    Node rightSide = getNodeToResolve(elElement.getNode(), astPath.rootToNode(leaf, true));
+                    if (leftSide instanceof AstIdentifier && rightSide instanceof Node) {
+                        result.put((AstIdentifier) leftSide, rightSide);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private static Node getFirstLeaf(Node root) {
+        AstPath astPath = new AstPath(root);
+        for (Node node : astPath.rootToLeaf()) {
+            if (node instanceof AstSemiColon) {
+                for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+                    Node childNode = node.jjtGetChild(i);
+                    AstPath path = new AstPath(childNode);
+                    return getNodeToResolve(childNode, path.rootToLeaf());
+                }
+            }
+        }
+        return getNodeToResolve(root, astPath.rootToLeaf());
     }
 
     /**

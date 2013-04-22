@@ -43,9 +43,6 @@
  */
 package org.netbeans.modules.websvc.rest.model.api;
 
-import org.netbeans.modules.websvc.rest.model.api.RestServices;
-import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
-
 /**
  *
  * @author mkuchtiak

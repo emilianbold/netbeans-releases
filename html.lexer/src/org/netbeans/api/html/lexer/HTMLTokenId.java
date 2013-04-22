@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.*;
 import org.netbeans.lib.html.lexer.HtmlLexer;
+import org.netbeans.lib.html.lexer.HtmlExpressions;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -101,7 +102,26 @@ public enum HTMLTokenId implements TokenId {
     /** HTML open tag symbol: <code> "&lt;"BODY&gt; </code>.*/
     TAG_OPEN_SYMBOL("tag"),
     /** HTML close tag symbol: <code> "&lt;/"BODY&gt; </code>.*/
-    TAG_CLOSE_SYMBOL("tag");
+    TAG_CLOSE_SYMBOL("tag"),
+    /**
+     * Custom expression language open delimiter. 
+     * <pre>"{{"var}}</pre>
+     * See {@link HtmlLexerELFactory#getOpenDelimiter()}.
+     */
+    EL_OPEN_DELIMITER("el-delimiter"),
+    /**
+     * Custom expression language close delimiter. 
+     * <pre>{{var"}}"</pre>
+     * See {@link HtmlLexerELFactory#getCloseDelimiter()}.
+     */
+    EL_CLOSE_DELIMITER("el-delimiter"),
+    /**
+     * Custom expression language expression content. 
+     * <pre>{{"var"}}</pre>
+     * See {@link HtmlLexerELFactory#getContentMimeType() }.
+     */
+    EL_CONTENT("el-content");
+    
     private final String primaryCategory;
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
     private static final String STYLE_MIMETYPE = "text/css";//NOI18N
@@ -248,6 +268,13 @@ public enum HTMLTokenId implements TokenId {
                 case STYLE:
                     mimeType = STYLE_MIMETYPE;
                     break;
+                case EL_CONTENT:
+                    Byte elContentProviderIndex = (Byte)token.getProperty(HtmlLexer.EL_CONTENT_PROVIDER_INDEX);
+                    if(elContentProviderIndex != null) {
+                        //set the token's mimetype
+                        mimeType = HtmlExpressions.getDefault().getMimeTypes()[elContentProviderIndex];
+                    }
+                    break;
             }
             if (mimeType != null) {
                 Language lang = Language.find(mimeType);
@@ -283,6 +310,7 @@ public enum HTMLTokenId implements TokenId {
      * @return name of the primary token category into which this token belongs
      *  or null if there is no primary category for this token.
      */
+    @Override
     public String primaryCategory() {
         return primaryCategory;
     }

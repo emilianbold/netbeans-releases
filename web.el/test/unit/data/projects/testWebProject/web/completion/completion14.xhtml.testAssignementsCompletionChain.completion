@@ -1,0 +1,10 @@
+Code completion result for source line:
+#{v.stream().average().|}
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     get()                           [PUBLIC]   Object
+METHOD     ifPresent(LambdaExpression lam  [PUBLIC]   void
+METHOD     orElse(Object other)            [PUBLIC]   Object
+METHOD     orElseGet(LambdaExpression oth  [PUBLIC]   Object
+METHOD     stream()                        [PUBLIC]   Stream
+PROPERTY   present                         [PUBLIC]   boolean
