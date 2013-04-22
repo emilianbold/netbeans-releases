@@ -51,6 +51,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,18 +101,24 @@ public final class JmeSdkCdcDetector extends CDCPlatformDetector {
         final String[] versionLines = versionOutput.split("\n");
         final String platformName = "CDC " + versionLines[0]; //without "CDC it colides with the CLDC platform
         final List<FileObject> jdocsAsFO = new ArrayList<FileObject>();
-        FileObject javadocBase = dir.getFileObject("docs/api/cdc-1.1"); //NOI18N
+        FileObject javadocBase = dir.getFileObject("docs/api"); //NOI18N
         if (javadocBase != null) {
             findJavaDoc(javadocBase, jdocsAsFO);
         }
 
-        //??Stringy?
-        //for docs to work you need to discuss with the mobility team
         final List<URL> jdocsAsURL = new ArrayList<URL>(jdocsAsFO.size());
         for (final FileObject fileObject : jdocsAsFO) {
-            //FIXME
-            //jdocsAsURL.add(fileObject.getURL());
+            jdocsAsURL.add(fileObject.toURL());
         }
+        
+        Comparator<URL> urlComparator = new Comparator<URL>() {
+            @Override
+            public int compare(URL o1, URL o2) {
+                return o1.getPath().compareTo(o2.getPath());
+            };
+        };
+        //Order javadoc folders by their names 
+        Collections.sort(jdocsAsURL, urlComparator);   
 
         final String ueiResultS = getEmulatorResult(dir, "-Xquery");
         final Properties ueiResult = new Properties();
@@ -203,7 +210,7 @@ public final class JmeSdkCdcDetector extends CDCPlatformDetector {
             if (fo.isFolder() && !folders.contains(fo.getParent())) {
                 findJavaDoc(fo, folders);
             }
-        }
+        }        
     }
 
     private CDCDevice[] getJavaMeSdkDevices(final Properties p) {
