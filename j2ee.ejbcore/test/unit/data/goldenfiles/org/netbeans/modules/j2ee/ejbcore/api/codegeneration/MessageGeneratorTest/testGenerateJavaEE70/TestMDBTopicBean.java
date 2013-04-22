@@ -1,5 +1,5 @@
 /*
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -14,17 +14,22 @@ import javax.jms.MessageListener;
  *
  * @author {user}
  */
-@MessageDriven(mappedName = "TestMessageDestination", activationConfig =  {
+@MessageDriven(activationConfig =  {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
-        @ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "Durable"),
-        @ActivationConfigProperty(propertyName = "clientId", propertyValue = "TestMDBTopicBean"),
-        @ActivationConfigProperty(propertyName = "subscriptionName", propertyValue = "TestMDBTopicBean"),
+        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "TestMessageDestination"),
+        @ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "durable"),
+        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Dups-ok-acknowledge"),
+        @ActivationConfigProperty(propertyName = "connectionFactoryLookup", propertyValue = "factoryLookup"),
+        @ActivationConfigProperty(propertyName = "clientId", propertyValue = "TestMessageDestination"),
+        @ActivationConfigProperty(propertyName = "subscriptionName", propertyValue = "TestMessageDestination"),
+        @ActivationConfigProperty(propertyName = "messageSelector", propertyValue = "selector")
     })
 public class TestMDBTopicBean implements MessageListener {
     
     public TestMDBTopicBean() {
     }
 
+    @Override
     public void onMessage(Message message) {
     }
     
