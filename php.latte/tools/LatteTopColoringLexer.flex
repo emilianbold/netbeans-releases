@@ -176,7 +176,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 WHITESPACE=[ \t\r\n]+
 COMMENT_START="*"
-COMMENT_END=~"*"
+COMMENT_CONTENT=([^\*] | \*[^\}\%])*
+COMMENT_END="*"
 LATTE_COMMENT_START={SYNTAX_LATTE_START}{COMMENT_START}
 LATTE_COMMENT_END={COMMENT_END}{SYNTAX_LATTE_END}
 DOUBLE_COMMENT_START={SYNTAX_DOUBLE_START}{COMMENT_START}
@@ -216,6 +217,7 @@ SYNTAX_PYTHON_END="%}"
     {PYTHON_COMMENT_START} {
         if (syntax == Syntax.PYTHON) {
             pushState(ST_COMMENT);
+            return LatteTopTokenId.T_LATTE_COMMENT_DELIMITER;
         }
     }
     {SYNTAX_PYTHON_START}[^ \t\r\n] {
@@ -228,6 +230,7 @@ SYNTAX_PYTHON_END="%}"
     {DOUBLE_COMMENT_START} {
         if (syntax == Syntax.DOUBLE || syntax == Syntax.PYTHON) {
             pushState(ST_COMMENT);
+            return LatteTopTokenId.T_LATTE_COMMENT_DELIMITER;
         }
     }
     {SYNTAX_DOUBLE_START}[^ \t\r\n{] {
@@ -248,6 +251,7 @@ SYNTAX_PYTHON_END="%}"
     {ASP_COMMENT_START} {
         if (syntax == Syntax.ASP) {
             pushState(ST_COMMENT);
+            return LatteTopTokenId.T_LATTE_COMMENT_DELIMITER;
         }
     }
     {SYNTAX_ASP_START}[^ \t\r\n] {
@@ -260,6 +264,7 @@ SYNTAX_PYTHON_END="%}"
     {LATTE_COMMENT_START} {
         if (syntax == Syntax.LATTE) {
             pushState(ST_COMMENT);
+            return LatteTopTokenId.T_LATTE_COMMENT_DELIMITER;
         }
     }
     {SYNTAX_LATTE_START}[^ \t\r\n{] {
@@ -382,30 +387,29 @@ SYNTAX_PYTHON_END="%}"
     {LATTE_COMMENT_END} {
         if (syntax == Syntax.LATTE) {
             popState();
-            return LatteTopTokenId.T_LATTE_COMMENT;
+            return LatteTopTokenId.T_LATTE_COMMENT_DELIMITER;
         }
     }
     {DOUBLE_COMMENT_END} {
         if (syntax == Syntax.DOUBLE || syntax == Syntax.PYTHON) {
             popState();
-            return LatteTopTokenId.T_LATTE_COMMENT;
+            return LatteTopTokenId.T_LATTE_COMMENT_DELIMITER;
         }
     }
     {ASP_COMMENT_END} {
         if (syntax == Syntax.ASP) {
             popState();
-            return LatteTopTokenId.T_LATTE_COMMENT;
+            return LatteTopTokenId.T_LATTE_COMMENT_DELIMITER;
         }
     }
     {PYTHON_COMMENT_END} {
         if (syntax == Syntax.PYTHON) {
             popState();
-            return LatteTopTokenId.T_LATTE_COMMENT;
+            return LatteTopTokenId.T_LATTE_COMMENT_DELIMITER;
         }
     }
-    . {
-        popState();
-        return LatteTopTokenId.T_HTML;
+    {COMMENT_CONTENT} {
+        return LatteTopTokenId.T_LATTE_COMMENT;
     }
 }
 

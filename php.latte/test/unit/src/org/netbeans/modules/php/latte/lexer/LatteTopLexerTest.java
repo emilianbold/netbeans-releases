@@ -114,6 +114,10 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
         performTest("n-multiple-in-one-element");
     }
 
+    public void testCommentWithAsterisk() throws Exception {
+        performTest("comment-with-asterisk");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".latte"));

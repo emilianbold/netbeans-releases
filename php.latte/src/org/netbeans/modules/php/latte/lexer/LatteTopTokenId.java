@@ -66,7 +66,8 @@ public enum LatteTopTokenId implements TokenId {
     T_LATTE("latte-markup"), //NOI18N
     T_LATTE_ERROR("latte-error"), //NOI18N
     T_LATTE_DELIMITER("latte-delimiter"), //NOI18N
-    T_LATTE_COMMENT("latte-comment"); //NOI18N
+    T_LATTE_COMMENT("latte-comment"), //NOI18N
+    T_LATTE_COMMENT_DELIMITER("latte-comment"); //NOI18N
     private String primaryCategory;
 
     private LatteTopTokenId(String primaryCategory) {
