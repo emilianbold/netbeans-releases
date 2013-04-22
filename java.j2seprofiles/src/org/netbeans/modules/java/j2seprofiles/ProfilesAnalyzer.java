@@ -115,7 +115,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class ProfilesAnalyzer implements Analyzer {
 
-    private static final String ICON = "org/netbeans/modules/java/j2seprofiles/resources/profile.gif"; //NOI18N
+    private static final String ICON = "org/netbeans/modules/java/j2seprofiles/resources/profile.png"; //NOI18N
     
     private final Context context;
     private final Result result;
