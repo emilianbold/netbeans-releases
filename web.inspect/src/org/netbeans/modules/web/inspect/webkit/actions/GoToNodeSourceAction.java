@@ -59,6 +59,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -195,7 +196,9 @@ public class GoToNodeSourceAction extends NodeAction  {
             } else {
                 HtmlParsingResult result = (HtmlParsingResult)htmlResultIterator.getParserResult();
                 Node nodeToShow = findNode(result, node);
-                offsetToShow = nodeToShow.from();
+                Snapshot snapshot = htmlResultIterator.getSnapshot();
+                int snapshotOffset = nodeToShow.from();
+                offsetToShow = snapshot.getOriginalOffset(snapshotOffset);
             }
             EventQueue.invokeLater(new Runnable() {
                 @Override
