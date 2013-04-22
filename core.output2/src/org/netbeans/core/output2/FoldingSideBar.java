@@ -42,14 +42,12 @@
 
 package org.netbeans.core.output2;
 
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -77,6 +75,7 @@ public class FoldingSideBar extends JComponent {
     private AbstractLines lines;
     private int charsPerLine = 80;
     private boolean wrapped;
+    private int activeFold = -1;
 
     public FoldingSideBar(JEditorPane textView, AbstractOutputPane outputPane) {
         this.textView = textView;
@@ -173,11 +172,14 @@ public class FoldingSideBar extends JComponent {
         if (nextOffset == 1) {
             drawButton(g, startY, endY, line);
         } else if (currOffset != 0 && currOffset + 1 == nextOffset) {
+            if (isActive(line)) {
+                g.drawLine(6, startY, 6, endY);
+            }
             g.drawLine(7, startY, 7, endY);
         } else if (currOffset > 0 && nextOffset == 0) {
-            drawFoldEnd(g, startY, lineMid(endY, lineHeight, descent));
+            drawFoldEnd(g, line, startY, lineMid(endY, lineHeight, descent));
         } else if (currOffset > 0 && nextOffset > 0) {
-            drawNestedFoldEnd(g, startY, endY,
+            drawNestedFoldEnd(g, line, startY, endY,
                     lineMid(endY, lineHeight, descent));
         }
     }
@@ -204,6 +206,9 @@ public class FoldingSideBar extends JComponent {
         if (lineEndY > lineStartY + 10
                 && (!collapsed || isLastVisibleLineInFold(line))) {
             g.drawLine(7, lineStartY + 10, 7, lineEndY);
+            if (isActive(line)) {
+                g.drawLine(6, lineStartY + 10, 6, lineEndY);
+            }
         }
     }
 
@@ -224,10 +229,17 @@ public class FoldingSideBar extends JComponent {
      * @param lineStartY Y coordinate of the start of the line.
      * @param lineMid Y coordinate of the middle of the last logical line.
      */
-    private void drawNestedFoldEnd(Graphics g, int lineStartY, int lineEndY,
-            int lineMid) {
+    private void drawNestedFoldEnd(Graphics g, int lineIndex,
+            int lineStartY, int lineEndY, int lineMid) {
         g.drawLine(7, lineStartY, 7, lineEndY);
         g.drawLine(7, lineMid, 11, lineMid);
+        if (isActive(lineIndex)) {
+            g.drawLine(6, lineStartY, 6, lineMid);
+            g.drawLine(7, lineMid - 1, 11, lineMid - 1);
+            if (isActive(findNextVisibleLine(lineIndex))) {
+                g.drawLine(6, lineMid, 6, lineEndY);
+            }
+        }
     }
 
     /**
@@ -237,9 +249,14 @@ public class FoldingSideBar extends JComponent {
      * @param lineStartY Y coordinate of the start of the line.
      * @param lineMid Y coordinate of the middle of the last logical line.
      */
-    private void drawFoldEnd(Graphics g, int lineStartY, int lineMid) {
+    private void drawFoldEnd(Graphics g, int lineIndex, int lineStartY,
+            int lineMid) {
         g.drawLine(7, lineStartY, 7, lineMid);
         g.drawLine(7, lineMid, 11, lineMid);
+        if (isActive(lineIndex)) {
+            g.drawLine(6, lineStartY, 6, lineMid);
+            g.drawLine(7, lineMid - 1, 11, lineMid - 1);
+        }
     }
 
     /**
@@ -292,22 +309,43 @@ public class FoldingSideBar extends JComponent {
         repaint();
     }
 
+    /**
+     * Check whether the the line belong to the fold under cursor.
+     *
+     * @param line Physical line index.
+     */
+    private boolean isActive(int line) {
+        int parent = line;
+        while (parent != activeFold && parent >= 0) {
+            int foldOffset = lines.getFoldOffsets().get(parent);
+            if (foldOffset == 0) {
+                break;
+            } else {
+                parent = parent - foldOffset;
+            }
+        }
+        return parent == activeFold;
+    }
+
     private class FoldingMouseListener extends MouseAdapter {
 
         @Override
+        public void mouseExited(MouseEvent e) {
+            activeFold = -1;
+            repaint();
+        }
+
+        @Override
         public void mouseMoved(MouseEvent e) {
-            int physicalRealLine = getLineForEvent(e);            
-            if (isFoldStartLine(physicalRealLine)) {
-                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            } else {
-                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            }
+            int physicalRealLine = getLineForEvent(e);
+            updateActiveFold(physicalRealLine);
         }
 
         @Override
         public void mouseClicked(MouseEvent e) {
             int physicalRealLine = getLineForEvent(e);
-            if (isFoldStartLine(physicalRealLine)) {
+            updateActiveFold(physicalRealLine);
+            if (activeFold == physicalRealLine) {
                 if (lines.isVisible(physicalRealLine + 1)) {
                     lines.hideFold(physicalRealLine);
                 } else {
@@ -316,10 +354,22 @@ public class FoldingSideBar extends JComponent {
             }
         }
 
-        private boolean isFoldStartLine(int physicalLine) {
-            return physicalLine >= 0
-                    && physicalLine + 1 < lines.getFoldOffsets().size()
-                    && lines.getFoldOffsets().get(physicalLine + 1) == 1;
+        private void updateActiveFold(int physicalLine) {
+            int origActiveFold = activeFold;
+            if (physicalLine < 0) {
+                activeFold = -1;
+            } else if (physicalLine + 1 < lines.getFoldOffsets().size()
+                    && lines.getFoldOffsets().get(physicalLine + 1) == 1) {
+                activeFold = physicalLine;
+            } else if (physicalLine < lines.getFoldOffsets().size()) {
+                activeFold = physicalLine
+                        - lines.getFoldOffsets().get(physicalLine);
+            } else {
+                activeFold = -1;
+            }
+            if (activeFold != origActiveFold) {
+                repaint();
+            }
         }
 
         private int getLineForEvent(MouseEvent e) {
