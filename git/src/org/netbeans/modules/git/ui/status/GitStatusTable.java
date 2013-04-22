@@ -71,6 +71,7 @@ import org.netbeans.modules.git.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.git.ui.commit.IncludeInCommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
+import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.status.VersioningPanelController.GitStatusNodeImpl;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
@@ -165,6 +166,12 @@ class GitStatusTable extends VCSStatusTable<GitStatusNodeImpl> {
                 item = menu.add(iica);
                 Mnemonics.setLocalizedText(item, item.getText());
             }
+        }
+        SystemActionBridge ia = SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
+                NbBundle.getMessage(IgnoreAction.class, "LBL_IgnoreAction_PopupName"), lkp);
+        if (ia.isEnabled()) {
+            item = menu.add(ia);
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }
         item = menu.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"), lkp)); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
