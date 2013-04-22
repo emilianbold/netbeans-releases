@@ -228,7 +228,7 @@ public final class MessageGenerator {
                 List<ExpressionTree> values = new ArrayList<ExpressionTree>(2);
                 ExpressionTree nameQualIdent = tm.QualIdent("name"); //NOI18N
                 values.add(tm.Assignment(nameQualIdent, tm.Literal(properties.get("destinationLookup")))); //NOI18N
-                ExpressionTree classnameQualIdent = tm.QualIdent("className"); //NOI18N
+                ExpressionTree classnameQualIdent = tm.QualIdent("interfaceName"); //NOI18N
                 values.add(tm.Assignment(classnameQualIdent, tm.Literal(properties.get("destinationType")))); //NOI18N
                 ExpressionTree resourceAdapterQualIdent = tm.QualIdent("resourceAdapter"); //NOI18N
                 values.add(tm.Assignment(resourceAdapterQualIdent, tm.Literal("jmsra"))); //NOI18N
