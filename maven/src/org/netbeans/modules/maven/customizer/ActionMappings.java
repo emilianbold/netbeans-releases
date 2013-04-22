@@ -641,7 +641,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                 //add
                 JPanel pnl = new JPanel();
                 pnl.setLayout(new FlowLayout(FlowLayout.LEADING));
-                pnl.add(new JLabel("Set Icon:"));
+                pnl.add(new JLabel(LBL_SetIcon()));
                 List<String> allIcons = RunCustomMavenAction.createAllActionIcons();
                 for (int i = 0; i < lstMappings.getModel().getSize(); i++) {
                     MappingWrapper wr0 = (MappingWrapper) lstMappings.getModel().getElementAt(i);
@@ -672,11 +672,11 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                     });
                 } else {
                     hasAvailable = false;
-                    pnl.add(new JLabel("<No more slots available>"));
+                    pnl.add(new JLabel(LBL_No_More_Icons()));
                 }
-                DialogDescriptor dd = new DialogDescriptor(pnl, "Set Toolbar Action Icon");
+                DialogDescriptor dd = new DialogDescriptor(pnl, TIT_SetIcon());
                 if (!hasAvailable) {
-                    dd.setOptions(new Object[] {"Close"});
+                    dd.setOptions(new Object[] {BTN_Close()});
                     dd.setClosingOptions(dd.getOptions());
                 }
                 Object ret = DialogDisplayer.getDefault().notify(dd);
@@ -688,6 +688,11 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         }
     }//GEN-LAST:event_jButton1ActionPerformed
     
+    @Messages({"LBL_SetIcon=Set Icon:",
+               "LBL_No_More_Icons=<No more slots available>",
+               "BTN_Close=Close",
+               "TIT_SetIcon=Set Toolbar Action Icon"
+    })
     private void loadMappings() {
         DefaultListModel model = new DefaultListModel();
 
@@ -797,7 +802,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         if (handle == null) { //only global settings
             jButton1.setEnabled(false);
             jButton1.setIcon(null);
-            jButton1.setText("Show in Toolbar");
+            jButton1.setText(BTN_ShowToolbar());
         }
     }
     
@@ -898,17 +903,20 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         }
         return actionmappings;
     }
-
+    @Messages({
+        "BTN_ShowToolbar=Show in Toolbar",
+        "BTN_HideToolbar=Hide from Toolbar"
+    })
     private void updateToolbarButton(MappingWrapper wr) {
         //TODO exclude run/debug and any default mappings.
         jButton1.setEnabled(true);
         if (wr.getToolbarIconPath() != null) {
             //TODO set title?? show icon?
             jButton1.setIcon(ImageUtilities.loadImageIcon(wr.getToolbarIconPath(), false));
-            jButton1.setText("Hide from Toolbar");
+            jButton1.setText(BTN_HideToolbar());
         } else {
             jButton1.setIcon(null);
-            jButton1.setText("Show in Toolbar");
+            jButton1.setText(BTN_ShowToolbar());
         }
     }
 
@@ -1172,7 +1180,9 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
 
     private class DepsListener implements ActionListener {
         private boolean shown = false;
-        @Override public void actionPerformed(ActionEvent e) {
+        @Override
+        @Messages("HINT_Build_WithDependencies=<html><h2>Please note:</h2>Build with Dependencies delegates to the action of the same name and performs it before the current action is performed.<p> The Build with Dependencies action relies on Maven's --project-list and --also-make switches to perform its duties.")
+        public void actionPerformed(ActionEvent e) {
             MappingWrapper map = (MappingWrapper)lstMappings.getSelectedValue();
             if (map != null) {
                 if (!map.isUserDefined()) {
@@ -1188,7 +1198,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                 }
                 if (cbBuildWithDeps.isSelected()) {
                     if (!shown && DontShowAgainSettings.getDefault().showWarningAboutBuildWithDependencies()) {
-                        WarnPanel panel = new WarnPanel(NbBundle.getMessage(ActionMappings.class, "HINT_Build_WithDependencies"));
+                        WarnPanel panel = new WarnPanel(HINT_Build_WithDependencies());
                         NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.PLAIN_MESSAGE);
                         DialogDisplayer.getDefault().notify(dd);
                         if (panel.disabledWarning()) {
