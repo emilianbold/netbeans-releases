@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.ui.nodes;
+package org.netbeans.modules.bugtracking.bridge.nodes;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -49,11 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
-import org.netbeans.modules.bugtracking.ui.query.QueryAction;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.AbstractNode;
@@ -67,9 +64,9 @@ import org.openide.util.actions.SystemAction;
  * @author Tomas Stupka
  */
 public class RepositoryNode extends AbstractNode implements PropertyChangeListener {
-    private RepositoryImpl repository;
+    private Repository repository;
 
-    public RepositoryNode(RepositoryImpl repository) {
+    public RepositoryNode(Repository repository) {
         super(Children.LEAF);
         this.repository = repository;
         setName(repository.getDisplayName());
@@ -84,22 +81,22 @@ public class RepositoryNode extends AbstractNode implements PropertyChangeListen
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            new AbstractAction(SystemAction.get(QueryAction.class).getName()) {
+            new AbstractAction("Query") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    QueryAction.openQuery(null, repository);
+                    Util.createNewQuery(repository);
                 }
             },
-            new AbstractAction(SystemAction.get(IssueAction.class).getName()) {
+            new AbstractAction("Issue") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    IssueAction.createIssue(repository);
+                    Util.createNewIssue(repository);
                 }
             },
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_EditRepository")) { // NOI18N
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    BugtrackingUtil.editRepository(repository.getRepository());
+                    repository.edit();
                 }
             },
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_RemoveRepository")) { // NOI18N

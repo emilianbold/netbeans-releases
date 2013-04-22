@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.bugtracking.ui.nodes;
+package org.netbeans.modules.bugtracking.bridge.nodes;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -53,14 +53,15 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.RepositoryImplComparator;
+import org.netbeans.modules.bugtracking.util.RepositoryComparator;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
 import org.openide.util.Mutex;
@@ -75,6 +76,8 @@ import org.openide.windows.WindowManager;
  * @author Tomas Stupka
  */
 public class BugtrackingRootNode extends AbstractNode {
+    
+    private static final Logger LOG = Logger.getLogger(BugtrackingRootNode.class.getName());
     
     private static final String BUGTRACKING_NODE_NAME = "bugtracking";                                       // NOI18N
     private static final String ICON_BASE = "org/netbeans/modules/bugtracking/ui/resources/bugtracking.png"; // NOI18N
@@ -102,7 +105,7 @@ public class BugtrackingRootNode extends AbstractNode {
      */
     @ServicesTabNodeRegistration(
         name="bugtracking",                                                                 // NOI18N
-        displayName="org.netbeans.modules.bugtracking.ui.nodes.Bundle#LBL_BugtrackingNode", // NOI18N
+        displayName="org.netbeans.modules.bugtracking.bridge.nodes.Bundle#LBL_BugtrackingNode", // NOI18N
         iconResource="org/netbeans/modules/bugtracking/ui/resources/bugtracking.png",       // NOI18N
         position=588
     )
@@ -121,48 +124,48 @@ public class BugtrackingRootNode extends AbstractNode {
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_CreateRepository")) { // NOI18N
             @Override
                 public void actionPerformed(ActionEvent e) {
-                    BugtrackingUtil.createRepository();
+                    RepositoryManager.getInstance().createRepository();
                 }
             }
         };
     }
     
-    private static class RootNodeChildren extends ChildFactory<RepositoryImpl> implements PropertyChangeListener  {
+    private static class RootNodeChildren extends ChildFactory<Repository> implements PropertyChangeListener  {
 
         /**
          * Creates a new instance of RootNodeChildren
          */
         public RootNodeChildren() {
-            RepositoryRegistry.getInstance().addPropertyChangeListener(this);
+            RepositoryManager.getInstance().addPropertChangeListener(this);
         }
 
         @Override
-        protected Node createNodeForKey(RepositoryImpl key) {
+        protected Node createNodeForKey(Repository key) {
             return new RepositoryNode(key);
         }
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
+            if(evt.getPropertyName().equals(RepositoryManager.EVENT_REPOSITORIES_CHANGED)) {
                 refresh(false);
             }
         }
 
         @Override
-        protected boolean createKeys(List<RepositoryImpl> toPopulate) {
-            Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories();
+        protected boolean createKeys(List<Repository> toPopulate) {
+            Collection<Repository> repos = RepositoryManager.getInstance().getRepositories();
             
             // populate only mutable repositories -> those that the user can edit or delete
-            Iterator<RepositoryImpl> it = repos.iterator();
+            Iterator<Repository> it = repos.iterator();
             while(it.hasNext()) {
-                RepositoryImpl repo = it.next();
+                Repository repo = it.next();
                 if(!repo.isMutable()) {
                     it.remove();
                 }
             }
             
             toPopulate.addAll(repos);
-            Collections.sort(toPopulate, new RepositoryImplComparator());
+            Collections.sort(toPopulate, new RepositoryComparator());
             return true;
         }
     }
@@ -174,13 +177,13 @@ public class BugtrackingRootNode extends AbstractNode {
                 TopComponent tab = WindowManager.getDefault().findTopComponent("services"); // NOI18N
                 if (tab == null) {
                     // XXX have no way to open it, other than by calling ServicesTabAction
-                    BugtrackingManager.LOG.fine("No ServicesTab found"); // NOI18N
+                    LOG.fine("No ServicesTab found"); // NOI18N
                     return;
                 }
                 tab.open();
                 tab.requestActive();
                 if (!(tab instanceof ExplorerManager.Provider)) {
-                    BugtrackingManager.LOG.fine("ServicesTab not an ExplorerManager.Provider"); // NOI18N
+                    LOG.fine("ServicesTab not an ExplorerManager.Provider"); // NOI18N
                     return;
                 }
                 final ExplorerManager mgr = ((ExplorerManager.Provider) tab).getExplorerManager();
@@ -190,14 +193,14 @@ public class BugtrackingRootNode extends AbstractNode {
                     public void run() {
                         Node repository = NodeOp.findChild(root, BUGTRACKING_NODE_NAME);
                         if (repository == null) {
-                            BugtrackingManager.LOG.fine("ServicesTab does not contain node " + BUGTRACKING_NODE_NAME); // NOI18N
+                            LOG.fine("ServicesTab does not contain node " + BUGTRACKING_NODE_NAME); // NOI18N
                             return;
                         }
                         Node _selected;
                         try {
                             _selected = NodeOp.findPath(repository, path);
                         } catch (NodeNotFoundException x) {
-                            BugtrackingManager.LOG.log(Level.FINE, "Could not find subnode", x); // NOI18N
+                            LOG.log(Level.FINE, "Could not find subnode", x); // NOI18N
                             _selected = x.getClosestNode();
                         }
                         final Node selected = _selected;
@@ -207,7 +210,7 @@ public class BugtrackingRootNode extends AbstractNode {
                                 try {
                                     mgr.setSelectedNodes(new Node[] {selected});
                                 } catch (PropertyVetoException x) {
-                                    BugtrackingManager.LOG.log(Level.FINE, "Could not select path", x); // NOI18N
+                                    LOG.log(Level.FINE, "Could not select path", x); // NOI18N
                                 }
                             }
                         });
