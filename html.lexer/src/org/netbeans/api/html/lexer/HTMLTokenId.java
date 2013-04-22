@@ -108,19 +108,19 @@ public enum HTMLTokenId implements TokenId {
      * <pre>"{{"var}}</pre>
      * See {@link HtmlLexerELFactory#getOpenDelimiter()}.
      */
-    EL_OPEN_DELIMITER("el"),
+    EL_OPEN_DELIMITER("el-delimiter"),
     /**
      * Custom expression language close delimiter. 
      * <pre>{{var"}}"</pre>
      * See {@link HtmlLexerELFactory#getCloseDelimiter()}.
      */
-    EL_CLOSE_DELIMITER("el"),
+    EL_CLOSE_DELIMITER("el-delimiter"),
     /**
      * Custom expression language expression content. 
      * <pre>{{"var"}}</pre>
      * See {@link HtmlLexerELFactory#getContentMimeType() }.
      */
-    EL_CONTENT("el");
+    EL_CONTENT("el-content");
     
     private final String primaryCategory;
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
