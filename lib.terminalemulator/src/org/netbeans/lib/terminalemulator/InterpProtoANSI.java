@@ -101,6 +101,7 @@ class InterpProtoANSI extends InterpDumb {
 	    st_esc_lb.setAction('K', st_base, new ACT_K());
 	    st_esc_lb.setAction('L', st_base, new ACT_AL());
 	    st_esc_lb.setAction('M', st_base, new ACT_DL());
+	    st_esc_lb.setAction('P', st_base, new ACT_DC());
 	    st_esc_lb.setAction('X', st_base, new ACT_ECH());
 	    st_esc_lb.setAction('Z', st_base, new ACT_CBT());
 	    st_esc_lb.setAction('@', st_base, new ACT_IC());
