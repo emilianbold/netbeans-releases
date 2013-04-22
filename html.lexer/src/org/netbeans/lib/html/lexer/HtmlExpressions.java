@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,51 +34,74 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.lib.html.lexer;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Set;
-import junit.framework.TestCase;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.html.lexer.HtmlExpression;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /**
- * HTMLLanguage test
  *
- * @author Marek Fukala
+ * @author marekfukala
  */
-public class HtmlLanguageTest extends TestCase {
-
-    private static final int IDS_SIZE = 10;
+public class HtmlExpressions {
     
-    public HtmlLanguageTest(String testName) {
-        super(testName);
+    private static HtmlExpressions DEFAULT;
+
+    public static synchronized HtmlExpressions getDefault() {
+        if(DEFAULT == null) {
+            DEFAULT = new HtmlExpressions();
+        }
+        return DEFAULT;
     }
     
-    protected void setUp() throws java.lang.Exception {
-    }
+    private Lookup.Result<HtmlExpression> lookupResult;
+    
+    private String[][] data;
+    
+    private HtmlExpressions() {
+        Lookup lookup = MimeLookup.getLookup("text/html");
+        lookupResult = lookup.lookupResult(HtmlExpression.class);
+        lookupResult.addLookupListener(new LookupListener() {
 
-    protected void tearDown() throws java.lang.Exception {
-    }
-
-    public void testTokenIds() {
-        // Check that token ids are all present and correctly ordered
-        Language language = HTMLTokenId.language();
-
-        // Check token categories
-        Set testTids = language.tokenCategories();
-        Collection tids = Arrays.asList(new String[] {
-            "text", "script", "style", "ws", "error", "tag", "tag", "argument",
-            "operator", "value", "block-comment", "sgml-comment", "sgml-declaration", 
-            "character", "text", "tag", "tag", "xml-pi", "el"
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                refresh();
+            }
         });
-        LexerTestUtilities.assertCollectionsEqual("Invalid token ids", tids, testTids);
-                
+        
+        refresh();
     }
-
+    
+    private void refresh() {
+        Collection<? extends HtmlExpression> allInstances = lookupResult.allInstances();
+        data = new String[3][allInstances.size()];
+        int idx = 0;
+        for(HtmlExpression fact : allInstances) {
+            data[0][idx] = fact.getOpenDelimiter();
+            data[1][idx] = fact.getCloseDelimiter();
+            data[2][idx] = fact.getContentMimeType();
+        }
+    }
+    
+    public String[] getOpenDelimiters() {
+        return data[0];
+    }
+    
+    public String[] getCloseDelimiters() {
+        return data[1];
+    }
+    
+    public String[] getMimeTypes() {
+        return data[2];
+    }
+    
 }
