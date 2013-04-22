@@ -42,17 +42,22 @@
 package org.netbeans.modules.glassfish.common.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.tools.ide.data.GlassFishJavaSEConfig;
 import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
 import org.glassfish.tools.ide.server.config.JavaSEPlatform;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
@@ -64,6 +69,22 @@ import org.openide.util.Parameters;
  */
 public class JavaUtils {
     
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Local logger. */
+    private static final Logger LOGGER
+            = GlassFishLogger.get(JavaUtils.class);
+
+    /** Platform display name prefix (including trailing space). */
+    private static final String
+            GF_PLATFORM_DISPLAY_NAME_PREFIX = "JDK ";
+
+    /** Platform display name suffix (including leading space). */
+    private static final String
+            GF_PLATFORM_DISPLAY_NAME_SUFFIX = " (GlassFish)";
+
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
@@ -226,6 +247,56 @@ public class JavaUtils {
             }
         }
         return javaHome;
+    }
+
+    /**
+     * Verify Java platform and register it when needed.
+     * <p/>
+     * @param javaHome Installation folder of Java platform.
+     * @return Value of <code>true</code> when Java platform is valid JDK
+     *         installation folder or <code>false</code> otherwise.
+     */
+    public static boolean checkAndRegisterJavaPlatform(final String javaHome) {
+        // Value of null is not installation folder of Java platform.
+        if (javaHome == null) {
+            return false;
+        }
+        File javaHomeFile = new File(javaHome);
+        // Java home must be readable directory.
+        if (javaHomeFile.isDirectory() && javaHomeFile.canRead()) {
+            // Check for already registered platforms.
+            if (findInstalledPlatform(javaHomeFile) != null) {
+                return true;
+            }
+            // Otherwise check for Java version and register when valid.
+            File javaVm = new File(org.glassfish.tools.ide.utils
+                    .JavaUtils.javaVmExecutableFullPath(javaHome));
+            if (javaVm.canExecute()) {
+                org.glassfish.tools.ide.utils.JavaUtils.JavaVersion javaVersion
+                        = org.glassfish.tools.ide.utils
+                        .JavaUtils.javaVmVersion(javaVm);
+                if (javaVersion != null) {
+                    String platformversion = javaVersion.toPlatform().toString();
+                    StringBuilder sb = new StringBuilder(
+                            GF_PLATFORM_DISPLAY_NAME_PREFIX.length()
+                            + GF_PLATFORM_DISPLAY_NAME_SUFFIX.length()
+                            + platformversion.length());
+                    sb.append(GF_PLATFORM_DISPLAY_NAME_PREFIX);
+                    sb.append(platformversion);
+                    sb.append(GF_PLATFORM_DISPLAY_NAME_SUFFIX);
+                    try {                        
+                        J2SEPlatformCreator.createJ2SEPlatform(
+                                FileUtil.toFileObject(javaHomeFile),
+                                sb.toString());
+                        return true;
+                    } catch (IOException ioe) {
+                        LOGGER.log(Level.INFO,
+                                "Unable to register Java platform {0}", javaHome);
+                    }
+                }
+            }
+        }
+        return false;
     }
 
 }

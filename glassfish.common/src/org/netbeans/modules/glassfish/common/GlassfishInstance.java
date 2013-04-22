@@ -63,6 +63,7 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.modules.glassfish.common.ui.GlassFishPropertiesCustomizer;
 import org.netbeans.modules.glassfish.common.ui.WarnPanel;
+import org.netbeans.modules.glassfish.common.utils.JavaUtils;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.*;
@@ -585,6 +586,11 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             }
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
             fixImportedAttributes(ip, instanceFO);
+            // Java platform is verified and eventually registered.
+            if (!JavaUtils.checkAndRegisterJavaPlatform(
+                    ip.get(GlassfishModule.JAVA_PLATFORM_ATTR))) {
+                ip.remove(GlassfishModule.JAVA_PLATFORM_ATTR);
+            }
             instance = create(ip,GlassfishInstanceProvider.getProvider(),false);
             // Display warning popup message for GlassFish 3.1.2 which is known
             // to have bug in WS.
