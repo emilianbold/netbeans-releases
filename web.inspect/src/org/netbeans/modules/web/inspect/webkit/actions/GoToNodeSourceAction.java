@@ -379,6 +379,19 @@ public class GoToNodeSourceAction extends NodeAction  {
             if (sourceNode instanceof OpenTag) {
                 OpenTag tag = (OpenTag)sourceNode;
 
+                // Check the tag names
+                String sourceTagName = tag.name().toString();
+                if (!domNode.getNodeName().equalsIgnoreCase(sourceTagName)) {
+                    return false;
+                }
+                // Some tags are unique - no need to check anything besides their name.
+                if ("html".equalsIgnoreCase(sourceTagName) // NOI18N
+                        || "body".equalsIgnoreCase(sourceTagName) // NOI18N
+                        || "head".equalsIgnoreCase(sourceTagName) // NOI18N
+                        || "title".equalsIgnoreCase(sourceTagName)) { // NOI18N
+                    return true;
+                }
+
                 // Check the ID
                 org.netbeans.modules.web.webkit.debugging.api.dom.Node.Attribute domAttr = domNode.getAttribute("id"); // NOI18N
                 String domID = (domAttr == null) ? null : domAttr.getValue();
@@ -390,11 +403,6 @@ public class GoToNodeSourceAction extends NodeAction  {
                 }
                 if ((domID != null) && domID.equals(sourceID)) {
                     return true;
-                }
-                
-                // Check the tag names
-                if (!domNode.getNodeName().equalsIgnoreCase(tag.name().toString())) {
-                    return false;
                 }
                 
                 // Check if attributes are the same
