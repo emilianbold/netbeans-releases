@@ -45,6 +45,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.beans.PropertyChangeEvent;
 import java.io.CharConversionException;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -55,6 +56,7 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.tasks.ui.DashboardTopComponent;
 import org.netbeans.modules.tasks.ui.QuickSearchPanel;
+import org.netbeans.modules.tasks.ui.cache.DashboardStorage;
 import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
@@ -239,5 +241,10 @@ public class Utils {
             Issue selectedTask = quickSearchPanel.getSelectedTask();
             open.setEnabled(selectedTask != null);
         }
+    }
+
+    public static boolean isRepositoryOpened(String repositoryId) {
+        List<String> closedIds = DashboardStorage.getInstance().readClosedRepositories();
+        return !closedIds.contains(repositoryId);
     }
 }
