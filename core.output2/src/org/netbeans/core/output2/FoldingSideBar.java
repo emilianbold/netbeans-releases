@@ -87,7 +87,7 @@ public class FoldingSideBar extends JComponent {
                     }
                 });
         setMinimumSize(new Dimension(BAR_WIDTH, 0));
-        setPreferredSize(new Dimension(BAR_WIDTH, Integer.MAX_VALUE));
+        setPreferredSize(new Dimension(BAR_WIDTH, 1024));
         setMaximumSize(new Dimension(BAR_WIDTH, Integer.MAX_VALUE));
         wrapped = outputPane.isWrapped();
         addMouseListener(new FoldingMouseListener());
