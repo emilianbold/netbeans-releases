@@ -204,9 +204,9 @@ public class ProfilesAnalyzer implements Analyzer {
             }
         }
         final ProfileProvider pp = new ProfileProvider(context);
-        final HashMap<URI,Set<Project>> submittedBinaries = new HashMap<>();
+        final HashMap<Pair<URI,SourceLevelQuery.Profile>,Set<Project>> submittedBinaries = new HashMap<>();
         final Set<URI> submittedSources = new HashSet<>();
-        final CollectorFactory cf = new CollectorFactory();
+        final CollectorFactory.ViolationsProvider vp = new CollectorFactory.ViolationsProvider();
         for (FileObject root : roots) {
             if (canceled.get()) {
                 break;
@@ -226,14 +226,14 @@ public class ProfilesAnalyzer implements Analyzer {
                 final Set<Project> projectRefs = new HashSet<>();
                 ProfileSupport.findProfileViolations(
                     profile,
-                    cpToRootUrls(boot, null, null, null),
-                    cpToRootUrls(compile, owner, submittedBinaries, projectRefs),
+                    cpToRootUrls(boot, profile, null, null, null),
+                    cpToRootUrls(compile, profile, owner, submittedBinaries, projectRefs),
                     Collections.singleton(root.toURL()),
                     EnumSet.of(
                         ProfileSupport.Validation.BINARIES_BY_MANIFEST,
                         ProfileSupport.Validation.BINARIES_BY_CLASS_FILES,
                         ProfileSupport.Validation.SOURCES),
-                    cf);
+                    new CollectorFactory(vp, profile, canceled));
                 verifySubProjects(projectRefs, owner, profile, result);
             }            
         }
@@ -242,15 +242,15 @@ public class ProfilesAnalyzer implements Analyzer {
             int count = 0;
             while (!submittedBinaries.isEmpty() || !submittedSources.isEmpty()) {
                 try {
-                    final Pair<URL,Collection<? extends ProfileSupport.Violation>> violationsPair = cf.poll(2500);
+                    final Pair<Pair<URI,SourceLevelQuery.Profile>,Collection<? extends ProfileSupport.Violation>> violationsPair = vp.poll(2500);
                     if (violationsPair == null) {
                         continue;
                     }
                     if (canceled.get()) {
                         break;
                     }
-                    final URI rootURI = violationsPair.first.toURI();
-                    final Set<Project> projects = submittedBinaries.remove(rootURI);
+                    final URI rootURI = violationsPair.first.first;
+                    final Set<Project> projects = submittedBinaries.remove(violationsPair.first);
                     final boolean binary = projects != null;
                     if (!binary) {
                         submittedSources.remove(rootURI);
@@ -274,7 +274,7 @@ public class ProfilesAnalyzer implements Analyzer {
                     context.progress(++count);
                 } catch (InterruptedException ex) {
                     break;
-                } catch (URISyntaxException | MalformedURLException ex) {
+                } catch (MalformedURLException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
@@ -443,8 +443,9 @@ public class ProfilesAnalyzer implements Analyzer {
     @NonNull
     private static Iterable<URL> cpToRootUrls(
             @NonNull final ClassPath cp,
+            @NonNull final SourceLevelQuery.Profile requiredProfile,
             @NullAllowed final Project owner,
-            @NullAllowed final Map<URI,Set<Project>> alreadyProcessed,
+            @NullAllowed final Map<Pair<URI,SourceLevelQuery.Profile>,Set<Project>> alreadyProcessed,
             @NullAllowed final Set<? super Project> projectRefs) {
         assert (owner == null && alreadyProcessed == null && projectRefs == null) ||
                (owner != null && alreadyProcessed != null && projectRefs != null);
@@ -475,10 +476,11 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
                     res.offer(url);
                 } else {
                     final URI uri = url.toURI();
-                    Set<Project> projects = alreadyProcessed.get(uri);
+                    final Pair<URI,SourceLevelQuery.Profile> key = Pair.of(uri,requiredProfile);
+                    Set<Project> projects = alreadyProcessed.get(key);
                     if (projects == null) {
                         projects = new HashSet<>();
-                        alreadyProcessed.put(uri, projects);
+                        alreadyProcessed.put(key, projects);
                         res.offer(url);
                     }                    
                     projects.add(owner);
@@ -559,38 +561,63 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
     }
 
     //@ThreadSafe
-    private final class CollectorFactory implements ProfileSupport.ViolationCollectorFactory {
+    private static final class CollectorFactory implements ProfileSupport.ViolationCollectorFactory {
 
-        
-        private final BlockingQueue<Pair<URL,Collection<? extends ProfileSupport.Violation>>>
-                allViolations = new LinkedBlockingQueue<>();
+        private final ViolationsProvider provider;
+        private final SourceLevelQuery.Profile profile;
+        private final AtomicBoolean canceled;
+
+
+        CollectorFactory(
+                @NonNull final ViolationsProvider provider,
+                @NonNull final SourceLevelQuery.Profile profile,
+                @NonNull final AtomicBoolean canceled) {
+            assert provider != null;
+            assert profile != null;
+            assert canceled != null;
+            this.provider = provider;
+            this.profile = profile;
+            this.canceled = canceled;
+        }
 
         @Override
         public ProfileSupport.ViolationCollector create(@NonNull final URL root) {
-            return new Collector(root);
+            try {
+                return new Collector(root.toURI());
+            } catch (URISyntaxException ex) {
+                throw new IllegalArgumentException(ex);
+            }
         }
 
         @Override
         public boolean isCancelled() {
             return canceled.get();
-        }
+        }        
 
-        @CheckForNull
-        Pair<URL, Collection<? extends ProfileSupport.Violation>> poll(long timeOut) throws InterruptedException {
-            return allViolations.poll(timeOut, TimeUnit.MILLISECONDS);
-        }
-
-        private synchronized void addViolations(
-                @NonNull final URL root,
+        private void addViolations(
+                @NonNull final URI root,
                 @NonNull final Collection<? extends ProfileSupport.Violation> violations) {
-            allViolations.offer(Pair.<URL,Collection<? extends ProfileSupport.Violation>>of(root,violations));
+            provider.allViolations.offer(Pair.<Pair<URI,SourceLevelQuery.Profile>,Collection<? extends ProfileSupport.Violation>>of(
+                    Pair.of(root,profile),violations));
+        }
+
+        //@ThreadSafe
+        static final  class ViolationsProvider {
+
+            private final BlockingQueue<Pair<Pair<URI,SourceLevelQuery.Profile>,Collection<? extends ProfileSupport.Violation>>>
+                    allViolations = new LinkedBlockingQueue<>();
+
+            @CheckForNull
+            Pair<Pair<URI,SourceLevelQuery.Profile>,Collection<? extends ProfileSupport.Violation>> poll(long timeOut) throws InterruptedException {
+                return allViolations.poll(timeOut, TimeUnit.MILLISECONDS);
+            }
         }
 
         private final class Collector implements ProfileSupport.ViolationCollector {
 
-            private final URL root;
+            private final URI root;
 
-            Collector(@NonNull final URL root) {
+            Collector(@NonNull final URI root) {
                 Parameters.notNull("root", root);   //NOI18N
                 this.root = root;
             }
@@ -606,9 +633,7 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
             public void finished() {
                 addViolations(root, violations);
             }
-
         }
-
     }
 
     //@NonThreadSafe
