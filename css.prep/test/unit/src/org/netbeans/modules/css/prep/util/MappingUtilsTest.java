@@ -54,7 +54,8 @@ public class MappingUtilsTest {
         File root = new File("/root");
         List<String> mappings = Arrays.asList(
                 "/scss:/css",
-                "/another/scss:/another/css");
+                "/another/scss:/another/css",
+                " /space/at/beginning : /space/in/output ");
         File file1 = new File(root, "scss/file1.scss");
         assertEquals(new File(root, "css/file1.css"), MappingUtils.resolveTarget(root, mappings, file1, "file1"));
         File file2 = new File(root, "another/scss/file2.scss");
@@ -63,6 +64,8 @@ public class MappingUtilsTest {
         assertEquals(new File(root, "file3.css"), MappingUtils.resolveTarget(root, mappings, file3, "file3"));
         File file4 = new File("/file4.scss");
         assertEquals(null, MappingUtils.resolveTarget(root, mappings, file4, "file4"));
+        File file5 = new File(root, "/space/at/beginning/file5.scss");
+        assertEquals(new File(root, "/space/in/output/file5.css"), MappingUtils.resolveTarget(root, mappings, file5, "file5"));
     }
 
     @Test
@@ -79,15 +82,19 @@ public class MappingUtilsTest {
 
     @Test
     public void testInvalidMappingsFormat() {
-        String mapping = "/sc:ss:/css";
-        List<String> mappings = Arrays.asList(mapping);
+        String mapping1 = "/sc:ss:/css";
+        String mapping2 = " :/css";
+        List<String> mappings = Arrays.asList(mapping1, mapping2);
         ValidationResult validationResult = new MappingUtils.MappingsValidator()
                 .validate(mappings)
                 .getResult();
-        assertTrue(validationResult.hasErrors());
-        ValidationResult.Message error = validationResult.getErrors().get(0);
-        assertEquals("mapping." + mapping, error.getSource());
-        assertTrue(error.getMessage(), error.getMessage().contains(mapping));
+        assertEquals(2, validationResult.getWarnings().size());
+        ValidationResult.Message warning1 = validationResult.getWarnings().get(0);
+        assertEquals("mapping." + mapping1, warning1.getSource());
+        assertTrue(warning1.getMessage(), warning1.getMessage().contains(mapping1));
+        ValidationResult.Message warning2 = validationResult.getWarnings().get(1);
+        assertEquals("mapping." + mapping2, warning2.getSource());
+        assertTrue(warning2.getMessage(), warning2.getMessage().contains(mapping2));
     }
 
 }

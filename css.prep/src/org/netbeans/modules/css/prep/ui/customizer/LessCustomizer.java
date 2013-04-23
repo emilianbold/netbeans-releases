@@ -103,7 +103,7 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
 
     @Override
     public boolean isValid() {
-        return getValidationResult().isFaultless();
+        return !getValidationResult().hasErrors();
     }
 
     @Override

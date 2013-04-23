@@ -179,5 +179,10 @@ public class CommandsLineProcessorTest extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        public void notifyPropertyChanged(PropertyChangeEvent propertyChangeEvent) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
 }

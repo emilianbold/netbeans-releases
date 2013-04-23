@@ -51,6 +51,7 @@ import javax.swing.LayoutStyle;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
 import org.netbeans.modules.css.prep.util.MappingUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
@@ -75,12 +76,13 @@ public class MappingPanel extends JPanel {
     }
 
     @NbBundle.Messages({
-        "# {0} - file extension",
-        "MappingPanel.info=<html>Comma-separated relative paths to web root, e.g.:<br><i>/{0}:/css,/other/{0}:/css</i>",
+        "# {0} - preprocessor name",
+        "# {1} - file extension",
+        "MappingPanel.info=<html>One or more {0} folder to css folder mappings for compiler output, eg. <i>/{1}:/css, /other/{1}:/css/smth<i>",
     })
     private void init(Type type) {
         // info
-        mappingInfoLabel.setText(Bundle.MappingPanel_info(type.getFileExtension()));
+        mappingInfoLabel.setText(Bundle.MappingPanel_info(type.getName(), type.getFileExtension()));
         // listeners
         mappingTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -175,8 +177,16 @@ public class MappingPanel extends JPanel {
 
     // Inner classes
 
+    @NbBundle.Messages({
+        "MappingPanel.type.sass.displayName=Sass",
+        "MappingPanel.type.less.displayName=LESS",
+    })
     public static enum Type {
         SASS() {
+            @Override
+            String getName() {
+                return Bundle.MappingPanel_type_sass_displayName();
+            }
             @Override
             String getFileExtension() {
                 return "scss"; //NOI18N
@@ -184,11 +194,17 @@ public class MappingPanel extends JPanel {
         },
         LESS() {
             @Override
+            String getName() {
+                return Bundle.MappingPanel_type_less_displayName();
+            }
+
+            @Override
             String getFileExtension() {
                 return "less"; //NOI18N
             }
         };
 
+        abstract String getName();
         abstract String getFileExtension();
     }
 
