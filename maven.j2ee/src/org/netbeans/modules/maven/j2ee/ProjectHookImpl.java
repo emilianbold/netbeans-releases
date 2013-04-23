@@ -53,6 +53,8 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.util.NbBundle;
@@ -84,6 +86,11 @@ public class ProjectHookImpl extends ProjectOpenedHook {
         final CopyOnSave copyOnSave = project.getLookup().lookup(CopyOnSave.class);
         if (copyOnSave != null) {
             copyOnSave.initialize();
+        }
+        
+        final CssPreprocessorsListener cssSupport = project.getLookup().lookup(CssPreprocessorsListener.class);
+        if (cssSupport != null) {
+            CssPreprocessors.getDefault().addCssPreprocessorsListener(cssSupport);
         }
 
         if (refreshListener == null) {
@@ -123,6 +130,11 @@ public class ProjectHookImpl extends ProjectOpenedHook {
         CopyOnSave copyOnSave = project.getLookup().lookup(CopyOnSave.class);
         if (copyOnSave != null) {
             copyOnSave.cleanup();
+        }
+        
+        CssPreprocessorsListener cssSupport = project.getLookup().lookup(CssPreprocessorsListener.class);
+        if (cssSupport != null) {
+            CssPreprocessors.getDefault().removeCssPreprocessorsListener(cssSupport);
         }
     }
 
