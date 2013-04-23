@@ -73,27 +73,31 @@ public class KnockoutModelTest extends ModelTestBase {
         KnockoutModelInterceptor.disabled = true;
     }
 
-//    public void testKnockout() throws Exception {
-//        String file = "testfiles/model/knockout-2.2.1.debug.js";
-//        FileObject fo = getTestFile(file);
-//        Model model = getModel(file);
-//        JsObject ko = model.getGlobalObject().getProperty("ko");
-//        ko.getProperties().remove("ko"); // remove ko.ko
-//
-//        final StringWriter sw = new StringWriter();
-//        Model.Printer p = new Model.Printer() {
-//
-//            @Override
-//            public void println(String str) {
-//                // XXX hacks improving the model
-//                String real = str;
-//                real = real.replaceAll("_L21.ko", "ko");
-//                sw.append(real).append("\n");
-//            }
-//        };
-//        model.writeModel(p, true);
-//        assertDescriptionMatches(fo, sw.toString(), false, ".model", true);
-//    }
+    public void testKnockout() throws Exception {
+        String file = "testfiles/model/knockout-2.2.1.debug.js";
+        if(!new File(getDataDir(), file).canRead()) {
+            return;
+        }
+        FileObject fo = getTestFile(file);
+
+        Model model = getModel(file);
+        JsObject ko = model.getGlobalObject().getProperty("ko");
+        ko.getProperties().remove("ko"); // remove ko.ko
+
+        final StringWriter sw = new StringWriter();
+        Model.Printer p = new Model.Printer() {
+
+            @Override
+            public void println(String str) {
+                // XXX hacks improving the model
+                String real = str;
+                real = real.replaceAll("_L21.ko", "ko");
+                sw.append(real).append("\n");
+            }
+        };
+        model.writeObject(p, ko, true);
+        assertDescriptionMatches(fo, sw.toString(), false, ".model", true);
+    }
 
     public void testExtend1() throws Exception {
         checkModel("testfiles/model/extend1.js");
