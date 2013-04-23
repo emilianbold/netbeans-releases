@@ -91,8 +91,9 @@ public class LessOptions implements CssPreprocessorImplementation.Options {
 
     @Override
     public void update() {
-        getComponent().setLessPath(CssPrepOptions.getInstance().getLessPath());
-        getComponent().setLessOutputOnError(CssPrepOptions.getInstance().getLessOutputOnError());
+        getComponent().setLessPath(getOptions().getLessPath());
+        getComponent().setLessOutputOnError(getOptions().getLessOutputOnError());
+        getComponent().setLessDebug(getOptions().getLessDebug());
     }
 
     @Override
@@ -121,11 +122,25 @@ public class LessOptions implements CssPreprocessorImplementation.Options {
     @Override
     public void save() throws IOException {
         Warnings.resetLessWarning();
-        String originalPath = CssPrepOptions.getInstance().getLessPath();
+        boolean fire = false;
+        // path
+        String originalPath = getOptions().getLessPath();
         String path = getComponent().getLessPath();
-        CssPrepOptions.getInstance().setLessPath(path);
-        CssPrepOptions.getInstance().setLessOutpuOnError(getComponent().getLessOutputOnError());
+        getOptions().setLessPath(path);
         if (!path.equals(originalPath)) {
+            fire = true;
+        }
+        // output on error
+        getOptions().setLessOutpuOnError(getComponent().getLessOutputOnError());
+        // debug
+        boolean originalDebug = getOptions().getLessDebug();
+        boolean debug = getComponent().getLessDebug();
+        getOptions().setLessDebug(debug);
+        if (debug != originalDebug) {
+            fire = true;
+        }
+        // changes
+        if (fire) {
             lessCssPreprocessor.fireOptionsChanged();
         }
     }
@@ -134,6 +149,10 @@ public class LessOptions implements CssPreprocessorImplementation.Options {
         return new CssPrepOptionsValidator()
                 .validateLessPath(getComponent().getLessPath())
                 .getResult();
+    }
+
+    private CssPrepOptions getOptions() {
+        return CssPrepOptions.getInstance();
     }
 
 }
