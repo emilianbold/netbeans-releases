@@ -145,7 +145,13 @@ import org.netbeans.modules.cnd.modelimpl.parser.*;
     void println(Object o1,Object o2) {
     }
     
-    protected void syncToSet() {
+    protected void sync_declaration_impl() {
+    }
+
+    protected void sync_member_impl() {
+    }
+
+    protected void sync_parameter_impl() {
     }
 
     pCXX_grammar CTX;
@@ -525,7 +531,17 @@ declaration [decl_kind kind]
 finally                                                                         {if(state.backtracking == 0){action.end_declaration(input.LT(0));}}
 
 sync_declaration
-@init                                                                           {syncToSet();}
+@init                                                                           {sync_declaration_impl();}
+    :   // Deliberately match nothing, causing this rule always to be entered.
+    ;
+
+sync_member
+@init                                                                           {sync_member_impl();}
+    :   // Deliberately match nothing, causing this rule always to be entered.
+    ;
+
+sync_parameter
+@init                                                                           {sync_parameter_impl();}
     :   // Deliberately match nothing, causing this rule always to be entered.
     ;
 
@@ -1147,7 +1163,11 @@ namespace_definition:
         )?
         gnu_attribute_or_extension_specifiers?
         LCURLY                                                                  {action.namespace_body($LCURLY);}
-        namespace_body 
+        sync_declaration
+        (
+            declaration[object_decl]
+            sync_declaration
+        )*
         RCURLY                                                                  {action.end_namespace_body($RCURLY);} 
                                                                                 {action.end_namespace_declaration($RCURLY);} 
     ;
@@ -1225,7 +1245,11 @@ linkage_specification [decl_kind kind]:
         LITERAL_extern STRING_LITERAL                                           {action.linkage_specification($LITERAL_extern, $STRING_LITERAL);}
         (
             LCURLY                                                              {action.linkage_specification(action.LINKAGE_SPECIFICATION__LCURLY, input.LT(0));}
-            declaration[kind] * 
+            sync_declaration
+            (
+                declaration[kind]
+                sync_declaration
+            )*
             RCURLY                                                              {action.linkage_specification(action.LINKAGE_SPECIFICATION__RCURLY, input.LT(0));}
     |
             declaration[kind]
@@ -1649,11 +1673,30 @@ parameters_and_qualifiers returns [ parameters_and_qualifiers_t pq ]
 finally                                                                         {if(state.backtracking == 0){action.end_parameters_and_qualifiers(input.LT(0));}}
 
 parameters
+scope Declaration; /* need it zero'ed to handle hoisted type_specifier predicate */
 @init                                                                           {if(state.backtracking == 0){action.parameters_and_qualifiers(action.PARAMETERS_AND_QUALIFIERS__LPAREN, input.LT(1));}}
     :                                                                           
-        LPAREN                                                                  
-        parameter_declaration_clause 
-        RPAREN                                                                  
+        LPAREN
+                                                                                {if(state.backtracking == 0){action.parameter_declaration_clause(input.LT(1));}}
+        (
+            ELLIPSIS?
+        |
+            (                                                                   {if(state.backtracking == 0){action.parameter_declaration_list(input.LT(1));}}
+                sync_parameter
+                parameter_declaration[parm_decl] 
+                (
+                    COMMA                                                       {action.end_parameter_declaration_list(action.PARAMETER_DECLARATION_LIST__COMMA, input.LT(0));}
+                    parameter_declaration[parm_decl]
+                    sync_parameter
+                )*                                                              
+                                                                                {if(state.backtracking == 0){action.end_parameter_declaration_list(input.LT(0));}}
+            )
+            (
+                COMMA                                                               {action.parameter_declaration_clause(action.PARAMETER_DECLARATION_CLAUSE__COMMA, input.LT(0));}
+                ELLIPSIS                                                            {action.parameter_declaration_clause(action.PARAMETER_DECLARATION_CLAUSE__ELLIPSIS2, input.LT(0));}
+            )?
+        )
+        RPAREN                                                                  {if(state.backtracking == 0){action.end_parameter_declaration_clause(input.LT(0));}}
     ;
 finally                                                                         {if(state.backtracking == 0){action.parameters_and_qualifiers(action.PARAMETERS_AND_QUALIFIERS__RPAREN, input.LT(0));}}
 
@@ -1848,9 +1891,13 @@ class_specifier
 @init                                                                           {if(state.backtracking == 0){action.class_declaration(input.LT(1));}}
     :
         class_head 
-        LCURLY                  {action.class_body($LCURLY);}
-        member_specification[false]? 
-        RCURLY                  {action.end_class_body($RCURLY);}
+        LCURLY                                                                  {action.class_body($LCURLY);}
+        sync_member
+        (
+            member_specification[false]
+            sync_member
+        )*
+        RCURLY                                                                  {action.end_class_body($RCURLY);}
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_class_declaration(input.LT(0));}}
 
@@ -1904,14 +1951,10 @@ class_key:
 member_specification[boolean class_late_binding]
 @init                                                                           {if(state.backtracking == 0){action.member_specification(input.LT(1));}}
     :
-        sync_declaration
-        (    
-            member_declaration[field_decl, class_late_binding] member_specification[class_late_binding]?
-            |
-            access_specifier 
-            COLON                                                               {action.member_specification(action.MEMBER_SPECIFICATION__COLON, input.LT(0));}
-            member_specification[class_late_binding]?
-        )
+        access_specifier 
+        COLON                                                                   {action.member_specification(action.MEMBER_SPECIFICATION__COLON, input.LT(0));}
+    |
+        member_declaration[field_decl, class_late_binding]
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_member_specification(input.LT(0));}}
 
@@ -2566,7 +2609,7 @@ capture:
         LITERAL_this
     ;
 lambda_declarator:
-        LPAREN parameter_declaration_clause RPAREN LITERAL_mutable? exception_specification? trailing_return_type?
+        parameters LITERAL_mutable? exception_specification? trailing_return_type?
     ;
 
 /*
