@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
@@ -438,7 +439,7 @@ public class TypeFactory {
                     super.toString() + '}'; //NOI18N
         }
     }
-   
+    
     public static CsmType createType(CsmType type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
         if(type.getPointerDepth() == pointerDepth &&
             type.isReference() == reference &&
@@ -485,6 +486,29 @@ public class TypeFactory {
         type.setQName(l.toArray(new CharSequence[l.size()]));
         type.initClassifier(cls);
         return type;
+    }
+    
+    public static CsmType createFunPtrType(CsmFile file, 
+                                           int pointerDepth, 
+                                           boolean reference, 
+                                           int arrayDepth, 
+                                           boolean _const, 
+                                           int startOffset, 
+                                           int endOffset,
+                                           Collection<CsmParameter> functionParams,
+                                           CsmType returnType)
+    {
+        return new TypeFunPtrImpl(
+                returnType.getClassifier(), 
+                file, 
+                pointerDepth,
+                reference, 
+                arrayDepth,
+                _const, 
+                startOffset, 
+                endOffset, 
+                functionParams
+        );
     }
     
     

@@ -45,12 +45,15 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -340,10 +343,47 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         @Override
         public TypedefImpl create() {
             CsmType type = null;
-            if(getTypeBuilder() != null) {
+            
+            if (getTypeBuilder() != null) {
                 getTypeBuilder().setScope(getScope());
-                type = getTypeBuilder().create();
+                
+                if (getTypeBuilder() != null && getDeclaratorBuilder() != null && getParametersListBuilder() != null) {
+                    // this is typedef of pointer to function
+
+                    CsmType returnType = getTypeBuilder().create();                 
+                    
+                    FunctionParameterListBuilder parametersBuilder = (FunctionParameterListBuilder) getParametersListBuilder();
+                    CsmFunctionParameterList parametersList = parametersBuilder.create();
+                    
+                    Collection<CsmParameter> parameters = parametersList.getParameters();
+                    if (parameters == null) {
+                        parameters = Collections.emptyList();
+                    }                 
+                    
+                    type = TypeFactory.createFunPtrType(
+                            getFile(),
+                            returnType.getPointerDepth() - 1, 
+                            returnType.isReference(), 
+                            returnType.getArrayDepth(), 
+                            returnType.isConst(),
+                            returnType.getStartOffset(), 
+                            parametersList.getEndOffset(),
+                            parameters,
+                            returnType
+                    );
+                    
+                    int c = 1;
+                    
+//                    type.setC
+                    
+//                    TypeFunPtrImpl funPtrType = (TypeFunPtrImpl) type;
+//                    funPtrType.setClassifierText(name);
+                    
+                } else {
+                    type = getTypeBuilder().create();
+                }
             }
+            
             if(type == null) {
                 type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), getFile(), getStartOffset(), getStartOffset()); // NOI18N
             }
