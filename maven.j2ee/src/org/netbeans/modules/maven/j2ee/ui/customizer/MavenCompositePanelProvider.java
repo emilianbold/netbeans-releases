@@ -47,20 +47,19 @@ import java.io.File;
 import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
-import org.netbeans.modules.maven.j2ee.J2eeMavenSourcesImpl;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerFrameworks;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunEar;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunEjb;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
+import org.netbeans.modules.maven.j2ee.web.WebProjectUtils;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraryCustomizerPanel;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -89,15 +88,20 @@ public final class MavenCompositePanelProvider implements ProjectCustomizer.Comp
     public static MavenCompositePanelProvider createFrameworks() {
         return new MavenCompositePanelProvider(FRAMEWORKS);
     }
+    
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 258)
+    public static MavenCompositePanelProvider createJavaScriptLibraries() {
+        return new MavenCompositePanelProvider(JS_LIBRARIES);
+    }
+    
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 259)
+    public static ProjectCustomizer.CompositeCategoryProvider createCssPreprocessors() {
+        return CssPreprocessors.getDefault().createCustomizer();
+    }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 301)
     public static MavenCompositePanelProvider createRun() {
         return new MavenCompositePanelProvider(RUN);
-    }
-    
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position=351)
-    public static MavenCompositePanelProvider createJavaScriptLibraries() {
-        return new MavenCompositePanelProvider(JS_LIBRARIES);
     }
 
 
@@ -141,10 +145,9 @@ public final class MavenCompositePanelProvider implements ProjectCustomizer.Comp
     
                 @Override
                 public File getWebRoot() {
-                    Sources srcs = ProjectUtils.getSources(project);
-                    SourceGroup[] grp = srcs.getSourceGroups(J2eeMavenSourcesImpl.TYPE_DOC_ROOT);
-                    if (grp.length > 0) {
-                        return FileUtil.toFile(grp[0].getRootFolder());
+                    FileObject docBase = WebProjectUtils.getDocumentBase(project);
+                    if (docBase != null) {
+                        return FileUtil.toFile(docBase);
                     }
                     return null;
                 }
