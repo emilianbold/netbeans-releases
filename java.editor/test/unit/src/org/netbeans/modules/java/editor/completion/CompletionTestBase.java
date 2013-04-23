@@ -294,8 +294,7 @@ public class CompletionTestBase extends NbTestCase {
         }
         out.close();
         
-        String version = System.getProperty("java.specification.version");
-        version = "1.5".equals(version) ? "" : version + "/";
+        String version = System.getProperty("java.specification.version") + "/";
         
         File goldenFile = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/java/editor/completion/JavaCompletionProviderTest/" + version + goldenFileName);
         File diffFile = new File(getWorkDir(), getName() + ".diff");        
