@@ -60,8 +60,8 @@ import org.netbeans.modules.web.webkit.debugging.spi.Response;
  */
 public class Runtime {
     
-    private TransportHelper transport;
-    private WebKitDebugging webkit;
+    private final TransportHelper transport;
+    private final WebKitDebugging webkit;
 
     private static final Logger LOG = Logger.getLogger( 
             Runtime.class.getCanonicalName());
