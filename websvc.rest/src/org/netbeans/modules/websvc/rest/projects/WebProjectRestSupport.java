@@ -66,6 +66,7 @@ import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
@@ -283,7 +284,7 @@ public class WebProjectRestSupport extends WebRestSupport {
         FileObject fileObject = generateTestClient(testdir);
         Map<String,String> map = new HashMap<String, String>();
         map.put(BASE_URL_TOKEN, url );
-        modifyFile( fileObject , map );
+        MiscUtilities.modifyFile( fileObject , map );
         return fileObject;
     }
     
@@ -295,7 +296,7 @@ public class WebProjectRestSupport extends WebRestSupport {
                 applicationPath = "/"+applicationPath;
             }
         }
-        return getContextRootURL()+"||"+applicationPath;            //NOI18N
+        return MiscUtilities.getContextRootURL(getProject())+"||"+applicationPath;            //NOI18N
     }
     
     @Override

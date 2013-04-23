@@ -76,6 +76,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -198,21 +199,6 @@ public class MavenProjectRestSupport extends WebRestSupport {
     }
     
     @Override
-    public String getContextRootURL() {
-        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        String serverInstanceID = provider.getServerInstanceID();
-        if (WSStackUtils.DEVNULL.equals(serverInstanceID)) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(RestSupport.class, "MSG_MissingServer"), 
-                    NotifyDescriptor.ERROR_MESSAGE));
-            return "";
-        } 
-        else {
-            return super.getContextRootURL();
-        }
-    }
-
-    @Override
     public boolean hasSwdpLibrary() {
         SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(
         JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -238,8 +224,8 @@ public class MavenProjectRestSupport extends WebRestSupport {
                 urlPatterns.append(mapping.getUrlPattern());
                 i++;
             }
-            http://localhost:8084/mavenprojectWeb3/||ServletAdaptor||resources/*
-            return getContextRootURL()+"||"+servletNames+"||"+urlPatterns;
+            // http://localhost:8084/mavenprojectWeb3/||ServletAdaptor||resources/*
+            return MiscUtilities.getContextRootURL(getProject())+"||"+servletNames+"||"+urlPatterns;
         } else {
             throw new IOException("Cannot read web.xml");
         }
@@ -367,33 +353,33 @@ public class MavenProjectRestSupport extends WebRestSupport {
 
         };
         FileObject testFO = copyFileAndReplaceBaseUrl(testdir, TEST_SERVICES_HTML, replaceKeys1, baseURL);
-        copyFile(testdir, TEST_RESBEANS_JS, replaceKeys2, false);
-        copyFile(testdir, TEST_RESBEANS_CSS);
-        copyFile(testdir, TEST_RESBEANS_CSS2);
-        copyFile(testdir, "expand.gif");
-        copyFile(testdir, "collapse.gif");
-        copyFile(testdir, "item.gif");
-        copyFile(testdir, "cc.gif");
-        copyFile(testdir, "og.gif");
-        copyFile(testdir, "cg.gif");
-        copyFile(testdir, "app.gif");
+        MiscUtilities.copyFile(testdir, RestSupport.TEST_RESBEANS_JS, replaceKeys2, false);
+        MiscUtilities.copyFile(testdir, RestSupport.TEST_RESBEANS_CSS);
+        MiscUtilities.copyFile(testdir, RestSupport.TEST_RESBEANS_CSS2);
+        MiscUtilities.copyFile(testdir, "expand.gif");
+        MiscUtilities.copyFile(testdir, "collapse.gif");
+        MiscUtilities.copyFile(testdir, "item.gif");
+        MiscUtilities.copyFile(testdir, "cc.gif");
+        MiscUtilities.copyFile(testdir, "og.gif");
+        MiscUtilities.copyFile(testdir, "cg.gif");
+        MiscUtilities.copyFile(testdir, "app.gif");
 
         File testdir2 = new File(testdir, "images");
         testdir2.mkdir();
-        copyFile(testdir, "images/background_border_bottom.gif");
-        copyFile(testdir, "images/pbsel.png");
-        copyFile(testdir, "images/bg_gradient.gif");
-        copyFile(testdir, "images/pname.png");
-        copyFile(testdir, "images/level1_selected-1lvl.jpg");
-        copyFile(testdir, "images/primary-enabled.gif");
-        copyFile(testdir, "images/masthead.png");
-        copyFile(testdir, "images/primary-roll.gif");
-        copyFile(testdir, "images/pbdis.png");
-        copyFile(testdir, "images/secondary-enabled.gif");
-        copyFile(testdir, "images/pbena.png");
-        copyFile(testdir, "images/tbsel.png");
-        copyFile(testdir, "images/pbmou.png");
-        copyFile(testdir, "images/tbuns.png");
+        MiscUtilities.copyFile(testdir, "images/background_border_bottom.gif");
+        MiscUtilities.copyFile(testdir, "images/pbsel.png");
+        MiscUtilities.copyFile(testdir, "images/bg_gradient.gif");
+        MiscUtilities.copyFile(testdir, "images/pname.png");
+        MiscUtilities.copyFile(testdir, "images/level1_selected-1lvl.jpg");
+        MiscUtilities.copyFile(testdir, "images/primary-enabled.gif");
+        MiscUtilities.copyFile(testdir, "images/masthead.png");
+        MiscUtilities.copyFile(testdir, "images/primary-roll.gif");
+        MiscUtilities.copyFile(testdir, "images/pbdis.png");
+        MiscUtilities.copyFile(testdir, "images/secondary-enabled.gif");
+        MiscUtilities.copyFile(testdir, "images/pbena.png");
+        MiscUtilities.copyFile(testdir, "images/tbsel.png");
+        MiscUtilities.copyFile(testdir, "images/pbmou.png");
+        MiscUtilities.copyFile(testdir, "images/tbuns.png");
         return testFO;
     }
 

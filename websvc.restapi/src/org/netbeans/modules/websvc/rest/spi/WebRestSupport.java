@@ -219,7 +219,7 @@ public abstract class WebRestSupport extends RestSupport {
         return null;
     }
 
-    protected WebApp findWebApp() throws IOException {
+    private WebApp findWebApp() throws IOException {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             FileObject ddFo = wm.getDeploymentDescriptor();
@@ -879,7 +879,7 @@ public abstract class WebRestSupport extends RestSupport {
     }
 
     protected void addJerseySpringJar() throws IOException {
-        FileObject srcRoot = findSourceRoot();
+        FileObject srcRoot = MiscUtilities.findSourceRoot(getProject());
         if (srcRoot != null) {
             ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
             if (cp ==null ||cp.findResource(
@@ -898,7 +898,7 @@ public abstract class WebRestSupport extends RestSupport {
     }
 
     public boolean isJersey2() {
-        if (hasResource("org.glassfish.jersey.servlet.ServletContainer")) {
+        if (MiscUtilities.hasResource(getProject(), "org.glassfish.jersey.servlet.ServletContainer")) {
             return true;
         }
         JaxRsStackSupport support = getJaxRsStackSupport();
@@ -1103,7 +1103,7 @@ public abstract class WebRestSupport extends RestSupport {
     protected FileObject getFileObjectFromClassName(String qualifiedClassName) 
             throws IOException 
     {
-        FileObject root = findSourceRoot();
+        FileObject root = MiscUtilities.findSourceRoot(getProject());
         ClasspathInfo cpInfo = ClasspathInfo.create(root);
         ClassIndex ci = cpInfo.getClassIndex();
         int beginIndex = qualifiedClassName.lastIndexOf('.')+1;
@@ -1370,7 +1370,7 @@ public abstract class WebRestSupport extends RestSupport {
     }
 
     private String getJacksonProviderSnippet(){
-        boolean addJacksonProvider = hasResource(
+        boolean addJacksonProvider = MiscUtilities.hasResource(getProject(),
                 "org/codehaus/jackson/jaxrs/JacksonJsonProvider.class");    // NOI18N
         if( !addJacksonProvider) {
             JaxRsStackSupport support = getJaxRsStackSupport();
@@ -1398,7 +1398,7 @@ public abstract class WebRestSupport extends RestSupport {
     }
 
     private String getJersey2JSONFeature(){
-        boolean addProvider = hasResource(
+        boolean addProvider = MiscUtilities.hasResource(getProject(), 
                 "org/glassfish/jersey/jackson/JacksonFeature.class");    // NOI18N
         if( !addProvider) {
             JaxRsStackSupport support = getJaxRsStackSupport();

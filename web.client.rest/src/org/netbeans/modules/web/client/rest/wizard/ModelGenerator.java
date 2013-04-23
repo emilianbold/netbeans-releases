@@ -68,6 +68,7 @@ import org.netbeans.modules.web.client.rest.wizard.JSClientGenerator.HttpRequest
 import org.netbeans.modules.web.client.rest.wizard.JSClientGenerator.MethodType;
 import org.netbeans.modules.web.client.rest.wizard.RestPanel.JsUi;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 
 
@@ -267,7 +268,7 @@ class ModelGenerator {
         }
         applicationPath = addUrlPath(applicationPath, relativePath);
         
-        return addUrlPath(restSupport.getContextRootURL(),applicationPath);            
+        return addUrlPath(MiscUtilities.getContextRootURL(project),applicationPath);
     }
     
     private String suggestModelName( String name ) {

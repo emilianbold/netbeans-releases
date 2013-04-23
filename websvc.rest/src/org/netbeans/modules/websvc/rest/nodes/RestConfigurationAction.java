@@ -44,22 +44,18 @@
 package org.netbeans.modules.websvc.rest.nodes;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.model.api.RestApplication;
-import org.netbeans.modules.websvc.rest.projects.RestApplicationsPanel;
 import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
 import org.netbeans.modules.websvc.rest.spi.ApplicationConfigPanel;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.openide.DialogDescriptor;
@@ -175,7 +171,7 @@ public class RestConfigurationAction extends NodeAction  {
                                 // add jsr311 library
                                 Library restApiLibrary = LibraryManager.getDefault().getLibrary(WebRestSupport.RESTAPI_LIBRARY);
                                 if (restApiLibrary != null) {
-                                    FileObject srcRoot = WebRestSupport.findSourceRoot(project);
+                                    FileObject srcRoot = MiscUtilities.findSourceRoot(project);
                                     if (srcRoot != null) {
                                         try {
                                             ProjectClassPathModifier.addLibraries(new Library[] {restApiLibrary}, srcRoot, ClassPath.COMPILE);
@@ -259,7 +255,7 @@ public class RestConfigurationAction extends NodeAction  {
     }
 
     private boolean isOnClasspath(Project project, String classResource) {
-        FileObject srcRoot = WebRestSupport.findSourceRoot(project);
+        FileObject srcRoot = MiscUtilities.findSourceRoot(project);
         if (srcRoot != null) {
             ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
             if (cp != null && cp.findResource(classResource) != null) {
