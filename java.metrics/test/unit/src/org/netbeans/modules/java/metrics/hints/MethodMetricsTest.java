@@ -217,7 +217,7 @@ public class MethodMetricsTest extends NbTestCase {
     
     public void testTooCustomManyParameters() throws Exception {
         HintTest.create().input("test/NoMethodLimits.java", code("NoMethodLimits.java")).
-        preference(MethodMetrics.OPTION_PARAMETERS_LIMIT, 4).
+        preference(MethodMetrics.OPTION_METHOD_PARAMETERS_LIMIT, 4).
         run(MethodMetrics.class, MethodMetrics.class.getName() + ".tooManyParameters").
         assertWarnings("28:27-28:47:verifier:Method 'methodWithParameters' takes too many parameters: 8",
             "38:9-38:30:verifier:Method 'methodWithParameters2' takes too many parameters: 8");
