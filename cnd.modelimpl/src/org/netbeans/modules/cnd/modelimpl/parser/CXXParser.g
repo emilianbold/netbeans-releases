@@ -730,7 +730,7 @@ scope Declaration;
 @init                                                                           {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
     :
                                                                                 {action.decl_specifiers(input.LT(1));}
-        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
+        decl_specifier*                                                         {action.end_decl_specifiers(null/*input.LT(0)*/);}
         (
             SEMICOLON
         |
@@ -770,8 +770,8 @@ scope Declaration;
     :
         gnu_attribute_or_extension_specifiers?
                                                                                 {action.decl_specifiers(input.LT(1));}
-        (decl_specifier gnu_attribute_specifiers?)*                              {action.end_decl_specifiers(input.LT(0));}
-
+        (decl_specifier gnu_attribute_specifiers?)*                             {action.end_decl_specifiers(null/*input.LT(0)*/);}
+                                                                                
         (
             SEMICOLON                                                           {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
         |
@@ -1967,7 +1967,7 @@ simple_member_declaration_or_function_definition[decl_kind kind, boolean class_l
 @init                                                                           {if(state.backtracking == 0){action.simple_member_declaration(input.LT(1));}}
     :
                                                                                 {action.decl_specifiers(input.LT(1));}
-        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
+        decl_specifier*                                                         {action.end_decl_specifiers(null/*input.LT(0)*/);}
         (
             (IDENT? COLON)=>
                 member_bitfield_declarator ( COMMA member_declarator )* SEMICOLON
