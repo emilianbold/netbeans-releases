@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.knockout.model;
 
 import java.io.File;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -55,13 +56,16 @@ import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
 import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -92,25 +96,37 @@ public class KnockoutModelTest extends ModelTestBase {
         Model model = getModel(file);
         JsObject ko = model.getGlobalObject().getProperty("ko");
 
-         // HACK remove ko.ko
+        // HACK remove ko.ko
         ko.getProperties().remove("ko");
 
         // HACK fix observableArray
+        // extend the fn and result with certain methods from Array
         JsObject observableArray = ko.getProperty("observableArray");
         if (observableArray instanceof JsFunction) {
             JsFunction func = (JsFunction) observableArray;
             func.addReturnType(new TypeUsageImpl("ko.observableArray.result", -1, true));
 
-
+            Set<String> arrayMethods = new HashSet<String>();
+            Collections.addAll(arrayMethods,
+                    "pop", "push", "reverse", "shift", "sort", "splice", "unshift", "slice");
             JsObject fn = observableArray.getProperty("fn");
+            JsObject result = observableArray.getProperty("result");
             if (fn != null) {
-                Set<String> arrayMethods = new HashSet<String>();
-                Collections.addAll(arrayMethods,
-                        "pop", "push", "reverse", "shift", "sort", "splice", "unshift", "slice");
-                for(IndexedElement elem : JsIndex.get(fo).getProperties("Array")) {
+                JsIndex index = JsIndex.get(fo);
+                for (IndexedElement elem : index.getProperties("Array.prototype")) {
                     if (arrayMethods.contains(elem.getName())) {
-                        fn.addProperty(elem.getName(), new JsFunctionImpl(func, fn,
-                                new IdentifierImpl(elem.getName(), OffsetRange.NONE), null, OffsetRange.NONE));
+                        IndexedElement.FunctionIndexedElement felem = (IndexedElement.FunctionIndexedElement) elem;
+                        List<Identifier> params = new ArrayList<Identifier>(felem.getParameters().size());
+                        for (String paramName : felem.getParameters().keySet()) {
+                            params.add(new IdentifierImpl(paramName, OffsetRange.NONE));
+                        }
+
+                        JsFunction function = new JsFunctionImpl(func, fn,
+                                new IdentifierImpl(elem.getName(), OffsetRange.NONE), params, OffsetRange.NONE);
+                        fn.addProperty(elem.getName(), function);
+                        result.addProperty(elem.getName(),
+                                new JsFunctionReference(result, new IdentifierImpl(elem.getName(), OffsetRange.NONE),
+                                function, false, null));
                     }
                 }
             }
