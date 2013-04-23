@@ -60,6 +60,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.hints.analyzer.Analyzer;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
@@ -84,7 +85,7 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
     private static final String PREFERRED_ID = "AnalyzerTopComponent";
 
     private Lookup context;
-    private Map<String, Preferences> preferencesOverlay;
+    private HintsSettings hintsSettings;
     private final ExplorerManager manager = new ExplorerManager();
     private final CheckTreeView btv;
     private final List<FixDescription> fixes = new LinkedList<FixDescription>();
@@ -112,7 +113,7 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
         prevAction.addPropertyChangeListener(l);
         nextAction.addPropertyChangeListener(l);
         
-        setData(Lookup.EMPTY, Collections.<String, Preferences>emptyMap(), Collections.<ErrorDescription>emptyList());
+        setData(Lookup.EMPTY, null, Collections.<ErrorDescription>emptyList());
         stateChanged(null);
         
         getActionMap().put("jumpNext", nextAction);
@@ -323,9 +324,9 @@ private void fixOnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         return instance;
     }
     
-    public void setData(Lookup context, Map<String, Preferences> preferencesOverlay, List<ErrorDescription> hints) {
+    public void setData(Lookup context, HintsSettings hintsSettings, List<ErrorDescription> hints) {
         this.context = context;
-        this.preferencesOverlay = preferencesOverlay;
+        this.hintsSettings = hintsSettings;
         for (FixDescription f : fixes) {
             f.removeChangeListener(this);
         }
@@ -344,7 +345,8 @@ private void fixOnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     }
     
     public void refresh() {
-        Analyzer.process(context, preferencesOverlay);
+        assert hintsSettings != null;
+        Analyzer.process(context, hintsSettings);
     }
 
     /**

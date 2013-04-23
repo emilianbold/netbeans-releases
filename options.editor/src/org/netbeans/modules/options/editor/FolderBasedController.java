@@ -135,7 +135,7 @@ public final class FolderBasedController extends OptionsPanelController implemen
     
     public final synchronized void update() {
         for (Entry<String, OptionsPanelController> e : getMimeType2delegates ().entrySet()) {
-            OptionsFilter f = createTreeModelFilter(filterDocument, new FilteringUsedCallback(e.getKey()));
+            OptionsFilter f = OptionsFilter.create(filterDocument, new FilteringUsedCallback(e.getKey()));
             Lookup innerLookup = new ProxyLookup(masterLookup, Lookups.singleton(f));
             OptionsPanelController c = e.getValue();
             c.getComponent(innerLookup);
@@ -193,7 +193,7 @@ public final class FolderBasedController extends OptionsPanelController implemen
         if (panel == null) {
             this.masterLookup = masterLookup;
             for (Entry<String, OptionsPanelController> e : getMimeType2delegates ().entrySet()) {
-                OptionsFilter f = createTreeModelFilter(filterDocument, new FilteringUsedCallback(e.getKey()));
+                OptionsFilter f = OptionsFilter.create(filterDocument, new FilteringUsedCallback(e.getKey()));
                 Lookup innerLookup = new ProxyLookup(masterLookup, Lookups.singleton(f));
                 OptionsPanelController controller = e.getValue();
                 controller.getComponent(innerLookup);
@@ -309,25 +309,4 @@ public final class FolderBasedController extends OptionsPanelController implemen
         }
     }
 
-    private static OptionsFilterAccessor filterAccessor;
-
-    public static void setFilterAccessor(OptionsFilterAccessor filterAccessor) {
-        FolderBasedController.filterAccessor = filterAccessor;
-    }
-
-    public static OptionsFilter createTreeModelFilter(Document doc, Runnable usedCallback) {
-        if (filterAccessor == null) {
-            try {
-                Class.forName(OptionsFilter.class.getName(), true, OptionsFilter.class.getClassLoader());   //NOI18N
-                assert filterAccessor != null;
-            } catch (ClassNotFoundException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        return filterAccessor.create(doc, usedCallback);
-    }
-
-    public interface OptionsFilterAccessor {
-        public OptionsFilter create(Document doc, Runnable usedCallback);
-    }
 }

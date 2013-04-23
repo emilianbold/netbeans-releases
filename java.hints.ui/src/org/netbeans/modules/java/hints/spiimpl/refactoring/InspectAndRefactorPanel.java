@@ -67,6 +67,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -113,6 +114,7 @@ import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsPanel;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsPanelLogic;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.spiimpl.refactoring.InspectAndRefactorUI.HintWrap;
 import org.netbeans.modules.refactoring.java.api.ui.JavaScopeBuilder;
 import org.openide.DialogDescriptor;
@@ -499,8 +501,10 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         } else {
             Configuration config = (Configuration) configurationCombo.getSelectedItem();
             List<HintDescription> hintsToApply = new LinkedList();
-            for (HintMetadata hint:config.getHints(allHints)) {
-                for (HintDescription hd : allHints.get(hint)) {
+            HintsSettings settings = config.getSettings();
+            for (Entry<? extends HintMetadata, ? extends Iterable<? extends HintDescription>> e : allHints.entrySet()) {
+                if (!settings.isEnabled(e.getKey())) continue;
+                for (HintDescription hd : allHints.get(e.getKey())) {
                     hintsToApply.add(hd);
                 }
             }

@@ -112,31 +112,31 @@ public class HintsInvoker {
 
     private final Map<String, Long> timeLog = new HashMap<String, Long>();
 
-    private final CompilationInfo info;
+    private final HintsSettings settings;
     private final int caret;
     private final int from;
     private final int to;
     private final boolean bulkMode;
     private final AtomicBoolean cancel;
 
-    public HintsInvoker(CompilationInfo info, AtomicBoolean cancel) {
-        this(info, false, cancel);
+    public HintsInvoker(HintsSettings settings, AtomicBoolean cancel) {
+        this(settings, false, cancel);
     }
 
-    public HintsInvoker(CompilationInfo info, boolean bulkMode, AtomicBoolean cancel) {
-        this(info, -1, -1, -1, bulkMode, cancel);
+    public HintsInvoker(HintsSettings settings, boolean bulkMode, AtomicBoolean cancel) {
+        this(settings, -1, -1, -1, bulkMode, cancel);
     }
 
-    public HintsInvoker(CompilationInfo info, int caret, AtomicBoolean cancel) {
-        this(info, caret, -1, -1, false, cancel);
+    public HintsInvoker(HintsSettings settings, int caret, AtomicBoolean cancel) {
+        this(settings, caret, -1, -1, false, cancel);
     }
 
-    public HintsInvoker(CompilationInfo info, int from, int to, AtomicBoolean cancel) {
-        this(info, -1, from, to, false, cancel);
+    public HintsInvoker(HintsSettings settings, int from, int to, AtomicBoolean cancel) {
+        this(settings, -1, from, to, false, cancel);
     }
 
-    private HintsInvoker(CompilationInfo info, int caret, int from, int to, boolean bulkMode, AtomicBoolean cancel) {
-        this.info = info;
+    private HintsInvoker(HintsSettings settings, int caret, int from, int to, boolean bulkMode, AtomicBoolean cancel) {
+        this.settings = settings;
         this.caret = caret;
         this.from = from;
         this.to = to;
@@ -156,7 +156,7 @@ public class HintsInvoker {
         for (Entry<HintMetadata, ? extends Collection<? extends HintDescription>> e : allHints.entrySet()) {
             HintMetadata m = e.getKey();
 
-            if (!HintsSettings.isEnabled(m)) {
+            if (!settings.isEnabled(m)) {
                 continue;
             }
 
@@ -164,15 +164,13 @@ public class HintsInvoker {
                 if (m.kind == Hint.Kind.ACTION) {
                     descs.addAll(e.getValue());
                 } else {
-                    Preferences pref = HintsSettings.getPreferences(m.id, HintsSettings.getCurrentProfileId());
-                    if (HintsSettings.getSeverity(m, pref) == Severity.HINT) {
+                    if (settings.getSeverity(m) == Severity.HINT) {
                         descs.addAll(e.getValue());
                     }
                 }
             } else {
                 if (m.kind == Hint.Kind.INSPECTION) {
-                    Preferences pref = HintsSettings.getPreferences(m.id, HintsSettings.getCurrentProfileId());
-                    if (HintsSettings.getSeverity(m, pref) != Severity.HINT) {
+                    if (settings.getSeverity(m) != Severity.HINT) {
                         descs.addAll(e.getValue());
                     }
                 }
@@ -557,7 +555,7 @@ public class HintsInvoker {
 
                     for (HintDescription hd : patternHints.get(d)) {
                         HintMetadata hm = hd.getMetadata();
-                        HintContext c = SPIAccessor.getINSTANCE().createHintContext(info, hm, candidate, verifiedVariables.getVariables(), verifiedVariables.getMultiVariables(), verifiedVariables.getVariables2Names(), constraints, problems, bulkMode, cancel, caret);
+                        HintContext c = SPIAccessor.getINSTANCE().createHintContext(info, settings, hm, candidate, verifiedVariables.getVariables(), verifiedVariables.getMultiVariables(), verifiedVariables.getVariables2Names(), constraints, problems, bulkMode, cancel, caret);
 
                         if (!Collections.disjoint(suppressedWarnings, hm.suppressWarnings))
                             continue;
@@ -651,7 +649,7 @@ public class HintsInvoker {
                         }
                     }
 
-                    HintContext c = SPIAccessor.getINSTANCE().createHintContext(info, hm, path, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap(), Collections.<String, TypeMirror>emptyMap(), new ArrayList<MessageImpl>(), bulkMode, cancel, caret);
+                    HintContext c = SPIAccessor.getINSTANCE().createHintContext(info, settings, hm, path, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap(), Collections.<String, TypeMirror>emptyMap(), new ArrayList<MessageImpl>(), bulkMode, cancel, caret);
                     Collection<? extends ErrorDescription> errors = runHint(hd, c);
 
                     if (errors != null) {

@@ -67,6 +67,7 @@ import org.netbeans.modules.java.hints.spiimpl.batch.BatchUtilities;
 import org.netbeans.modules.java.hints.spiimpl.batch.ProgressHandleWrapper;
 import org.netbeans.modules.java.hints.spiimpl.batch.Scopes;
 import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompiler;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.*;
@@ -175,7 +176,7 @@ public final class TransformationSupport {
      */
     private static void performTransformation(WorkingCopy workingCopy, TreePath on, String jackpotPattern, AtomicBoolean cancel) {
         Iterable<? extends HintDescription> hints = PatternConvertor.create(jackpotPattern);
-        HintsInvoker inv = new HintsInvoker(workingCopy, cancel);
+        HintsInvoker inv = new HintsInvoker(HintsSettings.getSettingsFor(workingCopy.getFileObject()), cancel);
         Map<HintDescription, List<ErrorDescription>> computeHints = inv.computeHints(workingCopy, on, false, hints, new ArrayList<MessageImpl>());
         
         if (computeHints == null || cancel.get()) return ;

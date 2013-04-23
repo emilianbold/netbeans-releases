@@ -221,6 +221,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.spi.editor.hints</package>
+                <package>org.netbeans.spi.editor.hints.settings</package>
             </public-packages>
         </data>
     </configuration>

@@ -77,6 +77,7 @@ import org.netbeans.modules.java.hints.declarative.conditionapi.Context;
 import org.netbeans.modules.java.hints.declarative.conditionapi.Matcher;
 import org.netbeans.modules.java.hints.declarative.test.TestTokenId;
 import org.netbeans.modules.java.hints.spiimpl.SPIAccessor;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.*;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -216,7 +217,7 @@ public class EvaluationSpanTask extends JavaParserResultTask<Result> {
 
             variables.put("$_", tp);
 
-            HintContext ctx = SPIAccessor.getINSTANCE().createHintContext(info, null, tp, variables, multiVariables, variableNames);
+            HintContext ctx = SPIAccessor.getINSTANCE().createHintContext(info, HintsSettings.getSettingsFor(info.getFileObject()), null, tp, variables, multiVariables, variableNames);
             String pattern = d.spec.substring(d.desc.textStart, d.desc.textEnd);
             Context context = new Context(ctx);
 

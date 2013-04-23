@@ -52,7 +52,9 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -127,65 +129,53 @@ public class ErrorFixesFakeHint extends AbstractHint {
     public static boolean enabled(FixKind kind) {
         return getHint(kind).isEnabled();
     }
+    
+    public static Preferences getPreferences(FileObject forFile, FixKind fixKind) {
+        return HintsSettings.getSettingsFor(forFile).getHintPreferences(HintMetadata.Builder.create(getHint(fixKind).getId()).build());
+    }
 
-    public static boolean isCreateFinalFieldsForCtor() {
-        return getHint(FixKind.CREATE_FINAL_FIELD_CTOR).getPreferences(null).getBoolean(FINAL_FIELDS_FROM_CTOR, true);
+    public static boolean isCreateFinalFieldsForCtor(Preferences p) {
+        return p.getBoolean(FINAL_FIELDS_FROM_CTOR, true);
     }
 
     public static void setCreateFinalFieldsForCtor(Preferences p, boolean v) {
         p.putBoolean(FINAL_FIELDS_FROM_CTOR, v);
     }
 
-    public static void setCreateFinalFieldsForCtor(boolean v) {
-        setCreateFinalFieldsForCtor(getHint(FixKind.CREATE_FINAL_FIELD_CTOR).getPreferences(null), v);
-    }
-
-    public static boolean isCreateLocalVariableInPlace() {
-        return getHint(FixKind.CREATE_LOCAL_VARIABLE).getPreferences(null).getBoolean(LOCAL_VARIABLES_INPLACE, true);
-    }
-    
-    public static void setCreateLocalVariableInPlace(boolean v) {
-        setCreateLocalVariableInPlace(getHint(FixKind.CREATE_LOCAL_VARIABLE).getPreferences(null), v);
+    public static boolean isCreateLocalVariableInPlace(Preferences p) {
+        return p.getBoolean(LOCAL_VARIABLES_INPLACE, true);
     }
     
     public static void setCreateLocalVariableInPlace(Preferences p, boolean v) {
         p.putBoolean(LOCAL_VARIABLES_INPLACE, v);
     }
     
-    public static boolean isUseExceptions() {
-        return getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).getBoolean(SURROUND_USE_EXCEPTIONS, true);
-    }
-    
-    public static void setUseExceptions(boolean v) {
-        setUseExceptions(getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null), v);
+    public static boolean isUseExceptions(Preferences p) {
+        return p.getBoolean(SURROUND_USE_EXCEPTIONS, true);
     }
     
     public static void setUseExceptions(Preferences p, boolean v) {
         p.putBoolean(SURROUND_USE_EXCEPTIONS, v);
     }
 
-    public static boolean isRethrowAsRuntimeException() {
-        return getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).getBoolean(SURROUND_RETHROW_AS_RUNTIME, false);
+    public static boolean isRethrowAsRuntimeException(Preferences p) {
+        return p.getBoolean(SURROUND_RETHROW_AS_RUNTIME, false);
     }
 
     public static void setRethrowAsRuntimeException(Preferences p, boolean v) {
         p.putBoolean(SURROUND_RETHROW_AS_RUNTIME, v);
     }
 
-    public static boolean isRethrow() {
-        return getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).getBoolean(SURROUND_RETHROW, false);
+    public static boolean isRethrow(Preferences p) {
+        return p.getBoolean(SURROUND_RETHROW, false);
     }
 
     public static void setRethrow(Preferences p, boolean v) {
         p.putBoolean(SURROUND_RETHROW, v);
     }
     
-    public static boolean isUseLogger() {
-        return getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).getBoolean(SURROUND_USE_JAVA_LOGGER, true);
-    }
-    
-    public static void setUseLogger(boolean v) {
-        setUseLogger(getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null), v);
+    public static boolean isUseLogger(Preferences p) {
+        return p.getBoolean(SURROUND_USE_JAVA_LOGGER, true);
     }
     
     public static void setUseLogger(Preferences p, boolean v) {

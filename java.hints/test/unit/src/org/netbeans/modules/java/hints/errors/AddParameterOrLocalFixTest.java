@@ -34,7 +34,9 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.FixKind;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
 
@@ -85,34 +87,37 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
 
     public void testAddLocalVariableNotInPlace() throws Exception {
         parameter = false;
-        boolean orig = ErrorFixesFakeHint.isCreateLocalVariableInPlace();
+        
+        Preferences prefs = ErrorFixesFakeHint.getPreferences(null, FixKind.CREATE_LOCAL_VARIABLE);
+        boolean orig = ErrorFixesFakeHint.isCreateLocalVariableInPlace(prefs);
 
         try {
-            ErrorFixesFakeHint.setCreateLocalVariableInPlace(false);
+            ErrorFixesFakeHint.setCreateLocalVariableInPlace(prefs, false);
 
             performFixTest("test/Test.java",
                     "package test; public class Test {public void test() {int a;\n |bbb = 0;\n int c; }}",
                     "AddParameterOrLocalFix:bbb:int:false",
                     "package test; public class Test {public void test() {int bbb; int a; bbb = 0; int c; }}");
         } finally {
-            ErrorFixesFakeHint.setCreateLocalVariableInPlace(orig);
+            ErrorFixesFakeHint.setCreateLocalVariableInPlace(prefs, orig);
         }
     }
 
     public void testAddLocalVariableNotInPlaceInConstr() throws Exception {
         parameter = false;
 
-        boolean orig = ErrorFixesFakeHint.isCreateLocalVariableInPlace();
+        Preferences prefs = ErrorFixesFakeHint.getPreferences(null, FixKind.CREATE_LOCAL_VARIABLE);
+        boolean orig = ErrorFixesFakeHint.isCreateLocalVariableInPlace(prefs);
 
         try {
-            ErrorFixesFakeHint.setCreateLocalVariableInPlace(false);
+            ErrorFixesFakeHint.setCreateLocalVariableInPlace(prefs, false);
 
             performFixTest("test/Test.java",
                     "package test; public class Test {public Test() {super();\n int a;\n |bbb = 0;\n int c; }}",
                     "AddParameterOrLocalFix:bbb:int:false",
                     "package test; public class Test {public Test() {super(); int bbb; int a; bbb = 0; int c; }}");
         } finally {
-            ErrorFixesFakeHint.setCreateLocalVariableInPlace(orig);
+            ErrorFixesFakeHint.setCreateLocalVariableInPlace(prefs, orig);
         }
     }
 
@@ -317,11 +322,12 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     }
 
     public void test189687b() throws Exception {
-        final boolean oldUse55 = ErrorFixesFakeHint.isCreateLocalVariableInPlace();
+        Preferences prefs = ErrorFixesFakeHint.getPreferences(null, FixKind.CREATE_LOCAL_VARIABLE);
+        final boolean oldUse55 = ErrorFixesFakeHint.isCreateLocalVariableInPlace(prefs);
 
         try {
             parameter = false;
-            ErrorFixesFakeHint.setCreateLocalVariableInPlace(false);
+            ErrorFixesFakeHint.setCreateLocalVariableInPlace(prefs, false);
             performFixTest("test/Test.java",
                     "package test;\n" +
                     "public class Test {\n" +
@@ -338,7 +344,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                      "     }\n" +
                      "}\n").replaceAll("[ \t\n]+", " "));
         } finally {
-            ErrorFixesFakeHint.setCreateLocalVariableInPlace(oldUse55);
+            ErrorFixesFakeHint.setCreateLocalVariableInPlace(prefs, oldUse55);
         }
     }
 

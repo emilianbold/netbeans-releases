@@ -73,7 +73,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-overall">
   <p>
-      <api name="EditorHintsSPI" category="devel" group="java" type="export" url="@TOP@/org/netbeans/spi/editor/hints/package-summary.html">
+      <api name="EditorHintsSPI" category="stable" group="java" type="export" url="@TOP@/org/netbeans/spi/editor/hints/package-summary.html">
           allows to show errors in the editor, with possible fixes.
       </api>
   </p>

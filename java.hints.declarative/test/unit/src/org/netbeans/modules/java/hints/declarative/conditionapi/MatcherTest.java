@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import org.netbeans.modules.java.hints.spiimpl.SPIAccessor;
 import org.netbeans.modules.java.hints.spiimpl.TestBase;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 
 /**
  *
@@ -75,7 +76,7 @@ public class MatcherTest extends TestBase {
         Map<String, TreePath> variables = Collections.singletonMap("$1", var);
         Map<String, Collection<? extends TreePath>> multiVariables = Collections.<String, Collection<? extends TreePath>>singletonMap("$2$", Arrays.asList(tp));
         Map<String, String> variables2Names = Collections.emptyMap();
-        Context ctx = new Context(SPIAccessor.getINSTANCE().createHintContext(info, null, null, variables, multiVariables, variables2Names));
+        Context ctx = new Context(SPIAccessor.getINSTANCE().createHintContext(info, HintsSettings.getGlobalSettings(), null, null, variables, multiVariables, variables2Names));
 
         new Matcher(ctx).referencedIn(new Variable("$1"), new Variable("$2$"));
     }

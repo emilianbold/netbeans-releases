@@ -46,9 +46,11 @@ package org.netbeans.modules.java.hints;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import java.util.Locale;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
+import org.netbeans.modules.java.hints.legacy.spi.RulesManager;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
@@ -96,10 +98,10 @@ public class HideFieldTest extends TreeRuleTestBase {
     }
 
     public void testDisabled() throws Exception {
-        HideField hint = new HideField();
-        String origSetting = hint.getPreferences(null).get(HideField.KEY_WARN_HIDDEN_STATIC_FIELDS, null);
+        Preferences prefs = RulesManager.currentHintPreferences.get();
+        String origSetting = prefs.get(HideField.KEY_WARN_HIDDEN_STATIC_FIELDS, null);
         try {
-            hint.getPreferences(null).putBoolean(HideField.KEY_WARN_HIDDEN_STATIC_FIELDS, false);
+            prefs.putBoolean(HideField.KEY_WARN_HIDDEN_STATIC_FIELDS, false);
             
             String code = "package test; class Test {" +
                 "  public static int HH;" +
@@ -111,9 +113,9 @@ public class HideFieldTest extends TreeRuleTestBase {
             performAnalysisTest("test/Test.java", code);
         } finally {
             if (origSetting == null) {
-                hint.getPreferences(null).remove(HideField.KEY_WARN_HIDDEN_STATIC_FIELDS);
+                prefs.remove(HideField.KEY_WARN_HIDDEN_STATIC_FIELDS);
             } else {
-                hint.getPreferences(null).put(HideField.KEY_WARN_HIDDEN_STATIC_FIELDS, origSetting);
+                prefs.put(HideField.KEY_WARN_HIDDEN_STATIC_FIELDS, origSetting);
             }
         }
     }

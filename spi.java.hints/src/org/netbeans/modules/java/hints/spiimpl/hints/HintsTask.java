@@ -53,7 +53,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -72,6 +71,7 @@ import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.editor.hints.settings.FileHintPreferences;
 import org.openide.filesystems.FileObject;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
@@ -109,7 +109,8 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
         long startTime = System.currentTimeMillis();
 
         int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(info.getFileObject());
-        HintsInvoker inv = caretAware ? new HintsInvoker(info, caret, cancel) : new HintsInvoker(info, cancel);
+        HintsSettings settings = HintsSettings.getSettingsFor(info.getFileObject());
+        HintsInvoker inv = caretAware ? new HintsInvoker(settings, caret, cancel) : new HintsInvoker(settings, cancel);
         List<ErrorDescription> result = inv.computeHints(info);
 
         if (result == null || cancel.get()) {
@@ -145,7 +146,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
 
         public FactoryImpl() {
             super(Phase.RESOLVED, Priority.LOW, TaskIndexingMode.ALLOWED_DURING_SCAN);
-	    HintsSettings.addChangeListener(WeakListeners.change(this, HintsSettings.class));
+            FileHintPreferences.addChangeListener(WeakListeners.change(this, HintsSettings.class));
         }
 
         @Override
@@ -167,7 +168,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
 
         public CaretFactoryImpl() {
             super(Phase.RESOLVED, Priority.LOW);
-	    HintsSettings.addChangeListener(WeakListeners.change(this, HintsSettings.class));
+            FileHintPreferences.addChangeListener(WeakListeners.change(this, HintsSettings.class));
         }
 
         @Override
@@ -201,7 +202,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
             int rowStart = Utilities.getRowStart((BaseDocument) doc, context.getPosition());
             int rowEnd = Utilities.getRowEnd((BaseDocument) doc, context.getPosition());
 
-            return new HintsInvoker(info, rowStart, rowEnd, context.getCancel()).computeHints(info);
+            return new HintsInvoker(HintsSettings.getSettingsFor(info.getFileObject()), rowStart, rowEnd, context.getCancel()).computeHints(info);
         }
 
         private static void setVersion(Document doc) {
@@ -228,7 +229,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
 
         @Override
         public List<ErrorDescription> getErrorDescriptionsAt(CompilationInfo info, Context context, Document doc) throws BadLocationException {
-            return new HintsInvoker(info, context.getPosition(), context.getCancel()).computeHints(info);
+            return new HintsInvoker(HintsSettings.getSettingsFor(info.getFileObject()), context.getPosition(), context.getCancel()).computeHints(info);
         }
 
         private static void setVersion(Document doc, int caret) {

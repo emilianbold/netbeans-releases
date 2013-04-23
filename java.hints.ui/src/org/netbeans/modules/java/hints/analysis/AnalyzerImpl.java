@@ -41,19 +41,15 @@
  */
 package org.netbeans.modules.java.hints.analysis;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
@@ -71,6 +67,7 @@ import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.spiimpl.refactoring.Utilities;
 import org.netbeans.modules.java.hints.spiimpl.refactoring.Utilities.ClassPathBasedHintWrapper;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -107,13 +104,14 @@ public class AnalyzerImpl implements Analyzer {
         final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         ProgressHandleWrapper w = new ProgressHandleWrapper(ctx, 10, 90);
         Collection<HintDescription> hints = new ArrayList<HintDescription>();
+        HintsSettings settings = HintsSettings.createPreferencesBasedHintsSettings(ctx.getSettings(), false, null);
 
         for (Entry<? extends HintMetadata, ? extends Collection<? extends HintDescription>> e : Utilities.getBatchSupportedHints(new ClassPathBasedHintWrapper()).entrySet()) {
             if (singleWarning != null) {
                 if (!singleWarning.equals(e.getKey().id)) continue;
             } else if (ctx.getSettings() != null) {
-                if (!HintsSettings.isEnabled(e.getKey(), ctx.getSettings().node(e.getKey().id))) continue;
-            } else if (!HintsSettings.isEnabled(e.getKey())) continue;
+                if (!settings.isEnabled(e.getKey())) continue;
+            }
 
             hints.addAll(e.getValue());
         }
@@ -124,35 +122,19 @@ public class AnalyzerImpl implements Analyzer {
         todo.addAll(ctx.getScope().getFolders());
         todo.addAll(ctx.getScope().getFiles());
 
-        BatchResult candidates = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(Folder.convert(todo)), w);
+        BatchResult candidates = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(Folder.convert(todo)), w, settings);
         List<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
-        Map<String, Preferences> origOverride = HintsSettings.getPreferencesOverride();
         
-        try {
-            final Preferences settings = ctx.getSettings();
-            if (settings != null) {
-                HintsSettings.setPreferencesOverride(new AbstractMap<String, Preferences>() {
-                    @Override public Preferences get(Object key) {
-                        return settings.node((String) key);
-                    }
-                    @Override public Set<Entry<String, Preferences>> entrySet() {
-                        throw new UnsupportedOperationException("Should not be called.");
-                    }
-                });
+        BatchSearch.getVerifiedSpans(candidates, w, new BatchSearch.VerifiedSpansCallBack() {
+            public void groupStarted() {}
+            public boolean spansVerified(CompilationController wc, Resource r, Collection<? extends ErrorDescription> inHints) throws Exception {
+                result.addAll(inHints);
+                return true;
             }
-            BatchSearch.getVerifiedSpans(candidates, w, new BatchSearch.VerifiedSpansCallBack() {
-                public void groupStarted() {}
-                public boolean spansVerified(CompilationController wc, Resource r, Collection<? extends ErrorDescription> inHints) throws Exception {
-                    result.addAll(inHints);
-                    return true;
-                }
-                public void groupFinished() {}
-                public void cannotVerifySpan(Resource r) {
-                }
-            }, problems, cancel);
-        } finally {
-            HintsSettings.setPreferencesOverride(origOverride);
-        }
+            public void groupFinished() {}
+            public void cannotVerifySpan(Resource r) {
+            }
+        }, problems, cancel);
 
         w.finish();
 
@@ -222,7 +204,7 @@ public class AnalyzerImpl implements Analyzer {
                     if (context.getPreselectId() == null) {
                         HintsPanel prev = context.getPreviousComponent();
                         if (prev != null) {
-                            prev.setOverlayPreferences(context.getSettings());
+                            prev.setOverlayPreferences(HintsSettings.createPreferencesBasedHintsSettings(context.getSettings(), false, Severity.VERIFIER));
                             return prev;
                         }
                         return new HintsPanel(context.getSettings(), context.getData());
