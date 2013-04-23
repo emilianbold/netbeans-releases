@@ -53,6 +53,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -1384,11 +1385,15 @@ public final class FileUtils {
     
     public static File getNormalizedPathFile(File file) {
         if (file != null && !file.getPath().isEmpty()) {
-            Path path = FileSystems.getDefault().getPath(file.getPath());
-            
-            if (path != null) {
-                return path.normalize().toFile();
-            }
+            try {
+                Path path = FileSystems.getDefault().getPath(file.getPath());
+                
+                if (path != null) {
+                    return path.normalize().toFile();
+                }
+            } catch(InvalidPathException ex) {
+                LogManager.log("Trying to normalize invalid path", ex);
+            }                            
         }
         
         return file;
