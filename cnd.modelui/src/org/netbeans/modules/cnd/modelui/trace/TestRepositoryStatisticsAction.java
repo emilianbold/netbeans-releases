@@ -70,10 +70,13 @@ public class TestRepositoryStatisticsAction extends TestProjectActionBase {
     @Override
     protected void performAction(Collection<CsmProject> csmProjects) {
 
-        NotifyDescriptor nd = new DialogDescriptor.Confirmation(
+        NotifyDescriptor nd = new NotifyDescriptor(
                 NbBundle.getMessage(TestRepositoryStatisticsAction.class, "CTL_TRS_Message"),
                 NbBundle.getMessage(TestRepositoryStatisticsAction.class, "CTL_TRS_Title"),
-                NotifyDescriptor.YES_NO_CANCEL_OPTION);
+                NotifyDescriptor.YES_NO_CANCEL_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION, NotifyDescriptor.CANCEL_OPTION},
+                NotifyDescriptor.NO_OPTION);
 
         Object ret = DialogDisplayer.getDefault().notify(nd);
         if (ret.equals(JOptionPane.CANCEL_OPTION)) {
