@@ -56,8 +56,8 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyError;
+import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorID;
+import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
 
 /**
  *
@@ -134,7 +134,7 @@ public class GroovyHintsProvider implements HintsProvider {
         cancelled = false;
         
         @SuppressWarnings("unchecked")
-        Map<GroovyCompilerErrorID,List<GroovyErrorRule>> hints = (Map)manager.getErrors();
+        Map<CompilerErrorID,List<GroovyErrorRule>> hints = (Map)manager.getErrors();
 
         if (hints.isEmpty() || isCancelled()) {
             unhandled.addAll(errors);
@@ -191,13 +191,13 @@ public class GroovyHintsProvider implements HintsProvider {
     }
 
     /** Apply error rules and return true iff somebody added an error description for it */
-    private boolean applyRules(GroovyError error, RuleContext context, Map<GroovyCompilerErrorID,List<GroovyErrorRule>> hints,
+    private boolean applyRules(GroovyError error, RuleContext context, Map<CompilerErrorID,List<GroovyErrorRule>> hints,
             List<Hint> result) {
         
        // LOG.setLevel(Level.FINEST);
        LOG.log(Level.FINEST, "applyRules(...)");
         
-        GroovyCompilerErrorID code = error.getId();
+        CompilerErrorID code = error.getId();
         if (code != null) {
             List<GroovyErrorRule> rules = hints.get(code);
 

@@ -83,7 +83,7 @@ import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
 import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.groovy.editor.compiler.error.GroovyCompilerErrorID;
+import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorResolver;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -660,25 +660,13 @@ public class GroovyParser extends Parser {
 
         Error error =
             new GroovyError(key, displayName, description, context.snapshot.getSource().getFileObject(),
-                startOffset, endOffset, severity, getIdForErrorMessage(description));
+                startOffset, endOffset, severity, CompilerErrorResolver.getId(description));
 
         context.errorHandler.error(error);
 
         if (sanitizing == Sanitize.NONE) {
             context.errorOffset = startOffset;
         }
-    }
-
-    static GroovyCompilerErrorID getIdForErrorMessage(String errorMessage) {
-        String ERR_PREFIX = "unable to resolve class "; // NOI18N
-
-        if (errorMessage != null) {
-            if (errorMessage.startsWith(ERR_PREFIX)) {
-                return GroovyCompilerErrorID.CLASS_NOT_FOUND;
-            }
-        }
-
-        return GroovyCompilerErrorID.UNDEFINED;
     }
 
     private void handleErrorCollector(ErrorCollector errorCollector, Context context,

@@ -42,13 +42,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.api.parser;
+package org.netbeans.modules.groovy.editor.compiler.error;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.Error.Badging;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -63,7 +62,7 @@ public class GroovyError implements Badging {
     private final int end;
     private final String key;
     private final Severity severity;
-    private final GroovyCompilerErrorID id;
+    private final CompilerErrorID id;
 
 
     public GroovyError(
@@ -74,7 +73,7 @@ public class GroovyError implements Badging {
             @NonNull int start,
             @NonNull int end,
             @NonNull Severity severity,
-            @NonNull GroovyCompilerErrorID id) {
+            @NonNull CompilerErrorID id) {
         this.key = key;
         this.displayName = displayName;
         this.description = description;
@@ -132,7 +131,7 @@ public class GroovyError implements Badging {
         return file;
     }
 
-    public GroovyCompilerErrorID getId() {
+    public CompilerErrorID getId() {
         return id;
     }
 

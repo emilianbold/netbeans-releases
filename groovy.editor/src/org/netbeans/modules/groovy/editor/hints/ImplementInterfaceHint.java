@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,31 +34,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api;
+package org.netbeans.modules.groovy.editor.hints;
+
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorID;
+import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
+import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyErrorRule;
+import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author schmidtm
+ * @author Martin Janicek
  */
-public enum GroovyCompilerErrorID {
+public class ImplementInterfaceHint extends GroovyErrorRule {
 
-    CLASS_NOT_FOUND("CLASS_NOT_FOUND"),
-    UNDEFINED("UNDEFINED");
-    
-    private String id;
-
-    GroovyCompilerErrorID(String id) {
-        this.id = id;
+    @Override
+    public Set<CompilerErrorID> getCodes() {
+        return EnumSet.of(CompilerErrorID.CLASS_DOES_NOT_IMPLEMENT_ALL_METHODS);
     }
 
-    public String getID() {
-        return id;
+    @Override
+    public void run(GroovyRuleContext context, GroovyError error, List<Hint> result) {
     }
-    
+
+    @Override
+    public boolean appliesTo(RuleContext context) {
+        return true;
+    }
+
+    @NbBundle.Messages("ImplementInterfaceHintDescription=Implement all abstract methods")
+    @Override
+    public String getDisplayName() {
+        return Bundle.ImplementInterfaceHintDescription();
+    }
+
+    @Override
+    public boolean showInTasklist() {
+        return false;
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.ERROR;
+    }
 }

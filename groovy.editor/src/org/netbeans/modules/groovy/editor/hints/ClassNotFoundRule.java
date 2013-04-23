@@ -42,6 +42,7 @@
 package org.netbeans.modules.groovy.editor.hints;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,8 +53,8 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.groovy.editor.imports.ImportHelper;
 import org.netbeans.modules.groovy.editor.imports.ImportCandidate;
-import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyError;
+import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorID;
+import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyErrorRule;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
 import org.openide.filesystems.FileObject;
@@ -74,11 +75,8 @@ public class ClassNotFoundRule extends GroovyErrorRule {
     }
 
     @Override
-    public Set<GroovyCompilerErrorID> getCodes() {
-        LOG.log(Level.FINEST, "getCodes()"); // NOI18N
-        Set<GroovyCompilerErrorID> result = new HashSet<GroovyCompilerErrorID>();
-        result.add(GroovyCompilerErrorID.CLASS_NOT_FOUND);
-        return result;
+    public Set<CompilerErrorID> getCodes() {
+        return EnumSet.of(CompilerErrorID.CLASS_NOT_FOUND);
     }
 
     @Override

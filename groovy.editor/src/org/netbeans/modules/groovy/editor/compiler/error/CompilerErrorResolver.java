@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,31 +34,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.hints.infrastructure;
+package org.netbeans.modules.groovy.editor.compiler.error;
 
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.Rule.ErrorRule;
-import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorID;
-import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Parameters;
 
-/** 
- * Represents a rule to be run on the Groovy source in case the compiler 
- * issued an error or a warning.
+/**
+ *
+ * @author Martin Janicek
  */
-public abstract class GroovyErrorRule implements ErrorRule {
+public final class CompilerErrorResolver {
 
-    /** 
-     * Get the diagnostic codes this rule should run on
+    private static final String UNABLE_TO_RESOLVE_CLASS_PREFIX = "unable to resolve class "; // NOI18N
+    private static final String CLASS_DOES_NOT_IMPLEMENT_ALL_METHODS = "Can't have an abstract method in a non-abstract class."; // NOI18N
+    
+    
+    private CompilerErrorResolver() {
+    }
+    
+    /**
+     * Finds correct {@link GroovyCompilerErrorID} for the given error message.
+     * 
+     * @param errorMessage message that is typically provided by the groovyc
+     * @return corresponding {@link GroovyCompilerErrorID}
      */
-    public abstract Set<CompilerErrorID> getCodes();
+    public static CompilerErrorID getId(@NonNull String errorMessage) {
+        Parameters.notNull("errorMessage", errorMessage);
+        
+        if (errorMessage.startsWith(UNABLE_TO_RESOLVE_CLASS_PREFIX)) {
+            return CompilerErrorID.CLASS_NOT_FOUND;
+        }
+        
+        if (errorMessage.startsWith(CLASS_DOES_NOT_IMPLEMENT_ALL_METHODS)) {
+            return CompilerErrorID.CLASS_DOES_NOT_IMPLEMENT_ALL_METHODS;
+        }
 
-    /** 
-     * Return possible fixes for a given diagnostic report.
-     */
-    public abstract void run(GroovyRuleContext context, GroovyError error,
-             List<Hint> result);
+        return CompilerErrorID.UNDEFINED;
+    }
 }
