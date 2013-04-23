@@ -44,6 +44,7 @@ package org.netbeans.modules.html.angular;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import static org.netbeans.modules.html.angular.AngularDirectiveValueType.*;
 
 /**
  *
@@ -51,48 +52,64 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  */
 public enum AngularDirective {
     
-    app(false, true, true, false), 
-    bind, 
-    bindHtmlUnsafe, 
-    bindTemplate, 
-    change(true, true, false, true), 
-    checked(true, true, false, false),
-    _class, //real name is "class"
-    classEven,
-    classOdd,
-    click,
-    cloak,
-    controller, 
-    csp(false, true, true, false),
-    dblclick,
-    disabled(true, true, false, false),
-    form(true, true, true, true),
-    hide,
-    href(true, true, false, false),
-    include(true, true, true, true),
-    init,
-    list,
-    model,
-    mousedown,
-    mouseenter,
-    mouseleave,
-    mousemove,
-    mouseover,
-    mouseup,
-    multiple(true, true, false, false),
-    nonBindable,
-    pluralize(true, true, false, true),
-    readonly(false, true, false, false),
-    repeat,
-    selected(false, true, false, false),
-    show,
-    src(true, true, false, false),
-    style,
-    submit,
-    _switch(true, true, false, true), //??? //real name is "switch"
-    transclude,
-    view(false, true, true, true);
+    app     (false, true, true,  false, angularModule), 
+    bind    (true,  true, true,  false, expression), 
+    bindHtmlUnsafe
+            (true,  true, true,  false, expression), 
+    bindTemplate
+            (true,  true, true,  false, string), 
+    change  (true,  true, false, true,  noValue), 
+    checked (true,  true, false, false, expression),
+    _class  (true,  true, true,  false, expression), //real name is "class"
+    classEven
+            (true,  true, true,  false, expression),
+    classOdd(true,  true, true,  false, expression),
+    click   (true,  true, true,  false, expression),
+    cloak   (true,  true, true,  false, noValue),
+    controller
+            (true,  true, true,  false, expression), 
+    csp     (false, true, true,  false, noValue),
+    dblclick(true,  true, true,  false, expression),
+    disabled(true,  true, false, false, expression),
+    form    (true,  true, true,  true,  string),
+    hide    (true,  true, true,  false, expression),
+    href    (true,  true, false, false, template),
+    include (true,  true, true,  true,  string),
+    init    (true,  true, true,  false, expression),
+    list    (true,  true, true,  false, string),
+    model   (true,  true, true,  false, noValue),
+    mousedown
+            (true,  true, true,  false, expression),
+    mouseenter
+            (true,  true, true,  false, expression),
+    mouseleave
+            (true,  true, true,  false, expression),
+    mousemove
+            (true,  true, true,  false, expression),
+    mouseover
+            (true,  true, true,  false, expression),
+    mouseup (true,  true, true,  false, expression),
+    multiple(true,  true, false, false, expression),
+    nonBindable
+            (true,  true, true,  false, noValue),
+    //TODO add sub directives
+    pluralize
+            (true,  true, false, true,  noValue),    
     
+    //TODO add sub directives
+    readonly(false, true, false, false, noValue),
+    repeat  (true,  true, true,  false, repeatExpression),
+    selected(false, true, false, false, string),
+    show    (true,  true, true,  false, expression),
+    src     (true,  true, false, false, template),
+    style   (true,  true, true,  false, expression),
+    submit  (true,  true, true,  false, expression),
+    
+    //TODO add sub directives 
+    _switch (true,  true, false, true,  noValue), //??? //real name is "switch"
+    transclude
+            (true,  true, true,  false, noValue),
+    view    (false, true, true,  true,  noValue);
     
     //ngdoc parser is here: https://github.com/angular/angular.js/blob/master/docs/src/ngdoc.js
     //the directives documentation in .ngdoc format is here: https://github.com/angular/angular.js/blob/master/src/ng/directive/ngController.js
@@ -109,15 +126,19 @@ public enum AngularDirective {
 
     private boolean useAsAttribute, useAsClass, useAsElement;
     
-    private AngularDirective() {
-        this(true, true, true, false);
-    }
-
-    private AngularDirective(boolean attributeValueRequired, boolean useAsAttribute, boolean useAsClass, boolean useAsElement) {
+    private AngularDirectiveValueType type;
+    
+    private AngularDirective(
+            boolean attributeValueRequired, 
+            boolean useAsAttribute, 
+            boolean useAsClass, 
+            boolean useAsElement,
+            AngularDirectiveValueType type) {
         this.attributeValueTypicallyUsed = attributeValueRequired;
         this.useAsAttribute = useAsAttribute;
         this.useAsClass = useAsClass;
         this.useAsElement = useAsElement;
+        this.type = type;
     }
 
     public String getExternalDocumentationURL() {
@@ -178,5 +199,9 @@ public enum AngularDirective {
     public boolean canUseAsElement() {
         return useAsElement;
     }
-      
+
+    public AngularDirectiveValueType getType() {
+        return type;
+    }
+    
 }
