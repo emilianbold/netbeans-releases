@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.bugtracking.util;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -56,7 +55,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
@@ -65,9 +63,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
-import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
+import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -154,6 +151,10 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
     }
     
     public void register(final JTextPane pane) {
+        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        if(ideServices == null || !ideServices.providesSearchResource() || !ideServices.providesJumpTo()) {
+            return;
+        }
         long t = System.currentTimeMillis();
         try {
             SwingUtilities.invokeLater(new Runnable() {
@@ -319,9 +320,9 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
     
     private class TypeLink {
         public void jumpTo(String resource) {
-            TypeDescriptor td = TypeBrowser.browse(NbBundle.getMessage(FindTypesSupport.class, "LBL_FindType"), resource, null); // NOI18N
-            if(td != null) {
-                td.open();
+            IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+            if(ideServices != null) {
+                ideServices.jumpTo(NbBundle.getMessage(FindTypesSupport.class, "LBL_FindType"), resource);  // NOI18N
             }
         }
     }
