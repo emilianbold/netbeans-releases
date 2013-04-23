@@ -105,7 +105,7 @@ public class ScanSeveralProjects2PerfTest extends NbTestCase {
                             "jEdit41.zip",
                             "jEdit"
                 },
-                { "http://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
+                { "https://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
                         "mediawiki.zip",
                         "mediawiki-1.14.0"
                 },
