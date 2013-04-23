@@ -39,22 +39,80 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
+package org.netbeans.lib.html.lexer;
 
-import java.awt.Color;
-import javax.swing.ImageIcon;
-import org.openide.util.ImageUtilities;
+import java.util.Collection;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.html.lexer.HtmlLexerPlugin;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /**
  *
  * @author marekfukala
  */
-public class Constants {
+public class HtmlPlugins {
     
-    public static final ImageIcon ANGULAR_ICON =
-                ImageUtilities.loadImageIcon("org/netbeans/modules/html/angular/resources/AngularJS_icon_16.png", false); // NOI18N
+    private static HtmlPlugins DEFAULT;
+
+    public static synchronized HtmlPlugins getDefault() {
+        if(DEFAULT == null) {
+            DEFAULT = new HtmlPlugins();
+        }
+        return DEFAULT;
+    }
     
-    public static final Color ANGULAR_COLOR = Color.red.darker();
+    private Lookup.Result<HtmlLexerPlugin> lookupResult;
+    private Collection<? extends HtmlLexerPlugin> plugins;
+    private String[][] data;
     
-    public static final String JAVASCRIPT_MIMETYPE = "text/javascript"; //NOI18N
+    private HtmlPlugins() {
+//        Lookup lookup = MimeLookup.getLookup("text/html");
+        Lookup lookup = Lookup.getDefault();
+        lookupResult = lookup.lookupResult(HtmlLexerPlugin.class);
+        lookupResult.addLookupListener(new LookupListener() {
+
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                refresh();
+            }
+        });
+        
+        refresh();
+    }
+    
+    private void refresh() {
+        Collection<? extends HtmlLexerPlugin> allInstances = lookupResult.allInstances();
+        plugins = allInstances;
+        data = new String[3][allInstances.size()];
+        int idx = 0;
+        for(HtmlLexerPlugin fact : allInstances) {
+            data[0][idx] = fact.getOpenDelimiter();
+            data[1][idx] = fact.getCloseDelimiter();
+            data[2][idx] = fact.getContentMimeType();
+        }
+    }
+    
+    public String[] getOpenDelimiters() {
+        return data[0];
+    }
+    
+    public String[] getCloseDelimiters() {
+        return data[1];
+    }
+    
+    public String[] getMimeTypes() {
+        return data[2];
+    }
+    
+    public String createAttributeEmbedding(String elementName, String attributeName) {
+        for (HtmlLexerPlugin plugin : plugins) {
+            String embeddingMimeType = plugin.createAttributeEmbedding(elementName, attributeName);
+            if(embeddingMimeType != null) {
+                return embeddingMimeType;
+            }
+        }
+        return null;
+    }
 }

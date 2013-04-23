@@ -39,22 +39,41 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
+package org.netbeans.modules.maven.j2ee.web;
 
-import java.awt.Color;
-import javax.swing.ImageIcon;
-import org.openide.util.ImageUtilities;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider2;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.web.common.api.CssPreprocessor;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  *
- * @author marekfukala
+ * @author Martin Janicek
  */
-public class Constants {
-    
-    public static final ImageIcon ANGULAR_ICON =
-                ImageUtilities.loadImageIcon("org/netbeans/modules/html/angular/resources/AngularJS_icon_16.png", false); // NOI18N
-    
-    public static final Color ANGULAR_COLOR = Color.red.darker();
-    
-    public static final String JAVASCRIPT_MIMETYPE = "text/javascript"; //NOI18N
+@ProjectServiceProvider(
+    service = 
+        CssPreprocessor.ProjectProblemsProviderSupport.class,
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR
+    }
+)
+public class CssPreprocessorsProblemProvider implements CssPreprocessor.ProjectProblemsProviderSupport {
+
+    private Project project;
+
+    public CssPreprocessorsProblemProvider(Project project) {
+        this.project = project;
+    }
+
+    @Override
+    public Project getProject() {
+        return project;
+    }
+
+    @Override
+    public void openCustomizer() {
+        project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(CssPreprocessors.CUSTOMIZER_IDENT, null);
+    }
 }

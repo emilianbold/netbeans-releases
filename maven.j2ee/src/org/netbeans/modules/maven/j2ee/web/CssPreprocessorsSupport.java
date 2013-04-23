@@ -39,22 +39,63 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
 
-import java.awt.Color;
-import javax.swing.ImageIcon;
-import org.openide.util.ImageUtilities;
+package org.netbeans.modules.maven.j2ee.web;
+
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.web.common.api.CssPreprocessor;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author marekfukala
+ * @author Martin Janicek
  */
-public class Constants {
-    
-    public static final ImageIcon ANGULAR_ICON =
-                ImageUtilities.loadImageIcon("org/netbeans/modules/html/angular/resources/AngularJS_icon_16.png", false); // NOI18N
-    
-    public static final Color ANGULAR_COLOR = Color.red.darker();
-    
-    public static final String JAVASCRIPT_MIMETYPE = "text/javascript"; //NOI18N
+@ProjectServiceProvider(
+    service = 
+        CssPreprocessorsListener.class,
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR
+    }
+)
+public class CssPreprocessorsSupport implements CssPreprocessorsListener {
+
+    private Project project;
+
+    public CssPreprocessorsSupport(Project project) {
+        this.project = project;
+    }
+
+    public void recompileSources(CssPreprocessor cssPreprocessor) {
+        assert cssPreprocessor != null;
+        
+        FileObject docBase = WebProjectUtils.getDocumentBase(project);
+        if (docBase == null) {
+            return;
+        }
+        CssPreprocessors.getDefault().process(cssPreprocessor, project, docBase);
+    }
+
+    @Override
+    public void preprocessorsChanged() {
+    }
+
+    @Override
+    public void optionsChanged(CssPreprocessor cssPreprocessor) {
+        recompileSources(cssPreprocessor);
+    }
+
+    @Override
+    public void customizerChanged(Project project, CssPreprocessor cssPreprocessor) {
+        if (project.equals(project)) {
+            recompileSources(cssPreprocessor);
+        }
+    }
+
+    @Override
+    public void processingErrorOccured(Project project, CssPreprocessor cssPreprocessor, String error) {
+    }
 }
