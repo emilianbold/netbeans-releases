@@ -28,8 +28,9 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.gsf.embedding;
+package org.netbeans.modules.html.editor.embedding;
 
+import org.netbeans.modules.html.editor.embedding.CssEmbeddingProvider;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.css.lib.api.CssParserResult;

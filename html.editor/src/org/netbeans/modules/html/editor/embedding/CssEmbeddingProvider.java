@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.gsf.embedding;
+package org.netbeans.modules.html.editor.embedding;
 
 import java.util.*;
 import java.util.logging.Level;

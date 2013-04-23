@@ -78,12 +78,12 @@ public final class MappingUtils {
     static File resolveTarget(File root, List<String> mappings, File file, String name) {
         for (String mapping : mappings) {
             List<String> exploded = StringUtils.explode(mapping, MAPPING_DELIMITER);
-            File from = resolveFile(root, exploded.get(0));
+            File from = resolveFile(root, exploded.get(0).trim());
             String relpath = PropertyUtils.relativizeFile(from, file.getParentFile());
             if (relpath != null
                     && !relpath.startsWith("../")) { // NOI18N
                 // path match
-                File to = resolveFile(root, exploded.get(1));
+                File to = resolveFile(root, exploded.get(1).trim());
                 to = PropertyUtils.resolveFile(to, relpath);
                 return resolveFile(to, makeCssFilename(name));
             }
@@ -107,7 +107,7 @@ public final class MappingUtils {
 
     public static final class MappingsValidator {
 
-        private static final Pattern MAPPING_PATTERN = Pattern.compile("^[^:]+:[^:]+$"); // NOI18N
+        private static final Pattern MAPPING_PATTERN = Pattern.compile("^[^:]*[^: ][^:]*:[^:]*[^: ][^:]*$"); // NOI18N
 
         private final ValidationResult result = new ValidationResult();
 
@@ -122,17 +122,17 @@ public final class MappingUtils {
         }
 
         @NbBundle.Messages({
-            "MappingsValidator.error.empty=Mappings must be set.",
+            "MappingsValidator.warning.empty=CSS output folders must be set.",
             "# {0} - mapping",
-            "MappingsValidator.error.format=Mapping \"{0}\" is incorrect.",
+            "MappingsValidator.warning.format=CSS output folder \"{0}\" is incorrect.",
         })
         private MappingsValidator validateMappings(List<String> mappings) {
             if (mappings.isEmpty()) {
-                result.addError(new ValidationResult.Message("mappings", Bundle.MappingsValidator_error_empty())); // NOI18N
+                result.addWarning(new ValidationResult.Message("mappings", Bundle.MappingsValidator_warning_empty())); // NOI18N
             }
             for (String mapping : mappings) {
                 if (!MAPPING_PATTERN.matcher(mapping).matches()) {
-                    result.addError(new ValidationResult.Message("mapping." + mapping, Bundle.MappingsValidator_error_format(mapping))); // NOI18N
+                    result.addWarning(new ValidationResult.Message("mapping." + mapping, Bundle.MappingsValidator_warning_format(mapping))); // NOI18N
                 }
             }
             return this;
