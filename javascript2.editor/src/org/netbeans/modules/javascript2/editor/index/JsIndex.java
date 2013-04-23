@@ -52,6 +52,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -224,6 +225,6 @@ public class JsIndex {
     }
     
     private String escapeRegExp(String text) {
-        return text.replace(".", "\\.").replace("$", "\\$").replace("?", "\\?").replace("^", "\\^").replace("[", "\\[").replace("]", "\\]");
+        return Pattern.quote(text);
     }
 }
