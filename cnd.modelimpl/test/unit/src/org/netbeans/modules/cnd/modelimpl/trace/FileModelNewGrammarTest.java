@@ -122,6 +122,10 @@ public class FileModelNewGrammarTest extends TraceModelTestBase {
         performTest("constructorInitializerListScope.cpp");
     }    
     
+    public void testBitFields() throws Exception {
+        performTest("bitFields.cpp");
+    }    
+    
 //    public void testMultipleMemberDeclaration() throws Exception {
 //        performTest("typedefEnum.cpp");
 //    } 
