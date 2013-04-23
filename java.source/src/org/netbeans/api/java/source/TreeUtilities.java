@@ -59,7 +59,6 @@ import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Context;
 import java.util.*;
@@ -71,6 +70,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.UnionType;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -1098,11 +1098,11 @@ public final class TreeUtilities {
             for (Tree res : node.getResources()) {
                 TypeMirror resType = trees.getTypeMirror(new TreePath(getCurrentPath(), res));
                 if (resType != null && resType.getKind() == TypeKind.DECLARED) {
-                    for (Element member : elements.getAllMembers((TypeElement)((DeclaredType)resType).asElement())) {
-                        if (member.getKind() == ElementKind.METHOD && "close".contentEquals(member.getSimpleName()) //NOI18N
-                                && ((ExecutableElement)member).getParameters().isEmpty()
-                                && ((ExecutableElement)member).getTypeParameters().isEmpty()) {
-                            s.addAll(((ExecutableElement)member).getThrownTypes());
+                    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers((TypeElement)((DeclaredType)resType).asElement()))) {
+                        if ("close".contentEquals(method.getSimpleName()) //NOI18N
+                                && method.getParameters().isEmpty()
+                                && method.getTypeParameters().isEmpty()) {
+                            s.addAll(method.getThrownTypes());
                         }
                     }
                 }
