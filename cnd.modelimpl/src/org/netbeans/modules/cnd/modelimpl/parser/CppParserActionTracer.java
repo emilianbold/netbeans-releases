@@ -1296,6 +1296,12 @@ public class CppParserActionTracer extends CppParserActionImpl implements CppPar
         super.end_member_declarator(token);
         printOut("member_declarator", token); //NOI18N
     }
+    
+    @Override 
+    public void member_bitfield_declarator(Token token) {
+        super.end_member_declarator(token);
+        printOut("member_bitfield_declarator", token); //NOI18N
+    }
 
     @Override
     public void pure_specifier(Token token) {

@@ -39,69 +39,16 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.html.lexer;
-
-import java.util.Collection;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.html.lexer.HtmlExpression;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
+package org.netbeans.modules.html.angular.model;
 
 /**
+ * Angular directive attribute form convention.
  *
  * @author marekfukala
  */
-public class HtmlExpressions {
-    
-    private static HtmlExpressions DEFAULT;
-
-    public static synchronized HtmlExpressions getDefault() {
-        if(DEFAULT == null) {
-            DEFAULT = new HtmlExpressions();
-        }
-        return DEFAULT;
-    }
-    
-    private Lookup.Result<HtmlExpression> lookupResult;
-    
-    private String[][] data;
-    
-    private HtmlExpressions() {
-        Lookup lookup = MimeLookup.getLookup("text/html");
-        lookupResult = lookup.lookupResult(HtmlExpression.class);
-        lookupResult.addLookupListener(new LookupListener() {
-
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                refresh();
-            }
-        });
-        
-        refresh();
-    }
-    
-    private void refresh() {
-        Collection<? extends HtmlExpression> allInstances = lookupResult.allInstances();
-        data = new String[3][allInstances.size()];
-        int idx = 0;
-        for(HtmlExpression fact : allInstances) {
-            data[0][idx] = fact.getOpenDelimiter();
-            data[1][idx] = fact.getCloseDelimiter();
-            data[2][idx] = fact.getContentMimeType();
-        }
-    }
-    
-    public String[] getOpenDelimiters() {
-        return data[0];
-    }
-    
-    public String[] getCloseDelimiters() {
-        return data[1];
-    }
-    
-    public String[] getMimeTypes() {
-        return data[2];
-    }
-    
+public enum DirectiveConvention {
+    /**
+     * The base attribute name convention "ng-" + directive name
+     */
+    base;
 }

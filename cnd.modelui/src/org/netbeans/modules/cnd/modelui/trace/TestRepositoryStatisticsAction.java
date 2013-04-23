@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,24 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
 
-import java.awt.Color;
-import javax.swing.ImageIcon;
-import org.openide.util.ImageUtilities;
+package org.netbeans.modules.cnd.modelui.trace;
+
+import java.util.Collection;
+import java.util.Date;
+import javax.swing.JOptionPane;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.repository.support.RepositoryStatistics;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
- *
- * @author marekfukala
+ * @author Vladimir Kvashin
  */
-public class Constants {
-    
-    public static final ImageIcon ANGULAR_ICON =
-                ImageUtilities.loadImageIcon("org/netbeans/modules/html/angular/resources/AngularJS_icon_16.png", false); // NOI18N
-    
-    public static final Color ANGULAR_COLOR = Color.red.darker();
-    
-    public static final String JAVASCRIPT_MIMETYPE = "text/javascript"; //NOI18N
+
+public class TestRepositoryStatisticsAction extends TestProjectActionBase {
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(TestRepositoryStatisticsAction.class, "CTL_TestRepositoryStatistics"); //NOI18N
+    }
+
+
+    @Override
+    protected void performAction(Collection<CsmProject> csmProjects) {
+
+        NotifyDescriptor nd = new NotifyDescriptor(
+                NbBundle.getMessage(TestRepositoryStatisticsAction.class, "CTL_TRS_Message"),
+                NbBundle.getMessage(TestRepositoryStatisticsAction.class, "CTL_TRS_Title"),
+                NotifyDescriptor.YES_NO_CANCEL_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION, NotifyDescriptor.CANCEL_OPTION},
+                NotifyDescriptor.NO_OPTION);
+
+        Object ret = DialogDisplayer.getDefault().notify(nd);
+        if (ret.equals(JOptionPane.CANCEL_OPTION)) {
+            return;
+        }
+        InputOutput io = IOProvider.getDefault().getIO("", false);
+        io.select();
+        OutputWriter out = io.getOut();
+        RepositoryStatistics.report(out, new Date().toString());
+        if (ret.equals(JOptionPane.YES_OPTION)) {
+            RepositoryStatistics.clear();
+        }
+    }
 }

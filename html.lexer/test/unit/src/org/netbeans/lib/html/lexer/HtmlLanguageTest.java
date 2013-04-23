@@ -81,7 +81,7 @@ public class HtmlLanguageTest extends TestCase {
         Collection tids = Arrays.asList(new String[] {
             "text", "script", "style", "ws", "error", "tag", "tag", "argument",
             "operator", "value", "block-comment", "sgml-comment", "sgml-declaration", 
-            "character", "text", "tag", "tag", "xml-pi", "el"
+            "character", "text", "tag", "tag", "xml-pi", "el-content", "el-delimiter"
         });
         LexerTestUtilities.assertCollectionsEqual("Invalid token ids", tids, testTids);
                 

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
+package org.netbeans.modules.html.angular.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -101,7 +101,7 @@ public class AngularModel {
                     for (Attribute ngAttr : ot.attributes(new AttributeFilter() {
                         @Override
                         public boolean accepts(Attribute attribute) {
-                            return AngularDirective.isAngularAttribute(attribute);
+                            return Directive.isAngularAttribute(attribute);
                         }
                     })) {
                         Collection<Attribute> attrs = elements2ngAttributes.get(ot);
