@@ -573,7 +573,6 @@ class NbIO implements InputOutput, Lookup.Provider {
 
             private final NbIoFoldHandleDefinition parent;
             private final int start;
-            private boolean expanded;
             private int end = -1;
             private NbIoFoldHandleDefinition nested = null;
 
@@ -581,8 +580,8 @@ class NbIO implements InputOutput, Lookup.Provider {
                     int start, boolean expanded) {
                 this.parent = parent;
                 this.start = start;
-                this.expanded = expanded;
                 setCurrentFoldStart(start);
+                setExpanded(expanded);
             }
 
             @Override
@@ -626,16 +625,22 @@ class NbIO implements InputOutput, Lookup.Provider {
             }
 
             @Override
-            public void setExpanded(boolean expanded) {
+            public final void setExpanded(boolean expanded) {
                 synchronized (out()) {
-                    this.expanded = expanded;
-                    //TODO
+                    if (expanded) {
+                        getLines().showFold(start);
+                    } else {
+                        getLines().hideFold(start);
+                    }
                 }
             }
 
             private void setCurrentFoldStart(int foldStartIndex) {
-                ((AbstractLines) out().getLines()).setCurrentFoldStart(
-                        foldStartIndex);
+                getLines().setCurrentFoldStart(foldStartIndex);
+            }
+
+            private AbstractLines getLines() {
+                return ((AbstractLines) out().getLines());
             }
         }
     }

@@ -743,6 +743,14 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             if (knownLogicalLineCounts == null) {
                 return;
             }
+            if (currentFoldStart >= 0 && (visibleList.get(currentFoldStart) == 0
+                    || !isVisible(currentFoldStart))) {
+                if (knownLogicalLineCounts.lastIndex() != lineIdx) {
+                    knownLogicalLineCounts.add(lineIdx,
+                            knownLogicalLineCounts.get(lineIdx - 1));
+                }
+                return;
+            };
             // nummber of logical lines above for knownLogicalLineCounts
             int aboveLineCount;
             boolean alreadyAdded = knownLogicalLineCounts.lastIndex() == lineIdx;
@@ -1267,6 +1275,9 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
      */
     private void setFoldExpanded(int foldStartIndex, boolean expanded) {
         synchronized (readLock()) {
+            if (visibleList.get(foldStartIndex) == (expanded ? 1 : 0)) {
+                return;
+            }
             visibleList.set(foldStartIndex, expanded ? 1 : 0);
             int len = foldLength(foldStartIndex);
             if (len > 0) {
