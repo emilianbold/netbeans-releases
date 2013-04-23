@@ -45,30 +45,22 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -79,6 +71,8 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.queries.SourceLevelQuery.Profile;
+import org.netbeans.api.java.source.support.ProfileSupport;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -90,7 +84,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -106,7 +99,6 @@ import static org.netbeans.modules.java.project.Bundle.*;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 /**
@@ -180,7 +172,7 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
 
     @Override
     @NbBundle.Messages({
-        "LBL_InvalidProfile=Invalid Profile",
+        "LBL_InvalidProfile=Invalid JRE 8 Profile",
         "DESC_InvalidProfile=The project profile ({0}) is lower than the profile of used libraries ({1}).",
         "DESC_IllegalProfile=The project libraries have illegal value of profile."
     })
@@ -192,19 +184,23 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                     @Override
                     public Collection<? extends ProjectProblem> run() {
                         final SourceLevelQuery.Result mySL = listenenOnProjectMetadata();
-                        final Profile profile = StandardProfile.forName(mySL.getProfile());
-                        if (!profile.isValid() || profile == StandardProfile.DEFAULT) {
+                        final Profile profile = mySL.getProfile();
+                        if (profile == Profile.DEFAULT) {
                             return Collections.<ProjectProblem>emptySet();
                         }
                         final Set<Reference> problems = collectReferencesWithWrongProfile(profile);
                         if (problems.isEmpty()) {
                             return Collections.<ProjectProblem>emptySet();
                         }
-                        final Profile minProfile = requiredProfile(problems, StandardProfile.forName("dummy"));  //NOI18N
+                        Profile minProfile = null;
+                        for (Reference problem : problems) {
+                            final Profile problemProfile = problem.getRequiredProfile();
+                            minProfile = max(minProfile, problemProfile);
+                        }
                         return Collections.<ProjectProblem>singleton(
                                 ProjectProblem.createError(
                                 LBL_InvalidProfile(),
-                                minProfile.isValid()
+                                minProfile != null
                                 ? DESC_InvalidProfile(profile.getDisplayName(), minProfile.getDisplayName())
                                 : DESC_IllegalProfile(),
                                 new ProfileResolver(
@@ -322,10 +318,17 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                     final String libName = rawEntry.substring(LIB_PREFIX.length(),rawEntry.lastIndexOf('.'));
                     final Library lib = refHelper.findLibrary(libName);
                     if (lib != null) {
-                        final Profile minProfile = findProfile(lib.getContent(VOL_CLASSPATH));
-                        if (isBroken(requiredProfile, minProfile)) {
-                            collector.add(new LibraryReference(classPathId, rawEntry, minProfile, lib));
-                        }
+                        final Collection<? extends ProfileSupport.Violation> res =
+                            ProfileSupport.findProfileViolations(
+                                requiredProfile,
+                                Collections.<URL>emptySet(),
+                                lib.getContent(VOL_CLASSPATH),
+                                Collections.<URL>emptySet(),
+                                EnumSet.of(ProfileSupport.Validation.BINARIES_BY_MANIFEST));
+                            if (!res.isEmpty()) {
+                                final Profile maxProfile = findMaxProfile(res);
+                                collector.add(new LibraryReference(classPathId, rawEntry, maxProfile, lib));
+                            }
                     }
                 } else if (rawEntry.startsWith(PRJ_PREFIX)) {
                     final Object[] ref = refHelper.findArtifactAndLocation(rawEntry);
@@ -333,7 +336,7 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                         AntArtifact artifact = (AntArtifact)ref[0];
                         final SourceLevelQuery.Result slRes = SourceLevelQuery.getSourceLevel2(artifact.getProject().getProjectDirectory());
                         slResCollector.add(slRes);
-                        final Profile minProfile = StandardProfile.forName(slRes.getProfile());
+                        final Profile minProfile = slRes.getProfile();
                         if (isBroken(requiredProfile, minProfile)) {
                             collector.add(new ProjectReference(classPathId, rawEntry, minProfile, artifact.getProject()));
                         }
@@ -345,9 +348,16 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                         final File file = antProjectHelper.resolveFile(path);
                         final URL root = FileUtil.urlForArchiveOrDir(file);
                         if (root != null) {
-                            final Profile minProfile = findProfile(root);
-                            if (isBroken(requiredProfile, minProfile)) {
-                                collector.add(new FileReference(classPathId, rawEntry, minProfile, file));
+                            final Collection<? extends ProfileSupport.Violation> res =
+                                ProfileSupport.findProfileViolations(
+                                    requiredProfile,
+                                    Collections.<URL>emptySet(),
+                                    Collections.singleton(root),
+                                    Collections.<URL>emptySet(),
+                                    EnumSet.of(ProfileSupport.Validation.BINARIES_BY_MANIFEST));
+                            if (!res.isEmpty()) {
+                                final Profile maxProfile = findMaxProfile(res);
+                                collector.add(new FileReference(classPathId, rawEntry, maxProfile, file));
                             }
                         }
                     }
@@ -367,9 +377,16 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                     final File file = antProjectHelper.resolveFile(propName);
                     final URL root = FileUtil.urlForArchiveOrDir(file);
                     if (root != null) {
-                        final Profile minProfile = findProfile(root);
-                        if (isBroken(requiredProfile, minProfile)) {
-                            collector.add(new FileReference(classPathId, rawEntry, minProfile, file));
+                        final Collection<? extends ProfileSupport.Violation> res =
+                                ProfileSupport.findProfileViolations(
+                                    requiredProfile,
+                                    Collections.<URL>emptySet(),
+                                    Collections.singleton(root),
+                                    Collections.<URL>emptySet(),
+                                    EnumSet.of(ProfileSupport.Validation.BINARIES_BY_MANIFEST));
+                        if (!res.isEmpty()) {
+                            final Profile maxProfile = findMaxProfile(res);
+                            collector.add(new FileReference(classPathId, rawEntry, maxProfile, file));
                         }
                     }
                 }
@@ -379,12 +396,12 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
 
     private static boolean isBroken(
             @NonNull final Profile requiredProfile,
-            @NonNull final Profile profile) {
-        if (!profile.isValid()) {
+            @NullAllowed final Profile profile) {
+        if (profile == null) {
             return true;
         }
         final Profile max = max(requiredProfile, profile);
-        return !max.equals(StandardProfile.DEFAULT) &&
+        return !max.equals(Profile.DEFAULT) &&
                !max.equals(requiredProfile);
     }
 
@@ -399,187 +416,43 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
     }
 
     @CheckForNull
-    private static Profile findProfile(@NonNull final Iterable<? extends URL> roots) {
-        Profile current = StandardProfile.DEFAULT;
-        for (URL root : roots) {
-            final Profile rootProfile = findProfile(root);
-            if (!rootProfile.isValid()) {
+    private static Profile findMaxProfile(@NonNull final Iterable<? extends ProfileSupport.Violation> violations) {
+        Profile current = null;
+        for (ProfileSupport.Violation violation : violations) {
+            Profile p = violation.getRequiredProfile();
+            if (p == null) {
                 //Broken profile - no need to continue
-                return rootProfile;
+                return null;
             }
-            current = max(current, rootProfile);
+            current = max(current, p);
         }
         return current;
     }
-
-    @NonNull
-    private static Profile findProfile(@NonNull URL root) {        
-        Profile res;
-        final ArchiveCache.Key key = ArchiveCache.createKey(root);
-        if (key != null) {
-            res = ArchiveCache.getProfile(key);
-            if (res != null) {
-                return res;
-            }
+    
+    @CheckForNull
+    static Profile max (@NullAllowed Profile a, @NullAllowed Profile b) {
+        if (b == null) {
+            return a;
         }
-        res = StandardProfile.DEFAULT;
-        final FileObject rootFo = URLMapper.findFileObject(root);
-        if (rootFo != null) {
-            final FileObject manifestFile = rootFo.getFileObject(RES_MANIFEST);
-            if (manifestFile != null) {
-                try {
-                    final InputStream in = manifestFile.getInputStream();
-                    try {
-                        final Manifest manifest = new Manifest(in);
-                        final Attributes attrs = manifest.getMainAttributes();
-                        res = StandardProfile.forName(attrs.getValue(ATTR_PROFILE));
-                    } finally {
-                        in.close();
-                    }
-                } catch (IOException ioe) {
-                    LOG.log(
-                        Level.INFO,
-                        "Cannot read Profile attribute from: {0}", //NOI18N
-                        FileUtil.getFileDisplayName(manifestFile));
-                }
-            }
+        if (a == null) {
+            return b;
         }
-        if (key != null) {
-            ArchiveCache.putProfile(key, res);
-        }
-        return res;
-    }
-
-
-    @NonNull
-    static Profile max (@NonNull Profile a, @NonNull Profile b) {        
-        return a.getRank() >= b.getRank() ?
-                a :
-                b;
+        return a.compareTo(b) <= 0 ?
+            b :
+            a;
     }
 
     @NonNull
     static Profile requiredProfile(
             @NonNull final Collection<? extends Reference> state,
-            @NonNull Profile current) {
+            @NonNull Profile initial) {
+        Profile current = initial;
         for (ProfileProblemsProviderImpl.Reference re : state) {
             current = max(current, re.getRequiredProfile());
         }
         return current;
     }
-
-    static interface Profile {
-        @NonNull
-        String getAntName();
-        @NonNull
-        String getDisplayName();
-        boolean isValid();
-        int getRank();
-    }
-
-    @NbBundle.Messages({
-        "NAME_Compact1=Compact 1",
-        "NAME_Compact2=Compact 2",
-        "NAME_Compact3=Compact 3",
-        "NAME_FullJRE=Full JRE"
-    })
-    static enum StandardProfile implements Profile {
-
-        COMPACT1(1, "compact1", Bundle.NAME_Compact1()),
-        COMPACT2(2, "compact2", Bundle.NAME_Compact2()),
-        COMPACT3(3, "compact3", Bundle.NAME_Compact3()),
-        DEFAULT(Integer.MAX_VALUE, "default", Bundle.NAME_FullJRE());
-
-        private static final Map<String,StandardProfile> profilesByName =
-                new HashMap<String, StandardProfile>();
-        static {
-            for (StandardProfile sp : values()) {
-                profilesByName.put(sp.getAntName(), sp);
-            }
-        }
-
-        private final int rank;
-        private final String antName;
-        private final String displayName;
-
-        private StandardProfile(
-                final int rank,
-                @NonNull final String antName,
-                @NonNull final String displayName) {
-            this.rank = rank;
-            this.antName = antName;
-            this.displayName = displayName;
-        }
-
-
-        @Override
-        @NonNull
-        public String getAntName() {
-            return antName;
-        }
-
-        @Override
-        @NonNull
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        @Override
-        public int getRank() {
-            return rank;
-        }
-
-        @Override
-        public boolean isValid() {
-            return true;
-        }
-
-        @NonNull
-        static Profile forName(@NullAllowed String antName) {
-            if (antName == null) {
-                antName = DEFAULT.getAntName();
-            }
-            Profile res = profilesByName.get(antName);
-            if (res == null) {
-                res = new UnknownProfile(antName);
-            }
-            return res;
-        }
-
-
-        private static class UnknownProfile implements Profile {
-
-            private final String antName;
-
-            UnknownProfile(@NonNull final String antName) {
-                Parameters.notEmpty("antName", antName);    //NOI18N
-                this.antName = antName;
-            }
-
-            @Override
-            public String getAntName() {
-                return antName;
-            }
-
-            @Override
-            public String getDisplayName() {
-                return antName;
-            }
-
-            @Override
-            public int getRank() {
-                return Integer.MIN_VALUE;
-            }
-
-            @Override
-            public boolean isValid() {
-                return false;
-            }
-        }
-
-
-    }
-
+    
     abstract static class Reference {
 
         private final String classPathId;
@@ -589,21 +462,24 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         private Reference(
                 @NonNull final String classPathId,
                 @NonNull final String rawId,
-                @NonNull final Profile requiredProfile) {
+                @NullAllowed final Profile requiredProfile) {
             Parameters.notNull("classPathId", classPathId); //NOI18N
             Parameters.notNull("rawId", rawId);             //NOI18N
-            Parameters.notNull("requiredProfile", requiredProfile); //NOI18N
             this.classPathId = classPathId;
             this.rawId = rawId;
             this.requiredProfile = requiredProfile;
         }
 
+        @NonNull
         abstract String getDisplayName();
 
+        @NonNull
         abstract String getToolTipText();
-        
+
+        @NonNull
         abstract Icon getIcon();        
-                        
+
+        @CheckForNull
         final Profile getRequiredProfile() {
             return requiredProfile;
         }
@@ -664,7 +540,7 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         private LibraryReference(
                 @NonNull final String classPathId,
                 @NonNull final String rawId,
-                @NonNull final Profile requiredProfile,
+                @NullAllowed final Profile requiredProfile,
                 @NonNull final Library lib) {
             super(classPathId, rawId, requiredProfile);
             Parameters.notNull("lib", lib); //NOI18N
@@ -693,7 +569,7 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         private ProjectReference(
                 @NonNull final String classPathId,
                 @NonNull final String rawId,
-                @NonNull final Profile requiredProfile,
+                @NullAllowed final Profile requiredProfile,
                 @NonNull final Project prj) {
             super(classPathId, rawId, requiredProfile);
             Parameters.notNull("prj", prj); //NOI18N
@@ -723,7 +599,7 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         private FileReference(
                 @NonNull final String classPathId,
                 @NonNull final String rawId,
-                @NonNull final Profile requiredProfile,
+                @NullAllowed final Profile requiredProfile,
                 @NonNull final File file) {
             super(classPathId, rawId, requiredProfile);
             Parameters.notNull("file", file);   //NOI18N
@@ -806,10 +682,10 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                                         final Profile newProfile = panel.getProfile();
                                         final EditableProperties props = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                         if (newProfile == null ||
-                                            newProfile == StandardProfile.DEFAULT) {
+                                            newProfile == Profile.DEFAULT) {
                                             props.remove(profileProperty);
                                         } else {
-                                            props.put(profileProperty, newProfile.getAntName());
+                                            props.put(profileProperty, newProfile.getName());
                                         }
                                         antProjectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                     }
@@ -839,114 +715,5 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
             res.run();
             return res;
         }
-    }
-
-
-    private static final class ArchiveCache {
-
-        private static final int MAX_CACHE_SIZE = Integer.getInteger(
-                "ProfileProblemsProviderImpl.ArchiveCache.size",    //NOI18N
-                1<<10);        
-
-        private static final Map<Key,Profile> cache = new LinkedHashMap<Key, Profile>(16, 0.75f, true) {
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<Key, Profile> entry) {
-                return size() > MAX_CACHE_SIZE;
-            }
-        };
-
-        private ArchiveCache() {}
-
-        @CheckForNull
-        static Profile getProfile(@NonNull final Key key) {
-            final Profile res = cache.get(key);
-            LOG.log(
-                Level.FINER,
-                "cache[{0}]->{1}",  //NOI18N
-                new Object[]{
-                    key,
-                    res
-                });
-            return res;
-        }
-
-        static void putProfile(
-            @NonNull final  Key key,
-            @NonNull final Profile profile) {
-            LOG.log(
-                Level.FINER,
-                "cache[{0}]<-{1}",   //NOI18N
-                new Object[]{
-                    key,
-                    profile
-                });
-            cache.put(key, profile);
-        }
-
-        @CheckForNull
-        static Key createKey(@NonNull final URL rootURL) {
-            final URL fileURL = FileUtil.getArchiveFile(rootURL);
-            if (fileURL == null) {
-                //Not an archive
-                return null;
-            }
-            final FileObject fileFo = URLMapper.findFileObject(fileURL);
-            if (fileFo == null) {
-                return null;
-            }
-            return new Key(
-                fileFo.toURI(),
-                fileFo.lastModified().getTime(),
-                fileFo.getSize());
-        }
-
-        private static final class Key {
-
-            private final URI root;
-            private final long mtime;
-            private final long size;
-
-            Key(
-                    @NonNull final URI root,
-                    final long mtime,
-                    final long size) {
-                this.root = root;
-                this.mtime = mtime;
-                this.size = size;
-            }
-
-            @Override
-            public int hashCode() {
-                int hash = 17;
-                hash = 31 * hash + (this.root != null ? this.root.hashCode() : 0);
-                hash = 31 * hash + (int) (this.mtime ^ (this.mtime >>> 32));
-                hash = 31 * hash + (int) (this.size ^ (this.size >>> 32));
-                return hash;
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-                if (obj == this) {
-                    return true;
-                }
-                if (!(obj instanceof Key)) {
-                    return false;
-                }
-                final Key other = (Key) obj;
-                return this.root.equals(other.root) &&
-                    this.mtime == other.mtime &&
-                    this.size == other.size;
-
-            }
-
-            @Override
-            public String toString() {
-                return String.format(
-                    "Key{root: %s, mtime: %d, size: %d}",   //NOI18N
-                    root,
-                    mtime,
-                    size);
-            }
-        }
-    }
+    }    
 }

@@ -56,7 +56,6 @@ import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
 import org.netbeans.modules.php.analysis.options.AnalysisOptionsValidator;
-import org.netbeans.modules.php.analysis.results.Result;
 import org.netbeans.modules.php.analysis.ui.analyzer.CodeSnifferCustomizerPanel;
 import org.netbeans.modules.php.analysis.util.AnalysisUtils;
 import org.netbeans.modules.php.analysis.util.Mappers;
@@ -135,7 +134,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
             if (cancelled.get()) {
                 return Collections.emptyList();
             }
-            List<Result> results = codeSniffer.analyze(codeSnifferStandard, root);
+            List<org.netbeans.modules.php.analysis.results.Result> results = codeSniffer.analyze(codeSnifferStandard, root);
             if (results == null) {
                 context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();
@@ -149,7 +148,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
             if (cancelled.get()) {
                 return Collections.emptyList();
             }
-            List<Result> results = codeSniffer.analyze(codeSnifferStandard, file);
+            List<org.netbeans.modules.php.analysis.results.Result> results = codeSniffer.analyze(codeSnifferStandard, file);
             if (results == null) {
                 context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();
@@ -164,7 +163,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
                 return Collections.emptyList();
             }
             FileObject folder = nonRecursiveFolder.getFolder();
-            List<Result> results = codeSniffer.analyze(codeSnifferStandard, folder, true);
+            List<org.netbeans.modules.php.analysis.results.Result> results = codeSniffer.analyze(codeSnifferStandard, folder, true);
             if (results == null) {
                 context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();

@@ -50,10 +50,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -82,6 +85,7 @@ import org.openide.nodes.NodeOp;
 import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
+import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -112,7 +116,7 @@ public class Nodes {
         }
         
         if (!byCategory) {
-            toPopulate.addAll(constructSemiLogicalViewNodes(new LogicalViewCache(), sortErrors(errors.provider2Hints, BY_FILE)));
+            toPopulate.addAll(constructSemiLogicalViewNodes(new LogicalViewCache(), sortErrors(errors.provider2Hints, BY_FILE), errors.errorsToProjects));
         } else {
 //            Map<AnalyzerFactory, Map<String, WarningDescription>> analyzerId2Description = new HashMap<AnalyzerFactory, Map<String, WarningDescription>>();
             Map<String, Map<AnalyzerFactory, List<ErrorDescription>>> byCategoryId = sortErrors(errors.provider2Hints, new ByCategoryRetriever(errors.analyzerId2Description.get()));
@@ -137,7 +141,7 @@ public class Nodes {
                     }
 
                     final String typeHtmlDisplayName = (typeDisplayName != null ? translate(typeDisplayName) : "Unknown") + " <b>(" + typeWarnings + ")</b>";
-                    AbstractNode typeNode = new AbstractNode(constructSemiLogicalViewChildren(lvc, sortErrors(typeEntry.getValue(), BY_FILE))) {
+                    AbstractNode typeNode = new AbstractNode(constructSemiLogicalViewChildren(lvc, sortErrors(typeEntry.getValue(), BY_FILE), errors.errorsToProjects)) {
                         @Override public Image getIcon(int type) {
                             return icon;
                         }
@@ -266,10 +270,10 @@ public class Nodes {
         return warnings != null ? warnings.get(id) : null;
     }
 
-    private static Children constructSemiLogicalViewChildren(final LogicalViewCache lvc, final Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
+    private static Children constructSemiLogicalViewChildren(final LogicalViewCache lvc, final Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors, final Map<ErrorDescription,Project> errorsToProjects) {
         return Children.create(new ChildFactory<Node>() {
             @Override protected boolean createKeys(List<Node> toPopulate) {
-                toPopulate.addAll(constructSemiLogicalViewNodes(lvc, errors));
+                toPopulate.addAll(constructSemiLogicalViewNodes(lvc, errors, errorsToProjects));
                 return true;
             }
             @Override protected Node createNodeForKey(Node key) {
@@ -278,30 +282,85 @@ public class Nodes {
         }, true);
     }
 
-    private static List<Node> constructSemiLogicalViewNodes(LogicalViewCache lvc, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
+    private static List<Node> constructSemiLogicalViewNodes(LogicalViewCache lvc, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors, Map<ErrorDescription, Project> errorsToProjects) {
         Map<Project, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>>> projects = new IdentityHashMap<Project, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>>>();
-        
-        for (FileObject file : errors.keySet()) {
+        Map<FileObject,Set<Project>> file2Projects = new HashMap<>();
+        for (Map.Entry<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> fileEntry : errors.entrySet()) {
+            if (!errorsToProjects.isEmpty()) {
+                for (Iterator<Map.Entry<AnalyzerFactory,List<ErrorDescription>>> analyzerEntryIt = fileEntry.getValue().entrySet().iterator(); analyzerEntryIt.hasNext();) {
+                    final Map.Entry<AnalyzerFactory,List<ErrorDescription>> analyzerEntry = analyzerEntryIt.next();
+                    for (Iterator<ErrorDescription> errorIt = analyzerEntry.getValue().iterator(); errorIt.hasNext();) {
+                        final ErrorDescription error = errorIt.next();
+                        Project project = errorsToProjects.get(error);
+                        if (project != null) {
+                            Set<Project> inProjects = file2Projects.get(fileEntry.getKey());
+                            if (inProjects == null) {
+                                inProjects = new HashSet<>();
+                                file2Projects.put(fileEntry.getKey(), inProjects);
+                            }
+                            inProjects.add(project);
+                            Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> projectErrors = projects.get(project);
+                            if (projectErrors == null) {
+                                projects.put(project, projectErrors = new HashMap<>());
+                            }
+                            Map<AnalyzerFactory, List<ErrorDescription>> analyzerErrors = projectErrors.get(fileEntry.getKey());
+                            if (analyzerErrors == null) {
+                                analyzerErrors = new HashMap<>();
+                                projectErrors.put(fileEntry.getKey(), analyzerErrors);
+                            }
+                            List<ErrorDescription> errorList = analyzerErrors.get(analyzerEntry.getKey());
+                            if (errorList == null) {
+                                errorList = new ArrayList<>();
+                                analyzerErrors.put(analyzerEntry.getKey(), errorList);
+                            }
+                            errorList.add(error);
+                            errorIt.remove();
+                        }
+                    }
+                    if (analyzerEntry.getValue().isEmpty()) {
+                        analyzerEntryIt.remove();
+                    }
+                }
+            }
+            if (fileEntry.getValue().isEmpty()) {
+                continue;
+            }
+            final FileObject file = fileEntry.getKey();
             Project project = FileOwnerQuery.getOwner(file);
-            
             if (project == null) {
                 Logger.getLogger(Nodes.class.getName()).log(Level.WARNING, "Cannot find project for: {0}", FileUtil.getFileDisplayName(file));
             }
-            
+
             Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> projectErrors = projects.get(project);
-            
+
             if (projectErrors == null) {
                 projects.put(project, projectErrors = new HashMap<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>>());
             }
-            
+
             projectErrors.put(file, errors.get(file));
         }
         
         projects.remove(null);
-        
+        Map<Project,Set<FileObject>> needsCacheClean = new HashMap<>();
+        for (Map.Entry<FileObject,Set<Project>> f2p : file2Projects.entrySet()) {
+            if (f2p.getValue().size() > 1) {
+                for (Project p : f2p.getValue()) {
+                    Set<FileObject> filesToClear = needsCacheClean.get(p);
+                    if (filesToClear == null) {
+                        filesToClear = new HashSet<>();
+                        needsCacheClean.put(p, filesToClear);
+                    }
+                    filesToClear.add(f2p.getKey());
+                }
+            }
+        }
         List<Node> nodes = new ArrayList<Node>(projects.size());
         
         for (Project p : projects.keySet()) {
+            final Set<FileObject> filesToClear = needsCacheClean.get(p);
+            if (filesToClear != null) {
+                lvc.file2FileNode.keySet().removeAll(filesToClear);
+            }
             nodes.add(constructSemiLogicalView(p, lvc, projects.get(p)));
         }
 
@@ -548,7 +607,18 @@ public class Nodes {
             Collections.sort(eds, new Comparator<ErrorDescription>() {
                 @Override public int compare(ErrorDescription o1, ErrorDescription o2) {
                     try {
-                        return o1.getRange().getBegin().getLine() - o2.getRange().getBegin().getLine();
+                        final PositionBounds r1 = o1.getRange();
+                        final PositionBounds r2 = o2.getRange();
+                        if (r1 != null) {
+                            return r2 != null ?
+                                r1.getBegin().getLine() - r2.getBegin().getLine() :
+                                -1;
+                        } else {
+                            return r2 != null ?
+                                1 :
+                                o1.getDescription().compareTo(o2.getDescription());
+                        }
+                        
                     } catch (IOException ex) {
                         throw new IllegalStateException(ex); //XXX
                     }
@@ -577,7 +647,10 @@ public class Nodes {
             }));
             int line = -1;
             try {
-                line = ed.getRange().getBegin().getLine();
+                final PositionBounds range = ed.getRange();
+                if (range != null) {
+                    line = range.getBegin().getLine();
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
