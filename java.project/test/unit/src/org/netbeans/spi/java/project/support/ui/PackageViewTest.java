@@ -1282,12 +1282,12 @@ public class PackageViewTest extends NbTestCase {
                 }
             }
         }
-        new A().assertPath("[org.netbeans, api.stuff, Stuff.java]", "org/netbeans/api/stuff/Stuff.java");
+        new A().assertPath("[org.netbeans, api.stuff, Stuff]", "org/netbeans/api/stuff/Stuff.java");
         new A().assertPath("[org.netbeans, api.stuff]", "org/netbeans/api/stuff");
         new A().assertPath(null, "org/netbeans/api"); // displayed only in Files
-        new A().assertPath("[org.netbeans, spi.stuff, StuffImplementation.java]", "org/netbeans/spi/stuff/StuffImplementation.java");
+        new A().assertPath("[org.netbeans, spi.stuff, StuffImplementation]", "org/netbeans/spi/stuff/StuffImplementation.java");
         new A().assertPath("[org.netbeans, spi.stuff, support]", "org/netbeans/spi/stuff/support");
-        new A().assertPath("[org.netbeans, spi.stuff, support, AbstractStuffImplementation.java]", "org/netbeans/spi/stuff/support/AbstractStuffImplementation.java");
+        new A().assertPath("[org.netbeans, spi.stuff, support, AbstractStuffImplementation]", "org/netbeans/spi/stuff/support/AbstractStuffImplementation.java");
     }
 
     // XXX test reduced tree copy & paste, drag & drop
