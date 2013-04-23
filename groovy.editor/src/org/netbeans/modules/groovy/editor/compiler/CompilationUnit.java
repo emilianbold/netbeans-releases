@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.api.parser;
+package org.netbeans.modules.groovy.editor.compiler;
 
 import groovy.lang.GroovyClassLoader;
 import groovyjarjarasm.asm.Opcodes;
@@ -66,6 +66,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyParser;
 import org.netbeans.modules.groovy.editor.java.ElementSearch;
 import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.openide.util.Exceptions;
@@ -74,7 +75,7 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Adamek
  */
-final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit {
+public final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit {
 
     public CompilationUnit(GroovyParser parser, CompilerConfiguration configuration,
             CodeSource security,

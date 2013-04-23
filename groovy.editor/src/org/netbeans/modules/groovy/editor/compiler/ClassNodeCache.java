@@ -39,11 +39,16 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.editor.api.parser;
+package org.netbeans.modules.groovy.editor.compiler;
 
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyResourceLoader;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -51,6 +56,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -58,6 +64,8 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -208,7 +216,7 @@ public final class ClassNodeCache {
         if (transformationLoader == null) {
             LOG.log(Level.FINE,"Transformation ClassLoader created.");  //NOI18N
             transformationLoader = 
-                new GroovyParser.TransformationClassLoader(
+                new TransformationClassLoader(
                     CompilationUnit.class.getClassLoader(),
                     allResources,
                     configuration);
@@ -223,7 +231,7 @@ public final class ClassNodeCache {
         GroovyClassLoader resolveLoader = resolveLoaderRef == null ? null : resolveLoaderRef.get();
         if (resolveLoader == null) {
             LOG.log(Level.FINE,"Resolver ClassLoader created.");  //NOI18N
-            resolveLoader = new GroovyParser.ParsingClassLoader(
+            resolveLoader = new ParsingClassLoader(
                     allResources,
                     configuration,
                     this);
@@ -295,5 +303,82 @@ public final class ClassNodeCache {
             }
         }
         return true;
+    }
+    
+    private static class TransformationClassLoader extends GroovyClassLoader {
+
+        public TransformationClassLoader(ClassLoader parent, ClassPath cp, CompilerConfiguration config) {
+            super(parent, config);
+            for (ClassPath.Entry entry : cp.entries()) {
+                this.addURL(entry.getURL());
+            }
+        }
+
+    }
+
+    private static class ParsingClassLoader extends GroovyClassLoader {
+
+        private static final ClassNotFoundException CNF = new ClassNotFoundException();
+        
+        private final CompilerConfiguration config;
+
+        private final ClassPath path;
+        
+        private final ClassNodeCache cache;
+
+        private final GroovyResourceLoader resourceLoader = new GroovyResourceLoader() {
+
+            @Override
+            public URL loadGroovySource(final String filename) throws MalformedURLException {
+                URL file = (URL) AccessController.doPrivileged(new PrivilegedAction() {
+
+                    @Override
+                    public Object run() {
+                        return getSourceFile(filename);
+                    }
+                });
+                return file;
+            }
+        };
+
+        public ParsingClassLoader(
+                @NonNull ClassPath path,
+                @NonNull CompilerConfiguration config,
+                @NonNull ClassNodeCache cache) {
+            super(path.getClassLoader(true), config);
+            this.config = config;
+            this.path = path;
+            this.cache = cache;
+        }
+        
+        @Override
+        public Class loadClass(
+                final String name,
+                final boolean lookupScriptFiles,
+                final boolean preferClassOverScript,
+                final boolean resolve) throws ClassNotFoundException, CompilationFailedException {
+            if (preferClassOverScript && !lookupScriptFiles) {
+                //Ideally throw CNF but we need to workaround fix of issue #206811
+                //which hurts performance.
+                if (cache.isNonExistent(name)) {
+                    throw CNF;
+                }
+            }
+            return super.loadClass(name, lookupScriptFiles, preferClassOverScript, resolve);
+        }
+
+        @Override
+        public GroovyResourceLoader getResourceLoader() {
+            return resourceLoader;
+        }
+
+        private URL getSourceFile(String name) {
+            // this is slightly faster then original implementation
+            FileObject fo = path.findResource(name.replace('.', '/') + config.getDefaultScriptExtension());
+            if (fo == null || fo.isFolder()) {
+                return null;
+            }
+            return URLMapper.findURL(fo, URLMapper.EXTERNAL);
+        }
     }
 }
