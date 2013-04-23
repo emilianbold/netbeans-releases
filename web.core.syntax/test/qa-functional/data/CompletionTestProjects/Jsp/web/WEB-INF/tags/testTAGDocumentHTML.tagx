@@ -21,13 +21,6 @@ rtl
 <jsp:body><html dir="rtl
 --%>
 
-<!-- completion for HTML entities -->
-<%--CC
-&q|
-&quot;
-&quot;
---%>
-
 <!-- completion for HTML end tags -->
 <%--CC
 <jsp:body><html></|

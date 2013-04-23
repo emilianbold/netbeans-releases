@@ -1,4 +1,4 @@
-[<h:inputText value="#{|}"/>, cookie, <h:inputText value="#{cookie}"/>, 269]
+[<h:inputText value="#{|}"/>, cookie, <h:inputText value="#{cookie}"/>, 265]
 MyBean MyBean
 applicationScope
 cookie
@@ -137,8 +137,8 @@ java.lang.VirtualMachineError
 java.lang.Void Void
 java java
 javax javax
-End cursor position = 297
-[<h:outputText value="#{|}" title="Hi" />, MyBean MyBean, <h:outputText value="#{MyBean}" title="Hi" />, 384]
+End cursor position = 294
+[<h:outputText value="#{|}" title="Hi" />, MyBean MyBean, <h:outputText value="#{MyBean}" title="Hi" />, 380]
 MyBean MyBean
 applicationScope
 cookie
@@ -277,8 +277,8 @@ java.lang.VirtualMachineError
 java.lang.Void Void
 java java
 javax javax
-End cursor position = 414
-[<h:outputText value="#{MyBean.n|}" title="Hi" />, name, <h:outputText value="#{MyBean.name}" title="Hi" />, 502]
+End cursor position = 410
+[<h:outputText value="#{MyBean.n|}" title="Hi" />, name, <h:outputText value="#{MyBean.name}" title="Hi" />, 498]
 String name
 boolean noErrors
-End cursor position = 537
+End cursor position = 533

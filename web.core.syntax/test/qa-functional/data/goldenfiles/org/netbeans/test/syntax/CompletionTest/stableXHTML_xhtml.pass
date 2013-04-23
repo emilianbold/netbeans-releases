@@ -34,10 +34,6 @@ End cursor position = 375
 ltr
 rtl
 End cursor position = 451
-[&em|, &empty;, &empty;, 510]
-? &empty;
-? &emsp;
-End cursor position = 518
 [<table><tr><td></|, </td, <table><tr><td></td>, 600]
 </td >
 </tr >

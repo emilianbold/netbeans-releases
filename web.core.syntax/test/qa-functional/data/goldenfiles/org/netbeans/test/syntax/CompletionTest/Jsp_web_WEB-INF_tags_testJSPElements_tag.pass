@@ -28,6 +28,7 @@ End cursor position = 149
 testJSPElements.tag
 End cursor position = 332
 [<jsp:useBean id="myBean" scope="request" class="java.lang.S|", String, <jsp:useBean id="myBean" scope="request" class="java.lang.String", 477]
+SafeVarargs
 SecurityException
 SecurityManager
 Short
