@@ -75,12 +75,10 @@ public class GroovyHintsProvider implements HintsProvider {
 
     @Override
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
-        return;
     }
 
     @Override
     public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
-        return;
     }
 
     @Override
@@ -127,7 +125,7 @@ public class GroovyHintsProvider implements HintsProvider {
         List<? extends Error> errors = rpr.getDiagnostics();
         LOG.log(Level.FINEST, "@@@ errors.size() : {0}", errors.size());
 
-        if (errors == null || errors.isEmpty()) {
+        if (errors.isEmpty()) {
             return;
         }
 
@@ -164,7 +162,6 @@ public class GroovyHintsProvider implements HintsProvider {
 
     @Override
     public void cancel() {
-        return;
     }
 
     @Override

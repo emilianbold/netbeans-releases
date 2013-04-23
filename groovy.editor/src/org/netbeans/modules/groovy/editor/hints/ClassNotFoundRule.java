@@ -43,7 +43,6 @@ package org.netbeans.modules.groovy.editor.hints;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -139,8 +138,6 @@ public class ClassNotFoundRule extends GroovyErrorRule {
 
             result.add(descriptor);
         }
-
-        return;
     }
 
     @Override
