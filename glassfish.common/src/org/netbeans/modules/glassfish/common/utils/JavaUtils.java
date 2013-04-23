@@ -215,9 +215,29 @@ public class JavaUtils {
         Set<JavaSEPlatform> supportedPlatforms = javaSEConfig.getPlatforms();
         for (JavaPlatform platform : allPlatforms) {
             for (FileObject fo : platform.getInstallFolders()) {
-                if (supportedPlatforms.contains(JavaSEPlatform.toValue(
-                    platform.getSpecification().getVersion().toString()))) {
-                    platformsList.add(platform);
+                try {
+                    if (supportedPlatforms.contains(JavaSEPlatform.toValue(
+                            platform.getSpecification()
+                            .getVersion().toString()))) {
+                        platformsList.add(platform);
+                    }
+                    // Try to locate NPE cause.
+                } catch (NullPointerException npe) {
+                    LOGGER.log(Level.WARNING,
+                            "NullPointerException caught in findSupportedPlatforms.", npe);
+                    LOGGER.log(Level.INFO, "Affected Java platform: {0}",
+                            platform.getDisplayName());
+                    if (supportedPlatforms == null) {
+                        LOGGER.log(Level.INFO,
+                                "Value of supportedPlatforms is null.");
+                    } else if (platform.getSpecification() == null) {
+                        LOGGER.log(Level.INFO,
+                                "Value of platform.getSpecification() is null.");
+                    } else if (
+                            platform.getSpecification().getVersion() == null) {
+                        LOGGER.log(Level.INFO,
+                                "Value of platform.getSpecification().getVersion() is null.");
+                    }
                 }
             }
         }
