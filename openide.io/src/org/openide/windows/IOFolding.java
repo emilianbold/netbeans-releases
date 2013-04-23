@@ -73,8 +73,8 @@ import org.openide.util.Parameters;
  * <ul>
  * <li> {@link InputOutput} provided by {@link IOProvider} has to implement
  * {@link Lookup.Provider}</li>
- * <li> Extend {@link FoldHandle.Definition}</li>
  * <li> Extend {@link IOFolding} and implement its abstract methods</li>
+ * <li> Extend {@link FoldHandleDefinition}</li>
  * <li> Place instance of {@link IOFolding} to {@link Lookup} provided by
  * {@link InputOutput}</li>
  * </ul>
@@ -112,12 +112,12 @@ public abstract class IOFolding {
      * window.
      *
      * @param expanded Initial state of the fold.
-     * @return Definition for the fold handle. Never null.
+     * @return FoldHandleDefinition for the fold handle. Never null.
      *
      * @throws IllegalStateException if the last fold hasn't been finished yet.
      */
     @NonNull
-    protected abstract FoldHandle.Definition startFold(boolean expanded);
+    protected abstract FoldHandleDefinition startFold(boolean expanded);
 
     /**
      * Create a fold handle for the current last line in the output window.
@@ -143,5 +143,39 @@ public abstract class IOFolding {
         } else {
             return new FoldHandle(folding.startFold(expanded));
         }
+    }
+
+    /**
+     * An SPI for creating custom FoldHandle implementations.
+     */
+    protected static abstract class FoldHandleDefinition {
+
+        /**
+         * Finish the fold at the current last line. Ensure that nested folds
+         * are finished correctly.
+         *
+         * @throws IllegalStateException if parent fold has been already
+         * finished, or if there is an unfinished nested fold.
+         */
+        public abstract void finish();
+
+        /**
+         * Start a new fold at the current last line. Ensure that the parent
+         * fold hasn't been finished yet.
+         *
+         * @param expand If false, the fold will be collapsed by default,
+         * otherwise it will be expanded.
+         * @return FoldHandleDefinition of handle for the newly created fold.
+         * @throws IllegalStateException if the fold has been already finished,
+         * or if the last nested fold hasn't been finished yet.
+         */
+        public abstract FoldHandleDefinition startFold(boolean expanded);
+
+        /**
+         * Set state of the fold.
+         *
+         * @param expanded True to expand the fold, false to collapse it.
+         */
+        public abstract void setExpanded(boolean expanded);
     }
 }

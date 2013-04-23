@@ -42,6 +42,8 @@
 
 package org.openide.windows;
 
+import org.openide.windows.IOFolding.FoldHandleDefinition;
+
 /**
  * An object that refers to a fold in output window. It can be used to finish
  * the fold, or to create a nested folds.
@@ -50,9 +52,9 @@ package org.openide.windows;
  */
 public final class FoldHandle {
 
-    private final Definition definition;
+    private final FoldHandleDefinition definition;
 
-    FoldHandle(Definition definition) {
+    FoldHandle(FoldHandleDefinition definition) {
         this.definition = definition;
     }
 
@@ -84,39 +86,5 @@ public final class FoldHandle {
      */
     public void setExpanded(boolean expanded) {
         definition.setExpanded(expanded);
-    }
-
-    /**
-     * An SPI for creating custom FoldHandle implementations.
-     */
-    public static abstract class Definition {
-
-        /**
-         * Finish the fold at the current last line. Ensure that nested folds
-         * are finished correctly.
-         *
-         * @throws IllegalStateException if parent fold has been already
-         * finished, or if there is an unfinished nested fold.
-         */
-        public abstract void finish();
-
-        /**
-         * Start a new fold at the current last line. Ensure that the parent
-         * fold hasn't been finished yet.
-         *
-         * @param expand If false, the fold will be collapsed by default,
-         * otherwise it will be expanded.
-         * @return Definition of handle for the newly created fold.
-         * @throws IllegalStateException if the fold has been already finished,
-         * or if the last nested fold hasn't been finished yet.
-         */
-        public abstract FoldHandle.Definition startFold(boolean expanded);
-
-        /**
-         * Set state of the fold.
-         *
-         * @param expanded True to expand the fold, false to collapse it.
-         */
-        public abstract void setExpanded(boolean expanded);
     }
 }

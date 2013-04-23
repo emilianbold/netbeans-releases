@@ -87,7 +87,7 @@ class NbIO implements InputOutput, Lookup.Provider {
     private Lookup lookup;
     private IOTabImpl ioTab;
     private IOColorsImpl ioColors;
-    private NbIoFoldHandleDefinition currentFold = null;
+    private IOFoldingImpl.NbIoFoldHandleDefinition currentFold = null;
 
     /** Creates a new instance of NbIO 
      * @param name The name of the IO
@@ -558,7 +558,7 @@ class NbIO implements InputOutput, Lookup.Provider {
     private class IOFoldingImpl extends IOFolding {
 
         @Override
-        protected FoldHandle.Definition startFold(boolean expanded) {
+        protected FoldHandleDefinition startFold(boolean expanded) {
             synchronized (out()) {
                 if (currentFold != null) {
                     throw new IllegalStateException(
@@ -568,75 +568,75 @@ class NbIO implements InputOutput, Lookup.Provider {
                         getLastLineNumber(), expanded);
             }
         }
-    }
 
-    class NbIoFoldHandleDefinition extends FoldHandle.Definition {
+        class NbIoFoldHandleDefinition extends IOFolding.FoldHandleDefinition {
 
-        private final NbIoFoldHandleDefinition parent;
-        private final int start;
-        private boolean expanded;
-        private int end = -1;
-        private NbIoFoldHandleDefinition nested = null;
+            private final NbIoFoldHandleDefinition parent;
+            private final int start;
+            private boolean expanded;
+            private int end = -1;
+            private NbIoFoldHandleDefinition nested = null;
 
-        public NbIoFoldHandleDefinition(NbIoFoldHandleDefinition parent,
-                int start, boolean expanded) {
-            this.parent = parent;
-            this.start = start;
-            this.expanded = expanded;
-            setCurrentFoldStart(start);
-        }
-
-        @Override
-        public void finish() {
-            synchronized (out()) {
-                if (nested != null) {
-                    throw new IllegalStateException(
-                            "Nested fold hasn't been finished.");       //NOI18N
-                }
-                if (end != -1) {
-                    throw new IllegalStateException(
-                            "Fold has been already finished.");         //NOI18N
-                }
-                if (parent == null) {
-                    currentFold = null;
-                    setCurrentFoldStart(-1);
-                } else {
-                    parent.nested = null;
-                    setCurrentFoldStart(parent.start);
-                }
-                end = getLastLineNumber();
-            }
-        }
-
-        @Override
-        public FoldHandle.Definition startFold(boolean expanded) {
-            synchronized (out()) {
-                if (end != -1) {
-                    throw new IllegalStateException(
-                            "The fold has been alredy finished.");      //NOI18N
-                }
-                if (nested != null) {
-                    throw new IllegalStateException(
-                            "An unfinished nested fold exists.");       //NOI18N
-                }
-                NbIoFoldHandleDefinition def = new NbIoFoldHandleDefinition(
-                        this, getLastLineNumber(), expanded);
-                this.nested = def;
-                return def;
-            }
-        }
-
-        @Override
-        public void setExpanded(boolean expanded) {
-            synchronized (out()) {
+            public NbIoFoldHandleDefinition(NbIoFoldHandleDefinition parent,
+                    int start, boolean expanded) {
+                this.parent = parent;
+                this.start = start;
                 this.expanded = expanded;
-                //TODO
+                setCurrentFoldStart(start);
             }
-        }
 
-        private void setCurrentFoldStart(int foldStartIndex) {
-            ((AbstractLines) out().getLines()).setCurrentFoldStart(
-                    foldStartIndex);
+            @Override
+            public void finish() {
+                synchronized (out()) {
+                    if (nested != null) {
+                        throw new IllegalStateException(
+                                "Nested fold hasn't been finished.");   //NOI18N
+                    }
+                    if (end != -1) {
+                        throw new IllegalStateException(
+                                "Fold has been already finished.");     //NOI18N
+                    }
+                    if (parent == null) {
+                        currentFold = null;
+                        setCurrentFoldStart(-1);
+                    } else {
+                        parent.nested = null;
+                        setCurrentFoldStart(parent.start);
+                    }
+                    end = getLastLineNumber();
+                }
+            }
+
+            @Override
+            public FoldHandleDefinition startFold(boolean expanded) {
+                synchronized (out()) {
+                    if (end != -1) {
+                        throw new IllegalStateException(
+                                "The fold has been alredy finished.");  //NOI18N
+                    }
+                    if (nested != null) {
+                        throw new IllegalStateException(
+                                "An unfinished nested fold exists.");   //NOI18N
+                    }
+                    NbIoFoldHandleDefinition def = new NbIoFoldHandleDefinition(
+                            this, getLastLineNumber(), expanded);
+                    this.nested = def;
+                    return def;
+                }
+            }
+
+            @Override
+            public void setExpanded(boolean expanded) {
+                synchronized (out()) {
+                    this.expanded = expanded;
+                    //TODO
+                }
+            }
+
+            private void setCurrentFoldStart(int foldStartIndex) {
+                ((AbstractLines) out().getLines()).setCurrentFoldStart(
+                        foldStartIndex);
+            }
         }
     }
 
