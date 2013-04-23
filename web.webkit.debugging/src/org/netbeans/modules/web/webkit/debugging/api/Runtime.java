@@ -149,6 +149,21 @@ public class Runtime {
     }
 
     /**
+     * Calls the procedure with the given declaration on the given object.
+     * It is a non-blocking/asynchronous (i.e. it doesn't wait until
+     * the execution is finished) variant of {@code callFunctionOn()} method.
+     * 
+     * @param object object to call the function on.
+     * @param procedureDeclaration declaration of the procedure to call.
+     */
+    public void callProcedureOn(RemoteObject object, String procedureDeclaration) {
+        JSONObject params = new JSONObject();
+        params.put("objectId", object.getObjectID()); // NOI18N
+        params.put("functionDeclaration", procedureDeclaration); // NOI18N
+        transport.sendCommand(new Command("Runtime.callFunctionOn", params)); // NOI18N
+    }
+
+    /**
      * Releases the given remote object.
      * 
      * @param object remote object to release.
