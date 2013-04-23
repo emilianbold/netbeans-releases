@@ -94,6 +94,8 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     private static final Pattern somethingMavenPlugin = Pattern.compile("(.+)-maven-plugin"); // NOI18N
     /** @see org.apache.maven.cli.ExecutionEventLogger#logReactorSummary */
     static final Pattern reactorFailure = Pattern.compile("\\[INFO\\] (.+) [.]* FAILURE \\[.+\\]"); // NOI18N
+    private static final Pattern exceptionStart = Pattern.compile("^\\w*(Exception|Error)"); //NOI18N
+    private static final Pattern stackTraceElement = Pattern.compile("^\\s+at.*:.*"); //NOI18N
     
     public static final Pattern reactorSummaryLine = Pattern.compile("(.+) [.]* (FAILURE|SUCCESS) (\\[.+\\])?"); // NOI18N
     private OutputWriter stdOut;
@@ -110,6 +112,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     //Session -> Project -> [Fork -> ForkedProject] -> Mojo                
     private final ExecutionEventObject.Tree executionTree = new ExecutionEventObject.Tree(null, null);
     private ExecutionEventObject.Tree currentTreeNode = executionTree;
+    private boolean inStackTrace = false;
     
 
     CommandLineOutputHandler(ProgressHandle hand, boolean createVisitorContext) {
@@ -180,6 +183,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
 
         private final BufferedReader str;
         private boolean skipLF = false;
+        private boolean addFold = false;
 
         public Output(InputStream instream) {
             str = new BufferedReader(new InputStreamReader(instream));
@@ -291,6 +295,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                         }
                     } else {
                         // oh well..
+                        updateFoldForException(line);
                         processLine(line, stdOut, Level.INFO);
                     }
                     if (contextImpl == null && firstFailure == null) {
@@ -298,6 +303,10 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                         if (match.matches()) {
                             firstFailure = match.group(1);
                         }
+                    }
+                    if (addFold && line.startsWith("[INFO] ---")) {     //NOI18N
+                        currentTreeNode.startFold(inputOutput);
+                        addFold = false;
                     }
                     line = readLine();
                 }
@@ -341,6 +350,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             
             if (ExecutionEvent.Type.MojoStarted.equals(obj.type)) {
                 growTree(obj);
+                addFold = true;
                 ExecMojo exec = (ExecMojo) obj;
                 String tag = goalPrefixFromArtifactId(exec.plugin.artifactId) + ":" + exec.goal;
                 ExecutionEventObject.Tree prjNode = currentTreeNode.findParentNodeOfType(ExecutionEvent.Type.ProjectStarted);
@@ -350,12 +360,14 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }
             if (ExecutionEvent.Type.MojoSucceeded.equals(obj.type)) {
+                currentTreeNode.finishFold();
                 trimTree(obj);
                 ExecMojo exec = (ExecMojo) obj;
                 String tag = goalPrefixFromArtifactId(exec.plugin.artifactId) + ":" + exec.goal;
                 CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }
             else if (ExecutionEvent.Type.MojoFailed.equals(obj.type)) {
+                currentTreeNode.finishFold();
                 trimTree(obj);
                 ExecMojo exec = (ExecMojo) obj;
                 String tag = goalPrefixFromArtifactId(exec.plugin.artifactId) + ":" + exec.goal;
@@ -408,6 +420,24 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             return mojoArtifact;
         }
 
+        /**
+         * Check whether the line is start of a stacktrace, inside a stacktrace,
+         * or is another text, and update folds accordingly.
+         */
+        private void updateFoldForException(String line) {
+            if (exceptionStart.matcher(line).find()) {
+                currentTreeNode.finishNestedFold();
+                inStackTrace = true;
+            } else if (inStackTrace
+                    && stackTraceElement.matcher(line).find()) {
+                if (!currentTreeNode.hasNestedFold()) {
+                    currentTreeNode.startNestedFold();
+                }
+            } else {
+                currentTreeNode.finishNestedFold();
+                inStackTrace = false;
+            }
+        }
         
         
         
