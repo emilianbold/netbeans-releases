@@ -44,16 +44,22 @@ package org.netbeans.modules.javascript2.knockout.model;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.api.OffsetRange;
 import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
 import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.modules.javascript2.editor.index.IndexedElement;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -78,14 +84,14 @@ public class KnockoutModelTest extends ModelTestBase {
 
     public void testKnockout() throws Exception {
         String file = "testfiles/model/knockout-2.2.1.debug.js";
-        if(!new File(getDataDir(), file).canRead()) {
+        if (!new File(getDataDir(), file).canRead()) {
             return;
         }
         FileObject fo = getTestFile(file);
 
         Model model = getModel(file);
         JsObject ko = model.getGlobalObject().getProperty("ko");
-        
+
          // HACK remove ko.ko
         ko.getProperties().remove("ko");
 
@@ -94,6 +100,20 @@ public class KnockoutModelTest extends ModelTestBase {
         if (observableArray instanceof JsFunction) {
             JsFunction func = (JsFunction) observableArray;
             func.addReturnType(new TypeUsageImpl("ko.observableArray.result", -1, true));
+
+
+            JsObject fn = observableArray.getProperty("fn");
+            if (fn != null) {
+                Set<String> arrayMethods = new HashSet<String>();
+                Collections.addAll(arrayMethods,
+                        "pop", "push", "reverse", "shift", "sort", "splice", "unshift", "slice");
+                for(IndexedElement elem : JsIndex.get(fo).getProperties("Array")) {
+                    if (arrayMethods.contains(elem.getName())) {
+                        fn.addProperty(elem.getName(), new JsFunctionImpl(func, fn,
+                                new IdentifierImpl(elem.getName(), OffsetRange.NONE), null, OffsetRange.NONE));
+                    }
+                }
+            }
         }
 
         final StringWriter sw = new StringWriter();
