@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte;
+package org.netbeans.modules.php.latte.completion;
 
 import java.util.ArrayList;
 import java.util.Collection;

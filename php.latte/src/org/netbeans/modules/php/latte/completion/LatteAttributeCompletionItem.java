@@ -39,73 +39,43 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte;
+package org.netbeans.modules.php.latte.completion;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.Color;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
-import org.netbeans.modules.html.editor.lib.api.HelpItem;
-import org.netbeans.modules.html.editor.lib.api.HelpResolver;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteCustomAttribute implements CustomAttribute {
-    private static final Logger LOGGER = Logger.getLogger(LatteCustomAttribute.class.getName());
-    private static final String DOCUMENTATION_URL = "http://doc.nette.org/en/"; //NOI18N
-    private final String name;
+public class LatteAttributeCompletionItem extends HtmlCompletionItem.Attribute {
+    public static final ImageIcon LATTE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/php/latte/resources/latte_cc_icon.png", false); //NOI18N
 
-    public LatteCustomAttribute(String name) {
-        this.name = name;
+    public LatteAttributeCompletionItem(CustomAttribute customAttribute, int offset) {
+        super(customAttribute.getName(), offset, customAttribute.isValueRequired(), customAttribute.getHelp());
     }
 
     @Override
-    public String getName() {
-        return name;
+    protected ImageIcon getIcon() {
+        return LATTE_ICON;
     }
 
     @Override
-    public boolean isRequired() {
-        return false;
+    protected Color getAttributeColor() {
+        return new Color(102, 58, 19);
     }
 
     @Override
-    public boolean isValueRequired() {
-        return false;
+    public int getSortPriority() {
+        return super.getSortPriority() - 10;
     }
 
     @Override
-    public HelpItem getHelp() {
-        return new HelpItem() {
-
-            @Override
-            public String getHelpHeader() {
-                return new StringBuilder().append("<h2>").append(getName()).append("</h2>").toString(); //NOI18N
-            }
-
-            @Override
-            public String getHelpContent() {
-                return "";
-            }
-
-            @Override
-            public URL getHelpURL() {
-                try {
-                    return new URL(DOCUMENTATION_URL);
-                } catch (MalformedURLException ex) {
-                    LOGGER.log(Level.FINE, null, ex);
-                    return null;
-                }
-            }
-
-            @Override
-            public HelpResolver getHelpResolver() {
-                return null;
-            }
-        };
+    public boolean hasHelp() {
+        return true;
     }
 
 }
