@@ -42,11 +42,20 @@
 
 package org.netbeans.modules.bugtracking.bridge.ideservices;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.autoupdate.InstallSupport;
+import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.jumpto.type.TypeBrowser;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.DialogDisplayer;
@@ -57,6 +66,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -118,6 +128,66 @@ public class IDEServicesImpl implements IDEServices {
         if(td != null) {
             td.open();
         }
+    }
+    
+    @Override
+    public boolean providesDownloadPlugin() {
+        return true;
+    }
+
+    @NbBundle.Messages({"LBL_Error=Error",
+                        "# {0} - pluginName", "MSG_LookingForPlugin=Looking for {0} plugin",
+                        "# {0} - pluginName", "MSG_PluginNotFound={0} plugin not found!",
+                        "# {0} - pluginName", "MSG_AlreadyInstalled={0} plugin seems to be already installed!",
+                        "# {0} - pluginName", "MSG_CannotBeInstalled=MSG_CannotBeInstalled={0} plugin cannot be installed"})
+    @Override
+    public void downloadPlugin(final String cnb, final String pluginName) {
+        final ProgressHandle ph = ProgressHandleFactory.createHandle(Bundle.MSG_LookingForPlugin(pluginName));
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                ph.start();
+                final UpdateElement[] updateElement = new UpdateElement[1];
+                try {
+                    List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
+                    
+                    boolean installed = false;
+                    
+                    for (UpdateUnit u : units) {
+                        if(u.getCodeName().equals(cnb)) {       
+                            List<UpdateElement> elements = u.getAvailableUpdates();
+                            if(elements.isEmpty()) {
+                                installed = true;
+                            } else {
+                                updateElement[0] = elements.get(0);
+                            }
+                            break;
+                        }
+                    }
+                    if(installed) {
+                        notifyError(Bundle.LBL_Error(), Bundle.MSG_AlreadyInstalled(units));            
+                        return;
+                    } else if(updateElement[0] == null) {
+                        notifyError(Bundle.LBL_Error(), Bundle.MSG_PluginNotFound(pluginName));            
+                        return;
+                     }
+                } finally {
+                    ph.finish();
+                }
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
+                        if (oc.canBeAdded(updateElement[0].getUpdateUnit(), updateElement[0])) {
+                            oc.add(updateElement[0]);
+                            PluginManager.openInstallWizard(oc);
+                        } else {
+                            notifyError(Bundle.LBL_Error(), Bundle.MSG_CannotBeInstalled(pluginName));            
+                        }
+                    }
+                });
+            }
+        });
     }
 
     private static void notifyError (final String title, final String message) {

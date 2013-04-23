@@ -54,12 +54,16 @@ public interface IDEServices {
     public void openDocument(String resourcePath, int offset);
     
     public boolean providesFindFile();
-    // XXX to evaluate if FileObject or if URL would be eventually better.
+    // XXX to be clarified if FileObject or if URL would be eventually better.
     // used when opening search history for a file given by a stacktrace.
     // Note, that io.File wouldn't work for VCS on remote filesystems 
     public FileObject findFile(String resourcePath);
         
     public boolean providesJumpTo();
     public void jumpTo(String label, String resource);
+
+    public boolean providesDownloadPlugin();
+    // XXX to be clarified how to handle progress and error messages
+    public void downloadPlugin(final String cnb, final String pluginName);
     
 }
