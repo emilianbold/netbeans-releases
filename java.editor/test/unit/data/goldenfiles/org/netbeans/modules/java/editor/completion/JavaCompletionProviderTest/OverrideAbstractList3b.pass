@@ -1,2 +1,0 @@
-public abstract String get(int arg0) - implement
-public int getModCount() - generate

@@ -108,6 +108,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ProfileSupport">
+             <api name="general"/>
+             <summary>Added support for JDK 8 Profiles.</summary>
+             <version major="0" minor="119"/>
+             <date day="12" month="4" year="2013"/>
+             <author login="tzezula"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>ProfileSupport</code> class providing utility methods for JDK 8 profiles.
+             </description>
+             <class package="org.netbeans.api.java.source.support" name="ProfileSupport"/>
+             <issue number="228384"/>
+        </change>
          <change id="getSymbols">
              <api name="general"/>
              <summary>Added several methods to support Java 8 features.</summary>

@@ -87,6 +87,7 @@ import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.api.java.source.matching.Matcher;
 import org.netbeans.api.java.source.matching.Pattern;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -100,20 +101,20 @@ public class BatchSearch {
     private static final Logger LOG = Logger.getLogger(BatchSearch.class.getName());
 
     public static BatchResult findOccurrences(Iterable<? extends HintDescription> patterns, Scope scope) {
-        return findOccurrences(patterns, scope, new ProgressHandleWrapper(null));
+        return findOccurrences(patterns, scope, new ProgressHandleWrapper(null), HintsSettings.getGlobalSettings());
     }
 
-    public static BatchResult findOccurrences(final Iterable<? extends HintDescription> patterns, final Scope scope, final ProgressHandleWrapper progress) {
-        return findOccurrencesLocal(patterns, scope.getIndexMapper(patterns), scope.getTodo(), progress);
+    public static BatchResult findOccurrences(final Iterable<? extends HintDescription> patterns, final Scope scope, final ProgressHandleWrapper progress, @NullAllowed HintsSettings settingsProvider) {
+        return findOccurrencesLocal(patterns, scope.getIndexMapper(patterns), scope.getTodo(), progress, settingsProvider);
     }
 
-    private static BatchResult findOccurrencesLocal(final Iterable<? extends HintDescription> patterns, final MapIndices indexMapper, final Collection<? extends Folder> todo, final ProgressHandleWrapper progress) {
+    private static BatchResult findOccurrencesLocal(final Iterable<? extends HintDescription> patterns, final MapIndices indexMapper, final Collection<? extends Folder> todo, final ProgressHandleWrapper progress, final @NullAllowed HintsSettings settingsProvider) {
         final BatchResult[] result = new BatchResult[1];
 
         try {
             JavaSource.create(Utilities.createUniversalCPInfo()).runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController parameter) throws Exception {
-                    result[0] = findOccurrencesLocalImpl(parameter, patterns, indexMapper, todo, progress);
+                    result[0] = findOccurrencesLocalImpl(parameter, patterns, indexMapper, todo, progress, settingsProvider);
                 }
             }, true);
         } catch (IOException ex) {
@@ -123,7 +124,7 @@ public class BatchSearch {
         return result[0];
     }
     
-    private static BatchResult findOccurrencesLocalImpl(final CompilationInfo info, final Iterable<? extends HintDescription> patterns, MapIndices indexMapper, Collection<? extends Folder> todo, ProgressHandleWrapper progress) {
+    private static BatchResult findOccurrencesLocalImpl(final CompilationInfo info, final Iterable<? extends HintDescription> patterns, MapIndices indexMapper, Collection<? extends Folder> todo, ProgressHandleWrapper progress, HintsSettings settingsProvider) {
         boolean hasKindPatterns = false;
 
         for (HintDescription pattern : patterns) {
@@ -150,13 +151,13 @@ public class BatchSearch {
         for (final Folder src : todo) {
             LOG.log(Level.FINE, "Processing: {0}", FileUtil.getFileDisplayName(src.getFileObject()));
             
-            IndexEnquirer indexEnquirer = indexMapper.findIndex(src.getFileObject(), innerForAll, src.isRecursive());
+            IndexEnquirer indexEnquirer;// = indexMapper.findIndex(src.getFileObject(), innerForAll, src.isRecursive());
 
-            if (indexEnquirer == null) {
+//            if (indexEnquirer == null) {
                 indexEnquirer = new FileSystemBasedIndexEnquirer(src.getFileObject(), src.isRecursive());
-            }
+//            }
 
-            Collection<? extends Resource> occurrences = indexEnquirer.findResources(patterns, innerForAll, bulkPattern, problems);
+            Collection<? extends Resource> occurrences = indexEnquirer.findResources(patterns, innerForAll, bulkPattern, problems, settingsProvider);
 
             if (!occurrences.isEmpty()) {
                 result.put(indexEnquirer, occurrences);
@@ -274,7 +275,23 @@ public class BatchSearch {
                                     progress.setMessage("processing: " + FileUtil.getFileDisplayName(parameter.getFileObject()));
                                     Resource r = file2Resource.get(parameter.getFileObject());
 
-                                    List<ErrorDescription> hints = new HintsInvoker(parameter, true, new AtomicBoolean()).computeHints(parameter, r.hints, problems);
+                                    HintsSettings settings = r.settings;
+                                    Iterable<? extends HintDescription> enabledHints;
+                                    
+                                    if (settings == null) {
+                                        settings = HintsSettings.getSettingsFor(parameter.getFileObject());
+                                        List<HintDescription> hintsCopy = new ArrayList<>();
+                                        for (HintDescription hd : r.hints) {
+                                            if (settings.isEnabled(hd.getMetadata())) {
+                                                hintsCopy.add(hd);
+                                            }
+                                        }
+                                        enabledHints = hintsCopy;
+                                    } else {
+                                        enabledHints = r.hints;
+                                    }
+                                    
+                                    List<ErrorDescription> hints = new HintsInvoker(settings, true, new AtomicBoolean()).computeHints(parameter, enabledHints, problems);
 
                                     assert hints != null;
                                     
@@ -412,12 +429,14 @@ public class BatchSearch {
         private final String relativePath;
         final Iterable<? extends HintDescription> hints;
         private final BulkPattern pattern;
+        final HintsSettings settings;
 
-        public Resource(IndexEnquirer indexEnquirer, String relativePath, Iterable<? extends HintDescription> hints, BulkPattern pattern) {
+        public Resource(IndexEnquirer indexEnquirer, String relativePath, Iterable<? extends HintDescription> hints, BulkPattern pattern, HintsSettings settings) {
             this.indexEnquirer = indexEnquirer;
             this.relativePath = relativePath;
             this.hints = hints;
             this.pattern = pattern;
+            this.settings = settings;
         }
 
         public String getRelativePath() {
@@ -542,7 +561,7 @@ public class BatchSearch {
         public IndexEnquirer(FileObject src) {
             this.src = src;
         }
-        public abstract Collection<? extends Resource> findResources(Iterable<? extends HintDescription> hints, ProgressHandleWrapper progress, @NullAllowed Callable<BulkPattern> bulkPattern, Collection<? super MessageImpl> problems);
+        public abstract Collection<? extends Resource> findResources(Iterable<? extends HintDescription> hints, ProgressHandleWrapper progress, @NullAllowed Callable<BulkPattern> bulkPattern, Collection<? super MessageImpl> problems, HintsSettings settingsProvider);
         public abstract void validateResource(Collection<? extends Resource> resources, ProgressHandleWrapper progress, VerifiedSpansCallBack callback, boolean doNotRegisterClassPath, Collection<? super MessageImpl> problems, AtomicBoolean cancel);
 //        public int[] getEstimatedSpan(Resource r);
     }
@@ -562,7 +581,7 @@ public class BatchSearch {
             super(src);
             this.recursive = recursive;
         }
-        public Collection<? extends Resource> findResources(final Iterable<? extends HintDescription> hints, ProgressHandleWrapper progress, final @NullAllowed Callable<BulkPattern> bulkPattern, final Collection<? super MessageImpl> problems) {
+        public Collection<? extends Resource> findResources(final Iterable<? extends HintDescription> hints, ProgressHandleWrapper progress, final @NullAllowed Callable<BulkPattern> bulkPattern, final Collection<? super MessageImpl> problems, final HintsSettings settingsProvider) {
             Collection<FileObject> files = new LinkedList<FileObject>();
 
             final ProgressHandleWrapper innerProgress = progress.startNextPartWithEmbedding(30, 70);
@@ -590,7 +609,7 @@ public class BatchSearch {
                                     boolean matches = BulkSearch.getDefault().matches(cc, new AtomicBoolean(), new TreePath(cc.getCompilationUnit()), bulkPattern.call());
 
                                     if (matches) {
-                                        result.add(new Resource(FileSystemBasedIndexEnquirer.this, FileUtil.getRelativePath(src, cc.getFileObject()), hints, bulkPattern.call()));
+                                        result.add(new Resource(FileSystemBasedIndexEnquirer.this, FileUtil.getRelativePath(src, cc.getFileObject()), hints, bulkPattern.call(), settingsProvider));
                                     }
                                 } catch (ThreadDeath td) {
                                     throw td;
@@ -608,7 +627,7 @@ public class BatchSearch {
                         LOG.log(Level.FINE, "took: {0}, per file: {1}", new Object[]{end - start, (end - start) / files.size()});
                     } else {
                         for (FileObject file : files) {
-                            result.add(new Resource(this, FileUtil.getRelativePath(src, file), hints, null));
+                            result.add(new Resource(this, FileUtil.getRelativePath(src, file), hints, null, settingsProvider));
                         }
                     }
                 } catch (IOException ex) {
