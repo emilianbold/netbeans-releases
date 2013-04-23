@@ -33,7 +33,9 @@ package org.netbeans.modules.java.hints.errors;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.FixKind;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -74,17 +76,18 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
     }
 
     public void testLogPrint() throws Exception {
-        boolean orig = ErrorFixesFakeHint.isUseLogger();
+        Preferences prefs = ErrorFixesFakeHint.getPreferences(null, FixKind.SURROUND_WITH_TRY_CATCH);
+        boolean orig = ErrorFixesFakeHint.isUseLogger(prefs);
 
         try {
-            ErrorFixesFakeHint.setUseLogger(false);
+            ErrorFixesFakeHint.setUseLogger(prefs, false);
 
             performFixTest("test/Test.java",
                     "package test; public class Test {public void test() {System.out.println(\"\"); |new java.io.FileInputStream(\"\");}}",
                     "FixImpl",
                     "package test; import java.io.FileNotFoundException; public class Test {public void test() {try { System.out.println(\"\"); new java.io.FileInputStream(\"\"); } catch (FileNotFoundException ex) { ex.printStackTrace(); } }}");
         } finally {
-            ErrorFixesFakeHint.setUseLogger(orig);
+            ErrorFixesFakeHint.setUseLogger(prefs, orig);
         }
     }
 
@@ -103,17 +106,18 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
     }
 
     public void test117085c() throws Exception {
-        boolean orig = ErrorFixesFakeHint.isUseLogger();
+        Preferences prefs = ErrorFixesFakeHint.getPreferences(null, FixKind.SURROUND_WITH_TRY_CATCH);
+        boolean orig = ErrorFixesFakeHint.isUseLogger(prefs);
 
         try {
-            ErrorFixesFakeHint.setUseLogger(false);
+            ErrorFixesFakeHint.setUseLogger(prefs, false);
 
             performFixTest("test/Test.java",
                     "package test; public class Test {public void test(Exception ex) {System.out.println(\"\"); |x();} private void x() throws Exception {}}",
                     "FixImpl",
                     "package test; public class Test {public void test(Exception ex) {try { System.out.println(\"\"); x(); } catch (Exception ex1) { ex1.printStackTrace(); } } private void x() throws Exception {}}");
         } finally {
-            ErrorFixesFakeHint.setUseLogger(orig);
+            ErrorFixesFakeHint.setUseLogger(prefs, orig);
         }
     }
 

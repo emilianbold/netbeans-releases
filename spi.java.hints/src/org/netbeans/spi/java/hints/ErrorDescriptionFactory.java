@@ -244,8 +244,8 @@ public class ErrorDescriptionFactory {
             }
 
 
-            auxiliaryFixes.add(new DisableConfigure(hm, true));
-            auxiliaryFixes.add(new DisableConfigure(hm, false));
+            auxiliaryFixes.add(new DisableConfigure(hm, true, SPIAccessor.getINSTANCE().getHintSettings(ctx)));
+            auxiliaryFixes.add(new DisableConfigure(hm, false, null));
 
             if (hm.kind == Hint.Kind.INSPECTION) {
                 auxiliaryFixes.add(new InspectFix(hm, false));
@@ -279,10 +279,12 @@ public class ErrorDescriptionFactory {
     private static class DisableConfigure implements Fix, SyntheticFix {
         private final @NonNull HintMetadata metadata;
         private final boolean disable;
+        private final HintsSettings hintsSettings;
 
-        DisableConfigure(@NonNull HintMetadata metadata, boolean disable) {
+        DisableConfigure(@NonNull HintMetadata metadata, boolean disable, HintsSettings hintsSettings) {
             this.metadata = metadata;
             this.disable = disable;
+            this.hintsSettings = hintsSettings;
         }
 
         @Override
@@ -306,7 +308,7 @@ public class ErrorDescriptionFactory {
         @Override
         public ChangeInfo implement() throws Exception {
             if (disable) {
-                HintsSettings.setEnabled(metadata, false);
+                hintsSettings.setEnabled(metadata, false);
                 //XXX: re-run hints task
             } else {
                 OptionsDisplayer.getDefault().open("Editor/Hints/text/x-java/" + metadata.id);
@@ -347,7 +349,7 @@ public class ErrorDescriptionFactory {
     private static final class TopLevelConfigureFix extends DisableConfigure implements EnhancedFix {
 
         public TopLevelConfigureFix(@NonNull HintMetadata metadata) {
-            super(metadata, false);
+            super(metadata, false, null);
         }
 
         @Override

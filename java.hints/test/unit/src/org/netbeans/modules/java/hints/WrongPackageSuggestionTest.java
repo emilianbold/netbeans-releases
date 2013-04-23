@@ -67,20 +67,19 @@ public class WrongPackageSuggestionTest extends TreeRuleTestBase {
     
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
-        HintsSettings.setSeverity(new WrongPackageSuggestion().getPreferences(null), Severity.VERIFIER);
         super.setUp();
     }
     
     public void testEvaluate1() throws Exception {
-        performAnalysisTest("test/Test.java", "pac|kage other; public class Test{}", "0:8-0:13:verifier:Incorrect Package");
+        performAnalysisTest("test/Test.java", "pac|kage other; public class Test{}", "0:8-0:13:error:Incorrect Package");
     }
     
     public void testEvaluate2() throws Exception {
-        performAnalysisTest("Test.java", "pac|kage other; public class Test{}", "0:8-0:13:verifier:Incorrect Package");
+        performAnalysisTest("Test.java", "pac|kage other; public class Test{}", "0:8-0:13:error:Incorrect Package");
     }
     
     public void testEvaluate3() throws Exception {
-        performAnalysisTest("test/Test.java", "|public class Test{}", "0:0-0:1:verifier:Incorrect Package");
+        performAnalysisTest("test/Test.java", "|public class Test{}", "0:0-0:1:error:Incorrect Package");
     }
     
     public void testEvaluate4() throws Exception {
@@ -96,27 +95,27 @@ public class WrongPackageSuggestionTest extends TreeRuleTestBase {
     }
     
     public void testAdjustPackageClause1() throws Exception {
-        performFixTest("test/Test.java", "pac|kage other; public class Test{}", "0:8-0:13:verifier:Incorrect Package", "CorrectFix", "package test; public class Test{}");
+        performFixTest("test/Test.java", "pac|kage other; public class Test{}", "0:8-0:13:error:Incorrect Package", "CorrectFix", "package test; public class Test{}");
     }
     
     public void testAdjustPackageClause2() throws Exception {
-        performFixTest("Test.java", "pac|kage other; public class Test{}", "0:8-0:13:verifier:Incorrect Package", "CorrectFix", " public class Test{}");
+        performFixTest("Test.java", "pac|kage other; public class Test{}", "0:8-0:13:error:Incorrect Package", "CorrectFix", " public class Test{}");
     }
     
     public void testAdjustPackageClause3() throws Exception {
-        performFixTest("test/Test.java", "|public class Test{}", "0:0-0:1:verifier:Incorrect Package", "CorrectFix", "package test; public class Test{}");
+        performFixTest("test/Test.java", "|public class Test{}", "0:0-0:1:error:Incorrect Package", "CorrectFix", "package test; public class Test{}");
     }
     
     public void testMoveToCorrectPackage1() throws Exception {
-        performFixTest("test/Test.java", "pac|kage other; public class Test{}", "0:8-0:13:verifier:Incorrect Package", "MoveFix", "other/Test.java", "package other; public class Test{}");
+        performFixTest("test/Test.java", "pac|kage other; public class Test{}", "0:8-0:13:error:Incorrect Package", "MoveFix", "other/Test.java", "package other; public class Test{}");
     }
     
     public void testMoveToCorrectPackage2() throws Exception {
-        performFixTest("Test.java", "pac|kage other; public class Test{}", "0:8-0:13:verifier:Incorrect Package", "MoveFix", "other/Test.java", "package other; public class Test{}");
+        performFixTest("Test.java", "pac|kage other; public class Test{}", "0:8-0:13:error:Incorrect Package", "MoveFix", "other/Test.java", "package other; public class Test{}");
     }
     
     public void testMoveToCorrectPackage3() throws Exception {
-        performFixTest("test/Test.java", "|public class Test{}", "0:0-0:1:verifier:Incorrect Package", "MoveFix", "Test.java", "public class Test{}");
+        performFixTest("test/Test.java", "|public class Test{}", "0:0-0:1:error:Incorrect Package", "MoveFix", "Test.java", "public class Test{}");
     }
     
     @Override

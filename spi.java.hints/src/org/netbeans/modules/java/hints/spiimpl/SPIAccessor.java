@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.java.hints.HintContext;
 import org.openide.util.Exceptions;
 
@@ -76,8 +77,9 @@ public abstract class SPIAccessor {
         accessor = instance;
     }
 
-    public abstract HintContext createHintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems, boolean bulkMode, AtomicBoolean cancel, int caret);
-    public abstract HintContext createHintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames);
+    public abstract HintContext createHintContext(CompilationInfo info, HintsSettings settings, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems, boolean bulkMode, AtomicBoolean cancel, int caret);
+    public abstract HintContext createHintContext(CompilationInfo info, HintsSettings settings, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames);
     public abstract HintMetadata getHintMetadata(HintContext ctx);
+    public abstract HintsSettings getHintSettings(HintContext ctx);
 
 }

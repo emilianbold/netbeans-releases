@@ -358,6 +358,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.java.editor</friend>
                 <friend>org.netbeans.modules.java.hints</friend>
+                <friend>org.netbeans.modules.java.hints.project</friend>
                 <friend>org.netbeans.modules.java.hints.ui</friend>
                 <friend>org.netbeans.modules.java.source</friend>
                 <friend>org.netbeans.modules.javafx.editor</friend>
@@ -374,6 +375,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.scala.editor</friend>
                 <friend>org.netbeans.modules.versioning.util</friend>
                 <friend>org.netbeans.modules.web.project</friend>
+                <friend>org.netbeans.spi.editor.hints.projects</friend>
                 <friend>org.netbeans.spi.java.hints</friend>
                 <package>org.netbeans.modules.options.colors</package>
                 <package>org.netbeans.modules.options.colors.spi</package>

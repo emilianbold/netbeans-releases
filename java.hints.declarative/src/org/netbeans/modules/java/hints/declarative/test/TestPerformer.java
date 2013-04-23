@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.java.hints.declarative.test;
 
+import com.sun.source.util.TreePath;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintRegistry;
 import java.util.Map.Entry;
 import java.io.ByteArrayInputStream;
@@ -64,11 +65,13 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.hints.declarative.test.TestParser.TestCase;
-import org.netbeans.modules.java.hints.jackpot.spi.HintsRunner;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
+import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
+import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -147,7 +150,7 @@ public class TestPerformer {
                         }
                     });
                     
-                    Map<HintDescription, List<ErrorDescription>> computedHints = HintsRunner.computeErrors(parameter, hints, cancel);
+                    Map<HintDescription, List<ErrorDescription>> computedHints = new HintsInvoker(HintsSettings.getGlobalSettings(), cancel).computeHints(parameter, new TreePath(parameter.getCompilationUnit()), hints, new LinkedList<MessageImpl>());
 
                     if (computedHints == null || cancel.get()) return;
                     

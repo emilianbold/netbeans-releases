@@ -84,7 +84,8 @@ public abstract class AbstractHint implements TreeRule {
      * @return Preferences node for given hint.
      */
     public Preferences getPreferences( String profile ) {
-        return HintsSettings.getPreferences(getId(), profile);
+        //TODO: better?
+        return RulesManager.currentHintPreferences.get();
     }
         
     /** Gets the UI description for this rule. It is fine to return null
@@ -106,14 +107,16 @@ public abstract class AbstractHint implements TreeRule {
      * @return true if enabled false otherwise.
      */
     public final boolean isEnabled() {
-        return HintsSettings.isEnabled(getPreferences(HintsSettings.getCurrentProfileId()), enableDefault);
+        //XXX: read current settings
+        return enableDefault;
     }
     
     /** Gets current severity of the hint.
      * @return Hints severity in current profile.
      */
     public final HintSeverity getSeverity() {
-        return HintSeverity.fromOfficialHintSeverity(HintsSettings.getSeverity(null, getPreferences(HintsSettings.getCurrentProfileId())), severityDefault);
+        //XXX: read current settings
+        return severityDefault;
     }
     
     /** Severity of hint

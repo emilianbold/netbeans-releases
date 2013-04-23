@@ -28,5 +28,17 @@
           </folder>
       </folder>
   </folder>
+  <folder name="Projects">
+      <folder name="hints">
+          <folder name="java-based">
+              <file name="JavaHints.instance">
+                  <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                  <attr name="instanceCreate" newvalue="org.netbeans.modules.java.hints.spiimpl.options.HintsOptionsPanelController"/>
+                  <attr name="mimeType" stringvalue="text/x-java"/>
+              </file>
+          </folder>
+      </folder>
+  </folder>
+    
 
 </filesystem>

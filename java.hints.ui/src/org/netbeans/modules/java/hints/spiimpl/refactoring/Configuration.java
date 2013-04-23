@@ -41,15 +41,12 @@
  */
 package org.netbeans.modules.java.hints.spiimpl.refactoring;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.java.hints.spiimpl.RulesManager;
-import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.spiimpl.RulesManager;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
+import static org.netbeans.modules.java.hints.spiimpl.options.HintsSettings.createPreferencesBasedHintsSettings;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbPreferences;
 
 /**
@@ -68,15 +65,10 @@ public class Configuration {
         prefs.put("display.name", displayName);
     }
     
-    public List<HintMetadata> getHints(Map<? extends HintMetadata, ? extends Iterable<? extends HintDescription>> allHints) {
-        ArrayList<HintMetadata> hints = new ArrayList();
-        for (HintMetadata hint : allHints.keySet()) {
-            Preferences prefs = HintsSettings.getPreferences(hint.id, id());
-            if (HintsSettings.isEnabled(hint, prefs)) {
-                hints.add(hint);
-            }
-        }
-        return Collections.unmodifiableList(hints);
+    private static final String DEFAULT_PROFILE = "default"; // NOI18N
+    private static final String PREFERENCES_LOCATION = "org/netbeans/modules/java/hints";
+    public HintsSettings getSettings() {
+        return createPreferencesBasedHintsSettings(NbPreferences.root().node(PREFERENCES_LOCATION).node(DEFAULT_PROFILE), false, Severity.VERIFIER);
     }
     
     public String getDisplayName() {
@@ -100,6 +92,11 @@ public class Configuration {
     }
 
     public void enable(String hintId) {
-        HintsSettings.getPreferences(hintId, id()).putBoolean("enabled", true);
+        for (HintMetadata hm : RulesManager.getInstance().readHints(null, null, null).keySet()) {
+            if (hintId.equals(hm.id)) {
+                getSettings().setEnabled(hm, true);
+                return ;
+            }
+        }
     }
 }

@@ -62,6 +62,7 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.java.hints.spiimpl.TestBase;
 import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompilerUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -1125,7 +1126,7 @@ public class JavaFixUtilitiesTest extends TestBase {
             }
         }).produce();
 
-        List<ErrorDescription> computeHints = new HintsInvoker(info, new AtomicBoolean()).computeHints(info, Collections.singleton(hd));
+        List<ErrorDescription> computeHints = new HintsInvoker(HintsSettings.getGlobalSettings(), new AtomicBoolean()).computeHints(info, Collections.singleton(hd));
 
         assertEquals(computeHints.toString(), 1, computeHints.size());
 
@@ -1147,7 +1148,7 @@ public class JavaFixUtilitiesTest extends TestBase {
             }
         }).produce();
 
-        List<ErrorDescription> computeHints = new HintsInvoker(info, new AtomicBoolean()).computeHints(info, Collections.singleton(hd));
+        List<ErrorDescription> computeHints = new HintsInvoker(HintsSettings.getGlobalSettings(), new AtomicBoolean()).computeHints(info, Collections.singleton(hd));
 
         assertEquals(computeHints.toString(), 1, computeHints.size());
 

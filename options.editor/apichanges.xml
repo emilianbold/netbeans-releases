@@ -110,6 +110,19 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="OptionsFilter.create">
+      <summary>Adding OptionsFilter.create</summary>
+      <version major="1" minor="42"/>
+      <date day="23" month="4" year="2013"/>
+      <author login="jlahoda"/>
+      <compatibility source="compatible" binary="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+        <p>
+            Added OptionsFilter.create
+        </p>
+      </description>
+      <class package="org.netbeans.modules.options.editor.spi" name="OptionsFilter"/>
+  </change>
     <change id="AddedHiglightingPanelController">
       <summary>Separating HighlightingPanel and its controller</summary>
       <version major="1" minor="39"/>

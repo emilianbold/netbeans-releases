@@ -65,6 +65,7 @@ import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.Kinds;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -739,7 +740,7 @@ public class HintsInvokerTest extends TestBase {
 
         assertNotNull(hd);
 
-        return new HintsInvoker(info, new AtomicBoolean()).computeHints(info, Collections.singletonList(hd));
+        return new HintsInvoker(HintsSettings.getGlobalSettings(), new AtomicBoolean()).computeHints(info, Collections.singletonList(hd));
     }
 
 //    @Override

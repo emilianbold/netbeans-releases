@@ -74,6 +74,7 @@ import org.netbeans.modules.java.hints.spiimpl.batch.ProgressHandleWrapper;
 import org.netbeans.modules.java.hints.spiimpl.batch.ProgressHandleWrapper.ProgressHandleAbstraction;
 import org.netbeans.spi.java.hints.HintContext.MessageKind;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
@@ -132,7 +133,7 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
 
     protected Collection<MessageImpl> performApplyPattern(Iterable<? extends HintDescription> pattern, Scope scope, RefactoringElementsBag refactoringElements) {
         ProgressHandleWrapper w = new ProgressHandleWrapper(this, 30, 70);
-        BatchResult candidates = BatchSearch.findOccurrences(pattern, scope, w);
+        BatchResult candidates = BatchSearch.findOccurrences(pattern, scope, w, /*XXX:*/HintsSettings.getGlobalSettings());
         Collection<RefactoringElementImplementation> fileChanges = new ArrayList<RefactoringElementImplementation>();
         Collection<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
         Map<JavaFix, ModificationResult> changesPerFix = new IdentityHashMap<JavaFix, ModificationResult>();

@@ -47,15 +47,20 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.java.hints.spiimpl.RulesManager;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.spiimpl.refactoring.Utilities.ClassPathBasedHintWrapper;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
+import org.netbeans.spi.editor.hints.settings.FileHintPreferences;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
+//XXX: not finished!
 public final class HintsOptionsPanelController extends OptionsPanelController {
     
+    private HintsSettings settings;
     private HintsPanel panel;
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -63,13 +68,15 @@ public final class HintsOptionsPanelController extends OptionsPanelController {
                     
     public void update() {
         if (panel != null) {
-            panel.update(true);
+            panel.update();
+            panel.setOverlayPreferences(settings);
         }
     }
     
     public void applyChanges() {
         if ( isChanged() ) {
             panel.applyChanges();
+            FileHintPreferences.fireChange();
         }
     }
     
@@ -92,8 +99,14 @@ public final class HintsOptionsPanelController extends OptionsPanelController {
     }
     
     public synchronized HintsPanel getComponent(Lookup masterLookup) {
+        Preferences prefs = masterLookup.lookup(Preferences.class);
+        if (prefs != null) {
+            settings = HintsSettings.createPreferencesBasedHintsSettings(prefs, true, null);
+        } else {
+            settings = null;
+        }
         if ( panel == null ) {
-            panel = new HintsPanel(masterLookup.lookup(OptionsFilter.class));
+            panel = new HintsPanel(masterLookup.lookup(OptionsFilter.class), settings);
         }
         return panel;
     }

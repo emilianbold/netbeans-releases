@@ -97,25 +97,30 @@ public final class AnalyzeFolder extends AbstractAction implements ContextAwareA
 
             @Override
             public void run() {
-                final Map<String, Preferences> preferencesOverlay = new HashMap<String, Preferences>();
-                for (HintMetadata hm : RulesManager.getInstance().readHints(null, null, null).keySet()) {
-                    String id = hm.id;
-
-                    if (!preferencesOverlay.containsKey(id)) {
-                        Preferences origPreferences = HintsSettings.getPreferences(id, HintsSettings.getCurrentProfileId());
-                        OverridePreferences prefs = new OverridePreferences(origPreferences);
-
-                        preferencesOverlay.put(id, prefs);
-                        HintsSettings.setEnabled(prefs, SUPPORTED_IDS.contains(id));
-                        HintsSettings.setSeverity(prefs, Severity.WARNING);
+                final HintsSettings hintsSettings = new HintsSettings() {
+                    private final HintsSettings delegate = HintsSettings.getGlobalSettings();
+                    @Override public boolean isEnabled(HintMetadata hint) {
+                        return SUPPORTED_IDS.contains(hint.id);
                     }
-                }
+                    @Override public void setEnabled(HintMetadata hint, boolean value) {
+                        throw new UnsupportedOperationException("Not supported.");
+                    }
+                    @Override public Preferences getHintPreferences(HintMetadata hint) {
+                        return delegate.getHintPreferences(hint);
+                    }
+                    @Override public Severity getSeverity(HintMetadata hint) {
+                        return Severity.VERIFIER;
+                    }
+                    @Override public void setSeverity(HintMetadata hint, Severity severity) {
+                        throw new UnsupportedOperationException("Not supported.");
+                    }
+                };
 
                 SwingUtilities.invokeLater(new Runnable() {
 
                     @Override
                     public void run() {
-                        Analyzer.process(Analyzer.normalizeLookup(context), preferencesOverlay);
+                        Analyzer.process(Analyzer.normalizeLookup(context), hintsSettings);
                     }
                 });
             }

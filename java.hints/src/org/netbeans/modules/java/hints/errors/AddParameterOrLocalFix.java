@@ -77,6 +77,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.FixKind;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -169,7 +170,7 @@ public class AddParameterOrLocalFix implements Fix {
 
                     working.rewrite(targetTree, result);
                 } else {
-                    if (ErrorFixesFakeHint.isCreateLocalVariableInPlace() || isEnhancedForLoopIdentifier(tp)) {
+                    if (ErrorFixesFakeHint.isCreateLocalVariableInPlace(ErrorFixesFakeHint.getPreferences(working.getFileObject(), FixKind.CREATE_LOCAL_VARIABLE)) || isEnhancedForLoopIdentifier(tp)) {
                         resolveLocalVariable(working, tp, make, proposedType);
                     } else {
                         resolveLocalVariable55(working, tp, make, proposedType);

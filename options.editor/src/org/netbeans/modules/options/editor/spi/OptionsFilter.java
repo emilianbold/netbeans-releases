@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -58,8 +57,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.options.editor.FolderBasedController;
-import org.netbeans.modules.options.editor.FolderBasedController.OptionsFilterAccessor;
 import org.netbeans.spi.options.OptionsPanelController;
 
 /**Allows to filter a tree based on user's input. Folder based {@link OptionsPanelController}s
@@ -289,12 +286,15 @@ public final class OptionsFilter {
 
     }
 
-    static {
-        FolderBasedController.setFilterAccessor(new OptionsFilterAccessor() {
-            @Override
-            public OptionsFilter create(Document doc, Runnable usedCallback) {
-                return new OptionsFilter(doc, usedCallback);
-            }
-        });
+    /**Create the OptionsFilter.
+     * 
+     * @param doc from which the filtering text should be read
+     * @param usedCallback callback that is invoked when the model is installed
+     * @return a newly created OptionsFilter.
+     * @since 1.42
+     */
+    public static OptionsFilter create(Document doc, Runnable usedCallback) {
+        return new OptionsFilter(doc, usedCallback);
     }
+    
 }

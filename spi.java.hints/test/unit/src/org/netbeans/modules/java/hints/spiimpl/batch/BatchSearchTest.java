@@ -115,9 +115,16 @@ public class BatchSearchTest extends NbTestCase {
         org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
         prepareTest();
         MimeTypes.setAllMimeTypes(Collections.singleton("text/x-java"));
-        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {ClassPathSupport.createClassPath(src1, src2)});
+        sourceCP = ClassPathSupport.createClassPath(src1, src2);
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {sourceCP});
         RepositoryUpdater.getDefault().start(true);
         super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] {sourceCP});
     }
 
     public void testBatchSearch1() throws Exception {
@@ -181,7 +188,6 @@ public class BatchSearchTest extends NbTestCase {
         assertEquals(golden, snipets);
     }
 
-    @RandomlyFails
     public void testBatchSearchNotIndexed() throws Exception {
         writeFilesAndWaitForScan(src1,
                                  new File("test/Test1.java", "package test; public class Test1 { private void test() { java.io.File f = null; f.isDirectory(); } }"),
@@ -313,6 +319,7 @@ public class BatchSearchTest extends NbTestCase {
     private FileObject src2;
     private FileObject src3;
     private FileObject empty;
+    private ClassPath sourceCP;
 
     private void prepareTest() throws Exception {
         workdir = SourceUtilsTestUtil.makeScratchDir(this);
