@@ -1080,6 +1080,7 @@ observable                  : FUNCTION observable [ANONYMOUS: false, DECLARED: t
 observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLARED: true - observableArray, MODIFIERS: PUBLIC, METHOD]
                             # RETURN TYPES
                             ko.observable.observable, RESOLVED: true
+                            ko.observableArray.result, RESOLVED: true
                             # PARAMETERS
                             OBJECT initialValues [ANONYMOUS: false, DECLARED: true - initialValues, MODIFIERS: PUBLIC, PARAMETER]
                             # PROPERTIES

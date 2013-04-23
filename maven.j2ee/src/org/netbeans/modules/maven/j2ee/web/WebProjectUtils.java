@@ -39,37 +39,41 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.api.html.lexer;
 
-import org.netbeans.api.annotations.common.NonNull;
+package org.netbeans.modules.maven.j2ee.web;
+
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.j2ee.J2eeMavenSourcesImpl;
+import org.openide.filesystems.FileObject;
 
 /**
- * <b>NOT FOR PUBLIC USE!!!</b> Prototype - not final version!!! An API review will run, this is a public API.
- * 
- * HtmlLexer extension - allows to inject custom expression languages into html content.
- * 
- * To be registered in mime lookup.
  *
- * @author marekfukala
+ * @author Martin Janicek
  */
-public interface HtmlExpression {
+public final class WebProjectUtils {
     
-    /**
-     * "{{"
-     */
-    @NonNull
-    public String getOpenDelimiter();
+    private WebProjectUtils() {
+    }
 
     /**
-     * "}}"
+     * Returns {@link FileObject} corresponding to the document base of the given
+     * {@link Project} or {@code null} if nothing was found. 
+     * 
+     * @param project for which we want to get document base
+     * @return document base of the given project or null if nothing was found
      */
-    @NonNull
-    public String getCloseDelimiter();
-    
-    /**
-     * "text/javascript"
-     */
-    @NonNull
-    public String getContentMimeType();
-    
+    @CheckForNull
+    public static FileObject getDocumentBase(Project project) {
+        Sources srcs = ProjectUtils.getSources(project);
+        SourceGroup[] grp = srcs.getSourceGroups(J2eeMavenSourcesImpl.TYPE_DOC_ROOT);
+        
+        if (grp.length > 0) {
+            return grp[0].getRootFolder();
+        }
+        return null;
+    }
 }

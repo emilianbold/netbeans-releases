@@ -781,7 +781,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                 embeddings.add(snapshot.create("\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
             } else if (htmlId == HTMLTokenId.EL_OPEN_DELIMITER) {
                 //1.check if the next token represents javascript content
-                String mimetype = (String) ts.token().getProperty("contentMimetype"); //NOT IN AN API, TBD
+                String mimetype = (String) ts.token().getProperty("contentMimeType"); //NOT IN AN API, TBD
                 if (mimetype != null && "text/javascript".equals(mimetype)) {
                     embeddings.add(snapshot.create("(function(){\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
 
