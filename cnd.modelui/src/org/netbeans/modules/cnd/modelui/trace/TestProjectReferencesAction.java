@@ -115,6 +115,10 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         return SharedClassObject.findObject(TestGraphContainerAction.class, true);
     }
 
+    public static Action getTestRepositoryStatisticsAction() {
+        return SharedClassObject.findObject(TestRepositoryStatisticsAction.class, true);
+    }
+
     private static final Map<CharSequence, Map<CharSequence, Long>> times = new HashMap<CharSequence, Map<CharSequence, Long>>();
     private Map<CharSequence, Long> getProjectMap(CsmProject p) {
         CharSequence name = p.getName();
