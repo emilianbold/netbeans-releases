@@ -43,6 +43,7 @@ package org.netbeans.modules.web.common.cssprep;
 
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -53,7 +54,7 @@ public final class CssPreprocessorsCustomizer implements ProjectCustomizer.Compo
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
-                "CssPreprocessors", // NOI18N
+                CssPreprocessors.CUSTOMIZER_IDENT,
                 Bundle.CssPreprocessorsCustomizer_displayName(),
                 null);
     }
