@@ -98,7 +98,7 @@ import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.java.JavaCompletionItem;
-import org.netbeans.modules.editor.java.LazyTypeCompletionItem;
+import org.netbeans.modules.editor.java.LazyJavaCompletionItem;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -1025,7 +1025,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
         for(ElementHandle<TypeElement> name : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
             if ((excludeHandles == null || !excludeHandles.contains(name)) && !isAnnonInner(name)) {
-                items.add(LazyTypeCompletionItem.create(name, kinds, substitutionOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), false, false, false, null));
+                items.add(LazyJavaCompletionItem.createTypeItem(name, kinds, substitutionOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), false, false, false, null));
             }
         }
     }

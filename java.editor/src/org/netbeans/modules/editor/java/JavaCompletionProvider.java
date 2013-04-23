@@ -3128,7 +3128,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (excludeHandles != null && excludeHandles.contains(symbols.getEnclosingType()) || isAnnonInner(symbols.getEnclosingType()))
                         continue;
                     for (String name : symbols.getSymbols()) {
-                        results.add(LazyStaticMemberCompletionItem.create(symbols.getEnclosingType(), name, anchorOffset, env.addSemicolon(), env.getReferencesCount(), controller.getSnapshot().getSource(), env.getWhiteList()));
+                        results.add(LazyJavaCompletionItem.createStaticMemberItem(symbols.getEnclosingType(), name, anchorOffset, env.addSemicolon(), env.getReferencesCount(), controller.getSnapshot().getSource(), env.getWhiteList()));
                     }
                 }
             }
@@ -3540,13 +3540,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                             sName = qName.substring(idx + 1);
                             if (sName.length() <= 0 || !startsWith(env, sName, prefix))
                                 break;
-                            results.add(LazyTypeCompletionItem.create(name, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));
+                            results.add(LazyJavaCompletionItem.createTypeItem(name, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));
                         }
                         qName = qName.substring(0, idx);
                         doNotRemove.add(qName);
                         ElementHandle<TypeElement> r = removed.remove(qName);
                         if (r != null) {
-                            results.add(LazyTypeCompletionItem.create(r, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));                        
+                            results.add(LazyJavaCompletionItem.createTypeItem(r, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));                        
                         }
                     }
                 }                
@@ -3564,7 +3564,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 for(ElementHandle<TypeElement> name : declaredTypes) {
                     if (excludeHandles != null && excludeHandles.contains(name) || isAnnonInner(name))
                         continue;
-                    results.add(LazyTypeCompletionItem.create(name, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));
+                    results.add(LazyJavaCompletionItem.createTypeItem(name, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));
                 }
             }
         }
