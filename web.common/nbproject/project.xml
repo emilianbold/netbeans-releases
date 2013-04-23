@@ -231,6 +231,7 @@
                 <friend>org.netbeans.modules.j2ee.common</friend>
                 <friend>org.netbeans.modules.javascript.jstestdriver</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
+                <friend>org.netbeans.modules.php.latte</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.web.browser.api</friend>
