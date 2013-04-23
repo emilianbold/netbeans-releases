@@ -68,8 +68,7 @@ public final class ClassNodeCache {
     
     private static final Logger LOG =
             Logger.getLogger(ClassNodeCache.class.getName());
-    private static final ThreadLocal<ClassNodeCache> instance = 
-            new ThreadLocal<ClassNodeCache>();
+    private static final ThreadLocal<ClassNodeCache> instance = new ThreadLocal<>();
     
     private static final int DEFAULT_NON_EXISTENT_CACHE_SIZE = 10000;
     private static final int NON_EXISTENT_CACHE_SIZE = Integer.getInteger(
@@ -87,7 +86,7 @@ public final class ClassNodeCache {
     private long hitCount;
     
     private ClassNodeCache() {
-        this.cache = new HashMap<CharSequence, ClassNode>();
+        this.cache = new HashMap<>();
         this.nonExistent = new LinkedHashMap<CharSequence, Void>(16,0.75f,true) {
             @Override
             protected boolean removeEldestEntry(Entry<CharSequence, Void> eldest) {
@@ -197,7 +196,7 @@ public final class ClassNodeCache {
         if (src == null) {
             LOG.log(Level.FINE,"Javac resolver created.");  //NOI18N
             src = JavaSource.create(info);
-            resolver = new SoftReference<JavaSource>(src);
+            resolver = new SoftReference<>(src);
         }
         return src;
     }
@@ -213,7 +212,7 @@ public final class ClassNodeCache {
                     CompilationUnit.class.getClassLoader(),
                     allResources,
                     configuration);
-            transformationLoaderRef = new SoftReference<GroovyClassLoader>(transformationLoader);
+            transformationLoaderRef = new SoftReference<>(transformationLoader);
         }
         return transformationLoader;
     }
@@ -228,7 +227,7 @@ public final class ClassNodeCache {
                     allResources,
                     configuration,
                     this);
-            resolveLoaderRef = new SoftReference<GroovyClassLoader>(resolveLoader);
+            resolveLoaderRef = new SoftReference<>(resolveLoader);
         }
         return resolveLoader;
     }
