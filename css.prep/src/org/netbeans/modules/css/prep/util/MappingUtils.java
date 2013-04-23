@@ -122,9 +122,9 @@ public final class MappingUtils {
         }
 
         @NbBundle.Messages({
-            "MappingsValidator.warning.empty=Mappings must be set.",
+            "MappingsValidator.warning.empty=CSS output folders must be set.",
             "# {0} - mapping",
-            "MappingsValidator.warning.format=Mapping \"{0}\" is incorrect.",
+            "MappingsValidator.warning.format=CSS output folder \"{0}\" is incorrect.",
         })
         private MappingsValidator validateMappings(List<String> mappings) {
             if (mappings.isEmpty()) {
