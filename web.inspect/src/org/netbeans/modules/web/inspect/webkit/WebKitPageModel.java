@@ -933,7 +933,7 @@ public class WebKitPageModel extends PageModel {
                     webKitNode = convertNode(webKitNode);
                     RemoteObject remote = getRemoteObject(webKitNode);
                     if (remote != null) {
-                        webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNext" + type + "Selection(this);}"); // NOI18N
+                        webKit.getRuntime().callProcedureOn(remote, "function() {NetBeans.addElementToNext" + type + "Selection(this);}"); // NOI18N
                     }
                 }
 
