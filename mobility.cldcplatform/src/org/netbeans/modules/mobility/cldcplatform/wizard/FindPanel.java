@@ -96,9 +96,11 @@ final public class FindPanel extends javax.swing.JPanel implements SearchRunnabl
     public FindPanel(FindWizardPanel wizardPanel) {
         this.wizardPanel = wizardPanel;
         JavaPlatform p[] = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        for ( JavaPlatform jp : p ) {
-        	for ( FileObject fo : (Collection<FileObject>)jp.getInstallFolders()) {
-                installedFolders.add(FileUtil.toFile(fo));
+        for (JavaPlatform jp : p) {
+            if (jp instanceof J2MEPlatform) {
+                for (FileObject fo : (Collection<FileObject>) jp.getInstallFolders()) {
+                    installedFolders.add(FileUtil.toFile(fo));
+                }
             }
         }
         initComponents();
