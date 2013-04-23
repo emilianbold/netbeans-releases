@@ -98,17 +98,19 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
     private long version = 0;
     
     private Result<FontColorSettings> lookupResult;
+    private LookupListener lookupListener;
 
     EmbeddingHighlightsContainer(Document document) {
         this.document = document;
 
         lookupResult = MimeLookup.getLookup(HTML_MIME_TYPE).lookupResult(FontColorSettings.class);
-        lookupResult.addLookupListener(new LookupListener() {
+        lookupResult.addLookupListener(WeakListeners.create(LookupListener.class,
+                lookupListener = new LookupListener() {
             @Override
             public void resultChanged(LookupEvent ev) {
                 refreshColorings();
             }
-        });
+        }, lookupResult));
         refreshColorings();
     }
     
