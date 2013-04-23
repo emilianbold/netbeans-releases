@@ -15,6 +15,11 @@ void String(byte[] arg0, int arg1, int arg2, String arg3) - parameters
 void String(byte[] arg0, int arg1, int arg2, int arg3) - parameters
 public String field
 public String toString()
+public clone().toString()
+public getClass().getCanonicalName()
+public getClass().getName()
+public getClass().getSimpleName()
+public getClass().toString()
 public static String String.copyValueOf(char[] arg0)
 public static String String.copyValueOf(char[] arg0, int arg1, int arg2)
 public static String String.format(String arg0, Object... arg1)

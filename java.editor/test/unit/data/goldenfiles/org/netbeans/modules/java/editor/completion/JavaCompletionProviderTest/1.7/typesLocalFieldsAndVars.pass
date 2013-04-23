@@ -1,5 +1,7 @@
 int a
 public String field
+final Object super
+final Test this
 boolean
 byte
 char

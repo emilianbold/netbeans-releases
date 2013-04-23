@@ -1,3 +1,9 @@
+public field.getBytes()
+public field.getBytes(Charset arg0)
+public field.getBytes(String arg0)
+public toString().getBytes()
+public toString().getBytes(Charset arg0)
+public toString().getBytes(String arg0)
 int a
 public String field
 protected native Object clone()
