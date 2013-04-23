@@ -136,23 +136,25 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
     @NbBundle.Messages({
         "# {0} - customizer name",
         "# {1} - message",
-        "CssPreprocessorsCustomizerPanel.error={0}: {1}",
+        "CssPreprocessorsCustomizerPanel.message={0}: {1}",
     })
     void validateCustomizers() {
-        String warning = null; // NOI18N
+        String message = null; // NOI18N
         for (CssPreprocessorImplementation.Customizer customizer : customizers) {
             if (!customizer.isValid()) {
                 String errorMessage = customizer.getErrorMessage();
                 Parameters.notNull("errorMessage", errorMessage); // NOI18N
-                category.setErrorMessage(Bundle.CssPreprocessorsCustomizerPanel_error(customizer.getDisplayName(), errorMessage));
+                category.setErrorMessage(Bundle.CssPreprocessorsCustomizerPanel_message(customizer.getDisplayName(), errorMessage));
                 category.setValid(false);
                 return;
             }
-            if (warning == null) {
-                warning = customizer.getWarningMessage();
+            String warning = customizer.getWarningMessage();
+            if (message == null
+                    && warning != null) {
+                message = Bundle.CssPreprocessorsCustomizerPanel_message(customizer.getDisplayName(), warning);
             }
         }
-        category.setErrorMessage(warning != null ? warning : " "); // NOI18N
+        category.setErrorMessage(message != null ? message : " "); // NOI18N
         category.setValid(true);
     }
 

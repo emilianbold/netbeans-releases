@@ -122,17 +122,17 @@ public final class MappingUtils {
         }
 
         @NbBundle.Messages({
-            "MappingsValidator.error.empty=Mappings must be set.",
+            "MappingsValidator.warning.empty=Mappings must be set.",
             "# {0} - mapping",
-            "MappingsValidator.error.format=Mapping \"{0}\" is incorrect.",
+            "MappingsValidator.warning.format=Mapping \"{0}\" is incorrect.",
         })
         private MappingsValidator validateMappings(List<String> mappings) {
             if (mappings.isEmpty()) {
-                result.addError(new ValidationResult.Message("mappings", Bundle.MappingsValidator_error_empty())); // NOI18N
+                result.addWarning(new ValidationResult.Message("mappings", Bundle.MappingsValidator_warning_empty())); // NOI18N
             }
             for (String mapping : mappings) {
                 if (!MAPPING_PATTERN.matcher(mapping).matches()) {
-                    result.addError(new ValidationResult.Message("mapping." + mapping, Bundle.MappingsValidator_error_format(mapping))); // NOI18N
+                    result.addWarning(new ValidationResult.Message("mapping." + mapping, Bundle.MappingsValidator_warning_format(mapping))); // NOI18N
                 }
             }
             return this;
