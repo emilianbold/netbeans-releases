@@ -448,7 +448,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     }
     
     @Override
-    public void update (ColorModel colorModel) {
+    public void update (final ColorModel colorModel) {
         this.colorModel = colorModel;
         currentProfile = colorModel.getCurrentProfile ();
         currentLanguage = ColorModel.ALL_LANGUAGES;
@@ -463,20 +463,35 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         preview.addPropertyChangeListener 
             (Preview.PROP_CURRENT_ELEMENT, this);
         listen = false;
-        List<String> languages = new ArrayList<String>(colorModel.getLanguages ());
-        languages.remove ("text/x-all-languages");
-        Collections.sort (languages, new LanguagesComparator ());
-        Iterator it = languages.iterator ();
-        Object lastLanguage = cbLanguage.getSelectedItem ();
-        cbLanguage.removeAllItems ();
-        while (it.hasNext ())
-            cbLanguage.addItem (it.next ());
-        listen = true;
-        if (lastLanguage != null) {
-            cbLanguage.setSelectedItem (lastLanguage);
-        } else {
-            cbLanguage.setSelectedIndex (0);
-        }
+        Task update = new RequestProcessor("SyntaxColoringPanel2").create(new Runnable() {
+            
+            @Override
+            public void run() {
+                final List<String> languages = new ArrayList<String>(colorModel.getLanguages());
+                EventQueue.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        languages.remove("text/x-all-languages");
+                        Collections.sort(languages, new LanguagesComparator());
+                        Iterator it = languages.iterator();
+                        Object lastLanguage = cbLanguage.getSelectedItem();
+                        cbLanguage.removeAllItems();
+                        while (it.hasNext()) {
+                            cbLanguage.addItem(it.next());
+                        }
+                        listen = true;
+                        if (lastLanguage != null) {
+                            cbLanguage.setSelectedItem(lastLanguage);
+                        } else {
+                            cbLanguage.setSelectedIndex(0);
+                        }
+                    }
+                });
+            }
+        });
+
+        update.schedule(20);
     }
     
     @Override
