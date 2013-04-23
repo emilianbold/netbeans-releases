@@ -82,6 +82,8 @@ import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescrip
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
+import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -263,6 +265,13 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             }
             if (conf.isMakefileConfiguration() && !CompileConfiguration.AUTO_COMPILE.equals(conf.getCompileConfiguration().getCompileCommand().getValue())) {
                 commandLine = pae.getRunCommandAsString();
+            }
+
+            // See bug #228730
+            if (conf.getDevelopmentHost().isLocalhost() && Utilities.isWindows()
+                    && cs.getCompilerFlavor().isMinGWCompiler()
+                    && pae.getExecutable().contains("make")) { // NOI18N
+                env.put("MAKE", WindowsSupport.getInstance().convertToMSysPath(pae.getExecutable())); // NOI18N
             }
         }
 
