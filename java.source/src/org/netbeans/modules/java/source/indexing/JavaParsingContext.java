@@ -161,7 +161,7 @@ final class JavaParsingContext {
     }
 
     @CheckForNull
-    String getProfile() {
+    SourceLevelQuery.Profile getProfile() {
         final SourceLevelQuery.Result sl = initSourceLevel();
         return sl == null ? null : sl.getProfile();
     }
