@@ -52,34 +52,22 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.modules.websvc.rest.MiscPrivateUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 
 /**
@@ -242,9 +230,6 @@ public class MiscUtilities {
         return null;
     }
 
-    // copy pasted from Maven project:
-    private static final String DEVNULL = "DEV-NULL"; //NOI18N
-
     public static String getContextRootURL(Project project) {
         String portNumber = "8080"; //NOI18N
         String host = "localhost"; //NOI18N
@@ -252,7 +237,7 @@ public class MiscUtilities {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         Deployment.getDefault().getServerInstance(provider.getServerInstanceID());
         String serverInstanceID = provider.getServerInstanceID();
-        if (serverInstanceID == null || DEVNULL.equals(serverInstanceID)) {
+        if (serverInstanceID == null || MiscPrivateUtilities.DEVNULL.equals(serverInstanceID)) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(RestSupport.class, "MSG_MissingServer"),
                     NotifyDescriptor.ERROR_MESSAGE));
@@ -291,85 +276,8 @@ public class MiscUtilities {
                 (contextRoot.length()>0 ? contextRoot+"/" : ""); //NOI18N
     }
 
-    static void setProjectProperty(final Project project, final AntProjectHelper helper, final String name, final String value,
-            final String propertyPath)
-    {
-        if (helper == null) {
-            return;
-        }
-        try {
-        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            @Override
-            public Object run() throws IOException {
-                // and save the project
-                try {
-                    EditableProperties ep = helper.getProperties(propertyPath);
-                    ep.setProperty(name, value);
-                    helper.putProperties(propertyPath, ep);
-                    ProjectManager.getDefault().saveProject(project);
-                }
-                catch(IOException ioe) {
-                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
-                }
-                return null;
-            }
-        });
-        }
-        catch (MutexException e) {
-            Logger.getLogger(MiscUtilities.class.getName()).log(Level.INFO, null, e);
-        }
-    }
-
-    static void removeProperty( final AntProjectHelper helper, String[] propertyNames , String propertiesPath ) {
-        EditableProperties ep = helper.getProperties(propertiesPath);
-        for (String name : propertyNames) {
-            ep.remove(name);
-        }
-        helper.putProperties(propertiesPath, ep);
-    }
-
-    static boolean hasResource(Project project, String resource ){
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sgs.length < 1) {
-            return false;
-        }
-        FileObject sourceRoot = sgs[0].getRootFolder();
-        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
-        if ( classPath == null ){
-            return false;
-        }
-        FileObject resourceFile = classPath.findResource(resource);
-        if (resourceFile != null) {
-            return true;
-        }
-        return false;
-    }
-
-    static ClassPath getClassPath( Project project, String type ) {
-        ClassPathProvider provider = project.getLookup().lookup(
-                ClassPathProvider.class);
-        if ( provider == null ){
-            return null;
-        }
-        Sources sources = project.getLookup().lookup(Sources.class);
-        if ( sources == null ){
-            return null;
-        }
-        SourceGroup[] sourceGroups = sources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA );
-        List<ClassPath> classPaths = new ArrayList<ClassPath>( sourceGroups.length);
-        for (SourceGroup sourceGroup : sourceGroups) {
-            String sourceGroupId = sourceGroup.getName();
-            if ( sourceGroupId!= null && sourceGroupId.contains("test")) {  // NOI18N
-                continue;
-            }
-            FileObject rootFolder = sourceGroup.getRootFolder();
-            ClassPath path = provider.findClassPath( rootFolder, type);
-            classPaths.add( path );
-        }
-        return ClassPathSupport.createProxyClassPath( classPaths.toArray(
-                new ClassPath[ classPaths.size()] ));
+    public static boolean hasApplicationResourceClass(RestSupport restSupport, final String fqn){
+        return MiscPrivateUtilities.hasApplicationResourceClass(restSupport, fqn);
     }
 
 }

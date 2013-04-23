@@ -60,7 +60,7 @@ import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -99,10 +99,10 @@ public class EntityResourcesIterator implements WizardDescriptor.ProgressInstant
         String restAppClass = null;
         
         final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if( restSupport instanceof WebRestSupport) {
+        if( restSupport instanceof RestSupport) {
             Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
             if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
-                ((WebRestSupport)restSupport).enableRestSupport( WebRestSupport.RestConfig.DD);
+                ((RestSupport)restSupport).enableRestSupport( RestSupport.RestConfig.DD);
             }
             else {
                 restAppPackage = (String) wizard
@@ -110,8 +110,8 @@ public class EntityResourcesIterator implements WizardDescriptor.ProgressInstant
                 restAppClass = (String) wizard
                         .getProperty(WizardProperties.APPLICATION_CLASS);
                 if (restAppPackage != null && restAppClass != null) {
-                    ((WebRestSupport) restSupport)
-                            .enableRestSupport(WebRestSupport.RestConfig.IDE);
+                    ((RestSupport) restSupport)
+                            .enableRestSupport(RestSupport.RestConfig.IDE);
                 }
             }
         }

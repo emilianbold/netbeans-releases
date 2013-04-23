@@ -70,7 +70,6 @@ import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDescriptor;
@@ -85,9 +84,9 @@ import org.openide.util.NbBundle;
  *
  * @author Nam Nguyen
  */
-@ProjectServiceProvider(service={RestSupport.class, WebRestSupport.class}, 
+@ProjectServiceProvider(service={RestSupport.class},
     projectType="org-netbeans-modules-web-project")
-public class WebProjectRestSupport extends WebRestSupport {
+public class WebProjectRestSupport extends RestSupport {
 
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";   //NOI18N
 
@@ -106,7 +105,7 @@ public class WebProjectRestSupport extends WebRestSupport {
     public void ensureRestDevelopmentReady() throws IOException {
         boolean needsRefresh = false;
         
-        WebRestSupport.RestConfig restConfig = null;
+        RestSupport.RestConfig restConfig = null;
         // Fix for BZ#217557 : do not show REST config dialog in JEE6 case
         boolean hasJaxRs = hasJaxRsApi();
         
@@ -117,23 +116,23 @@ public class WebProjectRestSupport extends WebRestSupport {
         if ( !hasJaxRs && !isRestSupportOn()) {
             needsRefresh = true;
             restConfig = setApplicationConfigProperty(
-                    RestUtils.isAnnotationConfigAvailable(project));
+                    RestUtils.isAnnotationConfigAvailable(getProject()));
         }
         
         extendBuildScripts();
 
         String restConfigType = getProjectProperty(PROP_REST_CONFIG_TYPE);
         
-        if (!RestUtils.isJSR_311OnClasspath(project)) {
+        if (!RestUtils.isJSR_311OnClasspath(getProject())) {
             boolean jsr311Added = false;
             if ( restConfig!= null && restConfig.isServerJerseyLibSelected() ){
                 JaxRsStackSupport support = getJaxRsStackSupport(); 
                 if ( support != null ){
-                        jsr311Added = support.addJsr311Api(project);
+                        jsr311Added = support.addJsr311Api(getProject());
                     }
             }
             if ( !jsr311Added ){
-                JaxRsStackSupport.getDefault().addJsr311Api(project);
+                JaxRsStackSupport.getDefault().addJsr311Api(getProject());
             }
         }
 
@@ -154,10 +153,10 @@ public class WebProjectRestSupport extends WebRestSupport {
                 addResourceConfigToWebApp(resourceUrl);
             }
             if (needsRefresh && CONFIG_TYPE_IDE.equals(restConfigType)) {
-                FileObject buildFo = Utils.findBuildXml(project);
+                FileObject buildFo = Utils.findBuildXml(getProject());
                 if (buildFo != null) {
                     ActionUtils.runTarget(buildFo,
-                            new String[] { WebRestSupport.REST_CONFIG_TARGET },
+                            new String[] { RestSupport.REST_CONFIG_TARGET },
                             null);
                 }
             }
@@ -168,11 +167,11 @@ public class WebProjectRestSupport extends WebRestSupport {
             if ( restConfig.isServerJerseyLibSelected()){
                 JaxRsStackSupport support = getJaxRsStackSupport();
                 if ( support != null ){
-                    added = support.extendsJerseyProjectClasspath(project);
+                    added = support.extendsJerseyProjectClasspath(getProject());
                 }
             }
             if ( !added && restConfig.isJerseyLibSelected()){
-                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
+                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
             }
         }
 
@@ -201,7 +200,7 @@ public class WebProjectRestSupport extends WebRestSupport {
     }
 
     public J2eePlatform getPlatform() {
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) getProject().getLookup().lookup(J2eeModuleProvider.class);
         if (j2eeModuleProvider == null) {
             return null;
         }
@@ -239,7 +238,7 @@ public class WebProjectRestSupport extends WebRestSupport {
     }
 
     public Datasource getDatasource(String jndiName) {
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = (J2eeModuleProvider) getProject().getLookup().lookup(J2eeModuleProvider.class);
 
         try {
             return provider.getConfigSupport().findDatasource(jndiName);
@@ -253,7 +252,7 @@ public class WebProjectRestSupport extends WebRestSupport {
     public void setDirectoryDeploymentProperty(Properties p) {
         String instance = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(J2EE_SERVER_INSTANCE);
         if (instance != null) {
-            J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider jmp = getProject().getLookup().lookup(J2eeModuleProvider.class);
             String sdi = jmp.getServerInstanceID();
             J2eeModule mod = jmp.getJ2eeModule();
             if (sdi != null && mod != null) {
@@ -314,7 +313,7 @@ public class WebProjectRestSupport extends WebRestSupport {
     protected void logResourceCreation(Project prj) {
         Object[] params = new Object[3];
         params[0] = LogUtils.WS_STACK_JAXRS;
-        params[1] = project.getClass().getName();
+        params[1] = prj.getClass().getName();
         params[2] = "REST RESOURCE"; // NOI18N
         LogUtils.logWsDetect(params);
     }

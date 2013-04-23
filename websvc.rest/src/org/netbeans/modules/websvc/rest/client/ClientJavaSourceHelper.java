@@ -90,7 +90,6 @@ import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.SubResourceLocator;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
@@ -273,8 +272,8 @@ public class ClientJavaSourceHelper {
                             (Security.Authentication.SESSION_KEY == security.getAuthentication() || Security.Authentication.OAUTH == security.getAuthentication())) {
                         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
 
-                        if (restSupport != null && restSupport instanceof WebRestSupport) {
-                            security.setDeploymentDescriptor(((WebRestSupport)restSupport).getDeploymentDescriptor());
+                        if (restSupport != null) {
+                            security.setDeploymentDescriptor((restSupport).getDeploymentDescriptor());
                         }
                     }
 

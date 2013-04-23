@@ -70,7 +70,7 @@ import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.websvc.api.support.SourceGroups;
 import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.wizard.HttpMethodsPanel.HttpMethods;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -225,7 +225,7 @@ public class OriginResourceIterator implements
         FileObject filterClass = GenerationUtils.createClass(dir,filterName, null );
         
         Project project = Templates.getProject(myWizard);
-        WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
+        RestSupport support = project.getLookup().lookup(RestSupport.class);
         boolean addResponseFilter = extendClasspath(handle, support);
         
         handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
@@ -237,7 +237,7 @@ public class OriginResourceIterator implements
             handle.progress(NbBundle.getMessage(OriginResourceIterator.class,
                     "MSG_UpdateDescriptor")); // NOI18N
             if (addResponseFilter) {
-                support.addInitParam(WebRestSupport.CONTAINER_RESPONSE_FILTER,
+                support.addInitParam(RestSupport.CONTAINER_RESPONSE_FILTER,
                         fqn);
             }
         }
@@ -330,7 +330,7 @@ public class OriginResourceIterator implements
         return fqn[0];
     }
 
-    private boolean extendClasspath( ProgressHandle handle,WebRestSupport support )
+    private boolean extendClasspath( ProgressHandle handle,RestSupport support )
             throws IOException
     {
         Project project = Templates.getProject(myWizard);

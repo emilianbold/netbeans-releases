@@ -47,7 +47,6 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Element;
 
@@ -164,7 +163,7 @@ public class WebXmlHelper {
         try {
             RestSupport rs = RestUtils.getRestSupport(project);
             if (rs != null) {
-                return ((WebRestSupport) rs).getWebXml();
+                return ((RestSupport) rs).getWebXml();
             }
         } catch(Exception iox) {
         }

@@ -66,7 +66,6 @@ import org.netbeans.modules.websvc.rest.model.api.RestApplications;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -84,6 +83,8 @@ import java.io.IOException;
 import java.util.Collections;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 
 
 /**
@@ -111,7 +112,7 @@ class RestScanTask {
        if( webModule == null ){
            return;
        }
-       final WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
+       final RestSupport support = project.getLookup().lookup(RestSupport.class);
        if ( support ==null || !support.hasJaxRsApi() ){
            return;
        }
@@ -147,7 +148,7 @@ class RestScanTask {
     }
 
     private void checkApplicationConfiguration( final Project project,
-            final WebRestSupport support, RestServicesModel servicesModel )
+            final RestSupport support, RestServicesModel servicesModel )
             throws MetadataModelException, IOException
     {
         RestApplicationModel applicationModel = support.getRestApplicationsModel();
@@ -227,7 +228,7 @@ class RestScanTask {
         return hints;
     }
     
-    private void doCheckApplicationConfiguration( Project project, WebRestSupport support,
+    private void doCheckApplicationConfiguration( Project project, RestSupport support,
             List<RestApplication>  applications, RestServicesMetadata metadata) 
     {
         List<TypeElement> restResources = getRestResources(metadata);
@@ -236,7 +237,7 @@ class RestScanTask {
             if ( isCancelled() ){
                 return; 
             }
-            if ( !support.hasApplicationResourceClass(fqn ) ){
+            if ( !MiscUtilities.hasApplicationResourceClass(support, fqn ) ){
                 ClassTree tree = info.getTrees().getTree(typeElement);
                 List<Integer> position = getElementPosition(info, tree);
                 

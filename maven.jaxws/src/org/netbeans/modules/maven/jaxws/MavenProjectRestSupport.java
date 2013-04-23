@@ -78,10 +78,7 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -93,9 +90,9 @@ import org.openide.util.NbBundle;
  *
  * @author Nam Nguyen
  */
-@ProjectServiceProvider(service={RestSupport.class, WebRestSupport.class}, 
+@ProjectServiceProvider(service={RestSupport.class},
     projectType="org-netbeans-modules-maven/war")
-public class MavenProjectRestSupport extends WebRestSupport {
+public class MavenProjectRestSupport extends RestSupport {
 
     private static final String DEPLOYMENT_GOAL = "package";             //NOI18N   
 
@@ -119,7 +116,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
     @Override
     public void ensureRestDevelopmentReady() throws IOException {
         String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
-        WebRestSupport.RestConfig restConfig = null;
+        RestSupport.RestConfig restConfig = null;
         
         /*WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         // Fix for BZ#217231 : don't check not Web projects
@@ -131,13 +128,13 @@ public class MavenProjectRestSupport extends WebRestSupport {
         
         if (!hasJaxRs && configType == null && getApplicationPathFromDD() == null) {
             restConfig = setApplicationConfigProperty(false);
-            if (restConfig == WebRestSupport.RestConfig.DD) {
+            if (restConfig == RestSupport.RestConfig.DD) {
                 addResourceConfigToWebApp(restConfig.getResourcePath());
             }
         }
 
         if ( SwingUtilities.isEventDispatchThread() ){
-            final WebRestSupport.RestConfig config = restConfig;
+            final RestSupport.RestConfig config = restConfig;
             final IOException[] exception = new IOException[1];
             Runnable runnable = new Runnable() {
                 
@@ -165,7 +162,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.websvc.rest.spi.WebRestSupport#enableRestSupport(org.netbeans.modules.websvc.rest.spi.WebRestSupport.RestConfig)
+     * @see org.netbeans.modules.websvc.rest.spi.RestSupport#enableRestSupport(org.netbeans.modules.websvc.rest.spi.RestSupport.RestConfig)
      */
     @Override
     public void enableRestSupport( final RestConfig config ) {
@@ -200,7 +197,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
     
     @Override
     public boolean hasSwdpLibrary() {
-        SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(
+        SourceGroup[] srcGroups = ProjectUtils.getSources(getProject()).getSourceGroups(
         JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (srcGroups.length > 0) {
             ClassPath classPath = ClassPath.getClassPath(srcGroups[0].getRootFolder(), ClassPath.COMPILE);
@@ -239,11 +236,11 @@ public class MavenProjectRestSupport extends WebRestSupport {
             if (config != null && config.isServerJerseyLibSelected() ) {
                 JaxRsStackSupport support = getJaxRsStackSupport();
                 if ( support != null ){
-                    jsr311Added  = support.addJsr311Api(project);
+                    jsr311Added  = support.addJsr311Api(getProject());
                 }
             }
             if ( !jsr311Added ){
-                JaxRsStackSupport.getDefault().addJsr311Api(project);
+                JaxRsStackSupport.getDefault().addJsr311Api(getProject());
             }
         }
         
@@ -252,21 +249,21 @@ public class MavenProjectRestSupport extends WebRestSupport {
             if (config.isServerJerseyLibSelected()) {
                 JaxRsStackSupport support = getJaxRsStackSupport();
                 if ( support != null ){
-                    added  = support.extendsJerseyProjectClasspath(project);
+                    added  = support.extendsJerseyProjectClasspath(getProject());
                 }
             }
             if (!added && config.isJerseyLibSelected()) {
-                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
+                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
             }
         }
         else if (addLibrary ){
-            JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
+            JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
         }
     }
 
     @Override
     public Datasource getDatasource(String jndiName) {
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = (J2eeModuleProvider) getProject().getLookup().lookup(J2eeModuleProvider.class);
 
         try {
             return provider.getConfigSupport().findDatasource(jndiName);
@@ -295,7 +292,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
     @Override
     public void deploy() {
         RunConfig config = RunUtils.createRunConfig(FileUtil.toFile(
-                getProject().getProjectDirectory()), project, 
+                getProject().getProjectDirectory()), getProject(),
                 NbBundle.getMessage(MavenProjectRestSupport.class, "MSG_Deploy",    // NOI18N
                         getProject().getLookup().lookup(
                                 ProjectInformation.class).getDisplayName()), 
@@ -308,7 +305,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
     @Override
     public File getLocalTargetTestRest(){
         try {
-            FileObject mainFolder = project.getProjectDirectory()
+            FileObject mainFolder = getProject().getProjectDirectory()
                     .getFileObject("src/main"); // NOI18N
             if (mainFolder != null) {
                 FileObject resourcesFolder = mainFolder
@@ -438,14 +435,14 @@ public class MavenProjectRestSupport extends WebRestSupport {
     protected void logResourceCreation(Project prj) {
         Object[] params = new Object[3];
         params[0] = LogUtils.WS_STACK_JAXRS;
-        params[1] = project.getClass().getName();
+        params[1] = prj.getClass().getName();
         params[2] = "RESOURCE"; // NOI18N
         LogUtils.logWsDetect(params);
     }
 
     @Override
     public String getProjectProperty(String name) {
-        Preferences prefs = ProjectUtils.getPreferences(project, MavenProjectRestSupport.class, true);
+        Preferences prefs = ProjectUtils.getPreferences(getProject(), MavenProjectRestSupport.class, true);
         if (prefs != null) {
             return prefs.get(name, null);
         }
@@ -459,7 +456,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
 
     @Override
     public void setProjectProperty(String name, String value) {
-        Preferences prefs = ProjectUtils.getPreferences(project, MavenProjectRestSupport.class, true);
+        Preferences prefs = ProjectUtils.getPreferences(getProject(), MavenProjectRestSupport.class, true);
         if (prefs != null) {
             prefs.put(name, value);
         }
@@ -467,7 +464,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
 
     @Override
     public void removeProjectProperties(String[] propertyNames) {
-        Preferences prefs = ProjectUtils.getPreferences(project, MavenProjectRestSupport.class, true);
+        Preferences prefs = ProjectUtils.getPreferences(getProject(), MavenProjectRestSupport.class, true);
         if (prefs != null) {
             for (String p : propertyNames) {
                 prefs.remove(p);
@@ -477,7 +474,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
 
     @Override
     public int getProjectType() {
-        NbMavenProject nbMavenProject = project.getLookup().lookup(NbMavenProject.class);
+        NbMavenProject nbMavenProject = getProject().getLookup().lookup(NbMavenProject.class);
         if (nbMavenProject != null) {
             String packagingType = nbMavenProject.getPackagingType();
             if (packagingType != null)

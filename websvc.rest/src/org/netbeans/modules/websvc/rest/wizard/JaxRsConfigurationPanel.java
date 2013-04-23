@@ -55,7 +55,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.wizard.AbstractPanel.Settings;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -140,8 +140,8 @@ public class JaxRsConfigurationPanel extends javax.swing.JPanel implements Chang
         }
         
         Project project = Templates.getProject(wizard);
-        final WebRestSupport restSupport = project.getLookup().
-                lookup(WebRestSupport.class);
+        final RestSupport restSupport = project.getLookup().
+                lookup(RestSupport.class);
         // do not show Jersey option for Jersey 2.0 and/or EE7:
         boolean hideJerseyChoice = restSupport.isEE7() || restSupport.isJersey2();
         useJersey.setVisible(!hideJerseyChoice);

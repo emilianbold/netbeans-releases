@@ -47,7 +47,7 @@ import java.io.IOException;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -101,7 +101,7 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
     @Override
     public boolean isValid() {
         Project project = Templates.getProject(myDescriptor);
-        WebRestSupport support  = project.getLookup().lookup(WebRestSupport.class);
+        RestSupport support  = project.getLookup().lookup(RestSupport.class);
         if ( support != null ){
             if ( support.isEE7() || support.isJersey2()){
                 if ( !support.isRestSupportOn() ){
