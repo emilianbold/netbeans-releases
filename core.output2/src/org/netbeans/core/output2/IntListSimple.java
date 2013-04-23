@@ -77,6 +77,22 @@ final class IntListSimple {
         return used;
     }
     
+    public void set(int index, int value) {
+        if (index >= used) {
+            throw new IndexOutOfBoundsException();
+        } else {
+            array[index] = value;
+        }
+    }
+
+    public void shorten(int newSize) {
+        if (newSize > used) {
+            throw new IllegalArgumentException();
+        } else {
+            used = newSize;
+        }
+    }
+
     private void growArray() {
         int[] old = array;
         array = new int[Math.round(array.length * 1.5f)];
