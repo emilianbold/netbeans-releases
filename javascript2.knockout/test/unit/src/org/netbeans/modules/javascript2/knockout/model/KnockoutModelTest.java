@@ -50,9 +50,12 @@ import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
 import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -82,7 +85,16 @@ public class KnockoutModelTest extends ModelTestBase {
 
         Model model = getModel(file);
         JsObject ko = model.getGlobalObject().getProperty("ko");
-        ko.getProperties().remove("ko"); // remove ko.ko
+        
+         // HACK remove ko.ko
+        ko.getProperties().remove("ko");
+
+        // HACK fix observableArray
+        JsObject observableArray = ko.getProperty("observableArray");
+        if (observableArray instanceof JsFunction) {
+            JsFunction func = (JsFunction) observableArray;
+            func.addReturnType(new TypeUsageImpl("ko.observableArray.result", -1, true));
+        }
 
         final StringWriter sw = new StringWriter();
         Model.Printer p = new Model.Printer() {
