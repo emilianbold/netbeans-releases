@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.latte.lexer;
 
+import java.util.ArrayDeque;
 import java.util.Objects;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -73,6 +74,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     private LatteStateStack stack = new LatteStateStack();
     private LexerInput input;
     private Syntax syntax;
+    private ArrayDeque<HtmlTag> tags;
 
     public LatteTopColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
@@ -80,9 +82,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             //reset state
             setState((LexerState) info.state());
             this.syntax = ((LexerState) info.state()).syntax;
+            this.tags = ((LexerState) info.state()).tags;
         } else {
             zzState = zzLexicalState = YYINITIAL;
             this.syntax = Syntax.LATTE;
+            this.tags = new ArrayDeque<>() ;
             stack.clear();
         }
 
@@ -96,6 +100,19 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         OFF;
     }
 
+    private static final class HtmlTag {
+        private boolean isSyntax;
+
+        public void setIsSyntax(boolean isSyntax) {
+            this.isSyntax = isSyntax;
+        }
+
+        public boolean isSyntax() {
+            return isSyntax;
+        }
+
+    }
+
     public static final class LexerState  {
         final LatteStateStack stack;
         /** the current state of the DFA */
@@ -103,21 +120,24 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         /** the current lexical state */
         final int zzLexicalState;
         private final Syntax syntax;
+        private final ArrayDeque<HtmlTag> tags;
 
-        LexerState(LatteStateStack stack, int zzState, int zzLexicalState, Syntax syntax) {
+        LexerState(LatteStateStack stack, int zzState, int zzLexicalState, Syntax syntax, ArrayDeque<HtmlTag> tags) {
             this.stack = stack;
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
             this.syntax = syntax;
+            this.tags = tags;
         }
 
         @Override
         public int hashCode() {
-            int hash = 5;
-            hash = 29 * hash + Objects.hashCode(this.stack);
-            hash = 29 * hash + this.zzState;
-            hash = 29 * hash + this.zzLexicalState;
-            hash = 29 * hash + (this.syntax != null ? this.syntax.hashCode() : 0);
+            int hash = 7;
+            hash = 89 * hash + Objects.hashCode(this.stack);
+            hash = 89 * hash + this.zzState;
+            hash = 89 * hash + this.zzLexicalState;
+            hash = 89 * hash + (this.syntax != null ? this.syntax.hashCode() : 0);
+            hash = 89 * hash + Objects.hashCode(this.tags);
             return hash;
         }
 
@@ -142,12 +162,15 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             if (this.syntax != other.syntax) {
                 return false;
             }
+            if (!Objects.equals(this.tags, other.tags)) {
+                return false;
+            }
             return true;
         }
     }
 
     public LexerState getState() {
-        return new LexerState(stack.createClone(), zzState, zzLexicalState, syntax);
+        return new LexerState(stack.createClone(), zzState, zzLexicalState, syntax, tags.clone());
     }
 
     public void setState(LexerState state) {
@@ -205,15 +228,16 @@ SYNTAX_PYTHON_END="%}"
 %state ST_PYTHON_DOUBLE
 %state ST_SYNTAX_CHANGE
 %state ST_IN_HTML_TAG
+%state ST_IN_SYNTAX_ATTR
 %state ST_N_ATTR_DOUBLE
 %state ST_N_ATTR_SINGLE
 %state ST_HIGHLIGHTING_ERROR
 
 %%
-<ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_PYTHON_DOUBLE, ST_N_ATTR_DOUBLE, ST_N_ATTR_SINGLE>{WHITESPACE}+ {
+<ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_PYTHON_DOUBLE, ST_N_ATTR_DOUBLE, ST_N_ATTR_SINGLE, ST_IN_HTML_TAG, ST_IN_SYNTAX_ATTR>{WHITESPACE}+ {
 }
 
-<YYINITIAL> {
+<YYINITIAL, ST_IN_HTML_TAG> {
     {PYTHON_COMMENT_START} {
         if (syntax == Syntax.PYTHON) {
             pushState(ST_COMMENT);
@@ -274,16 +298,91 @@ SYNTAX_PYTHON_END="%}"
             return LatteTopTokenId.T_LATTE_DELIMITER;
         }
     }
-    "n:"[a-zA-Z0-9\-_]+=\" {
-        pushState(ST_N_ATTR_DOUBLE);
+    "<"[a-z0-9:]+ {
+        tags.push(new HtmlTag());
+        pushState(ST_IN_HTML_TAG);
         return LatteTopTokenId.T_HTML;
     }
-    "n:"[a-zA-Z0-9\-_]+=' {
-        pushState(ST_N_ATTR_SINGLE);
+    "<""/"[a-zA-Z0-9:]+">" {
+        if (!tags.isEmpty()) {
+            HtmlTag tag = tags.pop();
+            if (tag.isSyntax()) {
+                syntax = Syntax.LATTE;
+            }
+        }
         return LatteTopTokenId.T_HTML;
     }
     {WHITESPACE}+ | . {
         return LatteTopTokenId.T_HTML;
+    }
+}
+
+<ST_IN_HTML_TAG> {
+    "n:"[a-zA-Z0-9\-]+=\" {
+        String text = yytext().toLowerCase().trim();
+        String attributeName = text.substring(2, text.length() - 2);
+        if ("syntax".equals(attributeName)) { //NOI18N
+            tags.peek().setIsSyntax(true);
+            pushState(ST_IN_SYNTAX_ATTR);
+        } else {
+            pushState(ST_N_ATTR_DOUBLE);
+        }
+        return LatteTopTokenId.T_HTML;
+    }
+    "n:"[a-zA-Z0-9\-]+=' {
+        String text = yytext().toLowerCase().trim();
+        String attributeName = text.substring(2, text.length() - 2);
+        if ("syntax".equals(attributeName)) { //NOI18N
+            tags.peek().setIsSyntax(true);
+            pushState(ST_IN_SYNTAX_ATTR);
+        } else {
+            pushState(ST_N_ATTR_SINGLE);
+        }
+        return LatteTopTokenId.T_HTML;
+    }
+    "/>" {
+        if (!tags.isEmpty()) {
+            HtmlTag tag = tags.pop();
+            if (tag.isSyntax()) {
+                syntax = Syntax.LATTE;
+            }
+        }
+        popState();
+        return LatteTopTokenId.T_HTML;
+    }
+    . {
+        return LatteTopTokenId.T_HTML;
+    }
+}
+
+<ST_IN_SYNTAX_ATTR> {
+    "latte" {
+        popState();
+        syntax = Syntax.LATTE;
+        return LatteTopTokenId.T_LATTE;
+    }
+    "double" {
+        popState();
+        syntax = Syntax.DOUBLE;
+        return LatteTopTokenId.T_LATTE;
+    }
+    "asp" {
+        popState();
+        syntax = Syntax.ASP;
+        return LatteTopTokenId.T_LATTE;
+    }
+    "python" {
+        popState();
+        syntax = Syntax.PYTHON;
+        return LatteTopTokenId.T_LATTE;
+    }
+    "off" {
+        popState();
+        syntax = Syntax.OFF;
+        return LatteTopTokenId.T_LATTE;
+    }
+    . {
+        popState();
     }
 }
 
@@ -293,7 +392,9 @@ SYNTAX_PYTHON_END="%}"
         popState();
         return LatteTopTokenId.T_LATTE;
     }
-
+    . {
+        popState();
+    }
 }
 
 <ST_N_ATTR_SINGLE> {
@@ -302,7 +403,9 @@ SYNTAX_PYTHON_END="%}"
         popState();
         return LatteTopTokenId.T_LATTE;
     }
-
+    . {
+        popState();
+    }
 }
 
 <ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_PYTHON_DOUBLE> {
@@ -413,14 +516,7 @@ SYNTAX_PYTHON_END="%}"
     }
 }
 
-/* ============================================
-   Stay in this state until we find a whitespace.
-   After we find a whitespace we go the the prev state and try again from the next token.
-   ============================================ */
 <ST_HIGHLIGHTING_ERROR> {
-    {WHITESPACE} {
-        popState();
-    }
     . {
         return LatteTopTokenId.T_LATTE_ERROR;
     }
@@ -430,7 +526,7 @@ SYNTAX_PYTHON_END="%}"
    This rule must be the last in the section!!
    it should contain all the states.
    ============================================ */
-<YYINITIAL, ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_N_ATTR_DOUBLE, ST_N_ATTR_SINGLE> {
+<YYINITIAL, ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_N_ATTR_DOUBLE, ST_N_ATTR_SINGLE, ST_IN_HTML_TAG, ST_IN_SYNTAX_ATTR> {
     . {
         yypushback(yylength());
         pushState(ST_HIGHLIGHTING_ERROR);

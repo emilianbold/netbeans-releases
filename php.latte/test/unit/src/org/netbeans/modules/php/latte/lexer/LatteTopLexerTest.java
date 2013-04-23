@@ -118,6 +118,10 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
         performTest("comment-with-asterisk");
     }
 
+    public void testNSyntax() throws Exception {
+        performTest("n-syntax");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".latte"));
