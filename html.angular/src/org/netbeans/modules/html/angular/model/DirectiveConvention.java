@@ -39,37 +39,16 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.api.html.lexer;
-
-import org.netbeans.api.annotations.common.NonNull;
+package org.netbeans.modules.html.angular.model;
 
 /**
- * <b>NOT FOR PUBLIC USE!!!</b> Prototype - not final version!!! An API review will run, this is a public API.
- * 
- * HtmlLexer extension - allows to inject custom expression languages into html content.
- * 
- * To be registered in mime lookup.
+ * Angular directive attribute form convention.
  *
  * @author marekfukala
  */
-public interface HtmlExpression {
-    
+public enum DirectiveConvention {
     /**
-     * "{{"
+     * The base attribute name convention "ng-" + directive name
      */
-    @NonNull
-    public String getOpenDelimiter();
-
-    /**
-     * "}}"
-     */
-    @NonNull
-    public String getCloseDelimiter();
-    
-    /**
-     * "text/javascript"
-     */
-    @NonNull
-    public String getContentMimeType();
-    
+    base;
 }

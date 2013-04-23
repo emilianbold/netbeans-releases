@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.html.angular.model;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -122,6 +124,26 @@ public enum Directive {
         return LexerUtils.startsWith(attribute.unqualifiedName(), NAME_PREFIX, true, false);
     }
     
+    private static final Map<String, Directive> NAMES2DIRECTIVES = new HashMap<>();
+    static {
+        for(Directive d : values()) {
+            for(DirectiveConvention dc : DirectiveConvention.values()) {
+                NAMES2DIRECTIVES.put(d.getAttributeName(dc), d);
+            }
+        }
+    }
+    
+    /**
+     * Gets an instance of {@link Directive} for an angular attribute name.
+     * 
+     * Attribute names in all supported forms can be used.
+     * 
+     * @param attributeName
+     */
+    public static Directive getDirective(String attributeName) {
+        return NAMES2DIRECTIVES.get(attributeName);
+    }
+    
     private boolean attributeValueTypicallyUsed;
 
     private boolean useAsAttribute, useAsClass, useAsElement;
@@ -153,8 +175,13 @@ public enum Directive {
      * Gets the directive name as html attribute in the base form: ng-model, ng-app,...
      */
     @NonNull
-    public String getAttributeName() {
-       return new StringBuilder().append(NAME_PREFIX).append('-').append(getAttributeCoreName()).toString();
+    public String getAttributeName(DirectiveConvention convention) {
+        switch(convention) {
+            case base:
+               return new StringBuilder().append(NAME_PREFIX).append('-').append(getAttributeCoreName()).toString();
+            default:
+                throw new IllegalStateException();
+        }
     }
 
     /**

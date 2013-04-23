@@ -13,6 +13,10 @@
                         </folder>
                     </folder>
                 </folder>
+                <file name="org-netbeans-modules-html-angular-AngularHtmlExpression.instance_hidden"/>
+                <file name="org-netbeans-modules-html-angular-AngularHtmlLexerPlugin.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.html.lexer.HtmlExpression"/>
+                </file>
             </folder>
         </folder>
     </folder>

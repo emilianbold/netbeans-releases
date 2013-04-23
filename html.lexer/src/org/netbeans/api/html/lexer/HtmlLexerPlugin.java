@@ -39,22 +39,51 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
+package org.netbeans.api.html.lexer;
 
-import java.awt.Color;
-import javax.swing.ImageIcon;
-import org.openide.util.ImageUtilities;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
+ * <b>NOT FOR PUBLIC USE!!!</b> Prototype - not final version!!! An API review will run, this is a public API.
+ * 
+ * HtmlLexer extension - allows to inject custom expression languages into html content.
+ * 
+ * To be registered in global lookup.
  *
  * @author marekfukala
  */
-public class Constants {
+public interface HtmlLexerPlugin {
     
-    public static final ImageIcon ANGULAR_ICON =
-                ImageUtilities.loadImageIcon("org/netbeans/modules/html/angular/resources/AngularJS_icon_16.png", false); // NOI18N
+    /**
+     * "{{"
+     */
+    @NonNull
+    public String getOpenDelimiter();
+
+    /**
+     * "}}"
+     */
+    @NonNull
+    public String getCloseDelimiter();
     
-    public static final Color ANGULAR_COLOR = Color.red.darker();
+    /**
+     * "text/javascript"
+     */
+    @NonNull
+    public String getContentMimeType();
     
-    public static final String JAVASCRIPT_MIMETYPE = "text/javascript"; //NOI18N
+    /**
+     * Can be used to create a language embedding on an attribute value token. 
+     * 
+     * Note: When more plugins creates an embedding for the same token then the embedding
+     * provided by the first plugin is used.
+     * 
+     * @param elementName name of the tag enclosing the attribute
+     * @param attributeName name of the tag attribute
+     * @return mimetype of the lexer language or null if no embedding should be created.
+     */
+    @CheckForNull
+    public String createAttributeEmbedding(String elementName, String attributeName);
+
 }

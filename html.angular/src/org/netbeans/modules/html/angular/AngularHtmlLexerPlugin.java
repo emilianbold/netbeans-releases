@@ -39,69 +39,47 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.html.lexer;
+package org.netbeans.modules.html.angular;
 
-import java.util.Collection;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.html.lexer.HtmlExpression;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
+//import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.html.lexer.HtmlLexerPlugin;
+import org.netbeans.modules.html.angular.model.Directive;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author marekfukala
  */
-public class HtmlExpressions {
-    
-    private static HtmlExpressions DEFAULT;
+//@MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
+@ServiceProvider(service = HtmlLexerPlugin.class)
+public class AngularHtmlLexerPlugin implements HtmlLexerPlugin {
 
-    public static synchronized HtmlExpressions getDefault() {
-        if(DEFAULT == null) {
-            DEFAULT = new HtmlExpressions();
-        }
-        return DEFAULT;
+    @Override
+    public String getOpenDelimiter() {
+        return "{{"; //NOI18N
     }
-    
-    private Lookup.Result<HtmlExpression> lookupResult;
-    
-    private String[][] data;
-    
-    private HtmlExpressions() {
-        Lookup lookup = MimeLookup.getLookup("text/html");
-        lookupResult = lookup.lookupResult(HtmlExpression.class);
-        lookupResult.addLookupListener(new LookupListener() {
 
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                refresh();
+    @Override
+    public String getCloseDelimiter() {
+        return "}}"; //NOI18N
+    }
+
+    @Override
+    public String getContentMimeType() {
+        return Constants.JAVASCRIPT_MIMETYPE; //NOI18N
+    }
+
+    @Override
+    public String createAttributeEmbedding(String elementName, String attributeName) {
+        //TODO take the element into account!
+        Directive directive = Directive.getDirective(attributeName);
+        if(directive != null) {
+            switch(directive.getType()) {
+                case expression:
+                    return Constants.JAVASCRIPT_MIMETYPE;
             }
-        });
-        
-        refresh();
-    }
-    
-    private void refresh() {
-        Collection<? extends HtmlExpression> allInstances = lookupResult.allInstances();
-        data = new String[3][allInstances.size()];
-        int idx = 0;
-        for(HtmlExpression fact : allInstances) {
-            data[0][idx] = fact.getOpenDelimiter();
-            data[1][idx] = fact.getCloseDelimiter();
-            data[2][idx] = fact.getContentMimeType();
         }
-    }
-    
-    public String[] getOpenDelimiters() {
-        return data[0];
-    }
-    
-    public String[] getCloseDelimiters() {
-        return data[1];
-    }
-    
-    public String[] getMimeTypes() {
-        return data[2];
+        return null;
     }
     
 }

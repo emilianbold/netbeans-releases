@@ -46,6 +46,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.html.angular.model.DirectiveConvention;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 import org.netbeans.modules.html.editor.lib.api.HelpItem;
 import org.netbeans.modules.html.editor.lib.api.HelpResolver;
@@ -77,7 +78,7 @@ public class AngularCustomAttribute implements CustomAttribute {
     
     @Override
     public String getName() {
-        return directive.getAttributeName();
+        return directive.getAttributeName(DirectiveConvention.base);
     }
 
     @Override
@@ -91,7 +92,7 @@ public class AngularCustomAttribute implements CustomAttribute {
 
             @Override
             public String getHelpHeader() {
-                return new StringBuilder().append("<h2>").append(directive.getAttributeName()).append("</h2>").toString(); //NOI18N
+                return new StringBuilder().append("<h2>").append(directive.getAttributeName(DirectiveConvention.base)).append("</h2>").toString(); //NOI18N
             }
 
             @Override
