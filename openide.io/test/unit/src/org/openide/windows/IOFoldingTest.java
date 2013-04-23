@@ -104,7 +104,7 @@ public class IOFoldingTest {
 
         private final Lookup lookup = Lookups.fixed(new DummyIOFolding());
 
-        private DummyFoldHandleDef currentFold = null;
+        private DummyIOFolding.DummyFoldHandleDef currentFold = null;
         private int currentLevel = 0;
 
         @Override
@@ -115,7 +115,7 @@ public class IOFoldingTest {
         private class DummyIOFolding extends IOFolding {
 
             @Override
-            protected FoldHandle.Definition startFold(boolean expanded) {
+            protected FoldHandleDefinition startFold(boolean expanded) {
                 if (currentFold != null) {
                     throw new IllegalStateException("Last fold not finished");
                 } else {
@@ -124,42 +124,42 @@ public class IOFoldingTest {
                     return currentFold;
                 }
             }
-        }
 
-        private class DummyFoldHandleDef extends FoldHandle.Definition {
+            private class DummyFoldHandleDef extends FoldHandleDefinition {
 
-            private DummyFoldHandleDef nested = null;
-            private final DummyFoldHandleDef parent;
+                private DummyFoldHandleDef nested = null;
+                private final DummyFoldHandleDef parent;
 
-            public DummyFoldHandleDef(DummyFoldHandleDef parent) {
-                this.parent = parent;
-            }
-
-            @Override
-            public void finish() {
-                if (nested != null) {
-                    throw new IllegalStateException("A nested fold exists.");
-                } else if (parent == null) {
-                    currentFold = null;
-                } else {
-                    parent.nested = null;
+                public DummyFoldHandleDef(DummyFoldHandleDef parent) {
+                    this.parent = parent;
                 }
-                currentLevel--;
-            }
 
-            @Override
-            public FoldHandle.Definition startFold(boolean expanded) {
-                if (nested != null) {
-                    throw new IllegalStateException("Last fold not finished.");
-                } else {
-                    nested = new DummyFoldHandleDef(this);
-                    currentLevel++;
-                    return nested;
+                @Override
+                public void finish() {
+                    if (nested != null) {
+                        throw new IllegalStateException("A nested fold exists.");
+                    } else if (parent == null) {
+                        currentFold = null;
+                    } else {
+                        parent.nested = null;
+                    }
+                    currentLevel--;
                 }
-            }
 
-            @Override
-            public void setExpanded(boolean expanded) {
+                @Override
+                public FoldHandleDefinition startFold(boolean expanded) {
+                    if (nested != null) {
+                        throw new IllegalStateException("Last fold not finished.");
+                    } else {
+                        nested = new DummyFoldHandleDef(this);
+                        currentLevel++;
+                        return nested;
+                    }
+                }
+
+                @Override
+                public void setExpanded(boolean expanded) {
+                }
             }
         }
     }
