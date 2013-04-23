@@ -41,14 +41,21 @@
  */
 package org.netbeans.modules.php.latte;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 import org.netbeans.modules.html.editor.lib.api.HelpItem;
+import org.netbeans.modules.html.editor.lib.api.HelpResolver;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class LatteCustomAttribute implements CustomAttribute {
+    private static final Logger LOGGER = Logger.getLogger(LatteCustomAttribute.class.getName());
+    private static final String DOCUMENTATION_URL = "http://doc.nette.org/en/"; //NOI18N
     private final String name;
 
     public LatteCustomAttribute(String name) {
@@ -72,7 +79,33 @@ public class LatteCustomAttribute implements CustomAttribute {
 
     @Override
     public HelpItem getHelp() {
-        return null;
+        return new HelpItem() {
+
+            @Override
+            public String getHelpHeader() {
+                return new StringBuilder().append("<h2>").append(getName()).append("</h2>").toString(); //NOI18N
+            }
+
+            @Override
+            public String getHelpContent() {
+                return "";
+            }
+
+            @Override
+            public URL getHelpURL() {
+                try {
+                    return new URL(DOCUMENTATION_URL);
+                } catch (MalformedURLException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                    return null;
+                }
+            }
+
+            @Override
+            public HelpResolver getHelpResolver() {
+                return null;
+            }
+        };
     }
 
 }

@@ -75,7 +75,7 @@ public class LatteAttributeCompletionItem extends HtmlCompletionItem.Attribute {
 
     @Override
     public boolean hasHelp() {
-        return false;
+        return true;
     }
 
 }
