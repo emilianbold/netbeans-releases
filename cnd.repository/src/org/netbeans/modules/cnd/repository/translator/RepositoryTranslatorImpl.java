@@ -183,7 +183,7 @@ public class RepositoryTranslatorImpl {
 
     public IntToStringCache loadUnitIndex(int unitId, CharSequence unitName) {
         synchronized (repository.getUnitLock(unitId)) {
-            unitNamesCache.loadUnitIndex(unitName, new HashSet<CharSequence>());
+            unitNamesCache.loadUnitIndex(unitId, unitName, new HashSet<CharSequence>());
             unitId = repository.unmaskRepositoryID(unitId);
             return unitNamesCache.getFileNames(unitId);
         }

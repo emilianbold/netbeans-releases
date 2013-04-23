@@ -64,6 +64,8 @@ import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.IntToStringCache;
 import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
+import org.netbeans.modules.cnd.repository.support.RepositoryStatistics;
+import org.netbeans.modules.cnd.repository.testbench.RepositoryStatisticsImpl;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -364,15 +366,19 @@ import org.openide.util.NbBundle;
         }
     }    
 
-    private boolean loadUnitIndex(final CharSequence unitName, String unitIndexFileName, Set<CharSequence> antiLoop) {
+    private boolean loadUnitIndex(final int unitId, final CharSequence unitName, String unitIndexFileName, Set<CharSequence> antiLoop) {
         DataInputStream dis = null;
         boolean indexLoaded = false;
+        File unitIndexFile = new File(unitIndexFileName);
 
         try {
             // don't produce exceptions when it's clear that the file just doesn't exist
-            if (new File(unitIndexFileName).exists()) {
+            if (unitIndexFile.exists()) {
                 dis = new DataInputStream(new BufferedInputStream(new FileInputStream(unitIndexFileName)));
                 indexLoaded = readUnitFilesCache(unitName, dis, antiLoop);
+                if (indexLoaded && RepositoryStatistics.ENABLED) {
+                    RepositoryStatisticsImpl.getInstance().logIndexRead(unitId, (int) unitIndexFile.length());
+                }
             }
         } catch (FileNotFoundException e) {
             if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
@@ -390,7 +396,7 @@ import org.openide.util.NbBundle;
             if (dis != null) {
                 try {
                     dis.close();
-                    new File(unitIndexFileName).delete();
+                    unitIndexFile.delete();
                 } catch (IOException e) {
                     e.printStackTrace(System.err);
                 }
@@ -517,7 +523,7 @@ import org.openide.util.NbBundle;
         }
         for (RequiredUnit rU : reqUnits) {
             if (!isUnitIndexLoaded(rU.getName())) {
-                loadUnitIndex(rU.getName(), antiLoop);
+                loadUnitIndex(rU.getUnitId(), rU.getName(), antiLoop);
             }
             Long tsL = unit2timestamp.get(rU.getName());
             if (tsL != null) {
@@ -540,13 +546,13 @@ import org.openide.util.NbBundle;
         return result;
     }
     
-    void loadUnitIndex(final CharSequence unitName, Set<CharSequence> antiLoop) {
+    void loadUnitIndex(final int unitId, final CharSequence unitName, Set<CharSequence> antiLoop) {
         // check if the index is already loaded
         if (isUnitIndexLoaded(unitName)) {
             return;
         }
         String unitIndexFileName = getUnitIndexName(unitName);
-        boolean indexLoaded = loadUnitIndex(unitName, unitIndexFileName, antiLoop);
+        boolean indexLoaded = loadUnitIndex(unitId, unitName, unitIndexFileName, antiLoop);
         if (!indexLoaded) {
             storageAllocator.deleteUnitFiles(unitName, false);
             cleanUnitData(unitName);
