@@ -263,7 +263,7 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
                     try {
                         int len = is.read (arr);
                         for (int i = 0; i < len; i++) {
-                            if (arr[i] >= 0 && arr[i] <= 31 && arr[i] != '\n' && arr[i] != '\r' && arr[i] != '\t') {
+                            if (arr[i] >= 0 && arr[i] <= 31 && arr[i] != '\n' && arr[i] != '\r' && arr[i] != '\t' && arr[i] != '\f') {
                                 return;
                             }
                         }
