@@ -1970,7 +1970,12 @@ simple_member_declaration_or_function_definition[decl_kind kind, boolean class_l
         decl_specifier*                                                         {action.end_decl_specifiers(null/*input.LT(0)*/);}
         (
             (IDENT? COLON)=>
-                member_bitfield_declarator ( COMMA member_declarator )* SEMICOLON
+                member_bitfield_declarator 
+                ( 
+                    COMMA                                                       {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__COMMA2, input.LT(0));}
+                    member_declarator 
+                )* 
+                SEMICOLON                                                       {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
         |
             (constructor_declarator)=>
                 constructor_declarator
@@ -2007,7 +2012,7 @@ finally                                                                         
 member_bitfield_declarator
     :
         (
-            IDENT
+            IDENT                                                               {if(state.backtracking == 0){action.member_bitfield_declarator(input.LT(0));}}
         )? 
         virt_specifier* 
         COLON 
