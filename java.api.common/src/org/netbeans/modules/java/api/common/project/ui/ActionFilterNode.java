@@ -723,6 +723,9 @@ final class ActionFilterNode extends FilterNode {
                     }
                 }
             }
+            if (FileUtil.isParentOf(binRoot, sourceTarget) || binRoot.equals(sourceTarget))  {
+                return sourceTarget;
+            }
             ignore(sourceTarget.toURI(), binRoot.toURI());
             return null;
         }

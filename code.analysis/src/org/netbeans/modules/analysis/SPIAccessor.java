@@ -43,15 +43,21 @@ package org.netbeans.modules.analysis;
 
 import java.awt.Image;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.analysis.spi.Analyzer.CustomizerContext;
 import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
+import org.netbeans.modules.analysis.spi.Analyzer.Result;
 import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.modules.refactoring.api.Scope;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.Exceptions;
 
 /**
@@ -71,6 +77,8 @@ public abstract class SPIAccessor {
     }
 
     public abstract Context createContext(Scope scope, Preferences settings, String singleWarningId, ProgressHandle progress, int bucketStart, int bucketSize);
+
+    public abstract Result createResult(List<ErrorDescription> errors, Map<ErrorDescription, Project> errorsToProjects, Collection<AnalysisProblem> analysisProblems);
 
     public abstract String getDisplayName(MissingPlugin missing);
 

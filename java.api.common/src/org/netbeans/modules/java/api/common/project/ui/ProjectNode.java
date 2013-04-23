@@ -74,6 +74,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.ui.PathFinder;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -190,9 +191,10 @@ class ProjectNode extends AbstractNode {
             content = new Object[1];
         }
         else {
-            content = new Object[3];
+            content = new Object[4];
             content[1] = new JavadocProvider(antArtifact, artifactLocation);
             content[2] = p;
+            content[3] = new PathFinderImpl();  //Needed by Source Inspect View to display errors in project reference
         }
         content[0] = new ActionFilterNode.Removable(helper, classPathId, entryId, webModuleElementName, cs, rh);
         Lookup lkp = Lookups.fixed(content);
@@ -305,6 +307,18 @@ class ProjectNode extends AbstractNode {
         @Override
         protected boolean asynchronous() {
             return false;
+        }
+    }
+
+    private static final class PathFinderImpl implements PathFinder {
+
+        @Override
+        public Node findPath(Node root, Object target) {
+            final Project p = root.getLookup().lookup(Project.class);
+            if (p != null && p.getProjectDirectory().equals(target)) {
+                return root;
+            }
+            return null;
         }
     }
 

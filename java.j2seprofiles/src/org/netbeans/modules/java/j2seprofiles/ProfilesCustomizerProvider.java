@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.analysis;
+package org.netbeans.modules.java.j2seprofiles;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.analysis.RunAnalysisPanel.FutureWarnings;
-import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.nodes.Node;
+import org.netbeans.modules.analysis.spi.Analyzer;
 
 /**
  *
- * @author lahvac
+ * @author Tomas Zezula
  */
-public class AnalysisResult {
+class ProfilesCustomizerProvider implements Analyzer.CustomizerProvider<Void, ProfilesCustomizer> {
 
-    public final Map<AnalyzerFactory, List<ErrorDescription>> provider2Hints;
-    public final Map<ErrorDescription, Project> errorsToProjects;
-    public final FutureWarnings analyzerId2Description;
-    public final Collection<Node> extraNodes;
+    static final String PROP_PROFILE_TO_CHECK = "profile-to-check";             //NOI18N
 
-    public AnalysisResult(Map<AnalyzerFactory, List<ErrorDescription>> provider2Hints, Map<ErrorDescription, Project> errorsToProjects, FutureWarnings analyzerId2Description, Collection<Node> extraNodes) {
-        this.provider2Hints = provider2Hints;
-        this.errorsToProjects = errorsToProjects;
-        this.analyzerId2Description = analyzerId2Description;
-        this.extraNodes = extraNodes;
+    @Override
+    public Void initialize() {
+        return null;
     }
-    
+
+    @Override
+    public ProfilesCustomizer createComponent(Analyzer.CustomizerContext<Void, ProfilesCustomizer> context) {
+        return new ProfilesCustomizer(context);
+    }
+
 }

@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -100,15 +101,18 @@ class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
         return null;
     }
 
-    private static String findProfile(
+    private static SourceLevelQuery.Profile findProfile(
             @NonNull final PropertyEvaluator eval) {
+        SourceLevelQuery.Profile res;
         if (supportsProfiles(findSourceLevel(eval))) {
             final String profile = eval.getProperty(JAVAC_PROFILE);
-            if (profile != null && profile.length() > 0) {
-                return profile;
+            res = SourceLevelQuery.Profile.forName(profile);
+            if (res != null) {
+                return res;
             }
         }
-        return null;
+        res = SourceLevelQuery.Profile.DEFAULT;
+        return res;
     }
 
     private static boolean supportsProfiles(
@@ -132,7 +136,7 @@ class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
         }
 
         @Override
-        public String getProfile() {
+        public SourceLevelQuery.Profile getProfile() {
             return findProfile(eval);
         }
 

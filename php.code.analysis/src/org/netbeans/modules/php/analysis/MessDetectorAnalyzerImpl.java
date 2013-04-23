@@ -55,7 +55,6 @@ import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.php.analysis.commands.MessDetector;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
 import org.netbeans.modules.php.analysis.options.AnalysisOptionsValidator;
-import org.netbeans.modules.php.analysis.results.Result;
 import org.netbeans.modules.php.analysis.ui.analyzer.MessDetectorCustomizerPanel;
 import org.netbeans.modules.php.analysis.util.AnalysisUtils;
 import org.netbeans.modules.php.analysis.util.Mappers;
@@ -134,7 +133,7 @@ public class MessDetectorAnalyzerImpl implements Analyzer {
             if (cancelled.get()) {
                 return Collections.emptyList();
             }
-            List<Result> results = messDetector.analyze(messDetectorRuleSets, root);
+            List<org.netbeans.modules.php.analysis.results.Result> results = messDetector.analyze(messDetectorRuleSets, root);
             if (results == null) {
                 context.reportAnalysisProblem(Bundle.MessDetectorAnalyzerImpl_analyze_error(), Bundle.MessDetectorAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();
@@ -148,7 +147,7 @@ public class MessDetectorAnalyzerImpl implements Analyzer {
             if (cancelled.get()) {
                 return Collections.emptyList();
             }
-            List<Result> results = messDetector.analyze(messDetectorRuleSets, file);
+            List<org.netbeans.modules.php.analysis.results.Result> results = messDetector.analyze(messDetectorRuleSets, file);
             if (results == null) {
                 context.reportAnalysisProblem(Bundle.MessDetectorAnalyzerImpl_analyze_error(), Bundle.MessDetectorAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();
@@ -172,7 +171,7 @@ public class MessDetectorAnalyzerImpl implements Analyzer {
             if (dataChildren.isEmpty()) {
                 continue;
             }
-            List<Result> results = messDetector.analyze(messDetectorRuleSets, dataChildren);
+            List<org.netbeans.modules.php.analysis.results.Result> results = messDetector.analyze(messDetectorRuleSets, dataChildren);
             if (results == null) {
                 context.reportAnalysisProblem(Bundle.MessDetectorAnalyzerImpl_analyze_error(), Bundle.MessDetectorAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();
