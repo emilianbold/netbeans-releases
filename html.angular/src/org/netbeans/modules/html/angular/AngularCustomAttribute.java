@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.angular;
 
+import org.netbeans.modules.html.angular.model.Directive;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -61,16 +62,16 @@ public class AngularCustomAttribute implements CustomAttribute {
     public static Collection<CustomAttribute> getCustomAttributes() {
         if(attributes == null) {
             attributes = new ArrayList<>();
-            for(AngularDirective ad : AngularDirective.values()) {
+            for(Directive ad : Directive.values()) {
                 attributes.add(new AngularCustomAttribute(ad));
             }
         }
         return attributes;
     }
     
-    private AngularDirective directive;
+    private Directive directive;
 
-    public AngularCustomAttribute(AngularDirective directive) {
+    public AngularCustomAttribute(Directive directive) {
         this.directive = directive;
     }
     

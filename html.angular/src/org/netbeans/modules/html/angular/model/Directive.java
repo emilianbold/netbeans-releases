@@ -39,18 +39,18 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
+package org.netbeans.modules.html.angular.model;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.web.common.api.LexerUtils;
-import static org.netbeans.modules.html.angular.AngularDirectiveValueType.*;
+import static org.netbeans.modules.html.angular.model.DirectiveType.*;
 
 /**
  *
  * @author marekfukala
  */
-public enum AngularDirective {
+public enum Directive {
     
     app     (false, true, true,  false, angularModule), 
     bind    (true,  true, true,  false, expression), 
@@ -126,14 +126,14 @@ public enum AngularDirective {
 
     private boolean useAsAttribute, useAsClass, useAsElement;
     
-    private AngularDirectiveValueType type;
+    private DirectiveType type;
     
-    private AngularDirective(
+    private Directive(
             boolean attributeValueRequired, 
             boolean useAsAttribute, 
             boolean useAsClass, 
             boolean useAsElement,
-            AngularDirectiveValueType type) {
+            DirectiveType type) {
         this.attributeValueTypicallyUsed = attributeValueRequired;
         this.useAsAttribute = useAsAttribute;
         this.useAsClass = useAsClass;
@@ -200,7 +200,7 @@ public enum AngularDirective {
         return useAsElement;
     }
 
-    public AngularDirectiveValueType getType() {
+    public DirectiveType getType() {
         return type;
     }
     

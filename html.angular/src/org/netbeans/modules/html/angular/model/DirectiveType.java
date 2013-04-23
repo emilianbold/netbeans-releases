@@ -39,13 +39,13 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
+package org.netbeans.modules.html.angular.model;
 
 /**
  *
  * @author marekfukala
  */
-public enum AngularDirectiveValueType {
+public enum DirectiveType {
 
     /**
      * Directive has no value.
