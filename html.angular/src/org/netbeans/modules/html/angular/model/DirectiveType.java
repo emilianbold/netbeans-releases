@@ -39,31 +39,59 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
-
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.html.lexer.HtmlExpression;
+package org.netbeans.modules.html.angular.model;
 
 /**
  *
  * @author marekfukala
  */
-@MimeRegistration(mimeType = "text/html", service = HtmlExpression.class)
-public class AngularHtmlExpression implements HtmlExpression {
+public enum DirectiveType {
 
-    @Override
-    public String getOpenDelimiter() {
-        return "{{"; //NOI18N
-    }
-
-    @Override
-    public String getCloseDelimiter() {
-        return "}}"; //NOI18N
-    }
-
-    @Override
-    public String getContentMimeType() {
-        return "text/javascript"; //NOI18N
-    }
-    
+    /**
+     * Directive has no value.
+     *
+     * For example ngChange.
+     */
+    noValue,
+    /**
+     * {expression} – Expression to evaluate.
+     *
+     * Used for example by nbBind.
+     */
+    expression,
+    /**
+     * {string} – template of form {{ expression }} to eval.
+     *
+     * Used for example by ngBindTemplate.
+     */
+    string,
+    /**
+     * {angular.Module} – an optional application module name to load.
+     *
+     * Used by ngApp. http://docs.angularjs.org/api/ng.directive:ngApp
+     */
+    angularModule,
+    /**
+     * {template} – any string which can contain {{}} markup.
+     *
+     * Used for example by ngHref.
+     */
+    template,
+    /**
+     * ngRepeat – {repeat_expression} – The expression indicating how to
+     * enumerate a collection. 
+     * 
+     * Two formats are currently supported: variable in
+     * expression – where variable is the user defined loop variable and
+     * expression is a scope expression giving the collection to enumerate.
+     *
+     * For example: track in cd.tracks.
+     *
+     * (key, value) in expression – where key and value can be any user defined
+     * identifiers, and expression is the scope expression giving the collection
+     * to enumerate.
+     *
+     * For example: (name, age) in {'adam':10, 'amalie':12}.
+     */
+    repeatExpression,
 }
