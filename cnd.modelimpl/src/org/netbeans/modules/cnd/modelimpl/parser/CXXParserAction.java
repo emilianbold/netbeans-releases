@@ -442,6 +442,7 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     void member_declaration(Token token);
     void member_declaration(int kind, Token token);
     void end_member_declaration(Token token);    
+    void member_bitfield_declarator(Token token);    
     void simple_member_declaration(Token token);
     void simple_member_declaration(int kind, Token token);
     void end_simple_member_declaration(Token token);

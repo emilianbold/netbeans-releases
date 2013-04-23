@@ -3303,6 +3303,20 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void end_member_declarator(Token token) {
         end_declarator(token);
     }
+        
+    @Override
+    public void member_bitfield_declarator(Token token) {
+        declarator(token);
+        
+        NameBuilder nameBuilder = new NameBuilder();
+        nameBuilder.addNamePart(token.getText());        
+        
+        DeclaratorBuilder builder = (DeclaratorBuilder) builderContext.top();
+        builder.setName(nameBuilder.getName());
+        builder.setNameBuilder(nameBuilder);
+        
+        end_declarator(token);
+    }
     
     @Override public void pure_specifier(Token token) {}
     @Override public void end_pure_specifier(Token token) {}

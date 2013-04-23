@@ -467,6 +467,7 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     @Override public void end_simple_member_declaration(Token token){}
     @Override public void member_declarator(Token token) {}
     @Override public void end_member_declarator(Token token) {}
+    @Override public void member_bitfield_declarator(Token token) {}
     @Override public void pure_specifier(Token token) {}
     @Override public void end_pure_specifier(Token token) {}
     @Override public void constant_initializer(Token token) {}

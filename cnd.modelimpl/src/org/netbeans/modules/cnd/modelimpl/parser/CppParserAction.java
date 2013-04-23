@@ -446,6 +446,7 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     void end_simple_member_declaration(Token token);
     void member_declarator(Token token);
     void end_member_declarator(Token token);
+    void member_bitfield_declarator(Token token);
     void pure_specifier(Token token);
     void end_pure_specifier(Token token);
     void constant_initializer(Token token);
