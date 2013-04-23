@@ -140,7 +140,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     public static boolean isGeneratedIdentifier(String ident) {
         return GENERATED_IDENTIFIER.equals(ident) || ident.contains(NETBEANS_IMPORT_FILE);
     }
-    
+
     public static boolean containsGeneratedIdentifier(String ident) {
         return ident.contains(GENERATED_IDENTIFIER) || ident.contains(NETBEANS_IMPORT_FILE);
     }
@@ -156,6 +156,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
     private static final String TPL_MIME_TYPE = "text/x-tpl"; // NOI18N
     private static final String TWIG_MIME_TYPE = "text/x-twig"; // NOI18N
+    private static final String LATTE_MIME_TYPE = "text/x-latte"; // NOI18N
     //private static final String GSP_TAG_MIME_TYPE = "application/x-gsp"; // NOI18N
     private static final Map<String, Translator> translators = new HashMap<String, Translator>();
 
@@ -168,6 +169,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         translators.put(PHP_MIME_TYPE, new PhpTranslator());
         translators.put(TPL_MIME_TYPE, new TplTranslator());
         translators.put(TWIG_MIME_TYPE, new TwigTranslator());
+        translators.put(LATTE_MIME_TYPE, new LatteTranslator());
     }
     // If you change this, update the testcase reference
     private static final String GENERATED_IDENTIFIER = "__UNKNOWN__"; // NOI18N
@@ -246,8 +248,8 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             return embeddings;
         }
     } // End JspTranslator class
-    
-    
+
+
     private static final class XhtmlTranslator implements Translator {
 
         @Override
@@ -457,6 +459,53 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             return embeddings;
         }
     } // End of TwigTranslator class
+
+    private static final class LatteTranslator implements Translator {
+
+        @Override
+        public List<Embedding> translate(Snapshot snapshot) {
+            TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+            if (th == null) {
+                //likely the latte language couldn't be found
+                LOG.info("Cannot get TokenHierarchy from snapshot " + snapshot); //NOI18N
+                return Collections.emptyList();
+            }
+
+            TokenSequence<? extends TokenId> tokenSequence = th.tokenSequence();
+            List<Embedding> embeddings = new ArrayList<Embedding>();
+
+            JsAnalyzerState state = new JsAnalyzerState();
+            while (tokenSequence.moveNext()) {
+                Token<? extends TokenId> token = tokenSequence.token();
+
+                if (token.id().name().equals("T_HTML")) { //NOI18N
+                    TokenSequence<? extends HTMLTokenId> ts = tokenSequence.embedded(HTMLTokenId.language());
+                    if (ts == null) {
+                        continue;
+                    }
+                    extractJavaScriptFromHtml(snapshot, ts, state, embeddings);
+                } else if (token.id().name().equals("T_LATTE")) { // NOI18N
+                    if (state.in_inlined_javascript || state.in_javascript) {
+                        //find end of the latte
+                        boolean hasNext = false;
+                        while (token.id().name().equals("T_LATTE")) { // NOI18N
+                            hasNext = tokenSequence.moveNext();
+                            if (!hasNext) {
+                                break;
+                            }
+                            token = tokenSequence.token();
+                        }
+                        if (hasNext) {
+                            tokenSequence.movePrevious();
+                        }
+                        embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
+                    }
+                }
+            }
+
+            return embeddings;
+        }
+    } // End of LatteTranslator class
 
     private static final class RhtmlTranslator implements Translator {
 
