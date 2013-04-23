@@ -28,8 +28,9 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.gsf.embedding;
+package org.netbeans.modules.html.editor.embedding;
 
+import org.netbeans.modules.html.editor.embedding.CssHtmlTranslator;
 import java.util.regex.Matcher;
 import org.netbeans.modules.html.editor.test.TestBase;
 
