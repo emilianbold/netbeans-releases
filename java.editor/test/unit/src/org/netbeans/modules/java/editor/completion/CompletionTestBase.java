@@ -323,7 +323,7 @@ public class CompletionTestBase extends NbTestCase {
             out2.write(doc.getText(0, doc.getLength()));
             out2.close();
             
-            File goldenFile2 = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/java/editor/completion/JavaCompletionProviderTest/" + goldenFileName2);
+            File goldenFile2 = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/java/editor/completion/JavaCompletionProviderTest/" + version + goldenFileName2);
             File diffFile2 = new File(getWorkDir(), getName() + ".diff2");
             
             assertFile(output2, goldenFile2, diffFile2, new WhitespaceIgnoringDiff());
