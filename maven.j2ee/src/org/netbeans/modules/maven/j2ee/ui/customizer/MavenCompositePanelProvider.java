@@ -88,20 +88,20 @@ public final class MavenCompositePanelProvider implements ProjectCustomizer.Comp
     public static MavenCompositePanelProvider createFrameworks() {
         return new MavenCompositePanelProvider(FRAMEWORKS);
     }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 301)
-    public static MavenCompositePanelProvider createRun() {
-        return new MavenCompositePanelProvider(RUN);
-    }
     
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 351)
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 258)
     public static MavenCompositePanelProvider createJavaScriptLibraries() {
         return new MavenCompositePanelProvider(JS_LIBRARIES);
     }
     
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 375)
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 259)
     public static ProjectCustomizer.CompositeCategoryProvider createCssPreprocessors() {
         return CssPreprocessors.getDefault().createCustomizer();
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 301)
+    public static MavenCompositePanelProvider createRun() {
+        return new MavenCompositePanelProvider(RUN);
     }
 
 
