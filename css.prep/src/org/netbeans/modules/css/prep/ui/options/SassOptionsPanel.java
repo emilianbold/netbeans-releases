@@ -101,7 +101,9 @@ public final class SassOptionsPanel extends JPanel {
 
         // listeners
         sassPathTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
-        sassOutputOnErrorCheckBox.addItemListener(new DefaultItemListener());
+        DefaultItemListener defaultItemListener = new DefaultItemListener();
+        sassOutputOnErrorCheckBox.addItemListener(defaultItemListener);
+        sassDebugCheckBox.addItemListener(defaultItemListener);
     }
 
     public String getSassPath() {
@@ -118,6 +120,14 @@ public final class SassOptionsPanel extends JPanel {
 
     public void setSassOutputOnError(boolean outputOnError) {
         sassOutputOnErrorCheckBox.setSelected(outputOnError);
+    }
+
+    public boolean getSassDebug() {
+        return sassDebugCheckBox.isSelected();
+    }
+
+    public void setSassDebug(boolean debug) {
+        sassDebugCheckBox.setSelected(debug);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -146,6 +156,7 @@ public final class SassOptionsPanel extends JPanel {
         sassPathHintLabel = new JLabel();
         installSassLabel = new JLabel();
         sassOutputOnErrorCheckBox = new JCheckBox();
+        sassDebugCheckBox = new JCheckBox();
 
         sassPathLabel.setLabelFor(sassPathTextField);
         Mnemonics.setLocalizedText(sassPathLabel, NbBundle.getMessage(SassOptionsPanel.class, "SassOptionsPanel.sassPathLabel.text")); // NOI18N
@@ -178,6 +189,8 @@ public final class SassOptionsPanel extends JPanel {
 
         Mnemonics.setLocalizedText(sassOutputOnErrorCheckBox, NbBundle.getMessage(SassOptionsPanel.class, "SassOptionsPanel.sassOutputOnErrorCheckBox.text")); // NOI18N
 
+        Mnemonics.setLocalizedText(sassDebugCheckBox, NbBundle.getMessage(SassOptionsPanel.class, "SassOptionsPanel.sassDebugCheckBox.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -197,7 +210,9 @@ public final class SassOptionsPanel extends JPanel {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(sassPathSearchButton))))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(sassOutputOnErrorCheckBox)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(sassOutputOnErrorCheckBox)
+                    .addComponent(sassDebugCheckBox))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
@@ -216,7 +231,10 @@ public final class SassOptionsPanel extends JPanel {
                     .addComponent(sassPathHintLabel)
                     .addComponent(installSassLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(sassOutputOnErrorCheckBox))
+                .addComponent(sassOutputOnErrorCheckBox)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(sassDebugCheckBox)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -253,6 +271,7 @@ public final class SassOptionsPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel installSassLabel;
+    private JCheckBox sassDebugCheckBox;
     private JCheckBox sassOutputOnErrorCheckBox;
     private JButton sassPathBrowseButton;
     private JLabel sassPathHintLabel;

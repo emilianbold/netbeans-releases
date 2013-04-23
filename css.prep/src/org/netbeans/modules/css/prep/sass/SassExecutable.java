@@ -68,6 +68,7 @@ public final class SassExecutable {
     private static final Logger LOGGER = Logger.getLogger(SassExecutable.class.getName());
 
     public static final String EXECUTABLE_NAME = "sass"; // NOI18N
+    private static final String DEBUG_PARAM = "--debug-info"; // NOI18N
 
     private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
 
@@ -147,6 +148,11 @@ public final class SassExecutable {
 
     private List<String> getParameters(File inputFile, File outputFile) {
         List<String> params = new ArrayList<>();
+        // debug
+        boolean debug = CssPrepOptions.getInstance().getSassDebug();
+        if (debug) {
+            params.add(DEBUG_PARAM);
+        }
         // input
         params.add(inputFile.getAbsolutePath());
         // output
