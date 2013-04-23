@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.Action;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -85,9 +86,11 @@ public abstract class OutputTabMaintainer<TabContext> {
     
     
     protected final void markFreeTab() {
-        synchronized (freeTabs) {
-            assert io != null;
-            freeTabs.put(io, new AllContext<TabContext>(name, tabContextType(), createContext()));
+        if (MavenSettings.getDefault().isReuseOutputTabs()) { //given that the freeTabs is weak this might be unnecessary but who knows..
+            synchronized (freeTabs) {
+                assert io != null;
+                freeTabs.put(io, new AllContext<TabContext>(name, tabContextType(), createContext()));
+            }
         }
     }
     
@@ -107,26 +110,28 @@ public abstract class OutputTabMaintainer<TabContext> {
     }
     
     protected final InputOutput createInputOutput() {
-        synchronized (freeTabs) {
-            for (Map.Entry<InputOutput,AllContext<?>> entry : freeTabs.entrySet()) {
-                InputOutput free = entry.getKey();
-                AllContext<?> allContext = entry.getValue();
-                if (io == null && allContext.name.equals(name) && allContext.tabContextType == tabContextType()) {
-                    // Reuse it.
-                    io = free;
-                    reassignAdditionalContext(tabContextType().cast(allContext.tabContext));
-                    try {
-                        io.getOut().reset();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+        if (MavenSettings.getDefault().isReuseOutputTabs()) {
+            synchronized (freeTabs) {
+                for (Map.Entry<InputOutput,AllContext<?>> entry : freeTabs.entrySet()) {
+                    InputOutput free = entry.getKey();
+                    AllContext<?> allContext = entry.getValue();
+                    if (io == null && allContext.name.equals(name) && allContext.tabContextType == tabContextType()) {
+                        // Reuse it.
+                        io = free;
+                        reassignAdditionalContext(tabContextType().cast(allContext.tabContext));
+                        try {
+                            io.getOut().reset();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        // useless: io.flushReader();
+                    } else {
+                        // Discard it.
+                        free.closeInputOutput();
                     }
-                    // useless: io.flushReader();
-                } else {
-                    // Discard it.
-                    free.closeInputOutput();
                 }
+                freeTabs.clear();
             }
-            freeTabs.clear();
         }
         //                }
         if (io == null) {

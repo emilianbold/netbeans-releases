@@ -339,6 +339,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         btnOptions = new javax.swing.JButton();
         cbSkipTests = new javax.swing.JCheckBox();
         btnGoals = new javax.swing.JButton();
+        cbAlwaysShow = new javax.swing.JCheckBox();
+        cbReuse = new javax.swing.JCheckBox();
         pnlAppearance = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -383,6 +385,10 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbAlwaysShow, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbAlwaysShow.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbReuse, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbReuse.text")); // NOI18N
+
         javax.swing.GroupLayout pnlExecutionLayout = new javax.swing.GroupLayout(pnlExecution);
         pnlExecution.setLayout(pnlExecutionLayout);
         pnlExecutionLayout.setHorizontalGroup(
@@ -405,7 +411,12 @@ public class SettingsPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblExternalVersion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(comMavenHome, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(comMavenHome, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(pnlExecutionLayout.createSequentialGroup()
+                        .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cbAlwaysShow)
+                            .addComponent(cbReuse))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         pnlExecutionLayout.setVerticalGroup(
@@ -426,7 +437,11 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addComponent(cbSkipTests)
                 .addGap(18, 18, 18)
                 .addComponent(btnGoals)
-                .addContainerGap(93, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(cbReuse)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbAlwaysShow)
+                .addContainerGap(29, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlExecution, "execution");
@@ -624,7 +639,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addComponent(lblCategory)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pnlCards, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
+                    .addComponent(pnlCards, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -694,7 +709,9 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnGoals;
     private javax.swing.JButton btnIndex;
     private javax.swing.JButton btnOptions;
+    private javax.swing.JCheckBox cbAlwaysShow;
     private javax.swing.JComboBox cbProjectNodeNameMode;
+    private javax.swing.JCheckBox cbReuse;
     private javax.swing.JCheckBox cbSkipTests;
     private javax.swing.JComboBox comBinaries;
     private javax.swing.JComboBox comIndex;
@@ -806,6 +823,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         comJavadoc.setSelectedItem(MavenSettings.getDefault().getJavadocDownloadStrategy());
         comSource.setSelectedItem(MavenSettings.getDefault().getSourceDownloadStrategy());
         cbSkipTests.setSelected(MavenSettings.getDefault().isSkipTests());
+        cbAlwaysShow.setSelected(MavenSettings.getDefault().isAlwaysShowOutput());
+        cbReuse.setSelected(MavenSettings.getDefault().isReuseOutputTabs());
 
         final String pattern = MavenSettings.getDefault().getProjectNodeNamePattern();
         txtProjectNodeNameCustomPattern.setText("");
@@ -833,7 +852,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 txtProjectNodeNameCustomPattern.setText(pattern);
             }
         }
-
+        
         changed = false;  //#163955 - do not fire change events on load
     }
     
@@ -867,6 +886,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         MavenSettings.getDefault().setJavadocDownloadStrategy((MavenSettings.DownloadStrategy) comJavadoc.getSelectedItem());
         MavenSettings.getDefault().setSourceDownloadStrategy((MavenSettings.DownloadStrategy) comSource.getSelectedItem());
         MavenSettings.getDefault().setSkipTests(cbSkipTests.isSelected());
+        MavenSettings.getDefault().setAlwaysShowOutput(cbAlwaysShow.isSelected());
+        MavenSettings.getDefault().setReuseOutputTabs(cbReuse.isSelected());
+        
         if (0 == cbProjectNodeNameMode.getSelectedIndex()) {
             //selected "default" entry
             MavenSettings.getDefault().setProjectNodeNamePattern(null);
