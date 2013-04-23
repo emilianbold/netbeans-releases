@@ -513,11 +513,11 @@ public class TreeLoader extends LazyTreeLoader {
                             if (state == 11 || state == 21)
                                 state++;
                         } else if (t == HTML.Tag.DIV && a.containsAttribute(HTML.Attribute.CLASS, "block")) { //NOI18N
-                            if (state == 11) {
+                            if (state == 11 && signature != null && sb != null) {
                                 setParamNames(signature, sb.toString().trim(), true);
                                 signature = null;
                                 sb = null;
-                            } else if (state == 21) {
+                            } else if (state == 21 && signature != null && sb != null) {
                                 setParamNames(signature, sb.toString().trim(), false);
                                 signature = null;
                                 sb = null;
@@ -538,18 +538,18 @@ public class TreeLoader extends LazyTreeLoader {
 
                     @Override
                     public void handleText(char[] data, int pos) {
-                        if (signature != null && (state == 12 || state == 22))
+                        if (signature != null && sb != null && (state == 12 || state == 22))
                             sb.append(data);
                     }
 
                     @Override
                     public void handleSimpleTag(Tag t, MutableAttributeSet a, int pos) {
                         if (t == HTML.Tag.BR) {
-                            if (state == 11) {
+                            if (state == 11 && signature != null && sb != null) {
                                 setParamNames(signature, sb.toString().trim(), true);
                                 signature = null;
                                 sb = null;
-                            } else if (state == 21) {
+                            } else if (state == 21 && signature != null && sb != null) {
                                 setParamNames(signature, sb.toString().trim(), false);
                                 signature = null;
                                 sb = null;
