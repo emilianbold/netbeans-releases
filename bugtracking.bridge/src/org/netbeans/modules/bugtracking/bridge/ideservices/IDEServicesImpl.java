@@ -76,7 +76,7 @@ public class IDEServicesImpl implements IDEServices {
                         "# {0} - to be opened documents path",  "MSG_CannotOpen=Couldn't open document for {0}",
                         "# {0} - to be found documents path",  "MSG_CannotFind=Couldn't find document for {0}"})
     public void openDocument(final String path, final int offset) {
-        final FileObject fo = searchResource(path);
+        final FileObject fo = findFile(path);
         if ( fo != null ) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -98,15 +98,15 @@ public class IDEServicesImpl implements IDEServices {
     }
 
     @Override
-    public boolean providesSearchResource() {
+    public boolean providesFindFile() {
         return true;
     }
     
     @Override
-    public FileObject searchResource(String path) {
-        return GlobalPathRegistry.getDefault().findResource(path);
+    public FileObject findFile(String resourcePath) {
+        return GlobalPathRegistry.getDefault().findResource(resourcePath);
     }    
-
+    
     @Override
     public boolean providesJumpTo() {
         return true;

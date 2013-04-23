@@ -280,8 +280,8 @@ class StackTraceSupport {
 
     static class StackTracePosition {
         private final StackTraceElement[] stackTraceElements;
-        private int start;
-        private int end;
+        private final int start;
+        private final int end;
         StackTracePosition(StackTraceElement[] stackTraceElements, int start, int end) {
             this.stackTraceElements = stackTraceElements;
             this.start = start;
@@ -307,17 +307,12 @@ class StackTraceSupport {
 
     static boolean isAvailable() {
         IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
-        return ideServices != null && ideServices.providesOpenDocument() && ideServices.providesSearchResource();
+        return ideServices != null && ideServices.providesOpenDocument() && ideServices.providesFindFile();
     }
     
     private static void openSearchHistory(String path, final int line) {
-        final FileObject fo = search(path);
-        if ( fo != null ) {
-            final File file = FileUtil.toFile(fo);
-            if(file == null) {
-                // XXX any chance to disable the action if it's not a real io.File - e.g. a jdk class?
-                return;
-            }
+        final File file = findFile(path);
+        if ( file != null ) {
             Collection<? extends VCSAccessor> supports = Lookup.getDefault().lookupAll(VCSAccessor.class);
             if(supports == null) {
                 return;
@@ -334,10 +329,13 @@ class StackTraceSupport {
         }
     }
 
-    private static FileObject search(String path) {
+    private static File findFile(String path) {
         IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
         if(ideServices != null) {
-            return ideServices.searchResource(path);
+            FileObject fo = ideServices.findFile(path);
+            if(fo != null) {
+                return FileUtil.toFile(fo);
+            }
         }
         return null;
     }
