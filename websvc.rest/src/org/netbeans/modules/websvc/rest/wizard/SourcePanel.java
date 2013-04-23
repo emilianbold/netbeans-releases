@@ -46,4 +46,5 @@ import org.netbeans.api.project.SourceGroup;
 
 public interface SourcePanel {
     SourceGroup getSourceGroup();
+    String getPackageName();
 }

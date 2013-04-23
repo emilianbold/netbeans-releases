@@ -730,6 +730,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         SymTab st;
         if(name != null) {
             st = globalSymTab.push(name);
+            enterNestedScopes(((SimpleDeclarationBuilder) top).getScopeNames());
         } else {
             st = globalSymTab.push();
         }
@@ -1088,30 +1089,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         CsmObjectBuilder parent = builderContext.top();
         
         if (parent instanceof ConstructorDefinitionBuilder || parent instanceof FunctionDefinitionBuilder) {
-            CharSequence[] scopeNames = ((SimpleDeclarationBuilder) parent).getScopeNames();
-            
-            if (scopeNames != null && scopeNames.length > 0) {
-                int firstSignificantNamePart = 0;
-                
-                if (scopeNames[0].length() == 0) {
-                    // Name is a fully qualified name. Since it is possible to define function or constructor only in enclosing namespace,
-                    // we could just skip common part
-                    firstSignificantNamePart = globalSymTab.getSize() - 1;
-                }
-                
-                for (int i = firstSignificantNamePart; i < scopeNames.length; i++) {
-                    CharSequence part = scopeNames[i];
-
-                    SymTabEntry classEntry = globalSymTab.lookup(part);
-                    SymTab st = null;
-                    if (classEntry != null) {
-                        st = (SymTab)classEntry.getAttribute(CppAttributes.SYM_TAB);
-                    }
-                    if(st != null) {
-                        globalSymTab.importToLocal(st);
-                    }
-                }
-            }            
+            enterNestedScopes(((SimpleDeclarationBuilder) parent).getScopeNames());
         }
         
         CompoundStatementBuilder builder = new CompoundStatementBuilder();
@@ -1803,10 +1781,21 @@ public class CppParserActionImpl implements CppParserActionEx {
 
     private SymTabStack createGlobal() {
         SymTabStack out = SymTabStack.create();
-        // TODO: need to push symtab for predefined types
+        // TODO: need to push symtab for predefined types                      
         
         // create global level 
-        out.push();
+        out.push();               
+        
+        // 1. Add namespace std to global level
+        CharSequence stdName = CharSequences.create("std");  // NOI18N
+        SymTabEntry entry = out.enterLocal(stdName); 
+        
+        out.push(stdName);
+        SymTab st = out.pop();
+        
+        entry.setAttribute(CppAttributes.SYM_TAB, st);        
+        entry.setAttribute(CppAttributes.TYPE, true);        
+        
         return out;
     }
 
@@ -2774,16 +2763,48 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     private void parameters_and_qualifiers_impl(int kind, Token token) {
         if(kind == PARAMETERS_AND_QUALIFIERS__LPAREN) {
+            CsmObjectBuilder parent = builderContext.top();
+
+            // In case of definition of function/constructor which was declared previously we would have scopes in the name
+            if (parent instanceof DeclaratorBuilder) {
+                DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) parent;
+                
+                if (declaratorBuilder.getNameBuilder() != null) {
+                    
+                    List<CharSequence> nameParts = declaratorBuilder.getNameBuilder().getNameParts();
+                    
+                    if (nameParts.size() > 1) {
+                        globalSymTab.push();
+                        enterNestedScopes(nameParts.subList(0, nameParts.size() - 1));
+                    }
+                }
+            }            
+            
             FunctionParameterListBuilder builder = new FunctionParameterListBuilder();
             builder.setFile(currentContext.file);
             builder.setStartOffset(((APTToken)token).getOffset());
             builderContext.push(builder);
-        } else if(kind == PARAMETERS_AND_QUALIFIERS__RPAREN) {
+        } else if(kind == PARAMETERS_AND_QUALIFIERS__RPAREN) {                    
             FunctionParameterListBuilder builder = (FunctionParameterListBuilder) builderContext.top();
             builder.setEndOffset(((APTToken)token).getEndOffset());
             builderContext.pop();
             if(builderContext.top(1) instanceof SimpleDeclarationBuilder) {
                 ((SimpleDeclarationBuilder)builderContext.top(1)).setParametersListBuilder(builder);
+            }
+            
+            CsmObjectBuilder parent = builderContext.top();
+            
+            // We must remove symtab if it was added previously
+            if (parent instanceof DeclaratorBuilder) {
+                DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) parent;
+                
+                if (declaratorBuilder.getNameBuilder() != null) {
+                    List<CharSequence> nameParts = declaratorBuilder.getNameBuilder().getNameParts();
+                    
+                    if (nameParts.size() > 1) {
+                        globalSymTab.pop();
+                    }
+                }
             }
         }
     }
@@ -3383,8 +3404,32 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void end_conversion_function_id(Token token) {}
     @Override public void conversion_type_id(Token token) {}
     @Override public void end_conversion_type_id(Token token) {}
-    @Override public void ctor_initializer(Token token) {}
-    @Override public void end_ctor_initializer(Token token) {}
+    
+    @Override 
+    public void ctor_initializer(Token token) {
+        CsmObjectBuilder parent = builderContext.top();
+        
+        if (parent instanceof ConstructorDefinitionBuilder) { // paranoia
+            CharSequence[] scopeNames = ((SimpleDeclarationBuilder) parent).getScopeNames();
+            if (scopeNames != null && scopeNames.length > 0) {
+                globalSymTab.push();
+                enterNestedScopes(((SimpleDeclarationBuilder) parent).getScopeNames());
+            }
+        }
+    }
+    
+    @Override 
+    public void end_ctor_initializer(Token token) {
+        CsmObjectBuilder parent = builderContext.top();
+        
+        if (parent instanceof ConstructorDefinitionBuilder) {
+            CharSequence[] scopeNames = ((SimpleDeclarationBuilder) parent).getScopeNames();
+            if (scopeNames != null && scopeNames.length > 0) {
+                globalSymTab.pop(); // pop symtab only if it has been added                
+            }
+        }        
+    }
+    
     @Override public void mem_initializer_list(Token token) {}
     @Override public void mem_initializer_list(int kind, Token token) {}
     @Override public void end_mem_initializer_list(Token token) {}
@@ -3692,6 +3737,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         
         SymTabEntry entry = globalSymTab.enterLocal(name);
         
+        // elaborated type
         if (declBuilder.getTypeBuilder() != null && declBuilder.getDeclaratorBuilder() == null) {
             entry.setAttribute(CppAttributes.TYPE, true);
         }
@@ -3699,6 +3745,39 @@ public class CppParserActionImpl implements CppParserActionEx {
         if (declBuilder.getTemplateDescriptorBuilder() != null) {
             entry.setAttribute(CppAttributes.TEMPLATE, true);
         }
+    }
+        
+    private void enterNestedScopes(CharSequence[] scopeNames) {
+        if (scopeNames != null && scopeNames.length > 0) {
+            enterNestedScopes(Arrays.asList(scopeNames));
+        }
+    }
+    
+    private void enterNestedScopes(List<CharSequence> scopeNames) {
+        if (scopeNames != null && scopeNames.size() > 0) {
+            int firstSignificantNamePart = 0;
+            
+            if (scopeNames.get(0).length() == 0) {
+                // Name is a fully qualified name. Since it is possible to define function or constructor only in enclosing namespace,
+                // we could just skip common part
+                firstSignificantNamePart = globalSymTab.getSize() - 1;
+            }
+            
+            Iterator<CharSequence> iter = scopeNames.listIterator(firstSignificantNamePart);
+            
+            while (iter.hasNext()) {
+                CharSequence part = iter.next();
+
+                SymTabEntry classEntry = globalSymTab.lookup(part);
+                SymTab st = null;
+                if (classEntry != null) {
+                    st = (SymTab)classEntry.getAttribute(CppAttributes.SYM_TAB);
+                }
+                if(st != null) {
+                    globalSymTab.importToLocal(st);
+                }
+            }
+        }        
     }
     
 }

@@ -75,6 +75,8 @@ public final class DocumentSerializer {
 
     private volatile boolean loaded = false;
     private volatile boolean loading = false;
+    
+    private static final RequestProcessor RP = new RequestProcessor(DocumentSerializer.class);
 
     private Runnable loader = new Runnable () {
         public void run () {
@@ -140,7 +142,7 @@ public final class DocumentSerializer {
                 return;
             loading = true;
 
-            RequestProcessor.getDefault ().post (loader);
+            RP.post(loader);
         }
     }
 

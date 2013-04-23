@@ -54,6 +54,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.MavenCommandLineExecutor;
 import org.netbeans.modules.maven.execute.MavenExecutor;
+import org.netbeans.modules.maven.execute.ProxyNonSelectableInputOutput;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -138,7 +139,7 @@ public final class RunUtils {
     }
     
     private static ExecutorTask executeMavenImpl(String runtimeName, final MavenExecutor exec) {
-        ExecutorTask task =  ExecutionEngine.getDefault().execute(runtimeName, exec, exec.getInputOutput());
+        ExecutorTask task =  ExecutionEngine.getDefault().execute(runtimeName, exec, new ProxyNonSelectableInputOutput(exec.getInputOutput()));
         exec.setTask(task);
         return task;
     }

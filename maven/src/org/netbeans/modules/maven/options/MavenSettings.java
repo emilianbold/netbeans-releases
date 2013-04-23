@@ -80,6 +80,8 @@ public final class MavenSettings  {
     private static final String PROP_SKIP_TESTS = "skipTests"; //NOI18N
     private static final String PROP_MAVEN_RUNTIMES = "mavenRuntimes"; //NOI18N
     public static final String PROP_PROJECTNODE_NAME_PATTERN = "project.displayName"; //NOI18N
+    private static final String PROP_ALWAYS_OUTPUT = "alwaysShowOutput";
+    private static final String PROP_REUSE_OUTPUT = "reuseOutputTabs";
 
     //these are from former versions (6.5) and are here only for conversion
     private static final String PROP_DEBUG = "showDebug"; // NOI18N
@@ -88,7 +90,7 @@ public final class MavenSettings  {
     private static final String PROP_PLUGIN_POLICY = "pluginUpdatePolicy"; //NOI18N
     private static final String PROP_FAILURE_BEHAVIOUR = "failureBehaviour"; //NOI18N
     private static final String PROP_USE_REGISTRY = "usePluginRegistry"; //NOI18N
-    
+      
     private static final MavenSettings INSTANCE = new MavenSettings();
     
     public static MavenSettings getDefault() {
@@ -252,7 +254,22 @@ public final class MavenSettings  {
     public void setSkipTests(boolean skipped) {
         getPreferences().putBoolean(PROP_SKIP_TESTS, skipped);
     }
+    
+    public boolean isAlwaysShowOutput() {
+        return getPreferences().getBoolean(PROP_ALWAYS_OUTPUT, true);
+    }
 
+    public void setAlwaysShowOutput(boolean show) {
+        getPreferences().putBoolean(PROP_ALWAYS_OUTPUT, show);
+    }
+    
+    public boolean isReuseOutputTabs() {
+        return getPreferences().getBoolean(PROP_REUSE_OUTPUT, true);
+    }
+
+    public void setReuseOutputTabs(boolean reuse) {
+        getPreferences().putBoolean(PROP_REUSE_OUTPUT, reuse);
+    }
     
     public String getLastArchetypeVersion() {
         return getPreferences().get(PROP_LAST_ARCHETYPE_VERSION, "1.0-SNAPSHOT"); //NOI18N

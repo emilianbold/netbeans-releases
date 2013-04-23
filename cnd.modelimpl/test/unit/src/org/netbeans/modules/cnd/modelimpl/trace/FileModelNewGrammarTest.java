@@ -110,6 +110,18 @@ public class FileModelNewGrammarTest extends TraceModelTestBase {
         performTest("clearingImportedSymbols.cpp");
     }    
     
+    public void testMultipleDeclarativeRegions() throws Exception {
+        performTest("multipleDeclarativeRegions.cpp");
+    }
+    
+    public void testNestedClassScope() throws Exception {
+        performTest("nestedClassScope.cpp");
+    }    
+    
+    public void testConstructorInitializerListScope() throws Exception {
+        performTest("constructorInitializerListScope.cpp");
+    }    
+    
 //    public void testMultipleMemberDeclaration() throws Exception {
 //        performTest("typedefEnum.cpp");
 //    } 

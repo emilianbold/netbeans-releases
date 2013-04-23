@@ -70,6 +70,7 @@ import static org.netbeans.modules.maven.execute.AbstractOutputHandler.SESSION_E
 import org.netbeans.modules.maven.execute.cmd.ExecMojo;
 import org.netbeans.modules.maven.execute.cmd.ExecProject;
 import org.netbeans.modules.maven.execute.cmd.ExecSession;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -404,6 +405,13 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 trimTree(obj);
             } else if (ExecutionEvent.Type.ForkedProjectFailed.equals(obj.type) || ExecutionEvent.Type.ForkedProjectSucceeded.equals(obj.type)) {
                 trimTree(obj);
+            } else if (!MavenSettings.getDefault().isAlwaysShowOutput() && ExecutionEvent.Type.SessionEnded.equals(obj.type)) {
+                for (ExecutionEventObject.Tree node : executionTree.childrenNodes) {
+                    if (node.endEvent != null && ExecutionEvent.Type.ProjectFailed.equals(node.endEvent.type)) {
+                        getIO().select();
+                        break;
+                    }
+                }
             }
         }
 

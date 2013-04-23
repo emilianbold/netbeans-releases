@@ -43,16 +43,25 @@ package org.netbeans.modules.maven.j2ee.ui.customizer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.modules.maven.j2ee.J2eeMavenSourcesImpl;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerFrameworks;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunEar;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunEjb;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraryCustomizerPanel;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -62,6 +71,7 @@ import org.openide.util.NbBundle;
  */
 public final class MavenCompositePanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
+    private static final String JS_LIBRARIES = "JavaScript-Libraries"; // NOI18N
     private static final String FRAMEWORKS = "Frameworks"; // NOI18N
     private static final String RUN = "Run"; // NOI18N
 
@@ -84,12 +94,23 @@ public final class MavenCompositePanelProvider implements ProjectCustomizer.Comp
     public static MavenCompositePanelProvider createRun() {
         return new MavenCompositePanelProvider(RUN);
     }
+    
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position=351)
+    public static MavenCompositePanelProvider createJavaScriptLibraries() {
+        return new MavenCompositePanelProvider(JS_LIBRARIES);
+    }
 
 
     @Override
     public Category createCategory(Lookup context) {
         Project project = context.lookup(Project.class);
         String projectType = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
+        
+        if (JS_LIBRARIES.equals(type)) {
+            if (NbMavenProject.TYPE_WAR.equalsIgnoreCase(projectType) == false) {
+                return null; // We want to create JavaScript libraries customizer only for Maven Web Project
+            }
+        }
         if (FRAMEWORKS.equals(type)) {
             if (NbMavenProject.TYPE_WAR.equalsIgnoreCase(projectType) == false) {
                 return null; // We want to create Framework customizer only for Maven Web Project
@@ -110,11 +131,33 @@ public final class MavenCompositePanelProvider implements ProjectCustomizer.Comp
     public JComponent createComponent(Category category, Lookup context) {
         String name = category.getName();
         ModelHandle2 handle = context.lookup(ModelHandle2.class);
-        Project project = context.lookup(Project.class);
+        final Project project = context.lookup(Project.class);
 
         category.setOkButtonListener(listenerAWT);
         category.setStoreListener(listenerNonAWT);
 
+        if (JS_LIBRARIES.equals(name)) {
+            return new JavaScriptLibraryCustomizerPanel(category, new JavaScriptLibraryCustomizerPanel.CustomizerSupport() {
+    
+                @Override
+                public File getWebRoot() {
+                    Sources srcs = ProjectUtils.getSources(project);
+                    SourceGroup[] grp = srcs.getSourceGroups(J2eeMavenSourcesImpl.TYPE_DOC_ROOT);
+                    if (grp.length > 0) {
+                        return FileUtil.toFile(grp[0].getRootFolder());
+                    }
+                    return null;
+                }
+
+                @Override
+                public void setLibrariesFolder(String librariesFolder) {
+                }
+
+                @Override
+                public void setSelectedLibraries(List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
+                }
+            });
+        }
         if (FRAMEWORKS.equals(name)) {
             frameworkCustomizer = new CustomizerFrameworks(category, project);
             return frameworkCustomizer;
