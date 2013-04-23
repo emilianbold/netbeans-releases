@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.html.angular;
 
+import org.netbeans.modules.html.angular.model.AngularModel;
+import org.netbeans.modules.html.angular.model.Directive;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -120,7 +122,7 @@ public class AngularHtmlExtension extends HtmlExtension {
 
     @Override
     public boolean isCustomAttribute(Attribute attribute) {
-        return AngularDirective.isAngularAttribute(attribute);
+        return Directive.isAngularAttribute(attribute);
     }
 
     @Override

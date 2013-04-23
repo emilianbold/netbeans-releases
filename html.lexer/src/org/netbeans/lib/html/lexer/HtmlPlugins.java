@@ -43,7 +43,7 @@ package org.netbeans.lib.html.lexer;
 
 import java.util.Collection;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.html.lexer.HtmlExpression;
+import org.netbeans.api.html.lexer.HtmlLexerPlugin;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -52,24 +52,25 @@ import org.openide.util.LookupListener;
  *
  * @author marekfukala
  */
-public class HtmlExpressions {
+public class HtmlPlugins {
     
-    private static HtmlExpressions DEFAULT;
+    private static HtmlPlugins DEFAULT;
 
-    public static synchronized HtmlExpressions getDefault() {
+    public static synchronized HtmlPlugins getDefault() {
         if(DEFAULT == null) {
-            DEFAULT = new HtmlExpressions();
+            DEFAULT = new HtmlPlugins();
         }
         return DEFAULT;
     }
     
-    private Lookup.Result<HtmlExpression> lookupResult;
-    
+    private Lookup.Result<HtmlLexerPlugin> lookupResult;
+    private Collection<? extends HtmlLexerPlugin> plugins;
     private String[][] data;
     
-    private HtmlExpressions() {
-        Lookup lookup = MimeLookup.getLookup("text/html");
-        lookupResult = lookup.lookupResult(HtmlExpression.class);
+    private HtmlPlugins() {
+//        Lookup lookup = MimeLookup.getLookup("text/html");
+        Lookup lookup = Lookup.getDefault();
+        lookupResult = lookup.lookupResult(HtmlLexerPlugin.class);
         lookupResult.addLookupListener(new LookupListener() {
 
             @Override
@@ -82,10 +83,11 @@ public class HtmlExpressions {
     }
     
     private void refresh() {
-        Collection<? extends HtmlExpression> allInstances = lookupResult.allInstances();
+        Collection<? extends HtmlLexerPlugin> allInstances = lookupResult.allInstances();
+        plugins = allInstances;
         data = new String[3][allInstances.size()];
         int idx = 0;
-        for(HtmlExpression fact : allInstances) {
+        for(HtmlLexerPlugin fact : allInstances) {
             data[0][idx] = fact.getOpenDelimiter();
             data[1][idx] = fact.getCloseDelimiter();
             data[2][idx] = fact.getContentMimeType();
@@ -104,4 +106,13 @@ public class HtmlExpressions {
         return data[2];
     }
     
+    public String createAttributeEmbedding(String elementName, String attributeName) {
+        for (HtmlLexerPlugin plugin : plugins) {
+            String embeddingMimeType = plugin.createAttributeEmbedding(elementName, attributeName);
+            if(embeddingMimeType != null) {
+                return embeddingMimeType;
+            }
+        }
+        return null;
+    }
 }

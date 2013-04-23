@@ -50,7 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.*;
 import org.netbeans.lib.html.lexer.HtmlLexer;
-import org.netbeans.lib.html.lexer.HtmlExpressions;
+import org.netbeans.lib.html.lexer.HtmlPlugins;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -192,96 +192,77 @@ public enum HTMLTokenId implements TokenId {
         @Override
         protected LanguageEmbedding embedding(
                 Token<HTMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-            if (LOG) {
-                LOGGER.log(Level.FINE,
-                        String.format("HTMLTokenId$Language<HTMLTokenId>.embedding(...) called on removed token with %s token id. LanguagePath: %s", token.id(), languagePath),
-                        new IllegalStateException()); //NOI18N
-            }
-
             String mimeType = null;
+            int startSkipLen = 0;
+            int endSkipLen = 0;
+            boolean joinSections = true;
+            
             switch (token.id()) {
-                // BEGIN TOR MODIFICATIONS
                 case VALUE_JAVASCRIPT:
                     mimeType = JAVASCRIPT_MIMETYPE;
-                    if (mimeType != null) {
-                        Language lang = Language.find(mimeType);
-                        if (lang == null) {
-                            return null; //no language found
-                        } else {
-                            // TODO:
-                            // XXX Don't handle JavaScript for non-quoted attributes
-                            // (Or use separate state so I can do 0,0 as offsets there
-
-                            // Marek: AFAIK value of the onSomething methods is always javascript
-                            // so having the attribute unqouted doesn't make much sense -  the html spec
-                            // allows only a-zA-Z characters in unqouted values so I belive
-                            // it is not possible to write reasonable js code - it ususally
-                            // contains some whitespaces, brackets, quotations etc.
-
-                            PartType ptype = token.partType();
-                            int startSkipLength = ptype == PartType.COMPLETE || ptype == PartType.START ? 1 : 0;
-                            int endSkipLength = ptype == PartType.COMPLETE || ptype == PartType.END ? 1 : 0;
-                            //do not join css code sections in attribute value between each other,
-                            //only token parts inside one value
-                            return LanguageEmbedding.create(
-                                    lang,
-                                    startSkipLength,
-                                    endSkipLength,
-                                    (ptype == PartType.END || ptype == PartType.COMPLETE) ? false : true);
-                        }
-                    }
+                    
+                    PartType ptype = token.partType();
+                    startSkipLen = ptype == PartType.COMPLETE || ptype == PartType.START ? 1 : 0;
+                    endSkipLen = ptype == PartType.COMPLETE || ptype == PartType.END ? 1 : 0;
+                    //do not join css code sections in attribute value between each other, only token parts inside one value
+                    joinSections = !(ptype == PartType.END || ptype == PartType.COMPLETE);
                     break;
-                // END TOR MODIFICATIONS
+                    
                 case VALUE_CSS:
                     mimeType = STYLE_MIMETYPE;
-                    if (mimeType != null) {
-                        Language lang = Language.find(mimeType);
-                        if (lang == null) {
-                            return null; //no language found
-                        } else {
-                            PartType ptype = token.partType();
-                            if (token.isRemoved()) {
-                                //strange, but sometimes the embedding is requested on removed token which has null image
-                                return null;
-                            }
-                            char firstChar = token.text().charAt(0);
-                            boolean quoted = firstChar == '\'' || firstChar == '"';
-                            int startSkipLength = quoted && (ptype == PartType.COMPLETE || ptype == PartType.START) ? 1 : 0;
-                            int endSkipLength = quoted && (ptype == PartType.COMPLETE || ptype == PartType.END) ? 1 : 0;
-
-                            //do not join css code sections in attribute value between each other,
-                            //only token parts inside one value
-                            return LanguageEmbedding.create(
-                                    lang,
-                                    startSkipLength,
-                                    endSkipLength,
-                                    (ptype == PartType.END || ptype == PartType.COMPLETE) ? false : true);
-                        }
-                    }
+                    
+                    ptype = token.partType();
+                    startSkipLen = ptype == PartType.COMPLETE || ptype == PartType.START ? 1 : 0;
+                    endSkipLen = ptype == PartType.COMPLETE || ptype == PartType.END ? 1 : 0;
+                    //do not join css code sections in attribute value between each other, only token parts inside one value
+                    joinSections = !(ptype == PartType.END || ptype == PartType.COMPLETE);
                     break;
+                    
+                case VALUE:
+                    //HtmlLexerPlugin can inject a custom embdedding to html tag attributes,
+                    //then the embedding mimetype is set to the value token property
+                    mimeType = (String)token.getProperty(HtmlLexer.ATTRIBUTE_VALUE_EMBEDDING_MIMETYPE_TOKEN_PROPERTY_KEY);
+                        
+                    ptype = token.partType();
+                    startSkipLen = ptype == PartType.COMPLETE || ptype == PartType.START ? 1 : 0;
+                    endSkipLen = ptype == PartType.COMPLETE || ptype == PartType.END ? 1 : 0;
+                    //do not join css code sections in attribute value between each other, only token parts inside one value
+                    joinSections = !(ptype == PartType.END || ptype == PartType.COMPLETE);
+                    break;
+                    
                 case SCRIPT:
                     String scriptType = (String)token.getProperty(SCRIPT_TYPE_TOKEN_PROPERTY);
                     if(scriptType == null || JAVASCRIPT_MIMETYPE.equals(scriptType)) {
                         mimeType = JAVASCRIPT_MIMETYPE;
                     }
                     break;
+                    
                 case STYLE:
                     mimeType = STYLE_MIMETYPE;
                     break;
+                    
                 case EL_CONTENT:
                     Byte elContentProviderIndex = (Byte)token.getProperty(HtmlLexer.EL_CONTENT_PROVIDER_INDEX);
                     if(elContentProviderIndex != null) {
                         //set the token's mimetype
-                        mimeType = HtmlExpressions.getDefault().getMimeTypes()[elContentProviderIndex];
+                        mimeType = HtmlPlugins.getDefault().getMimeTypes()[elContentProviderIndex];
                     }
                     break;
             }
+            
+            if (LOG) {
+                LOGGER.log(Level.FINE,
+                        String.format("creating embedding for %s on %s (%s)", mimeType, token.text() != null ? token.text().toString() : "no-text", token.id())); //NOI18N
+            }
+            
             if (mimeType != null) {
                 Language lang = Language.find(mimeType);
                 if (lang == null) {
+                        LOGGER.log(Level.FINE,
+                        String.format("can't find language for mimetype %s!", mimeType)); //NOI18N
                     return null; //no language found
                 } else {
-                    return LanguageEmbedding.create(lang, 0, 0, true);
+                    return LanguageEmbedding.create(lang, startSkipLen, endSkipLen, joinSections);
                 }
             }
             return null;

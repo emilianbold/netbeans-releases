@@ -39,37 +39,59 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.api.html.lexer;
-
-import org.netbeans.api.annotations.common.NonNull;
+package org.netbeans.modules.html.angular.model;
 
 /**
- * <b>NOT FOR PUBLIC USE!!!</b> Prototype - not final version!!! An API review will run, this is a public API.
- * 
- * HtmlLexer extension - allows to inject custom expression languages into html content.
- * 
- * To be registered in mime lookup.
  *
  * @author marekfukala
  */
-public interface HtmlExpression {
-    
-    /**
-     * "{{"
-     */
-    @NonNull
-    public String getOpenDelimiter();
+public enum DirectiveType {
 
     /**
-     * "}}"
+     * Directive has no value.
+     *
+     * For example ngChange.
      */
-    @NonNull
-    public String getCloseDelimiter();
-    
+    noValue,
     /**
-     * "text/javascript"
+     * {expression} – Expression to evaluate.
+     *
+     * Used for example by nbBind.
      */
-    @NonNull
-    public String getContentMimeType();
-    
+    expression,
+    /**
+     * {string} – template of form {{ expression }} to eval.
+     *
+     * Used for example by ngBindTemplate.
+     */
+    string,
+    /**
+     * {angular.Module} – an optional application module name to load.
+     *
+     * Used by ngApp. http://docs.angularjs.org/api/ng.directive:ngApp
+     */
+    angularModule,
+    /**
+     * {template} – any string which can contain {{}} markup.
+     *
+     * Used for example by ngHref.
+     */
+    template,
+    /**
+     * ngRepeat – {repeat_expression} – The expression indicating how to
+     * enumerate a collection. 
+     * 
+     * Two formats are currently supported: variable in
+     * expression – where variable is the user defined loop variable and
+     * expression is a scope expression giving the collection to enumerate.
+     *
+     * For example: track in cd.tracks.
+     *
+     * (key, value) in expression – where key and value can be any user defined
+     * identifiers, and expression is the scope expression giving the collection
+     * to enumerate.
+     *
+     * For example: (name, age) in {'adam':10, 'amalie':12}.
+     */
+    repeatExpression,
 }

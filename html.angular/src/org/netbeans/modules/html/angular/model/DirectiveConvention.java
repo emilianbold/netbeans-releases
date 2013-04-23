@@ -39,31 +39,16 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
-
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.html.lexer.HtmlExpression;
+package org.netbeans.modules.html.angular.model;
 
 /**
+ * Angular directive attribute form convention.
  *
  * @author marekfukala
  */
-@MimeRegistration(mimeType = "text/html", service = HtmlExpression.class)
-public class AngularHtmlExpression implements HtmlExpression {
-
-    @Override
-    public String getOpenDelimiter() {
-        return "{{"; //NOI18N
-    }
-
-    @Override
-    public String getCloseDelimiter() {
-        return "}}"; //NOI18N
-    }
-
-    @Override
-    public String getContentMimeType() {
-        return "text/javascript"; //NOI18N
-    }
-    
+public enum DirectiveConvention {
+    /**
+     * The base attribute name convention "ng-" + directive name
+     */
+    base;
 }
