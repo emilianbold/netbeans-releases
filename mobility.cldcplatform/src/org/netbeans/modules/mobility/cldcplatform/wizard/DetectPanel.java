@@ -82,6 +82,8 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.*;
 import java.net.URL;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**
  *
@@ -553,7 +555,41 @@ public class DetectPanel extends javax.swing.JPanel {
     
     public void storeSettings(final WizardDescriptor descriptor) {
         stop = true;
+        for (J2MEPlatform jp : getPlatforms()) {
+            jp.setName(createAntName(jp.getName()));
+        }
         descriptor.putProperty(PROP_PLATFORMS, getPlatforms());
+    }
+    
+    private static String createAntName(String name) {
+        if (name == null || name.length() == 0) {
+            throw new IllegalArgumentException();
+        }
+        String antName = PropertyUtils.getUsablePropertyName(name);
+        if (platformExists(antName)) {
+            String baseName = antName;
+            int index = 1;
+            antName = baseName + Integer.toString(index);
+            while (platformExists(antName)) {
+                index++;
+                antName = baseName + Integer.toString(index);
+            }
+        }
+        return antName;
+    }
+
+    private static boolean platformExists(String antName) {
+        JavaPlatformManager mgr = JavaPlatformManager.getDefault();
+        JavaPlatform[] platforms = mgr.getInstalledPlatforms();
+        for (int i = 0; i < platforms.length; i++) {
+            if (platforms[i] instanceof J2MEPlatform) {
+                String val = ((J2MEPlatform) platforms[i]).getName();
+                if (antName.equals(val)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
     public J2MEPlatform[] getPlatforms() {
