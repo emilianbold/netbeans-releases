@@ -213,6 +213,10 @@ public final class Model {
         writeObject(printer, getGlobalObject(), resolve ? parserResult : null);
     }
 
+    public void writeObject(Printer printer, JsObject object, boolean resolve) {
+        writeObject(printer, object, resolve ? parserResult : null);
+    }
+
     public static void writeObject(Printer printer, JsObject object, @NullAllowed JsParserResult parseResult) {
         StringBuilder sb = new StringBuilder();
         writeObject(printer, object, parseResult, sb, "", new HashSet<JsObject>()); // NOI18N

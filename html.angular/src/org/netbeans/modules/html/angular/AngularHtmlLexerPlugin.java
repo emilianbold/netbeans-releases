@@ -41,20 +41,45 @@
  */
 package org.netbeans.modules.html.angular;
 
-import java.awt.Color;
-import javax.swing.ImageIcon;
-import org.openide.util.ImageUtilities;
+//import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.html.lexer.HtmlLexerPlugin;
+import org.netbeans.modules.html.angular.model.Directive;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author marekfukala
  */
-public class Constants {
+//@MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
+@ServiceProvider(service = HtmlLexerPlugin.class)
+public class AngularHtmlLexerPlugin implements HtmlLexerPlugin {
+
+    @Override
+    public String getOpenDelimiter() {
+        return "{{"; //NOI18N
+    }
+
+    @Override
+    public String getCloseDelimiter() {
+        return "}}"; //NOI18N
+    }
+
+    @Override
+    public String getContentMimeType() {
+        return Constants.JAVASCRIPT_MIMETYPE; //NOI18N
+    }
+
+    @Override
+    public String createAttributeEmbedding(String elementName, String attributeName) {
+        //TODO take the element into account!
+        Directive directive = Directive.getDirective(attributeName);
+        if(directive != null) {
+            switch(directive.getType()) {
+                case expression:
+                    return Constants.JAVASCRIPT_MIMETYPE;
+            }
+        }
+        return null;
+    }
     
-    public static final ImageIcon ANGULAR_ICON =
-                ImageUtilities.loadImageIcon("org/netbeans/modules/html/angular/resources/AngularJS_icon_16.png", false); // NOI18N
-    
-    public static final Color ANGULAR_COLOR = Color.red.darker();
-    
-    public static final String JAVASCRIPT_MIMETYPE = "text/javascript"; //NOI18N
 }

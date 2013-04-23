@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlLexerPlugin;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
@@ -333,7 +334,20 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     private static final String IMG_OPEN_TAG_SYMBOL = "<"; //NOI18N
     private static final String IMG_OPEN_TAG_SYMBOL2 = "</"; //NOI18N
 
-    private final HtmlExpressions customELQuery = HtmlExpressions.getDefault();
+    private final HtmlPlugins customELQuery = HtmlPlugins.getDefault();
+    
+    /**
+     * Expression language open delimiter token can be queried for the mime type of 
+     * the content of the expression. 
+     */
+    public static final String EL_EXPRESSION_CONTENT_MIMETYPE_TOKEN_PROPERTY_KEY = "contentMimeType"; //NOI18N
+    
+    /**
+     * {@link HtmlLexerPlugin#createAttributeEmbedding(java.lang.String, java.lang.String)} can be used to 
+     * inject a custom embedding to an html tag attribute value. When the plugin returns a non null value
+     * then the mimetype is set as a token's property and then used in {@link HTMLTokenId#language.createEmbedding()} method.
+     */
+    public static final String ATTRIBUTE_VALUE_EMBEDDING_MIMETYPE_TOKEN_PROPERTY_KEY = "embeddingMimeType"; //NOI18N
 
     public HtmlLexer(LexerRestartInfo<HTMLTokenId> info) {
         this.input = info.input();
@@ -550,7 +564,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             //save the provider's index in the delimiter token's property so once can recognize what should be 
                             //the delimiters' content if it is empty
                             //TODO "contentMimetype" INTO API???
-                            return token(HTMLTokenId.EL_OPEN_DELIMITER, new HtmlTokenPropertyProvider("contentMimetype", customELQuery.getMimeTypes()[delimiterIndex])); 
+                            return token(HTMLTokenId.EL_OPEN_DELIMITER, 
+                                    new HtmlTokenPropertyProvider(EL_EXPRESSION_CONTENT_MIMETYPE_TOKEN_PROPERTY_KEY, customELQuery.getMimeTypes()[delimiterIndex])); 
                         }
                         
                     }
@@ -1374,6 +1389,12 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     return token(HTMLTokenId.VALUE_CSS, CLASS_TOKEN_PP);
                 }
             }
+            //lexer plugins:
+            String embeddingMimeType = HtmlPlugins.getDefault().createAttributeEmbedding(tag, attribute);
+            if(embeddingMimeType != null) {
+                return token(HTMLTokenId.VALUE, new HtmlTokenPropertyProvider(ATTRIBUTE_VALUE_EMBEDDING_MIMETYPE_TOKEN_PROPERTY_KEY, embeddingMimeType));
+            }
+
         } finally {
             attribute = null;
         }

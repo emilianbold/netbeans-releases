@@ -39,22 +39,60 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
+package org.netbeans.modules.cnd.repository.support;
 
-import java.awt.Color;
-import javax.swing.ImageIcon;
-import org.openide.util.ImageUtilities;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import org.openide.modules.OnStop;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author marekfukala
+ * @author vkvashin
  */
-public class Constants {
-    
-    public static final ImageIcon ANGULAR_ICON =
-                ImageUtilities.loadImageIcon("org/netbeans/modules/html/angular/resources/AngularJS_icon_16.png", false); // NOI18N
-    
-    public static final Color ANGULAR_COLOR = Color.red.darker();
-    
-    public static final String JAVASCRIPT_MIMETYPE = "text/javascript"; //NOI18N
+public abstract class RepositoryStatistics {
+
+    public static final boolean ENABLED = Boolean.getBoolean("cnd.repository.statistics"); //NOI18N
+    public static final boolean ENHANCED = Boolean.getBoolean("cnd.repository.statistics.enhanced"); //NOI18N
+
+    public static void report(PrintStream ps, String title) {
+        if (ENABLED) {
+            RepositoryStatistics instance = Lookup.getDefault().lookup(RepositoryStatistics.class);
+            if (instance != null) {
+                instance.reportImpl(ps, title);
+            }
+        }
+    }
+
+    public static void report(PrintWriter pw, String title) {
+        if (ENABLED) {
+            RepositoryStatistics instance = Lookup.getDefault().lookup(RepositoryStatistics.class);
+            if (instance != null) {
+                instance.reportImpl(pw, title);
+            }
+        }
+    }
+
+    public static void clear() {
+        if (ENABLED) {
+            RepositoryStatistics instance = Lookup.getDefault().lookup(RepositoryStatistics.class);
+            if (instance != null) {
+                instance.clearImpl();
+            }
+        }
+    }
+
+    protected abstract void reportImpl(PrintStream ps, String title);
+    protected abstract void reportImpl(PrintWriter pw, String title);
+    protected abstract void clearImpl();
+
+    @OnStop
+    public static class Reporter implements Runnable {
+        @Override
+        public void run() {
+            if (ENABLED) {
+                RepositoryStatistics.report(System.out, "Statistics report upon exit");
+            }
+        }
+    }
 }

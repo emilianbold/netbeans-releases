@@ -42,22 +42,27 @@
 package org.netbeans.api.html.lexer;
 
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.lib.html.lexer.HtmlExpressions;
+import org.netbeans.lib.html.lexer.HtmlLexer;
+import org.netbeans.lib.html.lexer.HtmlPlugins;
 import org.netbeans.lib.html.lexer.HtmlLexerTest;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author marekfukala
  */
-public class HtmlExpressionResolverTest extends NbTestCase {
+public class HtmlLexerPluginTest extends NbTestCase {
 
-    public HtmlExpressionResolverTest(String name) {
+    public HtmlLexerPluginTest(String name) {
         super(name);
     }
 
     public void testResolverRegistered() {
-        HtmlExpressions exprs = HtmlExpressions.getDefault();
+        HtmlPlugins exprs = HtmlPlugins.getDefault();
         assertNotNull(exprs);
         
         String[] closeDelimiters = exprs.getCloseDelimiters();
@@ -92,9 +97,51 @@ public class HtmlExpressionResolverTest extends NbTestCase {
                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", ">|TAG_CLOSE_SYMBOL", "{{|EL_OPEN_DELIMITER", 
                "X|EL_CONTENT", "}}|EL_CLOSE_DELIMITER", "</|TAG_OPEN_SYMBOL", "div|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
     }
+    
+    public void testInjectCustomEmbeddingIntoAttribute() {
+        TokenHierarchy th = TokenHierarchy.create("<div ng-click=\"alert()\">click me!</div>", HTMLTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
 
-    @MimeRegistration(mimeType = "text/html", service = HtmlExpression.class)
-    public static class TestExpressionResolver implements HtmlExpression {
+        assertTrue(ts.moveNext());
+        assertEquals("<", ts.token().text().toString());
+        assertEquals(HTMLTokenId.TAG_OPEN_SYMBOL, ts.token().id());
+
+        assertTrue(ts.moveNext());
+        assertEquals("div", ts.token().text().toString());
+        assertEquals(HTMLTokenId.TAG_OPEN, ts.token().id());
+
+        assertTrue(ts.moveNext());
+        assertEquals(" ", ts.token().text().toString());
+        assertEquals(HTMLTokenId.WS, ts.token().id());
+        
+        assertTrue(ts.moveNext());
+        assertEquals("ng-click", ts.token().text().toString());
+        assertEquals(HTMLTokenId.ARGUMENT, ts.token().id());
+        
+        assertTrue(ts.moveNext());
+        assertEquals("=", ts.token().text().toString());
+        assertEquals(HTMLTokenId.OPERATOR, ts.token().id());
+
+        //now check the value token
+        assertTrue(ts.moveNext());
+        Token<HTMLTokenId> token = ts.token();
+        assertEquals("\"alert()\"", token.text().toString());
+        assertEquals(HTMLTokenId.VALUE, token.id());
+        
+        String mimetype = (String)token.getProperty(HtmlLexer.ATTRIBUTE_VALUE_EMBEDDING_MIMETYPE_TOKEN_PROPERTY_KEY);
+        assertNotNull(mimetype);
+        assertEquals("text/javascript", mimetype);
+        
+//        //check if the javascript embedding was really created
+//        TokenSequence embedded = ts.embedded(JsTokenId.javascriptLanguage());
+//        assertNotNull(embedded);
+//        assertEquals("text/javascript", embedded.language().mimeType());
+//        
+    }
+
+    @ServiceProvider(service = HtmlLexerPlugin.class)
+    public static class TestPlugin implements HtmlLexerPlugin {
 
         @Override
         public String getOpenDelimiter() {
@@ -109,6 +156,18 @@ public class HtmlExpressionResolverTest extends NbTestCase {
         @Override
         public String getContentMimeType() {
             return "text/javascript";
+        }
+
+        @Override
+        public String createAttributeEmbedding(String elementName, String attributeName) {
+            assertNotNull(elementName);
+            assertNotNull(attributeName);
+            
+            if(attributeName.equals("ng-click")) {
+                return "text/javascript";
+            }
+            
+            return null;
         }
     }
 }
