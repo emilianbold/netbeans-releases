@@ -55,6 +55,7 @@ import org.glassfish.tools.ide.server.config.JavaSEPlatform;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
@@ -85,9 +86,24 @@ public class JavaUtils {
     private static final String
             GF_PLATFORM_DISPLAY_NAME_SUFFIX = " (GlassFish)";
 
+    /** Java SE specification name. */
+    public static final String
+            JAVA_SE_SPECIFICATION_NAME = "j2se";
+
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Get installed Java SE platforms.
+     * <p/>
+     * @return Installed Java SE platforms.
+     */
+    public static JavaPlatform[] getInstalledJavaSEPlatforms() {
+        return JavaPlatformManager.getDefault()
+                .getPlatforms(null, new Specification(
+                JAVA_SE_SPECIFICATION_NAME, null));
+    }
 
     /**
      * Check if provided Java SE platform is supported by GlassFish server
@@ -143,9 +159,9 @@ public class JavaUtils {
             @NonNull final File javaHome) {
         // Avoid NPEs and troll developer a bit.
         Parameters.notNull("javaHome", javaHome);
-        // Scan all install folders of all onstalled platformsList for Java SE home.
-        JavaPlatform[] platforms
-                = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        // Scan all install folders of all onstalled platformsList
+        // for Java SE home.
+        JavaPlatform[] platforms = getInstalledJavaSEPlatforms();
         JavaPlatform javaPlatform = null;
         for (JavaPlatform platform : platforms) {
             for (FileObject fo : platform.getInstallFolders()) {
@@ -176,7 +192,8 @@ public class JavaUtils {
         // Avoid NPEs and troll developer a bit.
         Parameters.notNull("javaPlatforms", javaPlatforms);
         Parameters.notNull("javaHome", javaHome);
-        // Scan all install folders of all onstalled platformsList for Java SE home.
+        // Scan all install folders of all onstalled platformsList
+        // for Java SE home.
         JavaPlatform javaPlatform = null;
         for (JavaPlatform platform : javaPlatforms) {
             for (FileObject fo : platform.getInstallFolders()) {
@@ -207,12 +224,16 @@ public class JavaUtils {
         Parameters.notNull("instance", instance);
         // Search for supported Java SE platforms.
         List<JavaPlatform> platformsList = new LinkedList<JavaPlatform>();
-        JavaPlatform[] allPlatforms
-                = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        JavaPlatform[] allPlatforms = getInstalledJavaSEPlatforms();
         GlassFishJavaSEConfig javaSEConfig
                 = ConfigBuilderProvider.getBuilder(instance)
                 .getJavaSEConfig(instance.getVersion());
         Set<JavaSEPlatform> supportedPlatforms = javaSEConfig.getPlatforms();
+        // Finish quickly for empty set.
+        if (supportedPlatforms == null || supportedPlatforms.isEmpty()) {
+            return new JavaPlatform[0];
+        }
+        // Processs non-empty set.
         for (JavaPlatform platform : allPlatforms) {
             for (FileObject fo : platform.getInstallFolders()) {
                 try {
@@ -221,30 +242,29 @@ public class JavaUtils {
                             .getVersion().toString()))) {
                         platformsList.add(platform);
                     }
-                    // Try to locate NPE cause.
+                // Try to locate NPE cause and log it.
                 } catch (NullPointerException npe) {
-                    LOGGER.log(Level.WARNING,
-                            "NullPointerException caught in findSupportedPlatforms.", npe);
+                    LOGGER.log(Level.INFO, "NullPointerException caught"
+                            + " in findSupportedPlatforms.", npe);
                     LOGGER.log(Level.INFO, "Affected Java platform: {0}",
                             platform.getDisplayName());
-                    if (supportedPlatforms == null) {
-                        LOGGER.log(Level.INFO,
-                                "Value of supportedPlatforms is null.");
-                    } else if (platform.getSpecification() == null) {
-                        LOGGER.log(Level.INFO,
-                                "Value of platform.getSpecification() is null.");
+                    if (platform.getSpecification() == null) {
+                        LOGGER.log(Level.INFO, "Value of"
+                                + " platform.getSpecification() is null.");
                     } else if (
                             platform.getSpecification().getVersion() == null) {
-                        LOGGER.log(Level.INFO,
-                                "Value of platform.getSpecification().getVersion() is null.");
+                        LOGGER.log(Level.INFO, "Value of"
+                                + " platform.getSpecification().getVersion()"
+                                + " is null.");
                     }
                 }
             }
         }
         JavaPlatform[] platforms = new JavaPlatform[platformsList.size()];
         int i = 0;
-        for (JavaPlatform platform : platformsList)
+        for (JavaPlatform platform : platformsList) {
             platforms[i++] = platform;
+        }
         return platforms;
     }
 
