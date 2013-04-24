@@ -48,6 +48,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.modules.php.api.editor.PhpClass;
@@ -76,6 +77,8 @@ public final class Atoum {
 
     public static final String PHAR_FILE_NAME = "mageekguy.atoum.phar"; // NOI18N
     public static final String ATOUM_FILE_NAME = "atoum"; // NOI18N
+
+    public static final Pattern LINE_PATTERN = Pattern.compile("^# ([^:]+):(\\d+)$"); // NOI18N
 
     private static final String ATOUM_PROJECT_FILE_PATH = "vendor/atoum/atoum/bin/atoum"; // NOI18N
 

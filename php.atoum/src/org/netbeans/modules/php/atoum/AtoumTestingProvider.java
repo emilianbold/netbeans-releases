@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.php.atoum;
 
+import java.io.File;
 import java.util.List;
+import java.util.regex.Matcher;
 import org.netbeans.modules.php.api.editor.PhpClass.Method;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
@@ -136,6 +138,15 @@ public class AtoumTestingProvider implements PhpTestingProvider {
 
     @Override
     public Locations.Line parseFileFromOutput(String line) {
+        Matcher matcher = Atoum.LINE_PATTERN.matcher(line);
+        if (matcher.matches()) {
+            File file = new File(matcher.group(1));
+            if (file.isFile()) {
+                FileObject fo = FileUtil.toFileObject(file);
+                assert fo != null;
+                return new Locations.Line(fo, Integer.valueOf(matcher.group(2)));
+            }
+        }
         return null;
     }
 
