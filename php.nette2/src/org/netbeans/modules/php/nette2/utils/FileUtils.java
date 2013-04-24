@@ -47,7 +47,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
@@ -61,6 +66,7 @@ import org.openide.filesystems.FileUtil;
  */
 public final class FileUtils {
     private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
+    private static final Set<PosixFilePermission> PERMISSIONS_777 = new HashSet<>(Arrays.asList(PosixFilePermission.values()));
 
     private FileUtils() {
     }
@@ -126,9 +132,11 @@ public final class FileUtils {
 
     private static void chmod777(File file) {
         assert file != null;
-        file.setExecutable(true, false);
-        file.setReadable(true, false);
-        file.setWritable(true, false);
+        try {
+            Files.setPosixFilePermissions(file.toPath(), PERMISSIONS_777);
+        } catch (IOException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        }
     }
 
 }
