@@ -151,7 +151,7 @@ public enum AccessLevel {
     }
 
     public static Set<AccessLevel> update(Set<AccessLevel> levels, ClassNode source, ClassNode type) {
-        HashSet<AccessLevel> modifiedAccess = new HashSet<AccessLevel>(levels);
+        HashSet<AccessLevel> modifiedAccess = new HashSet<>(levels);
         // leav flag
         if (source == null || !type.equals(source)) {
             modifiedAccess.remove(AccessLevel.PRIVATE);

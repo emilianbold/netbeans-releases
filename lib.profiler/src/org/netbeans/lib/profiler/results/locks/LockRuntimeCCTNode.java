@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,48 +34,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.lib.profiler.results.locks;
 
-package org.netbeans.lib.profiler.results.cpu.cct;
-
-import org.netbeans.lib.profiler.results.cpu.cct.nodes.MarkedCPUCCTNode;
-import org.netbeans.lib.profiler.results.cpu.cct.nodes.MethodCPUCCTNode;
-import org.netbeans.lib.profiler.results.cpu.cct.nodes.ServletRequestCPUCCTNode;
-import org.netbeans.lib.profiler.results.cpu.cct.nodes.ThreadCPUCCTNode;
-import org.netbeans.lib.profiler.marker.Mark;
-
+import java.util.List;
+import java.util.Map;
+import org.netbeans.lib.profiler.results.RuntimeCCTNode;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * @author Tomas Hurka
  */
-public class CPUCCTNodeFactory {
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
+public class LockRuntimeCCTNode implements RuntimeCCTNode {
 
-    private final boolean twoStamps;
+    private final Map<ThreadInfo, List<ThreadInfo.Monitor>> threads;
+    private final Map<MonitorInfo, List<MonitorInfo.ThreadDetail>> monitors;
 
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-
-    /** Creates a new instance of CPUCCTNodeFactory */
-    public CPUCCTNodeFactory(boolean twoStamps) {
-        this.twoStamps = twoStamps;
+    LockRuntimeCCTNode(Map<ThreadInfo, List<ThreadInfo.Monitor>> threadsCopy, Map<MonitorInfo, List<MonitorInfo.ThreadDetail>> monitorCopy) {
+        threads = threadsCopy;
+        monitors = monitorCopy;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public MarkedCPUCCTNode createCategory(Mark mark) {
-        return new MarkedCPUCCTNode(this, mark, twoStamps);
+    public LockCCTNode getThreads() {
+        LockCCTNode top = new TopLockCCTNode();
+        for (Map.Entry<ThreadInfo, List<ThreadInfo.Monitor>> entry : threads.entrySet()) {
+            top.addChild(new ThreadLockCCTNode(top, entry.getKey(), entry.getValue()));
+        }
+        return top;
     }
 
-    public MethodCPUCCTNode createMethodNode(int methodId) {
-        return new MethodCPUCCTNode(this, methodId, twoStamps);
+    public LockCCTNode getMonitors() {
+        LockCCTNode top = new TopLockCCTNode();
+        for (Map.Entry<MonitorInfo, List<MonitorInfo.ThreadDetail>> entry : monitors.entrySet()) {
+            top.addChild(new MonitorCCTNode(top, entry.getKey(), entry.getValue()));
+        }
+        return top;
     }
 
-    public ServletRequestCPUCCTNode createServletRequestNode(int requestType, String path) {
-        return new ServletRequestCPUCCTNode(this, requestType, path, twoStamps);
-    }
-
-    public ThreadCPUCCTNode createThreadNode(int threadId) {
-        return new ThreadCPUCCTNode(this, threadId, twoStamps);
+    @Override
+    public RuntimeCCTNode[] getChildren() {
+        throw new UnsupportedOperationException("Not supported.");  // NOI18N
     }
 }

@@ -687,14 +687,14 @@ public class CSSStylesSelectionPanel extends JPanel {
             final Node[] selectedProperties = propertyPaneManager.getSelectedNodes();
             Project project = pageModel.getProject();
             final Node rulePaneRoot = new MatchedRulesNode(project, selectedNode, matchedStyles);
-            rulePaneManager.setRootContext(rulePaneRoot);
-            updateResourceCache(rulePaneRoot);
             final Node propertyPaneRoot = new MatchedPropertiesNode(project, matchedStyles, propertyInfos);
-            propertyPaneManager.setRootContext(propertyPaneRoot);
-            if (keepSelection) {
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
+            updateResourceCache(rulePaneRoot);
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    rulePaneManager.setRootContext(rulePaneRoot);
+                    propertyPaneManager.setRootContext(propertyPaneRoot);
+                    if (keepSelection) {
                         if (selectedProperties.length > 0) {
                             Node selectedProperty = selectedProperties[0];
                             Property property = selectedProperty.getLookup().lookup(Property.class);
@@ -730,16 +730,11 @@ public class CSSStylesSelectionPanel extends JPanel {
                             // specific rule
                             preselectRule();
                         }
-                    }
-                });
-            } else {
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
+                    } else {
                         preselectRule();
                     }
-                });
-            }
+                }
+            });
         }
     }
 

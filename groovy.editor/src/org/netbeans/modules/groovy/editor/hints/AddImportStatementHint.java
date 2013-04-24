@@ -42,20 +42,18 @@
 package org.netbeans.modules.groovy.editor.hints;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.groovy.editor.imports.ImportHelper;
 import org.netbeans.modules.groovy.editor.imports.ImportCandidate;
-import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyError;
+import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorID;
+import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyErrorRule;
-import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
+import org.netbeans.modules.groovy.editor.hints.utils.HintUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -63,26 +61,18 @@ import org.openide.util.NbBundle;
  *
  * @author schmidtm, Petr Hejl
  */
-public class ClassNotFoundRule extends GroovyErrorRule {
+public class AddImportStatementHint extends GroovyErrorRule {
 
-    public static final Logger LOG = Logger.getLogger(ClassNotFoundRule.class.getName());
-    private final String DESC = NbBundle.getMessage(ClassNotFoundRule.class, "FixImportsHintDescription"); // NOI18N
+    public static final Logger LOG = Logger.getLogger(AddImportStatementHint.class.getName());
 
     
-    public ClassNotFoundRule() {
-        super();
+    @Override
+    public Set<CompilerErrorID> getCodes() {
+        return EnumSet.of(CompilerErrorID.CLASS_NOT_FOUND);
     }
 
     @Override
-    public Set<GroovyCompilerErrorID> getCodes() {
-        LOG.log(Level.FINEST, "getCodes()"); // NOI18N
-        Set<GroovyCompilerErrorID> result = new HashSet<GroovyCompilerErrorID>();
-        result.add(GroovyCompilerErrorID.CLASS_NOT_FOUND);
-        return result;
-    }
-
-    @Override
-    public void run(GroovyRuleContext context, GroovyError error, List<Hint> result) {
+    public void run(RuleContext context, GroovyError error, List<Hint> result) {
         LOG.log(Level.FINEST, "run()"); // NOI18N
 
         String desc = error.getDescription();
@@ -112,37 +102,20 @@ public class ClassNotFoundRule extends GroovyErrorRule {
 
         int DEFAULT_PRIORITY = 292;
 
-        // FIXME: for CLASS_NOT_FOUND errors we mark the whole line.
-        // This should be replaced with marking the indentifier only.
-        // OffsetRange range = new OffsetRange(error.getStartPosition(), error.getEndPosition());
-        int lineStart = 0;
-        int lineEnd = 0;
+        OffsetRange range = HintUtils.getLineOffset(context, error);
+        if (range != null) {
+            for (ImportCandidate candidate : importCandidates) {
+                List<HintFix> fixList = new ArrayList<>(1);
+                String fqn = candidate.getFqnName();
+                HintFix fixToApply = new AddImportFix(fo, fqn);
+                fixList.add(fixToApply);
 
-        try {
+                Hint descriptor = new Hint(this, fixToApply.getDescription(), fo, range,
+                        fixList, DEFAULT_PRIORITY);
 
-            lineStart = Utilities.getRowStart(context.doc, error.getStartPosition());
-            lineEnd = Utilities.getRowEnd(context.doc, error.getEndPosition());
-
-        } catch (BadLocationException ex) {
-            LOG.log(Level.FINEST, "Processing : {0}", ex); // NOI18N
-            return;
+                result.add(descriptor);
+            }
         }
-
-        OffsetRange range = new OffsetRange(lineStart, lineEnd);
-
-        for (ImportCandidate candidate : importCandidates) {
-            List<HintFix> fixList = new ArrayList<HintFix>(1);
-            String fqn = candidate.getFqnName();
-            HintFix fixToApply = new AddImportFix(fo, fqn);
-            fixList.add(fixToApply);
-
-            Hint descriptor = new Hint(this, fixToApply.getDescription(), fo, range,
-                    fixList, DEFAULT_PRIORITY);
-
-            result.add(descriptor);
-        }
-
-        return;
     }
 
     @Override
@@ -151,8 +124,9 @@ public class ClassNotFoundRule extends GroovyErrorRule {
     }
 
     @Override
+    @NbBundle.Messages("FixImportsHintDescription=Fix all imports ...")
     public String getDisplayName() {
-        return DESC;
+        return Bundle.FixImportsHintDescription();
     }
 
     @Override
@@ -165,10 +139,10 @@ public class ClassNotFoundRule extends GroovyErrorRule {
         return HintSeverity.ERROR;
     }
 
-    private class AddImportFix implements HintFix {
+    private static class AddImportFix implements HintFix {
 
-        FileObject fo;
-        String fqn;
+        private final FileObject fo;
+        private final String fqn;
 
         public AddImportFix(FileObject fo, String fqn) {
             this.fo = fo;
@@ -176,8 +150,12 @@ public class ClassNotFoundRule extends GroovyErrorRule {
         }
 
         @Override
+        @NbBundle.Messages({
+            "# {0} - fully qualified name of the class we want to import",
+            "ClassNotFoundRuleHintDescription=Add import for {0}"
+        })
         public String getDescription() {
-            return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundRuleHintDescription", fqn); // NOI18N
+            return Bundle.ClassNotFoundRuleHintDescription(fqn);
         }
 
         @Override
