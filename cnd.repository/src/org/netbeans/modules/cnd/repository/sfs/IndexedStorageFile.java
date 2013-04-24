@@ -67,6 +67,8 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
+import org.netbeans.modules.cnd.repository.support.RepositoryStatistics;
+import org.netbeans.modules.cnd.repository.testbench.RepositoryStatisticsImpl;
 
 /**
  * Represents the data file with the indexed access
@@ -140,6 +142,9 @@ class IndexedStorageFile extends FileStorage {
             object = fileRWAccess.read(key.getPersistentFactory(), chunkInfo.getOffset(), chunkInfo.getSize());
             if (Stats.fileStatisticsLevel > 0) {
                 fileStatistics.incrementReadCount(key);
+            }
+            if (RepositoryStatistics.ENABLED) {
+                RepositoryStatisticsImpl.getInstance().logDataRead(key, chunkInfo.getSize());
             }
         }
 

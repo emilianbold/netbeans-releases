@@ -42,6 +42,33 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
+import static com.sun.source.tree.Tree.Kind.ASSERT;
+import static com.sun.source.tree.Tree.Kind.ASSIGNMENT;
+import static com.sun.source.tree.Tree.Kind.BLOCK;
+import static com.sun.source.tree.Tree.Kind.BREAK;
+import static com.sun.source.tree.Tree.Kind.CLASS;
+import static com.sun.source.tree.Tree.Kind.CONTINUE;
+import static com.sun.source.tree.Tree.Kind.DO_WHILE_LOOP;
+import static com.sun.source.tree.Tree.Kind.EMPTY_STATEMENT;
+import static com.sun.source.tree.Tree.Kind.ENHANCED_FOR_LOOP;
+import static com.sun.source.tree.Tree.Kind.EXPRESSION_STATEMENT;
+import static com.sun.source.tree.Tree.Kind.FOR_LOOP;
+import static com.sun.source.tree.Tree.Kind.IF;
+import static com.sun.source.tree.Tree.Kind.LABELED_STATEMENT;
+import static com.sun.source.tree.Tree.Kind.METHOD_INVOCATION;
+import static com.sun.source.tree.Tree.Kind.NEW_ARRAY;
+import static com.sun.source.tree.Tree.Kind.NEW_CLASS;
+import static com.sun.source.tree.Tree.Kind.POSTFIX_DECREMENT;
+import static com.sun.source.tree.Tree.Kind.POSTFIX_INCREMENT;
+import static com.sun.source.tree.Tree.Kind.PREFIX_DECREMENT;
+import static com.sun.source.tree.Tree.Kind.PREFIX_INCREMENT;
+import static com.sun.source.tree.Tree.Kind.RETURN;
+import static com.sun.source.tree.Tree.Kind.SWITCH;
+import static com.sun.source.tree.Tree.Kind.SYNCHRONIZED;
+import static com.sun.source.tree.Tree.Kind.THROW;
+import static com.sun.source.tree.Tree.Kind.TRY;
+import static com.sun.source.tree.Tree.Kind.VARIABLE;
+import static com.sun.source.tree.Tree.Kind.WHILE_LOOP;
 import com.sun.source.util.*;
 import java.util.*;
 import javax.lang.model.element.*;
@@ -250,7 +277,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     lastStatement = GeneratorUtilities.get(workingCopy).importFQNs(lastStatement);
                 }
             }
-            lastStatement = translateLastStatement(parent, grandparent, newStatementList, lastStatement);
+            lastStatement = translateLastStatement(parent, grandparent, newStatementList, lastStatement, node);
             
             Element element = workingCopy.getTrees().getElement(statementPath);
             if (element != null && element.getKind() == ElementKind.FIELD) {
@@ -272,38 +299,6 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     addedStatementsForBlock.put(statementTree, stats = new LinkedList<>());
                 }
                 stats.addAll(newStatementList);
-                /*
-                 * Assignment
-                 * PreIncrementExpression
-                 * PreDecrementExpression
-                 * PostIncrementExpression
-                 * PostDecrementExpression
-                 * MethodInvocation
-                 * ClassInstanceCreationExpression
-                 */
-                if (parent.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
-                    switch (lastStatement.getKind()) {
-                        case ASSIGNMENT:
-                        case PREFIX_INCREMENT:
-                        case PREFIX_DECREMENT:
-                        case POSTFIX_DECREMENT:
-                        case POSTFIX_INCREMENT:
-                        case METHOD_INVOCATION:
-                        case NEW_CLASS:
-                        case NEW_ARRAY:
-                            break;
-                        default:
-                            lastStatement = make.EmptyStatement();
-                            methodInvocation = parent;
-                            SourcePositions positions = workingCopy.getTrees().getSourcePositions();
-                            long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
-                            long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
-                            String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
-                            problem = JavaPluginUtils.chainProblems(problem,
-                                      new Problem(false, NbBundle.getMessage(InlineMethodTransformer.class, "WRN_InlineChangeReturn", source)));
-                            break;
-                    }
-                }
                 translateMap.put(methodInvocation, lastStatement);
             }
         }
@@ -532,7 +527,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         }
     }
 
-    private Tree translateLastStatement(Tree parent, Tree grandparent, List<StatementTree> newStatementList, Tree lastStatement) {
+    private Tree translateLastStatement(Tree parent, Tree grandparent, List<StatementTree> newStatementList, Tree lastStatement, Tree node) {
         Tree result = lastStatement;
         if (parent.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
             if (result != null) {
@@ -550,7 +545,38 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         } else {
             if (result != null) {
                 if (result.getKind() == Tree.Kind.RETURN) {
-                    result = make.ExpressionStatement(((ReturnTree) result).getExpression());
+                    ExpressionTree returnExpression = ((ReturnTree) result).getExpression();
+                    /*
+                     * Allowed expressions in expressionstatement:
+                     * Assignment
+                     * PreIncrementExpression
+                     * PreDecrementExpression
+                     * PostIncrementExpression
+                     * PostDecrementExpression
+                     * MethodInvocation
+                     * ClassInstanceCreationExpression
+                     */
+                    switch (returnExpression.getKind()) {
+                        case ASSIGNMENT:
+                        case PREFIX_INCREMENT:
+                        case PREFIX_DECREMENT:
+                        case POSTFIX_DECREMENT:
+                        case POSTFIX_INCREMENT:
+                        case METHOD_INVOCATION:
+                        case NEW_CLASS:
+                        case NEW_ARRAY:
+                            result = make.ExpressionStatement(returnExpression);
+                            break;
+                        default:
+                            result = make.EmptyStatement();
+                            SourcePositions positions = workingCopy.getTrees().getSourcePositions();
+                            long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
+                            long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
+                            String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
+                            problem = JavaPluginUtils.chainProblems(problem,
+                                                                    new Problem(false, NbBundle.getMessage(InlineMethodTransformer.class, "WRN_InlineChangeReturn", source)));
+                            break;
+                    }
                 }
             }
             switch (grandparent.getKind()) {

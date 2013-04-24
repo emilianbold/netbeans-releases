@@ -215,7 +215,7 @@ computed                    : FUNCTION computed [ANONYMOUS: false, DECLARED: tru
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             disposeWhen                           : FUNCTION disposeWhen [ANONYMOUS: false, DECLARED: true - disposeWhen, MODIFIERS: PUBLIC, METHOD]
                                                                   # RETURN TYPES
-                                                                  @exp;ko@pro;utils@call;domNodeIsContainedBy, RESOLVED: true
+                                                                  Boolean, RESOLVED: true
                                                                   # PROPERTIES
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             disposeWhenNodeIsRemoved              : OBJECT disposeWhenNodeIsRemoved [ANONYMOUS: false, DECLARED: true - disposeWhenNodeIsRemoved, MODIFIERS: PRIVATE, VARIABLE]
@@ -282,7 +282,6 @@ computed                    : FUNCTION computed [ANONYMOUS: false, DECLARED: tru
                                                                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 contextFor                  : FUNCTION contextFor [ANONYMOUS: false, DECLARED: true - contextFor, MODIFIERS: PUBLIC, METHOD]
                             # RETURN TYPES
-                            @exp;ko@pro;utils@pro;domData@call;get, RESOLVED: true
                             # PARAMETERS
                             OBJECT node [ANONYMOUS: false, DECLARED: true - node, MODIFIERS: PUBLIC, PARAMETER]
                                     # PROPERTIES
@@ -393,7 +392,7 @@ dependentObservable         : FUNCTION dependentObservable [ANONYMOUS: false, DE
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             disposeWhen                           : FUNCTION disposeWhen [ANONYMOUS: false, DECLARED: true - disposeWhen, MODIFIERS: PUBLIC, METHOD]
                                                                   # RETURN TYPES
-                                                                  @exp;ko@pro;utils@call;domNodeIsContainedBy, RESOLVED: true
+                                                                  Boolean, RESOLVED: true
                                                                   # PROPERTIES
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             disposeWhenNodeIsRemoved              : OBJECT disposeWhenNodeIsRemoved [ANONYMOUS: false, DECLARED: true - disposeWhenNodeIsRemoved, MODIFIERS: PRIVATE, VARIABLE]
@@ -1002,9 +1001,9 @@ nativeTemplateEngine        : FUNCTION nativeTemplateEngine [ANONYMOUS: false, D
                                       # PROPERTIES
                                       renderTemplateSource : FUNCTION renderTemplateSource [ANONYMOUS: false, DECLARED: true - renderTemplateSource, MODIFIERS: PUBLIC, METHOD]
                                                            # RETURN TYPES
-                                                           @exp;@call;jQueryHtmlParse, RESOLVED: true
-                                                           @exp;@call;simpleHtmlParse, RESOLVED: true
                                                            Array, RESOLVED: true
+                                                           jQueryHtmlParse, RESOLVED: true
+                                                           simpleHtmlParse, RESOLVED: true
                                                            # PARAMETERS
                                                            OBJECT templateSource [ANONYMOUS: false, DECLARED: true - templateSource, MODIFIERS: PUBLIC, PARAMETER]
                                                                    # PROPERTIES
@@ -1081,6 +1080,7 @@ observable                  : FUNCTION observable [ANONYMOUS: false, DECLARED: t
 observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLARED: true - observableArray, MODIFIERS: PUBLIC, METHOD]
                             # RETURN TYPES
                             ko.observable.observable, RESOLVED: true
+                            ko.observableArray.result, RESOLVED: true
                             # PARAMETERS
                             OBJECT initialValues [ANONYMOUS: false, DECLARED: true - initialValues, MODIFIERS: PUBLIC, PARAMETER]
                             # PROPERTIES
@@ -1137,7 +1137,6 @@ observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLAR
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       indexOf         : FUNCTION indexOf [ANONYMOUS: false, DECLARED: true - indexOf, MODIFIERS: PUBLIC, METHOD]
                                                       # RETURN TYPES
-                                                      @exp;Array@pro;prototype@pro;indexOf@call;call, RESOLVED: true
                                                       Number, RESOLVED: true
                                                       # PARAMETERS
                                                       OBJECT item [ANONYMOUS: false, DECLARED: true - item, MODIFIERS: PUBLIC, PARAMETER]
@@ -1145,6 +1144,12 @@ observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLAR
                                                       arguments       : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                       underlyingArray : OBJECT underlyingArray [ANONYMOUS: false, DECLARED: true - underlyingArray, MODIFIERS: PRIVATE, VARIABLE]
                                       peek            : FUNCTION peek [ANONYMOUS: false, DECLARED: false - peek, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      pop             : FUNCTION pop [ANONYMOUS: false, DECLARED: true - pop, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      push            : FUNCTION push [ANONYMOUS: false, DECLARED: true - push, MODIFIERS: PUBLIC, METHOD]
                                                       # PROPERTIES
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       remove          : FUNCTION remove [ANONYMOUS: false, DECLARED: true - remove, MODIFIERS: PUBLIC, METHOD]
@@ -1220,6 +1225,32 @@ observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLAR
                                                       # PROPERTIES
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                       index     : OBJECT index [ANONYMOUS: false, DECLARED: true - index, MODIFIERS: PRIVATE, VARIABLE]
+                                      reverse         : FUNCTION reverse [ANONYMOUS: false, DECLARED: true - reverse, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      shift           : FUNCTION shift [ANONYMOUS: false, DECLARED: true - shift, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      slice           : FUNCTION slice [ANONYMOUS: false, DECLARED: true - slice, MODIFIERS: PUBLIC, METHOD]
+                                                      # PARAMETERS
+                                                      OBJECT start [ANONYMOUS: false, DECLARED: true - start, MODIFIERS: PUBLIC, PARAMETER]
+                                                      OBJECT end [ANONYMOUS: false, DECLARED: true - end, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      sort            : FUNCTION sort [ANONYMOUS: false, DECLARED: true - sort, MODIFIERS: PUBLIC, METHOD]
+                                                      # PARAMETERS
+                                                      OBJECT comparefn [ANONYMOUS: false, DECLARED: true - comparefn, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      splice          : FUNCTION splice [ANONYMOUS: false, DECLARED: true - splice, MODIFIERS: PUBLIC, METHOD]
+                                                      # PARAMETERS
+                                                      OBJECT start [ANONYMOUS: false, DECLARED: true - start, MODIFIERS: PUBLIC, PARAMETER]
+                                                      OBJECT deleteCount [ANONYMOUS: false, DECLARED: true - deleteCount, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      unshift         : FUNCTION unshift [ANONYMOUS: false, DECLARED: true - unshift, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       valueHasMutated : FUNCTION valueHasMutated [ANONYMOUS: false, DECLARED: false - valueHasMutated, MODIFIERS: PUBLIC, METHOD]
                                                       # PROPERTIES
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
@@ -1270,7 +1301,6 @@ observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLAR
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       indexOf         : FUNCTION indexOf [ANONYMOUS: false, DECLARED: true - indexOf, MODIFIERS: PUBLIC, METHOD]
                                                       # RETURN TYPES
-                                                      @exp;Array@pro;prototype@pro;indexOf@call;call, RESOLVED: true
                                                       Number, RESOLVED: true
                                                       # PARAMETERS
                                                       OBJECT item [ANONYMOUS: false, DECLARED: true - item, MODIFIERS: PUBLIC, PARAMETER]
@@ -1278,6 +1308,12 @@ observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLAR
                                                       arguments       : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                       underlyingArray : OBJECT underlyingArray [ANONYMOUS: false, DECLARED: true - underlyingArray, MODIFIERS: PRIVATE, VARIABLE]
                                       peek            : FUNCTION peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      pop             : FUNCTION pop [ANONYMOUS: false, DECLARED: false - pop, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      push            : FUNCTION push [ANONYMOUS: false, DECLARED: false - push, MODIFIERS: PUBLIC, METHOD]
                                                       # PROPERTIES
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       remove          : FUNCTION remove [ANONYMOUS: false, DECLARED: true - remove, MODIFIERS: PUBLIC, METHOD]
@@ -1353,6 +1389,32 @@ observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLAR
                                                       # PROPERTIES
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                       index     : OBJECT index [ANONYMOUS: false, DECLARED: true - index, MODIFIERS: PRIVATE, VARIABLE]
+                                      reverse         : FUNCTION reverse [ANONYMOUS: false, DECLARED: false - reverse, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      shift           : FUNCTION shift [ANONYMOUS: false, DECLARED: false - shift, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      slice           : FUNCTION slice [ANONYMOUS: false, DECLARED: false - slice, MODIFIERS: PUBLIC, METHOD]
+                                                      # PARAMETERS
+                                                      OBJECT start [ANONYMOUS: false, DECLARED: true - start, MODIFIERS: PUBLIC, PARAMETER]
+                                                      OBJECT end [ANONYMOUS: false, DECLARED: true - end, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      sort            : FUNCTION sort [ANONYMOUS: false, DECLARED: false - sort, MODIFIERS: PUBLIC, METHOD]
+                                                      # PARAMETERS
+                                                      OBJECT comparefn [ANONYMOUS: false, DECLARED: true - comparefn, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      splice          : FUNCTION splice [ANONYMOUS: false, DECLARED: false - splice, MODIFIERS: PUBLIC, METHOD]
+                                                      # PARAMETERS
+                                                      OBJECT start [ANONYMOUS: false, DECLARED: true - start, MODIFIERS: PUBLIC, PARAMETER]
+                                                      OBJECT deleteCount [ANONYMOUS: false, DECLARED: true - deleteCount, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      unshift         : FUNCTION unshift [ANONYMOUS: false, DECLARED: false - unshift, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       valueHasMutated : FUNCTION valueHasMutated [ANONYMOUS: false, DECLARED: true - valueHasMutated, MODIFIERS: PUBLIC, METHOD]
                                                       # PROPERTIES
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
@@ -1394,7 +1456,7 @@ renderTemplate              : OBJECT renderTemplate [ANONYMOUS: false, DECLARED:
                                                              parentNode : OBJECT parentNode [ANONYMOUS: false, DECLARED: false - parentNode, MODIFIERS: PUBLIC, PROPERTY]
                             whenToDispose                    : FUNCTION whenToDispose [ANONYMOUS: false, DECLARED: true - whenToDispose, MODIFIERS: PRIVATE, METHOD]
                                                              # RETURN TYPES
-                                                             @exp;ko@pro;utils@call;domNodeIsContainedBy, RESOLVED: true
+                                                             Boolean, RESOLVED: true
                                                              ko.renderTemplate.firstTargetNode, RESOLVED: true
                                                              # PROPERTIES
                                                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
@@ -1428,8 +1490,7 @@ renderTemplateForEach       : FUNCTION renderTemplateForEach [ANONYMOUS: false, 
                                                                        length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                             _L3101                      : FUNCTION _L3101 [ANONYMOUS: true, DECLARED: true - _L3101, MODIFIERS: PUBLIC, METHOD]
                                                         # RETURN TYPES
-                                                        @exp;@call;value, RESOLVED: true
-                                                        @exp;value, RESOLVED: true
+                                                        _L43.Anonym$4.unwrapObservable.value, RESOLVED: true
                                                         # PARAMETERS
                                                         OBJECT item [ANONYMOUS: false, DECLARED: true - item, MODIFIERS: PUBLIC, PARAMETER]
                                                                 # PROPERTIES

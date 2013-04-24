@@ -163,7 +163,9 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         translators.put(JSP_MIME_TYPE, new JspTranslator());
         translators.put(TAG_MIME_TYPE, new JspTranslator());
         translators.put(RHTML_MIME_TYPE, new RhtmlTranslator());
-        translators.put(HTML_MIME_TYPE, new HtmlTranslator());
+        //the creation of javascript virtual source for files with text/html mimetype
+        //is now handled by o.n.m.html.editor.embedding.JsEmbeddingProvider
+//        translators.put(HTML_MIME_TYPE, new HtmlTranslator());
         translators.put(XHTML_MIME_TYPE, new XhtmlTranslator());
         translators.put(PHP_MIME_TYPE, new PhpTranslator());
         translators.put(TPL_MIME_TYPE, new TplTranslator());
@@ -781,7 +783,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                 embeddings.add(snapshot.create("\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
             } else if (htmlId == HTMLTokenId.EL_OPEN_DELIMITER) {
                 //1.check if the next token represents javascript content
-                String mimetype = (String) ts.token().getProperty("contentMimetype"); //NOT IN AN API, TBD
+                String mimetype = (String) ts.token().getProperty("contentMimeType"); //NOT IN AN API, TBD
                 if (mimetype != null && "text/javascript".equals(mimetype)) {
                     embeddings.add(snapshot.create("(function(){\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
 

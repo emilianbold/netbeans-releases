@@ -56,4 +56,5 @@ public class Constants {
     
     public static final Color ANGULAR_COLOR = Color.red.darker();
     
+    public static final String JAVASCRIPT_MIMETYPE = "text/javascript"; //NOI18N
 }

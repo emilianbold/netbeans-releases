@@ -1019,13 +1019,13 @@ public class InlineTest extends RefactoringTestBase {
                 + "}"));
         final InlineRefactoring[] r = new InlineRefactoring[1];
         createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
-        performRefactoring(r);
+        performRefactoring(r, new Problem(false, "WRN_InlineChangeReturn"));
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
                 + "    public int getRating() {\n"
                 + "        System.out.println(\"Less then five?\");\n"
-                + "        numberOfLateDeliveries > 5;\n"
+                + "        ;\n"
                 + "        System.out.println(\"Less then five?\");\n"
                 + "        return (numberOfLateDeliveries > 5) ? 2 : 1;\n"
                 + "    }\n"

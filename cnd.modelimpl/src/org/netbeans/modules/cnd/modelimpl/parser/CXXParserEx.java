@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
  */
 public class CXXParserEx extends CXXParser {
     
+    private static final boolean RECOVER_DECLARATIONS = true;
     private static final int RECOVERY_LIMIT = 3;
     private static final BitSet stopSet = new BitSet();
     static {
@@ -174,11 +175,37 @@ public class CXXParserEx extends CXXParser {
      * control of the recovery and error mechanisms.
      */
     @Override
-    protected void syncToSet() {
+    protected void sync_declaration_impl() {
         // Compute the followset that is in context wherever we are in the
         // rule chain/stack
-        BitSet follow = state.following[state._fsp]; //computeContextSensitiveRuleFOLLOW();
-        syncToSet(follow);
+        if (RECOVER_DECLARATIONS) {
+            BitSet follow = state.following[state._fsp]; //computeContextSensitiveRuleFOLLOW();
+            syncToSet(follow);
+        }
+    }
+
+    @Override
+    protected void sync_member_impl() {
+        if (RECOVER_DECLARATIONS) {
+            BitSet follow = state.following[state._fsp]; //computeContextSensitiveRuleFOLLOW();
+            syncToSet(follow);
+        }
+    }
+
+    @Override
+    protected void sync_parameter_impl() {
+        if (RECOVER_DECLARATIONS) {
+            BitSet follow = state.following[state._fsp]; //computeContextSensitiveRuleFOLLOW();
+            syncToSet(follow);
+        }
+    }
+
+    @Override
+    protected void sync_statement_impl() {
+        if (RECOVER_DECLARATIONS) {
+            BitSet follow = state.following[state._fsp]; //computeContextSensitiveRuleFOLLOW();
+            syncToSet(follow);
+        }
     }
 
     protected void syncToSet(BitSet follow) {
@@ -210,30 +237,6 @@ public class CXXParserEx extends CXXParser {
         }
     }
     
-//    @Override
-//    public void consumeUntil(IntStream input, int tokenType) {
-//        //System.out.println("consumeUntil "+tokenType);
-//        int ttype = input.LA(1);
-//        while (ttype != org.antlr.runtime.Token.EOF && ttype != tokenType) {
-//            input.consume();
-//            ttype = input.LA(1);
-//        }
-//    }
-//
-//    /**
-//     * Consume tokens until one matches the given token set
-//     */
-//    @Override
-//    public void consumeUntil(IntStream input, BitSet set) {
-//        //System.out.println("consumeUntil("+set.toString(getTokenNames())+")");
-//        int ttype = input.LA(1);
-//        while (ttype != org.antlr.runtime.Token.EOF && !set.member(ttype)) {
-//            System.out.println("consume during recover LA(1)="+getTokenNames()[input.LA(1)]);
-//            input.consume();
-//            ttype = input.LA(1);
-//        }
-//    }
-
     @Override
     public void traceIn(String ruleName, int ruleIndex) {
         if (trace) {

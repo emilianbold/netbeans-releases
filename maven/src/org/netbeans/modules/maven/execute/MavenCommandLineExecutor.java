@@ -178,7 +178,9 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         CommandLineOutputHandler out = new CommandLineOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig, !isMaven2);
         try {
             BuildExecutionSupport.registerRunningItem(item);
-
+            if (MavenSettings.getDefault().isAlwaysShowOutput()) {
+                ioput.select();
+            }
             if (clonedConfig.getPreExecution() != null) {
                 ProcessBuilder builder = constructBuilder(clonedConfig.getPreExecution(), ioput);
                 preProcessUUID = UUID.randomUUID().toString();

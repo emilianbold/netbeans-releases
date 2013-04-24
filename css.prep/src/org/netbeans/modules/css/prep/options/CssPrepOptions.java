@@ -60,9 +60,11 @@ public final class CssPrepOptions {
     // sass
     private static final String SASS_PATH = "sass.path"; // NOI18N
     private static final String SASS_OUTPUT_ON_ERROR = "sass.outputOnError"; // NOI18N
+    private static final String SASS_DEBUG = "sass.debug"; // NOI18N
     // less
     private static final String LESS_PATH = "less.path"; // NOI18N
     private static final String LESS_OUTPUT_ON_ERROR = "less.outputOnError"; // NOI18N
+    private static final String LESS_DEBUG = "less.debug"; // NOI18N
 
     private volatile boolean sassSearched = false;
     private volatile boolean lessSearched = false;
@@ -101,6 +103,14 @@ public final class CssPrepOptions {
         getPreferences().putBoolean(SASS_OUTPUT_ON_ERROR, outputOnError);
     }
 
+    public boolean getSassDebug() {
+        return getPreferences().getBoolean(SASS_DEBUG, true);
+    }
+
+    public void setSassDebug(boolean debug) {
+        getPreferences().putBoolean(SASS_DEBUG, debug);
+    }
+
     @CheckForNull
     public String getLessPath() {
         String path = getPreferences().get(LESS_PATH, null);
@@ -125,6 +135,14 @@ public final class CssPrepOptions {
 
     public void setLessOutpuOnError(boolean outputOnError) {
         getPreferences().putBoolean(LESS_OUTPUT_ON_ERROR, outputOnError);
+    }
+
+    public boolean getLessDebug() {
+        return getPreferences().getBoolean(LESS_DEBUG, true);
+    }
+
+    public void setLessDebug(boolean debug) {
+        getPreferences().putBoolean(LESS_DEBUG, debug);
     }
 
     private Preferences getPreferences() {
