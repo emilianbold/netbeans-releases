@@ -1741,9 +1741,11 @@ parameter_declaration [decl_kind kind]
 scope Declaration;
 @init                                                                           {if(state.backtracking == 0){action.parameter_declaration(input.LT(1));}}
     :                                                                           
-        attribute_specifiers?
-        decl_specifier attribute_specifiers?
-        ( decl_specifier attribute_specifiers? )*
+        attribute_specifiers?                                                                                                                                                               
+                                                                                {action.decl_specifiers(input.LT(1));}
+        (decl_specifier attribute_specifiers?)                                  
+        ( decl_specifier attribute_specifiers? )*                               {action.end_decl_specifiers(null/*input.LT(0)*/);}
+
         universal_declarator? 
         (
             ASSIGNEQUAL                                                         {action.parameter_declaration(action.PARAMETER_DECLARATION__ASSIGNEQUAL, input.LT(0));}
