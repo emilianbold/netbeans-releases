@@ -55,6 +55,7 @@ import org.openide.windows.TopComponent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
+import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.openide.windows.WindowManager;
 
 
@@ -77,8 +78,17 @@ public class GetRightEditorAction extends AbstractAction {
             MultiViewPerspective[] all = handler.getPerspectives();
             for (int i = 0; i < all.length; i++) {
                 if (pers.equals(all[i])) {
-                    int newIndex = i != all.length  - 1 ? i + 1 : 0; 
+                    int newIndex = i != all.length  - 1 ? i + 1 : 0;
+		    MultiViewDescription selectedDescr = Accessor.DEFAULT.extractDescription(pers);
+		    if (selectedDescr instanceof ContextAwareDescription) {
+			if (((ContextAwareDescription) selectedDescr).isSplitDescription()) {
+			    newIndex = i != all.length  - 1 ? i + 2 : 1;
+			} else {
+			    newIndex = i != all.length  - 2 ? i + 2 : 0;
+			}
+		    }
                     handler.requestActive(all[newIndex]);
+		    break;
                 }
             }
         } else {
