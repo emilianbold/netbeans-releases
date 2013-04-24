@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,69 +37,94 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.output;
 
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.api.output.OutputProcessor;
-import org.netbeans.modules.maven.api.output.OutputUtils;
-import org.netbeans.modules.maven.api.output.OutputVisitor;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.windows.OutputListener;
+package org.netbeans.modules.maven.execute;
 
-
-
+import java.io.Reader;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
- * exec plugin output processing, just handle stacktraces.
- * @author  Milos Kleint
+ * workarounds execution API which at some point in time calls select() on the IO.
+ * @author mkleint
  */
-public class ExecPluginOutputListenerProvider implements OutputProcessor {
+public class ProxyNonSelectableInputOutput implements InputOutput {
+    private final InputOutput delegate;
     
-    private static final String[] EXECGOALS = new String[] {
-        "mojo-execute#exec:exec", //NOI18N
-        "mojo-execute#exec:java" //NOI18N
-    };
-    private final NbMavenProjectImpl project;
-    
-    /** Creates a new instance of ExecPluginOutputListenerProvider */
-    public ExecPluginOutputListenerProvider(NbMavenProjectImpl proj) {
-        project = proj;
-    }
-    
-    @Override
-    public void processLine(String line, OutputVisitor visitor) {
-        OutputVisitor.Context context = visitor.getContext();
-        Project prj = project;
-        if (context != null && context.getCurrentProject() != null) {
-            prj = context.getCurrentProject();
-        }
-        ClassPath[] cp = prj.getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.EXECUTE);
-        OutputListener list = OutputUtils.matchStackTraceLine(line, ClassPathSupport.createProxyClassPath(cp));
-        if (list != null) {
-            visitor.setOutputListener(list);
-        }
+    public ProxyNonSelectableInputOutput(InputOutput delegate) {
+        this.delegate = delegate;
     }
 
     @Override
-    public String[] getRegisteredOutputSequences() {
-        return EXECGOALS;
+    public OutputWriter getOut() {
+        return delegate.getOut();
     }
 
     @Override
-    public void sequenceStart(String sequenceId, OutputVisitor visitor) {
+    public Reader getIn() {
+        return delegate.getIn();
     }
 
     @Override
-    public void sequenceEnd(String sequenceId, OutputVisitor visitor) {
+    public OutputWriter getErr() {
+        return delegate.getErr();
     }
-    
+
     @Override
-    public void sequenceFail(String sequenceId, OutputVisitor visitor) {
+    public void closeInputOutput() {
+        delegate.closeInputOutput();
+    }
+
+    @Override
+    public boolean isClosed() {
+        return delegate.isClosed();
+    }
+
+    @Override
+    public void setOutputVisible(boolean value) {
+        delegate.setOutputVisible(value);
+    }
+
+    @Override
+    public void setErrVisible(boolean value) {
+        delegate.setErrVisible(value);
+    }
+
+    @Override
+    public void setInputVisible(boolean value) {
+        delegate.setInputVisible(value);
+    }
+
+    @Override
+    public void select() {
+        //do not delegate!
+    }
+
+    @Override
+    public boolean isErrSeparated() {
+        return delegate.isErrSeparated();
+    }
+
+    @Override
+    public void setErrSeparated(boolean value) {
+        delegate.setErrSeparated(value);
+    }
+
+    @Override
+    public boolean isFocusTaken() {
+        return delegate.isFocusTaken();
+    }
+
+    @Override
+    public void setFocusTaken(boolean value) {
+        delegate.setFocusTaken(value);
+    }
+
+    @Override
+    public Reader flushReader() {
+        return delegate.flushReader();
     }
     
 }
