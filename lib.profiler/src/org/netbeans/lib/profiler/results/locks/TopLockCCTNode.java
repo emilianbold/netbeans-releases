@@ -39,60 +39,57 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.support;
+package org.netbeans.lib.profiler.results.locks;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import org.openide.modules.OnStop;
-import org.openide.util.Lookup;
+import org.netbeans.lib.profiler.results.CCTNode;
 
 /**
  *
- * @author vkvashin
+ * @author Tomas Hurka
  */
-public abstract class RepositoryStatistics {
+class TopLockCCTNode extends LockCCTNode {
 
-    public static final boolean ENABLED = Boolean.getBoolean("cnd.repository.statistics"); //NOI18N
-    public static final boolean ENHANCED = Boolean.getBoolean("cnd.repository.statistics.enhanced"); //NOI18N
+    private long totalTime;
 
-    public static void report(PrintStream ps, String title) {
-        if (ENABLED) {
-            RepositoryStatistics instance = Lookup.getDefault().lookup(RepositoryStatistics.class);
-            if (instance != null) {
-                instance.reportImpl(ps, title);
-            }
-        }
+    TopLockCCTNode() {
+        super(null);
     }
 
-    public static void report(PrintWriter pw, String title) {
-        if (ENABLED) {
-            RepositoryStatistics instance = Lookup.getDefault().lookup(RepositoryStatistics.class);
-            if (instance != null) {
-                instance.reportImpl(pw, title);
-            }
-        }
+    @Override
+    public String getNodeName() {
+        return "Invisible root node";  //NOI18N
     }
 
-    public static void clear() {
-        if (ENABLED) {
-            RepositoryStatistics instance = Lookup.getDefault().lookup(RepositoryStatistics.class);
-            if (instance != null) {
-                instance.clearImpl();
+    @Override
+    public long getTime() {
+        if (totalTime == 0) {
+            for (CCTNode ch : getChildren()) {
+                if (ch instanceof LockCCTNode) {
+                    totalTime += ((LockCCTNode) ch).getTime();
+                }
             }
         }
+        return totalTime;
     }
 
-    protected abstract void reportImpl(PrintStream ps, String title);
-    protected abstract void reportImpl(PrintWriter pw, String title);
-    protected abstract void clearImpl();
-
-    @OnStop
-    public static class Reporter implements Runnable {
-        @Override
-        public void run() {
-            if (ENABLED) {
-                RepositoryStatistics.report(System.out, "Statistics report upon exit");
-            }
-        }
+    @Override
+    public int hashCode() {
+        return TopLockCCTNode.class.hashCode();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof TopLockCCTNode;
+    }
+
+    @Override
+    public double getTimeInPerCent() {
+        return 100;
+    }
+
+    @Override
+    public long getWaits() {
+        throw new UnsupportedOperationException("Not supported");  //NOI18N
+    }
+    
 }
