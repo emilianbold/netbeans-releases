@@ -48,8 +48,10 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.regex.MatchResult;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.html.editor.Utils;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -68,6 +70,12 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
     private static final String NETBEANS_IMPORT_FILE = "__netbeans_import__"; // NOI18N
     private boolean cancelled = true;
 
+    private final Language JS_LANGUAGE;
+
+    public JsEmbeddingProvider() {
+        JS_LANGUAGE = Language.find(JS_MIMETYPE); //NOI18N
+    }
+            
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         cancelled = false; //resume
@@ -101,11 +109,6 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
             
             Token<HTMLTokenId> token = ts.token();
             
-            //end of the inlined js section
-            if (state.in_inlined_javascript && token.id() != HTMLTokenId.VALUE_JAVASCRIPT) {
-                handleValueJavascriptSectionEnd(snapshot, ts, token, state, embeddings);
-            }
-
             switch (token.id()) {
                 case SCRIPT:
                     handleScript(snapshot, ts, token, state, embeddings);
@@ -119,7 +122,8 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
                     }
                     break;
                 case VALUE_JAVASCRIPT:
-                    handleValueJavascript(snapshot, ts, token, state, embeddings);
+                case VALUE:
+                    handleValue(snapshot, ts, token, state, embeddings);
                     break;
                 case TAG_CLOSE:
                     if (LexerUtils.equals("script", token.text(), true, true)) {
@@ -135,8 +139,20 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
             }
         }
     }
-
-    private static void handleELOpenDelimiter(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
+    
+    //VALUE_JAVASCRIPT token always has text/javascript embedding
+    //VALUE token MAY have text/javascript embedding (provided by HtmlLexerPlugin) or by dynamic embedding creation
+    private void handleValue(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
+        if(ts.embedded(JS_LANGUAGE) != null) {
+            //has javascript embedding
+            embeddings.add(snapshot.create("(function(){\n", JS_MIMETYPE)); //NOI18N
+            int diff = Utils.isAttributeValueQuoted(token.text()) ? 1 : 0;
+            embeddings.add(snapshot.create(ts.offset() + diff, ts.token().length() - diff * 2, JS_MIMETYPE));
+            embeddings.add(snapshot.create("\n});\n", JS_MIMETYPE)); //NOI18N
+        }
+    }
+    
+    private void handleELOpenDelimiter(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
         //1.check if the next token represents javascript content
         String mimetype = (String) ts.token().getProperty("contentMimeType"); //NOT IN AN API, TBD
         if (mimetype != null && "text/javascript".equals(mimetype)) {
@@ -144,11 +160,11 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
 
             //2. check content
             if (ts.moveNext()) {
-                if (token.id() == HTMLTokenId.EL_CONTENT) {
+                if (ts.token().id() == HTMLTokenId.EL_CONTENT) {
                     //not empty expression: {{sg}}
                     embeddings.add(snapshot.create(ts.offset(), ts.token().length(), JS_MIMETYPE));
                     embeddings.add(snapshot.create(";\n});\n", JS_MIMETYPE)); //NOI18N
-                } else if (token.id() == HTMLTokenId.EL_CLOSE_DELIMITER) {
+                } else if (ts.token().id() == HTMLTokenId.EL_CLOSE_DELIMITER) {
                     //empty expression: {{}}
                     embeddings.add(snapshot.create(ts.offset(), 0, JS_MIMETYPE));
                     embeddings.add(snapshot.create(";\n});\n", JS_MIMETYPE)); //NOI18N
@@ -157,7 +173,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
         }
     }
 
-    private static void handleScript(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
+    private void handleScript(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
         String scriptType = (String) token.getProperty(HTMLTokenId.SCRIPT_TYPE_TOKEN_PROPERTY);
         if (scriptType == null || "text/javascript".equals(scriptType)) {
             state.in_javascript = true;
@@ -171,92 +187,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
         }
     }
 
-    private static void handleValueJavascript(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
-        int sourceStart = ts.offset();
-        int sourceEnd = sourceStart + ts.token().length();
-
-        if (!state.in_inlined_javascript) {
-            //first inlined javascript token
-
-            String value = token.text().toString();
-            // Strip opening "'s
-            if (value.length() > 0) {
-                char fch = value.charAt(0); //get first char
-                if (fch == '\'' || fch == '"') {
-                    state.opening_quotation_stripped = true;
-                    sourceStart++; //skip the quotation
-                }
-            }
-
-            //first inlined JS section - add the prelude
-            // Add a function context around the event handler
-            // such that it gets proper function context (e.g.
-            // it can return values, the way event handlers can)
-            embeddings.add(snapshot.create("(function(){\n", JS_MIMETYPE)); //NOI18N
-        }
-
-        state.in_inlined_javascript = true;
-
-        state.lastInlinedJavascriptToken = ts.token();
-        state.lastInlinedJavscriptEmbedding = snapshot.create(sourceStart, sourceEnd - sourceStart, JS_MIMETYPE);
-
-        //add the embedding
-        embeddings.add(state.lastInlinedJavscriptEmbedding);
-
-        state.inlined_javascript_pieces++;
-
-    }
-
-    private static void handleValueJavascriptSectionEnd(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
-        //we left the inlined javascript section
-        //need to check if the last inlined javascript section endded
-        //with a quotation and if so, strip it from the virtual source
-
-        assert state.lastInlinedJavscriptEmbedding != null;
-        assert state.lastInlinedJavascriptToken != null;
-
-        int sourceStart = state.lastInlinedJavascriptToken.offset(snapshot.getTokenHierarchy());
-        int sourceLength = state.lastInlinedJavascriptToken.length();
-        CharSequence value = state.lastInlinedJavascriptToken.text();
-
-        //strip closing quotation
-        if (state.opening_quotation_stripped) {
-            if (value.length() > 0) {
-                char fch = value.charAt(value.length() - 1);
-                if (fch == '\'' || fch == '"') {
-                    sourceLength--;
-
-                    //if there is only one inlined javascript piece, and starting quotation has been stripped,
-                    //we need to do that again in the reentered embedding
-                    if (state.inlined_javascript_pieces == 1) {
-                        sourceStart++;
-                        sourceLength--;
-                    }
-
-                    //need to adjust the last embedding
-                    //1. remove the embedding from the list
-                    boolean removed = embeddings.remove(state.lastInlinedJavscriptEmbedding);
-                    assert removed;
-
-                    //2. create new embedding with the adjusted length
-                    embeddings.add(snapshot.create(sourceStart, sourceLength, JS_MIMETYPE));
-                }
-            }
-        }
-
-        //end of inlined javascript section - add postlude
-        state.in_inlined_javascript = false;
-        state.opening_quotation_stripped = false;
-        state.lastInlinedJavascriptToken = null;
-        state.lastInlinedJavscriptEmbedding = null;
-        state.inlined_javascript_pieces = 0;
-
-        // Finish the surrounding function context
-        embeddings.add(snapshot.create("\n});\n", JS_MIMETYPE)); //NOI18N
-
-    }
-
-    private static void handleOpenTag(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
+    private void handleOpenTag(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
         // TODO - if we see a <script src="someurl"> block that also
         // has a nonempty body, warn - the body will be ignored!!
         // (This should be a quickfix)
@@ -322,7 +253,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
 
     }
 
-    protected static List<EmbeddingPosition> extractJsEmbeddings(String text, int sourceStart) {
+    private List<EmbeddingPosition> extractJsEmbeddings(String text, int sourceStart) {
         List<EmbeddingPosition> embeddings = new LinkedList<>();
         // beginning comment around the script
         int start = 0;
@@ -354,7 +285,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
         return embeddings;
     }
 
-    private static boolean isHtmlCommentStartToSkip(String text, int start, int lineEnd) {
+    private boolean isHtmlCommentStartToSkip(String text, int start, int lineEnd) {
         if (lineEnd != -1) {
             // issue #223883 - one of suggested constructs: http://lachy.id.au/log/2005/05/script-comments (Example 4)
             if (text.startsWith("<!--//-->", start)) { //NOI18N
@@ -369,13 +300,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
     }
 
     private static final class JsAnalyzerState {
-
-        int inlined_javascript_pieces = 0;
         boolean in_javascript = false;
-        boolean in_inlined_javascript = false;
-        boolean opening_quotation_stripped = false;
-        Token<?> lastInlinedJavascriptToken = null;
-        Embedding lastInlinedJavscriptEmbedding = null;
     }
 
     protected static final class EmbeddingPosition {
