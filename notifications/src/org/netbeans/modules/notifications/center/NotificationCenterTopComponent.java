@@ -105,7 +105,6 @@ public final class NotificationCenterTopComponent extends TopComponent {
     private Timer previewRefreshTimer;
     private JScrollPane notificationScroll;
     private final Timer tableRefreshTimer;
-    private final KeyListener escSearchKeyListener;
     private final NotificationTable.ProcessKeyEventListener tableKeyListener;
     private JPanel pnlSearch;
     private JToggleButton btnSearch;
@@ -118,7 +117,6 @@ public final class NotificationCenterTopComponent extends TopComponent {
         filterCallback = new QuickFilterCallback();
         tableRefreshTimer = new Timer(TABLE_REFRESH_PERIOD, new RefreshTimerListener());
         tableRefreshTimer.stop();
-        escSearchKeyListener = new EscKeyListener();
         tableKeyListener = new TableKeyListener();
         setName(NbBundle.getMessage(NotificationCenterTopComponent.class, "CTL_NotificationCenterTopComponent"));
         setToolTipText(NbBundle.getMessage(NotificationCenterTopComponent.class, "HINT_NotificationCenterTopComponent"));
@@ -305,7 +303,6 @@ public final class NotificationCenterTopComponent extends TopComponent {
         removeAll();
         init();
         notificationTable.addProcessKeyEventListener(tableKeyListener);
-        this.addKeyListener(escSearchKeyListener);
         tableRefreshTimer.restart();
     }
 
@@ -313,7 +310,6 @@ public final class NotificationCenterTopComponent extends TopComponent {
     public void componentClosed() {
         NotificationCenterManager.tcClosed();
         notificationTable.removeProcessKeyEventListener(tableKeyListener);
-        this.removeKeyListener(escSearchKeyListener);
         tableRefreshTimer.stop();
     }
 
@@ -356,18 +352,6 @@ public final class NotificationCenterTopComponent extends TopComponent {
         public void actionPerformed(ActionEvent e) {
             notificationTable.revalidate();
             notificationTable.repaint();
-        }
-    }
-
-    private class EscKeyListener extends KeyAdapter {
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == Event.ESCAPE) {
-                if (!notificationManager.isQuickFilter()) {
-                    setSearchVisible(false);
-                }
-            }
         }
     }
 
