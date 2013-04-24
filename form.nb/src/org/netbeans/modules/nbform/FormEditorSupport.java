@@ -178,7 +178,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
     private static final String MV_JAVA_ID = "java"; // NOI18N
     
     private static final int JAVA_ELEMENT_INDEX = 0;
-    private static final int FORM_ELEMENT_INDEX = 1;
+    private static final int FORM_ELEMENT_INDEX = 2;
     private int elementToOpen; // default element index when multiview TC is created
     
     /** Icon for the form editor multiview window */
