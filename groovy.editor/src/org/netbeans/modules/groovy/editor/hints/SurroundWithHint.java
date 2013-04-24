@@ -49,10 +49,9 @@ import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovySelectionRule;
 import org.openide.util.NbBundle;
 
-public class CommentOutRule extends GroovySelectionRule {
+public class SurroundWithHint extends GroovySelectionRule {
 
-    public static final Logger LOG = Logger.getLogger(CommentOutRule.class.getName()); // NOI18N
-    String bulbDesc = NbBundle.getMessage(CommentOutRule.class, "CommentOutRuleDescription");
+    public static final Logger LOG = Logger.getLogger(SurroundWithHint.class.getName()); // NOI18N
 
     enum OPERATION {
 
@@ -60,6 +59,10 @@ public class CommentOutRule extends GroovySelectionRule {
     };
 
     @Override
+    @NbBundle.Messages({
+        "CommentOutRuleHintDescription=Surround with /*selection*/",
+        "AddIfAroundBlockHintDescription=Surround with if (exp) {...|}"
+    })
     public void run(GroovyRuleContext context, List<Hint> result) {
         ParserResult info = context.parserResult;
         int start = context.selectionStart;
@@ -87,16 +90,15 @@ public class CommentOutRule extends GroovySelectionRule {
 
         OffsetRange range = new OffsetRange(start, end);
 
-        result.add(getDescriptor(OPERATION.COMMENT_OUT, "CommentOutRuleHintDescription", context, baseDoc, range));
-        result.add(getDescriptor(OPERATION.ADD_IF, "AddIfAroundBlockHintDescription", context, baseDoc, range));
+        result.add(getDescriptor(OPERATION.COMMENT_OUT, Bundle.CommentOutRuleHintDescription(), context, baseDoc, range));
+        result.add(getDescriptor(OPERATION.ADD_IF, Bundle.AddIfAroundBlockHintDescription(), context, baseDoc, range));
     }
 
-    Hint getDescriptor(OPERATION operation, String bulbDescriptionMsgBundle, GroovyRuleContext context,
+    Hint getDescriptor(OPERATION operation, String description, GroovyRuleContext context,
         BaseDocument baseDoc, OffsetRange range) {
 
         int DEFAULT_PRIORITY = 292;
-        String descriptionString = NbBundle.getMessage(CommentOutRule.class, bulbDescriptionMsgBundle);
-        HintFix fixToApply = new SimpleFix(operation, descriptionString, baseDoc, context);
+        HintFix fixToApply = new SimpleFix(operation, description, baseDoc, context);
 
         List<HintFix> fixList = new ArrayList<>(1);
         fixList.add(fixToApply);
@@ -113,8 +115,9 @@ public class CommentOutRule extends GroovySelectionRule {
     }
 
     @Override
+    @NbBundle.Messages("CommentOutRuleDescription=Surround with ...")
     public String getDisplayName() {
-        return bulbDesc;
+        return Bundle.CommentOutRuleDescription();
     }
 
     @Override

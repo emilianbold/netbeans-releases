@@ -62,13 +62,11 @@ import org.openide.util.NbBundle;
  *
  * @author schmidtm, Petr Hejl
  */
-public class ClassNotFoundRule extends GroovyErrorRule {
+public class AddImportStatementHint extends GroovyErrorRule {
 
-    public static final Logger LOG = Logger.getLogger(ClassNotFoundRule.class.getName());
-    private final String DESC = NbBundle.getMessage(ClassNotFoundRule.class, "FixImportsHintDescription"); // NOI18N
-
+    public static final Logger LOG = Logger.getLogger(AddImportStatementHint.class.getName());
     
-    public ClassNotFoundRule() {
+    public AddImportStatementHint() {
         super();
     }
 
@@ -130,8 +128,9 @@ public class ClassNotFoundRule extends GroovyErrorRule {
     }
 
     @Override
+    @NbBundle.Messages("FixImportsHintDescription=Fix all imports ...")
     public String getDisplayName() {
-        return DESC;
+        return Bundle.FixImportsHintDescription();
     }
 
     @Override
@@ -155,8 +154,12 @@ public class ClassNotFoundRule extends GroovyErrorRule {
         }
 
         @Override
+        @NbBundle.Messages({
+            "# {0} - fully qualified name of the class we want to import",
+            "ClassNotFoundRuleHintDescription=Add import for {0}"
+        })
         public String getDescription() {
-            return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundRuleHintDescription", fqn); // NOI18N
+            return Bundle.ClassNotFoundRuleHintDescription(fqn);
         }
 
         @Override
