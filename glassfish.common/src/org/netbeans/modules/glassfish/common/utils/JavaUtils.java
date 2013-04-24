@@ -236,27 +236,10 @@ public class JavaUtils {
         // Processs non-empty set.
         for (JavaPlatform platform : allPlatforms) {
             for (FileObject fo : platform.getInstallFolders()) {
-                try {
-                    if (supportedPlatforms.contains(JavaSEPlatform.toValue(
-                            platform.getSpecification()
-                            .getVersion().toString()))) {
-                        platformsList.add(platform);
-                    }
-                // Try to locate NPE cause and log it.
-                } catch (NullPointerException npe) {
-                    LOGGER.log(Level.INFO, "NullPointerException caught"
-                            + " in findSupportedPlatforms.", npe);
-                    LOGGER.log(Level.INFO, "Affected Java platform: {0}",
-                            platform.getDisplayName());
-                    if (platform.getSpecification() == null) {
-                        LOGGER.log(Level.INFO, "Value of"
-                                + " platform.getSpecification() is null.");
-                    } else if (
-                            platform.getSpecification().getVersion() == null) {
-                        LOGGER.log(Level.INFO, "Value of"
-                                + " platform.getSpecification().getVersion()"
-                                + " is null.");
-                    }
+                if (supportedPlatforms.contains(JavaSEPlatform.toValue(
+                        platform.getSpecification()
+                        .getVersion().toString()))) {
+                    platformsList.add(platform);
                 }
             }
         }
