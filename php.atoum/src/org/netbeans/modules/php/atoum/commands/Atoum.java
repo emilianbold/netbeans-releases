@@ -55,6 +55,7 @@ import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.atoum.options.AtoumOptions;
 import org.netbeans.modules.php.atoum.ui.options.AtoumOptionsPanelController;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
@@ -174,7 +175,7 @@ public final class Atoum {
             LOGGER.log(Level.FINE, "Test creating cancelled", ex);
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
-            org.netbeans.modules.php.api.util.UiUtils.processExecutionException(ex, AtoumOptionsPanelController.OPTIONS_SUB_PATH);
+            UiUtils.processExecutionException(ex, AtoumOptionsPanelController.OPTIONS_SUB_PATH);
             throw new TestRunException(ex);
         }
         return null;
