@@ -44,6 +44,8 @@ package org.netbeans.modules.html.editor.embedding;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.html.lexer.HtmlLexerPlugin;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.test.CslTestBase;
@@ -82,11 +84,54 @@ public class JsEmbeddingProviderTest extends CslTestBase {
     }
 
     public void testOnClick() throws ParseException {
-        assertEmbedding("<div onclick='alert()'/>", 
+        assertEmbedding("<div onclick='alert()'/>",
                 "(function(){\n"
                 + "alert()\n"
                 + "});\n"
                 + "");
+    }
+
+    public void testCustomJSEmbeddingOnAttributeValue() {
+        assertEmbedding("<div controller='MyController'/>",
+                "(function(){\n"
+                + "MyController\n"
+                + "});\n"
+                + "");
+    }
+
+    public void testCustomEL() {
+        assertEmbedding("<div>{{hello}}</div>",
+                "(function(){\n"
+                + "hello;\n"
+                + "});\n"
+                + "");
+    }
+
+    @MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
+    public static class TestHtmlLexerPlugin implements HtmlLexerPlugin {
+
+        @Override
+        public String getOpenDelimiter() {
+            return "{{";
+        }
+
+        @Override
+        public String getCloseDelimiter() {
+            return "}}";
+        }
+
+        @Override
+        public String getContentMimeType() {
+            return "text/javascript";
+        }
+
+        @Override
+        public String createAttributeEmbedding(String elementName, String attributeName) {
+            if ("controller".equals(attributeName)) {
+                return "text/javascript";
+            }
+            return null;
+        }
     }
 
     private void assertEmbedding(String code, String expectedJsVirtualSource) {

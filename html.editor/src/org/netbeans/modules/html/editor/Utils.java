@@ -135,4 +135,15 @@ public class Utils {
         return model_ref.get();
     }
     
+    public static boolean isAttributeValueQuoted(CharSequence value) {
+        if (value == null) {
+            return false;
+        }
+        if (value.length() < 2) {
+            return false;
+        } else {
+            return ((value.charAt(0) == '\'' || value.charAt(0) == '"')
+                    && (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
+        }
+    }
 }
