@@ -571,7 +571,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
      */
     public int getLogicalLineCountIfWrappedAt (int charsPerLine) {
         if (charsPerLine >= longestLineLen) {
-            return getLineCount();
+            return getVisibleLineCount();
         }
         int lineCount = getLineCount();
         if (charsPerLine == 0 || lineCount == 0) {
