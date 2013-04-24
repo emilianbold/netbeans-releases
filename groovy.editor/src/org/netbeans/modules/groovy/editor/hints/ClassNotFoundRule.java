@@ -111,7 +111,7 @@ public class ClassNotFoundRule extends GroovyErrorRule {
         OffsetRange range = HintUtils.getLineOffset(context, error);
         if (range != null) {
             for (ImportCandidate candidate : importCandidates) {
-                List<HintFix> fixList = new ArrayList<HintFix>(1);
+                List<HintFix> fixList = new ArrayList<>(1);
                 String fqn = candidate.getFqnName();
                 HintFix fixToApply = new AddImportFix(fo, fqn);
                 fixList.add(fixToApply);
