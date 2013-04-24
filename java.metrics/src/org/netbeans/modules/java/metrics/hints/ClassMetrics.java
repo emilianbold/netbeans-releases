@@ -43,6 +43,7 @@ package org.netbeans.modules.java.metrics.hints;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -423,19 +424,23 @@ public class ClassMetrics {
             return false;
         }
         StatementTree st = method.getBody().getStatements().get(0);
-        if (st.getKind() != Tree.Kind.ASSIGNMENT) {
+        if (st.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
+            return false;
+        }
+        ExpressionTree stEx = ((ExpressionStatementTree)st).getExpression();
+        if (stEx.getKind() != Tree.Kind.ASSIGNMENT) {
             return false;
         }
         Element e = info.getTrees().getElement(
-                new TreePath(new TreePath(
+                new TreePath(new TreePath(new TreePath(
                     new TreePath(methodPath, method.getBody()),
-                    st), 
-                    ((AssignmentTree)st).getVariable()));
+                    st), stEx), 
+                    ((AssignmentTree)stEx).getVariable()));
         if (!isFieldOfThis(info, e, methodPath)) {
             return false;
         }
         // ensure that the expression is just parenthesized / typecasted the parameter
-        ExpressionTree expr = ((AssignmentTree)st).getExpression();
+        ExpressionTree expr = ((AssignmentTree)stEx).getExpression();
         TreePath exprPath = new TreePath(new TreePath(
                 new TreePath(methodPath, method.getBody()),
                 st), expr);
@@ -465,6 +470,15 @@ public class ClassMetrics {
         return true;
     }
     
+    /**
+     * Checks whether the expression at tree path resolves to a field
+     * on this type or a supertype.
+     * 
+     * @param info
+     * @param e
+     * @param methodPath
+     * @return 
+     */
     private static boolean isFieldOfThis(CompilationInfo info, Element e, TreePath methodPath) {
         if (e == null || e.getKind() != ElementKind.FIELD) {
             return false;
@@ -540,6 +554,11 @@ public class ClassMetrics {
         
         if (expr.getKind() == Tree.Kind.MEMBER_SELECT) {
             ExpressionTree selector = ((MemberSelectTree)expr).getExpression();
+            if (selector.getKind() != Tree.Kind.IDENTIFIER) {
+                return false;
+            } else if (!((IdentifierTree)selector).getName().contentEquals("this")) {
+                return false;
+            }
             fieldName = ((MemberSelectTree)expr).getIdentifier();
         } else if (expr.getKind() == Tree.Kind.IDENTIFIER) {
             fieldName = ((IdentifierTree)expr).getName();
