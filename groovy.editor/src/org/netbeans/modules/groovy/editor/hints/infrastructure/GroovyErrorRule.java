@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.Rule.ErrorRule;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorID;
 import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
 
@@ -65,6 +66,5 @@ public abstract class GroovyErrorRule implements ErrorRule {
     /** 
      * Return possible fixes for a given diagnostic report.
      */
-    public abstract void run(GroovyRuleContext context, GroovyError error,
-             List<Hint> result);
+    public abstract void run(RuleContext context, GroovyError error, List<Hint> result);
 }

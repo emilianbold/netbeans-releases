@@ -53,7 +53,6 @@ import org.netbeans.modules.groovy.editor.imports.ImportCandidate;
 import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorID;
 import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyErrorRule;
-import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
 import org.netbeans.modules.groovy.editor.hints.utils.HintUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -62,23 +61,18 @@ import org.openide.util.NbBundle;
  *
  * @author schmidtm, Petr Hejl
  */
-public class ClassNotFoundRule extends GroovyErrorRule {
+public class AddImportStatementHint extends GroovyErrorRule {
 
-    public static final Logger LOG = Logger.getLogger(ClassNotFoundRule.class.getName());
-    private final String DESC = NbBundle.getMessage(ClassNotFoundRule.class, "FixImportsHintDescription"); // NOI18N
+    public static final Logger LOG = Logger.getLogger(AddImportStatementHint.class.getName());
 
     
-    public ClassNotFoundRule() {
-        super();
-    }
-
     @Override
     public Set<CompilerErrorID> getCodes() {
         return EnumSet.of(CompilerErrorID.CLASS_NOT_FOUND);
     }
 
     @Override
-    public void run(GroovyRuleContext context, GroovyError error, List<Hint> result) {
+    public void run(RuleContext context, GroovyError error, List<Hint> result) {
         LOG.log(Level.FINEST, "run()"); // NOI18N
 
         String desc = error.getDescription();
@@ -130,8 +124,9 @@ public class ClassNotFoundRule extends GroovyErrorRule {
     }
 
     @Override
+    @NbBundle.Messages("FixImportsHintDescription=Fix all imports ...")
     public String getDisplayName() {
-        return DESC;
+        return Bundle.FixImportsHintDescription();
     }
 
     @Override
@@ -144,10 +139,10 @@ public class ClassNotFoundRule extends GroovyErrorRule {
         return HintSeverity.ERROR;
     }
 
-    private class AddImportFix implements HintFix {
+    private static class AddImportFix implements HintFix {
 
-        FileObject fo;
-        String fqn;
+        private final FileObject fo;
+        private final String fqn;
 
         public AddImportFix(FileObject fo, String fqn) {
             this.fo = fo;
@@ -155,8 +150,12 @@ public class ClassNotFoundRule extends GroovyErrorRule {
         }
 
         @Override
+        @NbBundle.Messages({
+            "# {0} - fully qualified name of the class we want to import",
+            "ClassNotFoundRuleHintDescription=Add import for {0}"
+        })
         public String getDescription() {
-            return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundRuleHintDescription", fqn); // NOI18N
+            return Bundle.ClassNotFoundRuleHintDescription(fqn);
         }
 
         @Override

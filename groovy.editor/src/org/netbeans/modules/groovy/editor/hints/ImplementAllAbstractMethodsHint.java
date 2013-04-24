@@ -65,7 +65,6 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorID;
 import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyErrorRule;
-import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
 import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -85,7 +84,7 @@ public final class ImplementAllAbstractMethodsHint extends GroovyErrorRule {
     }
 
     @Override
-    public void run(GroovyRuleContext context, GroovyError error, List<Hint> result) {
+    public void run(RuleContext context, GroovyError error, List<Hint> result) {
         FileObject fo = context.parserResult.getSnapshot().getSource().getFileObject();
         
         AddMethodStubsFix fix = findExistingFix(result);

@@ -62,7 +62,6 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorID;
 import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyErrorRule;
-import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
 import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.openide.util.NbBundle;
 
@@ -81,7 +80,7 @@ public final class MakeClassAbstractHint extends GroovyErrorRule {
     }
 
     @Override
-    public void run(GroovyRuleContext context, GroovyError error, List<Hint> result) {
+    public void run(RuleContext context, GroovyError error, List<Hint> result) {
         for (Hint existingHint : result) {
             if (existingHint.getRule() instanceof MakeClassAbstractHint) {
                 return;

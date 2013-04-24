@@ -14,10 +14,10 @@
         <folder name="text">
             <folder name="x-groovy">
                 <folder name="selection">
-                    <file name="org-netbeans-modules-groovy-editor-hints-CommentOutRule.instance"/>
+                    <file name="org-netbeans-modules-groovy-editor-hints-SurroundWithHint.instance"/>
                 </folder>    
                 <folder name="errors">
-                    <file name="org-netbeans-modules-groovy-editor-hints-ClassNotFoundRule.instance"/>
+                    <file name="org-netbeans-modules-groovy-editor-hints-AddImportStatementHint.instance"/>
                     <file name="org-netbeans-modules-groovy-editor-hints-MakeClassAbstractHint.instance"/>
                     <file name="org-netbeans-modules-groovy-editor-hints-ImplementAllAbstractMethodsHint.instance"/>
                 </folder>    

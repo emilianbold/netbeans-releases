@@ -47,8 +47,8 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
-import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
 import org.openide.util.Parameters;
 
 /**
@@ -69,7 +69,7 @@ public final class HintUtils {
      */
     @CheckForNull
     public static OffsetRange getLineOffset(
-            @NonNull GroovyRuleContext context, 
+            @NonNull RuleContext context, 
             @NonNull GroovyError error) {
         
         Parameters.notNull("context", context);
