@@ -39,55 +39,33 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.resources.api;
+package org.netbeans.modules.javaee.specs.support;
+
+import org.netbeans.modules.javaee.specs.support.spi.JmsSupportImplementation;
 
 /**
- * Describes single JmsDestination JNDI resource.
+ * Default {@link JmsSupportImplementation} implementation.
+ * Used in cases when the server doesn't provide its own implementation.
+ * It's GlassFish V3 complied with allowed 'destinationLookup' option
+ * which makes it compatible with current IDE behavior.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface JmsDestination extends JndiResource {
+public class DefaultJmsSupportImpl implements JmsSupportImplementation {
 
-    /**
-     * Description of the JmsDestination.
-     * @return JmsDestination's description
-     */
-    String getDescription();
+    @Override
+    public boolean useMappedName() {
+        return true;
+    }
 
-    /**
-     * Name of the JmsDestination.
-     * @return JmsDestination's name
-     */
-    String getName();
+    @Override
+    public boolean useDestinationLookup() {
+        return true;
+    }
 
-    /**
-     * ClassName of the JmsDestination.
-     * @return JmsDestination's className
-     */
-    String getClassName();
-
-    /**
-     * InterfaceName of the JmsDestination.
-     * @return JmsDestination's interfaceName
-     */
-    String getInterfaceName();
-
-    /**
-     * DestinationName of the JmsDestination.
-     * @return JmsDestination's destinationName
-     */
-    String getDestinationName();
-
-    /**
-     * ResourceAdapterName of the JmsDestination.
-     * @return JmsDestination's resourceAdapterName
-     */
-    String getResourceAdapterName();
-
-    /**
-     * Properties of the JmsDestination.
-     * @return array of JmsDestination's properties
-     */
-    String[] getProperties();
+    @Override
+    public String activationConfigProperty() {
+        return null;
+    }
 
 }
