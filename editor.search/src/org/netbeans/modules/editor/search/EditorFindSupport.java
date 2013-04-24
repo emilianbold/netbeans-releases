@@ -161,7 +161,7 @@ public final class EditorFindSupport {
         new WeakHashMap<>();
     
     /** Support for firing change events */
-    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
     private SPW lastSelected;
     private List<SPW> historyList = new ArrayList<>();
@@ -171,7 +171,7 @@ public final class EditorFindSupport {
     }
 
     /** Get shared instance of find support */
-    public static EditorFindSupport getInstance() {
+    public synchronized static EditorFindSupport getInstance() {
         if (findSupport == null) {
             findSupport = new EditorFindSupport();
         }
@@ -224,7 +224,7 @@ public final class EditorFindSupport {
      */
     public int[] getBlocks(int[] blocks, Document doc,
                     int startOffset, int endOffset) throws BadLocationException {
-        Map props = getValidFindProperties(null);
+        Map<String, Object> props = getValidFindProperties(null);
         
         boolean blockSearch = Boolean.TRUE.equals(props.get(FIND_BLOCK_SEARCH));
         Position blockSearchStartPos = (Position) props.get(FIND_BLOCK_SEARCH_START);
@@ -389,7 +389,7 @@ public final class EditorFindSupport {
         }
     }
     
-    private boolean isBackSearch(Map props, boolean oppositeDir) {
+    private boolean isBackSearch(Map<String, Object> props, boolean oppositeDir) {
         Boolean b = (Boolean)props.get(FIND_BACKWARD_SEARCH);
         boolean back = (b != null && b.booleanValue());
         if (oppositeDir) {
@@ -833,16 +833,13 @@ public final class EditorFindSupport {
 
                 // Display message about replacement
                 if (totalCnt == 0){
-                    String exp = "'' "; //NOI18N
-                    if (findWhat != null) { // nothing to search for
-                        exp = "'" + findWhat + "' "; // NOI18N
-                    }
+                    String exp = "'" + findWhat + "' "; //NOI18N
                     ComponentUtils.setStatusText(c, exp + NbBundle.getMessage(
                                 EditorFindSupport.class, NOT_FOUND_LOCALE), IMPORTANCE_FIND_OR_REPLACE);
                 }else{
                     MessageFormat fmt = new MessageFormat(
                                             NbBundle.getMessage(EditorFindSupport.class, ITEMS_REPLACED_LOCALE));
-                    String msg = fmt.format(new Object[] { new Integer(replacedCnt), new Integer(totalCnt) });
+                    String msg = fmt.format(new Object[] { Integer.valueOf(replacedCnt), Integer.valueOf(totalCnt) });
                     ComponentUtils.setStatusText(c, msg, IMPORTANCE_FIND_OR_REPLACE);
                 }
 
@@ -976,10 +973,10 @@ public final class EditorFindSupport {
     }
     
     public final static class SPW{
-        private String searchExpression;
-        private boolean wholeWords;
-        private boolean matchCase;
-        private boolean regExp;
+        private final String searchExpression;
+        private final boolean wholeWords;
+        private final boolean matchCase;
+        private final boolean regExp;
         
         public SPW(String searchExpression, boolean wholeWords,
             boolean matchCase, boolean regExp){
@@ -1046,8 +1043,8 @@ public final class EditorFindSupport {
 
     public final static class RP {
 
-        private String replaceExpression;
-        private boolean preserveCase;
+        private final String replaceExpression;
+        private final boolean preserveCase;
 
         public RP(String replaceExpression, boolean preserveCase) {
             this.replaceExpression = replaceExpression;
