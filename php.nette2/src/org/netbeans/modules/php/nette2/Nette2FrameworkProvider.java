@@ -51,10 +51,13 @@ import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.nette2.annotations.Nette2AnnotationsProvider;
+import org.netbeans.modules.php.nette2.preferences.Nette2Preferences;
 import org.netbeans.modules.php.nette2.ui.actions.Nette2PhpModuleActionsExtender;
+import org.netbeans.modules.php.nette2.ui.customizer.Nette2CustomizerExtender;
 import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
@@ -95,13 +98,15 @@ public class Nette2FrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public boolean isInPhpModule(PhpModule phpModule) {
-        boolean result = false;
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        if (sourceDirectory != null) {
-            FileObject bootstrap = sourceDirectory.getFileObject(COMMON_BOOTSTRAP_PATH);
-            result = bootstrap != null && !bootstrap.isFolder() && bootstrap.isValid();
-            FileObject config = sourceDirectory.getFileObject(COMMON_CONFIG_PATH);
-            result = result && config != null && config.isFolder() && config.isValid();
+        boolean result = Nette2Preferences.isManuallyEnabled(phpModule);
+        if (!result) {
+            FileObject sourceDirectory = phpModule.getSourceDirectory();
+            if (sourceDirectory != null) {
+                FileObject bootstrap = sourceDirectory.getFileObject(COMMON_BOOTSTRAP_PATH);
+                result = bootstrap != null && !bootstrap.isFolder() && bootstrap.isValid();
+                FileObject config = sourceDirectory.getFileObject(COMMON_CONFIG_PATH);
+                result = result && config != null && config.isFolder() && config.isValid();
+            }
         }
         return result;
     }
@@ -174,6 +179,11 @@ public class Nette2FrameworkProvider extends PhpFrameworkProvider {
     @Override
     public List<AnnotationCompletionTagProvider> getAnnotationsCompletionTagProviders(PhpModule phpModule) {
         return Collections.<AnnotationCompletionTagProvider>singletonList(new Nette2AnnotationsProvider());
+    }
+
+    @Override
+    public PhpModuleCustomizerExtender createPhpModuleCustomizerExtender(PhpModule phpModule) {
+        return new Nette2CustomizerExtender(phpModule);
     }
 
 }
