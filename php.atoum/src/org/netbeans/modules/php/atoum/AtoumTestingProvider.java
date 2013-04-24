@@ -46,6 +46,7 @@ import org.netbeans.modules.php.api.editor.PhpClass.Method;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.atoum.commands.Atoum;
+import org.netbeans.modules.php.atoum.locate.AtoumTestLocator;
 import org.netbeans.modules.php.atoum.run.TestRunner;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
@@ -120,7 +121,7 @@ public class AtoumTestingProvider implements PhpTestingProvider {
 
     @Override
     public TestLocator getTestLocator(PhpModule phpModule) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new AtoumTestLocator(phpModule);
     }
 
     @Override
