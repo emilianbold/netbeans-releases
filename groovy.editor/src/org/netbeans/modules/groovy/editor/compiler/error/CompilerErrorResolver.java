@@ -39,60 +39,42 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.support;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import org.openide.modules.OnStop;
-import org.openide.util.Lookup;
+package org.netbeans.modules.groovy.editor.compiler.error;
+
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Parameters;
 
 /**
  *
- * @author vkvashin
+ * @author Martin Janicek
  */
-public abstract class RepositoryStatistics {
+public final class CompilerErrorResolver {
 
-    public static final boolean ENABLED = Boolean.getBoolean("cnd.repository.statistics"); //NOI18N
-    public static final boolean ENHANCED = Boolean.getBoolean("cnd.repository.statistics.enhanced"); //NOI18N
-
-    public static void report(PrintStream ps, String title) {
-        if (ENABLED) {
-            RepositoryStatistics instance = Lookup.getDefault().lookup(RepositoryStatistics.class);
-            if (instance != null) {
-                instance.reportImpl(ps, title);
-            }
-        }
+    private static final String UNABLE_TO_RESOLVE_CLASS = "unable to resolve class "; // NOI18N
+    private static final String CLASS_DOES_NOT_IMPLEMENT_ALL_METHODS = "Can't have an abstract method in a non-abstract class."; // NOI18N
+    
+    
+    private CompilerErrorResolver() {
     }
-
-    public static void report(PrintWriter pw, String title) {
-        if (ENABLED) {
-            RepositoryStatistics instance = Lookup.getDefault().lookup(RepositoryStatistics.class);
-            if (instance != null) {
-                instance.reportImpl(pw, title);
-            }
+    
+    /**
+     * Finds correct {@link GroovyCompilerErrorID} for the given error message.
+     * 
+     * @param errorMessage message that is typically provided by the groovyc
+     * @return corresponding {@link GroovyCompilerErrorID}
+     */
+    public static CompilerErrorID getId(@NonNull String errorMessage) {
+        Parameters.notNull("errorMessage", errorMessage);
+        
+        if (errorMessage.startsWith(UNABLE_TO_RESOLVE_CLASS)) {
+            return CompilerErrorID.CLASS_NOT_FOUND;
         }
-    }
-
-    public static void clear() {
-        if (ENABLED) {
-            RepositoryStatistics instance = Lookup.getDefault().lookup(RepositoryStatistics.class);
-            if (instance != null) {
-                instance.clearImpl();
-            }
+        
+        if (errorMessage.startsWith(CLASS_DOES_NOT_IMPLEMENT_ALL_METHODS)) {
+            return CompilerErrorID.CLASS_DOES_NOT_IMPLEMENT_ALL_METHODS;
         }
-    }
 
-    protected abstract void reportImpl(PrintStream ps, String title);
-    protected abstract void reportImpl(PrintWriter pw, String title);
-    protected abstract void clearImpl();
-
-    @OnStop
-    public static class Reporter implements Runnable {
-        @Override
-        public void run() {
-            if (ENABLED) {
-                RepositoryStatistics.report(System.out, "Statistics report upon exit");
-            }
-        }
+        return CompilerErrorID.UNDEFINED;
     }
 }

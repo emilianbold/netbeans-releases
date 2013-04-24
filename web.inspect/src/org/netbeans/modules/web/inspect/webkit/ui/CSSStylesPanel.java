@@ -213,7 +213,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                                         @Override
                                         public void run() {
                                             contentUpdateInProgress = false;
-                                            updateRulesEditor(ruleLookupResult.allInstances());
+                                            updateRulesEditor();
                                         }
                                     });
                                 }
@@ -230,14 +230,13 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
 
     /**
      * Updates the rules editor window to show information about the selected rule.
-     *
-     * @param rules rules selected in this panel.
      */
-    void updateRulesEditor(final Collection<? extends Rule> rules) {
+    void updateRulesEditor() {
         RP.post(new Runnable() {
             @Override
             public void run() {
                 if (pageModel != null) {
+                    Collection<? extends Rule> rules = ruleLookupResult.allInstances();
                     String selector = null;
                     if  (rules.size() == 1) {
                         Rule rule = rules.iterator().next();
@@ -250,10 +249,11 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         if (!active) {
             return;
         }
-        final RuleInfo ruleInfo = (rules.size() == 1) ? lookup.lookup(RuleInfo.class) : null;
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
+                final Collection<? extends Rule> rules = ruleLookupResult.allInstances();
+                final RuleInfo ruleInfo = (rules.size() == 1) ? lookup.lookup(RuleInfo.class) : null;
                 CssStylesTC ruleEditor = (CssStylesTC)WindowManager.getDefault().findTopComponent(CssStylesTC.ID);
                 final RuleEditorController controller = ruleEditor.getRuleEditorController();
                 RP.post(new Runnable() {
@@ -304,7 +304,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     @Override
     public void activated() {
         active = true;
-        updateRulesEditor(ruleLookupResult.allInstances());
+        updateRulesEditor();
     }
 
     @Override
@@ -329,10 +329,9 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
 
         @Override
         public void resultChanged(LookupEvent ev) {
-            Collection<? extends Rule> rules = ruleLookupResult.allInstances();
             // Trying to avoid unwanted flashing of Rule Editor
             if (!contentUpdateInProgress) {
-                updateRulesEditor(rules);
+                updateRulesEditor();
             }
         }
 

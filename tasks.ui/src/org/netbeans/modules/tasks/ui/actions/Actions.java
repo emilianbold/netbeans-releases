@@ -460,11 +460,7 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            Repository repository = RepositoryManager.getInstance().createRepository();
-            // TODO replace this with listener in TC
-            if (repository != null) {
-                DashboardViewer.getInstance().addRepository(repository);
-            }
+            RepositoryManager.getInstance().createRepository();
         }
     }
 

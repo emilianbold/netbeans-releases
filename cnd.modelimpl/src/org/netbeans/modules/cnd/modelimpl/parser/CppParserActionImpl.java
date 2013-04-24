@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -1088,8 +1089,11 @@ public class CppParserActionImpl implements CppParserActionEx {
         
         CsmObjectBuilder parent = builderContext.top();
         
-        if (parent instanceof ConstructorDefinitionBuilder || parent instanceof FunctionDefinitionBuilder) {
+        if (parent instanceof FunctionBuilder) { 
+            // Note that ConstructorBuilder is also a FunctionBuilder
             enterNestedScopes(((SimpleDeclarationBuilder) parent).getScopeNames());
+            
+            populateScopeWithParameters((FunctionBuilder) parent);
         }
         
         CompoundStatementBuilder builder = new CompoundStatementBuilder();
@@ -3758,6 +3762,22 @@ public class CppParserActionImpl implements CppParserActionEx {
                 
         if (declBuilder.getTemplateDescriptorBuilder() != null) {
             entry.setAttribute(CppAttributes.TEMPLATE, true);
+        }
+    }
+    
+    private void populateScopeWithParameters(FunctionBuilder builder) {
+        if (builder.getParametersListBuilder() != null) {
+            FunctionParameterListBuilder parametersBuilder = (FunctionParameterListBuilder) builder.getParametersListBuilder();
+            List<ParameterBuilder> parameterBuildersList = parametersBuilder.getParameterBuilders();
+//            CsmFunctionParameterList parametersList = parametersBuilder.create();
+            
+            if (parameterBuildersList != null && !parameterBuildersList.isEmpty()) {
+                for (ParameterBuilder paramBuilder : parameterBuildersList) {
+                    if (paramBuilder.getName() != null && !String.valueOf(paramBuilder.getName()).isEmpty()) {
+                        globalSymTab.enterLocal(paramBuilder.getName());
+                    }
+                }
+            }
         }
     }
         
