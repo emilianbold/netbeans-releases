@@ -2987,8 +2987,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                         results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, e.asType(), anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, e.asType(), smartTypes), env.assignToVarPos(), env.getWhiteList()));
                         break;
                     case FIELD:
-                        TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
-                        results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
+                        String name = e.getSimpleName().toString();
+                        if (THIS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
+                            results.add(JavaCompletionItem.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
+                        } else {
+                            TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
+                            results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
+                        }
                         break;
                 }
             }
@@ -3365,6 +3370,14 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             if (!ctorSeen[0] && kinds.contains(CONSTRUCTOR) && elem.getKind().isInterface()) {
                 results.add(JavaCompletionItem.createDefaultConstructorItem((TypeElement)elem, anchorOffset, isOfSmartType(env, type, smartTypes)));
+            }
+            if (isStatic && elem.getKind().isInterface() && env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0) {
+                for (TypeMirror iface : enclClass.getInterfaces()) {
+                    if (((DeclaredType)iface).asElement() == elem) {
+                        results.add(JavaCompletionItem.createKeywordItem(SUPER_KEYWORD, null, anchorOffset, isOfSmartType(env, type, smartTypes)));
+                        break;
+                    }
+                }
             }
             if (!isStatic && nestedClassSeen[0]) {
                 addKeyword(env, NEW_KEYWORD, SPACE, false);

@@ -1,7 +1,5 @@
 int a
 public String field
-final Object super
-final Test this
 boolean
 byte
 char
@@ -10,6 +8,8 @@ float
 int
 long
 short
+super
+this
 AbstractMethodError
 Appendable
 ArithmeticException
