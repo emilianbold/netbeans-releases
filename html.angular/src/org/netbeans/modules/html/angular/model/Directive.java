@@ -53,7 +53,7 @@ import static org.netbeans.modules.html.angular.model.DirectiveType.*;
  * @author marekfukala
  */
 public enum Directive {
-    
+    //      requir.|attr |class |element
     app     (false, true, true,  false, angularModule), 
     bind    (true,  true, true,  false, expression), 
     bindHtmlUnsafe
