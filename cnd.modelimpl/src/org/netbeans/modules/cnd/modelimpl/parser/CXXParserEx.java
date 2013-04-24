@@ -200,6 +200,14 @@ public class CXXParserEx extends CXXParser {
         }
     }
 
+    @Override
+    protected void sync_statement_impl() {
+        if (RECOVER_DECLARATIONS) {
+            BitSet follow = state.following[state._fsp]; //computeContextSensitiveRuleFOLLOW();
+            syncToSet(follow);
+        }
+    }
+
     protected void syncToSet(BitSet follow) {
         beginResync();
         try {

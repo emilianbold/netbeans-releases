@@ -41,8 +41,12 @@
  */
 package org.netbeans.modules.cnd.repository.support;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.Date;
 import org.openide.modules.OnStop;
 import org.openide.util.Lookup;
 
@@ -54,6 +58,23 @@ public abstract class RepositoryStatistics {
 
     public static final boolean ENABLED = Boolean.getBoolean("cnd.repository.statistics"); //NOI18N
     public static final boolean ENHANCED = Boolean.getBoolean("cnd.repository.statistics.enhanced"); //NOI18N
+
+    private static volatile File reportFile;
+
+    static {
+        String reportFilePath = System.getProperty("cnd.repository.statistics.out"); //NOI18N
+        if (reportFilePath != null) {
+            reportFile = new File(reportFilePath);
+        }
+    }
+
+    public static void report(String title) {
+        if (ENABLED) {
+            PrintStream out = getDefaultOutput();
+            report(out, title);
+            out.close();
+        }
+    }
 
     public static void report(PrintStream ps, String title) {
         if (ENABLED) {
@@ -82,16 +103,55 @@ public abstract class RepositoryStatistics {
         }
     }
 
+    public static int getTotal() {
+        if (ENABLED) {
+            RepositoryStatistics instance = Lookup.getDefault().lookup(RepositoryStatistics.class);
+            if (instance != null) {
+                return instance.getTotalImpl();
+            }
+        }
+        return 0;
+    }
+
+    public static void setReportFile(File file) {
+        reportFile = file;
+    }
+
+    private static PrintStream getDefaultOutput() {
+        File file = reportFile;
+        try {
+            if (file != null) {
+                if (file.exists()) {
+                    if (file.canWrite()) {
+                        return new PrintStream(new FileOutputStream(file, true));
+                    }
+                } else {
+                    File parent = file.getParentFile();
+                    if (!parent.exists()) {
+                        parent.mkdirs();
+                    }
+                    if (parent.exists() && parent.canWrite()) {
+                        return new PrintStream(new FileOutputStream(file, true));
+                    }
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        }
+        return System.out;
+    }
+
     protected abstract void reportImpl(PrintStream ps, String title);
     protected abstract void reportImpl(PrintWriter pw, String title);
     protected abstract void clearImpl();
+    protected abstract int getTotalImpl();
 
     @OnStop
     public static class Reporter implements Runnable {
         @Override
         public void run() {
             if (ENABLED) {
-                RepositoryStatistics.report(System.out, "Statistics report upon exit"); // NOI18N
+                RepositoryStatistics.report(getDefaultOutput(), "Statistics report upon exit " + new Date()); // NOI18N
             }
         }
     }

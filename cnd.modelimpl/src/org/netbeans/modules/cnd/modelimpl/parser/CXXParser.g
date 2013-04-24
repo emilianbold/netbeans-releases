@@ -154,6 +154,9 @@ import org.netbeans.modules.cnd.modelimpl.parser.*;
     protected void sync_parameter_impl() {
     }
 
+    protected void sync_statement_impl() {
+    }
+
     pCXX_grammar CTX;
 
     static int IDT_CLASS_NAME=1;
@@ -331,10 +334,10 @@ compound_statement[boolean lazy]
         {lazy}? skip_balanced_Curl
     |
         LCURLY 
-        sync_declaration 
+        sync_statement 
         (
             statement
-            sync_declaration 
+            sync_statement 
         )* 
         RCURLY
     ;
@@ -542,6 +545,11 @@ sync_member
 
 sync_parameter
 @init                                                                           {sync_parameter_impl();}
+    :   // Deliberately match nothing, causing this rule always to be entered.
+    ;
+
+sync_statement
+@init                                                                           {sync_statement_impl();}
     :   // Deliberately match nothing, causing this rule always to be entered.
     ;
 
@@ -1733,9 +1741,11 @@ parameter_declaration [decl_kind kind]
 scope Declaration;
 @init                                                                           {if(state.backtracking == 0){action.parameter_declaration(input.LT(1));}}
     :                                                                           
-        attribute_specifiers?
-        decl_specifier attribute_specifiers?
-        ( decl_specifier attribute_specifiers? )*
+        attribute_specifiers?                                                                                                                                                               
+                                                                                {action.decl_specifiers(input.LT(1));}
+        (decl_specifier attribute_specifiers?)                                  
+        ( decl_specifier attribute_specifiers? )*                               {action.end_decl_specifiers(null/*input.LT(0)*/);}
+
         universal_declarator? 
         (
             ASSIGNEQUAL                                                         {action.parameter_declaration(action.PARAMETER_DECLARATION__ASSIGNEQUAL, input.LT(0));}
