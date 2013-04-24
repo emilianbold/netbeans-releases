@@ -59,6 +59,7 @@ public class CommentOutRule extends GroovySelectionRule {
         COMMENT_OUT, ADD_IF
     };
 
+    @Override
     public void run(GroovyRuleContext context, List<Hint> result) {
         ParserResult info = context.parserResult;
         int start = context.selectionStart;
@@ -88,8 +89,6 @@ public class CommentOutRule extends GroovySelectionRule {
 
         result.add(getDescriptor(OPERATION.COMMENT_OUT, "CommentOutRuleHintDescription", context, baseDoc, range));
         result.add(getDescriptor(OPERATION.ADD_IF, "AddIfAroundBlockHintDescription", context, baseDoc, range));
-
-        return;
     }
 
     Hint getDescriptor(OPERATION operation, String bulbDescriptionMsgBundle, GroovyRuleContext context,
@@ -99,7 +98,7 @@ public class CommentOutRule extends GroovySelectionRule {
         String descriptionString = NbBundle.getMessage(CommentOutRule.class, bulbDescriptionMsgBundle);
         HintFix fixToApply = new SimpleFix(operation, descriptionString, baseDoc, context);
 
-        List<HintFix> fixList = new ArrayList<HintFix>(1);
+        List<HintFix> fixList = new ArrayList<>(1);
         fixList.add(fixToApply);
         // FIXME parsing API
         Hint descriptor = new Hint(this, fixToApply.getDescription(), context.parserResult.getSnapshot().getSource().getFileObject(), range,
@@ -108,18 +107,22 @@ public class CommentOutRule extends GroovySelectionRule {
         return descriptor;
     }
 
+    @Override
     public boolean appliesTo(RuleContext context) {
         return true;
     }
 
+    @Override
     public String getDisplayName() {
         return bulbDesc;
     }
 
+    @Override
     public boolean showInTasklist() {
         return false;
     }
 
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.CURRENT_LINE_WARNING;
     }
@@ -138,10 +141,12 @@ public class CommentOutRule extends GroovySelectionRule {
             this.operation = operation;
         }
 
+        @Override
         public String getDescription() {
             return desc;
         }
 
+        @Override
         public void implement() throws Exception {
             EditList edits = new EditList(baseDoc);
 
@@ -177,13 +182,14 @@ public class CommentOutRule extends GroovySelectionRule {
 
                     break;
             }
-            return;
         }
 
+        @Override
         public boolean isSafe() {
             return false;
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,31 +34,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.hints.infrastructure;
+package org.netbeans.modules.groovy.editor.hints.utils;
 
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.Rule.ErrorRule;
-import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorID;
+import javax.swing.text.BadLocationException;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
+import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
+import org.openide.util.Parameters;
 
-/** 
- * Represents a rule to be run on the Groovy source in case the compiler 
- * issued an error or a warning.
+/**
+ *
+ * @author Martin Janicek
  */
-public abstract class GroovyErrorRule implements ErrorRule {
+public final class HintUtils {
 
-    /** 
-     * Get the diagnostic codes this rule should run on
-     */
-    public abstract Set<CompilerErrorID> getCodes();
+    private HintUtils() {
+    }
 
-    /** 
-     * Return possible fixes for a given diagnostic report.
+    /**
+     * Returns {@link OffsetRange} for the whole line where the {@link GroovyError} occurred.
+     * 
+     * @param context current hint context
+     * @param error error for which we want to find {@link OffsetRange}
+     * @return offset range for the whole line
      */
-    public abstract void run(GroovyRuleContext context, GroovyError error,
-             List<Hint> result);
+    @CheckForNull
+    public static OffsetRange getLineOffset(
+            @NonNull GroovyRuleContext context, 
+            @NonNull GroovyError error) {
+        
+        Parameters.notNull("context", context);
+        Parameters.notNull("error", error);
+        
+        // FIXME: for CLASS_NOT_FOUND errors we mark the whole line.
+        // This should be replaced with marking the indentifier only.
+        try {
+
+            int lineStart = Utilities.getRowStart(context.doc, error.getStartPosition());
+            int lineEnd = Utilities.getRowEnd(context.doc, error.getEndPosition());
+
+            return new OffsetRange(lineStart, lineEnd);
+            
+        } catch (BadLocationException ex) {
+            return null;
+        }
+    }
 }
