@@ -42,16 +42,16 @@
 package org.netbeans.modules.html.angular;
 
 //import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HtmlLexerPlugin;
 import org.netbeans.modules.html.angular.model.Directive;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author marekfukala
  */
-//@MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
-@ServiceProvider(service = HtmlLexerPlugin.class)
+@MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
+//@ServiceProvider(service = HtmlLexerPlugin.class)
 public class AngularHtmlLexerPlugin implements HtmlLexerPlugin {
 
     @Override
