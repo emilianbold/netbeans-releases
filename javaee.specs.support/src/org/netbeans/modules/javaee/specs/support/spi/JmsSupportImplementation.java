@@ -39,55 +39,47 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.resources.api;
+package org.netbeans.modules.javaee.specs.support.spi;
+
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
- * Describes single JmsDestination JNDI resource.
+ * Defines server specific JMS support.
  *
  * @author Martin Fousek <marfous@netbeans.org>
+ * @since 1.13
  */
-public interface JmsDestination extends JndiResource {
+public interface JmsSupportImplementation {
 
     /**
-     * Description of the JmsDestination.
-     * @return JmsDestination's description
+     * Whether should be used 'mappedName' attribute of the @MessageDriven in projects targeting Java EE6
+     * and lower to specify the destination. In another words, whether server supports mappedName attribute.
+     *
+     * @return {@code true} if the mappedName can be used and generated in EE6- projects, {@code false} otherwise
      */
-    String getDescription();
+    boolean useMappedName();
 
     /**
-     * Name of the JmsDestination.
-     * @return JmsDestination's name
+     * Whether can be used EE7 specific 'destinationLookup' Activation Config Property. Tells that the
+     * server is Java EE7 platform complied.
+     *
+     * @return {@code true} if the 'destinationLookup' ACP can be used in destination specification, {@code false}
+     * otherwise
      */
-    String getName();
+    boolean useDestinationLookup();
 
     /**
-     * ClassName of the JmsDestination.
-     * @return JmsDestination's className
+     * Activation config property to generate into the 'activationConfig' attribute of the @MessageDriven
+     * annotation. Can be {@code null} in case that no @ActivationConfigProperty is supported.
+     * <p>
+     * This property will be used for projects targeting JavaEE6 or lower EE platform.
+     *
+     * @return property name if any, {@code null} otherwise
      */
-    String getClassName();
+    @CheckForNull
+    String activationConfigProperty();
 
-    /**
-     * InterfaceName of the JmsDestination.
-     * @return JmsDestination's interfaceName
-     */
-    String getInterfaceName();
 
-    /**
-     * DestinationName of the JmsDestination.
-     * @return JmsDestination's destinationName
-     */
-    String getDestinationName();
-
-    /**
-     * ResourceAdapterName of the JmsDestination.
-     * @return JmsDestination's resourceAdapterName
-     */
-    String getResourceAdapterName();
-
-    /**
-     * Properties of the JmsDestination.
-     * @return array of JmsDestination's properties
-     */
-    String[] getProperties();
 
 }

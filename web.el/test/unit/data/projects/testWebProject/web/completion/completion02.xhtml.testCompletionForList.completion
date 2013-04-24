@@ -6,19 +6,19 @@ METHOD     add(E e)                        [PUBLIC]   boolean
 METHOD     addAll(Collection<? extends E>  [PUBLIC]   boolean
 METHOD     clear()                         [PUBLIC]   void
 METHOD     contains(Object o)              [PUBLIC]   boolean
-METHOD     containsAll(Collection<?> clct  [PUBLIC]   boolean
+METHOD     containsAll(Collection<?> c)    [PUBLIC]   boolean
 METHOD     equals(Object o)                [PUBLIC]   boolean
-METHOD     get(int i)                      [PUBLIC]   E
+METHOD     get(int index)                  [PUBLIC]   E
 METHOD     hashCode()                      [PUBLIC]   int
 METHOD     indexOf(Object o)               [PUBLIC]   int
 METHOD     iterator()                      [PUBLIC]   Iterator<E>
 METHOD     lastIndexOf(Object o)           [PUBLIC]   int
 METHOD     listIterator()                  [PUBLIC]   ListIterator<E>
 METHOD     remove(Object o)                [PUBLIC]   boolean
-METHOD     removeAll(Collection<?> clctn)  [PUBLIC]   boolean
-METHOD     retainAll(Collection<?> clctn)  [PUBLIC]   boolean
-METHOD     set(int i,E e)                  [PUBLIC]   E
+METHOD     removeAll(Collection<?> c)      [PUBLIC]   boolean
+METHOD     retainAll(Collection<?> c)      [PUBLIC]   boolean
+METHOD     set(int index,E element)        [PUBLIC]   E
 METHOD     size()                          [PUBLIC]   int
 METHOD     stream()                        [PUBLIC]   Stream
-METHOD     subList(int i,int i1)           [PUBLIC]   List<E>
+METHOD     subList(int fromIndex,int toIn  [PUBLIC]   List<E>
 METHOD     toArray()                       [PUBLIC]   Object[]

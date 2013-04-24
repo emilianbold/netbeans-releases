@@ -1,5 +1,5 @@
 Code completion result for source line:
-#{T(java.lang.Boolean).|}
+#{(java.lang.Boolean).|}
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     getBoolean                                 Boolean

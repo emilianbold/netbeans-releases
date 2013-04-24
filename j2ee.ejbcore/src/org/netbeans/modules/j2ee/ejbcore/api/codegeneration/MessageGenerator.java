@@ -79,6 +79,7 @@ import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.netbeans.modules.javaee.resources.api.JndiResourcesDefinition;
+import org.netbeans.modules.javaee.specs.support.api.JmsSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -92,12 +93,16 @@ public final class MessageGenerator {
     private static final String EJB21_EJBCLASS = "Templates/J2EE/EJB21/MessageDrivenEjbClass.java"; // NOI18N
     private static final String EJB30_MESSAGE_DRIVEN_BEAN = "Templates/J2EE/EJB30/MessageDrivenBean.java"; // NOI18N
 
+    private static final String DESTINATION_LOOKUP = "destinationLookup"; //NOI18N
+
     // informations collected in wizard
     private final FileObject pkg;
     private final MessageDestination messageDestination;
     private final boolean isSimplified;
     private final boolean isXmlBased;
     private final Map<String, String> properties;
+    private final Profile profile;
+    private final JmsSupport jmsSupport;
 
     // EJB naming options
     private final EJBNameOptions ejbNameOptions;
@@ -110,11 +115,11 @@ public final class MessageGenerator {
     
     private final Map<String, Object> templateParameters;
 
-    public static MessageGenerator create(Profile profile, String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, Map<String, String> properties) {
-        return new MessageGenerator(profile, wizardTargetName, pkg, messageDestination, isSimplified, properties, false);
+    public static MessageGenerator create(Profile profile, String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, Map<String, String> properties, JmsSupport jmsSupport) {
+        return new MessageGenerator(profile, wizardTargetName, pkg, messageDestination, isSimplified, properties, jmsSupport, false);
     }
-    
-    protected MessageGenerator(Profile profile, String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, Map<String, String> properties, boolean isTest) {
+
+    protected MessageGenerator(Profile profile, String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, Map<String, String> properties, JmsSupport jmsSupport, boolean isTest) {
         this.pkg = pkg;
         this.messageDestination = messageDestination;
         this.isSimplified = isSimplified;
@@ -127,11 +132,23 @@ public final class MessageGenerator {
         this.packageName = EjbGenerationUtil.getSelectedPackageName(pkg);
         this.packageNameWithDot = packageName + ".";
         this.templateParameters = new HashMap<String, Object>();
+        this.profile = profile;
+        this.jmsSupport = jmsSupport;
+        boolean useMappedName = useMappedName();
+        if (Util.isAtLeastJavaEE7Web(profile) && jmsSupport.useDestinationLookup()) {
+            String destination = properties.get(ActivationConfigProperties.DESTINATION_LOOKUP) == null || ((String) properties.get(ActivationConfigProperties.DESTINATION_LOOKUP)).isEmpty() ?
+                    messageDestination.getName() : properties.get(ActivationConfigProperties.DESTINATION_LOOKUP);
+            properties.put(DESTINATION_LOOKUP, destination);
+        } else {
+            if (!useMappedName) {
+                properties.put(jmsSupport.activationConfigProperty(), messageDestination.getName());
+            }
+        }
         // fill all possible template parameters
         this.templateParameters.put("package", packageName);
         this.templateParameters.put("messageDestinationName", messageDestination.getName());
         this.templateParameters.put("activationConfigProperties", transformProperties(properties));
-        this.templateParameters.put("useMappedName", useMappedName(profile, properties));
+        this.templateParameters.put("useMappedName", useMappedName);
         if (isTest) {
             // set date, time and user to values used in goldenfiles
             this.templateParameters.put("date", "{date}");
@@ -211,7 +228,7 @@ public final class MessageGenerator {
                 List<ExpressionTree> values = new ArrayList<ExpressionTree>(2);
                 ExpressionTree nameQualIdent = tm.QualIdent("name"); //NOI18N
                 values.add(tm.Assignment(nameQualIdent, tm.Literal(properties.get("destinationLookup")))); //NOI18N
-                ExpressionTree classnameQualIdent = tm.QualIdent("className"); //NOI18N
+                ExpressionTree classnameQualIdent = tm.QualIdent("interfaceName"); //NOI18N
                 values.add(tm.Assignment(classnameQualIdent, tm.Literal(properties.get("destinationType")))); //NOI18N
                 ExpressionTree resourceAdapterQualIdent = tm.QualIdent("resourceAdapter"); //NOI18N
                 values.add(tm.Assignment(resourceAdapterQualIdent, tm.Literal("jmsra"))); //NOI18N
@@ -312,12 +329,13 @@ public final class MessageGenerator {
         throw new UnsupportedOperationException("Method not implemented yet.");
     }
 
-    private static boolean useMappedName(Profile profile, Map<String, String> acProperties) {
-        if (Util.isAtLeastJavaEE7Web(profile)) {
-            String destinationLookup = acProperties.get(ActivationConfigProperties.DESTINATION_LOOKUP);
-            return destinationLookup == null || destinationLookup.isEmpty();
+    private boolean useMappedName() {
+        // JavaEE7 platform should always use portable, compatible way if possible
+        if (Util.isAtLeastJavaEE7Web(profile) && jmsSupport.useDestinationLookup()) {
+            return false;
+        } else {
+            return jmsSupport.useMappedName();
         }
-        return true;
     }
 
     public static final class KeyValuePair {

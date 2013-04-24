@@ -62,7 +62,6 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -82,13 +81,26 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.CodeCompletionResult;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import static org.netbeans.modules.csl.api.test.CslTestBase.getCaretOffset;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
 import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
@@ -189,6 +201,317 @@ public class ELTestBase extends CslTestBase {
         return "text/xhtml";
     }
 
+    public void checkCompletion(final String file, final String caretLine, final boolean includeModifiers, final List<String> toCheck) throws Exception {
+        // TODO call TestCompilationInfo.setCaretOffset!
+        final CodeCompletionHandler.QueryType type = CodeCompletionHandler.QueryType.COMPLETION;
+        final boolean caseSensitive = true;
+
+        Source testSource = getTestSource(getTestFile(file));
+
+        final int caretOffset;
+        if (caretLine != null) {
+            caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(testSource, caretOffset);
+        } else {
+            caretOffset = -1;
+        }
+
+        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result r = caretOffset == -1 ? resultIterator.getParserResult() : resultIterator.getParserResult(caretOffset);
+                assertTrue(r instanceof ParserResult);
+                ParserResult pr = (ParserResult) r;
+
+                CodeCompletionHandler cc = getCodeCompleter();
+                assertNotNull("getCodeCompleter must be implemented", cc);
+
+                Document doc = GsfUtilities.getDocument(pr.getSnapshot().getSource().getFileObject(), true);
+                boolean upToOffset = type == CodeCompletionHandler.QueryType.COMPLETION;
+                String prefix = cc.getPrefix(pr, caretOffset, upToOffset);
+                if (prefix == null) {
+                    if (prefix == null) {
+                        int[] blk =
+                            org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument) doc, caretOffset);
+
+                        if (blk != null) {
+                            int start = blk[0];
+                            if (start < caretOffset ) {
+                                if (upToOffset) {
+                                    prefix = doc.getText(start, caretOffset - start);
+                                } else {
+                                    prefix = doc.getText(start, blk[1] - start);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                final int finalCaretOffset = caretOffset;
+                final String finalPrefix = prefix;
+                final ParserResult finalParserResult = pr;
+                CodeCompletionContext context = new CodeCompletionContext() {
+
+                    @Override
+                    public int getCaretOffset() {
+                        return finalCaretOffset;
+                    }
+
+                    @Override
+                    public ParserResult getParserResult() {
+                        return finalParserResult;
+                    }
+
+                    @Override
+                    public String getPrefix() {
+                        return finalPrefix;
+                    }
+
+                    @Override
+                    public boolean isPrefixMatch() {
+                        return true;
+                    }
+
+                    @Override
+                    public CodeCompletionHandler.QueryType getQueryType() {
+                        return type;
+                    }
+
+                    @Override
+                    public boolean isCaseSensitive() {
+                        return caseSensitive;
+                    }
+                };
+
+                CodeCompletionResult completionResult = cc.complete(context);
+                List<CompletionProposal> proposals = completionResult.getItems();
+
+                final boolean deprecatedHolder[] = new boolean[1];
+                final HtmlFormatter formatter = new HtmlFormatter() {
+                    private StringBuilder sb = new StringBuilder();
+
+                    @Override
+                    public void reset() {
+                        sb.setLength(0);
+                    }
+
+                    @Override
+                    public void appendHtml(String html) {
+                        sb.append(html);
+                    }
+
+                    @Override
+                    public void appendText(String text, int fromInclusive, int toExclusive) {
+                        sb.append(text, fromInclusive, toExclusive);
+                    }
+
+                    @Override
+                    public void emphasis(boolean start) {
+                    }
+
+                    @Override
+                    public void active(boolean start) {
+                    }
+
+                    @Override
+                    public void name(ElementKind kind, boolean start) {
+                    }
+
+                    @Override
+                    public void parameters(boolean start) {
+                    }
+
+                    @Override
+                    public void type(boolean start) {
+                    }
+
+                    @Override
+                    public void deprecated(boolean start) {
+                        deprecatedHolder[0] = true;
+                    }
+
+                    @Override
+                    public String getText() {
+                        return sb.toString();
+                    }
+                };
+
+                String described = describeCompletion(caretLine, pr.getSnapshot().getSource().createSnapshot().getText().toString(), caretOffset, true, caseSensitive, type, proposals, includeModifiers, deprecatedHolder, formatter, toCheck);
+                assertDescriptionMatches(file, described, true, ".completion");
+            }
+        });
+    }
+
+    private String describeCompletion(String caretLine, String text, int caretOffset, boolean prefixSearch, boolean caseSensitive, CodeCompletionHandler.QueryType type, List<CompletionProposal> proposals,
+            boolean includeModifiers, boolean[] deprecatedHolder, final HtmlFormatter formatter, final List<String> toCheck) {
+        assertTrue(deprecatedHolder != null && deprecatedHolder.length == 1);
+        StringBuilder sb = new StringBuilder();
+        sb.append("Code completion result for source line:\n");
+        String sourceLine = getSourceLine(text, caretOffset);
+        if (sourceLine.length() == 1) {
+            sourceLine = getSourceWindow(text, caretOffset);
+        }
+        sb.append(sourceLine);
+        sb.append("\n(QueryType=" + type + ", prefixSearch=" + prefixSearch + ", caseSensitive=" + caseSensitive + ")");
+        sb.append("\n");
+
+        // Sort to make test more stable
+        Collections.sort(proposals, new Comparator<CompletionProposal>() {
+
+            public int compare(CompletionProposal p1, CompletionProposal p2) {
+                // Smart items first
+                if (p1.isSmart() != p2.isSmart()) {
+                    return p1.isSmart() ? -1 : 1;
+                }
+
+                if (p1.getKind() != p2.getKind()) {
+                    return p1.getKind().compareTo(p2.getKind());
+                }
+
+                formatter.reset();
+                String p1L = p1.getLhsHtml(formatter);
+                formatter.reset();
+                String p2L = p2.getLhsHtml(formatter);
+
+                if (!p1L.equals(p2L)) {
+                    return p1L.compareTo(p2L);
+                }
+
+                formatter.reset();
+                String p1Rhs = p1.getRhsHtml(formatter);
+                formatter.reset();
+                String p2Rhs = p2.getRhsHtml(formatter);
+                if (p1Rhs == null) {
+                    p1Rhs = "";
+                }
+                if (p2Rhs == null) {
+                    p2Rhs = "";
+                }
+                if (!p1Rhs.equals(p2Rhs)) {
+                    return p1Rhs.compareTo(p2Rhs);
+                }
+
+                // Yuck - tostring comparison of sets!!
+                if (!p1.getModifiers().toString().equals(p2.getModifiers().toString())) {
+                    return p1.getModifiers().toString().compareTo(p2.getModifiers().toString());
+                }
+
+                return 0;
+            }
+        });
+
+        boolean isSmart = true;
+        for (CompletionProposal proposal : proposals) {
+            if (!toCheck.contains(proposal.getName())) {
+                continue;
+            }
+            if (isSmart && !proposal.isSmart()) {
+                sb.append("------------------------------------\n");
+                isSmart = false;
+            }
+
+            deprecatedHolder[0] = false;
+            formatter.reset();
+            proposal.getLhsHtml(formatter); // Side effect to deprecatedHolder used
+            boolean strike = includeModifiers && deprecatedHolder[0];
+
+            String n = proposal.getKind().toString();
+            int MAX_KIND = 10;
+            if (n.length() > MAX_KIND) {
+                sb.append(n.substring(0, MAX_KIND));
+            } else {
+                sb.append(n);
+                for (int i = n.length(); i < MAX_KIND; i++) {
+                    sb.append(" ");
+                }
+            }
+
+//            if (proposal.getModifiers().size() > 0) {
+//                List<String> modifiers = new ArrayList<String>();
+//                for (Modifier mod : proposal.getModifiers()) {
+//                    modifiers.add(mod.name());
+//                }
+//                Collections.sort(modifiers);
+//                sb.append(modifiers);
+//            }
+
+            sb.append(" ");
+
+            formatter.reset();
+            n = proposal.getLhsHtml(formatter);
+            int MAX_LHS = 30;
+            if (strike) {
+                MAX_LHS -= 6; // Account for the --- --- strikethroughs
+                sb.append("---");
+            }
+            if (n.length() > MAX_LHS) {
+                sb.append(n.substring(0, MAX_LHS));
+            } else {
+                sb.append(n);
+                for (int i = n.length(); i < MAX_LHS; i++) {
+                    sb.append(" ");
+                }
+            }
+
+            if (strike) {
+                sb.append("---");
+            }
+
+            sb.append("  ");
+
+            assertNotNull("Return Collections.emptySet() instead from getModifiers!", proposal.getModifiers());
+            if (proposal.getModifiers().isEmpty()) {
+                n = "";
+            } else {
+                n = proposal.getModifiers().toString();
+            }
+            int MAX_MOD = 9;
+            if (n.length() > MAX_MOD) {
+                sb.append(n.substring(0, MAX_MOD));
+            } else {
+                sb.append(n);
+                for (int i = n.length(); i < MAX_MOD; i++) {
+                    sb.append(" ");
+                }
+            }
+
+            sb.append("  ");
+
+            formatter.reset();
+            sb.append(proposal.getRhsHtml(formatter));
+            sb.append("\n");
+
+            isSmart = proposal.isSmart();
+        }
+
+        return sb.toString();
+    }
+
+    private String getSourceLine(String s, int offset) {
+        int begin = offset;
+        if (begin > 0) {
+            begin = s.lastIndexOf('\n', offset-1);
+            if (begin == -1) {
+                begin = 0;
+            } else if (begin < s.length()) {
+                begin++;
+            }
+        }
+        if (s.length() == 0) {
+            return s;
+        }
+//        s.charAt(offset);
+        int end = s.indexOf('\n', begin);
+        if (end == -1) {
+            end = s.length();
+        }
+
+        if (offset < end) {
+            return (s.substring(begin, offset)+"|"+s.substring(offset,end)).trim();
+        } else {
+            return (s.substring(begin, end) + "|").trim();
+        }
+    }
+
     public ParseResultInfo parse(String fileName) throws ParseException {
         FileObject file = getTestFile(fileName);
 
@@ -213,7 +536,6 @@ public class ELTestBase extends CslTestBase {
         return _result[0];
     }
 
-  
     protected class TestClassPathProvider implements ClassPathProvider {
 
         private Map<String, ClassPath> map;
