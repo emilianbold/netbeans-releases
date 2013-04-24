@@ -53,6 +53,13 @@ public final class Constants {
     public static final String NETTE_PRESENTER_SUFFIX = "Presenter"; //NOI18N
     public static final String LATTE_MIME_TYPE = "text/x-latte"; //NOI18N
     public static final String LATTE_TEMPLATE_EXTENSION = ".latte"; //NOI18N
+    public static final String COMPOSER_PATH = "composer.json"; //NOI18N
+    public static final String ICON_PATH = "org/netbeans/modules/php/nette2/ui/resources/nette_badge_8.png"; // NOI18N
+    public static final String COMMON_CONFIG_PATH = "app/config"; //NOI18N
+    public static final String EXTRA_INDEX_PATH = "index.php"; //NOI18N
+    public static final String COMMON_INDEX_PATH = "www/index.php"; //NOI18N
+    public static final String COMMON_BOOTSTRAP_PATH = "app/bootstrap.php"; //NOI18N
+    public static final String NETTE_LIBS_DIR = "/libs/Nette"; //NOI18N
 
     private Constants() {
     }

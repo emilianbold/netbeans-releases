@@ -54,6 +54,7 @@ import org.netbeans.modules.php.nette2.annotations.Nette2AnnotationsProvider;
 import org.netbeans.modules.php.nette2.preferences.Nette2Preferences;
 import org.netbeans.modules.php.nette2.ui.actions.Nette2PhpModuleActionsExtender;
 import org.netbeans.modules.php.nette2.ui.customizer.Nette2CustomizerExtender;
+import org.netbeans.modules.php.nette2.utils.Constants;
 import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
@@ -72,12 +73,6 @@ import org.openide.util.NbBundle;
  */
 public class Nette2FrameworkProvider extends PhpFrameworkProvider {
     private static final Nette2FrameworkProvider INSTANCE = new Nette2FrameworkProvider();
-    private static final String ICON_PATH = "org/netbeans/modules/php/nette2/ui/resources/nette_badge_8.png"; // NOI18N
-    private static final String COMMON_CONFIG_PATH = "app/config"; //NOI18N
-    private static final String COMPOSER_PATH = "composer.json"; //NOI18N
-    private static final String COMMON_INDEX_PATH = "www/index.php"; //NOI18N
-    private static final String EXTRA_INDEX_PATH = "index.php"; //NOI18N
-    static final String COMMON_BOOTSTRAP_PATH = "app/bootstrap.php"; //NOI18N
     private final BadgeIcon badgeIcon;
 
     @PhpFrameworkProvider.Registration(position = 190)
@@ -92,8 +87,8 @@ public class Nette2FrameworkProvider extends PhpFrameworkProvider {
     private Nette2FrameworkProvider() {
         super("Nette2 PHP Web Framework", Bundle.LBL_FrameworkName(), Bundle.LBL_FrameworkDescription()); //NOI18N
         badgeIcon = new BadgeIcon(
-                ImageUtilities.loadImage(ICON_PATH),
-                Nette2FrameworkProvider.class.getResource("/" + ICON_PATH)); //NOI18N
+                ImageUtilities.loadImage(Constants.ICON_PATH),
+                Nette2FrameworkProvider.class.getResource("/" + Constants.ICON_PATH)); //NOI18N
     }
 
     @Override
@@ -102,9 +97,9 @@ public class Nette2FrameworkProvider extends PhpFrameworkProvider {
         if (!result) {
             FileObject sourceDirectory = phpModule.getSourceDirectory();
             if (sourceDirectory != null) {
-                FileObject bootstrap = sourceDirectory.getFileObject(COMMON_BOOTSTRAP_PATH);
+                FileObject bootstrap = sourceDirectory.getFileObject(Constants.COMMON_BOOTSTRAP_PATH);
                 result = bootstrap != null && !bootstrap.isFolder() && bootstrap.isValid();
-                FileObject config = sourceDirectory.getFileObject(COMMON_CONFIG_PATH);
+                FileObject config = sourceDirectory.getFileObject(Constants.COMMON_CONFIG_PATH);
                 result = result && config != null && config.isFolder() && config.isValid();
             }
         }
@@ -116,23 +111,23 @@ public class Nette2FrameworkProvider extends PhpFrameworkProvider {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory != null) {
             List<File> files = new ArrayList<>();
-            FileObject composer = sourceDirectory.getFileObject(COMPOSER_PATH);
+            FileObject composer = sourceDirectory.getFileObject(Constants.COMPOSER_PATH);
             if (composer != null) {
                 files.add(FileUtil.toFile(composer));
             }
-            FileObject bootstrap = sourceDirectory.getFileObject(COMMON_BOOTSTRAP_PATH);
+            FileObject bootstrap = sourceDirectory.getFileObject(Constants.COMMON_BOOTSTRAP_PATH);
             if (bootstrap != null) {
                 files.add(FileUtil.toFile(bootstrap));
             }
-            FileObject commonIndex = sourceDirectory.getFileObject(COMMON_INDEX_PATH);
+            FileObject commonIndex = sourceDirectory.getFileObject(Constants.COMMON_INDEX_PATH);
             if (commonIndex != null) {
                 files.add(FileUtil.toFile(commonIndex));
             }
-            FileObject extraIndex = sourceDirectory.getFileObject(EXTRA_INDEX_PATH);
+            FileObject extraIndex = sourceDirectory.getFileObject(Constants.EXTRA_INDEX_PATH);
             if (extraIndex != null) {
                 files.add(FileUtil.toFile(extraIndex));
             }
-            FileObject config = sourceDirectory.getFileObject(COMMON_CONFIG_PATH);
+            FileObject config = sourceDirectory.getFileObject(Constants.COMMON_CONFIG_PATH);
             if (config != null && config.isFolder() && config.isValid()) {
                 files.addAll(Arrays.asList(FileUtil.toFile(config).listFiles()));
             }
