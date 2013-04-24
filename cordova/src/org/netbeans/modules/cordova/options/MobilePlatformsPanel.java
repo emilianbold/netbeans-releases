@@ -44,10 +44,13 @@ package org.netbeans.modules.cordova.options;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cordova.CordovaPlatform;
+import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
+import org.netbeans.modules.cordova.platforms.ProvisioningProfile;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
@@ -91,6 +94,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        provisioningBrowse = new javax.swing.JButton();
         androidPanel = new javax.swing.JPanel();
         androidSdkLabel = new javax.swing.JLabel();
         androidSdkField = new javax.swing.JTextField();
@@ -107,8 +111,9 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
         identityLabel = new javax.swing.JLabel();
         identityTextField = new javax.swing.JTextField();
         provisioningProfile = new javax.swing.JLabel();
-        provisioningTextField = new javax.swing.JTextField();
-        provisioningBrowse = new javax.swing.JButton();
+        provisioningCombo = new javax.swing.JComboBox();
+
+        org.openide.awt.Mnemonics.setLocalizedText(provisioningBrowse, org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "MobilePlatformsPanel.androidSdkBrowse.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(androidSdkLabel, org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "MobilePlatformsPanel.androidSdkLabel.text")); // NOI18N
 
@@ -218,15 +223,6 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(provisioningProfile, org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "MobilePlatformsPanel.provisioningProfile.text")); // NOI18N
 
-        provisioningTextField.setText(org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "MobilePlatformsPanel.provisioningTextField.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(provisioningBrowse, org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "MobilePlatformsPanel.androidSdkBrowse.text")); // NOI18N
-        provisioningBrowse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                provisioningBrowseActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout iOSPanelLayout = new javax.swing.GroupLayout(iOSPanel);
         iOSPanel.setLayout(iOSPanelLayout);
         iOSPanelLayout.setHorizontalGroup(
@@ -238,11 +234,9 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
                     .addComponent(provisioningProfile))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(iOSPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(provisioningTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                    .addComponent(identityTextField))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(provisioningBrowse)
-                .addContainerGap())
+                    .addComponent(identityTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
+                    .addComponent(provisioningCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(100, 100, 100))
         );
         iOSPanelLayout.setVerticalGroup(
             iOSPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -253,9 +247,8 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
                     .addComponent(identityTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(iOSPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(provisioningTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(provisioningBrowse)
-                    .addComponent(provisioningProfile))
+                    .addComponent(provisioningProfile)
+                    .addComponent(provisioningCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -279,7 +272,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
                 .addComponent(androidPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(iOSPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(9, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     @NbBundle.Messages("LBL_AndroidPath=Choose Android SDK directory")
@@ -313,19 +306,6 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
             Exceptions.printStackTrace(ex);
         }
     }//GEN-LAST:event_cordovaSdkDownloadMouseClicked
-    @NbBundle.Messages("LBL_ProvisioningPath=Choose Provisioning Profile Path")
-    private void provisioningBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_provisioningBrowseActionPerformed
-        final FileChooserBuilder fileChooserBuilder = new FileChooserBuilder(MobilePlatformsPanel.class);
-        String provisioningProfilePath = PlatformManager.getPlatform(PlatformManager.IOS_TYPE).getProvisioningProfilePath();
-        if (provisioningProfilePath !=null) {
-            fileChooserBuilder.setDefaultWorkingDirectory(new File(provisioningProfilePath));
-        }
-        File sdkDir = fileChooserBuilder.setTitle(Bundle.LBL_ProvisioningPath()).showOpenDialog();
-        if (sdkDir != null) {
-            provisioningTextField.setText(sdkDir.getAbsolutePath());
-        }
-
-    }//GEN-LAST:event_provisioningBrowseActionPerformed
 
     void load() {
         if (documentL != null) {
@@ -334,20 +314,24 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
         }
         androidSdkField.setText(PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
         cordovaSdkField.setText(CordovaPlatform.getDefault().getSdkLocation());
+        final MobilePlatform iosPlatform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
         
-        identityTextField.setText(PlatformManager.getPlatform(PlatformManager.IOS_TYPE).getCodeSignIdentity());
-        provisioningTextField.setText(PlatformManager.getPlatform(PlatformManager.IOS_TYPE).getProvisioningProfilePath());
+        identityTextField.setText(iosPlatform.getCodeSignIdentity());
+        provisioningCombo.setModel(new DefaultComboBoxModel(iosPlatform.getProvisioningProfiles().toArray()));
+        
+        if (provisioningCombo.getItemCount()>0) {
+            provisioningCombo.setSelectedIndex(0);
+        }
         
         androidSdkField.getDocument().addDocumentListener(documentL);
         cordovaSdkField.getDocument().addDocumentListener(documentL);
-        provisioningTextField.getDocument().addDocumentListener(documentL);
-    }
+   }
 
     void store() {
         PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).setSdkLocation(androidSdkField.getText());
         CordovaPlatform.getDefault().setSdkLocation(cordovaSdkField.getText());
         PlatformManager.getPlatform(PlatformManager.IOS_TYPE).setCodeSignIdentity(identityTextField.getText());
-        PlatformManager.getPlatform(PlatformManager.IOS_TYPE).setProvisioningProfilePath(provisioningTextField.getText());
+        PlatformManager.getPlatform(PlatformManager.IOS_TYPE).setProvisioningProfilePath(((ProvisioningProfile) provisioningCombo.getSelectedItem()).getPath());
     }
 
     @NbBundle.Messages(
@@ -375,14 +359,14 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
             }
         }
         boolean cordovaValid = cordovaSdkValid;
-        String text = provisioningTextField.getText();
-        
-        if (text != null && !text.trim().isEmpty()) {
-            File f = new File(text);
-            if (!f.exists()) {
-                return false;
-            }
-        }
+//        String text = provisioningTextField.getText();
+//        
+//        if (text != null && !text.trim().isEmpty()) {
+//            File f = new File(text);
+//            if (!f.exists()) {
+//                return false;
+//            }
+//        }
         
         return adroidValid && cordovaValid;
     }
@@ -403,8 +387,8 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
     private javax.swing.JTextField identityTextField;
     private javax.swing.JLabel phonegapVersion;
     private javax.swing.JButton provisioningBrowse;
+    private javax.swing.JComboBox provisioningCombo;
     private javax.swing.JLabel provisioningProfile;
-    private javax.swing.JTextField provisioningTextField;
     // End of variables declaration//GEN-END:variables
 
     boolean isCordovaEmpty() {

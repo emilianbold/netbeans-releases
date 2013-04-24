@@ -44,6 +44,7 @@ package org.netbeans.modules.cordova.platforms.ios;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -53,6 +54,7 @@ import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.cordova.platforms.ProcessUtils;
+import org.netbeans.modules.cordova.platforms.ProvisioningProfile;
 import org.netbeans.modules.cordova.platforms.SDK;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.EditableProperties;
@@ -228,6 +230,25 @@ public class IOSPlatform implements MobilePlatform {
     public void setProvisioningProfilePath(String path) {
         NbPreferences.forModule(IOSPlatform.class).put(IOS_PROVISIONING_PROFILE_PREF, path);
         propertyChangeSupport.firePropertyChange("PROVISIONING_PROFILE", null, path);//NOI18N
+    }
+
+    @Override
+    public Collection<? extends ProvisioningProfile> getProvisioningProfiles() {
+        ArrayList result = new ArrayList();
+        File f = new File(System.getProperty("user.home") + "/Library/MobileDevice/Provisioning Profiles/");
+        if (f.exists() && f.isDirectory()) {
+            File[] listFiles = f.listFiles(new FilenameFilter() {
+
+                                   @Override
+                                   public boolean accept(File dir, String name) {
+                                       return name.endsWith(".mobileprovision");
+                                   }
+                               });
+            for (File prov: listFiles) {
+                result.add(new IOSProvisioningProfile(prov.getAbsolutePath()));
+            }
+        }
+        return result;
     }
 }
 

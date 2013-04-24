@@ -143,4 +143,6 @@ public interface MobilePlatform {
     void removePropertyChangeListener(PropertyChangeListener listener);
     
     void addPropertyChangeListener(PropertyChangeListener listener);
+    
+    Collection<? extends ProvisioningProfile> getProvisioningProfiles();
 }
