@@ -46,9 +46,10 @@ import org.openide.windows.IOFolding.FoldHandleDefinition;
 
 /**
  * An object that refers to a fold in output window. It can be used to finish
- * the fold, or to create a nested folds.
+ * the fold, or to create nested folds.
  *
  * @author jhavlin
+ * @since openide.io/1.38
  */
 public final class FoldHandle {
 

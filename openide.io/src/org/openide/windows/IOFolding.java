@@ -44,6 +44,7 @@ package org.openide.windows;
 import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Provider;
 import org.openide.util.Parameters;
 
 /**
@@ -72,7 +73,7 @@ import org.openide.util.Parameters;
  * </p>
  * <ul>
  * <li> {@link InputOutput} provided by {@link IOProvider} has to implement
- * {@link Lookup.Provider}</li>
+ * {@link Provider}</li>
  * <li> Extend {@link IOFolding} and implement its abstract methods</li>
  * <li> Extend {@link FoldHandleDefinition}</li>
  * <li> Place instance of {@link IOFolding} to {@link Lookup} provided by
@@ -80,6 +81,7 @@ import org.openide.util.Parameters;
  * </ul>
  *
  * @author jhavlin
+ * @since openide.io/1.38
  */
 public abstract class IOFolding {
 
@@ -163,7 +165,7 @@ public abstract class IOFolding {
          * Start a new fold at the current last line. Ensure that the parent
          * fold hasn't been finished yet.
          *
-         * @param expand If false, the fold will be collapsed by default,
+         * @param expanded If false, the fold will be collapsed by default,
          * otherwise it will be expanded.
          * @return FoldHandleDefinition of handle for the newly created fold.
          * @throws IllegalStateException if the fold has been already finished,
