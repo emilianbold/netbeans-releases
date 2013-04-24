@@ -51,6 +51,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -67,7 +68,7 @@ import org.openide.filesystems.FileUtil;
  */
 public final class FileUtils {
     private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
-    private static final Set<PosixFilePermission> PERMISSIONS_777 = new HashSet<>(Arrays.asList(PosixFilePermission.values()));
+    private static final Set<PosixFilePermission> PERMISSIONS_777 = EnumSet.allOf(PosixFilePermission.class);
 
     private FileUtils() {
     }
