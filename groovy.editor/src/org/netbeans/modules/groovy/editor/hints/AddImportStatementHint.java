@@ -53,7 +53,6 @@ import org.netbeans.modules.groovy.editor.imports.ImportCandidate;
 import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorID;
 import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyErrorRule;
-import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
 import org.netbeans.modules.groovy.editor.hints.utils.HintUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -73,7 +72,7 @@ public class AddImportStatementHint extends GroovyErrorRule {
     }
 
     @Override
-    public void run(GroovyRuleContext context, GroovyError error, List<Hint> result) {
+    public void run(RuleContext context, GroovyError error, List<Hint> result) {
         LOG.log(Level.FINEST, "run()"); // NOI18N
 
         String desc = error.getDescription();

@@ -45,7 +45,6 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
-import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovySelectionRule;
 import org.openide.util.NbBundle;
 
@@ -63,7 +62,7 @@ public class SurroundWithHint extends GroovySelectionRule {
         "CommentOutRuleHintDescription=Surround with /*selection*/",
         "AddIfAroundBlockHintDescription=Surround with if (exp) {...|}"
     })
-    public void run(GroovyRuleContext context, List<Hint> result) {
+    public void run(RuleContext context, List<Hint> result) {
         ParserResult info = context.parserResult;
         int start = context.selectionStart;
         int end = context.selectionEnd;
@@ -94,7 +93,7 @@ public class SurroundWithHint extends GroovySelectionRule {
         result.add(getDescriptor(Operation.ADD_IF, Bundle.AddIfAroundBlockHintDescription(), context, baseDoc, range));
     }
 
-    private Hint getDescriptor(Operation operation, String description, GroovyRuleContext context,
+    private Hint getDescriptor(Operation operation, String description, RuleContext context,
         BaseDocument baseDoc, OffsetRange range) {
 
         int DEFAULT_PRIORITY = 292;
@@ -134,10 +133,10 @@ public class SurroundWithHint extends GroovySelectionRule {
 
         final BaseDocument baseDoc;
         final String desc;
-        final GroovyRuleContext context;
+        final RuleContext context;
         final Operation operation;
 
-        public SimpleFix(Operation operation, String desc, BaseDocument baseDoc, GroovyRuleContext context) {
+        public SimpleFix(Operation operation, String desc, BaseDocument baseDoc, RuleContext context) {
             this.desc = desc;
             this.baseDoc = baseDoc;
             this.context = context;

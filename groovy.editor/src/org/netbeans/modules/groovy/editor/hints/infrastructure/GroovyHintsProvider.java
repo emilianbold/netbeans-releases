@@ -70,7 +70,7 @@ public class GroovyHintsProvider implements HintsProvider {
 
     @Override
     public RuleContext createRuleContext() {
-        return new GroovyRuleContext();
+        return new RuleContext();
     }
 
     @Override
@@ -176,14 +176,12 @@ public class GroovyHintsProvider implements HintsProvider {
     private void applyRules(RuleContext context, List<GroovySelectionRule> rules, int start, int end, 
             List<Hint> result) {
 
-        GroovyRuleContext groovyContext = (GroovyRuleContext)context;
-        
         for (GroovySelectionRule rule : rules) {
             if (!rule.appliesTo(context)) {
                 continue;
             }
 
-            rule.run(groovyContext, result);
+            rule.run(context, result);
         }
     }
 
@@ -200,13 +198,12 @@ public class GroovyHintsProvider implements HintsProvider {
 
             if (rules != null) {
                 int countBefore = result.size();
-                GroovyRuleContext groovyContext = (GroovyRuleContext)context;
                 
                 for (GroovyErrorRule rule : rules) {
                     if (!rule.appliesTo(context)) {
                         continue;
                     }
-                    rule.run(groovyContext, error, result);
+                    rule.run(context, error, result);
                 }
                 
                 return countBefore < result.size();
