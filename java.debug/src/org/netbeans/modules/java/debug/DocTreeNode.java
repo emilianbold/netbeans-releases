@@ -45,6 +45,7 @@ import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.DocTreePathScanner;
 import com.sun.source.util.DocTreeScanner;
 import com.sun.source.util.DocTrees;
@@ -86,11 +87,13 @@ public class DocTreeNode extends AbstractNode implements OffsetProvider {
             @Override
             public Void visitReference(ReferenceTree node, Void p) {
                 result.add(TreeNode.nodeForElement(info, ((DocTrees) info.getTrees()).getElement(getCurrentPath())));
-                if (node.getClassReference() != null) {
-                    result.add(TreeNode.getTree(info, new TreePath(declaration, node.getClassReference()), /*TODO: cancel*/new AtomicBoolean()));
+                ExpressionTree classReference = info.getTreeUtilities().getReferenceClass(getCurrentPath());
+                if (classReference != null) {
+                    result.add(TreeNode.getTree(info, new TreePath(declaration, classReference), /*TODO: cancel*/new AtomicBoolean()));
                 }
-                if (node.getMethodParameters() != null) {
-                    for (ExpressionTree param : node.getMethodParameters()) {
+                List<? extends Tree> methodParameters = info.getTreeUtilities().getReferenceParameters(getCurrentPath());
+                if (methodParameters != null) {
+                    for (Tree param : methodParameters) {
                         result.add(TreeNode.getTree(info, new TreePath(declaration, param), /*TODO: cancel*/new AtomicBoolean()));
                     }
                 }

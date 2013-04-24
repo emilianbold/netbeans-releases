@@ -53,6 +53,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
@@ -388,10 +389,13 @@ public class RenameTransformer extends RefactoringVisitor {
         Element el = trees.getElement(getCurrentDocPath());
         if (el != null && (el.equals(elementToFind) || isMethodMatch(el))) {
             ReferenceTree newRef;
+            ExpressionTree classReference = workingCopy.getTreeUtilities().getReferenceClass(currentDocPath);
+            Name memberName = workingCopy.getTreeUtilities().getReferenceName(currentDocPath);
+            List<? extends Tree> methodParameters = workingCopy.getTreeUtilities().getReferenceParameters(currentDocPath);
             if(el.getKind().isClass() || el.getKind().isInterface()) {
-                newRef = make.Reference(make.setLabel(node.getClassReference(), newName), node.getMemberName(), node.getMethodParameters());
+                newRef = make.Reference(make.setLabel(classReference, newName), memberName, methodParameters);
             } else {
-                newRef = make.Reference(node.getClassReference(), newName, node.getMethodParameters());
+                newRef = make.Reference(classReference, newName, methodParameters);
             }
             rewrite(currentDocPath.getTreePath().getLeaf(), node, newRef);
         }

@@ -3176,7 +3176,7 @@ public final class TreeMaker {
         return delegate.Return(description);
     }
 
-    public ReferenceTree Reference(@NullAllowed ExpressionTree qualExpr, @NullAllowed CharSequence member, @NullAllowed List<? extends ExpressionTree> paramTypes) {
+    public ReferenceTree Reference(@NullAllowed ExpressionTree qualExpr, @NullAllowed CharSequence member, @NullAllowed List<? extends Tree> paramTypes) {
         return delegate.Reference(qualExpr, member, paramTypes);
     }
 

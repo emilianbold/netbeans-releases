@@ -46,6 +46,7 @@ import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.DocTree.Kind;
 import com.sun.source.doctree.ReferenceTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.util.DocSourcePositions;
 import com.sun.source.util.DocTreePath;
@@ -534,10 +535,11 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 // complete class member
                 String prefix = sb.toString();
                 int substitutionOffset = caretOffset - sb.length();
-                if (ref.getClassReference() == null) {
+                ExpressionTree classReference = jdctx.javac.getTreeUtilities().getReferenceClass(tag);
+                if (classReference == null) {
                     addLocalMembersAndVars(jdctx, prefix, substitutionOffset);
                 } else {
-                    Element elm = jdctx.javac.getDocTrees().getElement(new TreePath(jdctx.javadocFor, ref.getClassReference()));
+                    Element elm = jdctx.javac.getDocTrees().getElement(new TreePath(jdctx.javadocFor, classReference));
                     if (elm != null) {
                         addMembers(jdctx, prefix, substitutionOffset, elm.asType(), elm,
                                 EnumSet.<ElementKind>of(ENUM_CONSTANT, FIELD, METHOD, CONSTRUCTOR),

@@ -72,7 +72,9 @@ import com.sun.source.doctree.UnknownInlineTagTree;
 import com.sun.source.doctree.ValueTree;
 import com.sun.source.doctree.VersionTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.tree.DCTree;
+import com.sun.tools.javac.tree.DCTree.DCReference;
 import com.sun.tools.javac.util.Name;
 import java.util.ArrayList;
 import java.util.List;
@@ -222,11 +224,12 @@ public class ImmutableDocTreeTranslator extends ImmutableTreeTranslator implemen
     }
 
     protected final ReferenceTree rewriteChildren(ReferenceTree tree) {
+        DCReference refTree = (DCReference) tree;
         ReferenceTree value = tree;
-        ExpressionTree classReference = (ExpressionTree) translate(tree.getClassReference());
-        List<? extends ExpressionTree> methodParameters = translate(tree.getMethodParameters());
-        if(classReference != tree.getClassReference() || methodParameters != tree.getMethodParameters()) {
-            value = make.Reference(classReference, tree.getMemberName(), methodParameters);
+        ExpressionTree classReference = (ExpressionTree) translate(refTree.qualifierExpression);
+        List<? extends Tree> methodParameters = translate(refTree.paramTypes);
+        if(classReference != refTree.qualifierExpression || methodParameters != refTree.paramTypes) {
+            value = make.Reference(classReference, refTree.memberName, methodParameters);
         }
         return value;
     }

@@ -97,6 +97,7 @@ import static com.sun.tools.javac.code.Flags.*;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.DCTree;
+import com.sun.tools.javac.tree.DCTree.DCReference;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.TreeInfo;
@@ -2139,17 +2140,18 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     @Override
     public Void visitReference(ReferenceTree node, Void p) {
         //TODO: should use formatting settings:
-        if (node.getClassReference() != null) {
-            print(node.getClassReference().toString());
+        DCReference refNode = (DCReference) node;
+        if (refNode.qualifierExpression != null) {
+            print(refNode.qualifierExpression);
         }
-        if (node.getMemberName() != null) {
+        if (refNode.memberName != null) {
             print("#");
-            print(node.getMemberName());
+            print(refNode.memberName);
         }
-        if (node.getMethodParameters() != null) {
+        if (refNode.paramTypes != null) {
             print("(");
             boolean first = true;
-            for (ExpressionTree param : node.getMethodParameters()) {
+            for (Tree param : refNode.paramTypes) {
                 if (!first) print(", ");
                 print(param.toString());
                 first = false;

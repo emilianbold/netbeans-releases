@@ -58,6 +58,7 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
+import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
@@ -65,6 +66,8 @@ import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Resolve;
+import com.sun.tools.javac.tree.DCTree.DCDocComment;
+import com.sun.tools.javac.tree.DCTree.DCReference;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
@@ -79,6 +82,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -803,7 +807,7 @@ public final class TreeUtilities {
     }
     
     public int[] findNameSpan(DocCommentTree docTree, ReferenceTree ref) {
-        Name name = ref.getMemberName();
+        Name name = ((DCReference) ref).memberName;
         if (name == null || !SourceVersion.isIdentifier(name)) {
             //names like "<error>", etc.
             return null;
@@ -1349,5 +1353,27 @@ public final class TreeUtilities {
         Type attributeTreeImpl = (Type) attributeTree;
 
         return attributeTreeImpl != null && attributeTreeImpl.constValue() != null;
+    }
+    
+    public @CheckForNull ExpressionTree getReferenceClass(DocTreePath path) {
+        TreePath tp = path.getTreePath();
+        DCReference ref = (DCReference) path.getLeaf();
+        
+        ((JavacTrees) this.info.getTrees()).ensureDocReferenceAttributed(tp, ref);
+        
+        return (ExpressionTree) ref.qualifierExpression;
+    }
+    
+    public @CheckForNull Name getReferenceName(DocTreePath path) {
+        return ((DCReference) path.getLeaf()).memberName;
+    }
+    
+    public @CheckForNull List<? extends Tree> getReferenceParameters(DocTreePath path) {
+        TreePath tp = path.getTreePath();
+        DCReference ref = (DCReference) path.getLeaf();
+        
+        ((JavacTrees) this.info.getTrees()).ensureDocReferenceAttributed(tp, ref);
+        
+        return ref.paramTypes;
     }
 }

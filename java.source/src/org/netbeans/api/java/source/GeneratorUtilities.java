@@ -225,8 +225,7 @@ public final class GeneratorUtilities {
         CompilationUnitTree compilationUnit = copy.getCompilationUnit();
         Tree lastMember = null;
         for (Tree tree : clazz.getMembers()) {
-            TreePath path = TreePath.getPath(compilationUnit, tree);
-            if ((path == null || !utils.isSynthetic(path))
+            if (!utils.isSynthetic(compilationUnit, tree)
                     && (codeStyle.getClassMemberInsertionPoint() == CodeStyle.InsertionPoint.FIRST_IN_CATEGORY && comparator.compare(member, tree) <= 0
                     || comparator.compare(member, tree) < 0)) {
                 if (doc == null || !(doc instanceof GuardedDocument))

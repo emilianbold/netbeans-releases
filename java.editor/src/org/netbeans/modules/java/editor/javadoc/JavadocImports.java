@@ -48,11 +48,11 @@ import com.sun.source.doctree.ParamTree;
 import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.doctree.SeeTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.DocSourcePositions;
 import com.sun.source.util.DocTreePath;
@@ -112,12 +112,15 @@ public final class JavadocImports {
      * @param el an element to search
      * @return referenced elements.
      */
-    public static Set<TypeElement> computeReferencedElements(CompilationInfo javac, final TreePath tp) {
+    public static Set<TypeElement> computeReferencedElements(final CompilationInfo javac, final TreePath tp) {
         final DocTrees trees = javac.getDocTrees();
         DocCommentTree docComment = trees.getDocCommentTree(tp);
+        
+        if (docComment == null) return Collections.emptySet();
+        
         final Set<TypeElement> result = new HashSet<TypeElement>();
         
-        new DocTreeScanner<Void, Void>() {
+        new DocTreePathScanner<Void, Void>() {
             @Override public Void visitReference(ReferenceTree node, Void p) {
                 new TreePathScanner<Void, Void>() {
                     @Override public Void visitIdentifier(IdentifierTree node, Void p) {
@@ -134,13 +137,13 @@ public final class JavadocImports {
                         }
                         return null;
                     }
-                }.scan(referenceEmbeddedSourceNodes(tp, node), null);
+                }.scan(referenceEmbeddedSourceNodes(javac, getCurrentPath()), null);
                 return super.visitReference(node, p);
             }
             @Override public Void visitSee(SeeTree node, Void p) {
                 return super.visitSee(node, p);
             }
-        }.scan(docComment, null);
+        }.scan(new DocTreePath(tp, docComment), null);
         
         return result;
     }
@@ -189,7 +192,7 @@ public final class JavadocImports {
                         }
                         return null;
                     }
-                }.scan(referenceEmbeddedSourceNodes(forElement, node), null);
+                }.scan(referenceEmbeddedSourceNodes(javac, getCurrentPath()), null);
                 if (toFind.equals(trees.getElement(getCurrentPath()))) {
                     int[] span = javac.getTreeUtilities().findNameSpan(docComment, node);
                     if (span != null) {
@@ -322,7 +325,7 @@ public final class JavadocImports {
                         }
                         return null;
                     }
-                }.scan(referenceEmbeddedSourceNodes(tp, node), null);
+                }.scan(referenceEmbeddedSourceNodes(javac, getCurrentPath()), null);
                 return super.visitReference(node, p);
             }
             @Override
@@ -352,10 +355,13 @@ public final class JavadocImports {
         if (tp == null) return null;
         
         final DocCommentTree docComment = javac.getDocTrees().getDocCommentTree(tp);
+        
+        if (docComment == null) return null;
+        
         final DocSourcePositions positions = trees.getSourcePositions();
         final Token[] result = new Token[1];
         
-        new DocTreeScanner<Void, Void>() {
+        new DocTreePathScanner<Void, Void>() {
             @Override public Void scan(DocTree node, Void p) {
                 if (   node != null
                     && positions.getStartPosition(javac.getCompilationUnit(), docComment, node) <= offset
@@ -400,7 +406,7 @@ public final class JavadocImports {
                         }
                         return null;
                     }
-                }.scan(referenceEmbeddedSourceNodes(tp, node), null);
+                }.scan(referenceEmbeddedSourceNodes(javac, getCurrentPath()), null);
                 return super.visitReference(node, p);
             }
             private void handleUsage(int start) {
@@ -432,7 +438,7 @@ public final class JavadocImports {
             @Override public Void visitSee(SeeTree node, Void p) {
                 return super.visitSee(node, p);
             }
-        }.scan(docComment, null);
+        }.scan(new DocTreePath(tp, docComment), null);
         
         return result[0];
     }
@@ -562,7 +568,10 @@ public final class JavadocImports {
         private void resolveElement() {
             final DocTrees trees = javac.getDocTrees();
             DocCommentTree dcComment = trees.getDocCommentTree(getCurrentPath());
-            new DocTreeScanner<Void, Void>() {
+            
+            if (dcComment == null) return ;
+            
+            new DocTreePathScanner<Void, Void>() {
                 @Override public Void visitReference(ReferenceTree node, Void p) {
                     new TreePathScanner<Void, Void>() {
                         @Override public Void visitIdentifier(IdentifierTree node, Void p) {
@@ -588,25 +597,25 @@ public final class JavadocImports {
                             }
                             return null;
                         }
-                    }.scan(referenceEmbeddedSourceNodes(getCurrentPath(), node), null);
+                    }.scan(referenceEmbeddedSourceNodes(javac, getCurrentPath()), null);
                     return super.visitReference(node, p);
                 }
-            }.scan(dcComment, null);
+            }.scan(new DocTreePath(getCurrentPath(), dcComment), null);
         }
     }
     
-    private static Iterable<? extends TreePath> referenceEmbeddedSourceNodes(TreePath basePath, ReferenceTree ref) {
+    private static Iterable<? extends TreePath> referenceEmbeddedSourceNodes(CompilationInfo info, DocTreePath ref) {
         List<TreePath> result = new ArrayList<TreePath>();
         
-        if (ref.getClassReference() != null) {
-            result.add(new TreePath(basePath, ref.getClassReference()));
+        if (info.getTreeUtilities().getReferenceClass(ref) != null) {
+            result.add(new TreePath(ref.getTreePath(), info.getTreeUtilities().getReferenceClass(ref)));
         }
         
-        List<? extends ExpressionTree> params = ref.getMethodParameters();
+        List<? extends Tree> params = info.getTreeUtilities().getReferenceParameters(ref);
         
         if (params != null) {
-            for (ExpressionTree et : params) {
-                result.add(new TreePath(basePath, et));
+            for (Tree et : params) {
+                result.add(new TreePath(ref.getTreePath(), et));
             }
         }
         
