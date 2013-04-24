@@ -115,7 +115,7 @@ public class Nette2FrameworkProvider extends PhpFrameworkProvider {
     public File[] getConfigurationFiles(PhpModule phpModule) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory != null) {
-            List<File> files = new ArrayList<File>();
+            List<File> files = new ArrayList<>();
             FileObject composer = sourceDirectory.getFileObject(COMPOSER_PATH);
             if (composer != null) {
                 files.add(FileUtil.toFile(composer));
