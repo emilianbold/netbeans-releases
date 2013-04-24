@@ -794,10 +794,10 @@ public class WrappedTextView extends View implements TabExpander {
     private int jumpToLine(Lines lines, PositionInfo pi, int direction) {
         assert direction == NORTH || direction == SOUTH;
 
-        int newVisibleLine = lines.realToVisibleLine(pi.lineIndex)
-                + ((direction == SOUTH) ? 1 : -1);
-        int newRealLine = lines.visibleToRealLine(newVisibleLine);
-
+        int newRealLine = findNearestVisibleLine(lines, pi.lineIndex, direction);
+        if (newRealLine < 0) {
+            return pi.offset;
+        }
         PositionInfo targetLine = getLineInfo(newRealLine);
         int newInnerRow = direction == NORTH
                 ? targetLine.innerRowsCount - 1
@@ -811,6 +811,35 @@ public class WrappedTextView extends View implements TabExpander {
         int physicalPos = fixPhysicalPosition(lines, logicalLineStart
                 + physicalColumn, newInnerRow, targetLine.lineStart);
         return Math.min(physicalPos, targetLine.lineEnd);
+    }
+
+    /**
+     * Find the nearest visible from {@code realLineIndex}.
+     *
+     * @param lines Info about lines.
+     * @param realLineIndex Real index of line above/below which the first
+     * visible line should be found.
+     * @param direction SwingConstants.SOUTH or SwingConstants.NORTH.
+     * @return Real line index of the nearest visible line, or -1 if no such
+     * line exists.
+     */
+    private int findNearestVisibleLine(Lines lines, int realLineIndex,
+            int direction) {
+        assert direction == SOUTH || direction == NORTH;
+        int inc = direction == SOUTH ? 1 : -1;
+        int visibleLine = lines.realToVisibleLine(realLineIndex);
+        if (visibleLine < 0) {
+            // the source line is not visible, let's search
+            for (int i = realLineIndex + inc; i >= 0
+                    && i < lines.getLineCount(); i += inc) {
+                if (lines.realToVisibleLine(i) >= 0) {
+                    return i;
+                }
+            }
+            return -1;
+        } else {
+            return lines.visibleToRealLine(visibleLine + inc);
+        }
     }
 
     /**
