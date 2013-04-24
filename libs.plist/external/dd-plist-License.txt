@@ -1,4 +1,10 @@
-plist - An open source library to parse and generate property lists
+Name: plist
+Version: 99
+Description: An open source library to parse and generate property lists
+License: MIT
+Origin: http://code.google.com/p/plist/
+Files: dd-plist.jar
+
 Copyright (C) 2012 Daniel Dreibrodt
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
