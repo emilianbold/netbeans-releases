@@ -917,7 +917,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                         if (ex == null || !(types.isAssignable(ex.asType(), error)
                                 || types.isAssignable(ex.asType(), runtime))) {
                             ExecutableElement ee = (ExecutableElement) currentElement;
-                            String fqn = ex != null ? ((TypeElement) ex).getQualifiedName().toString() : javac.getTreeUtilities().getReferenceClass(currentDocPath).toString();
+                            String fqn = ex != null ? ((TypeElement) ex).getQualifiedName().toString() : javac.getTreeUtilities().getReferenceClass(new DocTreePath(currentDocPath, exName)).toString();
                             checkThrowsDeclared(tree, fqn, ee.getThrownTypes(), dtph, positions, errors);
                         }
                         break;
