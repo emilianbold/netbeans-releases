@@ -94,13 +94,11 @@ public class GroovyError implements Badging {
         return description;
     }
 
-    // TODO rename to getStartOffset
     @Override
     public int getStartPosition() {
         return start;
     }
 
-    // TODO rename to getEndOffset
     @Override
     public int getEndPosition() {
         return end;

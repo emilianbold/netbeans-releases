@@ -51,7 +51,7 @@ import org.openide.util.Parameters;
  */
 public final class CompilerErrorResolver {
 
-    private static final String UNABLE_TO_RESOLVE_CLASS_PREFIX = "unable to resolve class "; // NOI18N
+    private static final String UNABLE_TO_RESOLVE_CLASS = "unable to resolve class "; // NOI18N
     private static final String CLASS_DOES_NOT_IMPLEMENT_ALL_METHODS = "Can't have an abstract method in a non-abstract class."; // NOI18N
     
     
@@ -67,7 +67,7 @@ public final class CompilerErrorResolver {
     public static CompilerErrorID getId(@NonNull String errorMessage) {
         Parameters.notNull("errorMessage", errorMessage);
         
-        if (errorMessage.startsWith(UNABLE_TO_RESOLVE_CLASS_PREFIX)) {
+        if (errorMessage.startsWith(UNABLE_TO_RESOLVE_CLASS)) {
             return CompilerErrorID.CLASS_NOT_FOUND;
         }
         
