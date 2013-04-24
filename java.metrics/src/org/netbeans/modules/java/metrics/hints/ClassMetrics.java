@@ -48,13 +48,16 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.beans.Expression;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -105,7 +108,10 @@ import static org.netbeans.modules.java.metrics.hints.Bundle.*;
     "TEXT_ClassManyConstructors=Class {0} has too many constructors: {1}",
     "# {0} - class name",
     "# {1} - field count",
-    "TEXT_ClassManyFields=Class {0} has too many fields: {1}"
+    "TEXT_ClassManyFields=Class {0} has too many fields: {1}",
+    "# {0} - method count",
+    "TEXT_AnonClassManyMethods=Anonymous class has too many methods: {0}",
+    
 })
 public class ClassMetrics {
     static final int DEFAULT_ANONYMOUS_COMPLEXITY_LIMIT = 5;
@@ -113,7 +119,8 @@ public class ClassMetrics {
     static final int DEFAULT_COUPLING_LIMIT = 25;
     static final int DEFAULT_CLASS_FIELDS_LIMIT = 10;
     static final int DEFAULT_CLASS_METHODS_LIMIT = 20;
-    static final int DEFAULT_CLASS_CONSTRUCTORS_LIMIT = 3;
+    static final int DEFAULT_ANON_CLASS_METHODS_LIMIT = 3;
+    static final int DEFAULT_CLASS_CONSTRUCTORS_LIMIT = 5;
     static final boolean DEFAULT_COUPLING_IGNORE_JAVA = true;
     static final boolean DEFAULT_CLASS_METHODS_IGNORE_ACCESSORS = true;
     static final boolean DEFAULT_CLASS_FIELDS_IGNORE_CONSTANTS = true;
@@ -173,6 +180,16 @@ public class ClassMetrics {
     )
     public static final String OPTION_CLASS_METHODS_LIMIT = "metrics.class.methods.limit"; // NOI18N
 
+    @IntegerOption(
+        displayName = "#OPTNAME_AnonClassMethodsLimit",
+        tooltip = "#OPTDESC_AnonClassMethodsLimit",
+        minValue = 1,
+        maxValue = 1000,
+        step = 1,
+        defaultValue = DEFAULT_ANON_CLASS_METHODS_LIMIT
+    )
+    public static final String OPTION_ANON_CLASS_METHODS_LIMIT = "metrics.anonclass.methods.limit"; // NOI18N
+
     @BooleanOption(
         displayName = "#OPTNAME_ClassMethodCountIgnoreAccessors",
         tooltip = "#OPTDESC_ClassMethodCountIgnoreAccessors",
@@ -226,8 +243,13 @@ public class ClassMetrics {
         int limit = ctx.getPreferences().getInt(OPTION_ANONYMOUS_COMPLEXITY_LIMIT, 
                 DEFAULT_ANONYMOUS_COMPLEXITY_LIMIT);
         if (complexity > limit) {
-            return ErrorDescriptionFactory.forName(ctx, 
-                    ctx.getPath(), 
+            CompilationInfo info = ctx.getInfo();
+            SourcePositions pos = info.getTrees().getSourcePositions();
+            NewClassTree nct = (NewClassTree)ctx.getPath().getLeaf();
+            long start = pos.getStartPosition(info.getCompilationUnit(), nct);
+            long mstart = pos.getStartPosition(info.getCompilationUnit(), nct.getClassBody());
+            return ErrorDescriptionFactory.forSpan(ctx, 
+                    (int)start, (int)mstart,
                     TEXT_ClassAnonymousTooComplex(complexity));
         } else {
             return null;
@@ -324,6 +346,29 @@ public class ClassMetrics {
     }
     
     @Hint(
+        displayName = "#DN_AnonClassMethodCount",
+        description = "#DESC_AnonClassMethodCount",
+        category = "metrics",
+        options = { Hint.Options.HEAVY, Hint.Options.QUERY },
+        enabled = false
+    )
+    @TriggerPatterns({
+        @TriggerPattern("new $classname<$tparams$>($params$) { $members$; }"),
+        @TriggerPattern("$expr.new $classname<$tparams$>($params$) { $members$; }"),
+        @TriggerPattern("new $classname($params$) { $members$; }"),
+        @TriggerPattern("$expr.new $classname($params$) { $members$; }"),
+    })
+    @UseOptions({ OPTION_ANON_CLASS_METHODS_LIMIT})
+    public static ErrorDescription anonymousTooManyMethods(HintContext ctx) {
+        NewClassTree nct = (NewClassTree)ctx.getPath().getLeaf();
+
+        return checkTooManyMethods(ctx, 
+            new TreePath(ctx.getPath(), nct.getClassBody()),
+            ctx.getPreferences().getInt(OPTION_ANON_CLASS_METHODS_LIMIT, DEFAULT_ANON_CLASS_METHODS_LIMIT),
+            true);
+    }
+    
+    @Hint(
         displayName = "#DN_ClassMethodCount",
         description = "#DESC_ClassMethodCount",
         category = "metrics",
@@ -334,7 +379,13 @@ public class ClassMetrics {
         OPTION_CLASS_METHODS_LIMIT})
     @TriggerTreeKind(Tree.Kind.CLASS)
     public static ErrorDescription tooManyMethods(HintContext ctx) {
-        ClassTree clazz = (ClassTree)ctx.getPath().getLeaf();
+        return checkTooManyMethods(ctx, ctx.getPath(), 
+            ctx.getPreferences().getInt(OPTION_CLASS_METHODS_LIMIT, DEFAULT_CLASS_METHODS_LIMIT),
+            false);
+    }
+    
+    private static ErrorDescription checkTooManyMethods(HintContext ctx, TreePath path, int limit, boolean anon) {
+        ClassTree clazz = (ClassTree)path.getLeaf();
         boolean ignoreAccessors = ctx.getPreferences().getBoolean(OPTION_CLASS_METHODS_IGNORE_ACCESSORS, DEFAULT_CLASS_METHODS_IGNORE_ACCESSORS);
         boolean ignoreAbstract = ctx.getPreferences().getBoolean(OPTION_CLASS_METHODS_IGNORE_ABSTRACT, DEFAULT_CLASS_METHODS_IGNORE_ABSTRACT);
         int methodCount = 0;
@@ -347,7 +398,7 @@ public class ClassMetrics {
                 // a constructor ?
                 continue;
             }
-            TreePath methodPath = new TreePath(ctx.getPath(), method);
+            TreePath methodPath = new TreePath(path, method);
             if (ignoreAccessors && (isSimpleGetter(ctx.getInfo(), methodPath) ||
                     isSimpleSetter(ctx.getInfo(), methodPath))) {
                 continue;
@@ -362,13 +413,21 @@ public class ClassMetrics {
             methodCount++;
         }
         
-        int limit = ctx.getPreferences().getInt(OPTION_CLASS_METHODS_LIMIT, DEFAULT_CLASS_METHODS_LIMIT);
         if (methodCount <= limit) {
             return null;
         }
-        return ErrorDescriptionFactory.forName(ctx, 
-                    ctx.getPath(), 
+        if (anon) {
+            CompilationInfo info = ctx.getInfo();
+            SourcePositions pos = info.getTrees().getSourcePositions();
+            long start = pos.getStartPosition(info.getCompilationUnit(), path.getParentPath().getLeaf());
+            long mstart = pos.getStartPosition(info.getCompilationUnit(), path.getLeaf());
+            return ErrorDescriptionFactory.forSpan(ctx, (int)start, (int)mstart,
+                    TEXT_AnonClassManyMethods(methodCount));
+        } else {
+            return ErrorDescriptionFactory.forName(ctx, 
+                    path, 
                     TEXT_ClassManyMethods(clazz.getSimpleName().toString(), methodCount));
+        }
     }
     
     @Hint(
