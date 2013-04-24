@@ -42,12 +42,13 @@
 package org.netbeans.modules.php.nette2.utils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -69,45 +70,6 @@ public final class FileUtils {
     private static final Set<PosixFilePermission> PERMISSIONS_777 = new HashSet<>(Arrays.asList(PosixFilePermission.values()));
 
     private FileUtils() {
-    }
-
-    public static void copyDirectory(File sourceDirectory, File destinationDirectory) {
-        assert sourceDirectory != null;
-        assert destinationDirectory != null;
-        if (sourceDirectory.isDirectory()) {
-            if (!destinationDirectory.exists()) {
-                destinationDirectory.mkdir();
-            }
-            String[] children = sourceDirectory.list();
-            if (children != null) {
-                for (int i = 0; i < children.length; i++) {
-                    copyDirectory(new File(sourceDirectory, children[i]), new File(destinationDirectory, children[i]));
-                }
-            }
-        } else {
-            try {
-                copyFile(sourceDirectory, destinationDirectory);
-            } catch (IOException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            }
-        }
-    }
-
-    public static void copyFile(File source, File destination) throws IOException {
-        assert source != null;
-        assert destination != null;
-        InputStream fis = new FileInputStream(source);
-        OutputStream fos = new FileOutputStream(destination);
-        try {
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = fis.read(buf)) > 0) {
-                fos.write(buf, 0, len);
-            }
-        } finally {
-            fis.close();
-            fos.close();
-        }
     }
 
     public static FileObject getFile(JTextComponent textComponent) {
@@ -136,6 +98,41 @@ public final class FileUtils {
             Files.setPosixFilePermissions(file.toPath(), PERMISSIONS_777);
         } catch (IOException ex) {
             LOGGER.log(Level.FINE, null, ex);
+        }
+    }
+
+    public static void copyDirectory(File sourceDirectory, File destinationDirectory) {
+        assert sourceDirectory != null;
+        assert destinationDirectory != null;
+        try {
+            Files.walkFileTree(sourceDirectory.toPath(), new CopyDirectoryVisitor(sourceDirectory.toPath(), destinationDirectory.toPath()));
+        } catch (IOException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        }
+    }
+
+    private static final class CopyDirectoryVisitor extends SimpleFileVisitor<Path> {
+        private final Path source;
+        private final Path destination;
+
+        CopyDirectoryVisitor(Path source, Path destination) {
+            this.source = source;
+            this.destination = destination;
+        }
+
+        @Override
+        public FileVisitResult preVisitDirectory(Path directory, BasicFileAttributes attributes) throws IOException {
+            Path targetPath = destination.resolve(source.relativize(directory));
+            if(!Files.exists(targetPath)){
+                Files.createDirectory(targetPath);
+            }
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) throws IOException {
+            Files.copy(file, destination.resolve(source.relativize(file)), StandardCopyOption.REPLACE_EXISTING);
+            return FileVisitResult.CONTINUE;
         }
     }
 
