@@ -39,47 +39,92 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
 
-//import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.html.lexer.HtmlLexerPlugin;
-import org.netbeans.modules.html.angular.model.Directive;
+package org.netbeans.modules.maven.execute;
+
+import java.io.Reader;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
- *
- * @author marekfukala
+ * workarounds execution API which at some point in time calls select() on the IO.
+ * @author mkleint
  */
-@MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
-//@ServiceProvider(service = HtmlLexerPlugin.class)
-public class AngularHtmlLexerPlugin implements HtmlLexerPlugin {
-
-    @Override
-    public String getOpenDelimiter() {
-        return "{{"; //NOI18N
+public class ProxyNonSelectableInputOutput implements InputOutput {
+    private final InputOutput delegate;
+    
+    public ProxyNonSelectableInputOutput(InputOutput delegate) {
+        this.delegate = delegate;
     }
 
     @Override
-    public String getCloseDelimiter() {
-        return "}}"; //NOI18N
+    public OutputWriter getOut() {
+        return delegate.getOut();
     }
 
     @Override
-    public String getContentMimeType() {
-        return Constants.JAVASCRIPT_MIMETYPE; //NOI18N
+    public Reader getIn() {
+        return delegate.getIn();
     }
 
     @Override
-    public String createAttributeEmbedding(String elementName, String attributeName) {
-        //TODO take the element into account!
-        Directive directive = Directive.getDirective(attributeName);
-        if(directive != null) {
-            switch(directive.getType()) {
-                case expression:
-                    return Constants.JAVASCRIPT_MIMETYPE;
-            }
-        }
-        return null;
+    public OutputWriter getErr() {
+        return delegate.getErr();
+    }
+
+    @Override
+    public void closeInputOutput() {
+        delegate.closeInputOutput();
+    }
+
+    @Override
+    public boolean isClosed() {
+        return delegate.isClosed();
+    }
+
+    @Override
+    public void setOutputVisible(boolean value) {
+        delegate.setOutputVisible(value);
+    }
+
+    @Override
+    public void setErrVisible(boolean value) {
+        delegate.setErrVisible(value);
+    }
+
+    @Override
+    public void setInputVisible(boolean value) {
+        delegate.setInputVisible(value);
+    }
+
+    @Override
+    public void select() {
+        //do not delegate!
+    }
+
+    @Override
+    public boolean isErrSeparated() {
+        return delegate.isErrSeparated();
+    }
+
+    @Override
+    public void setErrSeparated(boolean value) {
+        delegate.setErrSeparated(value);
+    }
+
+    @Override
+    public boolean isFocusTaken() {
+        return delegate.isFocusTaken();
+    }
+
+    @Override
+    public void setFocusTaken(boolean value) {
+        delegate.setFocusTaken(value);
+    }
+
+    @Override
+    public Reader flushReader() {
+        return delegate.flushReader();
     }
     
 }
