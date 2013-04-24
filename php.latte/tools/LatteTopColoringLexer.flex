@@ -82,7 +82,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             //reset state
             setState((LexerState) info.state());
             this.syntax = ((LexerState) info.state()).syntax;
-            this.tags = ((LexerState) info.state()).tags;
+            this.tags = ((LexerState) info.state()).tags.clone();
         } else {
             zzState = zzLexicalState = YYINITIAL;
             this.syntax = Syntax.LATTE;
@@ -237,6 +237,17 @@ SYNTAX_PYTHON_END="%}"
 <ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_PYTHON_DOUBLE, ST_N_ATTR_DOUBLE, ST_N_ATTR_SINGLE, ST_IN_HTML_TAG, ST_IN_SYNTAX_ATTR>{WHITESPACE}+ {
 }
 
+<ST_IN_HTML_TAG> {
+    "<""/"[a-zA-Z0-9:]+">" {
+        HtmlTag tag = tags.pop();
+        if (tag.isSyntax()) {
+            syntax = Syntax.LATTE;
+        }
+        popState();
+        return LatteTopTokenId.T_HTML;
+    }
+}
+
 <YYINITIAL, ST_IN_HTML_TAG> {
     {PYTHON_COMMENT_START} {
         if (syntax == Syntax.PYTHON) {
@@ -301,15 +312,6 @@ SYNTAX_PYTHON_END="%}"
     "<"[a-z0-9:]+ {
         tags.push(new HtmlTag());
         pushState(ST_IN_HTML_TAG);
-        return LatteTopTokenId.T_HTML;
-    }
-    "<""/"[a-zA-Z0-9:]+">" {
-        if (!tags.isEmpty()) {
-            HtmlTag tag = tags.pop();
-            if (tag.isSyntax()) {
-                syntax = Syntax.LATTE;
-            }
-        }
         return LatteTopTokenId.T_HTML;
     }
     {WHITESPACE}+ | . {
