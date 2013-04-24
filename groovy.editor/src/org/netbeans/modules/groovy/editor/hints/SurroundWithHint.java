@@ -53,9 +53,9 @@ public class SurroundWithHint extends GroovySelectionRule {
 
     public static final Logger LOG = Logger.getLogger(SurroundWithHint.class.getName()); // NOI18N
 
-    enum OPERATION {
-
-        COMMENT_OUT, ADD_IF
+    private enum Operation {
+        COMMENT_OUT,
+        ADD_IF
     };
 
     @Override
@@ -90,11 +90,11 @@ public class SurroundWithHint extends GroovySelectionRule {
 
         OffsetRange range = new OffsetRange(start, end);
 
-        result.add(getDescriptor(OPERATION.COMMENT_OUT, Bundle.CommentOutRuleHintDescription(), context, baseDoc, range));
-        result.add(getDescriptor(OPERATION.ADD_IF, Bundle.AddIfAroundBlockHintDescription(), context, baseDoc, range));
+        result.add(getDescriptor(Operation.COMMENT_OUT, Bundle.CommentOutRuleHintDescription(), context, baseDoc, range));
+        result.add(getDescriptor(Operation.ADD_IF, Bundle.AddIfAroundBlockHintDescription(), context, baseDoc, range));
     }
 
-    Hint getDescriptor(OPERATION operation, String description, GroovyRuleContext context,
+    private Hint getDescriptor(Operation operation, String description, GroovyRuleContext context,
         BaseDocument baseDoc, OffsetRange range) {
 
         int DEFAULT_PRIORITY = 292;
@@ -130,14 +130,14 @@ public class SurroundWithHint extends GroovySelectionRule {
         return HintSeverity.CURRENT_LINE_WARNING;
     }
 
-    static private class SimpleFix implements HintFix {
+    private static class SimpleFix implements HintFix {
 
         final BaseDocument baseDoc;
         final String desc;
         final GroovyRuleContext context;
-        final OPERATION operation;
+        final Operation operation;
 
-        public SimpleFix(OPERATION operation, String desc, BaseDocument baseDoc, GroovyRuleContext context) {
+        public SimpleFix(Operation operation, String desc, BaseDocument baseDoc, GroovyRuleContext context) {
             this.desc = desc;
             this.baseDoc = baseDoc;
             this.context = context;
