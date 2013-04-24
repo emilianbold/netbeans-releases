@@ -984,18 +984,26 @@ public class JsFormatter implements Formatter {
             return false;
         }
 
+        boolean hasSpaceMarker = false;
+        boolean hasSpace = false;
         FormatToken next = token;
         while (next != null && (next.isVirtual()
                 || skipWitespace && next.getKind() == FormatToken.Kind.WHITESPACE
                 || skipWitespace && next.getKind() == FormatToken.Kind.EOL)) {
             if (next.getKind() != FormatToken.Kind.WHITESPACE
-                    && next.getKind() != FormatToken.Kind.EOL
-                    && isSpace(next, context)) {
-                return true;
+                    && next.getKind() != FormatToken.Kind.EOL) {
+                if (isSpace(next, context)) {
+                    return true;
+                }
+                if (next.getKind().isSpaceMarker()) {
+                    hasSpaceMarker = true;
+                }
+            } else {
+                hasSpace = true;
             }
             next = next.next();
         }
-        return false;
+        return !hasSpaceMarker && hasSpace;
     }
 
     private static boolean isSpace(FormatToken token, FormatContext formatContext) {
