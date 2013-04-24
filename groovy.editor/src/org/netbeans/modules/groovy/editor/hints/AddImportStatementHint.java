@@ -65,11 +65,8 @@ import org.openide.util.NbBundle;
 public class AddImportStatementHint extends GroovyErrorRule {
 
     public static final Logger LOG = Logger.getLogger(AddImportStatementHint.class.getName());
-    
-    public AddImportStatementHint() {
-        super();
-    }
 
+    
     @Override
     public Set<CompilerErrorID> getCodes() {
         return EnumSet.of(CompilerErrorID.CLASS_NOT_FOUND);
@@ -143,10 +140,10 @@ public class AddImportStatementHint extends GroovyErrorRule {
         return HintSeverity.ERROR;
     }
 
-    private class AddImportFix implements HintFix {
+    private static class AddImportFix implements HintFix {
 
-        FileObject fo;
-        String fqn;
+        private final FileObject fo;
+        private final String fqn;
 
         public AddImportFix(FileObject fo, String fqn) {
             this.fo = fo;
