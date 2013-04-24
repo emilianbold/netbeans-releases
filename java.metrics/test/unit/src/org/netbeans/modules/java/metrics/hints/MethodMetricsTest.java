@@ -217,7 +217,7 @@ public class MethodMetricsTest extends NbTestCase {
     
     public void testTooCustomManyParameters() throws Exception {
         HintTest.create().input("test/NoMethodLimits.java", code("NoMethodLimits.java")).
-        preference(MethodMetrics.OPTION_PARAMETERS_LIMIT, 4).
+        preference(MethodMetrics.OPTION_METHOD_PARAMETERS_LIMIT, 4).
         run(MethodMetrics.class, MethodMetrics.class.getName() + ".tooManyParameters").
         assertWarnings("28:27-28:47:verifier:Method 'methodWithParameters' takes too many parameters: 8",
             "38:9-38:30:verifier:Method 'methodWithParameters2' takes too many parameters: 8");
@@ -293,7 +293,7 @@ public class MethodMetricsTest extends NbTestCase {
                 input("test/CoupledException.java", code("CoupledException.java")).
         classpath(FileUtil.getArchiveRoot(junit.framework.TestCase.class.getProtectionDomain().getCodeSource().getLocation())).
         run(MethodMetrics.class, MethodMetrics.class.getName() + ".tooManyDependencies").
-        assertWarnings("23:20-23:33:verifier:Method 'coupledMethod' is too coupled. References 16 types");
+        assertWarnings("23:20-23:33:verifier:Method 'coupledMethod' is too coupled. References 18 types");
         
     }
 
@@ -315,7 +315,7 @@ public class MethodMetricsTest extends NbTestCase {
         classpath(FileUtil.getArchiveRoot(junit.framework.TestCase.class.getProtectionDomain().getCodeSource().getLocation())).
         preference(MethodMetrics.OPTION_COUPLING_LIMIT, 13).
         run(MethodMetrics.class, MethodMetrics.class.getName() + ".tooManyDependencies").
-        assertWarnings("23:20-23:33:verifier:Method 'coupledMethod' is too coupled. References 14 types");
+        assertWarnings("23:20-23:33:verifier:Method 'coupledMethod' is too coupled. References 15 types");
     }
 
     public void testMethodCoupledWithJavaPlatform() throws Exception {
@@ -326,6 +326,6 @@ public class MethodMetricsTest extends NbTestCase {
         classpath(FileUtil.getArchiveRoot(junit.framework.TestCase.class.getProtectionDomain().getCodeSource().getLocation())).
         preference(MethodMetrics.OPTION_COUPLING_IGNORE_JAVA, false).
         run(MethodMetrics.class, MethodMetrics.class.getName() + ".tooManyDependencies").
-        assertWarnings("23:20-23:33:verifier:Method 'coupledMethod' is too coupled. References 19 types");
+        assertWarnings("23:20-23:33:verifier:Method 'coupledMethod' is too coupled. References 20 types");
     }
 }
