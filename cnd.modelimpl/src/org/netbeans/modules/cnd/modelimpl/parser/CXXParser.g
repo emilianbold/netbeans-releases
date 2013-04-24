@@ -154,6 +154,9 @@ import org.netbeans.modules.cnd.modelimpl.parser.*;
     protected void sync_parameter_impl() {
     }
 
+    protected void sync_statement_impl() {
+    }
+
     pCXX_grammar CTX;
 
     static int IDT_CLASS_NAME=1;
@@ -331,10 +334,10 @@ compound_statement[boolean lazy]
         {lazy}? skip_balanced_Curl
     |
         LCURLY 
-        sync_declaration 
+        sync_statement 
         (
             statement
-            sync_declaration 
+            sync_statement 
         )* 
         RCURLY
     ;
@@ -542,6 +545,11 @@ sync_member
 
 sync_parameter
 @init                                                                           {sync_parameter_impl();}
+    :   // Deliberately match nothing, causing this rule always to be entered.
+    ;
+
+sync_statement
+@init                                                                           {sync_statement_impl();}
     :   // Deliberately match nothing, causing this rule always to be entered.
     ;
 
