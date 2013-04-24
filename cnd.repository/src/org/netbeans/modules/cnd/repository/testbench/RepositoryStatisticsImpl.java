@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.util.Comparator;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
@@ -83,6 +82,15 @@ public class RepositoryStatisticsImpl extends RepositoryStatistics {
     }
 
     @Override
+    protected int getTotalImpl() {
+        int total = 0;
+        for (Impl impl : instances.values()) {
+            total += impl.getTotal();
+        }
+        return total;
+    }
+
+    @Override
     public void reportImpl(PrintWriter pw, String title) {
         PrintWrapper wrapper = new PrintWrapper(pw);
         reportImpl(wrapper, title);
@@ -95,6 +103,7 @@ public class RepositoryStatisticsImpl extends RepositoryStatistics {
     }
 
     private void reportImpl(PrintWrapper wrapper, String title) {
+        wrapper.printf("\n\n%s\n", title); // NOI18N
         for (Impl stats : instances.values()) {
             stats.report(wrapper, title);
         }
@@ -116,6 +125,11 @@ public class RepositoryStatisticsImpl extends RepositoryStatistics {
             this.displayName = displayName;
         }
 
+        public int getTotal() {
+            Entry entry = buckets.get(TOTAL);
+            return (entry == null) ? 0 : entry.getCount();
+        }
+
         public void incrementData(Key key, int size) {
             String category = getCategory(key);
             getOrCreateEntry(Group.BY_KEY, category).increment(size, key);
@@ -129,12 +143,8 @@ public class RepositoryStatisticsImpl extends RepositoryStatistics {
             getOrCreateEntry(Group.SUMMARY, TOTAL).increment(size); // NOI18N
         }
 
-        public void report(String title) {
-            report(new PrintWrapper(System.out), title);
-        }    
-        
         private void report(PrintWrapper ps, String title) {
-            ps.printf("\n\n%s for %s\n", title, getDisplayName()); // NOI18N
+            ps.printf("%s for %s\n", title, getDisplayName()); // NOI18N
             TreeSet<Entry> sorted = new TreeSet<Entry>(new Comparator<Entry>() {
                 @Override
                 public int compare(Entry e1, Entry e2) {
