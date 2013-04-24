@@ -317,6 +317,7 @@ class TabsComponent extends JPanel {
 	    splitPane.setOneTouchExpandable(true);
 	    splitPane.setContinuousLayout(true);
 	    splitPane.setResizeWeight(0.5);
+            splitPane.setBorder( BorderFactory.createEmptyBorder() );
 
 	    removeAll();
 	    Toolkit.getDefaultToolkit().addAWTEventListener(getAWTEventListener(), MouseEvent.MOUSE_EVENT_MASK | MouseEvent.MOUSE_MOTION_EVENT_MASK);
