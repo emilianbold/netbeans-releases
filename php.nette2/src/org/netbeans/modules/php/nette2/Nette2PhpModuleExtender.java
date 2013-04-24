@@ -114,6 +114,10 @@ class Nette2PhpModuleExtender extends PhpModuleExtender {
             if (bootstrap != null && !bootstrap.isFolder() && bootstrap.isValid()) {
                 result.add(bootstrap);
             }
+            FileObject tempDir = sourceDirectory.getFileObject(Constants.NETTE_TEMP_DIR);
+            if (tempDir != null) {
+                FileUtils.chmod777Recursively(tempDir);
+            }
         }
         return result;
     }

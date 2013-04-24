@@ -47,11 +47,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -105,6 +107,28 @@ public final class FileUtils {
     public static FileObject getFile(JTextComponent textComponent) {
         assert textComponent != null;
         return NbEditorUtilities.getFileObject(textComponent.getDocument());
+    }
+
+    public static void chmod777Recursively(FileObject fileObject) {
+        assert fileObject != null;
+        File file = FileUtil.toFile(fileObject);
+        if (file != null) {
+            chmod777(file);
+            Enumeration<? extends FileObject> allNestedChildren = fileObject.getChildren(true);
+            while (allNestedChildren.hasMoreElements()) {
+                File child = FileUtil.toFile(allNestedChildren.nextElement());
+                if (child != null) {
+                    chmod777(child);
+                }
+            }
+        }
+    }
+
+    private static void chmod777(File file) {
+        assert file != null;
+        file.setExecutable(true, false);
+        file.setReadable(true, false);
+        file.setWritable(true, false);
     }
 
 }

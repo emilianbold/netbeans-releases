@@ -60,6 +60,7 @@ public final class Constants {
     public static final String COMMON_INDEX_PATH = "www/index.php"; //NOI18N
     public static final String COMMON_BOOTSTRAP_PATH = "app/bootstrap.php"; //NOI18N
     public static final String NETTE_LIBS_DIR = "/libs/Nette"; //NOI18N
+    public static final String NETTE_TEMP_DIR = "/temp"; //NOI18N
 
     private Constants() {
     }
