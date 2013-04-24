@@ -44,6 +44,9 @@ package org.netbeans.modules.php.atoum;
 import java.util.List;
 import org.netbeans.modules.php.api.editor.PhpClass.Method;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.atoum.commands.Atoum;
+import org.netbeans.modules.php.atoum.run.TestRunner;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
@@ -52,6 +55,7 @@ import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class AtoumTestingProvider implements PhpTestingProvider {
@@ -65,7 +69,7 @@ public class AtoumTestingProvider implements PhpTestingProvider {
     private AtoumTestingProvider() {
     }
 
-    @PhpTestingProvider.Registration(position=150)
+    @PhpTestingProvider.Registration(position=200)
     public static AtoumTestingProvider getInstance() {
         return INSTANCE;
     }
@@ -83,7 +87,6 @@ public class AtoumTestingProvider implements PhpTestingProvider {
 
     @Override
     public boolean isInPhpModule(PhpModule phpModule) {
-        // XXX any detection?
         return true;
     }
 
@@ -94,17 +97,25 @@ public class AtoumTestingProvider implements PhpTestingProvider {
 
     @Override
     public boolean isTestFile(PhpModule phpModule, FileObject fileObj) {
+        if (!FileUtils.isPhpFile(fileObj)) {
+            return false;
+        }
+        FileObject testDirectory = phpModule.getTestDirectory();
+        if (testDirectory != null
+                && FileUtil.isParentOf(testDirectory, fileObj)) {
+            return true;
+        }
         return false;
     }
 
     @Override
     public boolean isTestCase(PhpModule phpModule, Method method) {
-        return false;
+        return Atoum.isTestMethod(method);
     }
 
     @Override
     public void runTests(PhpModule phpModule, TestRunInfo runInfo, TestSession testSession) throws TestRunException {
-        System.out.println("---------------running tests");
+        new TestRunner(phpModule).runTests(runInfo, testSession);
     }
 
     @Override
@@ -124,7 +135,7 @@ public class AtoumTestingProvider implements PhpTestingProvider {
 
     @Override
     public Locations.Line parseFileFromOutput(String line) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return null;
     }
 
 }
