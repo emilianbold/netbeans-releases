@@ -78,14 +78,11 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     private RequestProcessor.Task socketListener;
     private volatile boolean keepGoing = true;
     private Tabs tabs = new IOSDebugTransport.Tabs();
-;
 
     @Override
     public void registerResponseCallback(ResponseCallback callback) {
         this.callBack = callback;
     }
-
-    
 
     @Override
     public boolean attach() {
@@ -122,7 +119,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
         }
         //System.out.println("receiving " + object.toXMLPropertyList());
         JSONObject jmessage = extractResponse(object);
-        if (jmessage != null) {
+        if (jmessage != null && callBack != null) {
             callBack.handleResponse(new Response(jmessage));
         } else {
             if (!tabs.update(object)) {

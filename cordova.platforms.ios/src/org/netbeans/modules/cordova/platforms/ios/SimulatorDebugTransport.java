@@ -60,26 +60,6 @@ public class SimulatorDebugTransport extends IOSDebugTransport {
     private static final String LOCALHOST_IPV6 = "::1";
     private static final int port = 27753;
 
-    public static void runWhenReady(Runnable run, long timeout) {
-        long time;
-        long started = System.currentTimeMillis();
-        do {
-            try {
-                //Socket socket = new Socket(LOCALHOST_IPV6, port);
-                //socket.close();
-                Thread.sleep(5000);
-                run.run();
-                return;
-                //} catch (UnknownHostException ex) {
-                //    Exceptions.printStackTrace(ex);
-                //} catch (IOException ex) {
-                //    Exceptions.printStackTrace(ex);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            time = System.currentTimeMillis() - started;
-        } while (time < timeout);
-    }
     private Socket socket;
 
     @Override
