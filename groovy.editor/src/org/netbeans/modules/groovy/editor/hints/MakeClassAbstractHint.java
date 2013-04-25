@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
@@ -148,21 +149,42 @@ public final class MakeClassAbstractHint extends GroovyErrorRule {
                 Token t = ts.token();
 
                 if (t.id() == GroovyTokenId.LITERAL_class) {
-                    return ts.offset();
+                    int offset = ts.offset();
+                    if (isCorrectClassDefinition(ts)) {
+                        return offset;
+                    }
                 }
             }
 
             return 0;
         }
+        
+        private boolean isCorrectClassDefinition(TokenSequence<GroovyTokenId> ts) {
+            while (ts.moveNext()) {
+                Token<GroovyTokenId> token = ts.token();
+                TokenId id = token.id();
+                
+                if (id == GroovyTokenId.IDENTIFIER) {
+                    String identifierName = token.text().toString();
+                    
+                    if (identifierName.equals(getClassName())) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+            return false;
+        }
 
         @Override
         @NbBundle.Messages({"# {0} - class name", "MakeClassAbstract=Make class {0} abstract"})
         public String getDescription() {
-            return Bundle.MakeClassAbstract(getClassName(error));
+            return Bundle.MakeClassAbstract(getClassName());
         }
         
         @NonNull
-        public String getClassName(@NonNull GroovyError error) {
+        public String getClassName() {
             String errorMessage = error.getDescription();
             String classNamePrefix = "Can't have an abstract method in a non-abstract class. The class '"; // NOI18N
             String classNameSuffix = "' must be declared abstract or the method '"; // NOI18N
