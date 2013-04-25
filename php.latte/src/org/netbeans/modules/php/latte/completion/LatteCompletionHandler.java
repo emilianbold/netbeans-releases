@@ -48,6 +48,9 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
@@ -57,6 +60,8 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.latte.completion.LatteElement.Parameter;
+import org.netbeans.modules.php.latte.lexer.LatteMarkupTokenId;
+import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
 
 /**
  *
@@ -160,7 +165,7 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
-        return "";
+        return PrefixResolver.create(info, caretOffset, upToOffset).resolve();
     }
 
     @Override
@@ -181,6 +186,87 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
     @Override
     public ParameterInfo parameters(ParserResult info, int caretOffset, CompletionProposal proposal) {
         return ParameterInfo.NONE;
+    }
+
+    private static final class PrefixResolver {
+        private final ParserResult info;
+        private final int offset;
+        private final boolean upToOffset;
+        private String result = "";
+
+        static PrefixResolver create(ParserResult info, int offset, boolean upToOffset) {
+            return new PrefixResolver(info, offset, upToOffset);
+        }
+
+        private PrefixResolver(ParserResult info, int offset, boolean upToOffset) {
+            this.info = info;
+            this.offset = offset;
+            this.upToOffset = upToOffset;
+        }
+
+        String resolve() {
+            TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
+            if (th != null) {
+                processHierarchy(th);
+            }
+            return result;
+        }
+
+        private void processHierarchy(TokenHierarchy<?> th) {
+            TokenSequence<LatteTopTokenId> tts = th.tokenSequence(LatteTopTokenId.language());
+            if (tts != null) {
+                processTopSequence(tts);
+            }
+        }
+
+        private void processTopSequence(TokenSequence<LatteTopTokenId> tts) {
+            tts.move(offset);
+            if (tts.moveNext() || tts.movePrevious()) {
+                processSequence(tts.embedded(LatteMarkupTokenId.language()));
+            }
+        }
+
+        private void processSequence(TokenSequence<LatteMarkupTokenId> ts) {
+            if (ts != null) {
+                processValidSequence(ts);
+            }
+        }
+
+        private void processValidSequence(TokenSequence<LatteMarkupTokenId> ts) {
+            ts.move(offset);
+            if (ts.moveNext() || ts.movePrevious()) {
+                processToken(ts);
+            }
+        }
+
+        private void processToken(TokenSequence<LatteMarkupTokenId> ts) {
+            if (ts.offset() == offset) {
+                ts.movePrevious();
+            }
+            Token<LatteMarkupTokenId> token = ts.token();
+            if (token != null) {
+                processSelectedToken(ts);
+            }
+        }
+
+        private void processSelectedToken(TokenSequence<LatteMarkupTokenId> ts) {
+            LatteMarkupTokenId id = ts.token().id();
+            if (isValidTokenId(id)) {
+                createResult(ts);
+            }
+        }
+
+        private void createResult(TokenSequence<LatteMarkupTokenId> ts) {
+            if (upToOffset) {
+                String text = ts.token().text().toString();
+                result = text.substring(0, offset - ts.offset());
+            }
+        }
+
+        private static boolean isValidTokenId(LatteMarkupTokenId id) {
+            return LatteMarkupTokenId.T_SYMBOL.equals(id) || LatteMarkupTokenId.T_MACRO_START.equals(id) || LatteMarkupTokenId.T_MACRO_END.equals(id);
+        }
+
     }
 
 }
