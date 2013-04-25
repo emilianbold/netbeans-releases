@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.el.spi;
+package org.netbeans.modules.web.el.navigation;
 
-import java.util.List;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.web.el.ELTestBaseForTestProject;
 
 /**
- * @author marekfukala
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public final class ResourceBundle {
-    
-    private final String baseName, var;
-    private final List<FileObject> files;
-    
-    public ResourceBundle(String baseName, String var, List<FileObject> files) {
-        this.baseName = baseName;
-        this.var = var;
-        this.files = files;
-    }
-    
-    /**
-     * @return fully qualified name of the properties file representing the resource bundle.
-     */
-    public String getBaseName() {
-        return baseName;
-    }
-    
-    /**
-     * @return variable representing the resource bundle
-     */
-    public String getVar() {
-        return var;
+public class ELDeclarationFinderTest extends ELTestBaseForTestProject {
+
+    public ELDeclarationFinderTest(String name) {
+        super(name);
     }
 
-    /**
-     * @return files for all available locales
-     */
-    public List<FileObject> getFiles() {
-        return files;
+    public void testSimpleBean() throws Exception {
+        checkDeclaration("projects/testWebProject/web/navigation/navigation01.xhtml", "#{bea^n}", "Bean.java", 276);
     }
 
+    public void testBeanProperty() throws Exception {
+        checkDeclaration("projects/testWebProject/web/navigation/navigation02.xhtml", "#{bean.myArr^ay}", "Bean.java", 487);
+    }
+
+    public void testBeanPropertyField() throws Exception {
+        checkDeclaration("projects/testWebProject/web/navigation/navigation03.xhtml", "#{bean.myCypris.ge^tName()}", "Cypris.java", 103);
+    }
+
+    public void testResourceBundleIdentifier() throws Exception {
+        checkDeclaration("projects/testWebProject/web/navigation/navigation04.xhtml", "#{bu^ndle.cokolivJineho}", "Messages.properties", 0);
+    }
+
+    public void testResourceBundleKeyAsSuffix() throws Exception {
+        checkDeclaration("projects/testWebProject/web/navigation/navigation04.xhtml", "#{bundle.cokoliv^Jineho}", "Messages.properties", 48);
+    }
+
+    public void testResourceBundleKeyAsProperty() throws Exception {
+        checkDeclaration("projects/testWebProject/web/navigation/navigation04.xhtml", "#{bundle['cokoliv^Jineho']}", "Messages.properties", 48);
+    }
+    
 }
