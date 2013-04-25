@@ -174,7 +174,7 @@ public class CSSStylesSelectionPanel extends JPanel {
     /** Header of Property Summary section. */
     private JLabel propertySummaryLabel;
     /** Component showing the style information for the current selection. */
-    private JComponent selectionView;
+    private final JComponent selectionView;
     /** Mapping of {@code Resource} to the corresponding {@code FileObject}. */
     private final Map<Resource,FileObject> resourceCache = new WeakHashMap<Resource, FileObject>();
 
