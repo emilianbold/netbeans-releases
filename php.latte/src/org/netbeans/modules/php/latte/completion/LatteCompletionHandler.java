@@ -43,10 +43,12 @@ package org.netbeans.modules.php.latte.completion;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
@@ -65,12 +67,15 @@ import org.netbeans.modules.php.latte.completion.LatteElement.Parameter;
 import org.netbeans.modules.php.latte.lexer.LatteMarkupTokenId;
 import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
 import org.netbeans.modules.php.latte.parser.LatteParser.LatteParserResult;
+import org.netbeans.modules.php.latte.utils.LatteLexerUtils;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class LatteCompletionHandler implements CodeCompletionHandler {
+    private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<>(
+            Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n'));
     static final Set<LatteElement> MACROS = new HashSet<>();
     static {
         MACROS.add(LatteElement.Factory.create("link", "link ${Presenter}:${action}")); //NOI18N
@@ -189,7 +194,23 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
-        return QueryType.ALL_COMPLETION;
+        QueryType result = QueryType.ALL_COMPLETION;
+        if (typedText.length() == 0) {
+            result = QueryType.NONE;
+        } else {
+            char lastChar = typedText.charAt(typedText.length() - 1);
+            if (AUTOPOPUP_STOP_CHARS.contains(Character.valueOf(lastChar))) {
+                result = QueryType.STOP;
+            } else {
+                Document document = component.getDocument();
+                int offset = component.getCaretPosition();
+                TokenSequence<? extends LatteMarkupTokenId> ts = LatteLexerUtils.getLatteMarkupTokenSequence(document, offset);
+                if (ts == null) {
+                    result = QueryType.STOP;
+                }
+            }
+        }
+        return result;
     }
 
     @Override
