@@ -122,6 +122,10 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
         performTest("n-syntax");
     }
 
+    public void testWsNotError() throws Exception {
+        performTest("ws-not-error");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".latte"));
