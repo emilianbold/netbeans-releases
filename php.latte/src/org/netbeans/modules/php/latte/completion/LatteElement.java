@@ -169,12 +169,8 @@ public interface LatteElement extends ElementHandle {
         public String getTemplate() {
             StringBuilder template = new StringBuilder();
             template.append(getName());
-            template.append(":"); //NOI18N
             for (int i = 0; i < parameters.size(); i++) {
                 Parameter parameter = parameters.get(i);
-                if (i != 0) {
-                    template.append(":"); //NOI18N
-                }
                 parameter.prepareTemplate(template);
             }
             return template.toString();
@@ -195,7 +191,7 @@ public interface LatteElement extends ElementHandle {
         }
 
         public void format(HtmlFormatter formatter) {
-            if (!isMandatory()) {
+            if (isMandatory()) {
                 formatter.appendText(name);
             } else {
                 formatter.emphasis(true);
@@ -208,14 +204,12 @@ public interface LatteElement extends ElementHandle {
 
         public void prepareTemplate(StringBuilder template) {
             if (isMandatory()) {
-                template.append("${").append(name).append("}"); //NOI18N
-            } else {
-                template.append("${").append(defaultValue).append("}"); //NOI18N
+                template.append(":${").append(name).append("}"); //NOI18N
             }
         }
 
         private boolean isMandatory() {
-            return defaultValue != null;
+            return defaultValue == null;
         }
     }
 
