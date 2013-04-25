@@ -42,10 +42,14 @@
 package org.netbeans.modules.cordova.platforms.ios;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.Device;
+import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.cordova.platforms.ProcessUtils;
@@ -61,19 +65,22 @@ import org.openide.util.Exceptions;
  */
 public enum IOSDevice implements Device {
     
-    IPHONE("iPhone", "--family iphone"), //NOI18N
-    IPHONE_RETINA("iPhone (Retina)", "--family iphone --retina"), //NOI18N
-    IPAD("iPad", "--family ipad"), //NOI18N
-    IPAD_RETINA("iPad (Retina)", "--family ipad --retina"); //NOI18N
+    IPHONE("iPhone", "--family iphone", true), //NOI18N
+    IPHONE_RETINA("iPhone (Retina)", "--family iphone --retina", true), //NOI18N
+    IPAD("iPad", "--family ipad", true), //NOI18N
+    IPAD_RETINA("iPad (Retina)", "--family ipad --retina", true), //NOI18N
+    CONNECTED("Connected Device", null, false);
     
     String displayName;
     String args;
+    private boolean simulator;
     
     private Logger LOG = Logger.getLogger(IOSDevice.class.getName());
 
-    IOSDevice(String name, String args) {
+    IOSDevice(String name, String args, boolean simulator) {
         this.displayName = name;
         this.args = args;
+        this.simulator = simulator;
     }
 
     public String getDisplayName() {
@@ -86,7 +93,7 @@ public enum IOSDevice implements Device {
 
     @Override
     public boolean isEmulator() {
-        return true;
+        return simulator;
     }
 
     @Override
@@ -111,7 +118,11 @@ public enum IOSDevice implements Device {
     }
     
     @Override
-    public void openUrl(String url) {
+    public void openUrl(final String url) {
+        if (!simulator) {
+            //do nothing for device. Don't know how to open Safari on device.
+            return;
+        }
         try {
             try {
                 ProcessUtils.callProcess("killall", true, 5000, "MobileSafari");
@@ -127,5 +138,14 @@ public enum IOSDevice implements Device {
 
     private String getIPhoneSimName() {
         return getPlatform().getPrefferedTarget().getIdentifier().replace("p","P").replace("s", "S");
+    }
+
+    @Override
+    public MobileDebugTransport getDebugTransport() {
+        if (simulator) {
+            return new SimulatorDebugTransport();
+        } else {
+            return new DeviceDebugTransport();
+        }
     }
 }
