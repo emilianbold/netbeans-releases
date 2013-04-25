@@ -57,13 +57,10 @@ public class JiraConfig {
 
     private static JiraConfig instance = null;
     private static final String LAST_CHANGE_FROM    = "jira.last_change_from";      // NOI18N // XXX
-    private static final String QUERY_NAME          = "jira.query_";                // NOI18N
     private static final String QUERY_REFRESH_INT   = "jira.query_refresh";         // NOI18N
     private static final String QUERY_AUTO_REFRESH  = "jira.query_auto_refresh_";   // NOI18N
     private static final String ISSUE_REFRESH_INT   = "jira.issue_refresh";         // NOI18N
     private static final String CHECK_UPDATES       = "jira.check_updates";         // NOI18N
-
-    private static final String DELIMITER           = "<=>";                        // NOI18N
 
     private HashMap<String, Icon> priorityIcons;
     private JiraConfig() { }
