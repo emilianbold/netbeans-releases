@@ -365,6 +365,7 @@ public class Utilities {
         }
         if (originalFileName != null && originalLineNumber != -1) {
             File file = new File(originalFileName);
+            file = FileUtil.normalizeFile(file);
             final FileObject fob = FileUtil.toFileObject(file);
             if (fob != null) {
                 final int lineNo = originalLineNumber - 1;
