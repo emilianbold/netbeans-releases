@@ -180,7 +180,7 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public String document(ParserResult info, ElementHandle element) {
-        return "";
+        return null;
     }
 
     @Override
