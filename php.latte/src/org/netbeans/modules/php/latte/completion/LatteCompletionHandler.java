@@ -116,6 +116,8 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
         MACROS.add(LatteElement.Factory.create("_")); //NOI18N
         MACROS.add(LatteElement.Factory.create("!")); //NOI18N
         MACROS.add(LatteElement.Factory.create("!_")); //NOI18N
+        MACROS.add(LatteElement.Factory.create("=")); //NOI18N
+        MACROS.add(LatteElement.Factory.create("#")); //NOI18N
     }
 
     private static final Set<LatteElement> HELPERS = new HashSet<>();
