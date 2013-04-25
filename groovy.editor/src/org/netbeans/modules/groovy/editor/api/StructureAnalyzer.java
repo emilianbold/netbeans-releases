@@ -110,7 +110,7 @@ public class StructureAnalyzer implements StructureScanner {
 
         AnalysisResult ar = result.getStructure();
         List<? extends ASTElement> elements = ar.getElements();
-        List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
+        List<StructureItem> itemList = new ArrayList<>(elements.size());
 
         for (ASTElement e : elements) {
             if (isVisible(e)) {
@@ -130,10 +130,10 @@ public class StructureAnalyzer implements StructureScanner {
             return analysisResult;
         }
 
-        structure = new ArrayList<ASTElement>();
-        fields = new HashMap<ASTClass, Set<FieldNode>>();
-        methods = new ArrayList<ASTMethod>();
-        properties = new HashMap<ASTClass, Set<PropertyNode>>();
+        structure = new ArrayList<>();
+        fields = new HashMap<>();
+        methods = new ArrayList<>();
+        properties = new HashMap<>();
 
         AstPath path = new AstPath();
         path.descend(root);
@@ -142,7 +142,7 @@ public class StructureAnalyzer implements StructureScanner {
         path.ascend();
 
         // Process fields
-        Map<String, FieldNode> names = new HashMap<String, FieldNode>();
+        Map<String, FieldNode> names = new HashMap<>();
 
         for (ASTClass clz : fields.keySet()) {
             Set<FieldNode> assignments = fields.get(clz);
@@ -212,7 +212,7 @@ public class StructureAnalyzer implements StructureScanner {
                     Set<FieldNode> assignments = fields.get(parent);
 
                     if (assignments == null) {
-                        assignments = new HashSet<FieldNode>();
+                        assignments = new HashSet<>();
                         fields.put((ASTClass) parent, assignments);
                     }
 
@@ -233,7 +233,7 @@ public class StructureAnalyzer implements StructureScanner {
                 Set<PropertyNode> declarations = properties.get(parent);
 
                 if (declarations == null) {
-                    declarations = new HashSet<PropertyNode>();
+                    declarations = new HashSet<>();
                     properties.put((ASTClass) parent, declarations);
                 }
 
@@ -262,8 +262,8 @@ public class StructureAnalyzer implements StructureScanner {
         GroovyParserResult rpr = ASTUtils.getParseResult(info);
         AnalysisResult analysisResult = rpr.getStructure();
 
-        Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
-        List<OffsetRange> codefolds = new ArrayList<OffsetRange>();
+        Map<String, List<OffsetRange>> folds = new HashMap<>();
+        List<OffsetRange> codefolds = new ArrayList<>();
         folds.put("codeblocks", codefolds); // NOI18N
 
         final BaseDocument doc = LexUtilities.getDocument(rpr, false);
@@ -272,7 +272,7 @@ public class StructureAnalyzer implements StructureScanner {
         }
 
         final OffsetRange[] importsRange = new OffsetRange[1];
-        final List<OffsetRange> commentsRanges = new ArrayList<OffsetRange>();
+        final List<OffsetRange> commentsRanges = new ArrayList<>();
 
         doc.render(new Runnable() {
             @Override
@@ -542,7 +542,7 @@ public class StructureAnalyzer implements StructureScanner {
             List<ASTElement> nested = node.getChildren();
 
             if ((nested != null) && (nested.size() > 0)) {
-                List<GroovyStructureItem> children = new ArrayList<GroovyStructureItem>(nested.size());
+                List<GroovyStructureItem> children = new ArrayList<>(nested.size());
 
                 // FIXME: the same old problem: AstElement != ElementHandle.
 
