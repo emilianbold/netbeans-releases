@@ -41,9 +41,10 @@
  */
 package org.netbeans.modules.php.latte.completion;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
@@ -59,16 +60,18 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.latte.completion.LatteCompletionProposal.CompletionRequest;
 import org.netbeans.modules.php.latte.completion.LatteElement.Parameter;
 import org.netbeans.modules.php.latte.lexer.LatteMarkupTokenId;
 import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
+import org.netbeans.modules.php.latte.parser.LatteParser.LatteParserResult;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class LatteCompletionHandler implements CodeCompletionHandler {
-    private static final Set<LatteElement> MACROS = new HashSet<>();
+    static final Set<LatteElement> MACROS = new HashSet<>();
     static {
         MACROS.add(LatteElement.Factory.create("link", "link ${Presenter}:${action}")); //NOI18N
         MACROS.add(LatteElement.Factory.create("plink", "plink ${Presenter}:${action}")); //NOI18N
@@ -120,7 +123,7 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
         MACROS.add(LatteElement.Factory.create("#")); //NOI18N
     }
 
-    private static final Set<LatteElement> HELPERS = new HashSet<>();
+    static final Set<LatteElement> HELPERS = new HashSet<>();
     static {
         HELPERS.add(LatteElement.Factory.create("truncate", Arrays.asList(new Parameter[] {new Parameter("length"), new Parameter("append", "'…'")}))); //NOI18N
         HELPERS.add(LatteElement.Factory.create("substr", Arrays.asList(new Parameter[] {new Parameter("offset"), new Parameter("length", "stringLegth")}))); //NOI18N
@@ -152,7 +155,21 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
-        return new DefaultCompletionResult(Collections.<CompletionProposal>emptyList(), false);
+        final List<CompletionProposal> completionProposals = new ArrayList<>();
+        ParserResult parserResult = context.getParserResult();
+        if (parserResult instanceof LatteParserResult) {
+            LatteParserResult latteParserResult = (LatteParserResult) parserResult;
+            CompletionRequest request = new CompletionRequest();
+            int caretOffset = context.getCaretOffset();
+            request.prefix = context.getPrefix();
+            String properPrefix = getPrefix(latteParserResult, caretOffset, true);
+            request.anchorOffset = caretOffset - (properPrefix == null ? 0 : properPrefix.length());
+            request.parserResult = latteParserResult;
+            request.context = LatteCompletionContextFinder.find(request.parserResult, caretOffset);
+            LatteCompletionContext completionContext = LatteCompletionContextFinder.find(request.parserResult, caretOffset);
+            completionContext.complete(completionProposals, request);
+        }
+        return new DefaultCompletionResult(completionProposals, false);
     }
 
     @Override

@@ -48,9 +48,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.html.editor.api.gsf.HtmlExtension.CompletionContext;
 import org.netbeans.modules.php.latte.parser.LatteParser.LatteParserResult;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -167,7 +165,7 @@ public abstract class LatteCompletionProposal implements CompletionProposal {
         public int anchorOffset;
         public String prefix;
         public LatteParserResult parserResult;
-        public CompletionContext context;
+        public LatteCompletionContext context;
     }
 
 }
