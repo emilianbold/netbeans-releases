@@ -106,6 +106,7 @@ import org.openide.util.Parameters;
  *
  * @author Jan Becicka
  * @author Ralph Benjamin Ruijs
+ * @since 0.123
  */
 public final class DocTreePathHandle {
 

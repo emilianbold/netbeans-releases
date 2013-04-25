@@ -108,6 +108,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="DocTreesSupport">
+             <api name="general"/>
+             <summary>Added support for DocTrees.</summary>
+             <version major="0" minor="123"/>
+             <date day="3" month="5" year="2013"/>
+             <author login="jlahoda"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added new methods to support working with DocTrees.
+             </description>
+             <class package="org.netbeans.api.java.source" name="CompilationInfo"/>
+             <class package="org.netbeans.api.java.source" name="WorkingCopy"/>
+             <class package="org.netbeans.api.java.source" name="TreeMaker"/>
+             <issue number="999999"/>
+        </change>
         <change id="ProfileSupport">
              <api name="general"/>
              <summary>Added support for JDK 8 Profiles.</summary>
