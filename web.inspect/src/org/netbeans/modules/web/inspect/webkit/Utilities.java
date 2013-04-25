@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.model.api.AtRule;
 import org.netbeans.modules.css.model.api.Body;
 import org.netbeans.modules.css.model.api.BodyItem;
 import org.netbeans.modules.css.model.api.Declaration;
@@ -281,6 +282,9 @@ public class Utilities {
                 if (index > 0) {
                     BodyItem previousBodyItem = bodyItems.get(index-1);
                     Element element = previousBodyItem.getElement();
+                    if (element instanceof AtRule) {
+                        element = ((AtRule)element).getElement();
+                    }
                     if (element instanceof Media) {
                         Media media = (Media)element;
                         if (isMetaSourceInfo(media)) {
