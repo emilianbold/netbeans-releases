@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.project.ui.actions.tests;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -201,6 +202,7 @@ public final class CreateTestsAction extends NodeAction {
 
     void generateTests(final Node[] activatedNodes, final PhpProject phpProject, final PhpTestingProvider testingProvider) {
         assert phpProject != null;
+        assert !EventQueue.isDispatchThread();
 
         List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
         assert !files.isEmpty() : "No files for tests?!";
