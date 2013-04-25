@@ -301,6 +301,27 @@ public class WorkingCopy extends CompilationController {
         changes.put(oldTree, newTree);
     }
     
+    /**
+     * Replaces the original doctree <code>oldTree</code> with the new one -
+     * <code>newTree</code> for a specific tree.
+     * <p>
+     * To create a new javadoc comment, use
+     * <code>rewrite(tree, null, docCommentTree)</code>.
+     * <p>
+     * <code>tree</code> and <code>newTree</code> cannot be <code>null</code>.
+     * If <code>oldTree</code> is null, <code>newTree</code> must be of kind
+     * {@link DocTree.Kind#DOC_COMMENT DOC_COMMENT}.
+     * 
+     * @param tree     the tree to which the doctrees belong.
+     * @param oldTree  tree to be replaced, use tree already represented in
+     *                 source code. <code>null</code> to create a new file.
+     * @param newTree  new tree, either created by <code>TreeMaker</code>
+     *                 or obtained from different place. <code>null</code>
+     *                 values are not allowed.
+     * @throws IllegalStateException if <code>toPhase()</code> method was not
+     *         called before.
+     * @since 0.123
+     */
     public synchronized void rewrite(@NonNull Tree tree, @NonNull DocTree oldTree, @NonNull DocTree newTree) {
         checkConfinement();
         if (docChanges == null) {
