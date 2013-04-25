@@ -96,6 +96,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.editor.JumpList;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.file.LazyListModel;
@@ -164,8 +165,12 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     
     @Override
     public void actionPerformed( ActionEvent e ) {
-        for (TypeDescriptor td : getSelectedTypes()) {
-            td.open();
+        final Iterable<? extends TypeDescriptor> selectedTypes = getSelectedTypes();
+        if (selectedTypes.iterator().hasNext()) {
+            JumpList.checkAddEntry();
+            for (TypeDescriptor td : selectedTypes) {
+                td.open();
+            }
         }
     }
             

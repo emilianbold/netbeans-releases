@@ -53,6 +53,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.editor.JumpList;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
@@ -85,6 +86,7 @@ public class GoToSymbolAction extends AbstractAction {
     public void actionPerformed( ActionEvent e ) {
         SymbolDescriptor typeDescriptor = getSelectedSymbol();
         if (typeDescriptor != null) {
+            JumpList.checkAddEntry();
             typeDescriptor.open();
         }
     }
