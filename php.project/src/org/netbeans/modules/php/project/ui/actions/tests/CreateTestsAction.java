@@ -60,6 +60,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
@@ -120,7 +121,10 @@ public final class CreateTestsAction extends NodeAction {
         if (ProjectPropertiesSupport.getTestDirectory(phpProject, true) == null) {
             return;
         }
-        // XXX check any testing provider is present
+        if (phpProject.getTestingProviders().isEmpty()) {
+            Utils.informNoTestingProviders();
+            return;
+        }
 
         RUNNABLES.add(new Runnable() {
             @Override
