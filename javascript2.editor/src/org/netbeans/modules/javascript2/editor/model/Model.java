@@ -226,7 +226,8 @@ public final class Model {
         }
     }
 
-    public static Collection<JsObject> readModel(BufferedReader reader, JsObject parent) throws IOException {
+    public static Collection<JsObject> readModel(BufferedReader reader, JsObject parent,
+            @NullAllowed String sourceLabel) throws IOException {
         String line = null;
         StringBuilder pushback = new StringBuilder();
         List<JsObject> ret = new ArrayList<JsObject>();
@@ -238,15 +239,15 @@ public final class Model {
             if (line.trim().isEmpty()) {
                 continue;
             }
-            ret.add(readObject(parent, line, 0, reader, pushback, false));
+            ret.add(readObject(parent, line, 0, reader, pushback, false, sourceLabel));
         }
         return ret;
     }
 
     private static JsObject readObject(JsObject parent, String firstLine, int indent,
-            BufferedReader reader, StringBuilder pushback, boolean parameter) throws IOException {
+            BufferedReader reader, StringBuilder pushback, boolean parameter, String sourceLabel) throws IOException {
 
-        JsObject object = readObject(parent, firstLine, parameter);
+        JsObject object = readObject(parent, firstLine, parameter, sourceLabel);
 
         ParsingState state = null;
         String line = null;
@@ -290,7 +291,7 @@ public final class Model {
                         break;
                     case PARAMETER:
                         JsObject parameterObject = readObject(object, line.trim(),
-                                indent + 8, reader, innerPushback, true);
+                                indent + 8, reader, innerPushback, true, sourceLabel);
                         ((JsFunctionImpl) object).addParameter(parameterObject);
                         break;
                     case PROPERTY:
@@ -303,7 +304,7 @@ public final class Model {
                         int newIndent = name.length();
                         name = name.trim();
                         JsObject property = readObject(object, value.trim(), newIndent,
-                                    reader, innerPushback, false);
+                                    reader, innerPushback, false, sourceLabel);
                         object.addProperty(name, property);
                         break;
                     default:
@@ -314,7 +315,7 @@ public final class Model {
         return object;
     }
 
-    private static JsObject readObject(JsObject parent, String line, boolean parameter) throws IOException {
+    private static JsObject readObject(JsObject parent, String line, boolean parameter, String sourceLabel) throws IOException {
         Matcher m = OBJECT_PATTERN.matcher(line);
         if (!m.matches()) {
             throw new IOException("Malformed line: " + line);
@@ -338,18 +339,18 @@ public final class Model {
         }
         JsObjectImpl ret;
         if (parameter) {
-            ret = new ParameterObject(parent, new IdentifierImpl(name, OffsetRange.NONE));
+            ret = new ParameterObject(parent, new IdentifierImpl(name, OffsetRange.NONE), sourceLabel);
         } else if (function) {
             JsFunctionImpl functionImpl = new JsFunctionImpl(null, parent,
-                    new IdentifierImpl(name, OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE);
+                    new IdentifierImpl(name, OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE, sourceLabel);
             functionImpl.setAnonymous(anonymous);
             ret = functionImpl;
         } else {
             if (anonymous) {
-                ret = new AnonymousObject(parent, name, OffsetRange.NONE);
+                ret = new AnonymousObject(parent, name, OffsetRange.NONE, sourceLabel);
             } else {
                 ret = new JsObjectImpl(parent, new IdentifierImpl(name, OffsetRange.NONE),
-                    OffsetRange.NONE);
+                    OffsetRange.NONE, sourceLabel);
             }
         }
 
