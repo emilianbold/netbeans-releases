@@ -72,7 +72,7 @@ public class IndexedElement extends JsElementImpl {
     public final static char OBJECT_POSFIX = 'O';
     
     public IndexedElement(FileObject fileObject, String name, String fqn, boolean isDeclared, boolean isAnonymous, JsElement.Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, Collection<TypeUsage> assignments, boolean isPlatform) {
-        super(fileObject, name, isDeclared, offsetRange, modifiers);
+        super(fileObject, name, isDeclared, offsetRange, modifiers, null);
         this.jsKind = kind;
         this.fqn = fqn;
         this.isAnonymous = isAnonymous;
