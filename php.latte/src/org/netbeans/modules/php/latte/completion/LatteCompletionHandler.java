@@ -116,7 +116,7 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
         MACROS.add(LatteElement.Factory.create("form", Arrays.asList(new Parameter[] {new MacroParameter("$name")}), "form ${name}")); //NOI18N
         MACROS.add(LatteElement.Factory.create("label", Arrays.asList(new Parameter[] {new MacroParameter("$name")}), "label ${name}")); //NOI18N
         MACROS.add(LatteElement.Factory.create("input", Arrays.asList(new Parameter[] {new MacroParameter("$name")}), "input ${name}")); //NOI18N
-        MACROS.add(LatteElement.Factory.create("debugbrea", Arrays.asList(new Parameter[] {new MacroParameter("$cond")}), "debugbreak ${cond}")); //NOI18N
+        MACROS.add(LatteElement.Factory.create("debugbreak", Arrays.asList(new Parameter[] {new MacroParameter("$cond")}), "debugbreak ${cond}")); //NOI18N
         MACROS.add(LatteElement.Factory.create("l")); //NOI18N
         MACROS.add(LatteElement.Factory.create("r")); //NOI18N
         MACROS.add(LatteElement.Factory.create("first")); //NOI18N
