@@ -6,5 +6,6 @@ METHOD     any()                           [PUBLIC]   List<String>
 PROPERTY   myArray                         [PUBLIC]   String[]
 PROPERTY   myIterable                      [PUBLIC]   Iterable<String>
 PROPERTY   myList                          [PUBLIC]   List<String>
+PROPERTY   myMap                           [PUBLIC]   Map<String, String>
 PROPERTY   myString                        [PUBLIC]   String
 PROPERTY   property                        [PUBLIC]   String
