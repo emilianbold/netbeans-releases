@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.latte.completion;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -76,8 +77,8 @@ public interface LatteElement extends ElementHandle {
             return new LatteElementExtended(name, Collections.<Parameter>emptyList(), customTemplate);
         }
 
-        public static LatteElement create(String name, List<Parameter> parameters, String customTemplate) {
-            return new LatteElementExtended(name, parameters, customTemplate);
+        public static LatteElement createMacro(String name, String macroParameter, String customTemplate) {
+            return new LatteElementExtended(name, Arrays.asList(new Parameter[] {new MacroParameter(macroParameter)}), customTemplate);
         }
 
     }
