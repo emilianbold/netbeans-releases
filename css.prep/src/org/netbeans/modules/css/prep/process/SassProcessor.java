@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.css.prep.process;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.prep.editor.CPUtils;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
+import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
@@ -63,6 +66,10 @@ public final class SassProcessor extends BaseProcessor {
     private static final Logger LOGGER = Logger.getLogger(SassProcessor.class.getName());
 
 
+    public SassProcessor(SassCssPreprocessor cssPreprocessor) {
+        super(cssPreprocessor);
+    }
+
     @Override
     protected boolean isEnabledInternal(Project project) {
         return SassPreferences.isEnabled(project);
@@ -71,6 +78,11 @@ public final class SassProcessor extends BaseProcessor {
     @Override
     protected boolean isSupportedFile(FileObject fileObject) {
         return CPUtils.SCSS_FILE_MIMETYPE.equals(FileUtil.getMIMEType(fileObject, CPUtils.SCSS_FILE_MIMETYPE));
+    }
+
+    @Override
+    protected List<String> getMappings(Project project) {
+        return SassPreferences.getMappings(project);
     }
 
     @Override
@@ -101,13 +113,13 @@ public final class SassProcessor extends BaseProcessor {
     }
 
     @Override
-    protected void compile(Project project, FileObject fileObject) {
-        SassExecutable sass = getSass();
+    protected void compileInternal(Project project, File source, File target) {
+        SassExecutable sass = getSass(project);
         if (sass == null) {
             return;
         }
         try {
-            sass.compile(fileObject);
+            sass.compile(source, target);
         } catch (ExecutionException ex) {
             if (Warnings.showSassWarning()) {
                 UiUtils.processExecutionException(ex);
@@ -116,11 +128,11 @@ public final class SassProcessor extends BaseProcessor {
     }
 
     @CheckForNull
-    private SassExecutable getSass() {
+    private SassExecutable getSass(Project project) {
         try {
             return SassExecutable.getDefault();
         } catch (InvalidExternalExecutableException ex) {
-            // ignored, project problems will catch it
+            cssPreprocessor.fireProcessingErrorOccured(project, ex.getLocalizedMessage());
         }
         return null;
     }

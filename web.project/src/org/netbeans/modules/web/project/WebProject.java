@@ -55,7 +55,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -161,6 +160,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.classpath.DelagatingProjectClassPathModifierImpl;
@@ -210,7 +210,7 @@ public final class WebProject implements Project {
     private final GeneratedFilesHelper genFilesHelper;
     private Lookup lookup;
     private final ProjectWebModule webModule;
-    private final CopyOnSaveSupport css;
+    private final CopyOnSaveSupport copyOnSaveSupport;
     private final ClientSideDevelopmentSupport easelSupport;
     private final ArtifactCopyOnSaveSupport artifactSupport;
     private final DeployOnSaveSupport deployOnSaveSupport;
@@ -236,6 +236,7 @@ public final class WebProject implements Project {
     private final ClassPathProviderImpl cpProvider;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
     private WhiteListUpdater whiteListUpdater;
+    private CssPreprocessorsSupport cssSupport;
     
     private AntBuildExtender buildExtender;
 
@@ -407,8 +408,9 @@ public final class WebProject implements Project {
         libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
         cpMod = new DelagatingProjectClassPathModifierImpl(cpModTemp, libMod);
         easelSupport = new ClientSideDevelopmentSupport();
+        cssSupport = new CssPreprocessorsSupport(this);
         lookup = createLookup(aux, cpProvider);
-        css = new CopyOnSaveSupport();
+        copyOnSaveSupport = new CopyOnSaveSupport();
         artifactSupport = new ArtifactCopySupport();
         deployOnSaveSupport = new DeployOnSaveSupportProxy();
         webPagesFileWatch = new FileWatch(WebProjectProperties.WEB_DOCBASE_DIR);
@@ -619,6 +621,7 @@ public final class WebProject implements Project {
             new ProjectWebRootProviderImpl(),
             easelSupport,
             new WebProjectBrowserProvider(this),
+            CssPreprocessors.getDefault().createProjectProblemsProvider(cssSupport.getProblemResolver()),
         });
 
         Lookup ee6 = Lookups.fixed(new Object[]{
@@ -631,7 +634,7 @@ public final class WebProject implements Project {
         lookup = wpl;
         return LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
-    
+
     public ClassPathProviderImpl getClassPathProvider () {
         return this.cpProvider;
     }
@@ -869,6 +872,7 @@ public final class WebProject implements Project {
         
         ProjectOpenedHookImpl() {}
 
+        @Override
         protected void projectOpened() {
             evaluator().addPropertyChangeListener(WebProject.this.webModule);
 
@@ -921,7 +925,7 @@ public final class WebProject implements Project {
                 }
                 
                 // Register copy on save support
-                css.initialize();
+                copyOnSaveSupport.initialize();
                 
                 // Check up on build scripts.
                 if (updateHelper.isCurrent()) {
@@ -1057,6 +1061,8 @@ public final class WebProject implements Project {
             }
             webPagesFileWatch.init();
             webInfFileWatch.init();
+
+            CssPreprocessors.getDefault().addCssPreprocessorsListener(cssSupport);
         }
         
         private void updateProject() {
@@ -1223,6 +1229,7 @@ public final class WebProject implements Project {
             return filters;
         }
         
+        @Override
         protected void projectClosed() {
             evaluator().removePropertyChangeListener(WebProject.this.webModule);
 
@@ -1267,7 +1274,7 @@ public final class WebProject implements Project {
             
             // Unregister copy on save support
             try {
-                css.cleanup();
+                copyOnSaveSupport.cleanup();
             } 
             catch (FileStateInvalidException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
@@ -1281,7 +1288,9 @@ public final class WebProject implements Project {
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-                }
+
+            CssPreprocessors.getDefault().removeCssPreprocessorsListener(cssSupport);
+        }
         
     }
     
@@ -1524,12 +1533,12 @@ public final class WebProject implements Project {
     private class DeployOnSaveSupportProxy implements DeployOnSaveSupport {
 
         public synchronized void addArtifactListener(ArtifactListener listener) {
-            css.addArtifactListener(listener);
+            copyOnSaveSupport.addArtifactListener(listener);
             artifactSupport.addArtifactListener(listener);
         }
 
         public synchronized void removeArtifactListener(ArtifactListener listener) {
-            css.removeArtifactListener(listener);
+            copyOnSaveSupport.removeArtifactListener(listener);
             artifactSupport.removeArtifactListener(listener);
         }
 
@@ -1651,8 +1660,13 @@ public final class WebProject implements Project {
             }
         }
 
+        private void checkPreprocessors(FileObject file) {
+            CssPreprocessors.getDefault().process(WebProject.this, file);
+        }
+
         @Override
         public void fileChanged(FileEvent fe) {
+            checkPreprocessors(fe.getFile());
             try {
                 if (!handleResource(fe)) {
                     handleCopyFileToDestDir(fe.getFile());
@@ -1664,6 +1678,7 @@ public final class WebProject implements Project {
 
         @Override
         public void fileDataCreated(FileEvent fe) {
+            checkPreprocessors(fe.getFile());
             try {
                 if (!handleResource(fe)) {
                     handleCopyFileToDestDir(fe.getFile());
@@ -1675,6 +1690,7 @@ public final class WebProject implements Project {
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
+            checkPreprocessors(fe.getFile());
             try {
                 if (handleResource(fe)) {
                     return;
@@ -1739,6 +1755,7 @@ public final class WebProject implements Project {
 
         @Override
         public void fileDeleted(FileEvent fe) {
+            checkPreprocessors(fe.getFile());
             try {
                 if (handleResource(fe)) {
                     return;

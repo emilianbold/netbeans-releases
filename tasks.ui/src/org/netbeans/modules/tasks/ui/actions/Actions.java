@@ -60,7 +60,7 @@ import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.dashboard.QueryNode;
 import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
-import org.netbeans.modules.tasks.ui.utils.Utils;
+import org.netbeans.modules.tasks.ui.Utils;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -460,11 +460,7 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            Repository repository = RepositoryManager.getInstance().createRepository();
-            // TODO replace this with listener in TC
-            if (repository != null) {
-                DashboardViewer.getInstance().addRepository(repository);
-            }
+            RepositoryManager.getInstance().createRepository();
         }
     }
 

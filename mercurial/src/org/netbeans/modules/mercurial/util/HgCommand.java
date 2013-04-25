@@ -177,6 +177,7 @@ public class HgCommand {
     private static final String HG_LOG_LIMIT_CMD = "-l"; // NOI18N
     private static final String HG_PARENT_CMD = "parents";              //NOI18N
     private static final String HG_PARAM_BRANCH = "-b"; //NOI18N
+    private static final String HG_PARAM_PUSH_NEW_BRANCH = "--new-branch"; //NOI18N
 
     private static final String HG_LOG_NO_MERGES_CMD = "-M";
     private static final String HG_LOG_DEBUG_CMD = "--debug";
@@ -923,7 +924,9 @@ public class HgCommand {
      * @return hg push output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doPush(File repository, final HgURL toUrl, String revision, String branch, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
+    public static List<String> doPush (File repository, final HgURL toUrl,
+            String revision, String branch, boolean allowNewBranch,
+            OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || toUrl == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -939,7 +942,10 @@ public class HgCommand {
         }
         if (branch != null) {
             command.additionalOptions.add(HG_PARAM_BRANCH);
-            command.additionalOptions.add(branch);            
+            command.additionalOptions.add(branch);
+            command.additionalOptions.add(HG_PARAM_PUSH_NEW_BRANCH);
+        } else if (allowNewBranch) {
+            command.additionalOptions.add(HG_PARAM_PUSH_NEW_BRANCH);
         }
         command.urlPathProperties = new String[] {HgConfigFiles.HG_DEFAULT_PUSH};
 

@@ -212,7 +212,6 @@ public class BugzillaExecutor {
         if(conf.isValid()) {
             BugzillaVersion version = conf.getInstalledVersion();
             if(version.compareMajorMinorOnly(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION) > 0) {
-                boolean ua = BugzillaAutoupdate.getInstance().isUpdateAvailable(repository);
                 notifyErrorMessage(
                         NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_ERROR_WARNING", status.getMessage()) + "\n\n" + 
                         NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING1", version) + "\n" +          // NOI18N

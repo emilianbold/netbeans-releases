@@ -69,6 +69,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.openide.awt.ColorComboBox;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -115,6 +116,15 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         cbForeground.addItemListener(this);
         cbBackground.addItemListener (this);
 
+        cbEffects.addItem (loc ("CTL_Effects_None"));
+        cbEffects.addItem (loc ("CTL_Effects_Underlined"));
+        cbEffects.addItem (loc ("CTL_Effects_Wave_Underlined"));
+        cbEffects.addItem (loc ("CTL_Effects_Strike_Through"));
+        cbEffects.getAccessibleContext ().setAccessibleName (loc ("AN_Effects"));
+        cbEffects.getAccessibleContext ().setAccessibleDescription (loc ("AD_Effects"));
+        cbEffects.addActionListener (this);
+        cbEffectColor.addItemListener(this);
+
         lCategory.setLabelFor (lCategories);
         loc (lCategory, "CTL_Category");
         loc (lForeground, "CTL_Foreground_label");
@@ -136,6 +146,10 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         lBackground = new javax.swing.JLabel();
         cbBackground = new ColorComboBox();
         cbForeground = new ColorComboBox();
+        cbEffects = new javax.swing.JComboBox();
+        cbEffectColor = new ColorComboBox();
+        lEffects = new javax.swing.JLabel();
+        lEffectColor = new javax.swing.JLabel();
 
         lCategory.setText(org.openide.util.NbBundle.getMessage(HighlightingPanel.class, "CTL_Category")); // NOI18N
 
@@ -144,6 +158,12 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         lForeground.setText(org.openide.util.NbBundle.getMessage(HighlightingPanel.class, "CTL_Foreground_label")); // NOI18N
 
         lBackground.setText(org.openide.util.NbBundle.getMessage(HighlightingPanel.class, "CTL_Background_label")); // NOI18N
+
+        lEffects.setLabelFor(cbEffects);
+        lEffects.setText(org.openide.util.NbBundle.getMessage(HighlightingPanel.class, "CTL_Effects_label")); // NOI18N
+
+        lEffectColor.setLabelFor(cbEffectColor);
+        lEffectColor.setText(org.openide.util.NbBundle.getMessage(HighlightingPanel.class, "CTL_Effects_color")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -154,14 +174,23 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(cpCategories, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
-                        .addGap(20, 20, 20)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lBackground)
-                            .addComponent(lForeground))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(20, 20, 20)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(lBackground)
+                                    .addComponent(lForeground)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(lEffectColor)
+                                    .addComponent(lEffects))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(cbBackground, javax.swing.GroupLayout.Alignment.TRAILING, 0, 49, Short.MAX_VALUE)
-                            .addComponent(cbForeground, javax.swing.GroupLayout.Alignment.TRAILING, 0, 49, Short.MAX_VALUE)))
+                            .addComponent(cbForeground, javax.swing.GroupLayout.Alignment.TRAILING, 0, 49, Short.MAX_VALUE)
+                            .addComponent(cbEffects, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cbEffectColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addComponent(lCategory))
                 .addContainerGap())
         );
@@ -179,7 +208,16 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(lBackground)
-                            .addComponent(cbBackground, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(cbBackground, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(cbEffects, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lEffects))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(cbEffectColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lEffectColor))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(cpCategories, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -188,11 +226,15 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbBackground;
+    private javax.swing.JComboBox cbEffectColor;
+    private javax.swing.JComboBox cbEffects;
     private javax.swing.JComboBox cbForeground;
     private javax.swing.JScrollPane cpCategories;
     private javax.swing.JLabel lBackground;
     private javax.swing.JList lCategories;
     private javax.swing.JLabel lCategory;
+    private javax.swing.JLabel lEffectColor;
+    private javax.swing.JLabel lEffects;
     private javax.swing.JLabel lForeground;
     // End of variables declaration//GEN-END:variables
     
@@ -200,6 +242,12 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
     @Override
     public void actionPerformed (ActionEvent evt) {
         if (!listen) return;
+        if (evt.getSource () == cbEffects) {
+            if (cbEffects.getSelectedIndex () == 0)
+                cbEffectColor.setSelectedItem( null );
+	    cbEffectColor.setEnabled (cbEffects.getSelectedIndex () > 0);
+            updateData ();
+	}
         updateData ();
         changed = true;
     }
@@ -318,6 +366,34 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         } else {
             c.removeAttribute(StyleConstants.Foreground);
         }
+
+        Color underline = null,
+              wave = null,
+              strikethrough = null;
+        if (cbEffects.getSelectedIndex () == 1)
+            underline = ((ColorComboBox)cbEffectColor).getSelectedColor();
+        if (cbEffects.getSelectedIndex () == 2)
+            wave = ((ColorComboBox)cbEffectColor).getSelectedColor();
+        if (cbEffects.getSelectedIndex () == 3)
+            strikethrough = ((ColorComboBox)cbEffectColor).getSelectedColor();
+
+        if (underline != null) {
+            c.addAttribute(StyleConstants.Underline, underline);
+        } else {
+            c.removeAttribute(StyleConstants.Underline);
+        }
+
+        if (strikethrough != null) {
+            c.addAttribute(StyleConstants.StrikeThrough, strikethrough);
+        } else {
+            c.removeAttribute(StyleConstants.StrikeThrough);
+        }
+
+        if (wave != null) {
+            c.addAttribute(EditorStyleConstants.WaveUnderlineColor, wave);
+        } else {
+            c.removeAttribute(EditorStyleConstants.WaveUnderlineColor);
+        }
         
         categories.set(index, c);
         toBeSaved.add(currentProfile);
@@ -353,7 +429,21 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
             }
             ColorComboBoxSupport.setInheritedColor((ColorComboBox)cbBackground, inheritedBackground);
         }
-        
+
+        if (category.getAttribute(StyleConstants.Underline) != null) {
+            cbEffects.setSelectedIndex(1);
+            cbEffectColor.setEnabled(true);
+            ((ColorComboBox) cbEffectColor).setSelectedColor((Color) category.getAttribute(StyleConstants.Underline));
+        } else if (category.getAttribute(EditorStyleConstants.WaveUnderlineColor) != null) {
+            cbEffects.setSelectedIndex(2);
+            cbEffectColor.setEnabled(true);
+            ((ColorComboBox) cbEffectColor).setSelectedColor((Color) category.getAttribute(EditorStyleConstants.WaveUnderlineColor));
+        } else {
+            cbEffects.setSelectedIndex(0);
+            cbEffectColor.setEnabled(false);
+            cbEffectColor.setSelectedIndex(-1);
+        }
+    
         // set values
         ColorComboBoxSupport.setSelectedColor((ColorComboBox)cbForeground, (Color) category.getAttribute (StyleConstants.Foreground));
         ColorComboBoxSupport.setSelectedColor((ColorComboBox)cbBackground, (Color) category.getAttribute (StyleConstants.Background));

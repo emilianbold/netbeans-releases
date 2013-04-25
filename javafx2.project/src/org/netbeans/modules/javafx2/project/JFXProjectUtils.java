@@ -395,6 +395,23 @@ public final class JFXProjectUtils {
     }
 
     /**
+     * Checks if the project uses Maven build system
+     * @param prj the project to check
+     * @return true if is Maven project
+     */
+    public static boolean isMavenProject(@NonNull final Project prj) {
+        FileObject fo = prj.getProjectDirectory();
+        if (fo == null || !fo.isValid()) {
+            return false;
+        }
+        fo = fo.getFileObject("pom.xml"); //NOI18N
+        if (fo != null) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Checks what Run model is selected in current configuration of JFX Run Project Property panel
      * @param prj the project to check
      * @return string value of JFXProjectProperties.RunAsType type or null meaning JFXProjectProperties.RunAsType.STANDALONE

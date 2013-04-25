@@ -92,7 +92,7 @@ public class FixImportsAction extends BaseAction {
         final FileObject fo = NbEditorUtilities.getDataObject(target.getDocument()).getPrimaryFile();
         final Source source = Source.create(fo);
 
-        final List<String> missingNames = new ArrayList<String>();
+        final List<String> missingNames = new ArrayList<>();
         try {
             ParserManager.parse(Collections.singleton(source), new CollectMissingImportsTask(missingNames));
         } catch (ParseException ex) {

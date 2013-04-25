@@ -58,7 +58,10 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.javascript2.editor.JsLanguage;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsLexer;
+import org.netbeans.modules.javascript2.editor.lexer.JsonLexer;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -160,7 +163,9 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         translators.put(JSP_MIME_TYPE, new JspTranslator());
         translators.put(TAG_MIME_TYPE, new JspTranslator());
         translators.put(RHTML_MIME_TYPE, new RhtmlTranslator());
-        translators.put(HTML_MIME_TYPE, new HtmlTranslator());
+        //the creation of javascript virtual source for files with text/html mimetype
+        //is now handled by o.n.m.html.editor.embedding.JsEmbeddingProvider
+//        translators.put(HTML_MIME_TYPE, new HtmlTranslator());
         translators.put(XHTML_MIME_TYPE, new XhtmlTranslator());
         translators.put(PHP_MIME_TYPE, new PhpTranslator());
         translators.put(TPL_MIME_TYPE, new TplTranslator());
@@ -776,6 +781,26 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
             } else if (htmlId == HTMLTokenId.TAG_CLOSE && "script".equals(htmlToken.toString())) {
                 embeddings.add(snapshot.create("\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
+            } else if (htmlId == HTMLTokenId.EL_OPEN_DELIMITER) {
+                //1.check if the next token represents javascript content
+                String mimetype = (String) ts.token().getProperty("contentMimeType"); //NOT IN AN API, TBD
+                if (mimetype != null && "text/javascript".equals(mimetype)) {
+                    embeddings.add(snapshot.create("(function(){\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
+
+                    //2. check content
+                    if (ts.moveNext()) {
+                        Token<? extends HTMLTokenId> token = ts.token();
+                        if (token.id() == HTMLTokenId.EL_CONTENT) {
+                            //not empty expression: {{sg}}
+                            embeddings.add(snapshot.create(ts.offset(), ts.token().length(), JsTokenId.JAVASCRIPT_MIME_TYPE));
+                            embeddings.add(snapshot.create(";\n});\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
+                        } else if (token.id() == HTMLTokenId.EL_CLOSE_DELIMITER) {
+                            //empty expression: {{}}
+                            embeddings.add(snapshot.create(ts.offset(), 0, JsTokenId.JAVASCRIPT_MIME_TYPE));
+                            embeddings.add(snapshot.create(";\n});\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
+                        }
+                    }
+                }
             } else {
                 // TODO - stash some other DOM stuff into the JavaScript
                 // file such that I can refer to them from within JavaScript

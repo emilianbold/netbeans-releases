@@ -103,6 +103,8 @@ public class FaceletsLibrarySupport {
 
     private static final Logger LOGGER = Logger.getLogger(FaceletsLibrarySupport.class.getSimpleName());
 
+    private final ThreadLocal<Collection<? extends Library>> declaredFacesComponentsCache = new ThreadLocal<Collection<? extends Library>>();
+
     private FileChangeListener DDLISTENER = new FileChangeAdapter() {
 
         @Override
@@ -251,8 +253,13 @@ public class FaceletsLibrarySupport {
     /**
      * This method obtains a library instances for the elements declared by annotation without a library descriptor.
      */
-    private void updateFacesComponentLibraries(Map<String, Library> faceletsLibraries) {
-        for (Library library : JsfFacesComponentsProvider.getLibraries(jsfSupport.getProject())) {
+    private synchronized void updateFacesComponentLibraries(Map<String, Library> faceletsLibraries) {
+        if (declaredFacesComponentsCache.get() == null) {
+            Collection<? extends Library> libraries = JsfFacesComponentsProvider.getLibraries(jsfSupport.getProject());
+            declaredFacesComponentsCache.set(libraries);
+        }
+
+        for (Library library : declaredFacesComponentsCache.get()) {
             faceletsLibraries.put(library.getDefaultNamespace(), library);
         }
     }

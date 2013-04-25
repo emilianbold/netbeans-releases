@@ -57,8 +57,10 @@ import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilderContainer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -136,7 +138,15 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
     
     public static class DestructorDDBuilder extends MethodDDBuilder implements StatementBuilderContainer {
         @Override
-        public DestructorDDImpl create() {
+        public DestructorDDImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
+            final FunctionParameterListBuilder parameters = (FunctionParameterListBuilder)getParametersListBuilder();
+            if (parameters == null) {
+                return null;
+            }
+            final CompoundStatementImpl.CompoundStatementBuilder bodyBuilder = getBodyBuilder();
+            if (bodyBuilder == null) {
+                return null;
+            }
             CsmClass cls = (CsmClass) getScope();
             boolean _virtual = false;
             boolean _explicit = false;
@@ -155,16 +165,16 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
             }
 
             //method.setReturnType(getType());
-            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(method);
-            method.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(), true);
+            parameters.setScope(method);
+            method.setParameters(parameters.create(), true);
 
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);
 
             addDeclaration(method);
             
-            getBodyBuilder().setScope(method);
-            method.setCompoundStatement(getBodyBuilder().create());
+            bodyBuilder.setScope(method);
+            method.setCompoundStatement(bodyBuilder.create());
 
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);

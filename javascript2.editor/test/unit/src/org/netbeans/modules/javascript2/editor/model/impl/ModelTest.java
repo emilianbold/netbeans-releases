@@ -90,8 +90,20 @@ public class ModelTest extends ModelTestBase {
         checkModel("testfiles/model/property01.js");
     }
 
+    public void testProperty03() throws Exception {
+        checkModel("testfiles/model/property03.js");
+    }
+
     public void testKolo() throws Exception {
         checkModel("testfiles/model/kolo.js");
+    }
+
+    public void testRecursion() throws Exception {
+        checkModel("testfiles/model/recursion.js", true);
+    }
+
+    public void testTernary() throws Exception {
+        checkModel("testfiles/model/ternary.js");
     }
 
     public void testjQueryFragment01() throws Exception {
@@ -185,7 +197,7 @@ public class ModelTest extends ModelTestBase {
                     sw.append(str).append("\n");
                 }
             };
-            Model.writeObject(p, obj.iterator().next());
+            Model.writeObject(p, obj.iterator().next(), null);
             assertDescriptionMatches(fo, sw.toString(), false, ".revert", true);
         } finally {
             reader.close();

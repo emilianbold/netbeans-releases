@@ -55,10 +55,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,14 +66,11 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -94,7 +87,6 @@ import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.netbeans.modules.websvc.rest.model.spi.RestServicesMetadataModelFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -278,6 +270,7 @@ public abstract class RestSupport {
                 if (compileCP != null && bootCP != null) {
                     MetadataUnit metadataUnit = MetadataUnit.create(
                             bootCP,
+                            // TODO: do we need to add JAX-RS 2.0 jar to classpath here?
                             extendWithJsr311Api(compileCP),
                             sourceCP,
                             null);
@@ -297,15 +290,6 @@ public abstract class RestSupport {
     public RestApplicationModel getRestApplicationsModel() {
         FileObject sourceRoot = findSourceRoot();
         if (restApplicationModel.get() == null && sourceRoot != null) {
-            //ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
-            /*
-             * Fix for BZ#158250 -  NullPointerException: The classPath parameter cannot be null 
-             * 
-             MetadataUnit metadataUnit = MetadataUnit.create(
-                    cpProvider.findClassPath(sourceRoot, ClassPath.BOOT),
-                    cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE),
-                    cpProvider.findClassPath(sourceRoot, ClassPath.SOURCE),
-                    null);*/
             MetadataUnit metadataUnit = MetadataUnit.create(
                     getClassPath(getProject(), ClassPath.BOOT),
                     getClassPath(getProject(), ClassPath.COMPILE),
@@ -346,46 +330,25 @@ public abstract class RestSupport {
         }
     }
     
-    public static ClassPath extendWithJsr311Api(ClassPath classPath) {
+    private static ClassPath extendWithJsr311Api(ClassPath classPath) {
+        if (classPath.findResource("javax/ws/rs/core/Application.class") != null) {
+            return classPath;
+        }
         File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, "org.netbeans.modules.websvc.restlib", false);
         if (jerseyRoot != null && jerseyRoot.isDirectory()) {
             File[] jsr311Jars = jerseyRoot.listFiles(new JerseyFilter(JSR311_JAR_PATTERN));
             if (jsr311Jars != null && jsr311Jars.length>0) {
-                return extendClassPath(classPath, jsr311Jars[0]);
+                FileObject fo = FileUtil.toFileObject(jsr311Jars[0]);
+                if (fo != null) {
+                    fo = FileUtil.getArchiveRoot(fo);
+                    if (fo != null) {
+                        return ClassPathSupport.createProxyClassPath(classPath,
+                                ClassPathSupport.createClassPath(fo));
+                    }
+                }
             }
         }
         return classPath;
-    }
-    
-    public static ClassPath extendClassPath(ClassPath classPath, File path) {
-        if (path == null) {
-            return classPath;
-        }
-        try {
-            PathResourceImplementation jsr311Path = getPathResource(path);
-            List<PathResourceImplementation> roots = new ArrayList<PathResourceImplementation>();
-            roots.add(jsr311Path);
-            for (FileObject fo : classPath.getRoots()) {
-                roots.add(ClassPathSupport.createResource(fo.getURL()));
-            }
-            return ClassPathSupport.createClassPath(roots);
-        } catch (Exception ex) {
-            return classPath;
-        }
-    }
-
-    private static PathResourceImplementation getPathResource(File path) throws MalformedURLException {
-        URL url = path.toURI().toURL();
-        if (FileUtil.isArchiveFile(url)) {
-            url = FileUtil.getArchiveRoot(url);
-        } else {
-            url = path.toURI().toURL();
-            String surl = url.toExternalForm();
-            if (!surl.endsWith("/")) {
-                url = new URL(surl + "/");
-            }
-        }
-        return ClassPathSupport.createResource(url);
     }
     
     public abstract FileObject generateTestClient(File testdir, String url) 
@@ -586,10 +549,6 @@ public abstract class RestSupport {
     }
     
     public void removeSwdpLibrary(String[] classPathTypes) throws IOException {
-        JaxRsStackSupport support = JaxRsStackSupport.getDefault();
-        if ( support != null ){
-            support.removeJaxRsLibraries( project );
-        }
         JaxRsStackSupport.getDefault().removeJaxRsLibraries( project );
     }
     
@@ -847,44 +806,6 @@ public abstract class RestSupport {
     }
 
     public abstract int getProjectType();
-    
-    private ClassPath getCompileClassPath(SourceGroup[] groups ){
-        ClassPathProvider provider = project.getLookup().lookup( 
-                ClassPathProvider.class);
-        if ( provider == null ){
-            return null;
-        }
-        ClassPath[] paths = new ClassPath[ groups.length];
-        int i=0;
-        for (SourceGroup sourceGroup : groups) {
-            FileObject rootFolder = sourceGroup.getRootFolder();
-            paths[ i ] = provider.findClassPath( rootFolder, ClassPath.COMPILE);
-            i++;
-        }
-        return ClassPathSupport.createProxyClassPath( paths );
-    }
-    
-    private boolean contains( ClassPath classPath , URL url ){
-        URI uri = null;
-        try {
-            uri = url.toURI();
-        }
-        catch(URISyntaxException e ){
-            return false;
-        }
-        List<ClassPath.Entry> entries = classPath.entries();
-        for (ClassPath.Entry entry : entries) {
-            try {
-                if ( entry.getURL().toURI().equals(uri)){
-                    return true;
-                }
-            }
-            catch(URISyntaxException ignore ){
-                continue;
-            }
-        }
-        return false;
-    }
     
     private void setProjectProperty(final String name, final String value, 
             final String propertyPath) 

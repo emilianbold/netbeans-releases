@@ -42,14 +42,20 @@
 
 package org.netbeans.modules.bugzilla.autoupdate;
 
+import static junit.framework.Assert.assertFalse;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugzilla.TestConstants;
+import static org.netbeans.modules.bugzilla.TestConstants.REPO_PASSWD;
+import static org.netbeans.modules.bugzilla.TestConstants.REPO_URL;
+import static org.netbeans.modules.bugzilla.TestConstants.REPO_USER;
 import org.netbeans.modules.bugzilla.TestUtil;
 
 /**
  *
  * @author tomas
  */
-public class BugzillaNotSupportedTest extends BugzillaPluginUCTestCase implements TestConstants {
+public class BugzillaNotSupportedTest extends NbTestCase implements TestConstants {
 
     public BugzillaNotSupportedTest(String testName) {
         super(testName);
@@ -62,7 +68,8 @@ public class BugzillaNotSupportedTest extends BugzillaPluginUCTestCase implement
     }
 
     public void testIsNotSupportedBugzillaVersion() {
-        assertFalse(BugzillaAutoupdate.getInstance().checkSupportedBugzillaServerVersion(TestUtil.getRepository("test", REPO_URL, REPO_USER, REPO_PASSWD)));
+        BugzillaVersion version = BugzillaAutoupdate.getInstance().getServerVersion(TestUtil.getRepository("test", REPO_URL, REPO_USER, REPO_PASSWD));
+        assertFalse(BugzillaAutoupdate.getInstance().isSupportedVersion(version));
     }
 
 }

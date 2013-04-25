@@ -47,7 +47,9 @@ import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.openide.util.CharSequences;
 
 /**
  * helper for c++11 standard. 
@@ -55,6 +57,10 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author Vladimir Voskresensky
  */
 public class SplitShiftRightTokenFilter  implements APTTokenStream, TokenStream {
+    
+    private static final CharSequence FAKE_SHIFTRIGHT_LEFT_PART_TOKEN_ID = CharSequences.create(""); // NOI18N
+    
+    
     private TokenStream orig;
     private APTToken nextGTToken = null;
 
@@ -70,9 +76,9 @@ public class SplitShiftRightTokenFilter  implements APTTokenStream, TokenStream 
             if (ret == null) {
                 ret = (APTToken) orig.nextToken();
                 if (ret.getType() == APTTokenTypes.SHIFTRIGHT) {
-                    nextGTToken = APTUtils.createAPTToken(ret, APTTokenTypes.GREATERTHAN);
+                    nextGTToken = new APTBaseLanguageFilter.FilterToken(ret, APTTokenTypes.GREATERTHAN);
                     ret = APTUtils.createAPTToken(ret, APTTokenTypes.GREATERTHAN);
-                    ret.setText(""); // NOI18N
+                    ret.setTextID(FAKE_SHIFTRIGHT_LEFT_PART_TOKEN_ID); 
                 }
             }
             return ret;

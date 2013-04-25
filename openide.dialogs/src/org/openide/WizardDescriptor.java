@@ -1471,6 +1471,9 @@ public class WizardDescriptor extends DialogDescriptor {
                             public void run () {
                                 if( initialized.get() ) {  //#220286
                                     err.log (Level.FINE, "Runs onValidPerformer from invokeLater."); // NOI18N
+                                    if( panel instanceof ExtendedAsynchronousValidatingPanel ) {
+                                        ((ExtendedAsynchronousValidatingPanel)panel).finishValidation();
+                                    }
                                     onValidPerformer.run();
                                 }
                             }
@@ -1486,6 +1489,9 @@ public class WizardDescriptor extends DialogDescriptor {
                     SwingUtilities.invokeLater( new Runnable() {
                         @Override
                         public void run() {
+                            if( panel instanceof ExtendedAsynchronousValidatingPanel ) {
+                                ((ExtendedAsynchronousValidatingPanel)panel).finishValidation();
+                            }
                             onValidationFailed( wve );
                         }
                     });
@@ -1861,6 +1867,10 @@ public class WizardDescriptor extends DialogDescriptor {
      * <p>During background validation Cancel button is hooked
      * to signal the validation thread using interrupt().
      *
+     * <p>Note: It is recommended to use ExtendedAsynchronousValidatingPanel instead
+     * as it adds a method to conveniently unlock wizard's user interface when
+     * the validation is finished.
+     *
      * @since 6.2 (16 May 2005)
      */
     public interface AsynchronousValidatingPanel<Data> extends ValidatingPanel<Data> {
@@ -1881,6 +1891,49 @@ public class WizardDescriptor extends DialogDescriptor {
          */
         @Override
         public void validate() throws WizardValidationException;
+    }
+
+    /**
+     * A special interface for panels that need to do additional
+     * asynchronous validation when Next or Finish button is clicked.
+     *
+     * <p>During background validation is Next or Finish button
+     * disabled. On validation success wizard automatically
+     * progress to next panel or finishes.
+     *
+     * <p>During background validation Cancel button is hooked
+     * to signal the validation thread using interrupt().
+     *
+     * @param <Data>
+     *
+     * @since 7.31
+     */
+    public interface ExtendedAsynchronousValidatingPanel<Data> extends AsynchronousValidatingPanel<Data> {
+
+        /**
+         * Called synchronously from UI thread when Next
+         * of Finish buttons clicked. It allows to lock user
+         * input to assure official data for background validation.
+         */
+        @Override
+        public void prepareValidation();
+
+        /**
+         * Is called in separate thread when Next of Finish buttons
+         * are clicked and allows deeper check to find out that panel
+         * is in valid state and it is ok to leave it.
+         *
+         * @throws WizardValidationException when validation fails
+         */
+        @Override
+        public void validate() throws WizardValidationException;
+
+        /**
+         * Called synchronously from UI thread when the background validation
+         * is finished (even when throwing validation exception).
+         * It allows to enable user input locked in prepareValidation() method.
+         */
+        public void finishValidation();
     }
 
 

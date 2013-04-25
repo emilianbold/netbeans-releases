@@ -151,7 +151,17 @@ public final class ELTypeUtilities {
      * @return the element or {@code null}.
      */
     public static Element resolveElement(CompilationContext info, final ELElement elem, final Node target) {
-        TypeResolverVisitor typeResolver = new TypeResolverVisitor(info, elem, target);
+        return resolveElement(info, elem, target, Collections.<AstIdentifier, Node>emptyMap());
+    }
+
+    /**
+     * Resolves the element for the given {@code target}.
+     * @param elem
+     * @param target
+     * @return the element or {@code null}.
+     */
+    public static Element resolveElement(CompilationContext info, final ELElement elem, final Node target, Map<AstIdentifier, Node> assignments) {
+        TypeResolverVisitor typeResolver = new TypeResolverVisitor(info, elem, target, assignments);
         elem.getNode().accept(typeResolver);
         return typeResolver.getResult();
     }
@@ -649,13 +659,15 @@ public final class ELTypeUtilities {
 
         private final ELElement elem;
         private final Node target;
+        private final Map<AstIdentifier, Node> assignments;
         private Element result;
         private CompilationContext info;
 
-        public TypeResolverVisitor(CompilationContext info, ELElement elem, Node target) {
+        public TypeResolverVisitor(CompilationContext info, ELElement elem, Node target, Map<AstIdentifier, Node> assignments) {
             this.info = info;
             this.elem = elem;
             this.target = target;
+            this.assignments = assignments;
         }
 
         public Element getResult() {
@@ -665,10 +677,19 @@ public final class ELTypeUtilities {
         @Override
         public void visit(Node node) {
             Element enclosing = null;
+
+            // look for possible assignments to the identifier
+            Node evalNode;
+            if (node instanceof AstIdentifier && assignments.containsKey((AstIdentifier) node)) {
+                evalNode = assignments.get((AstIdentifier) node);
+            } else {
+                evalNode = node;
+            }
+
             // traverses AST resolving types for each property starting from
             // an identifier until the target is found
-            if (node instanceof AstIdentifier) {
-                enclosing = getIdentifierType(info, (AstIdentifier) node, elem);
+            if (evalNode instanceof AstIdentifier) {
+                enclosing = getIdentifierType(info, (AstIdentifier) evalNode, elem);
                 if (enclosing != null) {
                     if (node.equals(target)) {
                         result = enclosing;
@@ -720,7 +741,7 @@ public final class ELTypeUtilities {
                         }
                     }
                 }
-            } else if (node instanceof AstListData || node instanceof AstMapData) {
+            } else if (evalNode instanceof AstListData || evalNode instanceof AstMapData) {
                 Node parent = node.jjtGetParent();
                 for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                     Node child = parent.jjtGetChild(i);

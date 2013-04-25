@@ -83,7 +83,12 @@ import org.openide.windows.OutputWriter;
  * @author Tomas Mysik
  */
 public class SftpClient implements RemoteClient {
+
     private static final Logger LOGGER = Logger.getLogger(SftpClient.class.getName());
+
+    // #226820
+    private static final boolean NO_PROXY_PROPERTY = Boolean.getBoolean("nb.php.sftp.noProxy"); // NOI18N
+
     private static final Map<Integer, String> PASSWORDS = new HashMap<Integer, String>();
     private static final Map<Integer, String> PASSPHRASES = new HashMap<Integer, String>();
     private static final Map<Integer, Set<String>> MESSAGES = new HashMap<Integer, Set<String>>();
@@ -181,6 +186,9 @@ public class SftpClient implements RemoteClient {
     }
 
     private void setProxy() {
+        if (NO_PROXY_PROPERTY) {
+            return;
+        }
         Proxy proxy = null;
         // prefer socks proxy
         RemoteUtils.ProxyInfo proxyInfo = RemoteUtils.getSocksProxy();

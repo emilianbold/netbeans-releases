@@ -116,6 +116,7 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     public static int SIMPLE_TYPE_SPECIFIER__AUTO = 14;
     public static int SIMPLE_TYPE_SPECIFIER__ID = 15;
     public static int SIMPLE_TYPE_SPECIFIER__SCOPE = 16;    
+    public static int SIMPLE_TYPE_SPECIFIER__BI_VA_LIST = 17; // builtin va_list
     public static int DECLTYPE_SPECIFIER__LPAREN = 48;
     public static int DECLTYPE_SPECIFIER__RPAREN = 49;
     public static int QUALIFIED_NAMESPACE_SPECIFIER__SCOPE = 50;
@@ -194,14 +195,15 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     public static int TYPE_PARAMETER__CLASS_ASSIGNEQUAL = 125;
     public static int TYPE_PARAMETER__TYPENAME = 126;
     public static int TYPE_PARAMETER__TYPENAME_ASSIGNEQUAL = 127;
-    public static int SIMPLE_TEMPLATE_ID__TEMPLATE_ARGUMENT_LIST = 128;
-    public static int SIMPLE_TEMPLATE_ID__END_TEMPLATE_ARGUMENT_LIST = 129;
-    public static int SIMPLE_TEMPLATE_ID_NOCHECK__TEMPLATE_ARGUMENT_LIST = 130;
-    public static int SIMPLE_TEMPLATE_ID_NOCHECK__END_TEMPLATE_ARGUMENT_LIST = 131;
-    public static int SIMPLE_TEMPLATE_ID_OR_IDENT__TEMPLATE_ARGUMENT_LIST = 132;
-    public static int SIMPLE_TEMPLATE_ID_OR_IDENT__END_TEMPLATE_ARGUMENT_LIST = 133;
-    public static int TEMPLATE_ARGUMENT_LIST__ELLIPSIS = 134;
-    public static int TEMPLATE_ARGUMENT_LIST__COMMA = 135;
+    public static int TYPE_PARAMETER__TEMPLATE_CLASS_ASSIGNEQUAL = 128;
+    public static int SIMPLE_TEMPLATE_ID__TEMPLATE_ARGUMENT_LIST = 129;
+    public static int SIMPLE_TEMPLATE_ID__END_TEMPLATE_ARGUMENT_LIST = 130;
+    public static int SIMPLE_TEMPLATE_ID_NOCHECK__TEMPLATE_ARGUMENT_LIST = 131;
+    public static int SIMPLE_TEMPLATE_ID_NOCHECK__END_TEMPLATE_ARGUMENT_LIST = 132;
+    public static int SIMPLE_TEMPLATE_ID_OR_IDENT__TEMPLATE_ARGUMENT_LIST = 133;
+    public static int SIMPLE_TEMPLATE_ID_OR_IDENT__END_TEMPLATE_ARGUMENT_LIST = 134;
+    public static int TEMPLATE_ARGUMENT_LIST__ELLIPSIS = 135;
+    public static int TEMPLATE_ARGUMENT_LIST__COMMA = 136;
     public static int EXPLICIT_INSTANTIATION__EXTERN = 137;
     public static int EXPLICIT_INSTANTIATION__TEMPLATE = 138;
     public static int HANDLER__LPAREN = 139;
@@ -267,6 +269,7 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     void template_declaration(int kind, Token token);
     
     void type_parameter(int kind, Token token, Token token2, Token token3);
+    void type_parameter(int kind, Token token, Token token2, Token token3, Token token4);
 
     void elaborated_type_specifier(Token token);
     
@@ -439,6 +442,7 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     void member_declaration(Token token);
     void member_declaration(int kind, Token token);
     void end_member_declaration(Token token);    
+    void member_bitfield_declarator(Token token);    
     void simple_member_declaration(Token token);
     void simple_member_declaration(int kind, Token token);
     void end_simple_member_declaration(Token token);

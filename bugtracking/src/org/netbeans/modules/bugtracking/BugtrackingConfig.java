@@ -58,7 +58,7 @@ public class BugtrackingConfig {
     private static final String ARCHIVED_TTL_KEY  = "bugtracking.archived_time_to_live";      // NOI18N
     private static final String COLUMN_WIDTH_PREFIX  = "bugtracking.issuetable.columnwidth";  // NOI18N
     private static final String COLUMN_SORTING_PREFIX = "bugtracking.issuetable.columnsorting";  // NOI18N
-    private static long DEFAULT_ARCHIVED_TTL  = 7; // days
+    private static final long DEFAULT_ARCHIVED_TTL  = 7; // days
 
     private BugtrackingConfig() { }
 

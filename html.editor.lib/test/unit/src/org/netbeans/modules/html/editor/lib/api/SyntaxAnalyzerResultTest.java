@@ -42,13 +42,16 @@
 
 package org.netbeans.modules.html.editor.lib.api;
 
+import org.netbeans.modules.html.editor.lib.api.foreign.UndeclaredContentResolver;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.html.editor.lib.EmptyResult;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.Named;
 import org.netbeans.modules.html.editor.lib.plain.AbstractElement;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
 
@@ -308,6 +311,17 @@ public class SyntaxAnalyzerResultTest extends TestBase {
             public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
                 return Collections.singletonMap("my_ns", (List<String>)Collections.singletonList("x"));
             }
+
+            @Override
+            public boolean isCustomTag(Named element) {
+                return false;
+            }
+
+            @Override
+            public boolean isCustomAttribute(Attribute attribute) {
+                return false;
+            }
+            
         };
         
         HtmlSource source = new HtmlSource(code);

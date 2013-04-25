@@ -73,6 +73,7 @@ class MultiViewModel {
 //    private Map nestedPerspectiveComponents; //key=description, value mull or perspectiveComponent
     private MultiViewDescription[] descriptions;
     private ButtonGroup group;
+    private ButtonGroup groupSplit;
     private Collection<MultiViewElement> shownElements;
     private ArrayList<ElementSelectionListener> listeners;
     private ActionRequestObserverFactory observerFactory;
@@ -108,6 +109,7 @@ class MultiViewModel {
         }
         currentEditor = (defaultDescr == null || !nestedElements.containsKey(defaultDescr) ? descriptions[0] : defaultDescr);
         group = new BtnGroup();
+	groupSplit = new BtnGroup();
     }
     
     
@@ -194,6 +196,13 @@ class MultiViewModel {
      */
     ButtonGroup getButtonGroup() {
         return group;
+    }
+    
+    /**
+     * The button group where the togglebuttons for the split descriptions are put into.
+     */
+    ButtonGroup getButtonGroupSplit() {
+        return groupSplit;
     }
     
     MultiViewElement getElementForDescription(MultiViewDescription description) {

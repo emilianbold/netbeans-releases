@@ -46,9 +46,9 @@ import org.netbeans.modules.css.prep.problems.SassProjectProblemsProvider;
 import org.netbeans.modules.css.prep.process.SassProcessor;
 import org.netbeans.modules.css.prep.ui.customizer.SassCustomizer;
 import org.netbeans.modules.css.prep.ui.options.SassOptions;
+import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementationListener;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
@@ -56,11 +56,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 100)
-public final class SassCssPreprocessor implements CssPreprocessorImplementation {
+public final class SassCssPreprocessor extends BaseCssPreprocessor {
 
     private static final String IDENTIFIER = "SASS"; // NOI18N
-
-    private final CssPreprocessorImplementationListener.Support listenersSupport = new CssPreprocessorImplementationListener.Support();
 
 
     @Override
@@ -76,7 +74,7 @@ public final class SassCssPreprocessor implements CssPreprocessorImplementation 
 
     @Override
     public void process(Project project, FileObject fileObject) {
-        new SassProcessor().process(project, fileObject);
+        new SassProcessor(this).process(project, fileObject);
     }
 
     @Override
@@ -86,30 +84,12 @@ public final class SassCssPreprocessor implements CssPreprocessorImplementation 
 
     @Override
     public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
-        return new SassProjectProblemsProvider(support, createCustomizer(support.getProject()));
+        return new SassProjectProblemsProvider(support);
     }
 
     @Override
     public Options createOptions() {
         return new SassOptions(this);
-    }
-
-    @Override
-    public void addCssPreprocessorListener(CssPreprocessorImplementationListener listener) {
-        listenersSupport.addCssPreprocessorListener(listener);
-    }
-
-    @Override
-    public void removeCssPreprocessorListener(CssPreprocessorImplementationListener listener) {
-        listenersSupport.removeCssPreprocessorListener(listener);
-    }
-
-    public void fireOptionsChanged() {
-        listenersSupport.fireOptionsChanged(this);
-    }
-
-    public void fireCustomizerChanged(Project project) {
-        listenersSupport.fireCustomizerChanged(project, this);
     }
 
 }

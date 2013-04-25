@@ -42,29 +42,16 @@
 
 package org.netbeans.modules.bugzilla.autoupdate;
 
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
-import org.netbeans.api.autoupdate.InstallSupport;
-import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.modules.autoupdate.ui.api.PluginManager;
+import org.netbeans.modules.bugtracking.util.AutoupdateSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -79,15 +66,15 @@ public class BugzillaAutoupdate {
     }
     static final String BUGZILLA_MODULE_CODE_NAME = "org.netbeans.modules.bugzilla"; // NOI18N
 
-    private static Map<String, Long> lastChecks = null;
     private static final Pattern VERSION_PATTERN = Pattern.compile("^.*version ((\\d+?\\.\\d+?\\.\\d+?)|(\\d+?\\.\\d+?)).*$");
 
     private static BugzillaAutoupdate instance;
-    private Map<String, Boolean> updateAvailableMap = new HashMap<String, Boolean>();
-    private boolean wrongVersionAlreadyNotified;
 
-    private BugzillaAutoupdate() {
-    }
+    private final Set<BugzillaRepository> repos = new WeakSet<BugzillaRepository>();
+    
+    private final AutoupdateSupport support = new AutoupdateSupport(new AutoupdateCallback(), BUGZILLA_MODULE_CODE_NAME, NbBundle.getMessage(Bugzilla.class, "LBL_ConnectorName"));
+    
+    private BugzillaAutoupdate() { }
 
     public static BugzillaAutoupdate getInstance() {
         if(instance == null) {
@@ -95,155 +82,69 @@ public class BugzillaAutoupdate {
         }
         return instance;
     }
-
-    public boolean isUpdateAvailable(BugzillaRepository repository) {
-        Boolean ret = updateAvailableMap.get(repository.getUrl());
-        return ret != null ? ret : false;
-    }
-
+    
     /**
      * Checks if the remote Bugzilla repository has a version higher then actually
      * supported and if an update is available on the UC.
      *
      * @param repository the repository to check the version for
-     * @return true if things are ok or if the user desided to continue even with a
-     *         outdated version. False in case a new plugin version is abut to be
-     *         downloaded
      */
-    public boolean checkAndNotify(BugzillaRepository repository) {
-        Bugzilla.LOG.finest("BugzillaAutoupdate.checkAndNotify start");
-        try {
-            if(wasCheckedToday(getLastCheck(repository))) {
-                return true;
-            }
-            if(!BugzillaConfig.getInstance().getCheckUpdates()) {
-                return true;
-            }
-            
-            if(!checkSupportedBugzillaServerVersion(repository)) {
-                UpdateElement ue = checkNewBugzillaPluginAvailable();
-                if(ue != null) {
-                    updateAvailableMap.put(repository.getUrl(), Boolean.TRUE);
-                    AutoupdatePanel panel = new AutoupdatePanel();
-                    if(BugzillaUtil.show(
-                            panel,
-                            NbBundle.getMessage(BugzillaAutoupdate.class, "CTL_AutoupdateTitle"), // NOI18N
-                            NbBundle.getMessage(BugzillaAutoupdate.class, "CTL_Yes"),             // NOI18N
-                            new HelpCtx(BugzillaAutoupdate.class)))
-                    {
-                        OperationContainer<InstallSupport> oc = OperationContainer.createForUpdate();
-                        if (oc.canBeAdded(ue.getUpdateUnit(), ue)) {
-                            oc.add(ue);
-                            PluginManager.openInstallWizard(oc);
-                        } else {
-                            notifyError(NbBundle.getMessage(BugzillaAutoupdate.class, "MSG_CannotBeInstalled"),  // NOI18N
-                                        NbBundle.getMessage(BugzillaAutoupdate.class, "LBL_Error"));            // NOI18N
-                        }
-                        return false;
-                    }
-                }
-            }
-        } finally {
-            Bugzilla.LOG.finest("BugzillaAutoupdate.checkAndNotify finish");
-        }
-        return true;
+    public void checkAndNotify(final BugzillaRepository repository) {
+        repos.add(repository);
+        support.checkAndNotify(repository.getUrl());
     }
 
-    private static void notifyError (final String message, final String title) {
-        notifyInDialog(message, title, NotifyDescriptor.ERROR_MESSAGE, true);
-    }
-
-    private static void notifyInDialog (final String message, final String title, int messageType, boolean cancelVisible) {
-        NotifyDescriptor nd = new NotifyDescriptor(message, title, NotifyDescriptor.DEFAULT_OPTION, messageType,
-                cancelVisible ? new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION} : new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notifyLater(nd);
-    }        
-    
-    UpdateElement checkNewBugzillaPluginAvailable() {
-        List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
-        for (UpdateUnit u : units) {
-            if(u.getCodeName().equals(BUGZILLA_MODULE_CODE_NAME)) {
-                List<UpdateElement> elements = u.getAvailableUpdates();
-                if(elements != null) {
-                    for (UpdateElement updateElement : elements) {
-                        String desc = updateElement.getDescription();
-                        BugzillaVersion version = getVersion(desc);
-                        if(version != null){
-                            if(SUPPORTED_BUGZILLA_VERSION.compareTo(version) < 0){
-                                return updateElement;
-                            }
-                        } else {
-                            // looks like we weren't able to
-                            // parse the version; on the other hand ->
-                            // there is something so lets be optimistic
-                            return elements.size() > 0 ? updateElement : null; 
-                        }
-                    }                    
-                } else {
-                    return null;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Checks if the repository version is supported
-     * @param repository
-     * @return true if the repositories version is supported, othrwise false
-     */
-    boolean checkSupportedBugzillaServerVersion(BugzillaRepository repository) {
-        BugzillaConfiguration conf = repository.getConfiguration();
-        if(!conf.isValid()) {
-            return true; // do not force the wrong version notification
-        }
-        BugzillaVersion version = conf.getInstalledVersion();
-        if(version == null) {
-            return true; // do not force the wrong version notification 
-        }
-        boolean ret = isSupportedVersion(version);
-        if(!ret && !wrongVersionAlreadyNotified) {
-            Bugzilla.LOG.log(Level.INFO,
-                         "Bugzilla repository [{0}] has version {1}. ", // NOI18N
-                         new Object[] {repository.getUrl(), version});
-            wrongVersionAlreadyNotified = true;
-        }
-        return ret;
-    }
-
-    boolean isSupportedVersion(BugzillaVersion version) {
+    public boolean isSupportedVersion(BugzillaVersion version) {
         return version.compareTo(SUPPORTED_BUGZILLA_VERSION) <= 0;
     }
-
-    boolean wasCheckedToday(long lastCheck) {
-        if (lastCheck < 0) {
-            return false;
-        }
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.SECOND, c.get(Calendar.SECOND) * -1);
-        c.add(Calendar.MINUTE, c.get(Calendar.MINUTE) * -1);
-        c.add(Calendar.HOUR, c.get(Calendar.HOUR) * -1);
-        return lastCheck > c.getTime().getTime();
-    }
-
-    private long getLastCheck(BugzillaRepository repository) {
-        if(lastChecks == null) {
-            lastChecks = new HashMap<String, Long>(1);
-        }
-        Long l = lastChecks.get(repository.getUrl());
-        if(l == null) {
-            lastChecks.put(repository.getUrl(), System.currentTimeMillis());
-            return -1;
-        }
-        return l;
-    }
-
-    BugzillaVersion getVersion(String desc) {
+     
+    public BugzillaVersion getVersion(String desc) {
         Matcher m = VERSION_PATTERN.matcher(desc);
         if(m.matches()) {
             return new BugzillaVersion(m.group(1)) ;
         }
         return null;
     }
+
+    public BugzillaVersion getServerVersion(BugzillaRepository repository) {
+        BugzillaConfiguration conf = repository.getConfiguration();
+        if(!conf.isValid()) {
+            return null; // do not force the wrong version notification
+        }
+        BugzillaVersion version = conf.getInstalledVersion();
+        return version;
+    }
+
+    public AutoupdateSupport getAutoupdateSupport() {
+        return support;
+    }
+    
+    class AutoupdateCallback implements AutoupdateSupport.Callback {
+        @Override
+        public String getServerVersion(String url) {
+            BugzillaRepository repository = null;
+            for (BugzillaRepository r : repos) {
+                if(r.getUrl().equals(url)) {
+                    repository = r;
+                }
+            }
+            assert repository != null;
+            if(repository == null) {
+                return null;
+            }
+            BugzillaVersion version = BugzillaAutoupdate.this.getServerVersion(repository);
+            return version != null ? version.toString() : null;
+        }
+
+        @Override
+        public boolean checkIfShouldDownload(String desc) {
+            BugzillaVersion version = getVersion(desc);
+            return version != null && SUPPORTED_BUGZILLA_VERSION.compareTo(version) < 0;
+        }
+
+        @Override
+        public boolean isSupportedVersion(String version) {
+            return BugzillaAutoupdate.this.isSupportedVersion(new BugzillaVersion(version));
+        }
+    };
 }

@@ -48,8 +48,9 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.Rule.ErrorRule;
-import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyError;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorID;
+import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
 
 /** 
  * Represents a rule to be run on the Groovy source in case the compiler 
@@ -60,11 +61,10 @@ public abstract class GroovyErrorRule implements ErrorRule {
     /** 
      * Get the diagnostic codes this rule should run on
      */
-    public abstract Set<GroovyCompilerErrorID> getCodes();
+    public abstract Set<CompilerErrorID> getCodes();
 
     /** 
      * Return possible fixes for a given diagnostic report.
      */
-    public abstract void run(GroovyRuleContext context, GroovyError error,
-             List<Hint> result);
+    public abstract void run(RuleContext context, GroovyError error, List<Hint> result);
 }

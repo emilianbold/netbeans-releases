@@ -42,10 +42,13 @@
 package org.netbeans.modules.css.prep.ui.customizer;
 
 import java.io.IOException;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
+import org.netbeans.modules.css.prep.preferences.SassPreferencesValidator;
 import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
+import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.util.HelpCtx;
@@ -85,8 +88,9 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
     @Override
     public synchronized SassCustomizerPanel getComponent() {
         if (customizerPanel == null) {
-           customizerPanel = new SassCustomizerPanel();
-           customizerPanel.setSassEnabled(SassPreferences.isEnabled(project));
+            customizerPanel = new SassCustomizerPanel();
+            customizerPanel.setSassEnabled(SassPreferences.isEnabled(project));
+            customizerPanel.setMappings(SassPreferences.getMappings(project));
         }
         assert customizerPanel != null;
         return customizerPanel;
@@ -99,31 +103,47 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
 
     @Override
     public boolean isValid() {
-        // always valid
-        return true;
+        return !getValidationResult().hasErrors();
     }
 
     @Override
     public String getErrorMessage() {
-        // always valid
-        return null;
+        return getValidationResult().getFirstErrorMessage();
     }
 
     @Override
     public String getWarningMessage() {
-        // always valid
-        return null;
+        return getValidationResult().getFirstWarningMessage();
     }
 
     @Override
     public void save() throws IOException {
         Warnings.resetSassWarning();
+        boolean fire = false;
+        // enabled
         boolean originalEnabled = SassPreferences.isEnabled(project);
         boolean enabled = getComponent().isSassEnabled();
         SassPreferences.setEnabled(project, enabled);
         if (enabled != originalEnabled) {
+            fire = true;
+        }
+        // mappings
+        List<String> originalMappings = SassPreferences.getMappings(project);
+        List<String> mappings = getComponent().getMappings();
+        SassPreferences.setMappings(project, mappings);
+        if (!mappings.equals(originalMappings)) {
+            fire = true;
+        }
+        // change?
+        if (fire) {
             sassCssPreprocessor.fireCustomizerChanged(project);
         }
+    }
+
+    private ValidationResult getValidationResult() {
+        return new SassPreferencesValidator()
+                .validate(getComponent().isSassEnabled(), getComponent().getMappings())
+                .getResult();
     }
 
 }

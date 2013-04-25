@@ -86,22 +86,21 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion;
  */
 public class CsmFinderImpl implements CsmFinder {
 
-    private boolean caseSensitive = false;
-    private FileObject fo;
-    private CsmFile csmFile;
-    private String mimeType;
+    private final boolean caseSensitive;
+    private final CsmFile csmFile;
+    private final String mimeType;
 
     // ..........................................................................
     public CsmFinderImpl(FileObject fo, String mimeType) {
-        this.fo = fo;
+        this.csmFile = null;
         this.mimeType = mimeType;
-        caseSensitive = _getCaseSensitive();
+        this.caseSensitive = _getCaseSensitive();
     }
 
     public CsmFinderImpl(CsmFile csmFile, String mimeType) {
         this.csmFile = csmFile;
         this.mimeType = mimeType;
-        caseSensitive = _getCaseSensitive();
+        this.caseSensitive = _getCaseSensitive();
     }
 
     public CsmFinderImpl(CsmFile csmFile, String mimeType, boolean caseSensitive) {
@@ -121,10 +120,6 @@ public class CsmFinderImpl implements CsmFinder {
 
     private boolean _getCaseSensitive() {
         return CsmCompletionUtils.isCaseSensitive(mimeType);
-    }
-
-    private boolean getNaturalSort() {
-        return CsmCompletionUtils.isNaturalSort(mimeType);
     }
 
     private CsmNamespace resolveNamespace(String namespaceName, boolean caseSensitive) {

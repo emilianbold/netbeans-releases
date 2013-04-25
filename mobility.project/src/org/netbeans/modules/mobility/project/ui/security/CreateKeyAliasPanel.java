@@ -119,6 +119,8 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
         jPanel2 = new javax.swing.JPanel();
         lError = new javax.swing.JLabel();
 
+        setMinimumSize(new java.awt.Dimension(300, 348));
+        setPreferredSize(new java.awt.Dimension(300, 348));
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(tAlias);

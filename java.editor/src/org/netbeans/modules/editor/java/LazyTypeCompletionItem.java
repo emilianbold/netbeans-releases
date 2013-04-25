@@ -123,7 +123,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem.WhiteListJavaComp
                         Elements elements = controller.getElements();
                         if (e != null && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && controller.getTrees().isAccessible(scope, e)) {
                             if (isOfKind(e, kinds) && (!afterExtends || !e.getModifiers().contains(Modifier.FINAL)) && (!isInDefaultPackage(e) || isInDefaultPackage(scope.getEnclosingClass())) && !Utilities.isExcluded(e.getQualifiedName()))
-                                delegate = JavaCompletionItem.createTypeItem(controller, e, (DeclaredType)e.asType(), substitutionOffset, referencesCount, controller.getElements().isDeprecated(e), insideNew, addTypeVars, false, false, false, getWhiteList());
+                                delegate = createTypeItem(controller, e, (DeclaredType)e.asType(), substitutionOffset, referencesCount, controller.getElements().isDeprecated(e), insideNew, addTypeVars, false, false, false, getWhiteList());
                         }
                     }
                 });

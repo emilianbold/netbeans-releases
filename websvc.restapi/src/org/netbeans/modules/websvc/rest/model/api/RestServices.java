@@ -50,21 +50,35 @@
 package org.netbeans.modules.websvc.rest.model.api;
 
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 
 public interface RestServices extends RootInterface {
+
+    /** Property fired when list of services changes. */
+    public static final String PROP_SERVICES = "/restservices";
+
+    /** Property fired when list of providers changes. */
+    public static final String PROP_PROVIDERS = "providers";
+
+    RestServiceDescription[] getRestServiceDescription();
     
-    public RestServiceDescription[] getRestServiceDescription();
+    RestServiceDescription getRestServiceDescription(String name);
+
+    /**
+     * Return list of providers, that is classes annotated with @javax.ws.rs.ext.Provider
+     */
+    Collection<? extends RestProviderDescription> getProviders();
+
+    int sizeRestServiceDescription();
     
-    public RestServiceDescription getRestServiceDescription(String name);
+    @Override
+    void addPropertyChangeListener(PropertyChangeListener pcl);
     
-    public int sizeRestServiceDescription();
+    @Override
+    void removePropertyChangeListener(PropertyChangeListener pcl);
     
-    public void addPropertyChangeListener(PropertyChangeListener pcl);
+    void disablePropertyChangeListener();
     
-    public void removePropertyChangeListener(PropertyChangeListener pcl);
-    
-    public void disablePropertyChangeListener();
-    
-    public void enablePropertyChangeListener();
+    void enablePropertyChangeListener();
 }

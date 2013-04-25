@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.MissingResourceException;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -140,9 +141,13 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
         DefaultTableModel model = (DefaultTableModel)table.getModel();
         ArrayList<String> patterns = new ArrayList<String>( model.getRowCount() );
         for( int i=0; i<model.getRowCount(); i++ ) {
-            String pattern = model.getValueAt(i, 0).toString();
+            Object value = model.getValueAt(i, 0);
+            if (value == null) {
+                continue;
+            }
+            String pattern = value.toString();
             //remove empty patterns
-            if (!pattern.trim().isEmpty()) {
+            if (!pattern.trim().isEmpty() && !pattern.trim().equals(getDummyPattern())) {
                 patterns.add(pattern);
             }
         }
@@ -685,7 +690,7 @@ private void btnChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         DefaultTableModel model = (DefaultTableModel)table.getModel();
-        model.addRow( new Object[] { NbBundle.getMessage( ToDoCustomizer.class, "ToDoCustomizer.DefaultPattern") } ); //NOI18N
+        model.addRow( new Object[] { getDummyPattern( ) } ); //NOI18N
         table.getSelectionModel().setSelectionInterval( model.getRowCount()-1, model.getRowCount()-1 );
         final boolean wasChanged = changed;
         table.editCellAt( model.getRowCount()-1, 0 );
@@ -839,6 +844,10 @@ private void scanCommentsOnlyChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:
         txtLine.getDocument().removeDocumentListener(this);
         txtBlockStart.getDocument().removeDocumentListener(this);
         txtBlockEnd.getDocument().removeDocumentListener(this);
+    }
+
+    private String getDummyPattern() {
+        return NbBundle.getMessage(ToDoCustomizer.class, "ToDoCustomizer.DefaultPattern");
     }
 
     private static class MyTable extends JTable {

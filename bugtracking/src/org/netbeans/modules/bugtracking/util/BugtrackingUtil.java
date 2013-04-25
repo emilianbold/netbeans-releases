@@ -103,7 +103,7 @@ import org.openide.windows.WindowManager;
 public class BugtrackingUtil {
     private static RequestProcessor parallelRP;
 
-    public static boolean show(JPanel panel, String title, String okName) {
+    public static boolean show(JPanel panel, String title, String okName, HelpCtx helpCtx) {
         JButton ok = new JButton(okName);
         ok.getAccessibleContext().setAccessibleDescription(ok.getText());
         JButton cancel = new JButton(NbBundle.getMessage(BugtrackingUtil.class, "LBL_Cancel")); // NOI18N
@@ -116,9 +116,13 @@ public class BugtrackingUtil {
                     new Object[]{ok, cancel},
                     ok,
                     DialogDescriptor.DEFAULT_ALIGN,
-                    new HelpCtx(panel.getClass()),
+                    helpCtx,
                     null);
         return DialogDisplayer.getDefault().notify(dd) == ok;
+    }
+    
+    public static boolean show(JPanel panel, String title, String okName) {
+        return show(panel, title, okName, new HelpCtx(panel.getClass()));
     }
 
     /**

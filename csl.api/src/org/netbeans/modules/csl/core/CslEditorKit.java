@@ -67,21 +67,17 @@ import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.csl.api.CslActions;
-import org.netbeans.modules.csl.api.DeleteToNextCamelCasePosition;
-import org.netbeans.modules.csl.api.DeleteToPreviousCamelCasePosition;
-import org.netbeans.modules.csl.api.GoToDeclarationAction;
 import org.netbeans.modules.csl.api.InstantRenameAction;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
-import org.netbeans.modules.csl.api.NextCamelCasePosition;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.PreviousCamelCasePosition;
 import org.netbeans.modules.csl.api.SelectCodeElementAction;
-import org.netbeans.modules.csl.api.SelectNextCamelCasePosition;
-import org.netbeans.modules.csl.api.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.csl.api.ToggleBlockCommentAction;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.api.GoToMarkOccurrencesAction;
 import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
+import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
+import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -182,14 +178,6 @@ public final class CslEditorKit extends NbEditorKit {
         actions.add(new GenericGenerateGoToPopupAction());
         actions.add(new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true));
         actions.add(new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false));
-        //actions.add(new ExpandAllCodeBlockFolds());
-        //actions.add(new CollapseAllCodeBlockFolds());
-        actions.add(new NextCamelCasePosition(findAction(superActions, nextWordAction)));
-        actions.add(new PreviousCamelCasePosition(findAction(superActions, previousWordAction)));
-        actions.add(new SelectNextCamelCasePosition(findAction(superActions, selectionNextWordAction)));
-        actions.add(new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)));
-        actions.add(new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)));
-        actions.add(new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)));
 
         if (language == null) {
             LOG.log(Level.WARNING, "Language missing for MIME type {0}", mimeType);
@@ -231,6 +219,9 @@ public final class CslEditorKit extends NbEditorKit {
         return true;
     }
 
+    /**
+     * @deprecated use {@link TypedTextInterceptor} instead
+     */
     private final class GsfDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
         private JTextComponent currentTarget;
         private String replacedText = null;
@@ -318,6 +309,9 @@ public final class CslEditorKit extends NbEditorKit {
         }
     }
 
+    /**
+     * @deprecated use {@link TypedBreakInterceptor} instead
+     */
     private final class GsfInsertBreakAction extends InsertBreakAction {
         static final long serialVersionUID = -1506173310438326380L;
 
@@ -363,6 +357,9 @@ public final class CslEditorKit extends NbEditorKit {
         }
     }
 
+    /**
+     * @deprecated use {@link DeletedTextInterceptor} instead
+     */
     private final class GsfDeleteCharAction extends ExtDeleteCharAction {
         private JTextComponent currentTarget;
 
