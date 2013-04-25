@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import java.awt.event.ItemEvent;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -80,6 +81,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.RequestProcessor;
 
 /**
  * Chooser for executable and project used by AttachPanel
@@ -492,17 +494,31 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         return (prj != null)? prj.getProjectDirectory().getPath(): "";
     }
 
-    /*package*/ void setSelectedProjectByPath(String hostName, String path) {
+    /*package*/ void setSelectedProjectByPath(final String hostName, final String path) {
         if (path == null || path.length() == 0) {
             projectComboBox.setSelectedIndex(0);
             return;
         }
-        ProjectCBItem prj = getProjectByPath(hostName, path);
-        if (prj != null) {
-            projectComboBox.setSelectedItem(prj);
-        }
-        else {
-            projectComboBox.setSelectedIndex(0);
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    ProjectCBItem prj = getProjectByPath(hostName, path);
+                    if (prj != null) {
+                        projectComboBox.setSelectedItem(prj);
+                    } else {
+                        projectComboBox.setSelectedIndex(0);
+                    }
+                }
+            });
+        } else {
+            ProjectCBItem prj = getProjectByPath(hostName, path);
+            if (prj != null) {
+                projectComboBox.setSelectedItem(prj);
+            } else {
+                projectComboBox.setSelectedIndex(0);
+            }
         }
     }
 
