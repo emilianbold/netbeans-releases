@@ -15,13 +15,6 @@ rtl
 <p dir="rtl
 --%>
 
-<%-- completion for HTML entities --%>
-<%--CC
-&d|
-&delta;
-&delta;
---%>
-
 <html>
     <head><title>HTML Code Completion Page</title></head>
     <body>

@@ -50,7 +50,19 @@ public enum CompletionContext {
     EXPRESSION, // usually, we will offer everything what we know in the context
     OBJECT_PROPERTY, // object property that are visible outside the object
     OBJECT_MEMBERS, // usually after this.
+    /**
+     * This context is before ':' in an object literal definition, when a property
+     * is defined. Typically 
+     * var object_listeral = {
+     *  property_name : value
+     * }
+     * 
+     * This context can be used by frameworks to suggest the names of properties
+     * to define for example various configuration objects.
+     */
+    OBJECT_PROPERTY_NAME, 
     DOCUMENTATION, // inside documentation blocks
-    GLOBAL
+    GLOBAL,
+    STRING      // inside a string
 
 }

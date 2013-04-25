@@ -64,7 +64,6 @@ public class NamespacesTest extends GeneralJSF {
         return NbModuleSuite.create(
                 conf.addTest(
                 "testOpenProject",
-                "testAutoinsert",
                 "testMarkedUnused",
                 "testNamespaceUsed").enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }

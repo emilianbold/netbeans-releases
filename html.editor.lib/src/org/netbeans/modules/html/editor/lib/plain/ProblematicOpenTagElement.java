@@ -41,23 +41,21 @@
  */
 package org.netbeans.modules.html.editor.lib.plain;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 
 /**
  *
  * @author marekfukala
  */
-public class ProblematicOpenTagElement extends OpenTagElement implements OpenTag {
+public class ProblematicOpenTagElement extends LongOpenTagElement {
 
     private ProblemDescription problem;
 
-    public ProblematicOpenTagElement(CharSequence document, int from, short length,
+    public ProblematicOpenTagElement(CharSequence document, int from, int length,
             byte nameLen,
             List<Attribute> attribs,
             boolean isEmpty,

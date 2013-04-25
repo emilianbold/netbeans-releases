@@ -904,7 +904,14 @@ No.
         </question>
 -->
 <answer id="resources-read">
-No.
+    <p>
+	<api category="devel" group="branding" name="MultiViewElement.Spliting.Enabled" type="export">
+	    By default a MultiViewElement allows the containing TopComponent to split it.
+	    Some systems may however find this not of any use. Then they should brand the
+	    <code>MultiViewElement.Spliting.Enabled</code> to <code>false</code>. NetBeans IDE
+	    by default does allow spliting.
+	</api>
+    </p>
 </answer>
 
 <!-- Copy this above the </api-answers> tag! -->

@@ -656,7 +656,7 @@ implements TokenHierarchyListener, ChangeListener {
             // since "random" lookup events translate into highlight change events
             // that are monitored by tests and so the tests may then fail
             if (TEST_FALLBACK_COLORING == null) {
-                result.addLookupListener(this);
+                result.addLookupListener(WeakListeners.create(LookupListener.class, this, result));
             }
             updateFCS();
         }

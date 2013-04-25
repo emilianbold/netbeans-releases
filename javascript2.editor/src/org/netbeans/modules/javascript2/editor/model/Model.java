@@ -62,6 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -205,12 +206,20 @@ public final class Model {
     }
 
     public void writeModel(Printer printer) {
-        writeObject(printer, getGlobalObject());
+        writeObject(printer, getGlobalObject(), null);
     }
 
-    public static void writeObject(Printer printer, JsObject object) {
+    public void writeModel(Printer printer, boolean resolve) {
+        writeObject(printer, getGlobalObject(), resolve ? parserResult : null);
+    }
+
+    public void writeObject(Printer printer, JsObject object, boolean resolve) {
+        writeObject(printer, object, resolve ? parserResult : null);
+    }
+
+    public static void writeObject(Printer printer, JsObject object, @NullAllowed JsParserResult parseResult) {
         StringBuilder sb = new StringBuilder();
-        writeObject(printer, object, sb, "", new HashSet<JsObject>()); // NOI18N
+        writeObject(printer, object, parseResult, sb, "", new HashSet<JsObject>()); // NOI18N
         String rest = sb.toString();
         if (!rest.isEmpty()) {
             printer.println(rest);
@@ -357,7 +366,7 @@ public final class Model {
         return ret;
     }
 
-    private static void writeObject(Printer printer, JsObject jsObject,
+    private static void writeObject(Printer printer, JsObject jsObject, JsParserResult parseResult,
             StringBuilder sb, String ident, Set<JsObject> path) {
 
         if (jsObject instanceof JsFunction) {
@@ -395,12 +404,18 @@ public final class Model {
                 newLine(printer, sb, ident);
                 sb.append("# RETURN TYPES"); // NOI18N
 
-                List<TypeUsage> returnTypes = new ArrayList<TypeUsage>(function.getReturnTypes());
+                Collection<? extends TypeUsage> ret = function.getReturnTypes();
+                if (parseResult != null) {
+                    ret = ModelUtils.resolveTypes(ret, parseResult);
+                }
+                List<TypeUsage> returnTypes = new ArrayList<TypeUsage>(ret);
                 Collections.sort(returnTypes, RETURN_TYPES_COMPARATOR);
                 for (TypeUsage type : returnTypes) {
                     newLine(printer, sb, ident);
 
-                    sb.append(type.getType() + ", RESOLVED: " + type.isResolved());
+                    sb.append(type.getType());
+                    sb.append(", RESOLVED: ");
+                    sb.append(type.isResolved());
                 }
             }
             if (!function.getParameters().isEmpty()) {
@@ -414,7 +429,7 @@ public final class Model {
                     if (path.contains(param)) {
                         sb.append("CYCLE ").append(param.getFullyQualifiedName()); // NOI18N
                     } else {
-                        writeObject(printer, param, sb, ident + "        ", path);
+                        writeObject(printer, param, parseResult, sb, ident + "        ", path);
                     }
                 }
             }
@@ -451,7 +466,7 @@ public final class Model {
                 if (path.contains(entry.getValue())) {
                     sb.append("CYCLE ").append(entry.getValue().getFullyQualifiedName()); // NOI18N
                 } else {
-                    writeObject(printer, entry.getValue(), sb, identBuilder.toString(), path);
+                    writeObject(printer, entry.getValue(), parseResult, sb, identBuilder.toString(), path);
                 }
             }
         }

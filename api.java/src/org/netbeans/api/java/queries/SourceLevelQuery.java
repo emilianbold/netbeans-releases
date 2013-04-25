@@ -45,6 +45,11 @@
 package org.netbeans.api.java.queries;
 
 import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -55,8 +60,10 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Union2;
 import org.openide.util.WeakListeners;
@@ -74,6 +81,7 @@ public class SourceLevelQuery {
 
     private static final Pattern SOURCE_LEVEL = Pattern.compile("\\d+\\.\\d+"); //NOI18N
     private static final Pattern SYNONYM = Pattern.compile("\\d+");             //noI18N
+    private static final SpecificationVersion JDK8 = new SpecificationVersion("1.8");   //NOI18N
 
     @SuppressWarnings("deprecation")
     private static final Lookup.Result<? extends org.netbeans.spi.java.queries.SourceLevelQueryImplementation> implementations =
@@ -147,6 +155,125 @@ public class SourceLevelQuery {
         LOGGER.log(Level.FINE, "No source level found for {0}", javaFile);
         return new Result(javaFile);
     }
+    
+    /**
+     * The JRE profiles defined by Java 8.
+     * <div class="nonnormative">
+     * The JDK 8 provides three limited profiles (compact1, compact2, compact3) in addition
+     * to the full JDK. Each profile specifies a specific set of Java API packages and
+     * contains all of the APIs of the smaller profile, @see http://openjdk.java.net/jeps/161
+     * </div>
+     * @since 1.47
+     */
+    public static enum Profile {
+
+        /**
+         * The compact1 profile.
+         */
+        COMPACT1("compact1", Bundle.NAME_Compact1(), JDK8),   //NOI18N
+
+        /**
+         * The compact2 profile.
+         */
+        COMPACT2("compact2", Bundle.NAME_Compact2(), JDK8),   //NOI18N
+
+        /**
+         * The compact3 profile.
+         */
+        COMPACT3("compact3", Bundle.NAME_Compact3(), JDK8),   //NOI18N
+
+        /**
+         * The default full JRE profile.
+         */
+        DEFAULT(Bundle.NAME_FullJRE()) {
+            @Override
+            public boolean isSupportedIn(@NonNull final String sourceLevel) {
+                return true;
+            }
+        };
+
+        private static final Map<String,Profile> profilesByName = new HashMap<>();
+        static {
+            for (Profile sp : values()) {
+                profilesByName.put(sp.getName(), sp);
+            }
+        }
+
+        private final String name;
+        private final String displayName;
+        private final SpecificationVersion supportedFrom;
+
+        @NbBundle.Messages({
+        "NAME_Compact1=Compact 1",
+        "NAME_Compact2=Compact 2",
+        "NAME_Compact3=Compact 3",
+        "NAME_FullJRE=Full JRE"
+        })
+        private Profile(
+                @NonNull final String name,
+                @NonNull final String displayName,
+                @NonNull final SpecificationVersion supportedFrom) {
+            assert name != null;
+            assert displayName != null;
+            assert supportedFrom != null;
+            this.name = name;
+            this.displayName = displayName;
+            this.supportedFrom = supportedFrom;
+        }
+
+        private Profile(@NonNull final String displayName) {
+            assert displayName != null;
+            this.name = "";   //NOI18N
+            this.displayName = displayName;
+            this.supportedFrom = null;
+        }
+
+        /**
+         * Returns the name of the profile.
+         * @return the name of the profile
+         */
+        @NonNull
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Returns the display name of the profile.
+         * @return the display name of the profile
+         */
+        @NonNull
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        /**
+         * Tests if the profile is supported in gives source level.
+         * @param sourceLevel to test if the profile is supported in it
+         * @return true if the profile is supported in given source level
+         */
+        public boolean isSupportedIn(@NonNull String sourceLevel) {
+            Parameters.notNull("sourceLevel", sourceLevel); //NOI18N
+            sourceLevel = normalize(sourceLevel);
+            if (!SOURCE_LEVEL.matcher(sourceLevel).matches()) {
+                throw new IllegalArgumentException(sourceLevel);
+            }
+            return supportedFrom.compareTo(new SpecificationVersion(sourceLevel)) <= 0;
+        }
+
+        /**
+         * Returns the {@link Profile} for given profile name.
+         * @param profileName the name of the profile
+         * @return the {@link Profile} for given profile name or null
+         * for unknown profile name.
+         */
+        @CheckForNull
+        public static Profile forName(@NullAllowed String profileName) {
+            if (profileName == null) {
+                profileName = Profile.DEFAULT.getName();
+            }
+            return Profile.profilesByName.get(profileName);
+        }
+    }    
 
     /**
      * Result of finding source level, encapsulating the answer as well as the
@@ -195,23 +322,27 @@ public class SourceLevelQuery {
         }
 
         /**
-         * Returns the name of the required profile.
-         * @return a name of the required profile or null if the profile is either unknown
-         * or unsupported by actual source level.
+         * Returns the required profile.
+         * @return the required profile. If the profile is either unknown
+         * or unsupported by actual source level it returns the {@link Profile#DEFAULT}.
          * <div class="nonnormative">
          * The JDK 8 provides three limited profiles (compact1, compact2, compact3) in addition
          * to the full JDK. Each profile specifies a specific set of Java API packages and
          * contains all of the APIs of the smaller profile, @see http://openjdk.java.net/jeps/161
          * </div>
-         * @since 1.45
+         * @since 1.47
          */
-        @CheckForNull
-        public String getProfile() {
+        @NonNull
+        public Profile getProfile() {
             final SourceLevelQueryImplementation2.Result delegate = getDelegate();
             if (!(delegate instanceof SourceLevelQueryImplementation2.Result2)) {
-                return null;
+                return Profile.DEFAULT;
             }
-            return ((SourceLevelQueryImplementation2.Result2)delegate).getProfile();
+            final Profile result = ((SourceLevelQueryImplementation2.Result2)delegate).getProfile();
+            assert result != null : String.format(
+                "Null result returned by provider: %s", //NOI18N
+                delegate);
+            return result;
         }
 
         /**

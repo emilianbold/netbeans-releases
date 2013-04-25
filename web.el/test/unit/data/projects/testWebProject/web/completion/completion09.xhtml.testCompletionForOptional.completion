@@ -5,5 +5,6 @@ Code completion result for source line:
 METHOD     get()                           [PUBLIC]   Object
 METHOD     ifPresent(LambdaExpression lam  [PUBLIC]   void
 METHOD     orElse(Object other)            [PUBLIC]   Object
+METHOD     orElseGet(LambdaExpression oth  [PUBLIC]   Object
 METHOD     stream()                        [PUBLIC]   Stream
 PROPERTY   present                         [PUBLIC]   boolean

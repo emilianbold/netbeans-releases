@@ -44,12 +44,10 @@
 
 package org.netbeans.core.windows.view.ui.slides;
 
-import java.awt.Color;
+import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -88,14 +86,14 @@ public final class SlideBarContainer extends AbstractModeContainer {
     public SlideBarContainer(ModeView modeView, WindowDnDManager windowDnDManager) {
         super(modeView, windowDnDManager, Constants.MODE_KIND_SLIDING);
         
-        Component slideBar = this.tabbedHandler.getComponent();
-        panel = new VisualPanel(this, slideBar);
+        panel = new VisualPanel(this);
         panel.setBorder(computeBorder(getSlidingView().getSide()));
-//        boolean horizontal = true;
-//        if( slideBar instanceof SlideBar ) {
-//            horizontal = ((SlideBar)slideBar).isHorizontal();
-//        }
-//        panel.add(slideBar, Boolean.valueOf( horizontal ));
+        Component slideBar = this.tabbedHandler.getComponent();
+        boolean horizontal = true;
+        if( slideBar instanceof SlideBar ) {
+            horizontal = ((SlideBar)slideBar).isHorizontal();
+        }
+        panel.add(slideBar, horizontal ? BorderLayout.WEST : BorderLayout.NORTH );
     }
     
     
@@ -198,7 +196,7 @@ public final class SlideBarContainer extends AbstractModeContainer {
             top = 1; left = 1; bottom = 1; right = 2; 
         }
         if (Constants.BOTTOM.equals(orientation)) {
-            top = 2; left = 1; bottom = 1; right = 1; 
+            top = 2; left = 5; bottom = 1; right = 1;
         }
         if (Constants.TOP.equals(orientation)) {
             top = 1; left = 1; bottom = 2; right = 1; 
@@ -220,37 +218,26 @@ public final class SlideBarContainer extends AbstractModeContainer {
 
         static {
             if( isAqua ) {
-                bottomBorder = BorderFactory.createCompoundBorder(
-                                BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbBrushedMetal.darkShadow")), //NOI18N
-                                BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(187,187,187) ) );
+                bottomBorder = BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbBrushedMetal.darkShadow")); //NOI18N
 
                 bottomEmptyBorder = BorderFactory.createMatteBorder(3, 0, 0, 0, UIManager.getColor("NbSplitPane.background")); //NOI18N
                 
-                topBorder = BorderFactory.createCompoundBorder(
-                                BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("NbBrushedMetal.darkShadow")), //NOI18N
-                                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(187,187,187) ) );
+                topBorder = BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("NbBrushedMetal.darkShadow")); //NOI18N
 
                 topEmptyBorder = BorderFactory.createMatteBorder(0, 0, 3, 0, UIManager.getColor("NbSplitPane.background")); //NOI18N
 
                 leftEmptyBorder = BorderFactory.createMatteBorder(0, 0, 0, 3, UIManager.getColor("NbSplitPane.background")); //NOI18N
 
-                leftBorder = BorderFactory.createCompoundBorder(
-                        BorderFactory.createCompoundBorder( leftEmptyBorder,
-                            BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("NbBrushedMetal.darkShadow"))),
-                        BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbBrushedMetal.lightShadow"))); //NOI18N
-
+                leftBorder = BorderFactory.createMatteBorder( 0,0,0,1, UIManager.getColor("NbSplitPane.background"));
+ 
                 rightEmptyBorder = BorderFactory.createMatteBorder(0, 3, 0, 0, UIManager.getColor("NbSplitPane.background")); //NOI18N
 
-                rightBorder = BorderFactory.createCompoundBorder(
-                        BorderFactory.createCompoundBorder( rightEmptyBorder,
-                            BorderFactory.createMatteBorder(0, 1, 0, 0, UIManager.getColor("NbBrushedMetal.darkShadow"))), //NOI18N
-                        BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("NbBrushedMetal.lightShadow"))); //NOI18N
+                rightBorder = BorderFactory.createMatteBorder(0, 1, 0, 0, UIManager.getColor("NbBrushedMetal.darkShadow")); //NOI18N
             }
         }
         
-        public VisualPanel (SlideBarContainer modeContainer, Component slideBar) {
-            super(new SimpleLayout(slideBar));
-            add( slideBar );
+        public VisualPanel (SlideBarContainer modeContainer) {
+            super(new BorderLayout());
             this.modeContainer = modeContainer;
             // To be able to activate on mouse click.
             enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK);
@@ -262,7 +249,7 @@ public final class SlideBarContainer extends AbstractModeContainer {
             if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
                 setOpaque( false);
         }
-        
+
         @Override
         public ModeView getModeView() {
             return modeContainer.getModeView();
@@ -316,7 +303,7 @@ public final class SlideBarContainer extends AbstractModeContainer {
 
         @Override
         public Dimension getMinimumSize() {
-            if (modeContainer.getTopComponents().length == 0) {
+            if (!hasVisibleComponents()) {
                 // have minimum size, to avoid gridbag layout to place the empty component at [0,0] location.
                 // clashes with the dnd
                 Border b = getBorder();
@@ -331,10 +318,20 @@ public final class SlideBarContainer extends AbstractModeContainer {
         
         @Override
         public Dimension getPreferredSize() {
-            if( isAqua && modeContainer.getTopComponents().length == 0) {
+            if( isAqua && !hasVisibleComponents()) {
                 return getMinimumSize();
             }
             return super.getPreferredSize();
+        }
+        
+        private boolean hasVisibleComponents() {
+            for( Component c : getComponents() ) {
+                if( c instanceof SlideBar )
+                    continue;
+                if( null != c && c.isVisible() )
+                    return true;
+            }
+            return modeContainer.getTopComponents().length > 0;
         }
 
         @Override
@@ -344,22 +341,22 @@ public final class SlideBarContainer extends AbstractModeContainer {
 
             Border result;
             if( Constants.BOTTOM.equals(side) ) {
-                if( modeContainer.getTopComponents().length == 0 )
+                if( !hasVisibleComponents() )
                     result = bottomEmptyBorder;
                 else
                     result = bottomBorder;
             } else if( Constants.TOP.equals(side) ) {
-                if( modeContainer.getTopComponents().length == 0 )
+                if( !hasVisibleComponents() )
                     result = topEmptyBorder;
                 else
                     result = topBorder;
             } else if( Constants.RIGHT.equals(side) ) {
-                if( modeContainer.getTopComponents().length == 0 )
+                if( !hasVisibleComponents() )
                     result = rightEmptyBorder;
                 else
                     result = rightBorder;
             } else if( Constants.LEFT.equals(side) ) {
-                if( modeContainer.getTopComponents().length == 0 )
+                if( !hasVisibleComponents() )
                     result = leftEmptyBorder;
                 else
                     result = leftBorder;
@@ -371,39 +368,4 @@ public final class SlideBarContainer extends AbstractModeContainer {
         }
     } // End of VisualPanel
     
-    
-    private static class SimpleLayout implements LayoutManager {
-        
-        private final Component slideBar;
-                
-        public SimpleLayout( Component slideBar ) {
-            this.slideBar = slideBar;
-        }
-
-        @Override
-        public void addLayoutComponent( String name, Component comp ) {
-        }
-
-        @Override
-        public void removeLayoutComponent( Component comp ) {
-        }
-
-        @Override
-        public Dimension preferredLayoutSize( Container parent ) {
-            return slideBar.getPreferredSize();
-        }
-
-        @Override
-        public Dimension minimumLayoutSize( Container parent ) {
-            return slideBar.getMinimumSize();
-        }
-
-        @Override
-        public void layoutContainer( Container parent ) {
-            Dimension size = parent.getSize();
-            Dimension prefSize = slideBar.getPreferredSize();
-            slideBar.setBounds( 0, 0, Math.max(prefSize.width, size.width), Math.max(prefSize.height, size.height));
-        }
-        
-    }
 }

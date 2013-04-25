@@ -93,6 +93,26 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/completion10.xhtml", "#{a = 5; bean.^}", false);
     }
 
+    public void testCompletionInsideStream() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion11.xhtml", "#{[1,2,3].stream().^average()}", false);
+    }
+
+    public void testSimpleAssignement() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion12.xhtml", "#{v.^}", false);
+    }
+
+    public void testAssignementOnTheSameLine() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion13.xhtml", "#{v = {\"one\":1, \"two\":2, \"three\":3}; v.^}", false);
+    }
+
+    public void testAssignementsCompletionChain() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion14.xhtml", "#{v.stream().average().^}", false);
+    }
+
+    public void testAssignementsOfBean() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion15.xhtml", "#{c.^}", false);
+    }
+
     public void testJavaCompletion01() throws Exception {
         checkCompletion("projects/testWebProject/web/completion/java/java_completion01.xhtml", "#{^}", false);
     }

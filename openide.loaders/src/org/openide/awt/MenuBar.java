@@ -597,10 +597,10 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 for( StackTraceElement ste : Thread.currentThread().getStackTrace() ) {
                     if( "com.apple.laf.AquaRootPaneUI".equals(ste.getClassName()) ) { //NOI18N
                         if( "windowDeactivated".equals(ste.getMethodName()) ) { //NOI18N
-                            break;
+                            return;
                         }
                         if( "windowActivated".equals(ste.getMethodName()) ) { //NOI18N
-                            break;
+                            return;
                         }
                     }
                 }

@@ -104,37 +104,37 @@ public class StructHandler {
      *
      * @param  fire  true if should fire changes
      */
-    private synchronized PropertiesStructure reparseNowBlocking(boolean fire) {
-        if (!parsingAllowed) {
-            return null;
-        }
-        
-        FileObject fo = propFileEntry.getFile();
-        if(!fo.canRead()) {
-            // whatever happend - the file does not exist 
-            // so don't even try to parse it
-            // XXX may be a HACK. see issue #63321. This is supposed to be 
-            // rewriten after 6.0.
-            return null;
-        }
-        PropertiesParser parser = new PropertiesParser(propFileEntry);
+    private PropertiesStructure reparseNowBlocking(boolean fire) {
+        PropertiesStructure propStructure = null;
+        synchronized (this) {
+            if (!parsingAllowed) {
+                return null;
+            }
 
-        try {
-            parserWRef = new WeakReference<PropertiesParser>(parser);
+            FileObject fo = propFileEntry.getFile();
+            if(!fo.canRead()) {
+                // whatever happend - the file does not exist
+                // so don't even try to parse it
+                // XXX may be a HACK. see issue #63321. This is supposed to be
+                // rewriten after 6.0.
+                return null;
+            }
+            PropertiesParser parser = new PropertiesParser(propFileEntry);
 
-            parser.initParser();
-            PropertiesStructure propStructure = parser.parseFile();
-            
-            updatePropertiesStructure(propStructure, fire);
-            
-            return propStructure;
-        } catch (IOException ioe) {
-            updatePropertiesStructure(null, fire);
-            
-            return null;
-        } finally {
-            parser.clean();
+            try {
+                parserWRef = new WeakReference<PropertiesParser>(parser);
+
+                parser.initParser();
+                propStructure = parser.parseFile();
+
+            } catch (IOException ioe) {
+                // di do prdele
+            } finally {
+                parser.clean();
+            }
         }
+        updatePropertiesStructure(propStructure, fire);
+        return propStructure;
     }
     
     /**

@@ -60,7 +60,7 @@ import org.codehaus.groovy.classgen.BytecodeExpression;
  */
 public class ASTChildrenVisitor implements GroovyCodeVisitor {
 
-    private List<ASTNode> children = new ArrayList<ASTNode>();
+    private List<ASTNode> children = new ArrayList<>();
     
     public List<ASTNode> children() {
         return children;

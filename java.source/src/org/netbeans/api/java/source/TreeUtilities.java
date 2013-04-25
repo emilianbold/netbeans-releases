@@ -69,7 +69,6 @@ import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.tree.DCTree.DCDocComment;
 import com.sun.tools.javac.tree.DCTree.DCReference;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Context;
 import java.util.*;
@@ -81,6 +80,8 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.UnionType;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -1260,10 +1261,25 @@ public final class TreeUtilities {
 
         public Void visitTry(TryTree node, Set<TypeMirror> p) {
             Set<TypeMirror> s = new LinkedHashSet<TypeMirror>();
+            Trees trees = info.getTrees();
+            Types types = info.getTypes();
+            Elements elements = info.getElements();
+            for (Tree res : node.getResources()) {
+                TypeMirror resType = trees.getTypeMirror(new TreePath(getCurrentPath(), res));
+                if (resType != null && resType.getKind() == TypeKind.DECLARED) {
+                    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers((TypeElement)((DeclaredType)resType).asElement()))) {
+                        if ("close".contentEquals(method.getSimpleName()) //NOI18N
+                                && method.getParameters().isEmpty()
+                                && method.getTypeParameters().isEmpty()) {
+                            s.addAll(method.getThrownTypes());
+                        }
+                    }
+                }
+            }
             scan(node.getBlock(), s);
             Set<TypeMirror> c = new LinkedHashSet<TypeMirror>();
             for (CatchTree ct : node.getCatches()) {
-                TypeMirror t = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), ct.getParameter().getType()));
+                TypeMirror t = trees.getTypeMirror(new TreePath(getCurrentPath(), ct.getParameter().getType()));
                 if (t != null) {
                     if (t.getKind() == TypeKind.UNION) {
                         for (TypeMirror tm : ((UnionType)t).getAlternatives()) {
@@ -1277,10 +1293,10 @@ public final class TreeUtilities {
             }
             for (TypeMirror t : c) {
                 for (Iterator<TypeMirror> it = s.iterator(); it.hasNext();) {
-                    if (info.getTypes().isSubtype(it.next(), t))
+                    if (types.isSubtype(it.next(), t))
                         it.remove();
                 }
-           }
+            }
             p.addAll(s);
             scan(node.getCatches(), p);
             scan(node.getFinallyBlock(), p);

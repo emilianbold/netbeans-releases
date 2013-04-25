@@ -122,7 +122,7 @@ public class ActionProviderImpl implements ActionProvider {
     public static final String BUILD_WITH_DEPENDENCIES = "build-with-dependencies"; // NOI18N
 
     private final Project proj;
-    private static String[] supported = new String[]{
+    private static final String[] supported = new String[]{
         COMMAND_BUILD,
         BUILD_WITH_DEPENDENCIES,
         COMMAND_CLEAN,
@@ -147,7 +147,7 @@ public class ActionProviderImpl implements ActionProvider {
         COMMAND_COPY
     };
     
-    private static RequestProcessor RP = new RequestProcessor(ActionProviderImpl.class.getName(), 3);
+    private static final RequestProcessor RP = new RequestProcessor(ActionProviderImpl.class.getName(), 3);
 
     public ActionProviderImpl(Project proj) {
         this.proj = proj;
@@ -260,7 +260,7 @@ public class ActionProviderImpl implements ActionProvider {
             final ExecutorTask task = RunUtils.run(rc);
             if (task != null) {
                 task.addTaskListener(new TaskListener() {
-                    @Override public void taskFinished(Task _) {
+                    @Override public void taskFinished(Task t) {
                         listener.finished(task.result() == 0);
                     }
                 });
@@ -348,8 +348,8 @@ public class ActionProviderImpl implements ActionProvider {
 
     private final class CustomAction extends AbstractAction {
 
-        private NetbeansActionMapping mapping;
-        private boolean showUI;
+        private final NetbeansActionMapping mapping;
+        private final boolean showUI;
         private final Lookup context;
 
         private CustomAction(String name, NetbeansActionMapping mapp, boolean showUI, Lookup context) {

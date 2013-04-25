@@ -101,7 +101,7 @@ public final class MultiViewTopComponent
     
     private void setDeserializedMultiViewDescriptions(MultiViewDescription[] descriptions, 
                                                       MultiViewDescription defaultDesc, Map existingElements) {
-        peer.setDeserializedMultiViewDescriptions(descriptions, defaultDesc, existingElements);
+        peer.setDeserializedMultiViewDescriptions(-1, descriptions, defaultDesc, null, existingElements);
     }
     
     MultiViewModel getModel() {
@@ -161,9 +161,10 @@ public final class MultiViewTopComponent
         //TEMP don't delegate to element's actions..
         Action[] superActions = superActions4Tests == null ? super.getActions() : superActions4Tests;
         Action[] acts = peer.peerGetActions(superActions);
-        Action[] myActions = new Action[acts.length + 2];
+        Action[] myActions = new Action[acts.length + 3];
         System.arraycopy(acts, 0, myActions, 0, acts.length);
         myActions[acts.length + 1] = new EditorsAction();
+        myActions[acts.length + 2] = new SplitAction(true);
         return myActions;
     }
     
@@ -292,15 +293,33 @@ public final class MultiViewTopComponent
         SubComponent[] res = new SubComponent[perspectives.length];
         for( int i=0; i<perspectives.length; i++ ) {
             final MultiViewPerspective mvp = perspectives[i];
-            res[i] = new SubComponent( Actions.cutAmpersand(mvp.getDisplayName()), new ActionListener() {
+	    MultiViewDescription descr = Accessor.DEFAULT.extractDescription(mvp);
+	    Lookup lookup = descr == null ? peer.getLookup() :
+		    model.getElementForDescription(descr, false) == null ? peer.getLookup() : model.getElementForDescription(descr, false).getLookup();
+	    boolean showing = peer.tabs.isShowing(descr);
+            res[i] = new SubComponent( Actions.cutAmpersand(mvp.getDisplayName()), null, new ActionListener() {
 
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     peer.getMultiViewHandlerDelegate().requestActive( mvp );
                 }
-            }, mvp == model.getSelectedPerspective() );
+            }, mvp == model.getSelectedPerspective(), lookup, showing );
         }
         return res;
+    }
+
+    public TopComponent splitComponent(int orientation) {
+	peer.peerSplitComponent(orientation);
+	return this;
+    }
+
+    public TopComponent clearSplit() {
+	peer.peerClearSplit();
+	return this;
+    }
+
+    public int getSplitOrientation() {
+	return peer.getSplitOrientation();
     }
     
 //    public Lookup getLookup() {

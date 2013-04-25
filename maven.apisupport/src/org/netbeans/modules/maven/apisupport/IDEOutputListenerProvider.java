@@ -121,7 +121,7 @@ public class IDEOutputListenerProvider implements OutputProcessor {
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
         OutputVisitor.Context context = visitor.getContext();
         Project prj = project;
-        if (context != null) {
+        if (context != null && context.getCurrentProject() != null) {
             prj = context.getCurrentProject();
         }        
         classpath = createCP(prj, new HashSet<Project>());

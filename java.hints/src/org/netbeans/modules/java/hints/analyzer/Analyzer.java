@@ -93,13 +93,13 @@ public class Analyzer implements Runnable {
     private final Lookup context;
     private final AtomicBoolean cancel;
     private final ProgressHandle handle;
-    private final Map<String, Preferences> preferencesOverlay;
+    private final HintsSettings hintsSettings;
 
-    public Analyzer(Lookup context, AtomicBoolean cancel, ProgressHandle handle, Map<String, Preferences> preferencesOverlay) {
+    public Analyzer(Lookup context, AtomicBoolean cancel, ProgressHandle handle, HintsSettings hintsSettings) {
         this.context = context;
         this.cancel = cancel;
         this.handle = handle;
-        this.preferencesOverlay = preferencesOverlay;
+        this.hintsSettings = hintsSettings;
     }
 
     public void run() {
@@ -139,8 +139,7 @@ public class Analyzer implements Runnable {
                             if (cancel.get()) {
                                 return;
                             }
-                            HintsSettings.setPreferencesOverride(preferencesOverlay);
-
+                            
                             DataObject d = DataObject.find(cc.getFileObject());
                             EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
                             Document doc;
@@ -161,9 +160,8 @@ public class Analyzer implements Runnable {
 
                                 handle.progress(f.incrementAndGet());
 
-                                eds.addAll(new HintsInvoker(cc, new AtomicBoolean()).computeHints(cc));
+                                eds.addAll(new HintsInvoker(hintsSettings, new AtomicBoolean()).computeHints(cc));
                             } finally {
-                                HintsSettings.setPreferencesOverride(null);
                             }
                         }
                     }, true);
@@ -177,7 +175,7 @@ public class Analyzer implements Runnable {
                         AnalyzerTopComponent win = AnalyzerTopComponent.findInstance();
                         win.open();
                         win.requestActive();
-                        win.setData(context, preferencesOverlay, eds);
+                        win.setData(context, hintsSettings, eds);
 
                     }
                 });
@@ -188,7 +186,7 @@ public class Analyzer implements Runnable {
     }
     
     //@AWT
-    public static void process(Lookup context, Map<String, Preferences> preferencesOverlay) {
+    public static void process(Lookup context, HintsSettings hintsSettings) {
         final AtomicBoolean abCancel = new AtomicBoolean();
         class Cancel implements Cancellable {
             public boolean cancel() {
@@ -199,7 +197,7 @@ public class Analyzer implements Runnable {
         
         ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(Analyzer.class, "LBL_AnalyzingJavadoc"), new Cancel()); // NOI18N
 
-        RP.post(new Analyzer(context, abCancel, h, preferencesOverlay));
+        RP.post(new Analyzer(context, abCancel, h, hintsSettings));
     }
     
     public static Lookup normalizeLookup(Lookup l) {

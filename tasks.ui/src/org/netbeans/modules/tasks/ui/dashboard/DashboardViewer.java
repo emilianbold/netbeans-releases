@@ -64,12 +64,13 @@ import org.netbeans.modules.tasks.ui.actions.Actions.CreateRepositoryAction;
 import org.netbeans.modules.tasks.ui.cache.CategoryEntry;
 import org.netbeans.modules.tasks.ui.cache.DashboardStorage;
 import org.netbeans.modules.tasks.ui.cache.TaskEntry;
-import org.netbeans.modules.tasks.ui.dnd.DashboardTransferHandler;
+import org.netbeans.modules.tasks.ui.DashboardTransferHandler;
 import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
 import org.netbeans.modules.tasks.ui.filter.DashboardFilter;
-import org.netbeans.modules.tasks.ui.model.Category;
+import org.netbeans.modules.tasks.ui.Category;
 import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
-import org.netbeans.modules.tasks.ui.utils.DashboardRefresher;
+import org.netbeans.modules.tasks.ui.DashboardRefresher;
+import org.netbeans.modules.tasks.ui.Utils;
 import org.netbeans.modules.team.ui.util.treelist.ColorManager;
 import org.netbeans.modules.team.ui.util.treelist.TreeList;
 import org.netbeans.modules.team.ui.util.treelist.TreeListModel;
@@ -82,7 +83,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * Singleton providing access to Task Dashboard window.
+ * Singleton providing access to Tasks window.
  *
  * @author S. Aubrecht
  * @author J. Peska
@@ -213,7 +214,6 @@ public final class DashboardViewer implements PropertyChangeListener {
             requestProcessor.post(new Runnable() {
                 @Override
                 public void run() {
-                    //TODO needs to be optimalized
                     titleRepositoryNode.setProgressVisible(true);
                     Collection<Repository> addedRepositories = (Collection<Repository>) evt.getNewValue();
                     Collection<Repository> removedRepositories = (Collection<Repository>) evt.getOldValue();
@@ -903,7 +903,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 List<Repository> oldValue = getRepositories(false);
                 for (Repository addedRepository : addedRepositories) {
                     if (!oldValue.contains(addedRepository)) {
-                        toAdd.add(new RepositoryNode(addedRepository));
+                        toAdd.add(createRepositoryNode(addedRepository));
                     }
                 }
             }
@@ -925,7 +925,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             List<Repository> oldValue = getRepositories(false);
             for (Repository newRepository : repositories) {
                 if (!oldValue.contains(newRepository)) {
-                    toAdd.add(new RepositoryNode(newRepository));
+                    toAdd.add(createRepositoryNode(newRepository));
                 }
             }
             updateRepositories(toRemove, toAdd);
@@ -949,6 +949,15 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
+    private RepositoryNode createRepositoryNode(Repository repository) {
+        boolean open = Utils.isRepositoryOpened(repository.getId());
+        if (open) {
+            return new RepositoryNode(repository);
+        } else {
+            return new ClosedRepositoryNode(repository);
+        }
+    }
+
     public List<Repository> getRepositories(boolean openedOnly) {
         synchronized (LOCK_REPOSITORIES) {
             List<Repository> repositories = new ArrayList<Repository>();
@@ -964,11 +973,10 @@ public final class DashboardViewer implements PropertyChangeListener {
     private void loadRepositories() {
         try {
             List<Repository> allRepositories = new ArrayList<Repository>(RepositoryManager.getInstance().getRepositories());
-            List<String> closedIds = DashboardStorage.getInstance().readClosedRepositories();
             final List<RepositoryNode> repoNodes = new ArrayList<RepositoryNode>(allRepositories.size());
 
             for (Repository repository : allRepositories) {
-                boolean open = !closedIds.contains(repository.getId());
+                boolean open = Utils.isRepositoryOpened(repository.getId());
                 if (open) {
                     repoNodes.add(new RepositoryNode(repository));
                 } else {

@@ -52,14 +52,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.ConnectException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,6 +79,59 @@ import org.openide.util.NbBundle;
  * @author Peter Williams
  */
 public class Retriever implements Runnable {
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner classes                                                          //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Trusted certificates manager.
+     * >p/>
+     * Let's just trust any server that we connect to.
+     */
+    private static class RetrieverTrustManager implements X509TrustManager {
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] arg0,
+                String arg1) throws CertificateException {}
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] arg0,
+                String arg1) throws CertificateException {}
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
+
+    }
+
+    /**
+     * Host name verification.
+     * <p/>
+     * Let's just trust any server that we connect to.
+     */
+    private static class RetrieverHostnameVerifier implements HostnameVerifier {
+
+        @Override
+        public boolean verify(String string, SSLSession ssls) {
+            return true;
+        }
+    }
+
+    public interface Updater {
+        public void updateMessageText(String msg);
+        public void updateStatusText(String status);
+        public void clearCancelState();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Local logger. */
+    private static final Logger LOGGER
+            = GlassFishLogger.get(Retriever.class);
 
     public static final int LOCATION_DOWNLOAD_TIMEOUT = 20000;
     public static final int LOCATION_TRIES = 3;
@@ -79,7 +144,15 @@ public class Retriever implements Runnable {
     public static final int STATUS_FAILED = 4;
     public static final int STATUS_TERMINATED = 5;
     public static final int STATUS_BAD_DOWNLOAD = 6;
-    
+
+    /** Trusted certificates manager. */
+    private static final TrustManager[] trustManager
+            = new TrustManager[]{new RetrieverTrustManager()};
+
+    /** Host name verification. */
+    private static final RetrieverHostnameVerifier hostnameVerifier
+            = new RetrieverHostnameVerifier();
+
     private static final String [] STATUS_MESSAGE = {
         NbBundle.getMessage(Retriever.class, "STATUS_Ready"),  //NOI18N
         NbBundle.getMessage(Retriever.class, "STATUS_Connecting"),  //NOI18N
@@ -89,20 +162,44 @@ public class Retriever implements Runnable {
         NbBundle.getMessage(Retriever.class, "STATUS_Terminated"),  //NOI18N
         NbBundle.getMessage(Retriever.class, "STATUS_InvalidWsdl")  //NOI18N
     };
-    private String topLevelPrefix;
     
-    public interface Updater {
-        public void updateMessageText(String msg);
-        public void updateStatusText(String status);
-        public void clearCancelState();
+    ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Handle HTTPS connection.
+     * <p/>
+     * @param conn HTTPS connection.
+     */
+    protected static void handleSecureConnection(HttpsURLConnection conn) {
+        SSLContext context;
+        try {
+            context = SSLContext.getInstance("SSL");
+            context.init(null, trustManager, null);
+            conn.setSSLSocketFactory(context.getSocketFactory());
+            conn.setHostnameVerifier(hostnameVerifier);
+        } catch (NoSuchAlgorithmException ex) {
+            LOGGER.log(Level.INFO, "Cannot handle HTTPS connection", ex);
+        } catch (KeyManagementException ex) {
+            LOGGER.log(Level.INFO, "Cannot handle HTTPS connection", ex);
+        }
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
     
     private Updater updater;
     private final String locationUrl;
     private final String targetUrlPrefix;
     private final String defaultTargetUrl;
     private File targetInstallDir;
+    private String topLevelPrefix;
     
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
     
     public Retriever(File installDir, String locationUrl, String urlPrefix, 
             String defaultTargetUrl, Updater u, String topLevelPrefix) {
@@ -113,6 +210,9 @@ public class Retriever implements Runnable {
         this.updater = u;
         this.topLevelPrefix = topLevelPrefix;
     }
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
 
     // Thread support for downloading...
     public void stopRetrieval() {
@@ -149,7 +249,7 @@ public class Retriever implements Runnable {
     }
     
     private String countAsString(int c) {
-        String size = "";  //NOI18N
+        String size;  //NOI18N
         if(c < 1024) {
             size = NbBundle.getMessage(Retriever.class, "MSG_SizeBytes", c);  //NOI18N
         } else if(c < 1048676) {
@@ -218,11 +318,11 @@ public class Retriever implements Runnable {
             Logger.getLogger("glassfish").log(Level.FINE, "connection == {0}", connection);  //NOI18N
             Logger.getLogger("glassfish").log(Level.FINE, "in == {0}", in);  //NOI18N
             setDownloadState(STATUS_FAILED, "I/O Exception", ex); // NOI18N
-            updateMessage(
-                    in != null ?
-                        NbBundle.getMessage(Retriever.class, "MSG_FileProblem", connection.getURL()) :
-                        NbBundle.getMessage(Retriever.class, "MSG_InvalidUrl", 
-                            null == connection ? targetUrl : connection.getURL()));
+            updateMessage(in != null
+                    ? NbBundle.getMessage(Retriever.class, "MSG_FileProblem",
+                    connection != null ? connection.getURL() : null)
+                    : NbBundle.getMessage(Retriever.class, "MSG_InvalidUrl", 
+                    null == connection ? targetUrl : connection.getURL()));
         } catch(RuntimeException ex) {
             Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);  //NOI18N
             setDownloadState(STATUS_FAILED, "Runtime Exception", ex); // NOI18N
@@ -240,40 +340,79 @@ public class Retriever implements Runnable {
         }
     }
     
+    /**
+     * Retrieve GlassFish installation bundle download location.
+     * <p/>
+     * @return GlassFish installation bundle download location.
+     */
     private String getDownloadLocation() {
-        URLConnection conn = null;
-        BufferedReader reader = null;
+        String location = locationUrl;
         String result = defaultTargetUrl;
-
-        if(locationUrl != null && locationUrl.length() > 0) {
-            int tries = 0;
-            while(tries++ < LOCATION_TRIES) {
-                try {
-                    URL url = new URL(locationUrl);
-                    Logger.getLogger("glassfish").log(Level.FINE, "Attempt {0} to get download URL suffix from {1}", new Object[]{tries, url}); // NOI18N
-                    conn = url.openConnection();
-                    conn.setConnectTimeout(LOCATION_DOWNLOAD_TIMEOUT);
-                    conn.setReadTimeout(LOCATION_DOWNLOAD_TIMEOUT);
-                    reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8")); // NOI18N
-                    while((result = reader.readLine()) != null) {
-                        return targetUrlPrefix + result; // Only need the the first line
+        int retries = 0;
+        boolean run = true;
+        while(run) {
+            URLConnection conn;
+            BufferedReader in = null;
+            try {
+                URL url = new URL(location);
+                conn = url.openConnection();
+                if (conn instanceof HttpURLConnection) {
+                    HttpURLConnection hconn = (HttpURLConnection) conn;
+                    hconn.setConnectTimeout(LOCATION_DOWNLOAD_TIMEOUT);
+                    hconn.setReadTimeout(LOCATION_DOWNLOAD_TIMEOUT);
+                    if (hconn instanceof HttpsURLConnection) {
+                        handleSecureConnection((HttpsURLConnection)hconn);
                     }
-                } catch(Exception ex) {
-                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
-                } finally {
+                    hconn.connect();
+                    int responseCode = hconn.getResponseCode();
+                    LOGGER.log(Level.FINE, "URL Response code: {0} {1}",
+                            new String[] {Integer.toString(responseCode),
+                                hconn.getResponseMessage()});
+                    switch (responseCode) {
+                        case 301: case 302:
+                            location = hconn.getHeaderField("Location");
+                            if (location == null || location.trim().isEmpty()) {
+                                run = false;
+                            } else {
+                                LOGGER.log(Level.FINE, "URL Redirrection: {0}",
+                                        location);
+                                run = retries++ < LOCATION_TRIES;
+                            }
+                            break;
+                        case 200:
+                            in = new BufferedReader(new InputStreamReader(
+                                    hconn.getInputStream()));
+                            String path;
+                            if ((path = in.readLine()) != null) {
+                                result = targetUrlPrefix + path;
+                                LOGGER.log(Level.FINE,
+                                        "New Glassfish Location: {0}", result);
+                            }
+                        default:
+                            run = false;
+                    }
+                } else {
+                    LOGGER.log(Level.INFO,
+                            "Unexpected connection type: {0}", location);
+                }
+            } catch (MalformedURLException mue) {
+                LOGGER.log(Level.INFO, "Error opening URL connection", mue);
+                run = false;
+            } catch (IOException ioe) {
+                LOGGER.log(Level.INFO, "Error reading from URL", ioe);
+                run = false;
+            } finally {
+                if (in != null) {
                     try {
-                        if( reader != null) {
-                             reader.close();
-                        }
-                    } catch (IOException ex) {
-                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
+                        in.close();
+                    } catch (IOException ioe) {
+                        LOGGER.log(Level.INFO, "Cannot close URL reader", ioe);
                     }
                 }
             }
         }
-        
         return result;
-    }    
+    }
 
     private static final int READ_BUF_SIZE = 131072; // 128k
     private static final int WRITE_BUF_SIZE = 131072; // 128k
@@ -288,7 +427,7 @@ public class Retriever implements Runnable {
             final InputStream entryStream = jarStream;
             int totalBytesRead = 0;
             JarEntry entry;
-            while(!shutdown && (entry = (JarEntry) jarStream.getNextEntry()) != null) {
+            while(!shutdown && jarStream != null && (entry = (JarEntry)jarStream.getNextEntry()) != null) {
                 String entryName = stripTopLevelDir(entry.getName());
                 if(entryName == null || entryName.length() == 0) {
                     continue;

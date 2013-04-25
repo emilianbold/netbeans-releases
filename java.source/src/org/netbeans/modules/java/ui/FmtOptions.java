@@ -264,6 +264,7 @@ public class FmtOptions {
     public static final String usePackageImport = "usePackageImport"; //NOI18N
     public static final String useFQNs = "useFQNs"; //NOI18N
     public static final String importInnerClasses = "importInnerClasses"; //NOI18N
+    public static final String preferStaticImports = "preferStaticImports"; //NOI18N
     public static final String allowConvertToStarImport = "allowConvertToStarImport"; //NOI18N
     public static final String countForUsingStarImport = "countForUsingStarImport"; //NOI18N
     public static final String allowConvertToStaticStarImport = "allowConvertToStaticStarImport"; //NOI18N
@@ -545,6 +546,7 @@ public class FmtOptions {
             { usePackageImport, FALSE}, //NOI18N
             { useFQNs, FALSE}, //NOI18N
             { importInnerClasses, FALSE}, //NOI18N
+            { preferStaticImports, FALSE}, //NOI18N
             { allowConvertToStarImport, FALSE}, //NOI18N
             { countForUsingStarImport, "5"}, //NOI18N
             { allowConvertToStaticStarImport, FALSE}, //NOI18N

@@ -66,11 +66,13 @@ import org.openide.util.Lookup;
 public class CordovaCustomizerPanel extends javax.swing.JPanel implements ActionListener {
 
     private Project project;
+    final SourceConfig config;
     /**
      * Creates new form CordovaCustomizerPanel
      */
     public CordovaCustomizerPanel(Project p) {
         this.project = p;
+        config = CordovaPerformer.getConfig(project);
         if (!CordovaPlatform.getDefault().isReady()) {
             setLayout(new BorderLayout());
             add(new MobilePlatformsSetup(), BorderLayout.CENTER);
@@ -180,10 +182,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
          cordovaPanel.setPanelEnabled(true);
 
         cordovaPanel.update();
-        String pkg = CordovaPerformer.getConfig(project).getId();
-        if (pkg!=null) {
-            cordovaPanel.setPackageName(pkg);
-        }
+        cordovaPanel.load(config);
         validate();
     }
 
@@ -199,14 +198,10 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         preferences.put("phonegap", Boolean.toString(cordovaPanel.isPanelEnabled()));
         
         try {
-            SourceConfig config = CordovaPerformer.getConfig(project);
-            config.setId(cordovaPanel.getPackageName());
-            config.save();
+            cordovaPanel.save(config);
         } catch (IOException iOException) {
             Exceptions.printStackTrace(iOException);
         }
-        
-        
         if (cordovaPanel.isPanelEnabled()) {
             CordovaPerformer.getDefault().createPlatforms(project);
         }

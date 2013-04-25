@@ -25,6 +25,7 @@ testJSPDocumentHTML.jspx
 testJSPElements.jsp
 End cursor position = 358
 [<jsp:useBean id="myBean" scope="request" class="java.lang.S|", String, <jsp:useBean id="myBean" scope="request" class="java.lang.String", 503]
+SafeVarargs
 SecurityException
 SecurityManager
 Short

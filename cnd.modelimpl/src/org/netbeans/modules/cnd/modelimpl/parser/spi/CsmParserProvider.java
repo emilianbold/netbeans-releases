@@ -104,7 +104,7 @@ public abstract class CsmParserProvider {
     public static void registerParserError(ParserErrorDelegate delegate, String message, CsmFile file, int offset) {
         if (file != null) {
             int[] lineColumn = ((FileImpl)file).getLineColumn(offset);
-            String s = file.getAbsolutePath()+":"+lineColumn[0]+": error: "+message; //NOI18N
+            String s = file.getAbsolutePath()+":"+lineColumn[0]+":"+lineColumn[1]+": error: "+message; //NOI18N
             delegate.onError(new ParserError(s, lineColumn[0], lineColumn[1], "", offset < 0)); //NOI18N
         } else {
             delegate.onError(new ParserError(message, -1, -1, "", offset < 0)); //NOI18N
@@ -148,7 +148,7 @@ public abstract class CsmParserProvider {
 
         @Override
         public String toString() {
-            return message + " :" + (eof ? "<EOF>" : tokenText); // NOI18N
+            return message;// + " :" + (eof ? "<EOF>" : tokenText); // NOI18N
         }
     }
     

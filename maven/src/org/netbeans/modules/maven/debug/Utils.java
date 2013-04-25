@@ -142,9 +142,9 @@ public class Utils {
     static ClassPath createSourcePath(Project project) {
         File[] roots;
         ClassPath cp;
+        AdditionalDebuggedProjects adds = project.getLookup().lookup(AdditionalDebuggedProjects.class);
         try {
             Set<String> col = collectClasspaths(project);
-            AdditionalDebuggedProjects adds = project.getLookup().lookup(AdditionalDebuggedProjects.class);
             if (adds != null) {
                 for (Project prj : adds.getProjects()) {
                     col.addAll(collectClasspaths(prj));
@@ -158,7 +158,6 @@ public class Utils {
             cp = ClassPathSupport.createClassPath(new FileObject[0]);
         }
         Set<String> col = collectSourceRoots(project);
-        AdditionalDebuggedProjects adds = project.getLookup().lookup(AdditionalDebuggedProjects.class);
         if (adds != null) {
             for (Project prj : adds.getProjects()) {
                 col.addAll(collectSourceRoots(prj));

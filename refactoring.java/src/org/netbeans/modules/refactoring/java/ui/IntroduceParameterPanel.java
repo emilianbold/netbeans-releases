@@ -170,7 +170,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
                         TreePath bodyPath = new TreePath(methodPath, methodTree.getBody());
                         scope = info.getTrees().getScope(bodyPath);
                         
-                        final String parameterName = JavaPluginUtils.makeNameUnique(info, scope, name, methodTree);
+                        final String parameterName = JavaPluginUtils.makeNameUnique(info, scope, name);
                         
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
