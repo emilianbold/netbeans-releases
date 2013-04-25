@@ -40,36 +40,31 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.autoupdate;
+package org.netbeans.modules.bugtracking.util;
 
+import java.util.Calendar;
 import static junit.framework.Assert.assertFalse;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugzilla.TestConstants;
-import static org.netbeans.modules.bugzilla.TestConstants.REPO_PASSWD;
-import static org.netbeans.modules.bugzilla.TestConstants.REPO_URL;
-import static org.netbeans.modules.bugzilla.TestConstants.REPO_USER;
-import org.netbeans.modules.bugzilla.TestUtil;
+import static junit.framework.Assert.assertTrue;
+import junit.framework.TestCase;
+import org.openide.util.HelpCtx;
 
 /**
  *
  * @author tomas
  */
-public class BugzillaNotSupportedTest extends NbTestCase implements TestConstants {
+public class AutoupdateSupportTest extends TestCase {
 
-    public BugzillaNotSupportedTest(String testName) {
-        super(testName);
-    }
+    public void testCheckedToday() {
+        AutoupdateSupport as = new AutoupdateSupport(null, null, null);
+        assertFalse(as.wasCheckedToday(-1));                           // never
 
-    @Override
-    protected void setUp() throws Exception {
-        System.setProperty("netbeans.t9y.bugzilla.supported.version", "0.0.0");
-        super.setUp();
-    }
+        assertFalse(as.wasCheckedToday(1L));                           // a long long time ago
 
-    public void testIsNotSupportedBugzillaVersion() {
-        BugzillaVersion version = BugzillaAutoupdate.getInstance().getServerVersion(TestUtil.getRepository("test", REPO_URL, REPO_USER, REPO_PASSWD));
-        assertFalse(BugzillaAutoupdate.getInstance().isSupportedVersion(version));
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.HOUR, -24);                                      // yesterday
+        assertFalse(as.wasCheckedToday(c.getTime().getTime()));
+
+        assertTrue(as.wasCheckedToday(System.currentTimeMillis()));    // now
     }
 
 }

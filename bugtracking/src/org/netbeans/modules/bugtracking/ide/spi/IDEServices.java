@@ -51,14 +51,22 @@ import org.openide.filesystems.FileObject;
 public interface IDEServices {
     
     public boolean providesOpenDocument();
-    public void openDocument(String path, int offset);
+    public void openDocument(String resourcePath, int offset);
     
-    public boolean providesSearchResource();
-    public FileObject searchResource(String path);
+    public boolean providesFindFile();
+    // XXX to be clarified if FileObject or if URL would be eventually better.
+    // used when opening search history for a file given by a stacktrace.
+    // Note, that io.File wouldn't work for VCS on remote filesystems 
+    public FileObject findFile(String resourcePath);
         
     public boolean providesJumpTo();
     public void jumpTo(String label, String resource);
+
+    public boolean providesPluginUpdate();
     
-    
-    
+    public Plugin getPluginUpdates(String cnb, String pluginName);
+    public interface Plugin {
+        String getDescription();
+        boolean openInstallWizard();
+    }
 }

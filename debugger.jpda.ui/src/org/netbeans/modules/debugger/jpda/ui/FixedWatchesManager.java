@@ -372,7 +372,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         }
     }
 
-    private void addFixedWatch (String name, Variable variable) {
+    public void addFixedWatch (String name, Variable variable) {
         // Clone the variable to assure that it's unique and sticks to the JDI value.
         if (variable instanceof Cloneable) {
             try { // terrible code to invoke the clone() method

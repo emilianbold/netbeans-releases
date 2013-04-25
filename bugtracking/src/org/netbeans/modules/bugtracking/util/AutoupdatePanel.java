@@ -46,20 +46,29 @@
  * Created on Jul 2, 2009, 6:52:07 PM
  */
 
-package org.netbeans.modules.jira.autoupdate;
+package org.netbeans.modules.bugtracking.util;
 
-import org.netbeans.modules.jira.JiraConfig;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
 public class AutoupdatePanel extends javax.swing.JPanel {
+    private final AutoupdateSupport support;
 
+    @NbBundle.Messages({"LBL_DontShow=Don't show this message again",
+                        "# {0} - pluginName", "TXT_text="
+                                               + "The {0} server you are trying to access has a higher "
+                                               + "version than the one supported by NetBeans. "
+                                               + "Do you want to download an update from the NetBeans Update Center?"})            
     /** Creates new form AutoupdatePanel */
-    public AutoupdatePanel() {
+    public AutoupdatePanel(AutoupdateSupport support) {
         initComponents();
-        dontShowCheckBox.setSelected(!JiraConfig.getInstance().getCheckUpdates());
+        txtTextArea.setText(Bundle.TXT_text(support.getPluginName()));
+        dontShowCheckBox.setText(Bundle.LBL_DontShow());
+        this.support = support;
+        dontShowCheckBox.setSelected(!support.getCheckUpdates());
     }
 
     /** This method is called from within the constructor to
@@ -72,20 +81,18 @@ public class AutoupdatePanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        txtTextArea = new javax.swing.JTextArea();
 
         jScrollPane1.setBorder(null);
 
-        jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
-        jTextArea1.setColumns(20);
-        jTextArea1.setEditable(false);
-        jTextArea1.setLineWrap(true);
-        jTextArea1.setRows(5);
-        jTextArea1.setText(org.openide.util.NbBundle.getMessage(AutoupdatePanel.class, "AutoupdatePanel.jTextArea1.text")); // NOI18N
-        jTextArea1.setWrapStyleWord(true);
-        jScrollPane1.setViewportView(jTextArea1);
+        txtTextArea.setEditable(false);
+        txtTextArea.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
+        txtTextArea.setColumns(20);
+        txtTextArea.setLineWrap(true);
+        txtTextArea.setRows(5);
+        txtTextArea.setWrapStyleWord(true);
+        jScrollPane1.setViewportView(txtTextArea);
 
-        dontShowCheckBox.setText(org.openide.util.NbBundle.getMessage(AutoupdatePanel.class, "AutoupdatePanel.dontShowCheckBox.text")); // NOI18N
         dontShowCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dontShowCheckBoxActionPerformed(evt);
@@ -115,14 +122,14 @@ public class AutoupdatePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void dontShowCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dontShowCheckBoxActionPerformed
-        JiraConfig.getInstance().setCheckUpdates(!dontShowCheckBox.isSelected());
+        support.setCheckUpdates(!dontShowCheckBox.isSelected());
     }//GEN-LAST:event_dontShowCheckBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JCheckBox dontShowCheckBox = new javax.swing.JCheckBox();
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextArea txtTextArea;
     // End of variables declaration//GEN-END:variables
 
 }
