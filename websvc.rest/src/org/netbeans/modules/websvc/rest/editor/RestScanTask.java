@@ -128,7 +128,7 @@ class RestScanTask {
                         return metadata.getRestApplications();
                     }
                 });
-                if (support.getApplicationPathFromDD() != null
+                if (MiscUtilities.getApplicationPathFromDD(support.getWebApp()) != null
                         || !l.isEmpty())
                 {
                     needConfiguration = false;

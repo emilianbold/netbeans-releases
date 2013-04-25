@@ -88,6 +88,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 
 
 /**
@@ -237,7 +238,7 @@ public class OriginResourceIterator implements
             handle.progress(NbBundle.getMessage(OriginResourceIterator.class,
                     "MSG_UpdateDescriptor")); // NOI18N
             if (addResponseFilter) {
-                support.addInitParam(RestSupport.CONTAINER_RESPONSE_FILTER,
+                MiscUtilities.addInitParam(support, RestSupport.CONTAINER_RESPONSE_FILTER,
                         fqn);
             }
         }

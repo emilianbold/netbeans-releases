@@ -53,29 +53,21 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-
-import javax.swing.SwingUtilities;
-
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
+import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -114,102 +106,13 @@ public class MavenProjectRestSupport extends RestSupport {
     }
     
     @Override
-    public void ensureRestDevelopmentReady() throws IOException {
-        String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
-        RestSupport.RestConfig restConfig = null;
-        
-        /*WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        // Fix for BZ#217231 : don't check not Web projects
-        if ( webModule == null ){
-            return;
-        }*/
-        // Fix for BZ#217557 : do not show REST config dialog in JEE6 case
-        boolean hasJaxRs = hasJaxRsApi();
-        
-        if (!hasJaxRs && configType == null && getApplicationPathFromDD() == null) {
-            restConfig = setApplicationConfigProperty(false);
-            if (restConfig == RestSupport.RestConfig.DD) {
-                addResourceConfigToWebApp(restConfig.getResourcePath());
-            }
+    public String getBaseURL() {
+        WebApp webApp = null;
+        try {
+            webApp = getWebApp();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-
-        if ( SwingUtilities.isEventDispatchThread() ){
-            final RestSupport.RestConfig config = restConfig;
-            final IOException[] exception = new IOException[1];
-            Runnable runnable = new Runnable() {
-                
-                @Override
-                public void run() {
-                    try {
-                        addSwdpLibrary( config );
-                    }
-                    catch( IOException e ){
-                        exception[0] = e;
-                    }
-                }
-            };
-            AtomicBoolean cancel = new AtomicBoolean();
-            ProgressUtils.runOffEventDispatchThread( runnable , 
-                    NbBundle.getMessage(MavenProjectRestSupport.class, 
-                    "TTL_ExtendProjectClasspath"), cancel, false );  // NOI18N
-            if ( exception[0]!= null ){
-                throw exception[0];
-            }
-        }
-        else {
-            addSwdpLibrary( restConfig );
-        }
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.websvc.rest.spi.RestSupport#enableRestSupport(org.netbeans.modules.websvc.rest.spi.RestSupport.RestConfig)
-     */
-    @Override
-    public void enableRestSupport( final RestConfig config ) {
-        if ( SwingUtilities.isEventDispatchThread() ){
-            Runnable runnable = new Runnable() {
-                
-                @Override
-                public void run() {
-                    enableRestSupport(config);
-                }
-            };
-            AtomicBoolean cancel = new AtomicBoolean();
-            ProgressUtils.runOffEventDispatchThread( runnable , 
-                    NbBundle.getMessage(MavenProjectRestSupport.class, 
-                    "TTL_ExtendProjectClasspath"), cancel, false );  // NOI18N
-        }
-        else {
-            super.enableRestSupport(config);
-        }
-    }
-
-    @Override
-    public void removeRestDevelopmentReadiness() throws IOException {
-        removeResourceConfigFromWebApp();
-        removeSwdpLibrary(new String[]{ClassPath.COMPILE} );
-    }
-
-    @Override
-    public boolean isReady() {
-        return isRestSupportOn() && hasSwdpLibrary() && hasRestServletAdaptor();
-    }
-    
-    @Override
-    public boolean hasSwdpLibrary() {
-        SourceGroup[] srcGroups = ProjectUtils.getSources(getProject()).getSourceGroups(
-        JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (srcGroups.length > 0) {
-            ClassPath classPath = ClassPath.getClassPath(srcGroups[0].getRootFolder(), ClassPath.COMPILE);
-            FileObject contextFO = classPath.findResource("javax/ws/rs/core/Context.class"); // NOI18N
-            return contextFO != null;
-        }
-        return false;
-    }
-    
-    @Override
-    public String getBaseURL() throws IOException {
-        WebApp webApp = getWebApp();
         if (webApp != null) {
             StringBuilder servletNames = new StringBuilder();
             StringBuilder urlPatterns = new StringBuilder();
@@ -223,55 +126,8 @@ public class MavenProjectRestSupport extends RestSupport {
             }
             // http://localhost:8084/mavenprojectWeb3/||ServletAdaptor||resources/*
             return MiscUtilities.getContextRootURL(getProject())+"||"+servletNames+"||"+urlPatterns;
-        } else {
-            throw new IOException("Cannot read web.xml");
         }
-    }
-
-    private void addSwdpLibrary( RestConfig config ) throws IOException {
-        boolean addLibrary = false;
-        if (!hasSwdpLibrary()) { //platform does not have rest-api library, so add defaults
-            addLibrary = true;
-            boolean jsr311Added = false;
-            if (config != null && config.isServerJerseyLibSelected() ) {
-                JaxRsStackSupport support = getJaxRsStackSupport();
-                if ( support != null ){
-                    jsr311Added  = support.addJsr311Api(getProject());
-                }
-            }
-            if ( !jsr311Added ){
-                JaxRsStackSupport.getDefault().addJsr311Api(getProject());
-            }
-        }
-        
-        if (config != null) {
-            boolean added = false;
-            if (config.isServerJerseyLibSelected()) {
-                JaxRsStackSupport support = getJaxRsStackSupport();
-                if ( support != null ){
-                    added  = support.extendsJerseyProjectClasspath(getProject());
-                }
-            }
-            if (!added && config.isJerseyLibSelected()) {
-                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
-            }
-        }
-        else if (addLibrary ){
-            JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
-        }
-    }
-
-    @Override
-    public Datasource getDatasource(String jndiName) {
-        J2eeModuleProvider provider = (J2eeModuleProvider) getProject().getLookup().lookup(J2eeModuleProvider.class);
-
-        try {
-            return provider.getConfigSupport().findDatasource(jndiName);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        return null;
+        return super.getBaseURL();
     }
 
     @Override
@@ -282,11 +138,6 @@ public class MavenProjectRestSupport extends RestSupport {
     @Override
     public FileObject generateTestClient(File testdir, String url ) throws IOException {
         return generateMavenTester(testdir, url );
-    }
-    
-    @Override
-    public FileObject generateTestClient(File testdir ) throws IOException {
-        return generateMavenTester(testdir, getBaseURL() );
     }
     
     @Override
@@ -432,10 +283,10 @@ public class MavenProjectRestSupport extends RestSupport {
     }
 
     @Override
-    protected void logResourceCreation(Project prj) {
+    public void logResourceCreation() {
         Object[] params = new Object[3];
         params[0] = LogUtils.WS_STACK_JAXRS;
-        params[1] = prj.getClass().getName();
+        params[1] = getProject().getClass().getName();
         params[2] = "RESOURCE"; // NOI18N
         LogUtils.logWsDetect(params);
     }
@@ -489,7 +340,23 @@ public class MavenProjectRestSupport extends RestSupport {
         }
         return PROJECT_TYPE_DESKTOP;
     }
-    
 
+    @Override
+    public String getApplicationPathFromDialog(List<RestApplication> restApplications) {
+        if (restApplications.size() == 1) {
+            return restApplications.get(0).getApplicationPath();
+        }
+        return null;
+    }
+
+    @Override
+    protected void extendBuildScripts() throws IOException {
+        //
+    }
+
+    @Override
+    protected void handleSpring() throws IOException {
+        // TBD ?
+    }
    
 }

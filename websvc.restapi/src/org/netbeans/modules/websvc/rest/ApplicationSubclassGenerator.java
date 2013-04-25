@@ -51,7 +51,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
-import com.sun.source.util.SourcePositions;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -61,14 +60,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -89,7 +82,6 @@ import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
-import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -331,7 +323,7 @@ public class ApplicationSubclassGenerator {
         StringBuilder builder = new StringBuilder();
         builder.append('{');
         builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
-        if (restSupport.isJersey2()) {
+        if (restSupport.hasJersey2()) {
             builder.append(getJersey2JSONFeature());
         } else {
             builder.append(getJacksonProviderSnippet());
@@ -365,7 +357,7 @@ public class ApplicationSubclassGenerator {
                         handleResource(controller, provider.getClassName(), builder);
                     }
                     if (oldVersion) {
-                        if (restSupport.isJersey2()) {
+                        if (restSupport.hasJersey2()) {
                             builder.append(getJersey2JSONFeature());
                         } else {
                             builder.append(getJacksonProviderSnippet());
@@ -465,4 +457,41 @@ public class ApplicationSubclassGenerator {
             return builder.toString();
         }
     }
+
+    public static String getApplicationPathFromAnnotations(RestSupport restSupport, final String applPathFromDD) {
+        List<RestApplication> restApplications = restSupport.getRestApplications();
+        if (applPathFromDD == null) {
+            if (restApplications.isEmpty()) {
+                return null;
+            } else {
+                return restSupport.getApplicationPathFromDialog(restApplications);
+            }
+        } else {
+            if (restApplications.isEmpty()) {
+                return applPathFromDD;
+            } else {
+                boolean found = false;
+                for (RestApplication appl: restApplications) {
+                    if (applPathFromDD.equals(appl.getApplicationPath())) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    restApplications.add(new RestApplication() {
+                        public String getApplicationPath() {
+                            return applPathFromDD;
+                        }
+
+                        public String getApplicationClass() {
+                            return "web.xml"; //NOI18N
+                        }
+                    });
+                }
+                return restSupport.getApplicationPathFromDialog(restApplications);
+            }
+        }
+    }
+
+
 }

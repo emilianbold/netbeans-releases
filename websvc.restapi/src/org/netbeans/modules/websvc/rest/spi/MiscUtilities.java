@@ -53,21 +53,34 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.dd.api.common.InitParam;
+import org.netbeans.modules.j2ee.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.rest.MiscPrivateUtilities;
+import org.netbeans.modules.websvc.rest.WebXmlUpdater;
+import static org.netbeans.modules.websvc.rest.WebXmlUpdater.getRestServletAdaptorByName;
+import static org.netbeans.modules.websvc.rest.WebXmlUpdater.getRestServletMapping;
+import static org.netbeans.modules.websvc.rest.spi.RestSupport.REST_SERVLET_ADAPTOR;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -279,5 +292,95 @@ public class MiscUtilities {
     public static boolean hasApplicationResourceClass(RestSupport restSupport, final String fqn){
         return MiscPrivateUtilities.hasApplicationResourceClass(restSupport, fqn);
     }
+
+    public static FileObject generateTestClient(File testdir) throws IOException {
+        return MiscPrivateUtilities.generateTestClient(testdir);
+    }
+
+    public static void addInitParam( RestSupport restSupport, String paramName, String value ) {
+        try {
+            FileObject ddFO = restSupport.getWebXmlUpdater().getOrCreateWebXml();
+            WebApp webApp = restSupport.getWebXmlUpdater().findWebApp();
+            if (ddFO == null || webApp == null) {
+                return;
+            }
+
+            // XXX: TODO: "ServletAdaptor" looks like something from pre-Jersey 1.0 times
+            //      certainly EE6 will not have servlet with such name!
+
+            Servlet adaptorServlet = getRestServletAdaptorByName(webApp,
+                    REST_SERVLET_ADAPTOR);
+            InitParam initParam = (InitParam) adaptorServlet.findBeanByName(
+                    "InitParam", // NOI18N
+                    "ParamName", // NOI18N
+                    paramName);
+            if (initParam == null) {
+                try {
+                    initParam = (InitParam) adaptorServlet
+                            .createBean("InitParam"); // NOI18N
+                    adaptorServlet.addInitParam(initParam);
+                }
+                catch (ClassNotFoundException ex) {
+                }
+            }
+            initParam.setParamName(paramName);
+            initParam.setParamValue(value);
+
+            webApp.write(ddFO);
+        }
+        catch (IOException e) {
+            Logger.getLogger(RestSupport.class.getName()).log(Level.WARNING,  null , e);
+        }
+    }
+
+
+    public static ServletMapping getRestServletMapping(WebApp webApp) {
+        return WebXmlUpdater.getRestServletMapping(webApp);
+    }
+
+    public static String getApplicationPathFromDD(WebApp webApp) {
+        if (webApp != null) {
+            ServletMapping sm = getRestServletMapping(webApp);
+            if (sm != null) {
+                String urlPattern = null;
+                if (sm instanceof ServletMapping25) {
+                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
+                    if (urlPatterns.length > 0) {
+                        urlPattern = urlPatterns[0];
+                    }
+                } else {
+                    urlPattern = sm.getUrlPattern();
+                }
+                if (urlPattern != null) {
+                    if (urlPattern.endsWith("*")) { //NOI18N
+                        urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                    }
+                    if (urlPattern.endsWith("/")) { //NOI18N
+                        urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                    }
+                    if (urlPattern.startsWith("/")) { //NOI18N
+                        urlPattern = urlPattern.substring(1);
+                    }
+                    return urlPattern;
+                }
+
+            }
+        }
+        return null;
+    }
+
+
+    public static Datasource getDatasource(Project p, String jndiName) {
+        J2eeModuleProvider provider = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
+
+        try {
+            return provider.getConfigSupport().findDatasource(jndiName);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return null;
+    }
+
 
 }

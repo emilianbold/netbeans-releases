@@ -224,9 +224,9 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
             final RestSupport restSupport = project.getLookup().
                     lookup(RestSupport.class);
             boolean hasSpringSupport = restSupport.hasSpringSupport();
-            boolean showJaxRsCustomizer = restSupport.hasJaxRsApi() || restSupport.isJersey2();
+            boolean showJaxRsCustomizer = restSupport.hasJaxRsApi() || restSupport.hasJersey2();
             // TODO: for Jersey2 I temporarily disable Spring support:
-            if ( hasSpringSupport && !restSupport.isJersey2()) {
+            if ( hasSpringSupport && !restSupport.hasJersey2()) {
                 wizard.putProperty( WizardProperties.USE_JERSEY, true);
             }
             if (jaxRsConfigurationPanel != null) {

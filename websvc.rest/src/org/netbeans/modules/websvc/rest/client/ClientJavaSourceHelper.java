@@ -117,6 +117,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import org.netbeans.modules.websvc.rest.RestUtils;
 
 /**
  *
@@ -273,7 +274,7 @@ public class ClientJavaSourceHelper {
                         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
 
                         if (restSupport != null) {
-                            security.setDeploymentDescriptor((restSupport).getDeploymentDescriptor());
+                            security.setDeploymentDescriptor(RestUtils.getDeploymentDescriptor(project));
                         }
                     }
 
@@ -784,9 +785,7 @@ public class ClientJavaSourceHelper {
         String applicationPath = "webresources"; //NOI18N
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         if (restSupport != null) {
-            try {
-                applicationPath = restSupport.getApplicationPath();
-            } catch (IOException ex) {}
+            applicationPath = restSupport.getApplicationPath();
         }
         return "http://" + hostName + ":" + portNumber + "/" + //NOI18N
                 (contextRoot != null && !contextRoot.equals("") ? contextRoot : "") + //NOI18N

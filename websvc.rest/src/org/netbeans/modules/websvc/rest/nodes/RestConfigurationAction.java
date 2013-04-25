@@ -103,12 +103,12 @@ public class RestConfigurationAction extends NodeAction  {
             String oldApplicationPath = "/webresources"; //NOI18N
             try {
                 if (oldConfigType.equals( RestSupport.CONFIG_TYPE_DD)) {
-                    String oldPathFromDD = restSupport.getApplicationPathFromDD();
+                    String oldPathFromDD = MiscUtilities.getApplicationPathFromDD(restSupport.getWebApp());
                     if (oldPathFromDD != null) {
                         oldApplicationPath = oldPathFromDD;
                     }
                 } else if (oldConfigType.equals( RestSupport.CONFIG_TYPE_IDE)) {
-                    String resourcesPath = WebProjectRestSupport.
+                    String resourcesPath = restSupport.
                         getApplicationPathFromDialog(restSupport.getRestApplications());//restSupport.getProjectProperty(RestSupport.PROP_REST_RESOURCES_PATH);
                     if (resourcesPath != null && resourcesPath.length()>0) {
                         oldApplicationPath = resourcesPath;
@@ -162,11 +162,16 @@ public class RestConfigurationAction extends NodeAction  {
                                 newApplicationPath = newApplicationPath.substring(1);
                             }
                             restSupport.setProjectProperty(RestSupport.PROP_REST_RESOURCES_PATH, newApplicationPath);
-                            try {
-                                setRootResources(project);
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
+//                            try {
+
+
+                                // XXX: generating Application subclass via build script is obsolete
+
+                                
+                                //setRootResources(project);
+//                            } catch (IOException ex) {
+//                                ex.printStackTrace();
+//                            }
                             if (!isOnClasspath(project,"javax/ws/rs/ApplicationPath.class")) {
                                 // add jsr311 library
                                 Library restApiLibrary = LibraryManager.getDefault().getLibrary(RestSupport.RESTAPI_LIBRARY);
@@ -239,13 +244,6 @@ public class RestConfigurationAction extends NodeAction  {
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-        }
-    }
-
-    private void setRootResources(Project prj) throws IOException {
-        FileObject buildFo = Utils.findBuildXml(prj);
-        if (buildFo != null) {
-            ActionUtils.runTarget(buildFo, new String[] {RestSupport.REST_CONFIG_TARGET}, null);
         }
     }
 

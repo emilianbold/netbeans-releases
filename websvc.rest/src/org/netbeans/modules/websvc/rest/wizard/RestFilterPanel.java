@@ -47,6 +47,7 @@ import java.io.IOException;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -103,7 +104,7 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
         Project project = Templates.getProject(myDescriptor);
         RestSupport support  = project.getLookup().lookup(RestSupport.class);
         if ( support != null ){
-            if ( support.isEE7() || support.isJersey2()){
+            if ( support.isEE7() || support.hasJersey2()){
                 if ( !support.isRestSupportOn() ){
                     // TODO: how is user supposed to "enable" Jax-RS? could IDE do it automatically?
                     myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
@@ -118,7 +119,7 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
             
             Object object  = null;
             try {
-                object = support.getRestServletMapping(support.getWebApp());
+                object = MiscUtilities.getRestServletMapping(support.getWebApp());
             }
             catch(IOException e ){
                 // just keep object with null value

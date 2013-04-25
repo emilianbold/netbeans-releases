@@ -433,7 +433,7 @@ public class Utils {
                     p.setProperty(RestSupport.PROP_APPLICATION_PATH, applicationPath);
                 }
                 File testdir = rs.getLocalTargetTestRest();
-                FileObject testFO = rs.generateTestClient(testdir);
+                FileObject testFO = MiscUtilities.generateTestClient(testdir);
                 p.setProperty(RestSupport.PROP_RESTBEANS_TEST_URL, 
                         testFO.getURL().toString());
                 p.setProperty(RestSupport.PROP_RESTBEANS_TEST_FILE, 

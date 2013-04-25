@@ -43,6 +43,8 @@ package org.netbeans.modules.websvc.rest;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.util.SourcePositions;
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,11 +52,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClassIndex;
@@ -69,6 +73,10 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
@@ -77,6 +85,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
@@ -287,6 +296,104 @@ public class MiscPrivateUtilities {
             return JavaSource.forFileObject(fo);
         } else {
             return null;
+        }
+    }
+
+    public static boolean supportsTargetProfile(Project project, Profile profile){
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().
+                lookup(J2eeModuleProvider.class);
+        String serverInstanceID = provider.getServerInstanceID();
+        if ( serverInstanceID == null ){
+            return false;
+        }
+        ServerInstance serverInstance = Deployment.getDefault().
+                 getServerInstance(serverInstanceID);
+        try {
+            Set<Profile> profiles = serverInstance.getJ2eePlatform().getSupportedProfiles();
+            return profiles.contains( profile);
+        }
+        catch( InstanceRemovedException e ){
+            return false;
+        }
+    }
+
+
+    /**
+     * Generates test client.  Typically RunTestClientAction would need to call
+     * this before invoke the build script target.
+     *
+     * @param destDir directory to write test client files in.
+     * @param url base url of rest service
+     * @return test file object, containing token BASE_URL_TOKEN whether used or not.
+     */
+    public static FileObject generateTestClient(File testdir) throws IOException {
+
+        if (! testdir.isDirectory()) {
+            FileUtil.createFolder(testdir);
+        }
+        String[] replaceKeys1 = {
+            "TTL_TEST_RESBEANS", "MSG_TEST_RESBEANS_INFO"
+        };
+        String[] replaceKeys2 = {
+            "MSG_TEST_RESBEANS_wadlErr", "MSG_TEST_RESBEANS_No_AJAX", "MSG_TEST_RESBEANS_Resource",
+            "MSG_TEST_RESBEANS_See", "MSG_TEST_RESBEANS_No_Container", "MSG_TEST_RESBEANS_Content",
+            "MSG_TEST_RESBEANS_TabularView", "MSG_TEST_RESBEANS_RawView", "MSG_TEST_RESBEANS_ResponseHeaders",
+            "MSG_TEST_RESBEANS_Help", "MSG_TEST_RESBEANS_TestButton", "MSG_TEST_RESBEANS_Loading",
+            "MSG_TEST_RESBEANS_Status", "MSG_TEST_RESBEANS_Headers", "MSG_TEST_RESBEANS_HeaderName",
+            "MSG_TEST_RESBEANS_HeaderValue", "MSG_TEST_RESBEANS_Insert", "MSG_TEST_RESBEANS_NoContents",
+            "MSG_TEST_RESBEANS_AddParamButton", "MSG_TEST_RESBEANS_Monitor", "MSG_TEST_RESBEANS_No_SubResources",
+            "MSG_TEST_RESBEANS_SubResources", "MSG_TEST_RESBEANS_ChooseMethod", "MSG_TEST_RESBEANS_ChooseMime",
+            "MSG_TEST_RESBEANS_Continue", "MSG_TEST_RESBEANS_AdditionalParams", "MSG_TEST_RESBEANS_INFO",
+            "MSG_TEST_RESBEANS_Request", "MSG_TEST_RESBEANS_Sent", "MSG_TEST_RESBEANS_Received",
+            "MSG_TEST_RESBEANS_TimeStamp", "MSG_TEST_RESBEANS_Response", "MSG_TEST_RESBEANS_CurrentSelection",
+            "MSG_TEST_RESBEANS_DebugWindow", "MSG_TEST_RESBEANS_Wadl", "MSG_TEST_RESBEANS_RequestFailed",
+            "MSG_TEST_RESBEANS_NoContent"       // NOI18N
+
+        };
+        FileObject testFO = MiscUtilities.copyFile(testdir, RestSupport.TEST_RESBEANS_HTML, replaceKeys1, true);
+        MiscUtilities.copyFile(testdir, RestSupport.TEST_RESBEANS_JS, replaceKeys2, false);
+        MiscUtilities.copyFile(testdir, RestSupport.TEST_RESBEANS_CSS);
+        MiscUtilities.copyFile(testdir, RestSupport.TEST_RESBEANS_CSS2);
+        MiscUtilities.copyFile(testdir, "expand.gif");
+        MiscUtilities.copyFile(testdir, "collapse.gif");
+        MiscUtilities.copyFile(testdir, "item.gif");
+        MiscUtilities.copyFile(testdir, "cc.gif");
+        MiscUtilities.copyFile(testdir, "og.gif");
+        MiscUtilities.copyFile(testdir, "cg.gif");
+        MiscUtilities.copyFile(testdir, "app.gif");
+
+        File testdir2 = new File(testdir, "images");
+        testdir2.mkdir();
+        MiscUtilities.copyFile(testdir, "images/background_border_bottom.gif");
+        MiscUtilities.copyFile(testdir, "images/pbsel.png");
+        MiscUtilities.copyFile(testdir, "images/bg_gradient.gif");
+        MiscUtilities.copyFile(testdir, "images/pname.png");
+        MiscUtilities.copyFile(testdir, "images/level1_deselect.jpg");
+        MiscUtilities.copyFile(testdir, "images/level1_selected-1lvl.jpg");
+        MiscUtilities.copyFile(testdir, "images/primary-enabled.gif");
+        MiscUtilities.copyFile(testdir, "images/masthead.png");
+        MiscUtilities.copyFile(testdir, "images/masthead_link_enabled.gif");
+        MiscUtilities.copyFile(testdir, "images/masthead_link_roll.gif");
+        MiscUtilities.copyFile(testdir, "images/primary-roll.gif");
+        MiscUtilities.copyFile(testdir, "images/pbdis.png");
+        MiscUtilities.copyFile(testdir, "images/secondary-enabled.gif");
+        MiscUtilities.copyFile(testdir, "images/pbena.png");
+        MiscUtilities.copyFile(testdir, "images/tbsel.png");
+        MiscUtilities.copyFile(testdir, "images/pbmou.png");
+        MiscUtilities.copyFile(testdir, "images/tbuns.png");
+        return testFO;
+    }
+
+
+    public static class JerseyFilter implements FileFilter {
+        private Pattern pattern;
+
+        public JerseyFilter(String regexp) {
+            pattern = Pattern.compile(regexp);
+        }
+
+        public boolean accept(File pathname) {
+            return pattern.matcher(pathname.getName()).matches();
         }
     }
 

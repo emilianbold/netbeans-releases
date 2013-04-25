@@ -46,53 +46,35 @@ package org.netbeans.modules.websvc.rest.spi;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.common.dd.DDHelper;
-import org.netbeans.modules.j2ee.dd.api.common.InitParam;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider;
 import org.netbeans.modules.websvc.rest.ApplicationSubclassGenerator;
 import org.netbeans.modules.websvc.rest.MiscPrivateUtilities;
+import org.netbeans.modules.websvc.rest.WebXmlUpdater;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
 import org.netbeans.modules.websvc.rest.model.api.RestApplications;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.netbeans.modules.websvc.rest.model.spi.RestServicesMetadataModelFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -146,7 +128,7 @@ public abstract class RestSupport {
     public static final String WEB_RESOURCE_CLASS = "webresources.WebResources";//NOI18N
     public static final String REST_API_JAR = "jsr311-api.jar";//NOI18N
     public static final String REST_RI_JAR = "jersey";//NOI18N
-    public static final String IGNORE_PLATFORM_RESTLIB = "restlib.ignore.platform";//NOI18N
+    //public static final String IGNORE_PLATFORM_RESTLIB = "restlib.ignore.platform";//NOI18N
     public static final String JSR311_JAR_PATTERN = "jsr311-api.*\\.jar";//NOI18N
     public static final String JERSEY_API_LOCATION = "modules/ext/rest";//NOI18N
     public static final String JTA_USER_TRANSACTION_CLASS = "javax/transaction/UserTransaction.class";  //NOI18
@@ -158,8 +140,6 @@ public abstract class RestSupport {
     public static final int PROJECT_TYPE_DESKTOP = 0; //NOI18N
     public static final int PROJECT_TYPE_WEB = 1; //NOI18N
     public static final int PROJECT_TYPE_NB_MODULE = 2; //NOI18N
-    private static final String POJO_MAPPING_FEATURE =
-            "com.sun.jersey.api.json.POJOMappingFeature";                   // NOI18N
 
     public static final String PROP_REST_RESOURCES_PATH = "rest.resources.path";//NOI18N
     public static final String PROP_REST_CONFIG_TYPE = "rest.config.type"; //NOI18N
@@ -177,22 +157,19 @@ public abstract class RestSupport {
 
     public static final String CONTAINER_RESPONSE_FILTER = "com.sun.jersey.spi.container.ContainerResponseFilters";//NOI18N
 
-    public static final String REST_CONFIG_TARGET="generate-rest-config"; //NOI18N
     protected static final String JERSEY_SPRING_JAR_PATTERN = "jersey-spring.*\\.jar";//NOI18N
-    protected static final String JERSEY_PROP_PACKAGES = "com.sun.jersey.config.property.packages"; //NOI18N
-    protected static final String JERSEY_PROP_PACKAGES_DESC = "Multiple packages, separated by semicolon(;), can be specified in param-value"; //NOI18N
 
     private volatile PropertyChangeListener restModelListener;
 
-    private RequestProcessor REST_APP_MODIFICATION_RP = new RequestProcessor(RestSupport.class);
+    private RequestProcessor RP = new RequestProcessor(RestSupport.class);
     
     private AntProjectHelper helper;
-    private AtomicReference<RestServicesModel> restServicesModel;
-    private AtomicReference<RestApplicationModel> restApplicationModel;
-    private List<PropertyChangeListener> modelListeners = new ArrayList<PropertyChangeListener>();
+    private RestServicesModel restServicesModel;
+    private RestApplicationModel restApplicationModel;
     private final Project project;
 
     private ApplicationSubclassGenerator applicationSubclassGenerator;
+    private WebXmlUpdater webXmlUpdater;
 
     /** Creates a new instance of RestSupport */
     public RestSupport(Project project) {
@@ -200,10 +177,9 @@ public abstract class RestSupport {
             throw new IllegalArgumentException("Null project");
         }
         this.project = project;
-        restServicesModel = new AtomicReference<RestServicesModel>();
-        restApplicationModel = new AtomicReference<RestApplicationModel>();
         applicationSubclassGenerator = new ApplicationSubclassGenerator(this);
-        REST_APP_MODIFICATION_RP.post(new Runnable() {
+        webXmlUpdater = new WebXmlUpdater(this);
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
@@ -214,52 +190,116 @@ public abstract class RestSupport {
         });
     }
    
+    private void initListener() {
+        if ( restModelListener == null ){
+            restModelListener = new PropertyChangeListener() {
+
+                @Override
+                public void propertyChange( PropertyChangeEvent evt ) {
+                    applicationSubclassGenerator.refreshApplicationSubclass();
+                }
+            };
+            getRestServicesModel().addPropertyChangeListener(restModelListener);
+        }
+    }
+
     /**
      * Ensure the project is ready for REST development.
      * Typical implementation would need to invoke addSwdpLibraries
      * REST development with servlet container would need to add servlet adaptor
      * to web.xml.
      */
-    public abstract void ensureRestDevelopmentReady() throws IOException;
+    public final void ensureRestDevelopmentReady() throws IOException {
+        // check whether project EE level or project/server classpath provide
+        // JAX-RS APIs. The value should be false only in case of EE5 specification
+        // and server without any Jersey on its classpath, eg. Tomcat or some
+        // very very old GF (v2? or older)
+        final boolean hasJaxRs = hasJaxRsApi() || hasJersey1() || hasJersey2();
 
-    /**
-     * Cleanup the project from previously added REST development support artifacts.
-     * This should not remove any user source code.
-     */
-    public abstract void removeRestDevelopmentReadiness() throws IOException;
-
-    /**
-     * Is the REST development setup ready: SWDP library added, REST adaptors configured, 
-     * generic test client created ?
-     */
-    public abstract boolean isReady();
-    
-    /** Get Data Source for JNDI name
-     *
-     * @param jndiName JNDI name
-     * @return
-     */
-    public abstract Datasource getDatasource(String jndiName);
-  
-    public void addModelListener(PropertyChangeListener listener) {
-        modelListeners.add(listener);
-        RestServicesModel model = restServicesModel.get();
-        if (model != null) {
-            model.addPropertyChangeListener(listener);
+        // if JAR-RS APIs are missing and REST support is not ON then ask
+        // user in GUI how to configure the REST:
+        RestSupport.RestConfig restConfig = null;
+        if ( !hasJaxRs && !isRestSupportOn()) {
+            restConfig = setApplicationConfigProperty();
         }
+        final RestSupport.RestConfig restConfig2 = restConfig;
+        
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    ensureRestDevelopmentReadyImpl(restConfig2, hasJaxRs);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
 
-    public void removeModelListener(PropertyChangeListener listener) {
-        modelListeners.remove(listener);
-        RestServicesModel model = restServicesModel.get();
-        if (model != null) {
-            model.removePropertyChangeListener(listener);
+    private void ensureRestDevelopmentReadyImpl(RestSupport.RestConfig restConfig,
+            boolean hasJaxRs) throws IOException {
+
+        // extend build script if necessary
+        extendBuildScripts();
+
+        // retrieve how REST is configured in this project:
+        String restConfigType = getProjectProperty(PROP_REST_CONFIG_TYPE);
+        if (restConfigType == null) {
+            // use Annotation subclass type of configuration if none specified:
+            restConfigType = CONFIG_TYPE_IDE;
         }
+
+        // add latest JAX-RS APIs to project's classpath:
+        if (!hasJaxRs) {
+            boolean jsr311Added = false;
+            if (restConfig != null && restConfig.isServerJerseyLibSelected()) {
+                JaxRsStackSupport support = getJaxRsStackSupport();
+                if (support != null) {
+                    // in this case server is enhancing project's classpath:
+                    jsr311Added = support.addJsr311Api(getProject());
+                }
+            }
+            if (!jsr311Added) {
+                // fallback on IDE's default impl if server does not have its own
+                // jax-rs impl:
+                JaxRsStackSupport.getDefault().addJsr311Api(getProject());
+            }
+
+            if (restConfig != null && CONFIG_TYPE_DD.equals(restConfigType)) {
+                addResourceConfigToWebApp(restConfig.getResourcePath());
+            }
+        }
+
+        // if user selected "Use Jersey" option then make sure the project classpath
+        // contains Jersey JARs:
+        if (restConfig != null) {
+            boolean added = false;
+            if ( restConfig.isServerJerseyLibSelected()){
+                JaxRsStackSupport support = getJaxRsStackSupport();
+                if (support != null) {
+                    added = support.extendsJerseyProjectClasspath(getProject());
+                }
+            }
+            if (!added && restConfig.isJerseyLibSelected()){
+                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
+            }
+        }
+
+        handleSpring();
+
+        ProjectManager.getDefault().saveProject(getProject());
     }
+
+    protected abstract void extendBuildScripts() throws IOException;
+
+    protected abstract void handleSpring() throws IOException;
     
-    public RestServicesModel getRestServicesModel() {
-        FileObject sourceRoot = MiscUtilities.findSourceRoot(getProject());
-        if (restServicesModel.get() == null && sourceRoot != null) {
+    public abstract String getApplicationPathFromDialog(List<RestApplication> restApplications);
+
+    public synchronized RestServicesModel getRestServicesModel() {
+        if (restServicesModel == null) {
+            FileObject sourceRoot = MiscUtilities.findSourceRoot(getProject());
             ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
             if (cpProvider != null) {
                 ClassPath compileCP = cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE);
@@ -268,73 +308,41 @@ public abstract class RestSupport {
                 if (compileCP != null && bootCP != null) {
                     MetadataUnit metadataUnit = MetadataUnit.create(
                             bootCP,
-                            // TODO: do we need to add JAX-RS 2.0 jar to classpath here?
-                            extendWithJsr311Api(compileCP),
+                            extendClassPathWithJaxRsApisIfNecessary(compileCP),
                             sourceCP,
                             null);
-                    RestServicesModel model = RestServicesMetadataModelFactory.
+                    restServicesModel = RestServicesMetadataModelFactory.
                             createMetadataModel(metadataUnit, project);
-                    if (restServicesModel.compareAndSet(null, model)) {
-                        for (PropertyChangeListener pcl : modelListeners) {
-                            model.addPropertyChangeListener(pcl);
-                        }
-                    }
                 }
             }
         }
-        return restServicesModel.get();
+        return restServicesModel;
     }
 
-    public RestApplicationModel getRestApplicationsModel() {
-        FileObject sourceRoot = MiscUtilities.findSourceRoot(getProject());
-        if (restApplicationModel.get() == null && sourceRoot != null) {
+    public synchronized RestApplicationModel getRestApplicationsModel() {
+        if (restApplicationModel == null) {
             MetadataUnit metadataUnit = MetadataUnit.create(
                     MiscPrivateUtilities.getClassPath(getProject(), ClassPath.BOOT),
                     MiscPrivateUtilities.getClassPath(getProject(), ClassPath.COMPILE),
                     MiscPrivateUtilities.getClassPath(getProject(), ClassPath.SOURCE),
                     null
                     );
-            RestApplicationModel model =
-                    RestServicesMetadataModelFactory.
+            restApplicationModel = RestServicesMetadataModelFactory.
                     createApplicationMetadataModel(metadataUnit, project);
-            restApplicationModel.compareAndSet(null, model);
         }
-        return restApplicationModel.get();
+        return restApplicationModel;
     }
 
-    protected void refreshRestServicesMetadataModel() {
-        RestServicesModel model = restServicesModel.get();
-        if (model != null) {
-            for (PropertyChangeListener pcl : modelListeners) {
-                model.removePropertyChangeListener(pcl);
-            }
-            restServicesModel.compareAndSet( model, null);
-        }
-
-        try {
-            model = getRestServicesModel();
-            if (model != null) {
-                model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
-
-                    @Override
-                    public Void run(RestServicesMetadata metadata) throws IOException {
-                        metadata.getRoot().sizeRestServiceDescription();
-                        return null;
-                    }
-                });
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
-        }
-    }
-    
-    private static ClassPath extendWithJsr311Api(ClassPath classPath) {
+    private static ClassPath extendClassPathWithJaxRsApisIfNecessary(ClassPath classPath) {
         if (classPath.findResource("javax/ws/rs/core/Application.class") != null) {
             return classPath;
         }
+
+        // TODO: review this:
+        
         File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, "org.netbeans.modules.websvc.restlib", false);
         if (jerseyRoot != null && jerseyRoot.isDirectory()) {
-            File[] jsr311Jars = jerseyRoot.listFiles(new JerseyFilter(JSR311_JAR_PATTERN));
+            File[] jsr311Jars = jerseyRoot.listFiles(new MiscPrivateUtilities.JerseyFilter(JSR311_JAR_PATTERN));
             if (jsr311Jars != null && jsr311Jars.length>0) {
                 FileObject fo = FileUtil.toFileObject(jsr311Jars[0]);
                 if (fo != null) {
@@ -352,86 +360,8 @@ public abstract class RestSupport {
     public abstract FileObject generateTestClient(File testdir, String url) 
         throws IOException; 
     
-    /**
-     * Generates test client.  Typically RunTestClientAction would need to call 
-     * this before invoke the build script target.
-     * 
-     * @param destDir directory to write test client files in.
-     * @param url base url of rest service
-     * @return test file object, containing token BASE_URL_TOKEN whether used or not.
-     */
-    public FileObject generateTestClient(File testdir) throws IOException {        
-        
-        if (! testdir.isDirectory()) {
-            FileUtil.createFolder(testdir);
-        }
-        String[] replaceKeys1 = {
-            "TTL_TEST_RESBEANS", "MSG_TEST_RESBEANS_INFO"
-        };
-        String[] replaceKeys2 = {
-            "MSG_TEST_RESBEANS_wadlErr", "MSG_TEST_RESBEANS_No_AJAX", "MSG_TEST_RESBEANS_Resource",
-            "MSG_TEST_RESBEANS_See", "MSG_TEST_RESBEANS_No_Container", "MSG_TEST_RESBEANS_Content", 
-            "MSG_TEST_RESBEANS_TabularView", "MSG_TEST_RESBEANS_RawView", "MSG_TEST_RESBEANS_ResponseHeaders", 
-            "MSG_TEST_RESBEANS_Help", "MSG_TEST_RESBEANS_TestButton", "MSG_TEST_RESBEANS_Loading", 
-            "MSG_TEST_RESBEANS_Status", "MSG_TEST_RESBEANS_Headers", "MSG_TEST_RESBEANS_HeaderName",
-            "MSG_TEST_RESBEANS_HeaderValue", "MSG_TEST_RESBEANS_Insert", "MSG_TEST_RESBEANS_NoContents", 
-            "MSG_TEST_RESBEANS_AddParamButton", "MSG_TEST_RESBEANS_Monitor", "MSG_TEST_RESBEANS_No_SubResources", 
-            "MSG_TEST_RESBEANS_SubResources", "MSG_TEST_RESBEANS_ChooseMethod", "MSG_TEST_RESBEANS_ChooseMime", 
-            "MSG_TEST_RESBEANS_Continue", "MSG_TEST_RESBEANS_AdditionalParams", "MSG_TEST_RESBEANS_INFO", 
-            "MSG_TEST_RESBEANS_Request", "MSG_TEST_RESBEANS_Sent", "MSG_TEST_RESBEANS_Received", 
-            "MSG_TEST_RESBEANS_TimeStamp", "MSG_TEST_RESBEANS_Response", "MSG_TEST_RESBEANS_CurrentSelection",
-            "MSG_TEST_RESBEANS_DebugWindow", "MSG_TEST_RESBEANS_Wadl", "MSG_TEST_RESBEANS_RequestFailed",
-            "MSG_TEST_RESBEANS_NoContent"       // NOI18N
-            
-        };
-        FileObject testFO = MiscUtilities.copyFile(testdir, RestSupport.TEST_RESBEANS_HTML, replaceKeys1, true);
-        MiscUtilities.copyFile(testdir, RestSupport.TEST_RESBEANS_JS, replaceKeys2, false);
-        MiscUtilities.copyFile(testdir, RestSupport.TEST_RESBEANS_CSS);
-        MiscUtilities.copyFile(testdir, RestSupport.TEST_RESBEANS_CSS2);
-        MiscUtilities.copyFile(testdir, "expand.gif");
-        MiscUtilities.copyFile(testdir, "collapse.gif");
-        MiscUtilities.copyFile(testdir, "item.gif");
-        MiscUtilities.copyFile(testdir, "cc.gif");
-        MiscUtilities.copyFile(testdir, "og.gif");
-        MiscUtilities.copyFile(testdir, "cg.gif");
-        MiscUtilities.copyFile(testdir, "app.gif");
-
-        File testdir2 = new File(testdir, "images");
-        testdir2.mkdir();
-        MiscUtilities.copyFile(testdir, "images/background_border_bottom.gif");
-        MiscUtilities.copyFile(testdir, "images/pbsel.png");
-        MiscUtilities.copyFile(testdir, "images/bg_gradient.gif");
-        MiscUtilities.copyFile(testdir, "images/pname.png");
-        MiscUtilities.copyFile(testdir, "images/level1_deselect.jpg");
-        MiscUtilities.copyFile(testdir, "images/level1_selected-1lvl.jpg");
-        MiscUtilities.copyFile(testdir, "images/primary-enabled.gif");
-        MiscUtilities.copyFile(testdir, "images/masthead.png");
-        MiscUtilities.copyFile(testdir, "images/masthead_link_enabled.gif");
-        MiscUtilities.copyFile(testdir, "images/masthead_link_roll.gif");
-        MiscUtilities.copyFile(testdir, "images/primary-roll.gif");
-        MiscUtilities.copyFile(testdir, "images/pbdis.png");
-        MiscUtilities.copyFile(testdir, "images/secondary-enabled.gif");
-        MiscUtilities.copyFile(testdir, "images/pbena.png");
-        MiscUtilities.copyFile(testdir, "images/tbsel.png");
-        MiscUtilities.copyFile(testdir, "images/pbmou.png");
-        MiscUtilities.copyFile(testdir, "images/tbuns.png");
-        return testFO;
-    }
-    
-    public void removeSwdpLibrary(String[] classPathTypes) throws IOException {
-        JaxRsStackSupport.getDefault().removeJaxRsLibraries( project );
-    }
-    
     public Project getProject() {
         return project;
-    }
-
-    /**
-     * Should be overridden by sub-classes
-     */
-    public boolean hasSwdpLibrary() {
-        return MiscPrivateUtilities.hasResource(getProject(), REST_SERVLET_ADAPTOR_CLASS.replace('.', '/')+".class") ||
-                MiscPrivateUtilities.hasResource(getProject(), REST_SERVLET_ADAPTOR_CLASS_2_0.replace('.', '/')+".class");  // NOI18N
     }
 
     public void setProjectProperty(String name, String value) {
@@ -478,12 +408,6 @@ public abstract class RestSupport {
         
     }
 
-    protected boolean ignorePlatformRestLibrary() {
-        String v = getProjectProperty(IGNORE_PLATFORM_RESTLIB);
-        Boolean ignore = v != null ? Boolean.valueOf(v) : true;
-        return !ignore;
-    }
-    
     public AntProjectHelper getAntProjectHelper() {
         if (helper == null) {
             JAXWSSupportProvider provider = project.getLookup().lookup(JAXWSSupportProvider.class);
@@ -539,24 +463,19 @@ public abstract class RestSupport {
 
     public abstract File getLocalTargetTestRest();
     
-    public abstract String getBaseURL() throws IOException;
+    public String getBaseURL() {
+        String applicationPath = getApplicationPath();
+        if (applicationPath != null) {
+            if (!applicationPath.startsWith("/")) {
+                applicationPath = "/"+applicationPath;
+            }
+        }
+        return MiscUtilities.getContextRootURL(getProject())+"||"+applicationPath;            //NOI18N
+    }
+
     
     public abstract void deploy() throws IOException;
     
-    protected static class JerseyFilter implements FileFilter {
-        private Pattern pattern;
-
-        JerseyFilter(String regexp) {
-            pattern = Pattern.compile(regexp);
-        }
-
-        public boolean accept(File pathname) {
-            return pattern.matcher(pathname.getName()).matches();
-        }
-    }
-
-    /////////////////// USED TO BE WebRestSupport:
-
     public boolean isRestSupportOn() {
         if (getAntProjectHelper() == null) {
             return false;
@@ -575,20 +494,30 @@ public abstract class RestSupport {
                 break;
             case DD:
                 type = CONFIG_TYPE_DD;
-                JaxRsStackSupport support = getJaxRsStackSupport();
-                boolean added = false;
-                if ( support != null ){
-                    added = support.extendsJerseyProjectClasspath(project);
-                }
-                if ( !added ){
-                    JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
-                }
+                RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            enableRestSupportImpl();
+                        }
+                    });
                 break;
             default:
         }
         if ( type!= null ){
             setProjectProperty(PROP_REST_CONFIG_TYPE, type);
         }
+    }
+
+    private void enableRestSupportImpl() {
+        JaxRsStackSupport support = getJaxRsStackSupport();
+        boolean added = false;
+        if ( support != null ){
+            added = support.extendsJerseyProjectClasspath(project);
+        }
+        if ( !added ){
+            JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
+        }
+
     }
 
     /**
@@ -607,211 +536,24 @@ public abstract class RestSupport {
      * @throws java.io.IOException
      */
     public WebApp getWebApp() throws IOException {
-        FileObject fo = getWebXml();
-        if (fo != null) {
-            return DDProvider.getDefault().getDDRoot(fo);
-        }
-        return null;
+        return webXmlUpdater.getWebApp();
     }
 
-    private WebApp findWebApp() throws IOException {
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        if (wm != null) {
-            FileObject ddFo = wm.getDeploymentDescriptor();
-            if (ddFo != null) {
-                return DDProvider.getDefault().getDDRoot(ddFo);
-            }
-        }
-        return null;
-    }
-
-    public String getApplicationPathFromDD() throws IOException {
-        WebApp webApp = findWebApp();
-        if (webApp != null) {
-            ServletMapping sm = getRestServletMapping(webApp);
-            if (sm != null) {
-                String urlPattern = null;
-                if (sm instanceof ServletMapping25) {
-                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
-                    if (urlPatterns.length > 0) {
-                        urlPattern = urlPatterns[0];
-                    }
-                } else {
-                    urlPattern = sm.getUrlPattern();
-                }
-                if (urlPattern != null) {
-                    if (urlPattern.endsWith("*")) { //NOI18N
-                        urlPattern = urlPattern.substring(0, urlPattern.length()-1);
-                    }
-                    if (urlPattern.endsWith("/")) { //NOI18N
-                        urlPattern = urlPattern.substring(0, urlPattern.length()-1);
-                    }
-                    if (urlPattern.startsWith("/")) { //NOI18N
-                        urlPattern = urlPattern.substring(1);
-                    }
-                    return urlPattern;
-                }
-
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Handles upgrades between different jersey releases.
-     *
-     */
-    public void upgrade() {
-        if (!isRestSupportOn()) {
-            return;
-        }
-        try {
-            FileObject ddFO = getDeploymentDescriptor();
-            if (ddFO == null) {
-                return;
-            }
-
-            WebApp webApp = findWebApp();
-            if (webApp == null) {
-                return;
-            }
-
-            Servlet adaptorServlet = getRestServletAdaptorByName(webApp, REST_SERVLET_ADAPTOR);
-            if (adaptorServlet != null) {
-                // Starting with jersey 0.8, the adaptor class is under
-                // com.sun.jersey package instead of com.sun.we.rest package.
-                if (REST_SERVLET_ADAPTOR_CLASS_OLD.equals(adaptorServlet.getServletClass())) {
-                    boolean isSpring = hasSpringSupport();
-                    if (isSpring) {
-                        adaptorServlet.setServletClass(REST_SPRING_SERVLET_ADAPTOR_CLASS);
-                        InitParam initParam =
-                                (InitParam) adaptorServlet.findBeanByName("InitParam", //NOI18N
-                                "ParamName", //NOI18N
-                                JERSEY_PROP_PACKAGES);
-                        if (initParam == null) {
-                            try {
-                                initParam = (InitParam) adaptorServlet.createBean("InitParam"); //NOI18N
-                                initParam.setParamName(JERSEY_PROP_PACKAGES);
-                                initParam.setParamValue("."); //NOI18N
-                                initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
-                                adaptorServlet.addInitParam(initParam);
-                            } catch (ClassNotFoundException ex) {}
-                        }
-                    } else {
-                        adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
-                    }
-                    webApp.write(ddFO);
-                } else if (REST_SERVLET_ADAPTOR_CLASS.equals(adaptorServlet.getServletClass())) {
-                    if (isJersey2()) {
-                        // upgrading from Jersey 1.x to 2.x is too complicated to handle it here;
-                        // user will likely need to create subclass of Application and use
-                        // it instead of web.xml parameters
-                        //adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS_2_0);
-                        //webApp.write(ddFO);
-                    }
-                }
-            }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-    }
-
-    public void addInitParam( String paramName, String value ) {
-        try {
-            FileObject ddFO = getWebXml();
-            WebApp webApp = findWebApp();
-            if (ddFO == null || webApp == null) {
-                return;
-            }
-            Servlet adaptorServlet = getRestServletAdaptorByName(webApp,
-                    REST_SERVLET_ADAPTOR);
-            InitParam initParam = (InitParam) adaptorServlet.findBeanByName(
-                    "InitParam", // NOI18N
-                    "ParamName", // NOI18N
-                    paramName);
-            if (initParam == null) {
-                try {
-                    initParam = (InitParam) adaptorServlet
-                            .createBean("InitParam"); // NOI18N
-                    adaptorServlet.addInitParam(initParam);
-                }
-                catch (ClassNotFoundException ex) {
-                }
-            }
-            initParam.setParamName(paramName);
-            initParam.setParamValue(value);
-
-            webApp.write(ddFO);
-        }
-        catch (IOException e) {
-            Logger.getLogger(RestSupport.class.getName()).log(Level.WARNING,  null , e);
-        }
-    }
-
-    public FileObject getDeploymentDescriptor() {
-        WebModuleProvider wmp = project.getLookup().lookup(WebModuleProvider.class);
-        if (wmp != null) {
-            return wmp.findWebModule(project.getProjectDirectory()).getDeploymentDescriptor();
-        }
-        return null;
-    }
-
-    public FileObject getWebXml() throws IOException {
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        if (wm != null) {
-            FileObject ddFo = wm.getDeploymentDescriptor();
-            if (ddFo == null) {
-                FileObject webInf = wm.getWebInf();
-                if (webInf == null) {
-                    FileObject docBase = wm.getDocumentBase();
-                    if (docBase != null) {
-                        webInf = docBase.createFolder("WEB-INF"); //NOI18N
-                    }
-                }
-                if (webInf != null) {
-                    ddFo = DDHelper.createWebXml(wm.getJ2eeProfile(), webInf);
-                }
-            }
-            return ddFo;
-        }
-        return null;
-    }
-
-    public ServletMapping getRestServletMapping(WebApp webApp) {
-        String servletName = null;
-        for (Servlet s : webApp.getServlet()) {
-            String servletClass = s.getServletClass();
-            if (REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) || REST_SPRING_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
-                    REST_SERVLET_ADAPTOR_CLASS_2_0.equals(servletClass)) {
-                servletName = s.getServletName();
-                break;
-            }
-        }
-        if (servletName != null) {
-            for (ServletMapping sm : webApp.getServletMapping()) {
-                if (servletName.equals(sm.getServletName())) {
-                    return sm;
-                }
-            }
-        }
-        return null;
-    }
-
-    protected boolean hasRestServletAdaptor() {
-        try {
-            return getRestServletAdaptor(getWebApp()) != null;
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-            return false;
-        }
+    WebXmlUpdater getWebXmlUpdater() {
+        return webXmlUpdater;
     }
 
     public boolean hasServerJerseyLibrary(){
-        return getJaxRsStackSupport() != null;
+        return JaxRsStackSupport.getInstance(project) != null;
     }
 
     public JaxRsStackSupport getJaxRsStackSupport(){
         return JaxRsStackSupport.getInstance(project);
+    }
+
+    // XXX: does not belong here; should be removed from here and let in WebXmlUpdater:
+    public void addResourceConfigToWebApp(String resourcePath) throws IOException {
+        webXmlUpdater.addResourceConfigToWebApp(resourcePath);
     }
 
     /**
@@ -829,27 +571,12 @@ public abstract class RestSupport {
         boolean isJee7 = Profile.JAVA_EE_7_WEB.equals(profile) ||
                         Profile.JAVA_EE_7_FULL.equals(profile);
         // Fix for BZ#216345: JAVA_EE_6_WEB profile doesn't contain JAX-RS API
-        return (isJee6 && supportsTargetProfile(Profile.JAVA_EE_6_FULL)) || isJee7;
+        return (isJee6 && MiscPrivateUtilities.supportsTargetProfile(project, Profile.JAVA_EE_6_FULL)) || isJee7;
     }
 
-    private boolean supportsTargetProfile(Profile profile){
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().
-                lookup(J2eeModuleProvider.class);
-        String serverInstanceID = provider.getServerInstanceID();
-        if ( serverInstanceID == null ){
-            return false;
-        }
-        ServerInstance serverInstance = Deployment.getDefault().
-                 getServerInstance(serverInstanceID);
-        try {
-            Set<Profile> profiles = serverInstance.getJ2eePlatform().getSupportedProfiles();
-            return profiles.contains( profile);
-        }
-        catch( InstanceRemovedException e ){
-            return false;
-        }
-    }
-
+    /**
+     * Is this EE7 profile project?
+     */
     public boolean isEE7(){
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if ( webModule == null ){
@@ -860,30 +587,34 @@ public abstract class RestSupport {
                         Profile.JAVA_EE_7_FULL.equals(profile);
     }
 
-    public Servlet getRestServletAdaptor(WebApp webApp) {
-        if (webApp != null) {
-            for (Servlet s : webApp.getServlet()) {
-                String servletClass = s.getServletClass();
-                if ( REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
-                    REST_SPRING_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
-                    REST_SERVLET_ADAPTOR_CLASS_2_0.equals(servletClass) ||
-                    REST_SERVLET_ADAPTOR_CLASS_OLD.equals(servletClass)) {
-                    return s;
-                }
-            }
+    /**
+     * Is Jersey 2.x jar available on project's classpath or on classpath of
+     * server used by this project?
+     */
+    public boolean hasJersey2() {
+        if (MiscPrivateUtilities.hasResource(getProject(), REST_SERVLET_ADAPTOR_CLASS_2_0)) {
+            return true;
         }
-        return null;
+        JaxRsStackSupport support = getJaxRsStackSupport();
+        if (support != null){
+            return support.isBundled(REST_SERVLET_ADAPTOR_CLASS_2_0);
+        }
+        return false;
     }
 
-    protected Servlet getRestServletAdaptorByName(WebApp webApp, String servletName) {
-        if (webApp != null) {
-            for (Servlet s : webApp.getServlet()) {
-                if (servletName.equals(s.getServletName())) {
-                    return s;
-                }
-            }
+    /**
+     * Is Jersey 12.x jar available on project's classpath or on classpath of
+     * server used by this project?
+     */
+    public boolean hasJersey1() {
+        if (MiscPrivateUtilities.hasResource(getProject(), REST_SERVLET_ADAPTOR_CLASS)) {
+            return true;
         }
-        return null;
+        JaxRsStackSupport support = getJaxRsStackSupport();
+        if (support != null){
+            return support.isBundled(REST_SERVLET_ADAPTOR_CLASS);
+        }
+        return false;
     }
 
     /*
@@ -895,176 +626,25 @@ public abstract class RestSupport {
     public void configure(String... packages) throws IOException {
         String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
         if ( CONFIG_TYPE_DD.equals( configType)){
-            configRestPackages(packages);
+            webXmlUpdater.configRestPackages(packages);
         }
         else if (CONFIG_TYPE_IDE.equals(configType)) {
             initListener();
-            scheduleReconfigAppClass();
+            applicationSubclassGenerator.refreshApplicationSubclass();
         }
     }
 
-    public void addResourceConfigToWebApp(String resourcePath) throws IOException {
-        FileObject ddFO = getWebXml();
-        WebApp webApp = getWebApp();
-        if (webApp == null) {
-            return;
-        }
-        if (webApp.getStatus() == WebApp.STATE_INVALID_UNPARSABLE ||
-                webApp.getStatus() == WebApp.STATE_INVALID_OLD_VERSION)
-        {
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                        NbBundle.getMessage(RestSupport.class, "MSG_InvalidDD", webApp.getError()),
-                        NotifyDescriptor.ERROR_MESSAGE));
-            return;
-        }
-        boolean needsSave = false;
-        try {
-            Servlet adaptorServlet = getRestServletAdaptor(webApp);
-            if (adaptorServlet == null) {
-                adaptorServlet = (Servlet) webApp.createBean("Servlet"); //NOI18N
-                adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
-                boolean isSpring = hasSpringSupport();
-                if (isSpring) {
-                    adaptorServlet.setServletClass(REST_SPRING_SERVLET_ADAPTOR_CLASS);
-                    InitParam initParam = (InitParam) adaptorServlet.createBean("InitParam"); //NOI18N
-                    initParam.setParamName(JERSEY_PROP_PACKAGES);
-                    initParam.setParamValue("."); //NOI18N
-                    initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
-                    adaptorServlet.addInitParam(initParam);
-                } else {
-                    if (isJersey2()) {
-                        throw new IllegalStateException("this should not be needed!"); //
-                        //adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS_2_0);
-                    } else {
-                        adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
-                    }
-                }
-                adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
-                webApp.addServlet(adaptorServlet);
-                needsSave = true;
-            }
-
-            String resourcesUrl = resourcePath;
-            if (!resourcePath.startsWith("/")) { //NOI18N
-                resourcesUrl = "/"+resourcePath; //NOI18N
-            }
-            if (resourcesUrl.endsWith("/")) { //NOI18N
-                resourcesUrl = resourcesUrl+"*"; //NOI18N
-            } else if (!resourcesUrl.endsWith("*")) { //NOI18N
-                resourcesUrl = resourcesUrl+"/*"; //NOI18N
-            }
-
-            ServletMapping sm = getRestServletMapping(webApp);
-            if (sm == null) {
-                sm = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
-                sm.setServletName(adaptorServlet.getServletName());
-                if (sm instanceof ServletMapping25) {
-                    ((ServletMapping25)sm).addUrlPattern(resourcesUrl);
-                } else {
-                    sm.setUrlPattern(resourcesUrl);
-                }
-                webApp.addServletMapping(sm);
-                needsSave = true;
-            } else {
-                // check old url pattern
-                boolean urlPatternChanged = false;
-                if (sm instanceof ServletMapping25) {
-                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
-                    if (urlPatterns.length == 0 || !resourcesUrl.equals(urlPatterns[0])) {
-                        urlPatternChanged = true;
-                    }
-                } else {
-                    if (!resourcesUrl.equals(sm.getUrlPattern())) {
-                        urlPatternChanged = true;
-                    }
-                }
-
-                if (urlPatternChanged) {
-                    if (sm instanceof ServletMapping25) {
-                        String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
-                        if (urlPatterns.length>0) {
-                            ((ServletMapping25)sm).setUrlPattern(0, resourcesUrl);
-                        } else {
-                            ((ServletMapping25)sm).addUrlPattern(resourcesUrl);
-                        }
-                    } else {
-                        sm.setUrlPattern(resourcesUrl);
-                    }
-                    needsSave = true;
-                }
-            }
-            if (needsSave) {
-                webApp.write(ddFO);
-                logResourceCreation(project);
-            }
-        } catch (IOException ioe) {
-            throw ioe;
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalArgumentException(ex);
-        }
-    }
-
-    public String getApplicationPath() throws IOException {
-        String pathFromDD = getApplicationPathFromDD();
-        String applPath = getApplicationPathFromAnnotations(pathFromDD);
+    public String getApplicationPath() {
+        String pathFromDD = MiscUtilities.getApplicationPathFromDD(webXmlUpdater.findWebApp());
+        String applPath = ApplicationSubclassGenerator.getApplicationPathFromAnnotations(this, pathFromDD);
         return (applPath == null ? "webresources" : applPath);
-    }
-
-    protected String getApplicationPathFromAnnotations(final String applPathFromDD) {
-        List<RestApplication> restApplications = getRestApplications();
-        if (applPathFromDD == null) {
-            if (restApplications.size() == 0) {
-                return null;
-            } else {
-                return restApplications.get(0).getApplicationPath();
-            }
-        } else {
-            if (restApplications.size() == 0) {
-                return applPathFromDD;
-            } else {
-                for (RestApplication appl: restApplications) {
-                    if (applPathFromDD.equals(appl.getApplicationPath())) {
-                        return applPathFromDD;
-                    }
-                }
-                return restApplications.get(0).getApplicationPath();
-            }
-        }
-    }
-
-    protected void removeResourceConfigFromWebApp() throws IOException {
-        FileObject ddFO = getWebXml();
-        WebApp webApp = getWebApp();
-        if (webApp == null) {
-            return;
-        }
-        boolean needsSave = false;
-        Servlet restServlet = getRestServletAdaptorByName(webApp, REST_SERVLET_ADAPTOR);
-        if (restServlet != null) {
-            webApp.removeServlet(restServlet);
-            needsSave = true;
-        }
-
-        for (ServletMapping sm : webApp.getServletMapping()) {
-            if (REST_SERVLET_ADAPTOR.equals(sm.getServletName())) {
-                webApp.removeServletMapping(sm);
-                needsSave = true;
-                break;
-            }
-        }
-
-        if (needsSave) {
-            webApp.write(ddFO);
-        }
     }
 
     /** log rest resource detection
      *
      * @param prj project instance
      */
-    protected void logResourceCreation(Project prj) {
-    }
+    public abstract void logResourceCreation();
 
     public List<RestApplication> getRestApplications() {
         RestApplicationModel applicationModel = getRestApplicationsModel();
@@ -1095,7 +675,8 @@ public abstract class RestSupport {
         return Collections.emptyList();
     }
 
-    protected RestConfig setApplicationConfigProperty(boolean annotationConfigAvailable) {
+    protected RestConfig setApplicationConfigProperty() {
+        boolean annotationConfigAvailable = hasJaxRsApi();
         ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
                 annotationConfigAvailable, hasServerJerseyLibrary());
         DialogDescriptor desc = new DialogDescriptor(configPanel,
@@ -1155,7 +736,7 @@ public abstract class RestSupport {
             {
                 File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, null, false);
                 if (jerseyRoot != null && jerseyRoot.isDirectory()) {
-                    File[] jerseyJars = jerseyRoot.listFiles(new JerseyFilter(JERSEY_SPRING_JAR_PATTERN));
+                    File[] jerseyJars = jerseyRoot.listFiles(new MiscPrivateUtilities.JerseyFilter(JERSEY_SPRING_JAR_PATTERN));
                     if (jerseyJars != null && jerseyJars.length>0) {
                         URL url = FileUtil.getArchiveRoot(jerseyJars[0].toURI().toURL());
                         ProjectClassPathModifier.addRoots(new URL[] {url}, srcRoot, ClassPath.COMPILE);
@@ -1165,59 +746,8 @@ public abstract class RestSupport {
         }
     }
 
-    public boolean isJersey2() {
-        if (MiscPrivateUtilities.hasResource(getProject(), "org.glassfish.jersey.servlet.ServletContainer")) {
-            return true;
-        }
-        JaxRsStackSupport support = getJaxRsStackSupport();
-        if (support != null){
-            return support.isBundled("org.glassfish.jersey.servlet.ServletContainer");
-        }
-        return false;
-    }
-
     public int getProjectType() {
         return PROJECT_TYPE_WEB;
-    }
-
-    private String getPackagesList( Iterable<String> packs ) {
-        StringBuilder builder = new StringBuilder();
-        for (String pack : packs) {
-            builder.append( pack);
-            builder.append(';');
-        }
-        String packages ;
-        if ( builder.length() >0 ){
-            packages  = builder.substring( 0 ,  builder.length() -1 );
-        }
-        else{
-            packages = builder.toString();
-        }
-        return packages;
-    }
-
-    private String getPackagesList( String[] packs ) {
-        return getPackagesList( Arrays.asList( packs));
-    }
-
-    private InitParam createJerseyPackagesInitParam( Servlet adaptorServlet,
-            String... packs ) throws ClassNotFoundException
-    {
-        return createInitParam(adaptorServlet, JERSEY_PROP_PACKAGES,
-                getPackagesList(packs), JERSEY_PROP_PACKAGES_DESC);
-    }
-
-    private InitParam createInitParam( Servlet adaptorServlet, String name,
-            String value , String description ) throws ClassNotFoundException
-    {
-        InitParam initParam = (InitParam) adaptorServlet
-                .createBean("InitParam"); // NOI18N
-        initParam.setParamName(name);
-        initParam.setParamValue(value);
-        if ( description != null ){
-            initParam.setDescription(description);
-        }
-        return initParam;
     }
 
     public static enum RestConfig {
@@ -1256,102 +786,6 @@ public abstract class RestSupport {
         }
 
     }
-
-    private void initListener() {
-        if ( restModelListener == null ){
-            restModelListener = new PropertyChangeListener() {
-
-                @Override
-                public void propertyChange( PropertyChangeEvent evt ) {
-                    scheduleReconfigAppClass();
-                }
-            };
-            addModelListener(restModelListener);
-        }
-    }
-
-    private void scheduleReconfigAppClass(){
-        applicationSubclassGenerator.refreshApplicationSubclass();
-    }
-
-    private void configRestPackages( String... packs ) throws IOException {
-        try {
-            addResourceConfigToWebApp("/webresources/*");           // NOI18N
-            FileObject ddFO = getWebXml();
-            WebApp webApp = getWebApp();
-            if (webApp == null) {
-                return;
-            }
-            if (webApp.getStatus() == WebApp.STATE_INVALID_UNPARSABLE ||
-                     webApp.getStatus() == WebApp.STATE_INVALID_OLD_VERSION)
-            {
-                return;
-            }
-            boolean needsSave = false;
-            Servlet adaptorServlet = getRestServletAdaptor(webApp);
-            if ( adaptorServlet == null ){
-                return;
-            }
-            InitParam[] initParams = adaptorServlet.getInitParam();
-            boolean jerseyParamFound = false;
-            boolean jacksonParamFound = false;
-            for (InitParam initParam : initParams) {
-                if (initParam.getParamName().equals(JERSEY_PROP_PACKAGES)) {
-                    jerseyParamFound = true;
-                    String paramValue = initParam.getParamValue();
-                    if (paramValue != null) {
-                        paramValue = paramValue.trim();
-                    }
-                    else {
-                        paramValue = "";
-                    }
-                    if (paramValue.length() == 0 || paramValue.equals(".")){ // NOI18N
-                        initParam.setParamValue(getPackagesList(packs));
-                        needsSave = true;
-                    }
-                    else {
-                        String[] existed = paramValue.split(";");
-                        LinkedHashSet<String> set = new LinkedHashSet<String>();
-                        set.addAll(Arrays.asList(existed));
-                        set.addAll(Arrays.asList(packs));
-                        initParam.setParamValue(getPackagesList(set));
-                        needsSave = existed.length != set.size();
-                    }
-                }
-                else if ( initParam.getParamName().equals( POJO_MAPPING_FEATURE)){
-                    jacksonParamFound = true;
-                    String paramValue = initParam.getParamValue();
-                    if (paramValue != null) {
-                        paramValue = paramValue.trim();
-                    }
-                    if ( !Boolean.TRUE.toString().equals(paramValue)){
-                        initParam.setParamValue(Boolean.TRUE.toString());
-                        needsSave = true;
-                    }
-                }
-            }
-            if (!jerseyParamFound) {
-                InitParam initParam = createJerseyPackagesInitParam(adaptorServlet,
-                        packs);
-                adaptorServlet.addInitParam(initParam);
-                needsSave = true;
-            }
-            if ( !jacksonParamFound ){
-                InitParam initParam = createInitParam(adaptorServlet,
-                        POJO_MAPPING_FEATURE, Boolean.TRUE.toString(), null);
-                adaptorServlet.addInitParam(initParam);
-                needsSave = true;
-            }
-            if (needsSave) {
-                webApp.write(ddFO);
-                logResourceCreation(project);
-            }
-	}
-        catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
 
 }
 

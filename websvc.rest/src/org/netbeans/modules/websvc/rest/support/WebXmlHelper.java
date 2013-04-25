@@ -43,8 +43,10 @@
  */
 package org.netbeans.modules.websvc.rest.support;
 
+import java.io.IOException;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
@@ -160,12 +162,9 @@ public class WebXmlHelper {
     }
     
     private FileObject getWebXml(Project project) {
-        try {
-            RestSupport rs = RestUtils.getRestSupport(project);
-            if (rs != null) {
-                return ((RestSupport) rs).getWebXml();
-            }
-        } catch(Exception iox) {
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            return wm.getDeploymentDescriptor();
         }
         return null;
     }

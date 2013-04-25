@@ -99,20 +99,17 @@ public class EntityResourcesIterator implements WizardDescriptor.ProgressInstant
         String restAppClass = null;
         
         final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if( restSupport instanceof RestSupport) {
-            Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
-            if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
-                ((RestSupport)restSupport).enableRestSupport( RestSupport.RestConfig.DD);
-            }
-            else {
-                restAppPackage = (String) wizard
-                        .getProperty(WizardProperties.APPLICATION_PACKAGE);
-                restAppClass = (String) wizard
-                        .getProperty(WizardProperties.APPLICATION_CLASS);
-                if (restAppPackage != null && restAppClass != null) {
-                    ((RestSupport) restSupport)
-                            .enableRestSupport(RestSupport.RestConfig.IDE);
-                }
+        Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
+        if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
+            restSupport.enableRestSupport( RestSupport.RestConfig.DD);
+        }
+        else {
+            restAppPackage = (String) wizard
+                    .getProperty(WizardProperties.APPLICATION_PACKAGE);
+            restAppClass = (String) wizard
+                    .getProperty(WizardProperties.APPLICATION_CLASS);
+            if (restAppPackage != null && restAppClass != null) {
+                restSupport.enableRestSupport(RestSupport.RestConfig.IDE);
             }
         }
         if ( restSupport!= null ){
