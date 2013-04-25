@@ -194,11 +194,11 @@ public interface LatteElement extends ElementHandle {
             if (isMandatory()) {
                 formatter.appendText(name);
             } else {
-                formatter.emphasis(true);
+                formatter.parameters(true);
                 formatter.appendText(name);
-                formatter.appendText(" = "); //NOI18N
+                formatter.appendText("="); //NOI18N
                 formatter.appendText(defaultValue);
-                formatter.emphasis(false);
+                formatter.parameters(false);
             }
         }
 
