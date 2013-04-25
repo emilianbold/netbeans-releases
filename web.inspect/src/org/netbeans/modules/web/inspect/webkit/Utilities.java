@@ -332,15 +332,14 @@ public class Utilities {
                 String value = propertyValue(rule, "font-family"); // NOI18N
                 if (value != null) {
                     StringBuilder sb = new StringBuilder();
-                    boolean escape = false;
+                    boolean slash = false;
                     for (int i=0; i<value.length(); i++) {
                         char c = value.charAt(i);
-                        if (escape) {
-                            escape = false;
-                            sb.append(c);
-                        } else if (c == '\\') {
-                            escape = true;
-                        } else {
+                        if (slash && (c != ':' && c != '/' && c != '.')) {
+                            sb.append('\\');
+                        }
+                        slash = !slash && (c == '\\');
+                        if (!slash) {
                             sb.append(c);
                         }
                     }

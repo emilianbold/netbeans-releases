@@ -1100,9 +1100,8 @@ public class CSSStylesSelectionPanel extends JPanel {
                 RuleInfo ruleInfo = node.getLookup().lookup(RuleInfo.class);
                 if (ruleInfo != null && ruleInfo.getMetaSourceFile() != null && ruleInfo.getMetaSourceLine() != -1) {
                     ruleLocation = ruleInfo.getMetaSourceFile();
-                    int slashIndex = ruleLocation.lastIndexOf('/');
+                    int slashIndex = Math.max(ruleLocation.lastIndexOf('/'), ruleLocation.lastIndexOf('\\'));
                     ruleLocation = ruleLocation.substring(slashIndex+1);
-                    ruleLocation = ruleLocation.replaceAll("\\\\", ""); // NOI18N
                     ruleLocation += ":" + ruleInfo.getMetaSourceLine(); // NOI18N
                 } else {
                     Resource ruleOrigin = node.getLookup().lookup(Resource.class);
