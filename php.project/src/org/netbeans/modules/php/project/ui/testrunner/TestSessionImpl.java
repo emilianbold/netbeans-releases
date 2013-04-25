@@ -41,12 +41,15 @@
  */
 package org.netbeans.modules.php.project.ui.testrunner;
 
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.netbeans.modules.php.spi.testing.run.OutputLineHandler;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
 import org.netbeans.modules.php.spi.testing.run.TestSuite;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.windows.OutputWriter;
 
@@ -54,23 +57,32 @@ public class TestSessionImpl implements TestSession {
 
     private final Manager manager;
     private final org.netbeans.modules.gsf.testrunner.api.TestSession testSession;
+    private final PhpTestingProvider testingProvider;
 
     private volatile Coverage coverage;
     private boolean coverageSet = false;
 
 
-    TestSessionImpl(Manager manager, org.netbeans.modules.gsf.testrunner.api.TestSession testSession) {
+    TestSessionImpl(Manager manager, org.netbeans.modules.gsf.testrunner.api.TestSession testSession, PhpTestingProvider testingProvider) {
         assert manager != null;
         assert testSession != null;
+        assert testingProvider != null;
         this.manager = manager;
         this.testSession = testSession;
+        this.testingProvider = testingProvider;
     }
 
+    @NbBundle.Messages({
+        "# {0} - provider name",
+        "# {1} - suite name",
+        "TestSessionImpl.suite.name={0}: {1}",
+    })
     @Override
     public TestSuite addTestSuite(String name, FileObject location) {
         Parameters.notWhitespace("name", name); // NOI18N
-        org.netbeans.modules.gsf.testrunner.api.TestSuite testSuite = new org.netbeans.modules.gsf.testrunner.api.TestSuite(name);
-        manager.displaySuiteRunning(testSession, name);
+        String suiteName = Bundle.TestSessionImpl_suite_name(testingProvider.getDisplayName(), name);
+        org.netbeans.modules.gsf.testrunner.api.TestSuite testSuite = new org.netbeans.modules.gsf.testrunner.api.TestSuite(suiteName);
+        manager.displaySuiteRunning(testSession, suiteName);
         testSession.addSuite(testSuite);
         return new TestSuiteImpl(this, testSuite, location);
     }
@@ -87,12 +99,17 @@ public class TestSessionImpl implements TestSession {
         manager.displayOutput(testSession, message, error);
     }
 
+    public PhpTestingProvider getTestingProvider() {
+        return testingProvider;
+    }
+
     @Override
     public void setCoverage(Coverage coverage) {
         coverageSet = true;
         this.coverage = coverage;
     }
 
+    @CheckForNull
     public Coverage getCoverage() {
         return coverage;
     }
