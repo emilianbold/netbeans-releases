@@ -1110,6 +1110,23 @@ made subject to such option by the copyright holder.
             <a href="#java.io.File-installation.cache">purposes of installer</a>.
             </p>
         </api>
+        <api category="friend" group="java.io.File" name="all-clusters.dat" type="export">
+            <p>
+                Lists relative paths of clusters (those defined by
+                <a href="#systemproperty-netbeans.home">netbeans.home</a> and
+                <a href="#systemproperty-netbeans.dirs">netbeans.dirs</a>)
+                for which the cache has been created. This is an important file
+                in the 
+                <a href="#java.io.File-installation.cache">shared cache</a> as
+                it helps to ensure the set of clusters has not changed since
+                the cache has been generated.
+            </p>
+            <p>
+                The file is binary and its format is <em>private</em>. The location
+                is however well known for 
+                <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
         <api category="friend" group="java.io.File" name="all-installer.dat" type="export">
             <p>
                 Additional information about modules (like <em>deprecation message</em>, etc.)
