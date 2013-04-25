@@ -49,14 +49,13 @@ import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -129,13 +128,11 @@ public final class UnitTestRunner {
         return testSessions;
     }
 
-    @NbBundle.Messages("UnitTestRunner.error.noProviders=No PHP testing provider found, install one via Plugins (e.g. PHPUnit).")
     private boolean checkTestingProviders() {
         if (!testingProviders.isEmpty()) {
             return true;
         }
-        DialogDisplayer.getDefault().notifyLater(
-                new NotifyDescriptor.Message(Bundle.UnitTestRunner_error_noProviders(), NotifyDescriptor.INFORMATION_MESSAGE));
+        Utils.informNoTestingProviders();
         return false;
     }
 
