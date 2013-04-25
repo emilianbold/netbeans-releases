@@ -65,15 +65,19 @@ public interface LatteElement extends ElementHandle {
     public static class Factory {
 
         public static LatteElement create(String name) {
-            return new LatteElementWithoutParams(name);
+            return new LatteElementSimple(name);
         }
 
         public static LatteElement create(String name, List<Parameter> parameters) {
-            return new LatteElementWithParams(name, parameters);
+            return new LatteElementExtended(name, parameters);
         }
 
         public static LatteElement create(String name, String customTemplate) {
-            return new LatteElementWithCustomTemplate(name, customTemplate);
+            return new LatteElementExtended(name, Collections.<Parameter>emptyList(), customTemplate);
+        }
+
+        public static LatteElement create(String name, List<Parameter> parameters, String customTemplate) {
+            return new LatteElementExtended(name, parameters, customTemplate);
         }
 
     }
@@ -128,9 +132,9 @@ public interface LatteElement extends ElementHandle {
 
     }
 
-    static class LatteElementWithoutParams extends BaseLatteElementItem {
+    static class LatteElementSimple extends BaseLatteElementItem {
 
-        public LatteElementWithoutParams(String name) {
+        public LatteElementSimple(String name) {
             super(name);
         }
 
@@ -145,91 +149,109 @@ public interface LatteElement extends ElementHandle {
 
     }
 
-    static class LatteElementWithParams extends BaseLatteElementItem {
+    static class LatteElementExtended extends BaseLatteElementItem {
         private final List<Parameter> parameters;
+        private final String customTemplate;
 
-        public LatteElementWithParams(String name, List<Parameter> parameters) {
+        public LatteElementExtended(String name, List<Parameter> parameters) {
+            this(name, parameters, null);
+        }
+
+        public LatteElementExtended(String name, List<Parameter> parameters, String customTemplate) {
             super(name);
             this.parameters = parameters;
+            this.customTemplate = customTemplate;
         }
 
         @Override
         public void formatParameters(final HtmlFormatter formatter) {
-            formatter.appendText(":"); //NOI18N
             for (int i = 0; i < parameters.size(); i++) {
                 Parameter parameter = parameters.get(i);
-                if (i != 0) {
-                    formatter.appendText(":"); //NOI18N
-                }
+                formatter.appendText(parameter.getDelimiter());
                 parameter.format(formatter);
             }
         }
 
         @Override
         public String getTemplate() {
-            StringBuilder template = new StringBuilder();
-            template.append(getName());
-            for (int i = 0; i < parameters.size(); i++) {
-                Parameter parameter = parameters.get(i);
-                parameter.prepareTemplate(template);
+            String result = customTemplate;
+            if (result == null) {
+                StringBuilder template = new StringBuilder();
+                template.append(getName());
+                for (int i = 0; i < parameters.size(); i++) {
+                    Parameter parameter = parameters.get(i);
+                    parameter.prepareTemplate(template);
+                }
+                result = template.toString();
             }
-            return template.toString();
+            return result;
         }
     }
 
     public static class Parameter {
+        private final String delimiter;
         private final String name;
         private final String defaultValue;
 
-        public Parameter(String name, String defaultValue) {
+        public Parameter(String delimiter, String name, String defaultValue) {
+            this.delimiter = delimiter;
             this.name = name;
             this.defaultValue = defaultValue;
         }
 
-        public Parameter(String name) {
-            this(name, null);
+        public Parameter(String delimiter, String name) {
+            this(delimiter, name, null);
         }
 
         public void format(HtmlFormatter formatter) {
+            formatter.parameters(true);
             if (isMandatory()) {
                 formatter.appendText(name);
             } else {
-                formatter.parameters(true);
                 formatter.appendText(name);
                 formatter.appendText("="); //NOI18N
                 formatter.appendText(defaultValue);
-                formatter.parameters(false);
             }
+            formatter.parameters(false);
         }
 
         public void prepareTemplate(StringBuilder template) {
             if (isMandatory()) {
-                template.append(":${").append(name).append("}"); //NOI18N
+                template.append(getDelimiter()).append("${").append(name).append("}"); //NOI18N
             }
         }
 
         private boolean isMandatory() {
             return defaultValue == null;
         }
+
+        public String getDelimiter() {
+            return delimiter;
+        }
     }
 
-    static class LatteElementWithCustomTemplate extends BaseLatteElementItem {
+    public static final class HelperParameter extends Parameter {
 
-        private final String customTemplate;
-
-        public LatteElementWithCustomTemplate(String name, String customTemplate) {
-            super(name);
-            this.customTemplate = customTemplate;
+        public HelperParameter(String name) {
+            this(name, null);
         }
 
-        @Override
-        public String getTemplate() {
-            return customTemplate;
+        public HelperParameter(String name, String defaultValue) {
+            super(":", name, defaultValue); //NOI18N
         }
 
-        @Override
-        public void formatParameters(HtmlFormatter formatter) {
+    }
+
+    public static final class MacroParameter extends Parameter {
+
+        public MacroParameter(String name) {
+            this(name, null);
         }
+
+        public MacroParameter(String name, String defaultValue) {
+            super(" ", name, defaultValue); //NOI18N
+        }
+
     }
 
 }
