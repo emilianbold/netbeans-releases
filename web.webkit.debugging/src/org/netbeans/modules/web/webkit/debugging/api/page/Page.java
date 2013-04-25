@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.webkit.debugging.api.page;
 
+import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
@@ -80,6 +81,12 @@ public class Page {
             transport.sendCommand(new Command("Page.disable"));
             enabled = false;
         }
+    }
+    
+    public void navigate(String url) {
+        JSONObject urlPar = new JSONObject();
+        urlPar.put("url", url);
+        transport.sendBlockingCommand(new Command("Page.navigate", urlPar));
     }
 
     public boolean isEnabled() {

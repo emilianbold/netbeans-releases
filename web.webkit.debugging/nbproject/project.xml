@@ -85,6 +85,7 @@
                 <package>org.netbeans.modules.web.webkit.debugging.api.debugger</package>
                 <package>org.netbeans.modules.web.webkit.debugging.api.dom</package>
                 <package>org.netbeans.modules.web.webkit.debugging.api.network</package>
+                <package>org.netbeans.modules.web.webkit.debugging.api.page</package>
                 <package>org.netbeans.modules.web.webkit.debugging.spi</package>
             </friend-packages>
         </data>
