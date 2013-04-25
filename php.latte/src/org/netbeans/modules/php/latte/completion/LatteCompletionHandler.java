@@ -131,7 +131,7 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
     static {
         HELPERS.add(LatteElement.Factory.create("truncate", Arrays.asList(new Parameter[] {new Parameter("length"), new Parameter("append", "'…'")}))); //NOI18N
         HELPERS.add(LatteElement.Factory.create("substr", Arrays.asList(new Parameter[] {new Parameter("offset"), new Parameter("length", "stringLegth")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("trim", Arrays.asList(new Parameter[] {new Parameter("charlist", " \\t\\n\\r\\0\\x0B\\xC2\\xA0")}))); //NOI18N
+        HELPERS.add(LatteElement.Factory.create("trim", Arrays.asList(new Parameter[] {new Parameter("charlist", "' \\t\\n\\r\\0\\x0B\\xC2\\xA0'")}))); //NOI18N
         HELPERS.add(LatteElement.Factory.create("striptags")); //NOI18N
         HELPERS.add(LatteElement.Factory.create("strip")); //NOI18N
         HELPERS.add(LatteElement.Factory.create("webalize", Arrays.asList(new Parameter[] {new Parameter("charlist", "NULL"), new Parameter("lower", "true")}))); //NOI18N
