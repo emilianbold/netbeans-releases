@@ -58,6 +58,20 @@ import org.netbeans.api.annotations.common.NonNull;
  */
 public final class MethodInferenceVisitor {
 
+    private MethodInferenceVisitor() {
+    }
+    
+    /**
+     * Tries to infer correct {@link ClassNode} representing type of the caller for
+     * the given expression. Typically the given parameter is instance of {@link MethodCallExpression}
+     * and in that case the return type of the method call is returned.<br/><br/>
+     * 
+     * The method also handles method chain and in such case the return type of the
+     * last method call should be return.
+     * 
+     * @param expression
+     * @return class type of the caller if found, {@code null} otherwise
+     */
     @CheckForNull
     public static ClassNode findCallerType(@NonNull ASTNode expression) {
         // In case if the method call is chained with another method call
