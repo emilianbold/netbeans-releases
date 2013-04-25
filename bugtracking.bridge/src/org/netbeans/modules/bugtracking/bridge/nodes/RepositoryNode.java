@@ -81,13 +81,13 @@ public class RepositoryNode extends AbstractNode implements PropertyChangeListen
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            new AbstractAction("Query") {
+            new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "CTL_QueryAction")) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     Util.createNewQuery(repository);
                 }
             },
-            new AbstractAction("Issue") {
+            new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "CTL_IssueAction")) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     Util.createNewIssue(repository);
