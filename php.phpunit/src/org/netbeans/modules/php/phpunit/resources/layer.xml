@@ -56,19 +56,17 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         <folder name="Scripting">
             <folder name="Tests">
                 <file name="PHPUnitBootstrap.php" url="nbresloc:/org/netbeans/modules/php/phpunit/ui/resources/PHPUnitBootstrap.php">
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.php.phpunit.resources.Bundle#Templates/PHPUnit/PHPUnitBootstrap.php"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.php.phpunit.resources.Bundle#Templates/Scripting/Tests/PHPUnitBootstrap.php"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/phpunit/ui/resources/emptyPHPUnitBootstrapDescription.html"/>
-                    <attr name="templateCategory" stringvalue="PHP"/>
                     <attr name="position" intvalue="1000"/>
                 </file>
                 <file name="PHPUnitConfiguration.xml" url="nbresloc:/org/netbeans/modules/php/phpunit/ui/resources/PHPUnitConfiguration.xml">
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.php.phpunit.resources.Bundle#Templates/PHPUnit/PHPUnitConfiguration.xml"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.php.phpunit.resources.Bundle#Templates/Scripting/Tests/PHPUnitConfiguration.xml"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/phpunit/ui/resources/emptyPHPUnitConfigurationDescription.html"/>
-                    <attr name="templateCategory" stringvalue="PHP"/>
                     <attr name="position" intvalue="1100"/>
                 </file>
             </folder>
