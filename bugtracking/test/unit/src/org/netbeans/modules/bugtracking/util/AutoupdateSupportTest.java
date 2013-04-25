@@ -40,53 +40,31 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.autoupdate;
+package org.netbeans.modules.bugtracking.util;
 
-import java.io.File;
-import java.net.URL;
-import org.netbeans.api.autoupdate.UpdateUnitProvider;
-import org.netbeans.core.startup.MainLookup;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
-import org.netbeans.modules.jira.JiraTestUtil;
-import org.openide.util.Lookup;
+import java.util.Calendar;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import junit.framework.TestCase;
+import org.openide.util.HelpCtx;
 
 /**
  *
  * @author tomas
  */
-public class JiraPluginUCTestCase extends NbTestCase {
-    
-    protected static File catalogFile;
-    protected static URL catalogURL;
-    
-    public JiraPluginUCTestCase(String testName) {
-        super(testName);
-    }
+public class AutoupdateSupportTest extends TestCase {
 
-    public static class MyProvider extends AutoupdateCatalogProvider {
-        public MyProvider () {
-            super ("test-updates-provider", "test-updates-provider", catalogURL, UpdateUnitProvider.CATEGORY.STANDARD);
-        }
-    }
+    public void testCheckedToday() {
+        AutoupdateSupport as = new AutoupdateSupport(null, null, null);
+        assertFalse(as.wasCheckedToday(-1));                           // never
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        this.clearWorkDir ();
-        JiraTestUtil.initClient(getWorkDir());
-        catalogFile = new File(getWorkDir(), "updates.xml");
-        if (!catalogFile.exists()) {
-            catalogFile.createNewFile();
-        }
-        catalogURL = catalogFile.toURI().toURL();
+        assertFalse(as.wasCheckedToday(1L));                           // a long long time ago
 
-        setUserDir (getWorkDirPath ());
-        MainLookup.register(new MyProvider());
-        assert Lookup.getDefault().lookup(MyProvider.class) != null;
-    }
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.HOUR, -24);                                      // yesterday
+        assertFalse(as.wasCheckedToday(c.getTime().getTime()));
 
-    public static void setUserDir(String path) {
-        System.setProperty ("netbeans.user", path);
+        assertTrue(as.wasCheckedToday(System.currentTimeMillis()));    // now
     }
 
 }

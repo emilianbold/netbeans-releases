@@ -96,7 +96,7 @@ public class JiraUpdater {
 
     public static boolean supportsDownload() {
         IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
-        return ideServices != null && ideServices.providesDownloadPlugin();
+        return ideServices != null && ideServices.providesPluginUpdate();
     }
     
     /**
@@ -126,7 +126,10 @@ public class JiraUpdater {
     public void downloadAndInstall() {
         IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
         if(ideServices != null) {
-            ideServices.downloadPlugin(JIRA_CNB, Bundle.MSG_JiraPluginName());
+            IDEServices.Plugin plugin = ideServices.getPluginUpdates(JIRA_CNB, Bundle.MSG_JiraPluginName());
+            if(plugin != null) {
+                plugin.openInstallWizard();
+            }
         }
     }
 

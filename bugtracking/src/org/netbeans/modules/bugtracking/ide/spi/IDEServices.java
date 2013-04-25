@@ -62,8 +62,11 @@ public interface IDEServices {
     public boolean providesJumpTo();
     public void jumpTo(String label, String resource);
 
-    public boolean providesDownloadPlugin();
-    // XXX to be clarified how to handle progress and error messages
-    public void downloadPlugin(final String cnb, final String pluginName);
+    public boolean providesPluginUpdate();
     
+    public Plugin getPluginUpdates(String cnb, String pluginName);
+    public interface Plugin {
+        String getDescription();
+        boolean openInstallWizard();
+    }
 }
