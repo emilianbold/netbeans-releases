@@ -39,79 +39,66 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.csl;
+package org.netbeans.modules.php.latte.completion;
 
-import org.netbeans.api.lexer.Language;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.Formatter;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.php.latte.completion.LatteCompletionHandler;
-import org.netbeans.modules.php.latte.format.LatteFormatter;
-import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
-import org.netbeans.modules.php.latte.navigation.LatteStructureScanner;
-import org.netbeans.modules.php.latte.parser.LatteParser;
-import org.netbeans.modules.php.latte.semantic.LatteSemanticAnalyzer;
+import org.netbeans.modules.csl.api.CodeCompletionResult;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ParameterInfo;
+import org.netbeans.modules.csl.spi.DefaultCompletionResult;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@LanguageRegistration(mimeType = LatteLanguage.LATTE_MIME_TYPE)
-public class LatteLanguage extends DefaultLanguageConfig {
-    public static final String LATTE_MIME_TYPE = "text/x-latte"; //NOI18N
+public class LatteCompletionHandler implements CodeCompletionHandler {
 
     @Override
-    public Language getLexerLanguage() {
-        return LatteTopTokenId.language();
+    public CodeCompletionResult complete(CodeCompletionContext context) {
+        return new DefaultCompletionResult(Collections.<CompletionProposal>emptyList(), false);
     }
 
     @Override
-    public String getDisplayName() {
-        return "Latte"; //NOI18N
+    public String document(ParserResult info, ElementHandle element) {
+        return "";
     }
 
     @Override
-    public boolean isIdentifierChar(char c) {
-        return Character.isJavaIdentifierPart(c) || (c == '$') ||(c == '_');
+    public ElementHandle resolveLink(String link, ElementHandle originalHandle) {
+        return null;
     }
 
     @Override
-    public Parser getParser() {
-        return new LatteParser();
+    public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
+        return "";
     }
 
     @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return new LatteSemanticAnalyzer();
+    public QueryType getAutoQuery(JTextComponent component, String typedText) {
+        return QueryType.ALL_COMPLETION;
     }
 
     @Override
-    public boolean hasStructureScanner() {
-        return true;
+    public String resolveTemplateVariable(String variable, ParserResult info, int caretOffset, String name, Map parameters) {
+        return null;
     }
 
     @Override
-    public StructureScanner getStructureScanner() {
-        return new LatteStructureScanner();
+    public Set<String> getApplicableTemplates(Document doc, int selectionBegin, int selectionEnd) {
+        return null;
     }
 
     @Override
-    public boolean hasFormatter() {
-        return true;
-    }
-
-    @Override
-    public Formatter getFormatter() {
-        return new LatteFormatter();
-    }
-
-    @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        return new LatteCompletionHandler();
+    public ParameterInfo parameters(ParserResult info, int caretOffset, CompletionProposal proposal) {
+        return ParameterInfo.NONE;
     }
 
 }
