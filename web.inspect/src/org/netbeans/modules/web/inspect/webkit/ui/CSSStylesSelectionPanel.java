@@ -174,7 +174,7 @@ public class CSSStylesSelectionPanel extends JPanel {
     /** Header of Property Summary section. */
     private JLabel propertySummaryLabel;
     /** Component showing the style information for the current selection. */
-    private JComponent selectionView;
+    private final JComponent selectionView;
     /** Mapping of {@code Resource} to the corresponding {@code FileObject}. */
     private final Map<Resource,FileObject> resourceCache = new WeakHashMap<Resource, FileObject>();
 
@@ -1100,9 +1100,8 @@ public class CSSStylesSelectionPanel extends JPanel {
                 RuleInfo ruleInfo = node.getLookup().lookup(RuleInfo.class);
                 if (ruleInfo != null && ruleInfo.getMetaSourceFile() != null && ruleInfo.getMetaSourceLine() != -1) {
                     ruleLocation = ruleInfo.getMetaSourceFile();
-                    int slashIndex = ruleLocation.lastIndexOf('/');
+                    int slashIndex = Math.max(ruleLocation.lastIndexOf('/'), ruleLocation.lastIndexOf('\\'));
                     ruleLocation = ruleLocation.substring(slashIndex+1);
-                    ruleLocation = ruleLocation.replaceAll("\\\\", ""); // NOI18N
                     ruleLocation += ":" + ruleInfo.getMetaSourceLine(); // NOI18N
                 } else {
                     Resource ruleOrigin = node.getLookup().lookup(Resource.class);
