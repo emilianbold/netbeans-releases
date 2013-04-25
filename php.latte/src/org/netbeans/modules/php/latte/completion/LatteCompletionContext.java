@@ -59,6 +59,18 @@ public enum LatteCompletionContext {
         }
 
     },
+    MACRO {
+        @Override
+        public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+            completeMacros(completionProposals, request);
+        }
+    },
+    HELPER {
+        @Override
+        public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+            completeHelpers(completionProposals, request);
+        }
+    },
     NONE {
 
         @Override
