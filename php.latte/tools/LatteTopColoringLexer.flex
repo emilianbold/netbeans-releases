@@ -221,6 +221,7 @@ SYNTAX_PYTHON_START="{%"
 SYNTAX_PYTHON_END="%}"
 
 %state ST_COMMENT
+%state ST_POSSIBLE_LATTE
 %state ST_LATTE
 %state ST_DOUBLE
 %state ST_ASP
@@ -302,12 +303,9 @@ SYNTAX_PYTHON_END="%}"
             return LatteTopTokenId.T_LATTE_COMMENT_DELIMITER;
         }
     }
-    {SYNTAX_LATTE_START}[^ \t\r\n{] {
+    {SYNTAX_LATTE_START} {
         yypushback(1);
-        if (syntax == Syntax.LATTE) {
-            pushState(ST_LATTE);
-            return LatteTopTokenId.T_LATTE_DELIMITER;
-        }
+        pushState(ST_POSSIBLE_LATTE);
     }
     "<"[a-z0-9:]+ {
         tags.push(new HtmlTag());
@@ -315,6 +313,27 @@ SYNTAX_PYTHON_END="%}"
         return LatteTopTokenId.T_HTML;
     }
     {WHITESPACE}+ | . {
+        return LatteTopTokenId.T_HTML;
+    }
+}
+
+<ST_POSSIBLE_LATTE> {
+    {SYNTAX_LATTE_START}[^ \t\r\n{] {
+        yypushback(1);
+        if (syntax == Syntax.LATTE) {
+            pushState(ST_LATTE);
+            return LatteTopTokenId.T_LATTE_DELIMITER;
+        } else {
+            popState();
+            return LatteTopTokenId.T_HTML;
+        }
+    }
+    {SYNTAX_LATTE_START} {
+        popState();
+        return LatteTopTokenId.T_HTML;
+    }
+    {WHITESPACE}+ | . {
+        popState();
         return LatteTopTokenId.T_HTML;
     }
 }
@@ -528,7 +547,7 @@ SYNTAX_PYTHON_END="%}"
    This rule must be the last in the section!!
    it should contain all the states.
    ============================================ */
-<YYINITIAL, ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_N_ATTR_DOUBLE, ST_N_ATTR_SINGLE, ST_IN_HTML_TAG, ST_IN_SYNTAX_ATTR> {
+<YYINITIAL, ST_COMMENT, ST_POSSIBLE_LATTE, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_N_ATTR_DOUBLE, ST_N_ATTR_SINGLE, ST_IN_HTML_TAG, ST_IN_SYNTAX_ATTR> {
     . {
         yypushback(yylength());
         pushState(ST_HIGHLIGHTING_ERROR);

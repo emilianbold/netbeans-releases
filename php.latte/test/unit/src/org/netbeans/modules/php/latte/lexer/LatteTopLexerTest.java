@@ -126,6 +126,10 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
         performTest("ws-not-error");
     }
 
+    public void testSingleCurlyOpenError() throws Exception {
+        performTest("single-curly-open-error");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".latte"));
