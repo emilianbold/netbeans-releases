@@ -39,55 +39,52 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.api.html.lexer;
+package org.netbeans.modules.html.knockout;
 
-import org.netbeans.api.annotations.common.CheckForNull;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.logging.Level;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
- * <b>NOT FOR PUBLIC USE!!!</b> Prototype - not final version!!! An API review will run, this is a public API.
- * 
- * HtmlLexer extension - allows to inject custom expression languages into html content.
- * 
- * To be registered in global lookup.
  *
  * @author marekfukala
  */
-public abstract class HtmlLexerPlugin {
-    
-    /**
-     * "{{"
-     */
-    public String getOpenDelimiter() {
-        return null;
+public class KODataBindLanguageHierarchy extends LanguageHierarchy<KODataBindTokenId> {
+
+    @Override
+    protected Collection<KODataBindTokenId> createTokenIds() {
+        return EnumSet.allOf(KODataBindTokenId.class);
     }
 
-    /**
-     * "}}"
-     */
-    public String getCloseDelimiter() {
-        return null;
-    }
-    
-    /**
-     * "text/javascript"
-     */
-    public String getContentMimeType() {
-        return null;
-    }
-    
-    /**
-     * Can be used to create a language embedding on an attribute value token. 
-     * 
-     * Note: When more plugins creates an embedding for the same token then the embedding
-     * provided by the first plugin is used.
-     * 
-     * @param elementName name of the tag enclosing the attribute
-     * @param attributeName name of the tag attribute
-     * @return mimetype of the lexer language or null if no embedding should be created.
-     */
-    @CheckForNull
-    public String createAttributeEmbedding(String elementName, String attributeName) {
-        return null;
+    @Override
+    protected Lexer<KODataBindTokenId> createLexer(LexerRestartInfo<KODataBindTokenId> info) {
+        return new KODataBindLexer(info);
     }
 
+    @Override
+    protected String mimeType() {
+        return KOUtils.KO_DATA_BIND_MIMETYPE;
+    }
+
+    @Override
+    protected LanguageEmbedding embedding(
+            Token<KODataBindTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+        switch (token.id()) {
+            case VALUE:
+                Language lang = Language.find(KOUtils.JAVASCRIPT_MIMETYPE);
+                if (lang != null) {
+                    return LanguageEmbedding.create(lang, 0, 0, false);
+                }
+            default:
+                return null;
+        }
+    }
 }

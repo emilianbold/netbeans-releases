@@ -69,13 +69,12 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
     private static final String JS_MIMETYPE = "text/javascript"; //NOI18N
     private static final String NETBEANS_IMPORT_FILE = "__netbeans_import__"; // NOI18N
     private boolean cancelled = true;
-
     private final Language JS_LANGUAGE;
 
     public JsEmbeddingProvider() {
         JS_LANGUAGE = Language.find(JS_MIMETYPE); //NOI18N
     }
-            
+
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         cancelled = false; //resume
@@ -83,8 +82,8 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
         TokenSequence<HTMLTokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence(HTMLTokenId.language());
         JsAnalyzerState state = new JsAnalyzerState();
         process(snapshot, tokenSequence, state, embeddings);
-        return embeddings.isEmpty() 
-                ? Collections.<Embedding>emptyList() 
+        return embeddings.isEmpty()
+                ? Collections.<Embedding>emptyList()
                 : Collections.singletonList(Embedding.create(embeddings));
     }
 
@@ -100,15 +99,15 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
 
     private void process(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
         ts.moveStart();
-        
+
         while (ts.moveNext()) {
-            if(cancelled) {
+            if (cancelled) {
                 embeddings.clear();
-                return ;
+                return;
             }
-            
+
             Token<HTMLTokenId> token = ts.token();
-            
+
             switch (token.id()) {
                 case SCRIPT:
                     handleScript(snapshot, ts, token, state, embeddings);
@@ -139,19 +138,34 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
             }
         }
     }
-    
+
     //VALUE_JAVASCRIPT token always has text/javascript embedding
     //VALUE token MAY have text/javascript embedding (provided by HtmlLexerPlugin) or by dynamic embedding creation
     private void handleValue(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
-        if(ts.embedded(JS_LANGUAGE) != null) {
+        if (ts.embedded(JS_LANGUAGE) != null) {
             //has javascript embedding
             embeddings.add(snapshot.create("(function(){\n", JS_MIMETYPE)); //NOI18N
             int diff = Utils.isAttributeValueQuoted(token.text()) ? 1 : 0;
             embeddings.add(snapshot.create(ts.offset() + diff, ts.token().length() - diff * 2, JS_MIMETYPE));
             embeddings.add(snapshot.create("\n});\n", JS_MIMETYPE)); //NOI18N
+        } else if (ts.embedded() != null) {
+            //!temporary!
+            //workaround for knockout - it creates special text/ko-data-bind embedding
+            //at the value offset and creates javascript embedding on some parts of the value
+            TokenSequence<?> embeddedTS = ts.embedded();
+            embeddedTS.moveStart();
+            while (embeddedTS.moveNext()) {
+                if (embeddedTS.embedded(JS_LANGUAGE) != null) {
+                    //has javascript embedding
+                    embeddings.add(snapshot.create("(function(){\n", JS_MIMETYPE)); //NOI18N
+                    embeddings.add(snapshot.create(embeddedTS.offset(), embeddedTS.token().length(), JS_MIMETYPE));
+                    embeddings.add(snapshot.create("\n});\n", JS_MIMETYPE)); //NOI18N
+                }
+            }
         }
+
     }
-    
+
     private void handleELOpenDelimiter(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
         //1.check if the next token represents javascript content
         String mimetype = (String) ts.token().getProperty("contentMimeType"); //NOT IN AN API, TBD
@@ -300,6 +314,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
     }
 
     private static final class JsAnalyzerState {
+
         boolean in_javascript = false;
     }
 
