@@ -45,6 +45,7 @@ package org.netbeans;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -68,7 +69,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -91,9 +91,9 @@ public final class Stamps {
     private static final Logger LOG = Logger.getLogger(Stamps.class.getName());
     private static AtomicLong moduleJARs;
     private static File moduleNewestFile;
-    private static String[] dirs;
     private static File[] fallbackCache;
     private static boolean populated;
+    private static Boolean clustersChanged;
 
     private Worker worker = new Worker();
 
@@ -107,21 +107,24 @@ public final class Stamps {
     static void main(String... args) {
         if (args.length == 1 && "reset".equals(args[0])) { // NOI18N
             moduleJARs = null;
-            dirs = null;
+            Clusters.clear();
+            clustersChanged = null;
             fallbackCache = null;
             stamp(false);
             return;
         }
         if (args.length == 1 && "init".equals(args[0])) { // NOI18N
             moduleJARs = null;
-            dirs = null;
+            Clusters.clear();
+            clustersChanged = null;
             fallbackCache = null;
             stamp(true);
             return;
         }
         if (args.length == 1 && "clear".equals(args[0])) { // NOI18N
             moduleJARs = null;
-            dirs = null;
+            Clusters.clear();
+            clustersChanged = null;
             fallbackCache = null;
             return;
         }
@@ -183,6 +186,10 @@ public final class Stamps {
         return asByteBuffer(cache, true, false);
     }
     final File file(String cache, int[] len) {
+        if (clustersChanged()) {
+            return null;
+        }
+        
         checkPopulateCache();
         
         synchronized (this) {
@@ -191,34 +198,7 @@ public final class Stamps {
                 return null;
             }
         }
-
-        File cacheFile = Places.getCacheSubfile(cache);
-        long last = cacheFile.lastModified();
-        if (last <= 0) {
-            LOG.log(Level.FINE, "Cache does not exist when asking for {0}", cache); // NOI18N
-            cacheFile = findFallbackCache(cache);
-            if (cacheFile == null || (last = cacheFile.lastModified()) <= 0) {
-                return null;
-            }
-            LOG.log(Level.FINE, "Found fallback cache at {0}", cacheFile);
-        }
-
-        if (moduleJARs() > last) {
-            LOG.log(Level.FINE, "Timestamp does not pass when asking for {0}. Newest file {1}", new Object[] { cache, moduleNewestFile }); // NOI18N
-            return null;
-        }
-
-        long longLen = cacheFile.length();
-        if (longLen > Integer.MAX_VALUE) {
-            LOG.warning("Cache file is too big: " + longLen + " bytes for " + cacheFile); // NOI18N
-            return null;
-        }
-        if (len != null) {
-            len[0] = (int)longLen;
-        }
-        
-        LOG.log(Level.FINE, "Cache found: {0}", cache); // NOI18N
-        return cacheFile;
+        return fileImpl(cache, len, moduleJARs());
     }
     
     private ByteBuffer asByteBuffer(String cache, boolean direct, boolean mmap) {
@@ -260,12 +240,17 @@ public final class Stamps {
      */
     public void scheduleSave(Updater updater, String cache, boolean append) {
         boolean firstAdd;
-        synchronized (worker) {
-            firstAdd = worker.addStorage(new Store(updater, cache, append));
-        }
+        firstAdd = scheduleSaveImpl(updater, cache, append);
         LOG.log(firstAdd ? Level.FINE : Level.FINER, 
             "Scheduling save for {0} cache", cache
         );
+        Clusters.scheduleSave(this);
+    }
+    
+    final boolean scheduleSaveImpl(Updater updater, String cache, boolean append) {
+        synchronized (worker) {
+            return worker.addStorage(new Store(updater, cache, append));
+        }
     }
     
     /** Flushes all caches.
@@ -345,36 +330,23 @@ public final class Stamps {
         stamp(checkStampFile, result, newestFile);
         return result;
     }
-    
-    private static synchronized String[] dirs() {
-        if (dirs == null) {
-            List<String> tmp = new ArrayList<String>();
-            String nbdirs = System.getProperty("netbeans.dirs"); // NOI18N
-            if (nbdirs != null) {
-                StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
-                while (tok.hasMoreTokens()) {
-                    tmp.add(tok.nextToken());
-                }
-            }
-            dirs = tmp.toArray(new String[tmp.size()]);
-        }
-        return dirs;
-    }
 
     private static void stamp(boolean checkStampFile, AtomicLong result, AtomicReference<File> newestFile) {
         StringBuilder sb = new StringBuilder();
         
         Set<File> processedDirs = new HashSet<File>();
+        String[] relativeDirs = Clusters.relativeDirsWithHome();
         String home = System.getProperty ("netbeans.home"); // NOI18N
         if (home != null) {
             long stamp = stampForCluster (new File (home), result, newestFile, processedDirs, checkStampFile, true, null);
-            sb.append("home=").append(stamp).append('\n');
+            sb.append(relativeDirs[0]).append('=').append(stamp).append('\n');
         }
-        for (String t : dirs()) {
-            final File clusterDir = new File(t);
+        String[] drs = Clusters.dirs();
+        for (int i = 0; i < drs.length; i++) {
+            final File clusterDir = new File(drs[i]);
             long stamp = stampForCluster(clusterDir, result, newestFile, processedDirs, checkStampFile, true, null);
             if (stamp != -1) {
-                sb.append(clusterDir.getName()).append('=').append(stamp).append('\n');
+                sb.append("cluster.").append(relativeDirs[i + 1]).append('=').append(stamp).append('\n');
             }
         }
         File user = Places.getUserDirectory();
@@ -561,8 +533,8 @@ public final class Stamps {
     private static File findFallbackCache(String cache) {
         if (fallbackCache == null) {
             fallbackCache = new File[0];
-            if (dirs().length >= 1) {
-                File fallback = new File(new File(new File(dirs()[0]), "var"), "cache"); // NOI18N
+            if (Clusters.dirs().length >= 1) {
+                File fallback = new File(new File(new File(Clusters.dirs()[0]), "var"), "cache"); // NOI18N
                 if (fallback.isDirectory()) {
                     fallbackCache = new File[]{ fallback };
                 }
@@ -619,6 +591,69 @@ public final class Stamps {
         } catch (IOException ex) {
             LOG.log(Level.INFO, "Failed to populate {0}", cache);
         }
+    }
+    
+    private static boolean clustersChanged() {
+        if (clustersChanged != null) {
+            return clustersChanged;
+        }
+        
+        final String clustersCache = "all-clusters.dat"; // NOI18N
+        File f = fileImpl(clustersCache, null, -1); // no timestamp check
+        if (f != null) {
+            DataInputStream dis = null;
+            try {
+                dis = new DataInputStream(new FileInputStream(f));
+                if (Clusters.compareDirs(dis)) {
+                    return false;
+                }
+            } catch (IOException ex) {
+                return clustersChanged = true;
+            } finally {
+                if (dis != null) {
+                    try {
+                        dis.close();
+                    } catch (IOException ex) {
+                        LOG.log(Level.INFO, null, ex);
+                    }
+                }
+            }
+        } else {
+            // missing cluster file signals caches are OK, for 
+            // backward compatibility
+            return clustersChanged = false;
+        }
+        return clustersChanged = true;
+    }
+
+    private static File fileImpl(String cache, int[] len, long moduleJARs) {
+        File cacheFile = new File(Places.getCacheDirectory(), cache);
+        long last = cacheFile.lastModified();
+        if (last <= 0) {
+            LOG.log(Level.FINE, "Cache does not exist when asking for {0}", cache); // NOI18N
+            cacheFile = findFallbackCache(cache);
+            if (cacheFile == null || (last = cacheFile.lastModified()) <= 0) {
+                return null;
+            }
+            LOG.log(Level.FINE, "Found fallback cache at {0}", cacheFile);
+        }
+
+        if (moduleJARs > last) {
+            LOG.log(Level.FINE, "Timestamp does not pass when asking for {0}. Newest file {1}", new Object[] { cache, moduleNewestFile }); // NOI18N
+            return null;
+        }
+
+        long longLen = cacheFile.length();
+        if (longLen > Integer.MAX_VALUE) {
+            LOG.log(Level.WARNING, "Cache file is too big: {0} bytes for {1}", new Object[]{longLen, cacheFile}); // NOI18N
+            return null;
+        }
+        if (len != null) {
+            len[0] = (int)longLen;
+        }
+        
+        LOG.log(Level.FINE, "Cache found: {0}", cache); // NOI18N
+        return cacheFile;
     }
 
     /** A callback interface to flush content of some cache at a suitable
@@ -908,7 +943,7 @@ public final class Stamps {
             return relative;
         }
         int indx = Integer.parseInt(index);
-        String[] _dirs = dirs();
+        String[] _dirs = Clusters.dirs();
         if (indx < 0 || indx >= _dirs.length) {
             throw new IOException("Bad index " + indx + " for " + Arrays.toString(_dirs));
         }
@@ -931,7 +966,7 @@ public final class Stamps {
             return;
         }
         int cnt = 0;
-        for (String p : dirs()) {
+        for (String p : Clusters.dirs()) {
             if (testWritePath(path, p, "" + cnt, out)) {
                 return;
             }
