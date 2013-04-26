@@ -75,7 +75,7 @@ public class TestSessionImpl implements TestSession {
     @NbBundle.Messages({
         "# {0} - provider name",
         "# {1} - suite name",
-        "TestSessionImpl.suite.name={0}: {1}",
+        "TestSessionImpl.suite.name=[{0}] {1}",
     })
     @Override
     public TestSuite addTestSuite(String name, FileObject location) {
