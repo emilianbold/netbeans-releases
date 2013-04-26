@@ -627,7 +627,7 @@ public final class Stamps {
     }
 
     private static File fileImpl(String cache, int[] len, long moduleJARs) {
-        File cacheFile = Places.getCacheSubfile(cache);
+        File cacheFile = new File(Places.getCacheDirectory(), cache);
         long last = cacheFile.lastModified();
         if (last <= 0) {
             LOG.log(Level.FINE, "Cache does not exist when asking for {0}", cache); // NOI18N
