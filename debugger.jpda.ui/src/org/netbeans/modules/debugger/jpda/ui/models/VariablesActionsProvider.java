@@ -100,11 +100,14 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     private final Action GO_TO_SOURCE_ACTION = Models.createAction (
         NbBundle.getMessage(VariablesActionsProvider.class, "CTL_GoToSource"), 
         new Models.ActionPerformer () {
+            @Override
             public boolean isEnabled (Object node) {
                 return true;
             }
+            @Override
             public void perform (final Object[] nodes) {
                 lookupProvider.lookupFirst(null, RequestProcessor.class).post(new Runnable() {
+                    @Override
                     public void run() {
                         goToSource ((Field) nodes [0]);
                     }
@@ -117,11 +120,14 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     private final Action GO_TO_TYPE_SOURCE_ACTION = Models.createAction (
         NbBundle.getMessage(VariablesActionsProvider.class, "CTL_GoToTypeSource"), 
         new Models.ActionPerformer () {
+            @Override
             public boolean isEnabled (Object node) {
                 return true;
             }
+            @Override
             public void perform (final Object[] nodes) {
                 lookupProvider.lookupFirst(null, RequestProcessor.class).post(new Runnable() {
+                    @Override
                     public void run() {
                         showSource (((ObjectVariable) nodes [0]).getType());
                     }
@@ -139,6 +145,7 @@ public class VariablesActionsProvider implements NodeActionsProvider {
         this.lookupProvider = lookupProvider;
     }
 
+    @Override
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT)
             return new Action[] {
@@ -172,11 +179,13 @@ public class VariablesActionsProvider implements NodeActionsProvider {
         throw new UnknownTypeException (node);
     }
     
+    @Override
     public void performDefaultAction (final Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) 
             return;
         if (node instanceof Field) {
             lookupProvider.lookupFirst(null, RequestProcessor.class).post(new Runnable() {
+                @Override
                 public void run() {
                     goToSource ((Field) node);
                 }
