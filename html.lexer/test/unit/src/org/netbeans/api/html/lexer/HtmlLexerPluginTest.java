@@ -141,7 +141,7 @@ public class HtmlLexerPluginTest extends NbTestCase {
     }
 
     @ServiceProvider(service = HtmlLexerPlugin.class)
-    public static class TestPlugin implements HtmlLexerPlugin {
+    public static class TestPlugin extends HtmlLexerPlugin {
 
         @Override
         public String getOpenDelimiter() {

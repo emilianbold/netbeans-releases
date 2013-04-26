@@ -39,14 +39,15 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.embedding;
+package org.netbeans.modules.html.knockout;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.html.lexer.HtmlLexerPlugin;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -58,97 +59,41 @@ import org.netbeans.modules.web.common.api.WebUtils;
  *
  * @author marekfukala
  */
-public class JsEmbeddingProviderTest extends CslTestBase {
-
-    public JsEmbeddingProviderTest(String name) {
+public class KOModelTest extends CslTestBase {
+    
+    public KOModelTest(String name) {
         super(name);
     }
 
-    public void testScriptTag() throws ParseException {
-        assertEmbedding("<script>alert();</script>", "alert();\n");
-
-        assertEmbedding("<script>\n"
-                + "function hello() {\n"
-                + "    alert('hello!');\n"
-                + "}\n"
-                + "</script>",
-                "\n"
-                + "function hello() {\n"
-                + "    alert('hello!');\n"
-                + "}\n"
-                + "\n"
-                + "");
+    public void testBasic() {
+        KOModel model = createModel("<div data-bind=\"text: name\"></div>");
+        Collection<Attribute> bindings = model.getBindings();
+        assertNotNull(bindings);
+        assertEquals(1, bindings.size());
+        Attribute a = bindings.iterator().next();
+        assertEquals("text: name", a.unquotedValue().toString());
+        assertTrue(model.containsKnockout());
     }
-
-    public void testOnClick() throws ParseException {
-        assertEmbedding("<div onclick='alert()'/>",
-                "(function(){\n"
-                + "alert()\n"
-                + "});\n"
-                + "");
-    }
-
-    public void testCustomJSEmbeddingOnAttributeValue() {
-        assertEmbedding("<div controller='MyController'/>",
-                "(function(){\n"
-                + "MyController\n"
-                + "});\n"
-                + "");
-    }
-
-    public void testCustomEL() {
-        assertEmbedding("<div>{{hello}}</div>",
-                "(function(){\n"
-                + "hello;\n"
-                + "});\n"
-                + "");
-    }
-
-    @MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
-    public static class TestHtmlLexerPlugin extends HtmlLexerPlugin {
-
-        @Override
-        public String getOpenDelimiter() {
-            return "{{";
-        }
-
-        @Override
-        public String getCloseDelimiter() {
-            return "}}";
-        }
-
-        @Override
-        public String getContentMimeType() {
-            return "text/javascript";
-        }
-
-        @Override
-        public String createAttributeEmbedding(String elementName, String attributeName) {
-            if ("controller".equals(attributeName)) {
-                return "text/javascript";
-            }
-            return null;
-        }
-    }
-
-    private void assertEmbedding(String code, String expectedJsVirtualSource) {
-        try {
+    
+    private KOModel createModel(String code) {
+        try {        
             BaseDocument document = getDocument(code, "text/html");
             Source source = Source.create(document);
-            final AtomicReference<String> jsCodeRef = new AtomicReference<>();
+            final AtomicReference<KOModel> modelRef = new AtomicReference<>();
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    ResultIterator jsRi = WebUtils.getResultIterator(resultIterator, "text/javascript");
-                    assertNotNull(jsRi);
-                    jsCodeRef.set(jsRi.getSnapshot().getText().toString());
+                    ResultIterator htmlResult = WebUtils.getResultIterator(resultIterator, "text/html");
+                    assertNotNull(htmlResult);
+                    modelRef.set(KOModel.getModel((HtmlParserResult)htmlResult.getParserResult()));
                 }
             });
-            String jsCode = jsCodeRef.get();
-            assertNotNull(jsCode);
-            assertEquals(expectedJsVirtualSource, jsCode);
+            assertNotNull(modelRef.get());
+            return modelRef.get();
         } catch (ParseException ex) {
             throw new RuntimeException(ex);
         }
+        
     }
+    
 }
