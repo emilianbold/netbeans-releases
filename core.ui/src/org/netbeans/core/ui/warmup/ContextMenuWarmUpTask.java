@@ -73,9 +73,7 @@ public final class ContextMenuWarmUpTask implements Runnable {
         assert EventQueue.isDispatchThread();
         // For first context menu.
         org.openide.actions.ActionManager.getDefault().getContextActions();
-        synchronized (LogManager.getLogManager()) {
-            JMenuItem mi = new javax.swing.JMenuItem();
-        }
+        JMenuItem mi = new javax.swing.JMenuItem();
         warmUpToolsPopupMenuItem();
     }
 
