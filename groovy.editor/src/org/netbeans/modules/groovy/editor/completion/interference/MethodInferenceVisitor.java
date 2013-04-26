@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,72 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.editor.completion.interference;
 
-import java.util.Collections;
-import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
- * @author Petr Hejl
+ * @author Martin Janicek
  */
-public class GroovyTypeAnalyzer {
+public final class MethodInferenceVisitor {
 
-    private final BaseDocument document;
-
-    public GroovyTypeAnalyzer(BaseDocument document) {
-        this.document = document;
+    private MethodInferenceVisitor() {
     }
-
-    public Set<ClassNode> getTypes(AstPath path, int astOffset) {
-        ASTNode caller = path.leaf();
-        if (caller instanceof VariableExpression) {
-            ModuleNode moduleNode = (ModuleNode) path.root();
-            TypeInferenceVisitor typeVisitor = new TypeInferenceVisitor(moduleNode.getContext(), path, document, astOffset);
-            typeVisitor.collect();
+    
+    /**
+     * Tries to infer correct {@link ClassNode} representing type of the caller for
+     * the given expression. Typically the given parameter is instance of {@link MethodCallExpression}
+     * and in that case the return type of the method call is returned.<br/><br/>
+     * 
+     * The method also handles method chain and in such case the return type of the
+     * last method call should be return.
+     * 
+     * @param expression
+     * @return class type of the caller if found, {@code null} otherwise
+     */
+    @CheckForNull
+    public static ClassNode findCallerType(@NonNull ASTNode expression) {
+        // In case if the method call is chained with another method call
+        // For example: someInteger.toString().^
+        if (expression instanceof MethodCallExpression) {
+            MethodCallExpression methodCall = (MethodCallExpression) expression;
             
-            ClassNode guessedType = typeVisitor.getGuessedType();
-            if (guessedType != null) {
-                return Collections.singleton(guessedType);
+            ClassNode callerType = findCallerType(methodCall.getObjectExpression());
+            if (callerType != null) {
+                return findReturnTypeFor(callerType, methodCall.getMethodAsString(), methodCall.getArguments());
             }
         }
-        
-        if (caller instanceof MethodCallExpression) {
-            return Collections.singleton(MethodInferenceVisitor.findCallerType(caller));
+
+        // In case if the method call is directly on a variable
+        if (expression instanceof VariableExpression) {
+            Variable variable = ((VariableExpression) expression).getAccessedVariable();
+            return variable.getType();
         }
+        return null;
+    }
+    
+    @CheckForNull
+    private static ClassNode findReturnTypeFor(
+            @NonNull ClassNode callerType, 
+            @NonNull String methodName,
+            @NonNull Expression arguments) {
         
-        return Collections.emptySet();
+        MethodNode possibleMethod = callerType.tryFindPossibleMethod(methodName, arguments);
+        if (possibleMethod != null) {
+            return possibleMethod.getReturnType();
+        }
+        return null;
     }
 }
