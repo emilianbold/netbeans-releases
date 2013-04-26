@@ -54,13 +54,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
@@ -321,15 +320,17 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
         }
 
         private KenaiProject[] getProjectsViewProjects() {
-            Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
-            if (openProjects.length == 0) {
+            ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
+            FileObject[] openProjectFiles = projectServices != null ? projectServices.getOpenProjectsDirectories() : null;
+            
+            if (openProjectFiles == null || openProjectFiles.length == 0) {
                 return new KenaiProject[0];
             }
 
             int count = 0;
-            KenaiProject[] kenaiProjects = new KenaiProject[openProjects.length];
-            for (Project p : openProjects) {
-                KenaiProject kenaiProject = getKenaiProject(p);
+            KenaiProject[] kenaiProjects = new KenaiProject[openProjectFiles.length];
+            for (FileObject rootDir : openProjectFiles) {
+                KenaiProject kenaiProject = getKenaiProject(rootDir);
                 if (kenaiProject != null) {
                     kenaiProjects[count++] = kenaiProject;
                 }
@@ -338,8 +339,7 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
             return stripTrailingNulls(kenaiProjects);
         }
 
-        private static KenaiProject getKenaiProject(Project p) {
-            FileObject rootDir = p.getProjectDirectory();
+        private static KenaiProject getKenaiProject(FileObject rootDir) {
             Object attValue = rootDir.getAttribute(
                                        "ProvidedExtensions.RemoteLocation");//NOI18N
             if (!(attValue instanceof String)) {
@@ -352,7 +352,7 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
                 if(BugtrackingUtil.isNbRepository(url)) {
                     OwnerInfo owner = null;
                     for (KenaiAccessor kenaiAccessor : KenaiUtil.getKenaiAccessors()) {
-                        owner = kenaiAccessor.getOwnerInfo(FileUtil.toFile(p.getProjectDirectory()));
+                        owner = kenaiAccessor.getOwnerInfo(FileUtil.toFile(rootDir));
                         if (owner != null) {
                             break;
                         }

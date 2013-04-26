@@ -62,14 +62,13 @@ import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import org.netbeans.api.keyring.Keyring;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -500,13 +499,11 @@ public class BugtrackingUtil {
         if(nodes == null || nodes.length == 0) {
             return null;
         }
-        final Lookup nodeLookup = nodes[0].getLookup();
-
-        Project project = nodeLookup.lookup(Project.class);
-        if (project != null) {
-            return getFile(project);
+        Lookup nodeLookup = nodes[0].getLookup();
+        FileObject[] fos = getProjectDirectories(nodeLookup);
+        if(fos != null && fos.length > 0) {
+            return org.openide.filesystems.FileUtil.toFile(fos[0]);
         }
-
         DataObject dataObj = nodeLookup.lookup(DataObject.class);
         if (dataObj != null) {
             return getFile(dataObj);
@@ -529,22 +526,26 @@ public class BugtrackingUtil {
         });
     }
     
-    private static File getFile(Project project) {
-        FileObject fileObject = project.getProjectDirectory();
-        return org.openide.filesystems.FileUtil.toFile(fileObject);
-    }
-
     private static File getFile(DataObject dataObj) {
         FileObject fileObj = dataObj.getPrimaryFile();
         if (fileObj == null) {
             return null;
         }
-
-        Project project = FileOwnerQuery.getOwner(fileObj);
-        if (project != null) {
-            return getFile(project);
+        FileObject ownerDirectory = getFileOwnerDirectory(fileObj);
+        if (ownerDirectory != null) {
+            return org.openide.filesystems.FileUtil.toFile(ownerDirectory);
         }
         return org.openide.filesystems.FileUtil.toFile(fileObj);
     }  
-      
+
+    public static FileObject getFileOwnerDirectory(FileObject fileObject) {
+        ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
+        return projectServices != null ? projectServices.getFileOwnerDirectory(fileObject): null;
+    }
+    
+    public static FileObject[] getProjectDirectories(Lookup lookup) {
+        ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
+        return projectServices != null ? projectServices.getProjectDirectories(lookup) : null;
+    }
+    
 }
