@@ -331,7 +331,9 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
         PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).setSdkLocation(androidSdkField.getText());
         CordovaPlatform.getDefault().setSdkLocation(cordovaSdkField.getText());
         PlatformManager.getPlatform(PlatformManager.IOS_TYPE).setCodeSignIdentity(identityTextField.getText());
-        PlatformManager.getPlatform(PlatformManager.IOS_TYPE).setProvisioningProfilePath(((ProvisioningProfile) provisioningCombo.getSelectedItem()).getPath());
+        final ProvisioningProfile prov = (ProvisioningProfile) provisioningCombo.getSelectedItem();
+        if (prov !=null)
+            PlatformManager.getPlatform(PlatformManager.IOS_TYPE).setProvisioningProfilePath(prov.getPath());
     }
 
     @NbBundle.Messages(
