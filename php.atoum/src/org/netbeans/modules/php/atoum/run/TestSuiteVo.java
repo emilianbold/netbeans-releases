@@ -41,36 +41,52 @@
  */
 package org.netbeans.modules.php.atoum.run;
 
-import java.util.logging.Logger;
-import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.atoum.commands.Atoum;
-import org.netbeans.modules.php.atoum.ui.options.AtoumOptionsPanelController;
-import org.netbeans.modules.php.spi.testing.run.TestRunException;
-import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
-import org.netbeans.modules.php.spi.testing.run.TestSession;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
 
-public final class TestRunner {
+public final class TestSuiteVo {
 
-    private final PhpModule phpModule;
+    private final String name;
+    private final List<TestCaseVo> testCases = new ArrayList<>();
+
+    private String file = null;
+    private boolean fileSearched = false;
 
 
-    public TestRunner(PhpModule phpModule) {
-        assert phpModule != null;
-        this.phpModule = phpModule;
+    public TestSuiteVo(String name) {
+        assert name != null;
+        this.name = name;
     }
 
-    public void runTests(TestRunInfo runInfo, TestSession testSession) throws TestRunException {
-        Atoum atoum;
-        try {
-            atoum = Atoum.getForPhpModule(phpModule);
-        } catch (InvalidPhpExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), AtoumOptionsPanelController.OPTIONS_SUB_PATH);
-            return;
+    public String getName() {
+        return name;
+    }
+
+    @CheckForNull
+    public String getFile() {
+        if (!fileSearched) {
+            for (TestCaseVo testCase : testCases) {
+                file = testCase.getFile();
+                if (file != null) {
+                    break;
+                }
+            }
         }
-        assert atoum != null;
-        atoum.runTests(phpModule, runInfo, testSession);
+        return file;
+    }
+
+    public List<TestCaseVo> getTestCases() {
+        return testCases;
+    }
+
+    public void addTestCase(TestCaseVo testCase) {
+        testCases.add(testCase);
+    }
+
+    @Override
+    public String toString() {
+        return "TestSuiteVo{" + "name=" + name + ", testCases=" + testCases + '}'; // NOI18N
     }
 
 }

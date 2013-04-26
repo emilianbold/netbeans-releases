@@ -139,7 +139,7 @@ public class AtoumTestingProvider implements PhpTestingProvider {
     @Override
     public Locations.Line parseFileFromOutput(String line) {
         Matcher matcher = Atoum.LINE_PATTERN.matcher(line);
-        if (matcher.matches()) {
+        if (matcher.find()) {
             File file = new File(matcher.group(1));
             if (file.isFile()) {
                 FileObject fo = FileUtil.toFileObject(file);

@@ -41,36 +41,98 @@
  */
 package org.netbeans.modules.php.atoum.run;
 
-import java.util.logging.Logger;
-import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.atoum.commands.Atoum;
-import org.netbeans.modules.php.atoum.ui.options.AtoumOptionsPanelController;
-import org.netbeans.modules.php.spi.testing.run.TestRunException;
-import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
-import org.netbeans.modules.php.spi.testing.run.TestSession;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.spi.testing.run.TestCase;
 
-public final class TestRunner {
+public final class TestCaseVo {
 
-    private final PhpModule phpModule;
+    private final String name;
+
+    private TestCase.Status status;
+    private String file;
+    private int line = -1;
+    private long time = -1;
+    private String message;
+    private List<String> stackTrace = Collections.emptyList();
+    private TestCase.Diff diff;
 
 
-    public TestRunner(PhpModule phpModule) {
-        assert phpModule != null;
-        this.phpModule = phpModule;
+    public TestCaseVo(String name) {
+        assert name != null;
+        this.name = name;
     }
 
-    public void runTests(TestRunInfo runInfo, TestSession testSession) throws TestRunException {
-        Atoum atoum;
-        try {
-            atoum = Atoum.getForPhpModule(phpModule);
-        } catch (InvalidPhpExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), AtoumOptionsPanelController.OPTIONS_SUB_PATH);
-            return;
-        }
-        assert atoum != null;
-        atoum.runTests(phpModule, runInfo, testSession);
+    public String getName() {
+        return name;
+    }
+
+    public TestCase.Status getStatus() {
+        assert status != null;
+        return status;
+    }
+
+    public void setStatus(TestCase.Status status) {
+        this.status = status;
+    }
+
+    @CheckForNull
+    public String getFile() {
+        return file;
+    }
+
+    public void setFile(String file) {
+        this.file = file;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public void setLine(int line) {
+        this.line = line;
+    }
+
+    public long getTime() {
+        assert time != -1;
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
+    }
+
+    @CheckForNull
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    @CheckForNull
+    public List<String> getStackTrace() {
+        return stackTrace;
+    }
+
+    public void setStackTrace(List<String> stackTrace) {
+        this.stackTrace = stackTrace;
+    }
+
+    @CheckForNull
+    public TestCase.Diff getDiff() {
+        return diff;
+    }
+
+    public void setDiff(TestCase.Diff diff) {
+        this.diff = diff;
+    }
+
+    @Override
+    public String toString() {
+        return "TestCaseVo{" + "name=" + name + ", status=" + status + '}'; // NOI18N
     }
 
 }

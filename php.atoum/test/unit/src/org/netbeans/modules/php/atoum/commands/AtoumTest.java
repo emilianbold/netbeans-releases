@@ -49,7 +49,7 @@ public class AtoumTest {
 
     @Test
     public void testLinePattern() {
-        String line = "# /home/gapon/NetBeansProjects/atoum-sample/vendor/atoum/atoum/classes/test.php:838";
+        String line = "/home/gapon/NetBeansProjects/atoum-sample/vendor/atoum/atoum/classes/test.php:838";
         Matcher matcher = Atoum.LINE_PATTERN.matcher(line);
         assertTrue(matcher.matches());
         assertEquals("/home/gapon/NetBeansProjects/atoum-sample/vendor/atoum/atoum/classes/test.php", matcher.group(1));

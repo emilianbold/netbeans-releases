@@ -42,7 +42,9 @@
 package org.netbeans.modules.php.atoum.commands;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -51,14 +53,21 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.atoum.AtoumTestingProvider;
 import org.netbeans.modules.php.atoum.options.AtoumOptions;
+import org.netbeans.modules.php.atoum.run.TapParser;
+import org.netbeans.modules.php.atoum.run.TestCaseVo;
+import org.netbeans.modules.php.atoum.run.TestSuiteVo;
 import org.netbeans.modules.php.atoum.ui.options.AtoumOptionsPanelController;
+import org.netbeans.modules.php.spi.testing.locate.Locations;
+import org.netbeans.modules.php.spi.testing.run.TestCase;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.openide.filesystems.FileObject;
@@ -67,6 +76,8 @@ import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.php.spi.testing.run.TestRunInfo.SessionType.DEBUG;
 import static org.netbeans.modules.php.spi.testing.run.TestRunInfo.SessionType.TEST;
+import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.netbeans.modules.php.spi.testing.run.TestSuite;
 
 /**
  * Represents <tt>atoum</tt> or <tt>mageekguy.atoum.phar</tt>.
@@ -78,7 +89,7 @@ public final class Atoum {
     public static final String PHAR_FILE_NAME = "mageekguy.atoum.phar"; // NOI18N
     public static final String ATOUM_FILE_NAME = "atoum"; // NOI18N
 
-    public static final Pattern LINE_PATTERN = Pattern.compile("^# ([^:]+):(\\d+)$"); // NOI18N
+    public static final Pattern LINE_PATTERN = Pattern.compile("([^:]+):(\\d+)"); // NOI18N
 
     private static final String ATOUM_PROJECT_FILE_PATH = "vendor/atoum/atoum/bin/atoum"; // NOI18N
 
@@ -134,7 +145,7 @@ public final class Atoum {
     }
 
     @CheckForNull
-    public Integer runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
+    public Integer runTests(PhpModule phpModule, TestRunInfo runInfo, final TestSession testSession) throws TestRunException {
         PhpExecutable atoum = getExecutable(phpModule, getOutputTitle(runInfo));
         List<String> params = new ArrayList<>();
         params.add(TAP_FORMAT_PARAM);
@@ -170,9 +181,9 @@ public final class Atoum {
         atoum.additionalParameters(params);
         try {
             if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
-                return atoum.runAndWait(getDescriptor(), "Running tests..."); // NOI18N
+                return atoum.runAndWait(getDescriptor(), new ParsingFactory(testSession), "Running atoum tests..."); // NOI18N
             }
-            return atoum.debug(runInfo.getStartFile(), getDescriptor(), null);
+            return atoum.debug(runInfo.getStartFile(), getDescriptor(), new ParsingFactory(testSession));
         } catch (CancellationException ex) {
             // canceled
             LOGGER.log(Level.FINE, "Test creating cancelled", ex);
@@ -196,6 +207,7 @@ public final class Atoum {
     private ExecutionDescriptor getDescriptor() {
         return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .optionsPath(AtoumOptionsPanelController.OPTIONS_PATH)
+                .frontWindowOnError(false)
                 .inputVisible(false);
     }
 
@@ -230,6 +242,145 @@ public final class Atoum {
             return className.substring(1);
         }
         return className;
+    }
+
+    //~ Inner classes
+
+    private static final class ParsingFactory implements ExecutionDescriptor.InputProcessorFactory {
+
+        private final TestSession testSession;
+
+
+        private ParsingFactory(TestSession testSession) {
+            assert testSession != null;
+            this.testSession = testSession;
+        }
+
+        @Override
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return new ParsingProcessor(testSession);
+        }
+
+    }
+
+    private static final class ParsingProcessor implements InputProcessor {
+
+        private final TestSession testSession;
+
+        private String testSuiteName = null;
+        private TestSuite testSuite = null;
+        private long currentMillis = currentMillis();
+        private long testSuiteTime = 0;
+
+
+        public ParsingProcessor(TestSession testSession) {
+            assert testSession != null;
+            this.testSession = testSession;
+        }
+
+        private static long currentMillis() {
+            return System.currentTimeMillis();
+        }
+
+        @Override
+        public void processInput(char[] chars) throws IOException {
+            List<TestSuiteVo> suites = new TapParser()
+                    .parse(new String(chars), currentMillis() - currentMillis);
+            process(suites);
+            currentMillis = currentMillis();
+        }
+
+        @Override
+        public void reset() throws IOException {
+            // noop
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (testSuite != null) {
+                testSuite.finish(testSuiteTime);
+            }
+        }
+
+        private void process(List<TestSuiteVo> suites) {
+            for (TestSuiteVo suite : suites) {
+                String name = suite.getName();
+                if (testSuiteName == null
+                        || testSuiteName.equals(name)) {
+                    testSuiteName = name;
+                    if (testSuite != null) {
+                        testSuite.finish(testSuiteTime);
+                        testSuiteTime = 0;
+                    }
+                    testSuite = testSession.addTestSuite(name, getFileObject(suite.getFile()));
+                }
+                addTestCases(suite.getTestCases());
+            }
+        }
+
+        private FileObject getFileObject(String path) {
+            if (path == null) {
+                return null;
+            }
+            FileObject fileObject = FileUtil.toFileObject(new File(path));
+            assert fileObject != null : "Cannot find file object for: " + path;
+            return fileObject;
+        }
+
+        private void addTestCases(List<TestCaseVo> testCases) {
+            for (TestCaseVo kase : testCases) {
+                TestCase testCase = testSuite.addTestCase(kase.getName(), AtoumTestingProvider.IDENTIFIER);
+                map(kase, testCase);
+                testSuiteTime += kase.getTime();
+            }
+        }
+
+        private void map(TestCaseVo kase, TestCase testCase) {
+            testCase.setClassName(testSuiteName);
+            testCase.setStatus(kase.getStatus());
+            mapLocation(kase, testCase);
+            mapFailureInfo(kase, testCase);
+            testCase.setTime(kase.getTime());
+        }
+
+        private void mapLocation(TestCaseVo kase, TestCase testCase) {
+            String file = kase.getFile();
+            if (file == null) {
+                return;
+            }
+            FileObject fileObject = FileUtil.toFileObject(new File(file));
+            assert fileObject != null : "Cannot find file object for file: " + file;
+            testCase.setLocation(new Locations.Line(fileObject, kase.getLine()));
+        }
+
+        private void mapFailureInfo(TestCaseVo kase, TestCase testCase) {
+            if (isPass(kase.getStatus())) {
+                assert kase.getMessage() == null : kase.getMessage();
+                assert kase.getDiff() == null : kase.getDiff();
+                assert kase.getStackTrace() == null : kase.getStackTrace();
+                return;
+            }
+            String message = kase.getMessage();
+            assert message != null : kase;
+            List<String> stackTrace = kase.getStackTrace();
+            if (stackTrace == null) {
+                stackTrace = Collections.emptyList();
+            }
+            TestCase.Diff diff = kase.getDiff();
+            if (diff == null) {
+                diff = TestCase.Diff.NOT_KNOWN;
+            }
+            testCase.setFailureInfo(message, stackTrace.toArray(new String[stackTrace.size()]), isError(kase.getStatus()), diff);
+        }
+
+        private boolean isPass(TestCase.Status status) {
+            return status == TestCase.Status.PASSED;
+        }
+
+        private boolean isError(TestCase.Status status) {
+            return status == TestCase.Status.ERROR;
+        }
+
     }
 
 }
