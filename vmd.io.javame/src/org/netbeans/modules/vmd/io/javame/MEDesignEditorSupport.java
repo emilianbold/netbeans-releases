@@ -271,7 +271,7 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
                 tc.setIcon (projectTypeInfo != null ? ImageUtilities.loadImage (projectTypeInfo.getIconResource ()) : null);
 
                 String displayName = messageHtmlName();
-                if (displayName != null && tc.getDisplayName() != null) {
+                if (displayName != null) {
                     if (!displayName.equals(tc.getDisplayName())) {
                         tc.setDisplayName(displayName);
                     }
