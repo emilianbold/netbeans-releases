@@ -504,18 +504,28 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
 
                 @Override
                 public void run() {
-                    ProjectCBItem prj = getProjectByPath(hostName, path);
+                    final ProjectCBItem prj = getProjectByPath(hostName, path);
                     if (prj != null) {
-                        projectComboBox.setSelectedItem(prj);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                projectComboBox.setSelectedItem(prj);
+                            }
+                        });
                     } else {
                         projectComboBox.setSelectedIndex(0);
                     }
                 }
             });
         } else {
-            ProjectCBItem prj = getProjectByPath(hostName, path);
+            final ProjectCBItem prj = getProjectByPath(hostName, path);
             if (prj != null) {
-                projectComboBox.setSelectedItem(prj);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        projectComboBox.setSelectedItem(prj);
+                    }
+                });                        ;
             } else {
                 projectComboBox.setSelectedIndex(0);
             }
