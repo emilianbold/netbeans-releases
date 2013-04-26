@@ -94,6 +94,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.errors.CreateElementUtilities.*;
+import org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.FixKind;
 import org.netbeans.modules.java.hints.errors.Utilities.MethodArguments;
 
 /**
@@ -390,7 +391,7 @@ public final class CreateElement implements ErrorRule<Void> {
                         }
                         }
                     } else {
-                        if (firstMethod != null && info.getTrees().getElement(firstMethod).getKind() == ElementKind.CONSTRUCTOR && ErrorFixesFakeHint.isCreateFinalFieldsForCtor()) {
+                        if (firstMethod != null && info.getTrees().getElement(firstMethod).getKind() == ElementKind.CONSTRUCTOR && ErrorFixesFakeHint.isCreateFinalFieldsForCtor(ErrorFixesFakeHint.getPreferences(targetFile, FixKind.CREATE_FINAL_FIELD_CTOR))) {
                             modifiers.add(Modifier.FINAL);
                         }
                         if (ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_FINAL_FIELD_CTOR)) {

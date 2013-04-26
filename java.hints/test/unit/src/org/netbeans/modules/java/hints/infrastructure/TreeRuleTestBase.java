@@ -49,8 +49,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.AbstractPreferences;
+import java.util.prefs.BackingStoreException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -62,6 +65,7 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.java.hints.legacy.spi.RulesManager;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -151,6 +155,16 @@ public abstract class TreeRuleTestBase extends NbTestCase {
     
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path, int offset) {
         return computeErrors(info, path);
+    }
+
+    @Override
+    public void runTest() throws Throwable {
+        RulesManager.currentHintPreferences.set(new TempPreferences());
+        try {
+            super.runTest();
+        } finally {
+            RulesManager.currentHintPreferences.set(null);
+        }
     }
     
     protected String toDebugString(CompilationInfo info, Fix f) {
@@ -329,6 +343,71 @@ public abstract class TreeRuleTestBase extends NbTestCase {
             SourceUtils.waitScanFinished();
             clearWorkDir();
             performAnalysisTest("test/Test.java", before, i);
+        }
+    }
+
+    private static class TempPreferences extends AbstractPreferences {
+
+        /*private*/Properties properties;
+
+        private TempPreferences() {
+            super(null, "");
+        }
+
+        private  TempPreferences(TempPreferences parent, String name)  {
+            super(parent, name);
+            newNode = true;
+        }
+
+        protected final String getSpi(String key) {
+            return properties().getProperty(key);
+        }
+
+        protected final String[] childrenNamesSpi() throws BackingStoreException {
+            return new String[0];
+        }
+
+        protected final String[] keysSpi() throws BackingStoreException {
+            return properties().keySet().toArray(new String[0]);
+        }
+
+        protected final void putSpi(String key, String value) {
+            properties().put(key,value);
+        }
+
+        protected final void removeSpi(String key) {
+            properties().remove(key);
+        }
+
+        protected final void removeNodeSpi() throws BackingStoreException {}
+        protected  void flushSpi() throws BackingStoreException {}
+        protected void syncSpi() throws BackingStoreException {
+            properties().clear();
+        }
+
+        @Override
+        public void put(String key, String value) {
+            try {
+                super.put(key, value);
+            } catch (IllegalArgumentException iae) {
+                if (iae.getMessage().contains("too long")) {
+                    // Not for us!
+                    putSpi(key, value);
+                } else {
+                    throw iae;
+                }
+            }
+        }
+
+        Properties properties()  {
+            if (properties == null) {
+                properties = new Properties();
+            }
+            return properties;
+        }
+
+        protected AbstractPreferences childSpi(String name) {
+            return new TempPreferences(this, name);
         }
     }
 }

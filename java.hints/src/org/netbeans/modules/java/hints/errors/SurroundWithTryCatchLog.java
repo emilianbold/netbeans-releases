@@ -56,10 +56,10 @@ public class SurroundWithTryCatchLog extends javax.swing.JPanel {
     public SurroundWithTryCatchLog(Preferences p) {
         initComponents();
         this.p = p;
-        exceptions.setSelected(ErrorFixesFakeHint.isUseExceptions());
-        logger.setSelected(ErrorFixesFakeHint.isUseLogger());
-        rethrowRuntime.setSelected(ErrorFixesFakeHint.isRethrowAsRuntimeException());
-        rethrow.setSelected(ErrorFixesFakeHint.isRethrow());
+        exceptions.setSelected(ErrorFixesFakeHint.isUseExceptions(p));
+        logger.setSelected(ErrorFixesFakeHint.isUseLogger(p));
+        rethrowRuntime.setSelected(ErrorFixesFakeHint.isRethrowAsRuntimeException(p));
+        rethrow.setSelected(ErrorFixesFakeHint.isRethrow(p));
     }
 
     /** This method is called from within the constructor to

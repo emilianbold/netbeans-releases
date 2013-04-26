@@ -108,6 +108,19 @@ is the proper place.
 
     <changes>
 
+        <change id="per-project-hints">
+             <api name="EditorHintsSPI"/>
+             <summary>Added a new overload for ErrorDescriptionFactory.createErrorDescription taking PositionBounds</summary>
+             <version major="1" minor="31"/>
+             <date day="24" month="4" year="2013"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 XXX
+             </description>
+             <class name="FileHintPreferences" package="org.netbeans.spi.editor.hints.settings"/>
+             <issue number="212326"/>
+        </change>
         <change id="error-description-from-position-bounds">
              <api name="EditorHintsSPI"/>
              <summary>Added a new overload for ErrorDescriptionFactory.createErrorDescription taking PositionBounds</summary>

@@ -55,7 +55,7 @@ public class LocalVariableFixCustomizer extends javax.swing.JPanel {
     public LocalVariableFixCustomizer(Preferences p) {
         initComponents();
         this.p = p;
-        inPlace.setSelected(ErrorFixesFakeHint.isCreateLocalVariableInPlace());
+        inPlace.setSelected(ErrorFixesFakeHint.isCreateLocalVariableInPlace(p));
     }
 
     /** This method is called from within the constructor to

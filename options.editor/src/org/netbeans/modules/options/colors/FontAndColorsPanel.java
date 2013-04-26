@@ -152,7 +152,8 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
     private void initComponents() {
 
         lProfile = new javax.swing.JLabel();
-        cbProfile = new javax.swing.JComboBox();
+        cbProfile = new javax.swing.JComboBox<String>
+        ();
         tpCustomizers = new javax.swing.JTabbedPane();
         bDuplicate = new javax.swing.JButton();
         bDelete = new javax.swing.JButton();
@@ -207,7 +208,8 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bDelete;
     private javax.swing.JButton bDuplicate;
-    private javax.swing.JComboBox cbProfile;
+    private javax.swing.JComboBox<String>
+    cbProfile;
     private javax.swing.JLabel lProfile;
     private javax.swing.JTabbedPane tpCustomizers;
     // End of variables declaration//GEN-END:variables
@@ -255,7 +257,7 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
 
         // init schemes
         listen = false;
-        Iterator it = colorModel.getProfiles ().iterator ();
+        Iterator<String> it = colorModel.getProfiles ().iterator ();
         cbProfile.removeAllItems ();
         while (it.hasNext ())
             cbProfile.addItem (it.next ());

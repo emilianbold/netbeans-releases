@@ -291,6 +291,7 @@ java.hints.legacy.spi = java/hints
 java.hints.test = java/hints spi.java.hints
 java.j2seplatform = java/project
 java.j2seproject = java/project
+java.j2seprofiles = java/project
 java.kit = java/project
 java.lexer = java/editor
 java.navigation = java/navigation

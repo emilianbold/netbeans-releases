@@ -141,12 +141,12 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
 
         lCategory = new javax.swing.JLabel();
         cpCategories = new javax.swing.JScrollPane();
-        lCategories = new javax.swing.JList();
+        lCategories = new javax.swing.JList<AttributeSet>();
         lForeground = new javax.swing.JLabel();
         lBackground = new javax.swing.JLabel();
         cbBackground = new ColorComboBox();
         cbForeground = new ColorComboBox();
-        cbEffects = new javax.swing.JComboBox();
+        cbEffects = new javax.swing.JComboBox<String>();
         cbEffectColor = new ColorComboBox();
         lEffects = new javax.swing.JLabel();
         lEffectColor = new javax.swing.JLabel();
@@ -227,11 +227,11 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbBackground;
     private javax.swing.JComboBox cbEffectColor;
-    private javax.swing.JComboBox cbEffects;
+    private javax.swing.JComboBox<String> cbEffects;
     private javax.swing.JComboBox cbForeground;
     private javax.swing.JScrollPane cpCategories;
     private javax.swing.JLabel lBackground;
-    private javax.swing.JList lCategories;
+    private javax.swing.JList<AttributeSet> lCategories;
     private javax.swing.JLabel lCategory;
     private javax.swing.JLabel lEffectColor;
     private javax.swing.JLabel lEffects;
