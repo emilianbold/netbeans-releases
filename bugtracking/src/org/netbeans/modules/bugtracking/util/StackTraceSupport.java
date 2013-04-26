@@ -67,7 +67,6 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
-import org.netbeans.modules.bugtracking.spi.VCSAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -310,22 +309,26 @@ class StackTraceSupport {
         return ideServices != null && ideServices.providesOpenDocument() && ideServices.providesFindFile();
     }
     
-    private static void openSearchHistory(String path, final int line) {
+    @NbBundle.Messages({"CTL_ShowHistoryTitle=Show History",
+                        "# {0} - path to be opened",  "MSG_NoHistory=History View not available for file with path\n {0}.",
+                        "# {0} - path to be opened",  "MSG_NoFile=No file found for path\n {0}."})
+    private static void openSearchHistory(final String path, final int line) {
         final File file = findFile(path);
         if ( file != null ) {
-            Collection<? extends VCSAccessor> supports = Lookup.getDefault().lookupAll(VCSAccessor.class);
-            if(supports == null) {
+            final IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+            if(ideServices == null || !ideServices.providesSearchHistory(file)) {
                 return;
             }
-            for (final VCSAccessor s : supports) {
-                // XXX this is messy - we implicitly expect that unrelevant VCS modules
-                // will skip the action
-                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
-                    public void run() {
-                        s.searchHistory(file, line);
+            BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    if(!ideServices.searchHistory(file, line)) {
+                        BugtrackingUtil.notifyError(Bundle.CTL_ShowHistoryTitle(), Bundle.MSG_NoHistory(path));
                     }
-                });
-            }
+                }
+            });
+        } else {
+            BugtrackingUtil.notifyError(Bundle.CTL_ShowHistoryTitle(), Bundle.MSG_NoFile(path));            
         }
     }
 
@@ -499,6 +502,7 @@ class StackTraceSupport {
             }
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             openStackTrace(stackFrame, showHistory);
         }

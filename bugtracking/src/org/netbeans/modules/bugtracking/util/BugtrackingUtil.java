@@ -97,6 +97,11 @@ import org.openide.windows.WindowManager;
 public class BugtrackingUtil {
     private static RequestProcessor parallelRP;
 
+    public static void notifyError (final String title, final String message) {
+        NotifyDescriptor nd = new NotifyDescriptor(message, title, NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, new Object[] {NotifyDescriptor.OK_OPTION}, NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notifyLater(nd);
+    }          
+        
     public static boolean show(JPanel panel, String title, String okName, HelpCtx helpCtx) {
         JButton ok = new JButton(okName);
         ok.getAccessibleContext().setAccessibleDescription(ok.getText());

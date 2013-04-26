@@ -97,6 +97,21 @@ public interface IDEServices {
      * @return 
      */
     public File selectFileContext();
+
+    public boolean providesSearchHistory(File file);
+    
+    /**
+     * Meant to open a VCS history view where:
+     * - it is possible to traverse the given files history entries 
+     * - a diff view is provided, showing the selected revision compared against 
+     * it's parent and positioned on the given line.
+     *
+     * @param file Must be a versioned file (not a folder), otherwise false is returned 
+     * and the panel won't be opened
+     * @param lineNumber requested line number to lock on
+     * @return true if parameters are valid and the search history panel is opened, otherwise false
+     */
+    public boolean searchHistory(File file, int line);
     
     /**
      * Provides access to a downloadable plugin - e.g. from the NetBeans UC

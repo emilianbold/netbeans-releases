@@ -60,6 +60,10 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -87,8 +91,8 @@ public class IDEServicesImpl implements IDEServices {
     
     @Override
     @NbBundle.Messages({"LBL_OpenDocument=Open Document", 
-                        "# {0} - to be opened documents path",  "MSG_CannotOpen=Couldn't open document for {0}",
-                        "# {0} - to be found documents path",  "MSG_CannotFind=Couldn't find document for {0}"})
+                        "# {0} - to be opened documents path",  "MSG_CannotOpen=Could not open document with path\n {0}",
+                        "# {0} - to be found documents path",  "MSG_CannotFind=Could not find document with path\n {0}"})
     public void openDocument(final String path, final int offset) {
         final FileObject fo = findFile(path);
         if ( fo != null ) {
@@ -221,5 +225,23 @@ public class IDEServicesImpl implements IDEServices {
             context = chooser.getSelectedFile();
         }
         return context;
+    }
+
+    @Override
+    public boolean providesSearchHistory(File file) {
+        return SearchHistorySupport.getInstance(file) != null;
+    }
+
+    @Override
+    public boolean searchHistory(File file , int line) {
+        try {
+            SearchHistorySupport support = SearchHistorySupport.getInstance(file);
+            if(support != null) {
+                return support.searchHistory(line);
+            }
+        } catch (IOException ex) {            
+            LOG.log(Level.SEVERE, null, ex);
+        }
+        return false;
     }
 }
