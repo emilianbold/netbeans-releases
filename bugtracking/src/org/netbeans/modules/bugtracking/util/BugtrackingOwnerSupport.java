@@ -92,54 +92,10 @@ public abstract class BugtrackingOwnerSupport {
 
     public enum ContextType {
         MAIN_PROJECT_ONLY,
-        MAIN_OR_SINGLE_PROJECT,
-        ALL_PROJECTS,
         SELECTED_FILE_AND_ALL_PROJECTS,
     }
 
     //--------------------------------------------------------------------------
-
-    public static Project getMainOrSingleProject() {
-        final OpenProjects projects = OpenProjects.getDefault();
-
-        Project[] openProjects = projects.getOpenProjects();
-        if (openProjects.length == 1) {
-            return openProjects[0];
-        } else {
-            return projects.getMainProject();
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    public RepositoryImpl getRepository(ContextType context) {
-        switch (context) {
-            case MAIN_PROJECT_ONLY:
-                Project mainProject = OpenProjects.getDefault().getMainProject();
-                if (mainProject != null) {
-                    return getRepository(mainProject, false);
-                }
-                break;
-            case MAIN_OR_SINGLE_PROJECT:
-                Project mainOrSingleProject = getMainOrSingleProject();
-                if (mainOrSingleProject != null) {
-                    return getRepository(mainOrSingleProject, false);
-                }
-                break;
-            case ALL_PROJECTS:
-                return getRepository(OpenProjects.getDefault().getOpenProjects());
-            case SELECTED_FILE_AND_ALL_PROJECTS:
-                File contextFile = getLargerContext();
-                if (contextFile != null) {
-                    return getRepositoryForContext(contextFile, false);
-                }
-                break;
-            default:
-                assert false;
-                break;
-        }
-        return null;
-    }
 
     public RepositoryImpl getRepository(Node... nodes) {
         if (nodes == null) {
@@ -185,29 +141,6 @@ public abstract class BugtrackingOwnerSupport {
 
     protected abstract RepositoryImpl getRepository(DataObject dataObj);
 
-    public RepositoryImpl getRepository(Project... projects) {
-        if (projects.length == 0) {
-            return null;
-        }
-        if (projects.length == 1) {
-            return getRepository(projects[0], false);
-        }
-
-        RepositoryImpl chosenRepo = null;
-        for (Project project : projects) {
-            RepositoryImpl repo = getRepository(project, false);
-            if (repo == null) {
-                continue;
-            }
-            if (chosenRepo == null) {
-                chosenRepo = repo;
-            } else if (repo != chosenRepo) {
-                return null;   //the projects have various repositories assigned
-            }
-        }
-        return chosenRepo;
-    }
-
     public abstract RepositoryImpl getRepository(Project project, boolean askIfUnknown);
 
     public RepositoryImpl getRepository(File file, boolean askIfUnknown) {
@@ -215,11 +148,6 @@ public abstract class BugtrackingOwnerSupport {
     }
 
     public abstract RepositoryImpl getRepository(File file, String issueId, boolean askIfUnknown);
-
-    protected RepositoryImpl getRepositoryForContext(File context,
-                                                 boolean askIfUnknown) {
-        return getRepositoryForContext(context, null, askIfUnknown);
-    }
 
     protected abstract RepositoryImpl getRepositoryForContext(File context,
                                                           String issueId,
@@ -256,15 +184,6 @@ public abstract class BugtrackingOwnerSupport {
                     context = getLargerContext(mainProject);
                 }
                 break;
-            case MAIN_OR_SINGLE_PROJECT:
-                Project mainOrSingleProject = getMainOrSingleProject();
-                if (mainOrSingleProject != null) {
-                    context = getLargerContext(mainOrSingleProject);
-                }
-                break;
-            case ALL_PROJECTS:
-                context = getContextFromProjects();
-                break;
             case SELECTED_FILE_AND_ALL_PROJECTS:
                 context = getLargerContext();
                 break;
@@ -278,12 +197,6 @@ public abstract class BugtrackingOwnerSupport {
                     context,
                     repository);
         }
-    }
-
-    public void setLooseAssociation(File file, RepositoryImpl repository) {
-        FileToRepoMappingStorage.getInstance().setLooseAssociation(
-                getLargerContext(file),
-                repository);
     }
 
     /**
