@@ -476,7 +476,9 @@ public final class UEIEmulatorConfiguratorImpl {
             if (profile == null) {
                 // Profile detection modified because of #221063 and #228551 - Adding TC65 WTK as Java ME CLDC Platform
                 final String profileValue = versionProperties.getProperty("Profile"); //NOI18N
-                profile = (profileValue != null && profileValue.contains("IMP-NG")) ? "IMP-NG" : null; //NOI18N
+                profile = (profileValue != null && profileValue.contains("IMP-NG")) ? "IMP-NG" //NOI18N
+                        : (profileValue != null && profileValue.contains("MIDP-2.1")) ? "MIDP-2.1" //NOI18N
+                        : (profileValue != null && profileValue.contains("MIDP-2.0")) ? "MIDP-2.0" : null; //NOI18N
             }
             String profileName = null;
             if(profile != null) {
