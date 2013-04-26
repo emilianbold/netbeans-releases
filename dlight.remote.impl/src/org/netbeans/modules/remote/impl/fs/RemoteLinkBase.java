@@ -347,7 +347,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
                     FileAttributeEvent fae = (FileAttributeEvent) fe;
                     fe = new FileAttributeEvent(src, file, fae.getName(), fae.getOldValue(), fae.getNewValue(), fe.isExpected());
                 } else {
-                    fe = new FileEvent(src, file, fe.isExpected());
+                    fe = new FileEvent(src, file, fe.isExpected(), fe.getTime());
                 }
             }
         }
