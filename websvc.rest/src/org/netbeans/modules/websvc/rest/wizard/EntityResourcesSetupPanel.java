@@ -173,9 +173,9 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
             final RestSupport restSupport = project.getLookup().
                     lookup(RestSupport.class);
             boolean hasSpringSupport = restSupport.hasSpringSupport();
-            boolean showJaxRsCustomizer = restSupport.hasJaxRsApi() || restSupport.hasJersey2();
+            boolean showJaxRsCustomizer = restSupport.isEESpecWithJaxRS() || restSupport.hasJersey2(true);
             // TODO: for Jersey2 I temporarily disable Spring support:
-            if ( hasSpringSupport && !restSupport.hasJersey2()) {
+            if ( hasSpringSupport && !restSupport.hasJersey2(true)) {
                 wizard.putProperty( WizardProperties.USE_JERSEY, true);
             }
             if (jaxRsConfigurationPanel != null) {

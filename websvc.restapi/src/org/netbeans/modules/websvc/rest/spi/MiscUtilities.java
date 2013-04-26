@@ -310,6 +310,10 @@ public class MiscUtilities {
 
             Servlet adaptorServlet = getRestServletAdaptorByName(webApp,
                     REST_SERVLET_ADAPTOR);
+            if (adaptorServlet == null) {
+                // servlet is missing in the web.xml and so parameter cannot be added
+                return;
+            }
             InitParam initParam = (InitParam) adaptorServlet.findBeanByName(
                     "InitParam", // NOI18N
                     "ParamName", // NOI18N

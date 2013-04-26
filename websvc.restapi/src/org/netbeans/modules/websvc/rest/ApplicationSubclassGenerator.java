@@ -323,7 +323,7 @@ public class ApplicationSubclassGenerator {
         StringBuilder builder = new StringBuilder();
         builder.append('{');
         builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
-        if (restSupport.hasJersey2()) {
+        if (restSupport.hasJersey2(true)) {
             builder.append(getJersey2JSONFeature());
         } else {
             builder.append(getJacksonProviderSnippet());
@@ -357,7 +357,7 @@ public class ApplicationSubclassGenerator {
                         handleResource(controller, provider.getClassName(), builder);
                     }
                     if (oldVersion) {
-                        if (restSupport.hasJersey2()) {
+                        if (restSupport.hasJersey2(true)) {
                             builder.append(getJersey2JSONFeature());
                         } else {
                             builder.append(getJacksonProviderSnippet());

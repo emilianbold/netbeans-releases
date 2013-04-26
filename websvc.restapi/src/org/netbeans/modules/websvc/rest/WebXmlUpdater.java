@@ -292,7 +292,7 @@ public class WebXmlUpdater {
                     initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
                     adaptorServlet.addInitParam(initParam);
                 } else {
-                    if (restSupport.hasJersey2()) {
+                    if (restSupport.hasJersey2(true)) {
                         throw new IllegalStateException("this should not be needed!"); //
                         //adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS_2_0);
                     } else {

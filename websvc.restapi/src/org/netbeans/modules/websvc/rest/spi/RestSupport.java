@@ -214,12 +214,16 @@ public abstract class RestSupport {
         // JAX-RS APIs. The value should be false only in case of EE5 specification
         // and server without any Jersey on its classpath, eg. Tomcat or some
         // very very old GF (v2? or older)
-        final boolean hasJaxRs = hasJaxRsApi() || hasJersey1() || hasJersey2();
+        final boolean hasJaxRs = isEESpecWithJaxRS() || hasJersey1(true) || hasJersey2(true);
 
         // if JAR-RS APIs are missing and REST support is not ON then ask
         // user in GUI how to configure the REST:
         RestSupport.RestConfig restConfig = null;
-        if ( !hasJaxRs && !isRestSupportOn()) {
+        if ( !hasJaxRs && !isRestSupportOn() && isEE5()) {
+            // this is old way to ask for REST configuration; it should be
+            // kept alive as long as we support EE5; for EE6 the REST configuration
+            // options are shown directly in wizards using
+            // org.netbeans.modules.websvc.rest.wizard.JaxRsConfigurationPanel
             restConfig = setApplicationConfigProperty();
         }
         final RestSupport.RestConfig restConfig2 = restConfig;
@@ -250,8 +254,10 @@ public abstract class RestSupport {
             restConfigType = CONFIG_TYPE_IDE;
         }
 
+        boolean hasJaxRsOnCompilationClasspath = hasJaxRsOnClasspath(false);
+
         // add latest JAX-RS APIs to project's classpath:
-        if (!hasJaxRs) {
+        if (!hasJaxRs || !hasJaxRsOnCompilationClasspath) {
             boolean jsr311Added = false;
             if (restConfig != null && restConfig.isServerJerseyLibSelected()) {
                 JaxRsStackSupport support = getJaxRsStackSupport();
@@ -560,7 +566,7 @@ public abstract class RestSupport {
      * Returns true if JAX-RS APIs are available for the project. That means if
      * project's profile is EE7 (web profile or full) or EE6 (full).
      */
-    public boolean hasJaxRsApi(){
+    public boolean isEESpecWithJaxRS(){
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if ( webModule == null ){
             return false;
@@ -587,17 +593,28 @@ public abstract class RestSupport {
                         Profile.JAVA_EE_7_FULL.equals(profile);
     }
 
+    public boolean isEE5(){
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if ( webModule == null ){
+            return false;
+        }
+        Profile profile = webModule.getJ2eeProfile();
+        return Profile.JAVA_EE_5.equals(profile);
+    }
+
     /**
      * Is Jersey 2.x jar available on project's classpath or on classpath of
      * server used by this project?
      */
-    public boolean hasJersey2() {
+    public boolean hasJersey2(boolean checkServerClasspath) {
         if (MiscPrivateUtilities.hasResource(getProject(), REST_SERVLET_ADAPTOR_CLASS_2_0)) {
             return true;
         }
-        JaxRsStackSupport support = getJaxRsStackSupport();
-        if (support != null){
-            return support.isBundled(REST_SERVLET_ADAPTOR_CLASS_2_0);
+        if (checkServerClasspath) {
+            JaxRsStackSupport support = getJaxRsStackSupport();
+            if (support != null){
+                return support.isBundled(REST_SERVLET_ADAPTOR_CLASS_2_0);
+            }
         }
         return false;
     }
@@ -606,13 +623,28 @@ public abstract class RestSupport {
      * Is Jersey 12.x jar available on project's classpath or on classpath of
      * server used by this project?
      */
-    public boolean hasJersey1() {
+    public boolean hasJersey1(boolean checkServerClasspath) {
         if (MiscPrivateUtilities.hasResource(getProject(), REST_SERVLET_ADAPTOR_CLASS)) {
             return true;
         }
-        JaxRsStackSupport support = getJaxRsStackSupport();
-        if (support != null){
-            return support.isBundled(REST_SERVLET_ADAPTOR_CLASS);
+        if (checkServerClasspath) {
+            JaxRsStackSupport support = getJaxRsStackSupport();
+            if (support != null){
+                return support.isBundled(REST_SERVLET_ADAPTOR_CLASS);
+            }
+        }
+        return false;
+    }
+
+    public boolean hasJaxRsOnClasspath(boolean checkServerClasspath) {
+        if (MiscPrivateUtilities.hasResource(getProject(), "javax.ws.rs.core.Application")) {
+            return true;
+        }
+        if (checkServerClasspath) {
+            JaxRsStackSupport support = getJaxRsStackSupport();
+            if (support != null){
+                return support.isBundled("javax.ws.rs.core.Application");
+            }
         }
         return false;
     }
@@ -676,7 +708,7 @@ public abstract class RestSupport {
     }
 
     protected RestConfig setApplicationConfigProperty() {
-        boolean annotationConfigAvailable = hasJaxRsApi();
+        boolean annotationConfigAvailable = isEESpecWithJaxRS();
         ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
                 annotationConfigAvailable, hasServerJerseyLibrary());
         DialogDescriptor desc = new DialogDescriptor(configPanel,

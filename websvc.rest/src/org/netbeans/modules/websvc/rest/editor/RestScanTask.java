@@ -113,7 +113,7 @@ class RestScanTask {
            return;
        }
        final RestSupport support = project.getLookup().lookup(RestSupport.class);
-       if ( support ==null || !support.hasJaxRsApi() ){
+       if ( support ==null || !support.isEESpecWithJaxRS() ){
            return;
        }
        

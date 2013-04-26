@@ -103,9 +103,9 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
     public boolean isValid() {
         Project project = Templates.getProject(myDescriptor);
         RestSupport support  = project.getLookup().lookup(RestSupport.class);
-        if ( support != null ){
-            if ( support.isEE7() || support.hasJersey2()){
-                if ( !support.isRestSupportOn() ){
+        if (support != null) {
+            if (support.isEE7() || support.hasJersey2(false)) {
+                if (!support.isRestSupportOn()) {
                     // TODO: how is user supposed to "enable" Jax-RS? could IDE do it automatically?
                     myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                             NbBundle.getMessage(RestFilterPanel.class, 
@@ -120,17 +120,15 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
             Object object  = null;
             try {
                 object = MiscUtilities.getRestServletMapping(support.getWebApp());
-            }
-            catch(IOException e ){
+            } catch(IOException e ){
                 // just keep object with null value
             }
-            if (  object==  null ){
+            if (object == null) {
                 if ( support.isRestSupportOn() ){
                     myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                         NbBundle.getMessage(RestFilterPanel.class, 
                         "ERR_NoJerseyConfig"));                      // NOI18N
-                }
-                else {
+                } else {
                     myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                             NbBundle.getMessage(RestFilterPanel.class, 
                             "ERR_NoRestConfig"));                   // NOI18N
