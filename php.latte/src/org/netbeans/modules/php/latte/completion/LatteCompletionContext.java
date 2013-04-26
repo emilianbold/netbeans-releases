@@ -51,13 +51,12 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 public enum LatteCompletionContext {
 
     ALL {
-
         @Override
         public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
             completeMacros(completionProposals, request);
             completeHelpers(completionProposals, request);
+            completeKeywords(completionProposals, request);
         }
-
     },
     MACRO {
         @Override
@@ -72,7 +71,6 @@ public enum LatteCompletionContext {
         }
     },
     NONE {
-
         @Override
         public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
         }
@@ -93,6 +91,14 @@ public enum LatteCompletionContext {
         for (LatteElement helper : LatteCompletionHandler.HELPERS) {
             if (startsWith(helper.getName(), request.prefix)) {
                 completionProposals.add(new LatteCompletionProposal.HelperCompletionProposal(helper, request));
+            }
+        }
+    }
+
+    protected void completeKeywords(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+        for (LatteElement keyword : LatteCompletionHandler.KEYWORDS) {
+            if (startsWith(keyword.getName(), request.prefix)) {
+                completionProposals.add(new LatteCompletionProposal.KeywordCompletionProposal(keyword, request));
             }
         }
     }

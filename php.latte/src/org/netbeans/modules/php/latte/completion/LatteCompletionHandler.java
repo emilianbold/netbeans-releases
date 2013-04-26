@@ -158,6 +158,22 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
         HELPERS.add(LatteElement.Factory.create("null")); //NOI18N
     }
 
+    static final Set<LatteElement> KEYWORDS = new HashSet<>();
+    static {
+        KEYWORDS.add(LatteElement.Factory.create("true")); //NOI18N
+        KEYWORDS.add(LatteElement.Factory.create("false")); //NOI18N
+        KEYWORDS.add(LatteElement.Factory.create("null")); //NOI18N
+        KEYWORDS.add(LatteElement.Factory.create("and")); //NOI18N
+        KEYWORDS.add(LatteElement.Factory.create("or")); //NOI18N
+        KEYWORDS.add(LatteElement.Factory.create("xor")); //NOI18N
+        KEYWORDS.add(LatteElement.Factory.create("clone")); //NOI18N
+        KEYWORDS.add(LatteElement.Factory.create("new")); //NOI18N
+        KEYWORDS.add(LatteElement.Factory.create("instanceof")); //NOI18N
+        KEYWORDS.add(LatteElement.Factory.create("return")); //NOI18N
+        KEYWORDS.add(LatteElement.Factory.create("continue")); //NOI18N
+        KEYWORDS.add(LatteElement.Factory.create("break")); //NOI18N
+    }
+
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
         final List<CompletionProposal> completionProposals = new ArrayList<>();

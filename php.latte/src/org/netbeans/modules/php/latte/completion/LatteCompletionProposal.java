@@ -49,6 +49,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.php.latte.parser.LatteParser.LatteParserResult;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -157,6 +158,30 @@ public abstract class LatteCompletionProposal implements CompletionProposal {
         @Override
         public ElementKind getKind() {
             return ElementKind.RULE;
+        }
+
+    }
+
+    static class KeywordCompletionProposal extends LatteCompletionProposal {
+        private static final ImageIcon KEYWORD_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/latte/resources/latte_cc_icon.png")); //NOI18N
+        public KeywordCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        @NbBundle.Messages("KeywordRhs=Keyword")
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return Bundle.KeywordRhs();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.KEYWORD;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return KEYWORD_ICON;
         }
 
     }
