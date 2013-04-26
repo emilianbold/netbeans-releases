@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,8 +24,14 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
+ * or only the GPL Version , indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
  * under the [CDDL or GPL Version 2] license." If you do not indicate a
  * single choice of license, a recipient has the option to distribute
@@ -34,60 +40,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.api.html.lexer;
+package org.netbeans.modules.html.knockout;
 
-import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenId;
 
 /**
- * <b>NOT FOR PUBLIC USE!!!</b> Prototype - not final version!!! An API review will run, this is a public API.
- * 
- * HtmlLexer extension - allows to inject custom expression languages into html content.
- * 
- * To be registered in global lookup.
+ * key: value, key: value, ...
  *
- * @author marekfukala
+ * @author Marek Fukala
  */
-public abstract class HtmlLexerPlugin {
+public enum KODataBindTokenId implements TokenId {
     
-    /**
-     * "{{"
-     */
-    public String getOpenDelimiter() {
-        return null;
-    }
+    KEY("key"),
+    VALUE("value"),
+    COLON("operator"),
+    COMMA("operator"),
+    ERROR("error"),
+    WS("whitespace"); //NOI18N
 
-    /**
-     * "}}"
-     */
-    public String getCloseDelimiter() {
-        return null;
+    private static final Language<KODataBindTokenId> language = new KODataBindLanguageHierarchy().language();
+    
+    @MimeRegistration(mimeType = KOUtils.KO_DATA_BIND_MIMETYPE, service = Language.class)
+    public static Language<KODataBindTokenId> language() {
+        return language;
     }
     
-    /**
-     * "text/javascript"
-     */
-    public String getContentMimeType() {
-        return null;
-    }
-    
-    /**
-     * Can be used to create a language embedding on an attribute value token. 
-     * 
-     * Note: When more plugins creates an embedding for the same token then the embedding
-     * provided by the first plugin is used.
-     * 
-     * @param elementName name of the tag enclosing the attribute
-     * @param attributeName name of the tag attribute
-     * @return mimetype of the lexer language or null if no embedding should be created.
-     */
-    @CheckForNull
-    public String createAttributeEmbedding(String elementName, String attributeName) {
-        return null;
-    }
+    private String category;
 
+    private KODataBindTokenId(String category) {
+        this.category = category;
+    }
+    
+    @Override
+    public String primaryCategory() {
+        return category;
+    }
+    
 }

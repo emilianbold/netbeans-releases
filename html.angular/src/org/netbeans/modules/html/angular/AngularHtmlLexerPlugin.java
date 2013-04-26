@@ -52,7 +52,7 @@ import org.netbeans.modules.html.angular.model.Directive;
  */
 @MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
 //@ServiceProvider(service = HtmlLexerPlugin.class)
-public class AngularHtmlLexerPlugin implements HtmlLexerPlugin {
+public class AngularHtmlLexerPlugin extends HtmlLexerPlugin {
 
     @Override
     public String getOpenDelimiter() {

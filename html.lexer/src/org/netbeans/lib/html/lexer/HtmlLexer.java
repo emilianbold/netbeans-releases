@@ -535,6 +535,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     //custom EL support
                     delimiters: for(byte delimiterIndex = 0; delimiterIndex < customELQuery.getOpenDelimiters().length; delimiterIndex++ ) {
                         String openDelimiter = customELQuery.getOpenDelimiters()[delimiterIndex];
+                        if(openDelimiter == null) {
+                            continue;
+                        }
                         int alreadyRead = input.readLength();
                         char read = (char)actChar; //first char is already read
                         for(int i = 0; i < openDelimiter.length(); i++) {
@@ -575,6 +578,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                 case ISI_EL:
                     delimiters: for(byte delimiterIndex = 0; delimiterIndex < customELQuery.getOpenDelimiters().length; delimiterIndex++ ) {
                         String closeDelimiter = customELQuery.getCloseDelimiters()[delimiterIndex];
+                        if(closeDelimiter == null) {
+                            continue;
+                        }
                         int alreadyRead = input.readLength();
                         char read = (char)actChar; //first char is already read
                         for(int i = 0; i < closeDelimiter.length(); i++) {
@@ -1392,7 +1398,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             //lexer plugins:
             String embeddingMimeType = HtmlPlugins.getDefault().createAttributeEmbedding(tag, attribute);
             if(embeddingMimeType != null) {
-                LOGGER.log(Level.FINE, "creating html attribute value token {0} in tag {1} with embedding {3}", 
+                LOGGER.log(Level.FINE, "creating html attribute value token {0} in tag {1} with embedding {2}", 
                         new Object[]{attribute, tag, embeddingMimeType});
                 return token(HTMLTokenId.VALUE, new HtmlTokenPropertyProvider(ATTRIBUTE_VALUE_EMBEDDING_MIMETYPE_TOKEN_PROPERTY_KEY, embeddingMimeType));
             }
