@@ -51,7 +51,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.DocSourcePositions;
 import com.sun.source.util.DocTreePath;
 import com.sun.source.util.DocTreePathScanner;
-import com.sun.source.util.DocTrees;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
@@ -66,7 +65,6 @@ import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Resolve;
-import com.sun.tools.javac.tree.DCTree.DCDocComment;
 import com.sun.tools.javac.tree.DCTree.DCReference;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
@@ -83,7 +81,6 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import javax.tools.Diagnostic;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -803,10 +800,29 @@ public final class TreeUtilities {
         return findNameSpan(mst.getIdentifier().toString(), mst, JavaTokenId.DOT, JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
     }
     
+    /**Find span of the {@link MemberReferenceTree#getName()} identifier in the source.
+     * Returns starting and ending offset of the name in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param mst member reference for which the identifier should be searched for
+     * @return the span of the name, or null if cannot be found
+     * @since 0.123
+     */
     public int[] findNameSpan(MemberReferenceTree mst) {
         return findNameSpan(mst.getName().toString(), mst, JavaTokenId.DOT, JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
     }
     
+    /**Find span of the name in the DocTree's reference tree (see {@link #getReferenceName(com.sun.source.util.DocTreePath)}
+     * identifier in the source. Returns starting and ending offset of the name in
+     * the source code that was parsed (ie. {@link CompilationInfo.getText()}, which
+     * may differ from the positions in the source document if it has been already
+     * altered.
+     * 
+     * @param ref reference for which the identifier should be found
+     * @return the span of the name, or null if cannot be found
+     * @since 0.123
+     */
     public int[] findNameSpan(DocCommentTree docTree, ReferenceTree ref) {
         Name name = ((DCReference) ref).memberName;
         if (name == null || !SourceVersion.isIdentifier(name)) {
@@ -1116,6 +1132,31 @@ public final class TreeUtilities {
         return itt.translate(original);
     }
     
+    /**Returns new tree based on {@code original}, such that each visited subtree
+     * that occurs as a key in {@code original2Translated} is replaced by the corresponding
+     * value from {@code original2Translated}. The value is then translated using the same
+     * algorithm. Each key from {@code original2Translated} is used at most once.
+     * Unless the provided {@code original} tree is a key in {@code original2Translated},
+     * the resulting tree has the same type as {@code original}.
+     *
+     * Principally, the method inner workings are:
+     * <pre>
+     * translate(original, original2Translated) {
+     *      if (original2Translated.containsKey(original))
+     *          return translate(original2Translated.remove(original));
+     *      newTree = copyOf(original);
+     *      for (Tree child : allChildrenOf(original)) {
+     *          newTree.replace(child, translate(child, original2Translated));
+     *      }
+     *      return newTree;
+     * }
+     * </pre>
+     * 
+     * @param original the tree that should be translated
+     * @param original2Translated map containing trees that should be translated
+     * @return translated tree.
+     * @since 0.123
+     */
     public @NonNull DocTree translate(final @NonNull DocTree original, final @NonNull Map<? extends DocTree, ? extends DocTree> original2Translated) {
         return translate(original, original2Translated, new NoImports(info), null);
     }
@@ -1371,7 +1412,13 @@ public final class TreeUtilities {
         return attributeTreeImpl != null && attributeTreeImpl.constValue() != null;
     }
     
-    public @CheckForNull ExpressionTree getReferenceClass(DocTreePath path) {
+    /**Find the type (the part before {@code #}) that is being referenced by the given {@link ReferenceTree}.
+     * 
+     * @param path the leaf must be {@link ReferenceTree}
+     * @return the referred type, or {@code null} if none.
+     * @since 0.123
+     */
+    public @CheckForNull ExpressionTree getReferenceClass(@NonNull DocTreePath path) {
         TreePath tp = path.getTreePath();
         DCReference ref = (DCReference) path.getLeaf();
         
@@ -1380,11 +1427,23 @@ public final class TreeUtilities {
         return (ExpressionTree) ref.qualifierExpression;
     }
     
-    public @CheckForNull Name getReferenceName(DocTreePath path) {
+    /**Find the name (the name after {@code #}) that is being referenced by the given {@link ReferenceTree}.
+     * 
+     * @param path the leaf must be {@link ReferenceTree}
+     * @return the referred member name, or {@code null} if none.
+     * @since 0.123
+     */
+    public @CheckForNull Name getReferenceName(@NonNull DocTreePath path) {
         return ((DCReference) path.getLeaf()).memberName;
     }
     
-    public @CheckForNull List<? extends Tree> getReferenceParameters(DocTreePath path) {
+    /**Find the parameters that are specified in the given {@link ReferenceTree}.
+     * 
+     * @param path the leaf must be {@link ReferenceTree}
+     * @return the parameters for the referred method, or {@code null} if none.
+     * @since 0.123
+     */
+    public @CheckForNull List<? extends Tree> getReferenceParameters(@NonNull DocTreePath path) {
         TreePath tp = path.getTreePath();
         DCReference ref = (DCReference) path.getLeaf();
         
