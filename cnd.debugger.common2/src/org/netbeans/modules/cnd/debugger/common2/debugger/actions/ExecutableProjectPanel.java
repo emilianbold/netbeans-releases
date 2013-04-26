@@ -499,37 +499,27 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
             projectComboBox.setSelectedIndex(0);
             return;
         }
-        if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
-
-                @Override
-                public void run() {
-                    final ProjectCBItem prj = getProjectByPath(hostName, path);
-                    if (prj != null) {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                projectComboBox.setSelectedItem(prj);
-                            }
-                        });
-                    } else {
-                        projectComboBox.setSelectedIndex(0);
-                    }
-                }
-            });
-        } else {
-            final ProjectCBItem prj = getProjectByPath(hostName, path);
-            if (prj != null) {
+ 
+        projectComboBox.setEnabled(false);
+        
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                final ProjectCBItem prj = getProjectByPath(hostName, path);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        projectComboBox.setSelectedItem(prj);
+                        if (prj != null) {
+                            projectComboBox.setSelectedItem(prj);
+                        } else {
+                            projectComboBox.setSelectedIndex(0);
+                        }
+                        
+                        projectComboBox.setEnabled(true);
                     }
-                });                        ;
-            } else {
-                projectComboBox.setSelectedIndex(0);
+                });
             }
-        }
+        });
     }
 
     /*package*/ boolean containsProjectWithPath(String hostName, String path) {
