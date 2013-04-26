@@ -337,7 +337,7 @@ public final class PhpUnit {
                 .additionalParameters(params);
         try {
             if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
-                return phpUnit.runAndWait(getDescriptor(), "Running tests..."); // NOI18N
+                return phpUnit.runAndWait(getDescriptor(), "Running PhpUnit tests..."); // NOI18N
             }
             return phpUnit.debug(runInfo.getStartFile(), getDescriptor(), null);
         } catch (CancellationException ex) {
