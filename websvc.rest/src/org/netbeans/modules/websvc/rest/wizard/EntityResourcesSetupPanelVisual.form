@@ -26,7 +26,7 @@
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="resourcePackageLabel" alignment="0" min="-2" max="-2" attributes="1"/>
-                          <Component id="controllerPackageLabel" pref="124" max="32767" attributes="1"/>
+                          <Component id="controllerPackageLabel" pref="0" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -41,7 +41,7 @@
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="locationComboBox" alignment="0" pref="320" max="32767" attributes="1"/>
                   <Component id="projectTextField" pref="320" max="32767" attributes="1"/>
-                  <Component id="resourcePackageComboBox" alignment="0" pref="320" max="32767" attributes="1"/>
+                  <Component id="resourcePackageComboBox" alignment="0" pref="307" max="32767" attributes="1"/>
                   <Component id="controllerPackageComboBox" alignment="0" pref="320" max="32767" attributes="1"/>
               </Group>
           </Group>

@@ -140,7 +140,7 @@ public final class CompleteElementHandler {
         boolean leaf = (level == 0);
         Set<AccessLevel> modifiedAccess = AccessLevel.update(access, source, node);
 
-        Map<MethodSignature, CompletionItem> result = new TreeMap<MethodSignature, CompletionItem>(new Comparator<MethodSignature>() {
+        Map<MethodSignature, CompletionItem> result = new TreeMap<>(new Comparator<MethodSignature>() {
 
             @Override
             public int compare(MethodSignature method1, MethodSignature method2) {
@@ -234,7 +234,7 @@ public final class CompleteElementHandler {
         context.setTypeName(typeName);
         /**/
         
-        Map<FieldSignature, CompletionItem> result = new HashMap<FieldSignature, CompletionItem>();
+        Map<FieldSignature, CompletionItem> result = new HashMap<>();
 
         fillSuggestions(JavaElementHandler.forCompilationInfo(info).getFields(typeNode.getName(), prefix, anchor, leaf), result);
 

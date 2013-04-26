@@ -48,8 +48,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -57,9 +55,9 @@ import java.util.concurrent.TimeoutException;
 import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.cordova.platforms.Device;
-import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.cordova.platforms.ProcessUtils;
+import org.netbeans.modules.cordova.platforms.ProvisioningProfile;
 import org.netbeans.modules.cordova.platforms.SDK;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -315,15 +313,33 @@ public class AndroidPlatform implements MobilePlatform {
     }
 
     @Override
-    public MobileDebugTransport getDebugTransport() {
-        return new AndroidDebugTransport();
-    }
-
-    @Override
     public Device getDevice(String name, EditableProperties props) {
         return AndroidDevice.get(name, props);
     }
-    
-    
+
+    @Override
+    public String getCodeSignIdentity() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String getProvisioningProfilePath() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setCodeSignIdentity(String identity) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setProvisioningProfilePath(String path) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<? extends ProvisioningProfile> getProvisioningProfiles() {
+        return Collections.emptyList();
+    }
 }
 

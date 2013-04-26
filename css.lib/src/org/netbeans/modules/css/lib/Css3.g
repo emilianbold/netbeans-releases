@@ -879,7 +879,7 @@ function
 //                    | (cp_args_list)=>cp_args_list
 //                    | fnAttributes
                     fnAttributes
-                    | {isCssPreprocessorSource()}? //empty
+                    | //empty
 		)
 		RPAREN
 	;

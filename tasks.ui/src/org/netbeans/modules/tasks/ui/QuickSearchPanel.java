@@ -49,7 +49,6 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
-import org.netbeans.modules.tasks.ui.model.Category;
 import org.openide.util.NbBundle;
 
 /**

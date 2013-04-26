@@ -98,6 +98,38 @@ public class FileModelNewGrammarTest extends TraceModelTestBase {
         performTest("accessModifiers.cpp");
     }
     
+    public void testClassForwardScope() throws Exception { 
+        performTest("classForwardScope.cpp");
+    }
+    
+    public void testConstructorImportSymbols() throws Exception {
+        performTest("constructorImportSymbols.cpp");
+    }
+    
+    public void testClearingImportedSymbols() throws Exception {
+        performTest("clearingImportedSymbols.cpp");
+    }    
+    
+    public void testMultipleDeclarativeRegions() throws Exception {
+        performTest("multipleDeclarativeRegions.cpp");
+    }
+    
+    public void testNestedClassScope() throws Exception {
+        performTest("nestedClassScope.cpp");
+    }    
+    
+    public void testConstructorInitializerListScope() throws Exception {
+        performTest("constructorInitializerListScope.cpp");
+    }    
+    
+    public void testBitFields() throws Exception {
+        performTest("bitFields.cpp");
+    }    
+
+    public void testFunctionParametersInFunctionBody() throws Exception {
+        performTest("functionParametersInFunctionBody.cpp");
+    }    
+    
 //    public void testMultipleMemberDeclaration() throws Exception {
 //        performTest("typedefEnum.cpp");
 //    } 

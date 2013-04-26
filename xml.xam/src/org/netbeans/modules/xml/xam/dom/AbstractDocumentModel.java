@@ -79,8 +79,22 @@ import org.w3c.dom.NodeList;
 public abstract class AbstractDocumentModel<T extends DocumentComponent<T>> 
         extends AbstractModel<T> implements DocumentModel<T> {
 
+    /**
+     * Do not assign to this field. And do not read from it either. Its initialization is not synchronized
+     * by 'this' instance from 6.x, there's no guarantee that the field's value will be visible to the
+     * reading thread.
+     * <p/>
+     * The field will be soon deprecated
+     */
     protected DocumentModelAccess access;
-    private boolean needsSync;
+    
+    private volatile DocumentModelAccess accessPrivate;
+    
+    /**
+     * needsSync contains timestamp of the last dirtying operation. Non-zero
+     * value means dirty status.
+     */
+    private volatile long needsSync;
     private DocumentListener docListener;
     private javax.swing.text.Document swingDocument;
     private final Object getAccessLock = new Object();
@@ -128,12 +142,12 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
 	    swingDocument = currentDoc;
 	    currentDoc.addDocumentListener(new WeakDocumentListener(docListener, currentDoc));
 	}
-	return needsSync || !currentDoc.equals(lastDoc);
+	return needsSync != 0 || !currentDoc.equals(lastDoc);
     }
     
     @Override
     protected void syncStarted() {
-        needsSync = false;
+        needsSync = 0;
         getAccess().unsetDirty();
     }
 
@@ -145,8 +159,16 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     
     private void documentChanged() {
 	if (!isIntransaction()) {
-            getAccess().setDirty();
-	    needsSync = true;
+            DocumentModelAccess acc;
+            synchronized (getAccessLock) {
+                acc = accessPrivate;
+                needsSync = System.currentTimeMillis();
+            }
+            // if the access was not yet created, the needsSync will keep
+            // the dirty information until the model access is initialized; see getAcces().
+            if (acc != null) {
+                acc.setDirty();
+            }
 	}
     }
 
@@ -566,19 +588,32 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     public org.w3c.dom.Document getDocument() {
         return getAccess().getDocumentRoot();
     }
-
+    
     @Override
     public DocumentModelAccess getAccess() {
-        synchronized (getAccessLock) {
-            if (access == null) {
-                access = getEffectiveAccessProvider().createModelAccess(this);
-                if (! (access instanceof ReadOnlyAccess)) {
-                    access.addUndoableEditListener(this);
+        DocumentModelAccess acc = accessPrivate;
+        if (acc == null) {
+            acc = getEffectiveAccessProvider().createModelAccess(this);
+            long ts;
+            synchronized (getAccessLock) {
+                if (accessPrivate != null) {
+                    // already loaded and initialized
+                    return accessPrivate;
+                }
+                accessPrivate = access = acc;
+                if (! (acc instanceof ReadOnlyAccess)) {
+                    acc.addUndoableEditListener(this);
                     setIdentifyingAttributes();
                 }
+                ts = needsSync;
             }
-            return access;
+            if (ts != 0) {
+                // delayed setDirty, access was not present when documentChanged was called
+                // was called.
+                acc.setDirty();
+            }
         }
+        return acc;
     }
 
     private DocumentModelAccessProvider getEffectiveAccessProvider() {

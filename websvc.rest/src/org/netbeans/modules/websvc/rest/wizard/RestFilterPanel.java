@@ -44,9 +44,6 @@ package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.project.Project;
@@ -106,8 +103,9 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
         Project project = Templates.getProject(myDescriptor);
         WebRestSupport support  = project.getLookup().lookup(WebRestSupport.class);
         if ( support != null ){
-            if ( OriginResourceIterator.isJee7Profile(project)){
+            if ( support.isEE7() || support.isJersey2()){
                 if ( !support.isRestSupportOn() ){
+                    // TODO: how is user supposed to "enable" Jax-RS? could IDE do it automatically?
                     myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                             NbBundle.getMessage(RestFilterPanel.class, 
                             "ERR_NoRestConfig"));                   // NOI18N 

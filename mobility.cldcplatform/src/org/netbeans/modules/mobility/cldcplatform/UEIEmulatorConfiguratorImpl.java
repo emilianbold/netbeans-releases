@@ -322,6 +322,7 @@ public final class UEIEmulatorConfiguratorImpl {
     // temporary
     private String platformName;
     private Properties properties;
+    private Properties versionProperties;
     private String platformType;
     
     private Process emulatorProcess;
@@ -471,7 +472,12 @@ public final class UEIEmulatorConfiguratorImpl {
                 continue;
             }
 
-            final String profile = properties.getProperty(deviceName + ".version.profile"); //NOI18N
+            String profile = properties.getProperty(deviceName + ".version.profile"); //NOI18N
+            if (profile == null) {
+                // Profile detection modified because of #221063 and #228551 - Adding TC65 WTK as Java ME CLDC Platform
+                final String profileValue = versionProperties.getProperty("Profile"); //NOI18N
+                profile = (profileValue != null && profileValue.contains("IMP-NG")) ? "IMP-NG" : null; //NOI18N
+            }
             String profileName = null;
             if(profile != null) {
                 final int i = profile.lastIndexOf('-');
@@ -626,11 +632,18 @@ public final class UEIEmulatorConfiguratorImpl {
      * @return true if load is successful
      */
     private boolean processVersion(final PrintWriter pw) {
+        versionProperties = new Properties();
         try {
             execute(CMD_VERSION, pw);
             if (! resolveVersion(emulatorOutput))
                 if (! resolveVersion(emulatorError))
                     return false;
+            
+            // Platform detection modified because of #221063 and #228551 - Adding TC65 WTK as Java ME CLDC Platform
+            final String output = emulatorOutput.toString();
+            if (output != null && !output.isEmpty()) {
+                versionProperties.load(new ReaderInputStream(new StringReader(output)));
+            }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             return false;

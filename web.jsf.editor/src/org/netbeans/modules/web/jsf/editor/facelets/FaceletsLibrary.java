@@ -73,7 +73,7 @@ public class FaceletsLibrary extends AbstractFaceletsLibrary {
     private final URL libraryDescriptorSource;
 
     public FaceletsLibrary(FaceletsLibrarySupport support, String namespace, URL libraryDescriptorSourceURL) {
-        super(support);
+        super(support, namespace);
         declaredNamespace = namespace;
         libraryDescriptorSource = libraryDescriptorSourceURL;
     }

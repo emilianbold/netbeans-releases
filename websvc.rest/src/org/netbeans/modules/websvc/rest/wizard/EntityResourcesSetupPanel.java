@@ -53,15 +53,12 @@ import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
-import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -152,9 +149,9 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
                     withoutController);
             setLayout( new BoxLayout(this, BoxLayout.Y_AXIS));
             add( mainPanel );
-            jerseyPanel = new JerseyPanel( this );
-            mainPanel.addChangeListener(jerseyPanel );
-            add( jerseyPanel );
+            jaxRsConfigurationPanel = new JaxRsConfigurationPanel( this );
+            mainPanel.addChangeListener(jaxRsConfigurationPanel );
+            add( jaxRsConfigurationPanel );
             setName(name);
         }
 
@@ -176,16 +173,17 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
             final WebRestSupport restSupport = project.getLookup().
                     lookup(WebRestSupport.class);
             boolean hasSpringSupport = restSupport.hasSpringSupport();
-            boolean hasJaxRs = restSupport.hasJaxRsApi(); 
-            if ( hasSpringSupport ){
+            boolean showJaxRsCustomizer = restSupport.hasJaxRsApi() || restSupport.isJersey2();
+            // TODO: for Jersey2 I temporarily disable Spring support:
+            if ( hasSpringSupport && !restSupport.isJersey2()) {
                 wizard.putProperty( WizardProperties.USE_JERSEY, true);
             }
-            if (jerseyPanel != null) {
-                if (!hasJaxRs || hasSpringSupport
+            if (jaxRsConfigurationPanel != null) {
+                if (!showJaxRsCustomizer || hasSpringSupport
                         || restSupport.isRestSupportOn())
                 {
-                    remove(jerseyPanel);
-                    jerseyPanel = null;
+                    remove(jaxRsConfigurationPanel);
+                    jaxRsConfigurationPanel = null;
                 }
                 ScanDialog.runWhenScanFinished(new Runnable() {
 
@@ -195,7 +193,7 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
                                 getRestApplications();
                         boolean configured = restApplications != null
                                 && !restApplications.isEmpty();
-                        configureJersey(configured, wizard);
+                        configureJaxRsConfigurationPanel(configured, wizard);
                     }
                 }, NbBundle.getMessage(PatternResourcesSetupPanel.class,
                         "LBL_SearchAppConfig")); // NOI18N
@@ -209,16 +207,16 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
         @Override
         public void store( WizardDescriptor wizard ) {
             mainPanel.store(wizard);
-            if ( hasJerseyPanel() ){
-                jerseyPanel.store(wizard);
+            if ( hasJaxRsConfigurationPanel() ){
+                jaxRsConfigurationPanel.store(wizard);
             }            
         }
 
         @Override
         public boolean valid(WizardDescriptor wizard) {
             boolean isValid = ((AbstractPanel.Settings)mainPanel).valid(wizard);
-            if ( isValid && hasJerseyPanel() ){
-                return jerseyPanel.valid(wizard);
+            if ( isValid && hasJaxRsConfigurationPanel() ){
+                return jaxRsConfigurationPanel.valid(wizard);
             }
             else {
                 return isValid;
@@ -228,31 +226,36 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
         @Override
         public void addChangeListener(ChangeListener l) {
             mainPanel.addChangeListener(l);
-            if ( hasJerseyPanel() ){
-                jerseyPanel.addChangeListener(l);
+            if ( hasJaxRsConfigurationPanel() ){
+                jaxRsConfigurationPanel.addChangeListener(l);
             }
         }
         
-        private boolean hasJerseyPanel(){
-            return jerseyPanel != null;
+        private boolean hasJaxRsConfigurationPanel(){
+            return jaxRsConfigurationPanel != null;
         }
         
-        private void configureJersey(boolean remove, WizardDescriptor wizard){
-            if ( jerseyPanel == null ){
+        private void configureJaxRsConfigurationPanel(boolean remove, WizardDescriptor wizard){
+            if ( jaxRsConfigurationPanel == null ){
                 return;
             }
             if ( remove )
             {
-                remove( jerseyPanel );
-                jerseyPanel = null;
+                remove( jaxRsConfigurationPanel );
+                jaxRsConfigurationPanel = null;
             }
             else {
-                jerseyPanel.read(wizard);
+                jaxRsConfigurationPanel.read(wizard);
             }
         }
         
         private EntityResourcesSetupPanelVisual mainPanel;
-        private JerseyPanel jerseyPanel;
+        private JaxRsConfigurationPanel jaxRsConfigurationPanel;
+
+        @Override
+        public String getPackageName() {
+            return mainPanel.getPackageName();
+        }
     }
     
     private boolean withoutController;

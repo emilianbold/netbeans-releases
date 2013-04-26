@@ -171,6 +171,13 @@ public class NotificationTable extends ETable {
         selection.setSelectionInterval(toSelect, toSelect);
     }
 
+    void showDefaultSelection() {
+        int selectedRow = this.getSelectedRow();
+        if (selectedRow == -1) {
+            this.getSelectionModel().setSelectionInterval(0, 0);
+        }
+    }
+
     private class NotificationPriorityRenderer extends NotificationRenderer {
 
         @Override

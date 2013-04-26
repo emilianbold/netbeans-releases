@@ -95,8 +95,9 @@ public interface CssPreprocessorImplementation {
 
     /**
      * Create a {@link Customizer customizer} for this CSS preprocessor
-     * and the given project.
-     * @param project the project that is to be customized
+     * and the given project. <b>The project must have {@link org.netbeans.modules.web.common.spi.ProjectWebRootProvider}
+     * in its lookup.</b>
+     * @param project the project with {@link org.netbeans.modules.web.common.spi.ProjectWebRootProvider} in its lookup that is to be customized
      * @return a new CSS preprocessor customizer; can be {@code null} if the CSS preprocessor doesn't need
      *         to store/read any project specific properties (or does not need to be added/removed to given project)
      */

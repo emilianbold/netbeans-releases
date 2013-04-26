@@ -86,7 +86,6 @@ public class TitleNode extends LeafNode {
                 lblName = new TreeLabel(titleName);
                 lblName.setBorder(new EmptyBorder(0, 0, 0, 5));
                 lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
-                lblName.setForeground(ColorManager.getDefault().getDefaultBackground());
                 panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
                 panel.add(lblProgress, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
@@ -101,6 +100,7 @@ public class TitleNode extends LeafNode {
                     }
                 }
             }
+            lblName.setForeground(foreground);
         }
         return panel;
     }

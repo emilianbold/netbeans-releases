@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 
 /**
  * completion resolver for the file
@@ -142,7 +141,7 @@ public interface CompletionResolver {
      */
     public void setResolveTypes(int resolveTypes);
 
-    public CsmCompletionQuery.QueryScope setResolveScope(CsmCompletionQuery.QueryScope queryScope);
+    public QueryScope setResolveScope(QueryScope queryScope);
     /**
      * init resolver before using
      * or reinit
@@ -160,6 +159,12 @@ public interface CompletionResolver {
      * get result of resolving
      */
     public Result getResult();
+    
+    public static enum QueryScope {
+        LOCAL_QUERY,
+        SMART_QUERY,
+        GLOBAL_QUERY,
+    };
     
     public interface Result {
         public Collection<CsmVariable> getLocalVariables();

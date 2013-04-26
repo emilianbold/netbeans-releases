@@ -112,7 +112,6 @@ public class ArchiveTest extends NbTestCase {
         super.tearDown();
     }
     
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
     public void testWrongClassPathElement() throws Exception {
         ClassLoader l = module.getClassLoader();
         assertNotNull("Resource found", l.getResource("fake/org.openide.sample"));

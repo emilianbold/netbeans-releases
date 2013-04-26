@@ -864,10 +864,7 @@ public final class VeryPretty extends JCTree.Visitor {
         int col = out.col;
         if (!ERROR.contentEquals(tree.name))
             col -= tree.name.getByteLength();
-        if (cs.spaceAroundAssignOps())
-            print(' ');
-        print('=');
-        wrapTree(cs.wrapAssignOps(), cs.spaceAroundAssignOps(), cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize(), new Runnable() {
+        wrapAssignOpTree("=", col, new Runnable() {
             @Override public void run() {
                 printNoParenExpr(tree.init);
             }
@@ -1414,12 +1411,7 @@ public final class VeryPretty extends JCTree.Visitor {
     public void visitAssign(final JCAssign tree) {
         int col = out.col;
 	printExpr(tree.lhs, TreeInfo.assignPrec + 1);
-        boolean spaceAroundAssignOps = cs.spaceAroundAssignOps();
-	if (spaceAroundAssignOps)
-            print(' ');
-	print('=');
-	int rm = cs.getRightMargin();
-        wrapTree(cs.wrapAssignOps(), spaceAroundAssignOps, cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize(), new Runnable() {
+        wrapAssignOpTree("=", col, new Runnable() {
             @Override public void run() {
                 printExpr(tree.rhs, TreeInfo.assignPrec);
             }
@@ -2454,6 +2446,25 @@ public final class VeryPretty extends JCTree.Visitor {
             printNoParenExpr(l.head);
             first = false;
         }
+    }
+    
+    private void wrapAssignOpTree(final String operator, int col, final Runnable print) {
+        final boolean spaceAroundAssignOps = cs.spaceAroundAssignOps();
+        if (cs.wrapAfterAssignOps()) {
+            if (spaceAroundAssignOps)
+                print(' ');
+            print(operator);
+        }
+        wrapTree(cs.wrapAssignOps(), spaceAroundAssignOps, cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize(), new Runnable() {
+            @Override public void run() {
+                if (!cs.wrapAfterAssignOps()) {
+                    print(operator);
+                    if (spaceAroundAssignOps)
+                        print(' ');
+                }
+                print.run();
+            }
+        });
     }
     
     private void wrapTree(WrapStyle wrapStyle, boolean needsSpaceBefore, int colAfterWrap, Runnable print) {

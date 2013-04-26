@@ -50,6 +50,10 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.spi.editor.typinghooks.CamelCaseInterceptor;
+import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
+import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
+import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 
 
 /**
@@ -57,6 +61,8 @@ import org.netbeans.modules.csl.spi.ParserResult;
  * editing.
  *
  * @author Tor Norbye
+ * @deprecated use interceptors {@link CamelCaseInterceptor} {@link DeletedTextInterceptor} {@link TypedTextInterceptor} {@link TypedBreakInterceptor} instead.
+ * When all interceptors are implemented and registrated through annotations, keystrokehandler should be set to null in language registration. 
  */
 public interface KeystrokeHandler {
     /**

@@ -331,6 +331,22 @@ tokens {
     LITERAL___has_trivial_constructor="__has_trivial_constructor"; // NOI18N
     LITERAL___restrict__="__restrict__"; // NOI18N
     LITERAL__Noreturn="_Noreturn"; // NOI18N
+    LITERAL___has_nothrow_assign="__has_nothrow_assign"; // NOI18N
+    LITERAL___has_nothrow_copy="__has_nothrow_copy"; // NOI18N
+    LITERAL___has_nothrow_constructor="__has_nothrow_constructor"; // NOI18N
+    LITERAL___has_trivial_assign="__has_trivial_assign"; // NOI18N
+    LITERAL___has_trivial_copy="__has_trivial_copy"; // NOI18N
+    LITERAL___has_trivial_destructor="__has_trivial_destructor"; // NOI18N
+    LITERAL___has_virtual_destructor="__has_virtual_destructor"; // NOI18N
+    LITERAL___is_abstract="__is_abstract"; // NOI18N
+    LITERAL___is_empty="__is_empty"; // NOI18N
+    LITERAL___is_literal_type="__is_literal_type"; // NOI18N
+    LITERAL___is_polymorphic="__is_polymorphic"; // NOI18N
+    LITERAL___is_standard_layout="__is_standard_layout"; // NOI18N
+    LITERAL___is_trivial="__is_trivial"; // NOI18N
+    LITERAL___is_union="__is_union"; // NOI18N
+    LITERAL___underlying_type="__underlying_type"; // NOI18N
+    LITERAL___builtin_va_list="__builtin_va_list"; // NOI18N
 
     LAST_LITERAL_TOKEN;
 

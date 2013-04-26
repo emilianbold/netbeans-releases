@@ -42,11 +42,9 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -67,16 +65,10 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.VCSAccessor;
+import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.text.Line.ShowOpenType;
-import org.openide.text.Line.ShowVisibilityType;
-import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -128,6 +120,9 @@ class StackTraceSupport {
         return path;
     }
 
+    /**
+     * package private for test purposes
+     */
     static List<StackTracePosition> find(String text) {
 
        LinkedList<StackTracePosition> result = new LinkedList<StackTracePosition>();
@@ -135,11 +130,11 @@ class StackTraceSupport {
            return result;
        }
 
-       List<Integer> lineBreaks = new ArrayList<Integer>();
-       int pos = -1;
-       while( (pos = text.indexOf("\n", pos + 1)) > -1) {
-           lineBreaks.add(pos);
-       }
+//       List<Integer> lineBreaks = new ArrayList<Integer>();
+//       int pos = -1;
+//       while( (pos = text.indexOf("\n", pos + 1)) > -1) {
+//           lineBreaks.add(pos);
+//       }
 
        String nt = removeAll( text, '\n');
        //String nt = text.replace('\n', ' ');
@@ -282,10 +277,10 @@ class StackTraceSupport {
        return sb.toString();
    }
 
-   static class StackTracePosition {
+    static class StackTracePosition {
         private final StackTraceElement[] stackTraceElements;
-        private int start;
-        private int end;
+        private final int start;
+        private final int end;
         StackTracePosition(StackTraceElement[] stackTraceElements, int start, int end) {
             this.stackTraceElements = stackTraceElements;
             this.start = start;
@@ -303,56 +298,55 @@ class StackTraceSupport {
     }
 
     static void open(String path, final int line) {
-        final FileObject fo = search(path);
-        if ( fo != null ) {
-            SwingUtilities.invokeLater(new Runnable() {
+        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        if(ideServices != null) {
+            ideServices.openDocument(path, line);
+        }
+    }
+
+    static boolean isAvailable() {
+        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        return ideServices != null && ideServices.providesOpenDocument() && ideServices.providesFindFile();
+    }
+    
+    @NbBundle.Messages({"CTL_ShowHistoryTitle=Show History",
+                        "# {0} - path to be opened",  "MSG_NoHistory=History View not available for file with path\n {0}.",
+                        "# {0} - path to be opened",  "MSG_NoFile=No file found for path\n {0}."})
+    private static void openSearchHistory(final String path, final int line) {
+        final File file = findFile(path);
+        if ( file != null ) {
+            final IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+            if(ideServices == null || !ideServices.providesSearchHistory(file)) {
+                return;
+            }
+            BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
                 public void run() {
-                    doOpen(fo, line);
+                    if(!ideServices.searchHistory(file, line)) {
+                        BugtrackingUtil.notifyError(Bundle.CTL_ShowHistoryTitle(), Bundle.MSG_NoHistory(path));
+                    }
                 }
             });
+        } else {
+            BugtrackingUtil.notifyError(Bundle.CTL_ShowHistoryTitle(), Bundle.MSG_NoFile(path));            
         }
     }
 
-    private static void openSearchHistory(String path, final int line) {
-        final FileObject fo = search(path);
-        if ( fo != null ) {
-            final File file = FileUtil.toFile(fo);
-            if(file == null) {
-                // XXX any chance to disable the action if it's not a real io.File - e.g. a jdk class?
-                return;
-            }
-            Collection<? extends VCSAccessor> supports = Lookup.getDefault().lookupAll(VCSAccessor.class);
-            if(supports == null) {
-                return;
-            }
-            for (final VCSAccessor s : supports) {
-                // XXX this is messy - we implicitly expect that unrelevant VCS modules
-                // will skip the action
-                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
-                    public void run() {
-                        s.searchHistory(file, line);
-                    }
-                });
+    private static File findFile(String path) {
+        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        if(ideServices != null) {
+            FileObject fo = ideServices.findFile(path);
+            if(fo != null) {
+                return FileUtil.toFile(fo);
             }
         }
-    }
-
-    private static boolean doOpen(FileObject fo, int line) {
-        try {
-            DataObject od = DataObject.find(fo);
-            return NbDocument.openDocument(od, line, -1, ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
-        } catch (IOException e) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, e);
-        }
-
-        return false;
-    }
-
-    static private FileObject search(String path) {
-        return GlobalPathRegistry.getDefault().findResource(path);
+        return null;
     }
 
     public static void register(final JTextPane textPane) {
+        if(!isAvailable()) {
+            return;
+        }
         final StyledDocument doc = textPane.getStyledDocument();
         String text = "";
         try {
@@ -508,6 +502,7 @@ class StackTraceSupport {
             }
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             openStackTrace(stackFrame, showHistory);
         }

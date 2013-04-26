@@ -48,13 +48,18 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.openide.util.Exceptions;
+import static org.netbeans.modules.editor.java.JavaKit.JAVA_MIME_TYPE;
+import org.netbeans.spi.editor.typinghooks.CamelCaseInterceptor;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -216,4 +221,49 @@ import org.openide.util.Exceptions;
         return Utilities.getPreviousWord((BaseDocument)doc, offset);
     }
 
+    public static class JavaCamelCaseInterceptor implements CamelCaseInterceptor {
+
+        private boolean isUsingCamelCase() {
+            return NbPreferences.root().getBoolean("useCamelCaseStyleNavigation", true); // NOI18N
+        }
+
+        @Override
+        public boolean beforeChange(MutableContext context) throws BadLocationException {
+            return false;
+        }
+
+        @Override
+        public void change(MutableContext context) throws BadLocationException {
+            if (isUsingCamelCase()) {
+                if (context.isBackward()) {
+                    context.setNextWordOffset(CamelCaseOperations.previousCamelCasePosition(context.getComponent()));
+                } else {
+                    context.setNextWordOffset(CamelCaseOperations.nextCamelCasePosition(context.getComponent()));
+                }
+            }
+        }
+
+        @Override
+        public void afterChange(MutableContext context) throws BadLocationException {
+        }
+
+        @Override
+        public void cancelled(MutableContext context) {
+        }
+
+        @MimeRegistrations({
+            @MimeRegistration(mimeType = JAVA_MIME_TYPE, service = CamelCaseInterceptor.Factory.class),
+            @MimeRegistration(mimeType = "text/x-javadoc", service = CamelCaseInterceptor.Factory.class), //NOI18N
+            @MimeRegistration(mimeType = "text/x-java-string", service = CamelCaseInterceptor.Factory.class), //NOI18N
+            @MimeRegistration(mimeType = "text/x-java-character", service = CamelCaseInterceptor.Factory.class) //NOI18N
+        })
+        @MimeRegistration(mimeType = JAVA_MIME_TYPE, service = CamelCaseInterceptor.Factory.class)
+        public static class JavaFactory implements CamelCaseInterceptor.Factory {
+
+            @Override
+            public CamelCaseInterceptor createCamelCaseInterceptor(MimePath mimePath) {
+                return new JavaCamelCaseInterceptor();
+            }
+        }
+    }
 }

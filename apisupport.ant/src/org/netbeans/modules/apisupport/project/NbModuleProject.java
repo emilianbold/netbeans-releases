@@ -102,6 +102,7 @@ import org.netbeans.modules.apisupport.project.ui.ModuleActions;
 import org.netbeans.modules.apisupport.project.ui.ModuleLogicalView;
 import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.apisupport.project.ui.customizer.NbModulePackageModifierImplementation;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
@@ -312,6 +313,7 @@ public final class NbModuleProject implements Project {
         ic.add(new SourceLevelQueryImpl(this));
         //ic.add(new ProjectWhiteListQueryImplementation(this));
         ic.add(new ProjectWhiteListQueryImplementation(this));
+        ic.add(new NbModulePackageModifierImplementation(this));
         ic.add(helper.createSharabilityQuery2(evaluator(), new String[0], new String[]{
                     "${build.dir}", // NOI18N
                 }));

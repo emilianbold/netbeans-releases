@@ -88,6 +88,7 @@ Ext       : OBJECT Ext [ANONYMOUS: false, DECLARED: true - Ext, MODIFIERS: PUBLI
                          @exp;Manager@call;instantiateByAlias, RESOLVED: false
                          Object, RESOLVED: true
                          _L214.Anonym$4.widget.T, RESOLVED: true
+                         _L214.Anonym$4.widget.config, RESOLVED: false
                          # PARAMETERS
                          OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
                          OBJECT config [ANONYMOUS: false, DECLARED: true - config, MODIFIERS: PUBLIC, PARAMETER]
@@ -379,6 +380,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                    @exp;Manager@call;instantiateByAlias, RESOLVED: false
                                    Object, RESOLVED: true
                                    _L214.Anonym$4.widget.T, RESOLVED: true
+                                   _L214.Anonym$4.widget.config, RESOLVED: false
                                    # PARAMETERS
                                    OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
                                    OBJECT config [ANONYMOUS: false, DECLARED: true - config, MODIFIERS: PUBLIC, PARAMETER]
@@ -818,6 +820,8 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                     nameListeners : OBJECT nameListeners [ANONYMOUS: false, DECLARED: true - nameListeners, MODIFIERS: PRIVATE, VARIABLE]
                     parseNamespace                  : FUNCTION parseNamespace [ANONYMOUS: false, DECLARED: true - parseNamespace, MODIFIERS: PUBLIC, METHOD]
+                                                    # RETURN TYPES
+                                                    @exp;parts@call;concat, RESOLVED: false
                                                     # PARAMETERS
                                                     OBJECT namespace [ANONYMOUS: false, DECLARED: true - namespace, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES

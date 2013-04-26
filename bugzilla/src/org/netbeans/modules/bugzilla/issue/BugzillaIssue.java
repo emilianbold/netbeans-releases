@@ -60,7 +60,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -77,7 +76,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
-import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -88,7 +86,9 @@ import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
+import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.PatchUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -104,7 +104,6 @@ import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -1187,18 +1186,18 @@ public class BugzillaIssue {
         }
     }
 
-    class Attachment {
+    class Attachment extends AttachmentsPanel.AbstractAttachment {
         private final String desc;
         private final String filename;
         private final String author;
         private final String authorName;
         private final Date date;
         private final String id;
-        private String contentType;
-        private String isDeprected;
-        private String size;
-        private String isPatch;
-        private String url;
+        private final String contentType;
+        private final String isDeprected;
+        private final String size;
+        private final String isPatch;
+        private final String url;
 
 
         public Attachment(TaskAttribute ta) {
@@ -1239,26 +1238,37 @@ public class BugzillaIssue {
             url = getMappedValue(ta, TaskAttribute.ATTACHMENT_URL);
         }
 
+        @Override
+        public boolean isPatch() {
+            return "1".equals(isPatch);
+        }
+        
+        @Override
         public String getAuthorName() {
             return authorName;
         }
 
+        @Override
         public String getAuthor() {
             return author;
         }
 
+        @Override
         public Date getDate() {
             return date;
         }
 
+        @Override
         public String getDesc() {
             return desc;
         }
 
+        @Override
         public String getFilename() {
             return filename;
         }
 
+        @Override
         public String getContentType() {
             return contentType;
         }
@@ -1271,10 +1281,6 @@ public class BugzillaIssue {
             return isDeprected;
         }
 
-        public String getIsPatch() {
-            return isPatch;
-        }
-
         public String getSize() {
             return size;
         }
@@ -1283,15 +1289,14 @@ public class BugzillaIssue {
             return url;
         }
 
+        @Override
         public void getAttachementData(final OutputStream os) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N            
             repository.getExecutor().execute(new GetAttachmentCommand(repository, id, os));
         }
 
         void open() {
-            String progressFormat = NbBundle.getMessage(
-                                        DefaultAttachmentAction.class,
-                                        "Attachment.open.progress");    //NOI18N
+            String progressFormat = NbBundle.getMessage(BugzillaIssue.class, "Attachment.open.progress");    //NOI18N
             String progressMessage = MessageFormat.format(progressFormat, getFilename());
             final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
             handle.start();
@@ -1329,12 +1334,10 @@ public class BugzillaIssue {
         }
 
         void saveToFile() {
-            final File file = new FileChooserBuilder(AttachmentsPanel.class)
+            final File file = new FileChooserBuilder(BugzillaIssue.class)
                     .setFilesOnly(true).showSaveDialog();
             if (file != null) {
-                String progressFormat = NbBundle.getMessage(
-                                            SaveAttachmentAction.class,
-                                            "Attachment.saveToFile.progress"); //NOI18N
+                String progressFormat = NbBundle.getMessage(BugzillaIssue.class, "Attachment.saveToFile.progress"); //NOI18N
                 String progressMessage = MessageFormat.format(progressFormat, getFilename());
                 final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
                 handle.start();
@@ -1360,11 +1363,9 @@ public class BugzillaIssue {
         }
 
         void applyPatch() {
-            final File context = BugtrackingUtil.selectPatchContext();
+            final File context = PatchUtils.selectPatchContext();
             if (context != null) {
-                String progressFormat = NbBundle.getMessage(
-                                            ApplyPatchAction.class,
-                                            "Attachment.applyPatch.progress"); //NOI18N
+                String progressFormat = NbBundle.getMessage(BugzillaIssue.class, "Attachment.applyPatch.progress"); //NOI18N
                 String progressMessage = MessageFormat.format(progressFormat, getFilename());
                 final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
                 handle.start();
@@ -1401,49 +1402,6 @@ public class BugzillaIssue {
             }
             return file;
         }
-
-        class DefaultAttachmentAction extends AbstractAction {
-
-            public DefaultAttachmentAction() {
-                putValue(NAME, NbBundle.getMessage(
-                                   DefaultAttachmentAction.class,
-                                   "Attachment.DefaultAction.name"));   //NOI18N
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Attachment.this.open();
-            }
-        }
-
-        class SaveAttachmentAction extends AbstractAction {
-
-            public SaveAttachmentAction() {
-                putValue(NAME, NbBundle.getMessage(
-                                   SaveAttachmentAction.class,
-                                   "Attachment.SaveAction.name"));      //NOI18N
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Attachment.this.saveToFile();
-            }
-        }
-
-        class ApplyPatchAction extends AbstractAction {
-
-            public ApplyPatchAction() {
-                putValue(NAME, NbBundle.getMessage(
-                                   ApplyPatchAction.class,
-                                   "Attachment.ApplyPatchAction.name"));//NOI18N
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Attachment.this.applyPatch();
-            }
-        }
-
     }
 
 }

@@ -51,11 +51,12 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CPFileType;
 import org.netbeans.modules.css.prep.CPIndex;
+import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
+import org.openide.util.NbBundle;
 
 abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
 
@@ -66,19 +67,18 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
 
     final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
     final CssPreprocessor.ProjectProblemsProviderSupport support;
-    final CssPreprocessorImplementation.Customizer customizer;
 
 
-    protected BaseProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support, CssPreprocessorImplementation.Customizer customizer) {
+    protected BaseProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
         assert support != null;
-        assert customizer != null;
         this.support = support;
-        this.customizer = customizer;
     }
 
+    abstract String getDisplayName();
     abstract boolean isEnabled(Project project);
     abstract CPFileType getFileType();
     abstract void checkCompiler(Collection<ProjectProblem> currentProblems);
+    abstract ValidationResult validatePreferences(Project project);
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -92,7 +92,7 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
 
     @Override
     public Collection<? extends ProjectProblem> getProblems() {
-        Project project = support.getProject();
+        final Project project = support.getProject();
         if (!isEnabled(project)) {
             return Collections.emptyList();
         }
@@ -102,9 +102,9 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
         return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
             @Override
             public Collection<ProjectProblemsProvider.ProjectProblem> collectProblems() {
-                Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<ProjectProblem>(5);
+                Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<>();
                 checkCompiler(currentProblems);
-                checkCustomizer(currentProblems);
+                checkPreferences(currentProblems, project);
                 return currentProblems;
             }
         });
@@ -120,15 +120,22 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
         return true;
     }
 
-    protected void checkCustomizer(Collection<ProjectProblem> currentProblems) {
-        if (customizer.isValid()) {
+    @NbBundle.Messages({
+        "# {0} - preprocessor name",
+        "# {1} - message",
+        "BaseProjectProblemsProvider.error={0}: {1}",
+    })
+    protected void checkPreferences(Collection<ProjectProblem> currentProblems, Project project) {
+        ValidationResult validationResult = validatePreferences(project);
+        if (validationResult.isFaultless()) {
             return;
         }
-        String message = customizer.getErrorMessage();
+        String message = validationResult.getFirstErrorMessage();
         if (message == null) {
-            message = customizer.getWarningMessage();
+            message = validationResult.getFirstWarningMessage();
         }
-        assert message != null;
+        assert message != null : "Message should be found for invalid preferences: " + getDisplayName();
+        message = Bundle.BaseProjectProblemsProvider_error(getDisplayName(), message);
         ProjectProblem problem = ProjectProblem.createError(
                 message,
                 message,

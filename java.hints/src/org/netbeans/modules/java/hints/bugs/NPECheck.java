@@ -31,12 +31,11 @@ package org.netbeans.modules.java.hints.bugs;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -251,6 +250,8 @@ public class NPECheck {
     }
 
     private static State getStateFromAnnotations(Element e, State def) {
+        if (e == null) return def;
+        
         for (AnnotationMirror am : e.getAnnotationMirrors()) {
             String simpleName = ((TypeElement) am.getAnnotationType().asElement()).getSimpleName().toString();
 
@@ -377,19 +378,13 @@ public class NPECheck {
                 wasNPE = true;
             }
             
-            Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
+            Element site = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
             
-            if (isVariableElement(e)) {
-                State r = getStateFromAnnotations(e);
-                
-                if (wasNPE) {
-                    variable2State.put((VariableElement) e, NOT_NULL_BE_NPE);
-                }
-                
-                return r;
+            if (isVariableElement(site) && wasNPE && (variable2State.get(site) == null || !variable2State.get(site).isNotNull())) {
+                variable2State.put((VariableElement) site, NOT_NULL_BE_NPE);
             }
             
-            return State.POSSIBLE_NULL;
+            return getStateFromAnnotations(info.getTrees().getElement(getCurrentPath()));
         }
 
         @Override
@@ -698,6 +693,11 @@ public class NPECheck {
         @Override
         public State visitForLoop(ForLoopTree node, Void p) {
             return handleGeneralizedFor(node.getInitializer(), node.getCondition(), node.getUpdate(), node.getStatement(), p);
+        }
+
+        @Override
+        public State visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+            return handleGeneralizedFor(Arrays.asList(node.getVariable(), node.getExpression()), null, null, node.getStatement(), p);
         }
         
         private State handleGeneralizedFor(Iterable<? extends Tree> initializer, Tree condition, Iterable<? extends Tree> update, Tree statement, Void p) {
