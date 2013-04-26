@@ -305,8 +305,8 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 if (checkOnly) {
                     return vote;
                 }
-            }
-            if (JavaIndex.ensureAttributeValue(url, JRE_PROFILE, sourceLevel.getProfile(), checkOnly)) {
+            }            
+            if (JavaIndex.ensureAttributeValue(url, JRE_PROFILE, sourceLevel.getProfile().getName(), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to jre profile change"); //NOI18N
                 vote = true;
                 if (checkOnly) {

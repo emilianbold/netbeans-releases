@@ -56,8 +56,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.SideBarFactory;
-import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.spi.editor.SideBarFactory;
 import org.netbeans.modules.editor.NbEditorKit;
 
 @MimeRegistration(mimeType = SearchNbEditorKit.SEARCHBAR_MIMETYPE, service = EditorKit.class)
@@ -68,6 +67,7 @@ public final class SearchNbEditorKit extends NbEditorKit {
     public static final String SEARCHBAR_MIMETYPE = "text/x-editor-search"; // NOI18N
     public static final String PROP_SEARCH_CONTAINER = "diff.search.container"; // NOI18N
 
+    @SuppressWarnings("unchecked")
     public static <T> T findComponent(Container container, Class<T> componentClass, int depth) {
         if (depth > 0) {
             for (Component c : container.getComponents()) {

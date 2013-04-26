@@ -8,6 +8,8 @@ float
 int
 long
 short
+super
+this
 AbstractMethodError
 Appendable
 ArithmeticException

@@ -68,7 +68,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
     private final JScrollPane scrollPane;
     private final JEditorPane editorPane;
     private Object oldValue;
-    private static final JTextField referenceTextField = (JTextField) new JComboBox().getEditor().getEditorComponent();
+    private static final JTextField referenceTextField = (JTextField) new JComboBox<String>().getEditor().getEditorComponent();
     private static final Logger LOG = Logger.getLogger(SearchComboBoxEditor.class.getName());
 
     public SearchComboBoxEditor() {
@@ -324,6 +324,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         }
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public Object getItem() {
         Object newValue = editorPane.getText();

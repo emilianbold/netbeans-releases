@@ -55,7 +55,7 @@ public class FinalFieldsFromCtorCustomiser extends javax.swing.JPanel {
     public FinalFieldsFromCtorCustomiser(Preferences preferences) {
         initComponents();
         this.preferences = preferences;
-        finalCheckBox.setSelected(ErrorFixesFakeHint.isCreateFinalFieldsForCtor());
+        finalCheckBox.setSelected(ErrorFixesFakeHint.isCreateFinalFieldsForCtor(preferences));
     }
 
     /** This method is called from within the constructor to

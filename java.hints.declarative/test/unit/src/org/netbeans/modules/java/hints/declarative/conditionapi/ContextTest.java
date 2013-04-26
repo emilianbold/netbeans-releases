@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import org.netbeans.modules.java.hints.spiimpl.SPIAccessor;
 import org.netbeans.modules.java.hints.spiimpl.TestBase;
-import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 
 /**
  *
@@ -75,7 +75,7 @@ public class ContextTest extends TestBase {
         variables.put("$3", tp.getParentPath().getParentPath());
         Map<String, Collection<? extends TreePath>> multiVariables = Collections.<String, Collection<? extends TreePath>>emptyMap();
         Map<String, String> variables2Names = Collections.emptyMap();
-        Context ctx = new Context(SPIAccessor.getINSTANCE().createHintContext(info, null, null, variables, multiVariables, variables2Names));
+        Context ctx = new Context(SPIAccessor.getINSTANCE().createHintContext(info, HintsSettings.getGlobalSettings(), null, null, variables, multiVariables, variables2Names));
 
         assertEquals(Arrays.asList("test.Test.X", "test.Test"), ctx.enclosingClasses(new Variable("$1")));
         assertEquals(Arrays.asList("test.Test.X", "test.Test"), ctx.enclosingClasses(new Variable("$2")));

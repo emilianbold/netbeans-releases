@@ -105,6 +105,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.search.provider.SearchFilter;
 import org.netbeans.api.search.provider.SearchInfoUtils;
+import org.netbeans.editor.JumpList;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.common.Factory;
@@ -173,6 +174,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     public void actionPerformed(ActionEvent arg0) {
         FileDescriptor[] typeDescriptors = getSelectedFiles();
         if (typeDescriptors != null) {
+            JumpList.checkAddEntry();
             for(FileDescriptor td: typeDescriptors){
                 td.open();
             }

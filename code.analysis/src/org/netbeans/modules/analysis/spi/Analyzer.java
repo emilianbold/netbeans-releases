@@ -45,10 +45,14 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.analysis.AnalysisProblem;
 import org.netbeans.modules.analysis.SPIAccessor;
 import org.netbeans.modules.refactoring.api.Scope;
@@ -127,8 +131,67 @@ public interface Analyzer extends Cancellable {
          */
         public abstract Analyzer createAnalyzer(Context context);
 
+        /**
+         * Creates a new {@link Analyzer} with a context and warning collector.
+         * @param context the {@link Context} of the analysis
+         * @param result the warning collector
+         * @return the {@link Analyzer}
+         * @since 1.16
+         */
+        public Analyzer createAnalyzer(Context context, Result result) {
+            return createAnalyzer(context);
+        }
+
         //XXX: should be protected
         public void warningOpened(ErrorDescription warning) {}
+    }
+
+    /**
+     * Collector of the analysis problems.
+     * The waring added into the {@link Result} are merged with
+     * warnings returned by the {@link Analyzer#analyze()} methods.
+     * @since 1.16
+     */
+    public static final class Result {
+                
+        private final List<ErrorDescription> errors;
+        private final Map<ErrorDescription, Project> errorsToProjects;
+        private final Collection<AnalysisProblem> analysisProblems;
+
+        Result(List<ErrorDescription> errors, Map<ErrorDescription, Project> errorsToProjects, Collection<AnalysisProblem> analysisProblems) {
+            this.errors = errors;
+            this.errorsToProjects = errorsToProjects;
+            this.analysisProblems = analysisProblems;
+        }
+
+        /**
+         * Reports an analysis problem.
+         * @param displayName the display name of the problem
+         * @param description the more detailed description of the problem
+         */
+        public void reportAnalysisProblem(String displayName, CharSequence description) {
+            analysisProblems.add(new AnalysisProblem(displayName, description));
+        }
+
+        /**
+         * Reports a new warning.
+         * @param errorDescription the warning
+         */
+        public void reportError(@NonNull final ErrorDescription errorDescription) {
+            errors.add(errorDescription);
+        }
+
+        /**
+         * Reports a new warning related to the given project.
+         * The method should be used only for warning in project dependencies
+         * which are not owned by analyzed project.
+         * @param owner the project to which the problem is related
+         * @param errorDescription the warning
+         */
+        public void reportError(@NonNull final Project owner, @NonNull final ErrorDescription errorDescription) {
+            errors.add(errorDescription);            
+            errorsToProjects.put(errorDescription, owner);
+        }
     }
 
     public static final class Context {
@@ -189,12 +252,17 @@ public interface Analyzer extends Cancellable {
         public void reportAnalysisProblem(String displayName, CharSequence description) {
             problems.add(new AnalysisProblem(displayName, description));
         }
-
+        
         static {
             SPIAccessor.ACCESSOR = new SPIAccessor() {
                 @Override
                 public Context createContext(Scope scope, Preferences settings, String singleWarningId, ProgressHandle progress, int bucketStart, int bucketSize) {
                     return new Context(scope, settings, singleWarningId, progress, bucketStart, bucketSize);
+                }
+
+                @Override
+                public Result createResult(List<ErrorDescription> errors, Map<ErrorDescription, Project> errorsToProjects, Collection<AnalysisProblem> analysisProblem) {
+                    return new Result(errors, errorsToProjects, analysisProblem);
                 }
 
                 @Override
