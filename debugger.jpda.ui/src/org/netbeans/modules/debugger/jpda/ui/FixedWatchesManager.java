@@ -100,12 +100,13 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
     public static final String FIXED_WATCH =
         "org/netbeans/modules/debugger/resources/watchesView/watch_type3_16.png";
     private final Action DELETE_ACTION = Models.createAction (
-        NbBundle.getBundle (FixedWatchesManager.class).getString 
-            ("CTL_DeleteFixedWatch_Label"),
+        NbBundle.getMessage(FixedWatchesManager.class, "CTL_DeleteFixedWatch_Label"),
         new Models.ActionPerformer () {
+            @Override
             public boolean isEnabled (Object node) {
                 return !WatchesNodeModelFilter.isEmptyWatch(node);
             }
+            @Override
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++)
@@ -125,12 +126,13 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         );
     };
     private final Action CREATE_FIXED_WATCH_ACTION = Models.createAction (
-        NbBundle.getBundle (FixedWatchesManager.class).getString 
-            ("CTL_CreateFixedWatch_Label"),
+        NbBundle.getMessage(FixedWatchesManager.class, "CTL_CreateFixedWatch_Label"),
         new Models.ActionPerformer () {
+            @Override
             public boolean isEnabled (Object node) {
                 return !WatchesNodeModelFilter.isEmptyWatch(node) && !isPrimitive(node);
             }
+            @Override
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++)
@@ -182,10 +184,12 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
 
     // TreeModelFilter .........................................................
     
+    @Override
     public Object getRoot (TreeModel original) {
         return original.getRoot ();
     }
 
+    @Override
     public Object[] getChildren (
         TreeModel original, 
         Object parent, 
@@ -193,7 +197,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         int to
     ) throws UnknownTypeException {
         if (parent == TreeModel.ROOT) {
-            if (fixedWatches.size () == 0) 
+            if (fixedWatches.isEmpty()) 
                 return original.getChildren (parent, from, to);
 
             int fixedSize = fixedWatches.size ();
@@ -234,6 +238,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         return original.getChildren (parent, from, to);
     }
 
+    @Override
     public int getChildrenCount (
         TreeModel original, 
         Object parent
@@ -248,11 +253,13 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         return original.getChildrenCount (parent);
     }
 
+    @Override
     public boolean isLeaf (TreeModel original, Object node) 
     throws UnknownTypeException {
         return original.isLeaf (node);
     }
 
+    @Override
     public synchronized void addModelListener (ModelListener l) {
         if (listeners == null) {
             listeners = new HashSet();
@@ -260,6 +267,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         listeners.add(l);
     }
 
+    @Override
     public synchronized void removeModelListener (ModelListener l) {
         if (listeners == null) return;
         listeners.remove (l);
@@ -268,6 +276,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
     
     // NodeActionsProviderFilter ...............................................
 
+    @Override
     public void performDefaultAction (
         NodeActionsProvider original, 
         Object node
@@ -278,6 +287,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         original.performDefaultAction (node);
     }
 
+    @Override
     public Action[] getActions (NodeActionsProvider original, Object node) 
     throws UnknownTypeException {
         Action [] actions = original.getActions (node);
@@ -329,6 +339,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
     
     // NodeModel ...............................................................
     
+    @Override
     public String getDisplayName (NodeModel original, Object node) 
     throws UnknownTypeException {
         KeyWrapper wrapper = new KeyWrapper(node);
@@ -337,11 +348,13 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         return original.getDisplayName (node);
     }
     
+    @Override
     public String getShortDescription (NodeModel original, Object node) 
     throws UnknownTypeException {
         return original.getShortDescription (node);
     }
     
+    @Override
     public String getIconBase (NodeModel original, Object node) 
     throws UnknownTypeException {
         return original.getIconBase (node);
@@ -356,7 +369,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
             addFixedWatch (jw.getExpression (), jw);
         } else {
             Variable variable = (Variable) node;
-            String name = null;
+            String name;
             if (variable instanceof LocalVariable) {
                 name = ((LocalVariable) variable).getName ();
             } else if (variable instanceof Field) {
@@ -391,6 +404,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
                 ModelEvent.NodeChanged.CHILDREN_MASK));
         // Open the watches view, where the fixed watch was added:
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 TopComponent watchesView = WindowManager.getDefault().findTopComponent("watchesView"); // NOI18N
                 if (watchesView != null && watchesView.isOpened()) {
@@ -422,6 +436,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         }
     }
 
+    @Override
     public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {
         if (fixedWatches.containsKey (new KeyWrapper(node))) {
             return false;
@@ -429,40 +444,49 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         return original.canRename(node);
     }
 
+    @Override
     public boolean canCopy(ExtendedNodeModel original, Object node) throws UnknownTypeException {
         return original.canCopy(node);
     }
 
+    @Override
     public boolean canCut(ExtendedNodeModel original, Object node) throws UnknownTypeException {
         return original.canCut(node);
     }
 
+    @Override
     public Transferable clipboardCopy(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
         return original.clipboardCopy(node);
     }
 
+    @Override
     public Transferable clipboardCut(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
         return original.clipboardCut(node);
     }
 
+    @Override
     public PasteType[] getPasteTypes(ExtendedNodeModel original, Object node, Transferable t) throws UnknownTypeException {
         return original.getPasteTypes(node, t);
     }
 
+    @Override
     public void setName(ExtendedNodeModel original, Object node, String name) throws UnknownTypeException {
         original.setName(node, name);
     }
 
+    @Override
     public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
         if (fixedWatches.containsKey (new KeyWrapper(node)))
             return FIXED_WATCH;
         return original.getIconBaseWithExtension (node);
     }
 
+    @Override
     public Object getValueAt(TableModel original, Object node, String columnID) throws UnknownTypeException {
         return original.getValueAt(node, columnID);
     }
 
+    @Override
     public boolean isReadOnly(TableModel original, Object node, String columnID) throws UnknownTypeException {
         if (fixedWatches.containsKey(new KeyWrapper(node))) {
             return true;
@@ -471,6 +495,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         }
     }
 
+    @Override
     public void setValueAt(TableModel original, Object node, String columnID, Object value) throws UnknownTypeException {
         original.setValueAt(node, columnID, value);
     }
