@@ -61,6 +61,15 @@ public class TinyTest extends NbTestCase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        //XXX: hack, need to initialize the HintTest's lookup before setting the
+        //formatting preferences
+        Class.forName(HintTest.class.getName(), true, HintTest.class.getClassLoader());
+        
+        super.setUp();
+    }
+
     public void testPositive1() throws Exception {
         HintTest
                 .create()
