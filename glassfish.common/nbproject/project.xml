@@ -223,6 +223,7 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
+            <!-- Verifier code should be cleaned up in trunk after 7.3.1 release -->
             <friend-packages>
                 <friend>org.netbeans.modules.glassfish.grails</friend>
                 <friend>org.netbeans.modules.glassfish.javaee</friend>
@@ -234,7 +235,14 @@
                 <friend>org.netbeans.modules.jbi.fuji.server.gfsupport</friend>
                 <friend>org.netbeans.modules.jbi.fuji.server.plugin</friend>
                 <friend>org.netbeans.modules.web.kit</friend>
+                <!-- Temporary for 7.3.1 -->
+                <friend>org.netbeans.modules.glassfish.javaee.verifier</friend>
+
                 <package>org.netbeans.modules.glassfish.spi</package>
+                <!-- Temporary for 7.3.1 -->
+                <package>org.netbeans.modules.glassfish.common</package>
+                <package>org.netbeans.modules.glassfish.common.ui</package>
+                <package>org.netbeans.modules.glassfish.common.utils</package>
             </friend-packages>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">

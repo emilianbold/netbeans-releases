@@ -273,6 +273,16 @@ public class JavaUtils {
     }
 
     /**
+     * Get default Java SE platform home.
+     * <p/>
+     * @return Default Java SE platform home.
+     */
+    public static String getDefaultJavaHome() {
+        return getJavaHome(
+                JavaPlatformManager.getDefault().getDefaultPlatform());
+    }
+
+    /**
      * Verify Java platform and register it when needed.
      * <p/>
      * @param javaHome Installation folder of Java platform.
