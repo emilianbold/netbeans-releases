@@ -22,7 +22,7 @@
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]"  
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -44,7 +44,6 @@ package org.netbeans.modules.bugtracking.util;
 
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import java.awt.Dimension;
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,7 +52,6 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -76,7 +74,6 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
-import org.netbeans.modules.bugtracking.ui.issue.PatchContextChooser;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
@@ -85,12 +82,9 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeNotFoundException;
-import org.openide.nodes.NodeOp;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -311,28 +305,6 @@ public class BugtrackingUtil {
             issue = bar.getIssue();
         }
         return issue != null ? issue.getID() : null;
-    }
-
-    public static File selectPatchContext() {
-        PatchContextChooser chooser = new PatchContextChooser();
-        ResourceBundle bundle = NbBundle.getBundle(BugtrackingUtil.class);
-        JButton ok = new JButton(bundle.getString("LBL_Apply")); // NOI18N
-        JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
-        DialogDescriptor descriptor = new DialogDescriptor(
-                chooser,
-                bundle.getString("LBL_ApplyPatch"), // NOI18N
-                true,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                ok,
-                null);
-        descriptor.setOptions(new Object [] {ok, cancel});
-        descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.bugtracking.patchContextChooser")); // NOI18N
-        File context = null;
-        DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
-        if (descriptor.getValue() == ok) {
-            context = chooser.getSelectedFile();
-        }
-        return context;
     }
 
     /**

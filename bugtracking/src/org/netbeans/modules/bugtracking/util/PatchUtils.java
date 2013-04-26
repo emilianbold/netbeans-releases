@@ -40,69 +40,45 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.ide.spi;
+package org.netbeans.modules.bugtracking.util;
 
 import java.io.File;
 import java.io.IOException;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
 
 /**
  *
  * @author Tomas Stupka
  */
-public interface IDEServices {
+public final class PatchUtils {
     
-    public boolean providesOpenDocument();
-    public void openDocument(String resourcePath, int offset);
+    public static boolean isAvailable() {
+        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        return ideServices != null && ideServices.providesPatchUtils();
+    }
     
-    public boolean providesFindFile();
-    // XXX to be clarified if FileObject or if URL would be eventually better.
-    // used when opening search history for a file given by a stacktrace.
-    // Note, that io.File wouldn't work for VCS on remote filesystems 
-    public FileObject findFile(String resourcePath);
-        
-    public boolean providesJumpTo();
-    public void jumpTo(String label, String resource);
-
-    public boolean providesPluginUpdate();
+    public static boolean isPatch(File file) throws IOException{
+        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        return ideServices != null && ideServices.providesPatchUtils() && ideServices.isPatch(file);
+    }
     
-    public Plugin getPluginUpdates(String cnb, String pluginName);
-
-    public boolean providesPatchUtils();
-
     /**
-     * Applies the given patch file.
-     * 
-     * @param patchFile the patch files
-     * @param context the context on which the patch should be applied
-     * @throws PatchException
-     * @throws IOException - the patch is invalid or cannot be applied
-     */
-    public void applyPatch(File patchFile, File context) throws IOException;
-
-    /**
-     * Determines whether the given file is in a recognized patch format.
      * 
      * @param file
-     * @return true in case the file is a patch, otherwise false
-     * @throws IOException in case something is wrong with the file
+     * @param context
+     * @throws IOException - the patch is invalid or cannot be applied
      */
-    public boolean isPatch(File file) throws IOException;
-
-    /**
-     * Open a chooser providing a way to select a file somehow related to the IDE 
-     * e.g. an expandable list of projects relevant to the what is currently 
-     * opened in the IDE, so that the context for a patch action might be determined.
-     * 
-     * @return 
-     */
-    public File selectFileContext();
-    
-    /**
-     * Provides access to a downloadable plugin - e.g. from the NetBeans UC
-     */
-    public interface Plugin {
-        String getDescription();
-        boolean openInstallWizard();
+    public static void applyPatch(File file, File context) throws IOException {
+        assert BugtrackingManager.getInstance().getIDEServices() != null : "do not call this if patch utils not provided!";
+        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        if(ideServices != null && ideServices.providesPatchUtils()) {
+            ideServices.applyPatch(file, context);
+        }
     }
+
+    public static File selectPatchContext() {
+        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        return ideServices != null && ideServices.providesPatchUtils() ? ideServices.selectFileContext() : null;
+    }    
 }

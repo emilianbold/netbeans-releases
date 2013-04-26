@@ -121,7 +121,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
@@ -641,7 +640,30 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (!isNew) {
             commentsPanel.setIssue(issue, attachments);
         }
-        attachmentsPanel.setAttachments(attachments, isNetbeans);
+        if(isNetbeans) {
+            AttachmentsPanel.NBBugzillaCallback callback = 
+                new AttachmentsPanel.NBBugzillaCallback() {
+                    @Override
+                    public String getLogFilePath() {
+                        return NbBugzillaConstants.NB_LOG_FILE_PATH;
+                    }
+                    @Override
+                    public String getLogFileContentType() {
+                        return NbBugzillaConstants.NB_LOG_FILE_ATT_CONT_TYPE;
+                    }
+                    @Override
+                    public String getLogFileDescription() {
+                        return NbBundle.getMessage(IssuePanel.class, "MSG_LOG_FILE_DESC");
+                    }
+                    @Override
+                    public void showLogFile() {
+                        IssuePanel.showLogFile(null);
+                    }
+                };
+            attachmentsPanel.setAttachments(attachments, callback);
+        } else {
+            attachmentsPanel.setAttachments(attachments);
+        }
         UIUtils.keepFocusedComponentVisible(commentsPanel, this);
         UIUtils.keepFocusedComponentVisible(attachmentsPanel, this);
         if (force && !isNew) {
@@ -2514,11 +2536,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     submitOK = issue.submitAndRefresh();
                     if(submitOK) {
                         for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
-                            if (attachment.file.exists() && attachment.file.isFile()) {
-                                if (attachment.description.trim().length() == 0) {
-                                    attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
+                            if (attachment.getFile().exists() && attachment.getFile().isFile()) {
+                                if (attachment.getDescription().trim().length() == 0) {
+                                    attachment.setDescription(NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription")); // NOI18N
                                 }
-                                issue.addAttachment(attachment.file, null, attachment.description, attachment.contentType, attachment.isPatch); // NOI18N
+                                issue.addAttachment(attachment.getFile(), null, attachment.getDescription(), attachment.getContentType(), attachment.isPatch()); // NOI18N
                             } else {
                                 // PENDING notify user
                             }
@@ -3178,7 +3200,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     static void showLogFile(ActionEvent evt) {
         Action a = getShowLogAction();
         if(a != null) {
-            a.actionPerformed(evt);
+            a.actionPerformed(null);
         }
     }
 
