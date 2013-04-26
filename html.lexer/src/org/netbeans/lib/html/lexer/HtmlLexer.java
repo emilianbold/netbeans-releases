@@ -1392,6 +1392,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             //lexer plugins:
             String embeddingMimeType = HtmlPlugins.getDefault().createAttributeEmbedding(tag, attribute);
             if(embeddingMimeType != null) {
+                LOGGER.log(Level.FINE, "creating html attribute value token {0} in tag {1} with embedding {3}", 
+                        new Object[]{attribute, tag, embeddingMimeType});
                 return token(HTMLTokenId.VALUE, new HtmlTokenPropertyProvider(ATTRIBUTE_VALUE_EMBEDDING_MIMETYPE_TOKEN_PROPERTY_KEY, embeddingMimeType));
             }
 
