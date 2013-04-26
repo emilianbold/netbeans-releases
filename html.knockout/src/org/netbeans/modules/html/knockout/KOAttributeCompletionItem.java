@@ -39,55 +39,46 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.api.html.lexer;
+package org.netbeans.modules.html.knockout;
 
-import org.netbeans.api.annotations.common.CheckForNull;
+import java.awt.Color;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
+import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 
 /**
- * <b>NOT FOR PUBLIC USE!!!</b> Prototype - not final version!!! An API review will run, this is a public API.
- * 
- * HtmlLexer extension - allows to inject custom expression languages into html content.
- * 
- * To be registered in global lookup.
  *
  * @author marekfukala
  */
-public abstract class HtmlLexerPlugin {
+public class KOAttributeCompletionItem extends HtmlCompletionItem.Attribute {
+
+    private boolean isInKnockoutFile;
     
-    /**
-     * "{{"
-     */
-    public String getOpenDelimiter() {
+    public KOAttributeCompletionItem(CustomAttribute ca, int offset, boolean isInKnockoutFile) {
+        super(ca.getName(), offset, ca.isValueRequired(), ca.getHelp());
+        this.isInKnockoutFile = isInKnockoutFile;
+    }
+
+    @Override
+    protected ImageIcon getIcon() {
         return null;
     }
 
-    /**
-     * "}}"
-     */
-    public String getCloseDelimiter() {
-        return null;
-    }
-    
-    /**
-     * "text/javascript"
-     */
-    public String getContentMimeType() {
-        return null;
-    }
-    
-    /**
-     * Can be used to create a language embedding on an attribute value token. 
-     * 
-     * Note: When more plugins creates an embedding for the same token then the embedding
-     * provided by the first plugin is used.
-     * 
-     * @param elementName name of the tag enclosing the attribute
-     * @param attributeName name of the tag attribute
-     * @return mimetype of the lexer language or null if no embedding should be created.
-     */
-    @CheckForNull
-    public String createAttributeEmbedding(String elementName, String attributeName) {
-        return null;
+    @Override
+    protected Color getAttributeColor() {
+        return KOUtils.KO_COLOR;
     }
 
+    //move the ko results to the top of the completion list if the page
+    //already contains ko stuff
+    @Override
+    public int getSortPriority() {
+        return super.getSortPriority() - (isInKnockoutFile ? 10 : 0);
+    }
+
+    @Override
+    public boolean hasHelp() {
+        return true;
+    }
+    
 }

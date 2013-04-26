@@ -39,55 +39,23 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.api.html.lexer;
+package org.netbeans.modules.html.knockout;
 
-import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.junit.NbTestCase;
 
 /**
- * <b>NOT FOR PUBLIC USE!!!</b> Prototype - not final version!!! An API review will run, this is a public API.
- * 
- * HtmlLexer extension - allows to inject custom expression languages into html content.
- * 
- * To be registered in global lookup.
  *
  * @author marekfukala
  */
-public abstract class HtmlLexerPlugin {
+public class KODataBindTokenIdTest extends NbTestCase {
     
-    /**
-     * "{{"
-     */
-    public String getOpenDelimiter() {
-        return null;
+    public KODataBindTokenIdTest(String name) {
+        super(name);
     }
 
-    /**
-     * "}}"
-     */
-    public String getCloseDelimiter() {
-        return null;
+    public void testCanFindLanguage() {
+        assertNotNull(Language.find(KOUtils.KO_DATA_BIND_MIMETYPE));
     }
     
-    /**
-     * "text/javascript"
-     */
-    public String getContentMimeType() {
-        return null;
-    }
-    
-    /**
-     * Can be used to create a language embedding on an attribute value token. 
-     * 
-     * Note: When more plugins creates an embedding for the same token then the embedding
-     * provided by the first plugin is used.
-     * 
-     * @param elementName name of the tag enclosing the attribute
-     * @param attributeName name of the tag attribute
-     * @return mimetype of the lexer language or null if no embedding should be created.
-     */
-    @CheckForNull
-    public String createAttributeEmbedding(String elementName, String attributeName) {
-        return null;
-    }
-
 }
