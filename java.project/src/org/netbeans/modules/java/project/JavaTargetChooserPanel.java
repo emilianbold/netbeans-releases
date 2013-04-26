@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -99,6 +100,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         this.isValidPackageRequired = isValidPackageRequired;
     }
 
+    @Override
     public Component getComponent() {
         if (gui == null) {
             gui = new JavaTargetChooserPanelGUI( project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), type );
@@ -115,6 +117,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
     }
 
     @Messages("ERR_JavaTargetChooser_WrongPlatform=Wrong source level of the project. You will NOT be able to compile this file since it contains JDK 1.5 features.")
+    @Override
     public boolean isValid() {              
         if (gui == null) {
            setErrorMessage( null );
@@ -210,10 +213,12 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         return returnValue;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
     }
@@ -226,6 +231,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         }
     }
 
+    @Override
     public void readSettings(WizardDescriptor wizard) {
         this.wizard = wizard;
         if ( gui != null ) {
@@ -249,6 +255,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         }
     }
 
+    @Override
     public void storeSettings(WizardDescriptor wizard) { 
         Object value = wizard.getValue();
         if (WizardDescriptor.PREVIOUS_OPTION.equals(value) || WizardDescriptor.CANCEL_OPTION.equals(value) ||
@@ -269,6 +276,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireChange();
     }
@@ -378,14 +386,27 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         }
         return true;
     }
-    
-    static boolean isValidTypeIdentifier(String ident) {
-        if (ident == null || "".equals(ident) || !Utilities.isJavaIdentifier( ident ) ) {
-            return false;
-        }
-        else {
-            return true;
-        }
+
+    @NonNull
+    static String[] getPackageAndSimpleName(@NonNull final String name) {
+        final int lastDot = name.lastIndexOf('.');  //NOI18N
+        if (lastDot > 0) {
+            return new String[] {
+                name.substring(0, lastDot),
+                lastDot == name.length() - 1 ?
+                    "" :    //NOI18N
+                    name.substring(lastDot+1)
+            };
+        } else {
+            return new String[] {
+                "",             //NOI18N
+                name
+            };
+        }        
+    }
+
+    private static boolean isValidTypeIdentifier(String ident) {
+        return ident != null && !"".equals(ident) && Utilities.isJavaIdentifier( ident );  //NOI18N
     }
     
     // helper methods copied from project/ui/ProjectUtilities
@@ -397,13 +418,13 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
      * @param extension extension of created file
      * @return localized error message or null if all right
      */    
-    final public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension) {
+    public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension) {
         String newObjectNameToDisplay = newObjectName;
         if (newObjectName != null) {
             newObjectName = newObjectName.replace ('.', '/'); // NOI18N
         }
         if (extension != null && extension.length () > 0) {
-            StringBuffer sb = new StringBuffer ();
+            StringBuilder sb = new StringBuilder ();
             sb.append (newObjectName);
             sb.append ('.'); // NOI18N
             sb.append (extension);
@@ -411,7 +432,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         }
         
         if (extension != null && extension.length () > 0) {
-            StringBuffer sb = new StringBuffer ();
+            StringBuilder sb = new StringBuilder ();
             sb.append (newObjectNameToDisplay);
             sb.append ('.'); // NOI18N
             sb.append (extension);
@@ -443,15 +464,10 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         return null;
     }
 
-    private static boolean existFileName(FileObject targetFolder, String relFileName) {
-        boolean result = false;
+    private static boolean existFileName(FileObject targetFolder, String relFileName) {        
         File fileForTargetFolder = FileUtil.toFile(targetFolder);
-        if (fileForTargetFolder.exists()) {
-            result = new File (fileForTargetFolder, relFileName).exists();
-        } else {
-            result = targetFolder.getFileObject (relFileName) != null;
-        }
-        
-        return result;
+        return fileForTargetFolder.exists() ?
+                new File (fileForTargetFolder, relFileName).exists() :
+                targetFolder.getFileObject (relFileName) != null;
     }
 }

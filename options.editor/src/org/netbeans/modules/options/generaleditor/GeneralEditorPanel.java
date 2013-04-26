@@ -88,7 +88,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         loc (cbShowBraceOutline, "Brace_Show_Outline");
                 
         cboEditorSearchType.setRenderer(new EditorSearchTypeRenderer(cboEditorSearchType.getRenderer()));
-        cboEditorSearchType.setModel(new DefaultComboBoxModel(new Object [] { "default", "closing"})); //NOI18N
+        cboEditorSearchType.setModel(new DefaultComboBoxModel<String>(new String [] { "default", "closing"})); //NOI18N
         cboEditorSearchType.addActionListener( new ActionListener() {
 
             @Override
@@ -121,7 +121,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         lEditorSearchType = new javax.swing.JLabel();
         jSeparator5 = new javax.swing.JSeparator();
         lSearch = new javax.swing.JLabel();
-        cboEditorSearchType = new javax.swing.JComboBox();
+        cboEditorSearchType = new javax.swing.JComboBox<String>();
         lSearchtypeTooltip = new javax.swing.JLabel();
 
         setForeground(new java.awt.Color(99, 130, 191));
@@ -141,8 +141,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         lEditorSearchType.setText("Editor Search Type:");
 
         lSearch.setText("Search");
-
-        cboEditorSearchType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         lSearchtypeTooltip.setText("<html>In Closing type Enter accepts search match, Esc jumps to start. Both close searchbar. <br /> Default type closes searchbar by Esc or button. Enter means find a new instance.</html>");
 
@@ -165,8 +163,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                             .addComponent(cbCamelCaseBehavior)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(21, 21, 21)
-                                .addComponent(lCamelCaseBehaviorExample, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(26, 26, 26))
+                                .addComponent(lCamelCaseBehaviorExample, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(lEditorSearchType)
@@ -225,7 +222,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     private javax.swing.JCheckBox cbBraceTooltip;
     private javax.swing.JCheckBox cbCamelCaseBehavior;
     private javax.swing.JCheckBox cbShowBraceOutline;
-    private javax.swing.JComboBox cboEditorSearchType;
+    private javax.swing.JComboBox<String> cboEditorSearchType;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
