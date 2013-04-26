@@ -61,15 +61,6 @@ public class TinyTest extends NbTestCase {
         super(name);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        //XXX: hack, need to initialize the HintTest's lookup before setting the
-        //formatting preferences
-        Class.forName(HintTest.class.getName(), true, HintTest.class.getClassLoader());
-        
-        super.setUp();
-    }
-
     public void testPositive1() throws Exception {
         HintTest
                 .create()
@@ -364,7 +355,11 @@ public class TinyTest extends NbTestCase {
         }
     }
 
-    private static Map<String, String> alterSettings(String... settings) {
+    private static Map<String, String> alterSettings(String... settings) throws Exception {
+        //XXX: hack, need to initialize the HintTest's lookup before setting the
+        //formatting preferences
+        HintTest.create();
+        
         Map<String, String> adjustPreferences = new HashMap<String, String>();
         for (int i = 0; i < settings.length; i += 2) {
             adjustPreferences.put(settings[i], settings[i + 1]);
