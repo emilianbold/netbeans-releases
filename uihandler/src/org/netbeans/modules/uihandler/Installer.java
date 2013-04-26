@@ -1625,6 +1625,7 @@ public class Installer extends ModuleInstall implements Runnable {
             //StringBuilder sb = new StringBuilder(1024);
             for (;;) {
                 String connURL = defaultURI;
+                File tmp = null;
                 try {
                     if (url == null) {
                         url = new URL(defaultURI); // NOI18N
@@ -1635,7 +1636,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     URLConnection conn = url.openConnection();
                     conn.setRequestProperty("User-Agent", "NetBeans");
                     conn.setConnectTimeout(5000);
-                    File tmp = File.createTempFile("uigesture", ".html");
+                    tmp = File.createTempFile("uigesture", ".html");
                     tmp.deleteOnExit();
                     FileOutputStream os = new FileOutputStream(tmp);
                     connURL = conn.getURL().toExternalForm();
@@ -1689,29 +1690,71 @@ public class Installer extends ModuleInstall implements Runnable {
                 } catch (ParserConfigurationException ex) {
                     LOG.log(Level.WARNING, null, ex);
                 } catch (SAXException ex) {
-                    catchParsingProblem(ex, connURL);
+                    boolean doContinue = catchParsingProblem(ex, connURL);
                     //LOG.log(Level.INFO, sb.toString());
-                    continue;
+                    if (doContinue) {
+                        if (tmp != null) {
+                            tmp.delete();
+                            tmp = null;
+                        }
+                        continue;
+                    }
                 } catch (IllegalStateException ex){
-                    catchConnectionProblem(ex);
-                    continue;
+                    boolean doContinue = catchConnectionProblem(ex);
+                    if (doContinue) {
+                        if (tmp != null) {
+                            tmp.delete();
+                            tmp = null;
+                        }
+                        continue;
+                    }
                 } catch (java.net.SocketTimeoutException ex) {
-                    catchConnectionProblem(ex);
-                    continue;
+                    boolean doContinue = catchConnectionProblem(ex);
+                    if (doContinue) {
+                        if (tmp != null) {
+                            tmp.delete();
+                            tmp = null;
+                        }
+                        continue;
+                    }
                 } catch (UnknownHostException ex) {
-                    catchConnectionProblem(ex);
-                    continue;
+                    boolean doContinue = catchConnectionProblem(ex);
+                    if (doContinue) {
+                        if (tmp != null) {
+                            tmp.delete();
+                            tmp = null;
+                        }
+                        continue;
+                    }
                 } catch (NoRouteToHostException ex) {
-                    catchConnectionProblem(ex);
-                    continue;
+                    boolean doContinue = catchConnectionProblem(ex);
+                    if (doContinue) {
+                        if (tmp != null) {
+                            tmp.delete();
+                            tmp = null;
+                        }
+                        continue;
+                    }
                 } catch (ConnectException ex) {
-                    catchConnectionProblem(ex);
-                    continue;
+                    boolean doContinue = catchConnectionProblem(ex);
+                    if (doContinue) {
+                        if (tmp != null) {
+                            tmp.delete();
+                            tmp = null;
+                        }
+                        continue;
+                    }
                 } catch (IOException ex) {
                     if (firstRound) {
-                        catchConnectionProblem(ex);
-                        firstRound = false;
-                        continue;
+                        boolean doContinue = catchConnectionProblem(ex);
+                        if (doContinue) {
+                            if (tmp != null) {
+                                tmp.delete();
+                                tmp = null;
+                            }
+                            firstRound = false;
+                            continue;
+                        }
                     } else {// preventing from deadlock while reading error page
                         LOG.log(Level.WARNING, url.toExternalForm(), ex);
                     }
@@ -1745,13 +1788,16 @@ public class Installer extends ModuleInstall implements Runnable {
             LOG.log(Level.FINE, "doCloseDialog");
         }
 
-        private void catchConnectionProblem(Exception exception){
+        private boolean catchConnectionProblem(Exception exception){
             LOG.log(Level.INFO, url.toExternalForm(), exception);
             errorURL = url.toExternalForm();
             errorMessage = exception.getLocalizedMessage();
-            url = getUnknownHostExceptionURL();
+            URL newURL = getUnknownHostExceptionURL();
+            boolean doContinue = !newURL.equals(url); // Prevent from an infinite loop
+            url = newURL;
             jpb.setVisible(false);
             errorPage = true;
+            return doContinue;
         }
 
         private URL getUnknownHostExceptionURL() {
@@ -1764,13 +1810,16 @@ public class Installer extends ModuleInstall implements Runnable {
             return getClass().getResource("UnknownHostException.html"); // NOI18N
         }
         
-        private void catchParsingProblem(Exception exception, String connectionURL) {
+        private boolean catchParsingProblem(Exception exception, String connectionURL) {
             LOG.log(Level.INFO, connectionURL, exception);
             errorURL = connectionURL;
             errorMessage = exception.getLocalizedMessage();
-            url = getParsingProblemURL();
+            URL newURL = getParsingProblemURL();
+            boolean doContinue = !newURL.equals(url); // Prevent from an infinite loop
+            url = newURL;
             jpb.setVisible(false);
             errorPage = true;
+            return doContinue;
         }
 
         private URL getParsingProblemURL() {
