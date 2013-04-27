@@ -41,7 +41,6 @@
  */
 package org.netbeans.performance.scanning;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -50,7 +49,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -65,7 +63,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 
@@ -99,7 +96,7 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
             throws IOException, ExecutionException, InterruptedException
     {
         String[][] files = {
-                { "http://netbeans.org/projects/performance/downloads/download/gravl-0.4.zip",
+                { "https://netbeans.org/projects/performance/downloads/download/gravl-0.4.zip",
                             "gravl-0.4.zip",
                             "gravl-0.4"},
       
@@ -107,7 +104,7 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
                             "jEdit41.zip",
                             "jEdit"
                 },
-                { "http://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
+                { "https://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
                         "Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
                         "mediawiki-1.14.0"
                 },
