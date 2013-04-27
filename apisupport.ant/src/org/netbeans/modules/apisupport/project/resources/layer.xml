@@ -249,4 +249,11 @@
             </folder>
         </folder>
     </folder>
+    <folder name="org-netbeans-modules-java-hints">
+        <folder name="rules">
+            <folder name="errors">
+                <file name="org-netbeans-modules-apisupport-project-java-hints-errors-SearchModuleDependency.instance"/>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

@@ -68,6 +68,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -119,18 +120,20 @@ import org.openide.util.Exceptions;
  *
  * @author   Jan Jancura
  */
-abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeListener {
+public abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeListener {
     
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
 
-    private JPDADebuggerImpl    debugger;
-    private JPDABreakpoint      breakpoint;
-    private BreakpointsReader   reader;
+    private final JPDADebuggerImpl    debugger;
+    private final JPDABreakpoint      breakpoint;
+    private final BreakpointsReader   reader;
     private EvaluatorExpression compiledCondition;
     private List<EventRequest>  requests = new ArrayList<EventRequest>();
     private int                 hitCountFilter = 0;
     private int                 customHitCount;
     private int                 customHitCountFilter = 0;
+    private List<HitCountListener> hcListeners = new CopyOnWriteArrayList<HitCountListener>();
+    private volatile int        breakCount = 0;
 
     protected BreakpointImpl (JPDABreakpoint p, BreakpointsReader reader, JPDADebuggerImpl debugger, Session session) {
         this.debugger = debugger;
@@ -361,8 +364,9 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
     private final Map<Event, Throwable> conditionException = new HashMap<Event, Throwable>();
     
     private Boolean processCustomHitCount() {
+        customHitCount++;
+        fireHitCountChanged();
         if (customHitCountFilter > 0) {
-            customHitCount++;
             switch (breakpoint.getHitCountFilteringStyle()) {
                 case MULTIPLE:
                     if ((customHitCount % customHitCountFilter) != 0) {
@@ -373,7 +377,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                     if (customHitCountFilter != customHitCount) {
                         return false;
                     }
-                    customHitCountFilter = 0;
+                    //customHitCountFilter = 0;
                     removeAllEventRequests();
                     break;
                 case GREATER:
@@ -388,7 +392,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         return null;
     }
 
-    public boolean processCondition(
+    boolean processCondition(
             Event event,
             String condition,
             ThreadReference threadReference,
@@ -397,7 +401,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         return processCondition(event, condition, threadReference, returnValue, null);
     }
 
-    public boolean processCondition(
+    boolean processCondition(
             Event event,
             String condition,
             ThreadReference threadReference,
@@ -524,6 +528,8 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
+        breakCount++;
+        fireHitCountChanged();
         getDebugger ().fireBreakpointEvent (
             getBreakpoint (),
             e
@@ -942,6 +948,84 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         return name.equals (pattern);
     }
     
+    /**
+     * @return The current hit count, or <code>-1</code> when unknown.
+     */
+    public int getCurrentHitCount() {
+        if (customHitCountFilter > 0) {
+            return customHitCount;
+        } else if (breakpoint.getHitCountFilter() <= 0) {
+            // No JDI hit count involvement
+            return customHitCount;
+        } else {
+            // JDI hit count filter applied. We do not know how many times is the breakpoint hit actually.
+            return -1;
+        }
+    }
+    
+    public int getCurrentBreakCounts() {
+        return breakCount;
+    }
+    
+    /**
+     * @return The remaining hit counts till the breakpoint breaks execution, or <code>-1</code> when unknown.
+     */
+    public int getHitCountsTillBreak() {
+        if (customHitCountFilter > 0) {
+            switch (breakpoint.getHitCountFilteringStyle()) {
+                case MULTIPLE:
+                    return customHitCountFilter - (customHitCount % customHitCountFilter);
+                case EQUAL:
+                    int tb = customHitCountFilter - customHitCount;
+                    if (tb < 0) {
+                        tb = 0;
+                    }
+                    return tb;
+                case GREATER:
+                    tb = customHitCountFilter - customHitCount;
+                    if (tb <= 0) {
+                        tb = 1;
+                    }
+                    return tb;
+                default:
+                    throw new IllegalStateException(getBreakpoint().getHitCountFilteringStyle().name());
+            }
+        } else if (breakpoint.getHitCountFilter() <= 0) {
+            // No JDI hit count involvement
+            return 1;
+        } else {
+            // JDI hit count filter applied. We do not know how many times is the breakpoint hit actually.
+            return -1;
+        }
+    }
+    
+    public void resetHitCounts() {
+        if (customHitCountFilter > 0) {
+            customHitCount = 0;
+        } else if (breakpoint.getHitCountFilter() <= 0) {
+            // No JDI hit count involvement
+            customHitCount = 0;
+        } else {
+            // JDI hit count filter applied. We do not know how many times is the breakpoint hit actually.
+            // Ignore
+        }
+    }
+    
+    private void fireHitCountChanged() {
+        for (HitCountListener hcl : hcListeners) {
+            hcl.hitCountChanged(breakpoint);
+        }
+    }
+    
+    public void addHitCountListener(HitCountListener hcl) {
+        hcListeners.add(hcl);
+    }
+    
+    public void removeHitCountListener(HitCountListener hcl) {
+        hcListeners.remove(hcl);
+    }
+    
+    
     private static final class ValidityChangeEvent extends ChangeEvent {
         
         private String reason;
@@ -971,5 +1055,10 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             return newEngine;
         }
 
+    }
+    
+    public static interface HitCountListener {
+        
+        void hitCountChanged(JPDABreakpoint bp);
     }
 }

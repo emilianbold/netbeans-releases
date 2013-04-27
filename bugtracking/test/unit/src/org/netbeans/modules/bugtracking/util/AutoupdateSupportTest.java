@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,38 +34,37 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.spi;
+package org.netbeans.modules.bugtracking.util;
 
-import java.io.File;
+import java.util.Calendar;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import junit.framework.TestCase;
+import org.openide.util.HelpCtx;
 
 /**
- * Entry point for VCS specific functionality accesed from the issuetracking modules
- * 
- * @author Tomas Stupka
- * 
- * @deprecated use o.n.m.versioning.spi.VCSHistoryProvider instead
+ *
+ * @author tomas
  */
-public abstract class VCSAccessor {
+public class AutoupdateSupportTest extends TestCase {
 
-    /**
-     * Opens the search VCS history panel with a specific DiffResultsView, which
-     * does not move accross differences but is initially fixed on the given line.
-     * Right panel shows current local changes in the file, left panel shows
-     * revisions from the file's repository. </br>
-     * Do not run in AWT, IllegalStateException is thrown.
-     * Validity of the arguments is checked and result is returned as a return value
-     *
-     * @param path requested files absolute path. Must be a versioned file (not a folder), 
-     *        otherwise false is returned and the panel won't be opened
-     * @param lineNumber requested line number to fix on
-     * @return true if parameters are valid and the search panel is opened, otherwise false
-     */
-    public abstract boolean searchHistory(File file, final int line);
-    
+    public void testCheckedToday() {
+        AutoupdateSupport as = new AutoupdateSupport(null, null, null);
+        assertFalse(as.wasCheckedToday(-1));                           // never
+
+        assertFalse(as.wasCheckedToday(1L));                           // a long long time ago
+
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.HOUR, -24);                                      // yesterday
+        assertFalse(as.wasCheckedToday(c.getTime().getTime()));
+
+        assertTrue(as.wasCheckedToday(System.currentTimeMillis()));    // now
+    }
+
 }

@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Set;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.classpath.BootClassPathImpl;
 import org.netbeans.modules.maven.spi.debug.AdditionalDebuggedProjects;
@@ -63,10 +64,10 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -172,8 +173,9 @@ public class Utils {
         return sourcePath;
     }
     
-    static ClassPath createJDKSourcePath(Project nbproject) {     
-        JavaPlatform jp = BootClassPathImpl.getActivePlatform(BootClassPathImpl.createJavaPlatformOrigin(nbproject.getLookup().lookup(NbMavenProjectImpl.class)));
+    static ClassPath createJDKSourcePath(Project nbproject) {
+        String val = nbproject.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_JDK_PLATFORM, true);
+        JavaPlatform jp = BootClassPathImpl.getActivePlatform(val);
         if (jp == null) {
             jp = JavaPlatformManager.getDefault().getDefaultPlatform();
         }
