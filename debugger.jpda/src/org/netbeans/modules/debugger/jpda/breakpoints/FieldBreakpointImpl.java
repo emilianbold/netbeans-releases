@@ -97,7 +97,7 @@ import org.openide.util.NbBundle;
 public class FieldBreakpointImpl extends ClassBasedBreakpoint {
 
     
-    private FieldBreakpoint breakpoint;
+    private final FieldBreakpoint breakpoint;
     
     
     public FieldBreakpointImpl (FieldBreakpoint breakpoint, JPDADebuggerImpl debugger, Session session) {

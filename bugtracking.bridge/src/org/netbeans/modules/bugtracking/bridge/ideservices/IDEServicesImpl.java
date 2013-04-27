@@ -42,13 +42,30 @@
 
 package org.netbeans.modules.bugtracking.bridge.ideservices;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.autoupdate.InstallSupport;
+import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.jumpto.type.TypeBrowser;
+import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -56,6 +73,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,7 +82,7 @@ import org.openide.util.NbBundle;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.ide.spi.IDEServices.class)
 public class IDEServicesImpl implements IDEServices {
-    static final Logger LOG = Logger.getLogger(IDEServicesImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(IDEServicesImpl.class.getName());
     
     @Override
     public boolean providesOpenDocument() {
@@ -73,10 +91,10 @@ public class IDEServicesImpl implements IDEServices {
     
     @Override
     @NbBundle.Messages({"LBL_OpenDocument=Open Document", 
-                        "# {0} - to be opened documents path",  "MSG_CannotOpen=Couldn't open document for {0}",
-                        "# {0} - to be found documents path",  "MSG_CannotFind=Couldn't find document for {0}"})
+                        "# {0} - to be opened documents path",  "MSG_CannotOpen=Could not open document with path\n {0}",
+                        "# {0} - to be found documents path",  "MSG_CannotFind=Could not find document with path\n {0}"})
     public void openDocument(final String path, final int offset) {
-        final FileObject fo = searchResource(path);
+        final FileObject fo = findFile(path);
         if ( fo != null ) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -98,15 +116,15 @@ public class IDEServicesImpl implements IDEServices {
     }
 
     @Override
-    public boolean providesSearchResource() {
+    public boolean providesFindFile() {
         return true;
     }
     
     @Override
-    public FileObject searchResource(String path) {
-        return GlobalPathRegistry.getDefault().findResource(path);
+    public FileObject findFile(String resourcePath) {
+        return GlobalPathRegistry.getDefault().findResource(resourcePath);
     }    
-
+    
     @Override
     public boolean providesJumpTo() {
         return true;
@@ -119,9 +137,111 @@ public class IDEServicesImpl implements IDEServices {
             td.open();
         }
     }
+    
+    @Override
+    public boolean providesPluginUpdate() {
+        return true;
+    }
+
+    @Override
+    @NbBundle.Messages({"LBL_Error=Error",
+                        "# {0} - pluginName", "MSG_CannotBeInstalled={0} plugin cannot be installed"})
+    public Plugin getPluginUpdates(String cnb, final String pluginName) {
+        List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
+        for (UpdateUnit u : units) {
+            if(u.getCodeName().equals(cnb)) {
+                List<UpdateElement> elements = u.getAvailableUpdates();
+                final boolean isInstalled = u.getInstalled() != null;
+                if(elements != null) {
+                    for (final UpdateElement updateElement : elements) {
+                        // even if there is more UpdateElements (more plugins with different versions),
+                        // we will return the first one - it is given that it will have the highest version.
+                        return new Plugin() {
+                            @Override
+                            public String getDescription() {
+                                return updateElement.getDescription();
+                            }
+                            @Override
+                            public boolean openInstallWizard() {
+                                OperationContainer<InstallSupport> oc = isInstalled ? 
+                                        OperationContainer.createForUpdate() : 
+                                        OperationContainer.createForInstall();
+                                if (oc.canBeAdded(updateElement.getUpdateUnit(), updateElement)) {
+                                    oc.add(updateElement);
+                                    return PluginManager.openInstallWizard(oc);
+                                } else {
+                                    notifyError(Bundle.LBL_Error(), Bundle.MSG_CannotBeInstalled(pluginName)); 
+                                }
+                                return false;
+                            }
+                        };
+                    }                    
+                } else {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
 
     private static void notifyError (final String title, final String message) {
         NotifyDescriptor nd = new NotifyDescriptor(message, title, NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, new Object[] {NotifyDescriptor.OK_OPTION}, NotifyDescriptor.OK_OPTION);
         DialogDisplayer.getDefault().notifyLater(nd);
-    }      
+    }          
+
+    @Override
+    public boolean providesPatchUtils() {
+        return true;
+    }
+
+    @Override
+    public void applyPatch(File file, File context) throws IOException{
+        PatchUtils.applyPatch(file, context);
+    }
+
+    @Override
+    public boolean isPatch(File file) throws IOException {
+        return PatchUtils.isPatch(file);
+    }
+
+    @Override
+    public File selectFileContext() {
+        PatchContextChooser chooser = new PatchContextChooser();
+        ResourceBundle bundle = NbBundle.getBundle(IDEServicesImpl.class);
+        JButton ok = new JButton(bundle.getString("LBL_Apply")); // NOI18N
+        JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
+        DialogDescriptor descriptor = new DialogDescriptor(
+                chooser,
+                bundle.getString("LBL_ApplyPatch"), // NOI18N
+                true,
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                ok,
+                null);
+        descriptor.setOptions(new Object [] {ok, cancel});
+        descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.bugtracking.patchContextChooser")); // NOI18N
+        File context = null;
+        DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
+        if (descriptor.getValue() == ok) {
+            context = chooser.getSelectedFile();
+        }
+        return context;
+    }
+
+    @Override
+    public boolean providesSearchHistory(File file) {
+        return SearchHistorySupport.getInstance(file) != null;
+    }
+
+    @Override
+    public boolean searchHistory(File file , int line) {
+        try {
+            SearchHistorySupport support = SearchHistorySupport.getInstance(file);
+            if(support != null) {
+                return support.searchHistory(line);
+            }
+        } catch (IOException ex) {            
+            LOG.log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
 }

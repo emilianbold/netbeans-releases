@@ -79,7 +79,7 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
 
     // variables ...............................................................
 
-    private ThreadBreakpoint              breakpoint;
+    private final ThreadBreakpoint breakpoint;
 
     // init ....................................................................
     

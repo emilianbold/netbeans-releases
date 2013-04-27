@@ -54,9 +54,7 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Mirror;
 import com.sun.jdi.ObjectReference;
-import com.sun.jdi.PrimitiveType;
 import com.sun.jdi.StackFrame;
-import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import com.sun.source.tree.CompilationUnitTree;
@@ -82,7 +80,7 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.Exceptions;
 
 /**
- * Defines the exection context in which to evaluate a given expression. The context consists of:
+ * Defines the execution context in which to evaluate a given expression. The context consists of:
  * the current stack frame and the source file in which the expression would exist. The source file
  * is needed for the import facility to work.
  *
@@ -116,9 +114,9 @@ public class EvaluationContext {
     private PropertyChangeListener threadPropertyChangeListener = null;
 
     /**
-     * Creates a new context in which to evaluate expresions.
+     * Creates a new context in which to evaluate expressions.
      *
-     * @param frame the frame in which context evaluation occurrs
+     * @param frame the frame in which context evaluation occurs
      * @param imports list of imports
      * @param staticImports list of static imports
      */
@@ -305,6 +303,7 @@ public class EvaluationContext {
         synchronized (disabledCollectionObjects) {
             if (threadPropertyChangeListener == null) {
                 threadPropertyChangeListener = new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (thread.equals(evt.getSource()) && JPDAThreadImpl.PROP_SUSPENDED.equals(evt.getPropertyName())
                             || thread.getDebugger().equals(evt.getSource()) && JPDADebuggerImpl.PROP_STATE.equals(evt.getPropertyName())) {

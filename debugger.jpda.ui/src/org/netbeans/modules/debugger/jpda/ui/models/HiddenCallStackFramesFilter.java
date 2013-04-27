@@ -168,7 +168,7 @@ public class HiddenCallStackFramesFilter implements TreeModelFilter,
     }
     
     /**
-     * Returns number of filterred children for given node.
+     * Returns number of filtered children for given node.
      * 
      * @param   original the original tree model
      * @param   node the parent node

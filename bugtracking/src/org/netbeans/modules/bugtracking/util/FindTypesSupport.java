@@ -152,7 +152,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
     
     public void register(final JTextPane pane) {
         IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
-        if(ideServices == null || !ideServices.providesSearchResource() || !ideServices.providesJumpTo()) {
+        if(ideServices == null || !ideServices.providesFindFile() || !ideServices.providesJumpTo()) {
             return;
         }
         long t = System.currentTimeMillis();
