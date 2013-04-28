@@ -116,7 +116,9 @@ public final class UnitTestRunner {
             TestSessionImpl testSessionImpl = new TestSessionImpl(MANAGER, testSession, testingProvider);
             testSessions.addTestSession(testSessionImpl);
             try {
+                LOGGER.log(Level.FINE, "Running {0} tests...", testingProvider.getIdentifier());
                 testingProvider.runTests(project.getPhpModule(), info, testSessionImpl);
+                LOGGER.fine("Test run finished");
             } catch (TestRunException exc) {
                 LOGGER.log(Level.INFO, null, exc);
                 error = true;
