@@ -124,6 +124,12 @@ made subject to such option by the copyright holder.
         <folder name="Scripting">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
             <attr name="position" intvalue="20"/>
+            <folder name="Tests">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.ui.wizards.Bundle#Templates/Scripting/Tests"/>
+                <attr name="position" intvalue="9999"/>
+                <!-- intentionally not in new file wizard, only in Tools > Templates -->
+                <attr name="templateCategory" stringvalue="PhpTests"/>
+            </folder>
             <file name="EmptyPHP.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHP.php">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.ui.wizards.Bundle#Templates/Scripting/EmptyPHP"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
