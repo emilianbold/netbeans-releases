@@ -182,11 +182,16 @@ public final class TapParser {
                 message.append(firstLine);
             }
         }
+        String msg = null;
         if (message != null) {
-            testCase.setMessage(message.toString());
+            msg = message.toString();
+            testCase.setMessage(msg);
         }
         // append file with line number
-        stackTrace.add(lastLine);
+        // XXX remove if once aborted method contains file with line number as well
+        if (!lastLine.equals(msg)) {
+            stackTrace.add(lastLine);
+        }
         testCase.setStackTrace(stackTrace);
         // reset
         state = null;

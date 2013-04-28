@@ -265,6 +265,8 @@ public final class Atoum {
 
     private static final class ParsingProcessor implements InputProcessor {
 
+        private static final Logger LOGGER = Logger.getLogger(ParsingProcessor.class.getName());
+
         private final TestSession testSession;
 
         private String testSuiteName = null;
@@ -284,8 +286,11 @@ public final class Atoum {
 
         @Override
         public void processInput(char[] chars) throws IOException {
+            String input = new String(chars);
+            LOGGER.log(Level.FINEST, "Processing input {0}", input);
             List<TestSuiteVo> suites = new TapParser()
-                    .parse(new String(chars), currentMillis() - currentMillis);
+                    .parse(input, currentMillis() - currentMillis);
+            LOGGER.log(Level.FINE, "Parsed test suites: {0}", suites);
             process(suites);
             currentMillis = currentMillis();
         }
@@ -297,7 +302,9 @@ public final class Atoum {
 
         @Override
         public void close() throws IOException {
+            LOGGER.fine("Closing processor");
             if (testSuite != null) {
+                LOGGER.log(Level.FINE, "Test suite {0} found, finishing", testSuiteName);
                 testSuite.finish(testSuiteTime);
             }
         }
@@ -306,12 +313,14 @@ public final class Atoum {
             for (TestSuiteVo suite : suites) {
                 String name = suite.getName();
                 if (testSuiteName == null
-                        || testSuiteName.equals(name)) {
-                    testSuiteName = name;
+                        || !testSuiteName.equals(name)) {
                     if (testSuite != null) {
+                        LOGGER.log(Level.FINE, "Finishing the current suite {0}", testSuiteName);
                         testSuite.finish(testSuiteTime);
                         testSuiteTime = 0;
                     }
+                    testSuiteName = name;
+                    LOGGER.log(Level.FINE, "Adding new test suite {0}", name);
                     testSuite = testSession.addTestSuite(name, getFileObject(suite.getFile()));
                 }
                 addTestCases(suite.getTestCases());
@@ -329,8 +338,15 @@ public final class Atoum {
 
         private void addTestCases(List<TestCaseVo> testCases) {
             for (TestCaseVo kase : testCases) {
-                TestCase testCase = testSuite.addTestCase(kase.getName(), AtoumTestingProvider.IDENTIFIER);
-                map(kase, testCase);
+                String name = kase.getName();
+                LOGGER.log(Level.FINE, "Adding new test case {0}", name);
+                TestCase testCase = testSuite.addTestCase(name, AtoumTestingProvider.IDENTIFIER);
+                // XXX remove once the output TAP format is perfectly known
+                try {
+                    map(kase, testCase);
+                } catch (Throwable throwable) {
+                    LOGGER.log(Level.WARNING, null, throwable);
+                }
                 testSuiteTime += kase.getTime();
             }
         }
@@ -357,7 +373,6 @@ public final class Atoum {
             if (isPass(kase.getStatus())) {
                 assert kase.getMessage() == null : kase.getMessage();
                 assert kase.getDiff() == null : kase.getDiff();
-                assert kase.getStackTrace() == null : kase.getStackTrace();
                 return;
             }
             String message = kase.getMessage();
