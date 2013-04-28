@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.project.ui.actions.tests;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -60,6 +62,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
@@ -104,7 +107,7 @@ public final class CreateTestsAction extends NodeAction {
 
     @Override
     public boolean asynchronous() {
-        return true;
+        return false;
     }
 
     @Override
@@ -120,7 +123,15 @@ public final class CreateTestsAction extends NodeAction {
         if (ProjectPropertiesSupport.getTestDirectory(phpProject, true) == null) {
             return;
         }
-        // XXX check any testing provider is present
+        List<PhpTestingProvider> testingProviders = phpProject.getTestingProviders();
+        if (testingProviders.isEmpty()) {
+            Utils.informNoTestingProviders();
+            return;
+        }
+        final PhpTestingProvider testingProvider = selectTestingProvider(testingProviders);
+        if (testingProvider == null) {
+            return;
+        }
 
         RUNNABLES.add(new Runnable() {
             @Override
@@ -129,7 +140,7 @@ public final class CreateTestsAction extends NodeAction {
                 handle.start();
                 try {
                     LifecycleManager.getDefault().saveAll();
-                    generateTests(activatedNodes, phpProject);
+                    generateTests(activatedNodes, phpProject, testingProvider);
                 } finally {
                     handle.finish();
                 }
@@ -189,8 +200,9 @@ public final class CreateTestsAction extends NodeAction {
         return null;
     }
 
-    void generateTests(final Node[] activatedNodes, final PhpProject phpProject) {
+    void generateTests(final Node[] activatedNodes, final PhpProject phpProject, final PhpTestingProvider testingProvider) {
         assert phpProject != null;
+        assert !EventQueue.isDispatchThread();
 
         List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
         assert !files.isEmpty() : "No files for tests?!";
@@ -207,11 +219,9 @@ public final class CreateTestsAction extends NodeAction {
         FileUtil.runAtomicAction(new Runnable() {
             @Override
             public void run() {
-                for (PhpTestingProvider testingProvider : phpProject.getTestingProviders()) {
-                    CreateTestsResult result = testingProvider.createTests(phpModule, sanitizedFiles);
-                    succeeded.addAll(result.getSucceeded());
-                    failed.addAll(result.getFailed());
-                }
+                CreateTestsResult result = testingProvider.createTests(phpModule, sanitizedFiles);
+                succeeded.addAll(result.getSucceeded());
+                failed.addAll(result.getFailed());
             }
         });
         showFailures(failed);
@@ -273,6 +283,14 @@ public final class CreateTestsAction extends NodeAction {
                 FileUtil.refreshFor(FileUtil.toFile(testDir));
             }
         });
+    }
+
+    @CheckForNull
+    private PhpTestingProvider selectTestingProvider(List<PhpTestingProvider> testingProviders) {
+        if (testingProviders.size() == 1) {
+            return testingProviders.get(0);
+        }
+        return SelectProviderPanel.open(testingProviders);
     }
 
 }
