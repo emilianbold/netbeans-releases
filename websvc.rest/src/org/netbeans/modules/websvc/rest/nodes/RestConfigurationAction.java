@@ -44,23 +44,19 @@
 package org.netbeans.modules.websvc.rest.nodes;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.model.api.RestApplication;
-import org.netbeans.modules.websvc.rest.projects.RestApplicationsPanel;
 import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
 import org.netbeans.modules.websvc.rest.spi.ApplicationConfigPanel;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -98,22 +94,22 @@ public class RestConfigurationAction extends NodeAction  {
     
     protected void performAction(Node[] activatedNodes) {
         Project project = activatedNodes[0].getLookup().lookup(Project.class);
-        WebRestSupport restSupport = project.getLookup().lookup(WebRestSupport.class);
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         if (restSupport != null) {
-            String oldConfigType = restSupport.getProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE);
+            String oldConfigType = restSupport.getProjectProperty(RestSupport.PROP_REST_CONFIG_TYPE);
             if (oldConfigType == null) {
-                oldConfigType = WebRestSupport.CONFIG_TYPE_DD;
+                oldConfigType = RestSupport.CONFIG_TYPE_DD;
             }
             String oldApplicationPath = "/webresources"; //NOI18N
             try {
-                if (oldConfigType.equals( WebRestSupport.CONFIG_TYPE_DD)) {
-                    String oldPathFromDD = restSupport.getApplicationPathFromDD();
+                if (oldConfigType.equals( RestSupport.CONFIG_TYPE_DD)) {
+                    String oldPathFromDD = MiscUtilities.getApplicationPathFromDD(restSupport.getWebApp());
                     if (oldPathFromDD != null) {
                         oldApplicationPath = oldPathFromDD;
                     }
-                } else if (oldConfigType.equals( WebRestSupport.CONFIG_TYPE_IDE)) {
-                    String resourcesPath = WebProjectRestSupport.
-                        getApplicationPathFromDialog(restSupport.getRestApplications());//restSupport.getProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH);
+                } else if (oldConfigType.equals( RestSupport.CONFIG_TYPE_IDE)) {
+                    String resourcesPath = restSupport.
+                        getApplicationPathFromDialog(restSupport.getRestApplications());//restSupport.getProjectProperty(RestSupport.PROP_REST_RESOURCES_PATH);
                     if (resourcesPath != null && resourcesPath.length()>0) {
                         oldApplicationPath = resourcesPath;
                     }
@@ -124,7 +120,7 @@ public class RestConfigurationAction extends NodeAction  {
             if (!oldApplicationPath.startsWith(("/"))) { //NOI18N
                 oldApplicationPath="/"+oldApplicationPath;
             }
-            String oldJerseyConfig = restSupport.getProjectProperty(WebRestSupport.PROP_REST_JERSEY);
+            String oldJerseyConfig = restSupport.getProjectProperty(RestSupport.PROP_REST_JERSEY);
             // needs detect if Jersey Lib is present
             boolean isJerseyLib = oldJerseyConfig!= null;/*isOnClasspath(project,
                     "com/sun/jersey/spi/container/servlet/ServletContainer.class")  //NOI18N
@@ -151,31 +147,36 @@ public class RestConfigurationAction extends NodeAction  {
                     {
                         if (!oldConfigType.equals(newConfigType)) {
                             // set up rest.config.type property
-                            restSupport.setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, newConfigType);
+                            restSupport.setProjectProperty(RestSupport.PROP_REST_CONFIG_TYPE, newConfigType);
 
-                            if (!WebRestSupport.CONFIG_TYPE_IDE.equals(newConfigType)) {
+                            if (!RestSupport.CONFIG_TYPE_IDE.equals(newConfigType)) {
                                 //remove properties related to rest.config.type=ide
                                 restSupport.removeProjectProperties(new String[] {
-                                    WebRestSupport.PROP_REST_RESOURCES_PATH,
+                                    RestSupport.PROP_REST_RESOURCES_PATH,
                                 });
                             }
                         }
 
-                        if (WebRestSupport.CONFIG_TYPE_IDE.equals(newConfigType)) {
+                        if (RestSupport.CONFIG_TYPE_IDE.equals(newConfigType)) {
                             if (newApplicationPath.startsWith("/")) { //NOI18N
                                 newApplicationPath = newApplicationPath.substring(1);
                             }
-                            restSupport.setProjectProperty(WebRestSupport.PROP_REST_RESOURCES_PATH, newApplicationPath);
-                            try {
-                                setRootResources(project);
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
+                            restSupport.setProjectProperty(RestSupport.PROP_REST_RESOURCES_PATH, newApplicationPath);
+//                            try {
+
+
+                                // XXX: generating Application subclass via build script is obsolete
+
+                                
+                                //setRootResources(project);
+//                            } catch (IOException ex) {
+//                                ex.printStackTrace();
+//                            }
                             if (!isOnClasspath(project,"javax/ws/rs/ApplicationPath.class")) {
                                 // add jsr311 library
-                                Library restApiLibrary = LibraryManager.getDefault().getLibrary(WebRestSupport.RESTAPI_LIBRARY);
+                                Library restApiLibrary = LibraryManager.getDefault().getLibrary(RestSupport.RESTAPI_LIBRARY);
                                 if (restApiLibrary != null) {
-                                    FileObject srcRoot = WebRestSupport.findSourceRoot(project);
+                                    FileObject srcRoot = MiscUtilities.findSourceRoot(project);
                                     if (srcRoot != null) {
                                         try {
                                             ProjectClassPathModifier.addLibraries(new Library[] {restApiLibrary}, srcRoot, ClassPath.COMPILE);
@@ -185,7 +186,7 @@ public class RestConfigurationAction extends NodeAction  {
                                     }
                                 }
                             }
-                        } else if (WebRestSupport.CONFIG_TYPE_DD.equals(newConfigType)) { // Deployment Descriptor
+                        } else if (RestSupport.CONFIG_TYPE_DD.equals(newConfigType)) { // Deployment Descriptor
                             // add entries to dd
                             try {
                                 restSupport.addResourceConfigToWebApp(newApplicationPath);
@@ -246,20 +247,13 @@ public class RestConfigurationAction extends NodeAction  {
         }
     }
 
-    private void setRootResources(Project prj) throws IOException {
-        FileObject buildFo = Utils.findBuildXml(prj);
-        if (buildFo != null) {
-            ActionUtils.runTarget(buildFo, new String[] {WebRestSupport.REST_CONFIG_TARGET}, null);
-        }
-    }
-
     @Override
     public boolean asynchronous() {
         return true;
     }
 
     private boolean isOnClasspath(Project project, String classResource) {
-        FileObject srcRoot = WebRestSupport.findSourceRoot(project);
+        FileObject srcRoot = MiscUtilities.findSourceRoot(project);
         if (srcRoot != null) {
             ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
             if (cp != null && cp.findResource(classResource) != null) {

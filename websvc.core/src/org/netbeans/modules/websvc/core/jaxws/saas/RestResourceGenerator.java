@@ -208,7 +208,7 @@ public class RestResourceGenerator {
                                                 RestServices root = metadata.getRoot();
 
                                                 if (root.sizeRestServiceDescription() < 1) {
-                                                    restSupport.removeRestDevelopmentReadiness();
+                                                    //restSupport.removeRestDevelopmentReadiness();
                                                 }
 
                                                 return null;
