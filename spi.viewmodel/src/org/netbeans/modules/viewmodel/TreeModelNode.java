@@ -951,11 +951,17 @@ public class TreeModelNode extends AbstractNode {
         firePropertyChange(null, null, null);
     }
     
-    void refreshColumn(String column) {
+    void refreshColumn(String column, int changeMask) {
         synchronized (properties) {
-            properties.remove(column);
-            properties.remove(column + "#html");
-            properties.remove(column + "#canWrite");
+            if ((ModelEvent.TableValueChanged.VALUE_MASK & changeMask) != 0) {
+                properties.remove(column);
+            }
+            if ((ModelEvent.TableValueChanged.HTML_VALUE_MASK & changeMask) != 0) {
+                properties.remove(column + "#html");
+            }
+            if ((ModelEvent.TableValueChanged.IS_READ_ONLY_MASK & changeMask) != 0) {
+                properties.remove(column + "#canWrite");
+            }
         }
         firePropertyChange(column, null, null);
     }
@@ -1869,14 +1875,19 @@ public class TreeModelNode extends AbstractNode {
         public void run() {
             Object value = "";
             String htmlValue = null;
-            String nonHtmlValue = null;
+            Object nonHtmlValue = null;
             try {
                 //System.err.println("getValueAt("+object+", "+id+") of node "+TreeModelNode.this);
                 value = model.getValueAt (object, id);
+                nonHtmlValue = value;
+                boolean hasHTML = model.hasHTMLValueAt(object, id);
+                if (hasHTML) {
+                    htmlValue = model.getHTMLValueAt(object, id);
+                }
                 //System.err.println("  Value of ("+object+") executed in "+Thread.currentThread()+" is "+value);
                 //System.out.println("  evaluateLazily("+TreeModelNode.this.getDisplayName()+", "+id+"): have value = "+value);
                 //System.out.println("      object = "+object+" class = "+((object != null) ? object.getClass().toString() : "null"));
-                if (value instanceof String) {
+                if (!hasHTML && (value instanceof String)) { // For backward compatibility
                     htmlValue = htmlValue ((String) value);
                     nonHtmlValue = removeHTML ((String) value);
                 }
@@ -1893,12 +1904,8 @@ public class TreeModelNode extends AbstractNode {
                 //evaluatedNotify.run();
                 boolean fire;
                 synchronized (properties) {
-                    if (value instanceof String) {
-                        properties.put (id, nonHtmlValue);
-                        properties.put (id + "#html", htmlValue);
-                    } else {
-                        properties.put (id, value);
-                    }
+                    properties.put (id, nonHtmlValue);
+                    properties.put (id + "#html", htmlValue);
                     synchronized (evaluated) {
                         fire = evaluated[0] == -1;
                         evaluated[0] = 1;
@@ -1992,13 +1999,18 @@ public class TreeModelNode extends AbstractNode {
         private Object getTheValue() {
             Object value = "";
             String htmlValue = null;
-            String nonHtmlValue = null;
+            Object nonHtmlValue = null;
             try {
                 value = model.getValueAt (object, id);
+                nonHtmlValue = value;
+                boolean hasHTML = model.hasHTMLValueAt(object, id);
+                if (hasHTML) {
+                    htmlValue = model.getHTMLValueAt(object, id);
+                }
                 //System.err.println("  Value of ("+object+") executed in "+Thread.currentThread()+" is "+value);
                 //System.out.println("  evaluateLazily("+TreeModelNode.this.getDisplayName()+", "+id+"): have value = "+value);
                 //System.out.println("      object = "+object+" class = "+((object != null) ? object.getClass().toString() : "null"));
-                if (value instanceof String) {
+                if (!hasHTML && (value instanceof String)) { // For backward compatibility
                     htmlValue = htmlValue ((String) value);
                     nonHtmlValue = removeHTML ((String) value);
                 }
@@ -2008,12 +2020,8 @@ public class TreeModelNode extends AbstractNode {
                 }
             } finally {
                 synchronized (properties) {
-                    if (value instanceof String) {
-                        properties.put (id, nonHtmlValue);
-                        properties.put (id + "#html", htmlValue);
-                    } else {
-                        properties.put (id, value);
-                    }
+                    properties.put (id, nonHtmlValue);
+                    properties.put (id + "#html", htmlValue);
                 }
             }
             return value;
@@ -2124,13 +2132,19 @@ public class TreeModelNode extends AbstractNode {
                 Object v = value;
                 model.setValueAt (object, id, v);
                 v = model.getValueAt(object, id); // Store the new value
+                String htmlValue = null;
+                Object nonHtmlValue = v;
+                boolean hasHTML = model.hasHTMLValueAt(object, id);
+                if (hasHTML) {
+                    htmlValue = model.getHTMLValueAt(object, id);
+                }
+                if (!hasHTML && (v instanceof String)) { // For backward compatibility
+                    htmlValue = htmlValue ((String) v);
+                    nonHtmlValue = removeHTML ((String) v);
+                }
                 synchronized (properties) {
-                    if (v instanceof String) {
-                        properties.put (id, removeHTML ((String) v));
-                        properties.put (id + "#html", htmlValue ((String) v));
-                    } else {
-                        properties.put (id, v);
-                    }
+                    properties.put (id, nonHtmlValue);
+                    properties.put (id + "#html", htmlValue);
                 }
                 firePropertyChange (propertyId, null, null);
             } catch (UnknownTypeException e) {
@@ -2140,11 +2154,19 @@ public class TreeModelNode extends AbstractNode {
         
         @Override
         public PropertyEditor getPropertyEditor () {
-            PropertyEditor pe = columnModel.getPropertyEditor ();
+            PropertyEditor pe = null;
+            try {
+                pe = model.getPropertyEditor(object, id);
+            } catch (UnknownTypeException ex) {
+                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Column id:" + columnModel.getID ()+"\nModel: "+model, ex);
+            }
             if (pe == null) {
-                return super.getPropertyEditor();
-            } else {
+                pe = columnModel.getPropertyEditor ();
+            }
+            if (pe != null) {
                 return pe;
+            } else {
+                return super.getPropertyEditor();
             }
         }
 

@@ -399,6 +399,39 @@ made subject to such option by the copyright holder.
         <class package="org.netbeans.spi.viewmodel" name="TableRendererModelFilter" />
         <issue number="186672"/>
     </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>Separate the value and HTML value and allow custom property editors.</summary>
+        <version major="1" minor="42"/>
+        <date day="30" month="4" year="2013"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deletion="no" addition="yes" modification="no"/>
+        <description>
+            So far the HTML value is automatically retrieved from the value provided
+            by the <code>TableModel</code> when the value is a <code>String</code>
+            and contains HTML code. This is not flexible enough and therefore
+            we separate the value and HTML value by introduction of <code>TableHTMLModel</code>
+            and <code>TableHTMLModelFilter</code>.<br/>
+            In addition to that, this API change also brings a prossibility
+            to provide custom property editor, separately for every value.
+            Two interfaces are introduced for this purpose: <code>TablePropertyEditorsModel</code>
+            and <code>TablePropertyEditorsModelFilter</code>.<br/>
+            This also implies, that <code>Models.CompoundModel</code> now implements
+            <code>TableHTMLModel</code> and <code>TablePropertyEditorsModel</code>.<br/>
+            In order to be able to fire changes in HTML value and also in r/w state,
+            an additional constructor of <code>ModelEvent.TableValueChanged</code>
+            is added, which takes the change mask. Three change masks are defined:
+            <code>VALUE_MASK</code>, <code>HTML_VALUE_MASK</code> and <code>IS_READ_ONLY_MASK</code>.
+            To get the change mask, <code>ModelEvent.TableValueChanged.getChange()</code>
+            method is added.
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="TableHTMLModel" />
+        <class package="org.netbeans.spi.viewmodel" name="TableHTMLModelFilter" />
+        <class package="org.netbeans.spi.viewmodel" name="TablePropertyEditorsModel" />
+        <class package="org.netbeans.spi.viewmodel" name="TablePropertyEditorsModelFilter" />
+        <class package="org.netbeans.spi.viewmodel" name="ModelEvent" />
+        <issue number="228909"/>
+    </change>
 
 
 </changes>
