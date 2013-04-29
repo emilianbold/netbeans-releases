@@ -39,84 +39,20 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.csl;
+package org.netbeans.modules.php.latte;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.Formatter;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.php.latte.completion.LatteCompletionHandler;
-import org.netbeans.modules.php.latte.format.LatteFormatter;
-import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
-import org.netbeans.modules.php.latte.navigation.LatteStructureScanner;
-import org.netbeans.modules.php.latte.parser.LatteParser;
-import org.netbeans.modules.php.latte.semantic.LatteSemanticAnalyzer;
+import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.modules.php.latte.csl.LatteLanguage;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@LanguageRegistration(mimeType = LatteLanguage.LATTE_MIME_TYPE, useCustomEditorKit = true)
-public class LatteLanguage extends DefaultLanguageConfig {
-    public static final String LATTE_MIME_TYPE = "text/x-latte"; //NOI18N
+public class LatteEditorKit extends NbEditorKit {
 
     @Override
-    public Language getLexerLanguage() {
-        return LatteTopTokenId.language();
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "Latte"; //NOI18N
-    }
-
-    @Override
-    public boolean isIdentifierChar(char c) {
-        return Character.isJavaIdentifierPart(c) || (c == '$') ||(c == '_');
-    }
-
-    @Override
-    public Parser getParser() {
-        return new LatteParser();
-    }
-
-    @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return new LatteSemanticAnalyzer();
-    }
-
-    @Override
-    public boolean hasStructureScanner() {
-        return true;
-    }
-
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new LatteStructureScanner();
-    }
-
-    @Override
-    public boolean hasFormatter() {
-        return true;
-    }
-
-    @Override
-    public Formatter getFormatter() {
-        return new LatteFormatter();
-    }
-
-    @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        return new LatteCompletionHandler();
-    }
-
-    @Override
-    public boolean isUsingCustomEditorKit() {
-        return true;
+    public String getContentType() {
+        return LatteLanguage.LATTE_MIME_TYPE;
     }
 
 }
