@@ -225,7 +225,7 @@ public class HgQueueHookImpl extends HgQueueHook {
         File file = files[0];
         HookImpl.LOG.log(Level.FINE, "afterPatchFinish start for {0}", file);              // NOI18N
 
-        Repository repository = OwnerUtils.getRepository(file, op.getIssueID(), true);
+        Repository repository = OwnerUtils.getRepository(file, true);
         if (repository == null) {
             HookImpl.LOG.log(Level.FINE, " no issue repository for {0}:{1}", new Object[] { op.getIssueID(), file }); //NOI18N
             return;
@@ -301,7 +301,7 @@ public class HgQueueHookImpl extends HgQueueHook {
                             Issue issue = null;
                             Repository repository = null;
                             try {
-                                repository = OwnerUtils.getRepository(referenceFile, issueId, false);
+                                repository = OwnerUtils.getRepository(referenceFile, false);
                                 if (repository == null) {
                                     issue = null;
                                 } else {

@@ -454,7 +454,7 @@ public final class TaskListProvider extends PushTaskScanner {
                     startTime = System.currentTimeMillis();
                 }
                 // lookup a repository registered with current projects
-                RepositoryImpl repository = BugtrackingOwnerSupport.getInstance().getRepository(fo, false);
+                RepositoryImpl repository = BugtrackingOwnerSupport.getInstance().getRepository(fo);
                 if (LOG.isLoggable(Level.FINER)) {
                     LOG.log(Level.FINER, "getRepositoriesFor: repository: {0} for {1} after {2}", new Object[] {repository, fo, (System.currentTimeMillis() - startTime)});
                 }
