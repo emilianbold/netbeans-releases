@@ -85,9 +85,7 @@ public class SearchButton {
     private static void processButton(AbstractButton button) {
         removeButtonContentAreaAndBorder(button);
         button.setMargin(BUTTON_INSETS);
-        if (button instanceof AbstractButton) {
-            button.addMouseListener(sharedMouseListener);
-        }
+        button.addMouseListener(sharedMouseListener);
         button.setFocusable(false);
     }
 

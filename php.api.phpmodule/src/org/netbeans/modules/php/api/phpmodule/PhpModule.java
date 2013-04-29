@@ -139,12 +139,24 @@ public abstract class PhpModule {
     public abstract void openCustomizer(String category);
 
     /**
+     * <b>Deprecated, use {@link #notifyPropertyChanged(java.beans.PropertyChangeEvent)}. This
+     * method will be removed after NB 7.4.</b>
      * A way for informing PHP module that something has changed.
      * @param propertyChangeEvent property change event
      * @since 2.4
      * @see #PROPERTY_FRAMEWORKS
+     * @deprecated use {@link #notifyPropertyChanged(java.beans.PropertyChangeEvent)}
      */
+    @Deprecated
     public abstract void propertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
+
+    /**
+     * A way for informing PHP module that something has changed.
+     * @param propertyChangeEvent property change event
+     * @since 2.18
+     * @see #PROPERTY_FRAMEWORKS
+     */
+    public abstract void notifyPropertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
 
     /**
      * Gets PHP module for the given {@link FileObject}.

@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -148,6 +149,10 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         
         public void addParameterBuilder(ParameterBuilder parameterBuilser) {
             parameterBuilsers.add(parameterBuilser);
+        }
+        
+        public List<ParameterBuilder> getParameterBuilders() {
+            return Collections.unmodifiableList(parameterBuilsers);
         }
 
         public FunctionParameterListImpl create() {

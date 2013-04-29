@@ -227,8 +227,8 @@ public class Utils {
         boolean isRest = false;
         if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
 
-            if (helper.hasAnyAnnotation(type.getAnnotationMirrors(),
-                    new HashSet<String>(Arrays.asList(RestConstants.PATH, RestConstants.PROVIDER_ANNOTATION)))) { // NOI18N
+            if (helper.hasAnnotation(type.getAnnotationMirrors(),
+                    RestConstants.PATH)) { // NOI18N
                 isRest = true;
             } else {
                 for (Element element : type.getEnclosedElements()) {
@@ -242,6 +242,16 @@ public class Utils {
         return isRest;
     }
     
+    static boolean isProvider(TypeElement type, AnnotationModelHelper helper) {
+        if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
+            if (helper.hasAnnotation(type.getAnnotationMirrors(),
+                    RestConstants.PROVIDER_ANNOTATION)) { // NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+
     static boolean isRestApplication(TypeElement type, AnnotationModelHelper helper) {
         boolean isRest = false;
         if (type != null && type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces

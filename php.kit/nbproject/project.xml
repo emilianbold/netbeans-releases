@@ -54,13 +54,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.php.phpunit</code-name-base>
-                    <run-dependency>
-                        <release-version>0</release-version>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.php.project</code-name-base>
                     <run-dependency>
                         <specification-version>2.54</specification-version>

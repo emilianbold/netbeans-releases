@@ -10,6 +10,42 @@
 <html >
 End cursor position = 132
 [<a |, href, <a href="", 199]
+ng-bind
+ng-bind-html-unsafe
+ng-bind-template
+ng-change
+ng-checked
+ng-class
+ng-class-even
+ng-class-odd
+ng-click
+ng-cloak
+ng-controller
+ng-dblclick
+ng-disabled
+ng-form
+ng-hide
+ng-href
+ng-include
+ng-init
+ng-list
+ng-model
+ng-mousedown
+ng-mouseenter
+ng-mouseleave
+ng-mousemove
+ng-mouseover
+ng-mouseup
+ng-multiple
+ng-non-bindable
+ng-pluralize
+ng-repeat
+ng-show
+ng-src
+ng-style
+ng-submit
+ng-switch
+ng-transclude
 accesskey
 charset
 class
@@ -20,6 +56,11 @@ hreflang
 id
 lang
 name
+ng-app
+ng-csp
+ng-readonly
+ng-selected
+ng-view
 onblur
 onclick
 ondblclick
@@ -45,262 +86,8 @@ End cursor position = 209
 ltr
 rtl
 End cursor position = 285
-[&|, &quot;, &quot;, 340]
-? &AElig;
-Á &Aacute;
-Â &Acirc;
-? &Agrave;
-? &Alpha;
-? &Aring;
-? &Atilde;
-Ä &Auml;
-? &Beta;
-Ç &Ccedil;
-? &Chi;
-‡ &Dagger;
-? &Delta;
-? &ETH;
-É &Eacute;
-? &Ecirc;
-? &Egrave;
-? &Epsilon;
-? &Eta;
-Ë &Euml;
-? &Gamma;
-Í &Iacute;
-Î &Icirc;
-? &Igrave;
-? &Iota;
-? &Iuml;
-? &Kappa;
-? &Lambda;
-? &Mu;
-? &Ntilde;
-? &Nu;
-? &OElig;
-Ó &Oacute;
-Ô &Ocirc;
-? &Ograve;
-? &Omega;
-? &Omicron;
-? &Oslash;
-? &Otilde;
-Ö &Ouml;
-? &Phi;
-? &Pi;
-? &Prime;
-? &Psi;
-? &Rho;
-Š &Scaron;
-? &Sigma;
-? &THORN;
-? &Tau;
-? &Theta;
-Ú &Uacute;
-? &Ucirc;
-? &Ugrave;
-? &Upsilon;
-Ü &Uuml;
-? &Xi;
-Ý &Yacute;
-? &Yuml;
-? &Zeta;
-á &aacute;
-â &acirc;
-´ &acute;
-? &aelig;
-? &agrave;
-? &alefsym;
-? &alpha;
-& &amp;
-? &and;
-? &ang;
-? &aring;
-? &asymp;
-? &atilde;
-ä &auml;
-„ &bdquo;
-? &beta;
-¦ &brvbar;
-• &bull;
-? &cap;
-ç &ccedil;
-¸ &cedil;
-? &cent;
-? &chi;
-? &circ;
-? &clubs;
-? &cong;
-© &copy;
-? &crarr;
-? &cup;
-¤ &curren;
-? &dArr;
-† &dagger;
-? &darr;
-° &deg;
-? &delta;
-? &diams;
-÷ &divide;
-é &eacute;
-? &ecirc;
-? &egrave;
-? &empty;
-? &emsp;
-? &ensp;
-? &epsilon;
-? &equiv;
-? &eta;
-? &eth;
-ë &euml;
-€ &euro;
-? &exist;
-? &fnof;
-? &forall;
-? &frac12;
-? &frac14;
-? &frac34;
-? &frasl;
-? &gamma;
-? &ge;
-> &gt;
-? &hArr;
-? &harr;
-? &hearts;
-… &hellip;
-í &iacute;
-î &icirc;
-? &iexcl;
-? &igrave;
-? &image;
-? &infin;
-? &int;
-? &iota;
-? &iquest;
-? &isin;
-? &iuml;
-? &kappa;
-? &lArr;
-? &lambda;
-? &lang;
-« &laquo;
-? &larr;
-? &lceil;
-“ &ldquo;
-? &le;
-? &lfloor;
-? &lowast;
-? &loz;
-? &lrm;
-‹ &lsaquo;
-‘ &lsquo;
-< &lt;
-? &macr;
-— &mdash;
-µ &micro;
-· &middot;
-? &minus;
-? &mu;
-? &nabla;
-  &nbsp;
-– &ndash;
-? &ne;
-? &ni;
-¬ &not;
-? &notin;
-? &nsub;
-? &ntilde;
-? &nu;
-ó &oacute;
-ô &ocirc;
-? &oelig;
-? &ograve;
-? &oline;
-? &omega;
-? &omicron;
-? &oplus;
-? &or;
-? &ordf;
-? &ordm;
-? &oslash;
-? &otilde;
-? &otimes;
-ö &ouml;
-¶ &para;
-? &part;
-‰ &permil;
-? &perp;
-? &phi;
-? &pi;
-? &piv;
-± &plusmn;
-? &pound;
-? &prime;
-? &prod;
-? &prop;
-? &psi;
-" &quot;
-? &rArr;
-? &radic;
-? &rang;
-» &raquo;
-? &rarr;
-? &rceil;
-” &rdquo;
-? &real;
-® &reg;
-? &rfloor;
-? &rho;
-? &rlm;
-› &rsaquo;
-’ &rsquo;
-‚ &sbquo;
-š &scaron;
-? &sdot;
-§ &sect;
-­ &shy;
-? &sigma;
-? &sigmaf;
-? &sim;
-? &spades;
-? &sub;
-? &sube;
-? &sum;
-? &sup;
-? &sup1;
-? &sup2;
-? &sup3;
-? &supe;
-ß &szlig;
-? &tau;
-? &there4;
-? &theta;
-? &thetasym;
-? &thinsp;
-? &thorn;
-? &tilde;
-× &times;
-™ &trade;
-? &uArr;
-ú &uacute;
-? &uarr;
-? &ucirc;
-? &ugrave;
-¨ &uml;
-? &upsih;
-? &upsilon;
-ü &uuml;
-? &weierp;
-? &xi;
-ý &yacute;
-? &yen;
-? &yuml;
-? &zeta;
-? &zwj;
-? &zwnj;
-End cursor position = 347
-[<table><tr><td></|, /td, <table><tr><td></td>, 429]
+[<table><tr><td></|, /td, <table><tr><td></td>, 362]
 </td >
 </tr >
 </table >
-End cursor position = 450
+End cursor position = 383

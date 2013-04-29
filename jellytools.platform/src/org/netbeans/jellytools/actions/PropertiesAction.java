@@ -47,7 +47,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "Properties" popup menu item, "Window|Properties" main menu item,
+/** Used to call "Properties" popup menu item, "Window|IDE Tools|Properties" main menu item,
  * "org.openide.actions.PropertiesAction" or Ctrl+Shift+7 shortcut.
  * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
@@ -55,6 +55,7 @@ public class PropertiesAction extends Action {
 
     private static final String propertiesPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Properties");
     private static final String propertiesMenu = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
+                                                + "|IDE Tools"
                                                 + "|" + propertiesPopup;
     private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
             KeyStroke.getKeyStroke(KeyEvent.VK_7, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK) :

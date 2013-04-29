@@ -221,6 +221,14 @@ public class ClassPathUtils {
         return classPath.findResource("javax/swing/GroupLayout.class") != null; // NOI18N
     }
 
+    public static boolean isJava7ProjectPlatform(FileObject fileInProject) {
+        ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.BOOT);
+        if (classPath == null)
+            return false;
+
+        return classPath.findResource("javax/swing/JLayer.class") != null; // NOI18N
+    }
+
     /** Updates project'c classpath with entries from ClassSource object.
      * @return null if operation was cancelled by user otherwise true or false
      *  if project classpath was changed or not

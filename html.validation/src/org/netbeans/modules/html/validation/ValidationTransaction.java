@@ -158,7 +158,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     private String charsetOverride = null;
     private Set<String> filteredNamespaces = new LinkedHashSet<String>(); // linked
     private LexicalHandler lexicalHandler;
-    private String codeToValidate;
+    private Reader codeToValidate;
     private long validationTime;
     private ProblemsHandler problemsHandler = new ProblemsHandler();
     private LinesMapper linesMapper = new LinesMapper();
@@ -423,7 +423,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         return validationTime;
     }
 
-    public void validateCode(String code, String sourceURI, Set<String> filteredNamespaces, String encoding) throws SAXException {
+    public void validateCode(Reader code, String sourceURI, Set<String> filteredNamespaces, String encoding) throws SAXException {
         long from = System.currentTimeMillis();
 
         codeToValidate = code;
@@ -1292,11 +1292,11 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         //for html content the flow remains.
         Reader readerImpl = xhtmlContent
                 ? sourceReader = new CharacterHandlerReader(codeToValidate)
-                : new StringReader(codeToValidate);
+                : codeToValidate;
 
         documentInput = new TypedInputSource(readerImpl);
         documentInput.setType("text/html"); //NOI18N
-        documentInput.setLength(codeToValidate.length());
+//        documentInput.setLength(codeToValidate.length());
         documentInput.setEncoding(encoding);
     }
 

@@ -46,6 +46,7 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.openide.util.Lookup;
 
 /**
@@ -100,6 +101,16 @@ public abstract class CsmParserProvider {
         int getErrorCount();
     }
     
+    public static void registerParserError(ParserErrorDelegate delegate, String message, CsmFile file, int offset) {
+        if (file != null) {
+            int[] lineColumn = ((FileImpl)file).getLineColumn(offset);
+            String s = file.getAbsolutePath()+":"+lineColumn[0]+":"+lineColumn[1]+": error: "+message; //NOI18N
+            delegate.onError(new ParserError(s, lineColumn[0], lineColumn[1], "", offset < 0)); //NOI18N
+        } else {
+            delegate.onError(new ParserError(message, -1, -1, "", offset < 0)); //NOI18N
+        }
+    }
+    
     public static final class ParserError {
         public String message;
         public String tokenText;
@@ -134,7 +145,11 @@ public abstract class CsmParserProvider {
         public boolean isEof() {
             return eof;
         }        
-                
+
+        @Override
+        public String toString() {
+            return message;// + " :" + (eof ? "<EOF>" : tokenText); // NOI18N
+        }
     }
     
     public interface ParserErrorDelegate {

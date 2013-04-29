@@ -73,16 +73,17 @@ public class FindSelectionAction extends AbstractEditorAction {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         if (target != null) {
             EditorFindSupport findSupport = EditorFindSupport.getInstance();
             Caret caret = target.getCaret();
             int dotPos = caret.getDot();
-            HashMap props = new HashMap(findSupport.createDefaultFindProperties());
+            HashMap<String, Object> props = new HashMap<>(findSupport.createDefaultFindProperties());
             String searchWord = null;
             boolean revert = false;
             Boolean originalValue = null;
-            Map revertMap = (Map) props.get(EditorFindSupport.REVERT_MAP);
+            Map<String, Object> revertMap = (Map<String, Object>) props.get(EditorFindSupport.REVERT_MAP);
             Boolean revertValue = revertMap != null ? (Boolean) revertMap.get(EditorFindSupport.FIND_WHOLE_WORDS) : null;
             if (Utilities.isSelectionShowing(caret)) {
                 // valid selection
@@ -114,7 +115,7 @@ public class FindSelectionAction extends AbstractEditorAction {
                 }
                 props.put(EditorFindSupport.FIND_WHAT, searchWord);
                 if (revert) {
-                    revertMap = new HashMap();
+                    revertMap = new HashMap<>();
                     revertMap.put(EditorFindSupport.FIND_WHOLE_WORDS, originalValue != null ? originalValue : Boolean.FALSE);
                     props.put(EditorFindSupport.REVERT_MAP, revertMap);
                 }

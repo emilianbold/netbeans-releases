@@ -81,7 +81,7 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
     }
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
-    public static class DeviceDefault extends IOSBrowserFactory {
+    public static class EmulatorDefault extends IOSBrowserFactory {
 
         @Override
         public String getDisplayName() {
@@ -100,8 +100,8 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
 
     }
 
-    //@ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
-    public static class EmulatorDefault extends IOSBrowserFactory {
+    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
+    public static class DeviceDefault extends IOSBrowserFactory {
 
         @Override
         public String getDisplayName() {

@@ -58,7 +58,8 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
  */
 public class CXXParserEx extends CXXParser {
     
-    private static final int RECOVERY_LIMIT = 20;
+    private static final boolean RECOVER_DECLARATIONS = true;
+    private static final int RECOVERY_LIMIT = 3;
     private static final BitSet stopSet = new BitSet();
     static {
         stopSet.add(LCURLY);
@@ -71,11 +72,13 @@ public class CXXParserEx extends CXXParser {
     private final boolean trace;
     private int level = 0; // indentation based trace
     private int recoveryCounter = 0;
+    private final boolean reportErrors;
 
     public CXXParserEx(TokenStream input, CXXParserActionEx action) {
         super(input, action);
         this.action = action;
         this.trace = TraceFlags.TRACE_CPP_PARSER_RULES;
+        this.reportErrors = TraceFlags.REPORT_PARSING_ERRORS;
     }
     
     private CsmParserProvider.ParserErrorDelegate errorDelegate;
@@ -86,20 +89,25 @@ public class CXXParserEx extends CXXParser {
 
     @Override
     public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
-        if(errorDelegate != null) {
-            if (e instanceof MyRecognitionException) {
-                MyRecognitionException ex = (MyRecognitionException) e;
-                String hdr = getSourceName();
-                if (APTUtils.isEOF(ex.getToken())) {
-                    errorDelegate.onError(new CsmParserProvider.ParserError(hdr+" "+ex.getMessage(), -1, -1, ex.getToken().getText(), true));
-                } else {
-                    errorDelegate.onError(new CsmParserProvider.ParserError(hdr+":"+ex.getToken().getLine()+": error: "+ex.getMessage(), ex.getToken().getLine(), ex.getToken().getColumn(), ex.getToken().getText(), false)); // NOI18N
-                }
+        CsmParserProvider.ParserError parserError;
+        if (e instanceof MyRecognitionException) {
+            MyRecognitionException ex = (MyRecognitionException) e;
+            String hdr = getSourceName();
+            if (APTUtils.isEOF(ex.getToken())) {
+                parserError = new CsmParserProvider.ParserError(hdr+" "+ex.getMessage(), -1, -1, ex.getToken().getText(), true);
             } else {
-                String hdr = getSourceName();
-                String msg = getErrorMessage(e, tokenNames);
-                errorDelegate.onError(new CsmParserProvider.ParserError(hdr+":"+e.line+": error: "+msg, e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1)); // NOI18N
+                parserError = new CsmParserProvider.ParserError(hdr+":"+ex.getToken().getLine()+":"+ex.getToken().getColumn()+": error: "+ex.getMessage(), ex.getToken().getLine(), ex.getToken().getColumn(), ex.getToken().getText(), false); // NOI18N
             }
+        } else {
+            String hdr = getSourceName();
+            String msg = getErrorMessage(e, tokenNames);
+            parserError = new CsmParserProvider.ParserError(hdr+":"+e.line+":"+e.charPositionInLine+": error: "+msg, e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1); // NOI18N
+        }
+        if (errorDelegate != null) {
+            errorDelegate.onError(parserError);
+        }
+        if (reportErrors) {
+            System.err.println(parserError);
         }
     }
 
@@ -135,7 +143,7 @@ public class CXXParserEx extends CXXParser {
             //input.consume();
             //</editor-fold>
             // our solution:
-            if (recoveryCounter > RECOVERY_LIMIT) {
+            if (recoveryCounter >= RECOVERY_LIMIT) {
                 input.consume();
                 recoveryCounter = 0;
                 //followSet.orInPlace(stopSet);
@@ -151,30 +159,84 @@ public class CXXParserEx extends CXXParser {
         endResync();
     }
     
-//    @Override
-//    public void consumeUntil(IntStream input, int tokenType) {
-//        //System.out.println("consumeUntil "+tokenType);
-//        int ttype = input.LA(1);
-//        while (ttype != org.antlr.runtime.Token.EOF && ttype != tokenType) {
-//            input.consume();
-//            ttype = input.LA(1);
-//        }
-//    }
-//
-//    /**
-//     * Consume tokens until one matches the given token set
-//     */
-//    @Override
-//    public void consumeUntil(IntStream input, BitSet set) {
-//        //System.out.println("consumeUntil("+set.toString(getTokenNames())+")");
-//        int ttype = input.LA(1);
-//        while (ttype != org.antlr.runtime.Token.EOF && !set.member(ttype)) {
-//            System.out.println("consume during recover LA(1)="+getTokenNames()[input.LA(1)]);
-//            input.consume();
-//            ttype = input.LA(1);
-//        }
-//    }
+    /**
+     * Use the current stacked followset to work out the valid tokens that can
+     * follow on from the current point in the parse, then recover by eating
+     * tokens that are not a member of the follow set we compute.
+     *
+     * This method is used whenever we wish to force a sync, even though the
+     * parser has not yet checked LA(1) for alt selection. This is useful in
+     * situations where only a subset of tokens can begin a new construct (such
+     * as the start of a new statement in a block) and we want to proactively
+     * detect garbage so that the current rule does not exit on on an exception.
+     *
+     * We could override recover() to make this the default behavior but that is
+     * too much like using a sledge hammer to crack a nut. We want finer grained
+     * control of the recovery and error mechanisms.
+     */
+    @Override
+    protected void sync_declaration_impl() {
+        // Compute the followset that is in context wherever we are in the
+        // rule chain/stack
+        if (RECOVER_DECLARATIONS) {
+            BitSet follow = state.following[state._fsp]; //computeContextSensitiveRuleFOLLOW();
+            syncToSet(follow);
+        }
+    }
 
+    @Override
+    protected void sync_member_impl() {
+        if (RECOVER_DECLARATIONS) {
+            BitSet follow = state.following[state._fsp]; //computeContextSensitiveRuleFOLLOW();
+            syncToSet(follow);
+        }
+    }
+
+    @Override
+    protected void sync_parameter_impl() {
+        if (RECOVER_DECLARATIONS) {
+            BitSet follow = state.following[state._fsp]; //computeContextSensitiveRuleFOLLOW();
+            syncToSet(follow);
+        }
+    }
+
+    @Override
+    protected void sync_statement_impl() {
+        if (RECOVER_DECLARATIONS) {
+            BitSet follow = state.following[state._fsp]; //computeContextSensitiveRuleFOLLOW();
+            syncToSet(follow);
+        }
+    }
+
+    protected void syncToSet(BitSet follow) {
+        beginResync();
+        try {
+            // Consume all tokens in the stream until we find a member of the follow
+            // set, which means the next production should be guaranteed to be happy.
+            while (!follow.member(input.LA(1))) {
+                if (input.LA(1) == org.antlr.runtime.Token.EOF) {
+                    // Looks like we didn't find anything at all that can help us here
+                    // so we need to rewind to where we were and let normal error handling
+                    // bail out.
+                    return;
+                }
+                final Token token = ParserProviderImpl.convertToken(input.LT(1));
+                reportError(new MyRecognitionException("Skip unexpected token at '"+token.getText()+"'", token)); // NOI18N
+                input.consume();
+                // Now here, because you are consuming some tokens, yu will probably want
+                // to raise an error message such as "Spurious elements after the class member were discarded"
+                // using whatever your override of displayRecognitionError() routine does to record
+                // error messages. The exact error my depend on context etc.
+            }
+        } catch (Exception e) {
+            // Just ignore any errors here, we will just let the recognizer
+            // try to resync as normal - something must be very screwed.
+        } finally {
+            // Always release the mark we took
+            endResync();
+        }
+    }
+    
     @Override
     public void traceIn(String ruleName, int ruleIndex) {
         if (trace) {

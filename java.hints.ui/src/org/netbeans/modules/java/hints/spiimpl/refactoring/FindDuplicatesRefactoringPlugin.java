@@ -49,6 +49,7 @@ import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.BatchResult;
 import org.netbeans.modules.java.hints.spiimpl.batch.ProgressHandleWrapper;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.spi.java.hints.Hint.Kind;
@@ -102,7 +103,7 @@ public class FindDuplicatesRefactoringPlugin extends AbstractApplyHintsRefactori
     private List<MessageImpl> performSearchForPattern(final RefactoringElementsBag refactoringElements) {
         ProgressHandleWrapper w = new ProgressHandleWrapper(this, 10, 90);
         Iterable<? extends HintDescription> queries = filterQueries(refactoring.getPattern(), true);
-        BatchResult candidates = BatchSearch.findOccurrences(queries, refactoring.getScope(), w);
+        BatchResult candidates = BatchSearch.findOccurrences(queries, refactoring.getScope(), w, /*XXX:*/HintsSettings.getGlobalSettings());
         List<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
 
         if (queries.iterator().hasNext()) {

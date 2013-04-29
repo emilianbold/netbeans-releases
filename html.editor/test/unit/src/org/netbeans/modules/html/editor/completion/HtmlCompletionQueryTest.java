@@ -62,7 +62,7 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlExtension.CompletionContext;
 import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport.Match;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
-import org.netbeans.modules.html.editor.lib.api.UndeclaredContentResolver;
+import org.netbeans.modules.html.editor.lib.api.foreign.UndeclaredContentResolver;
 import org.netbeans.modules.html.parser.HtmlDocumentation;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -425,14 +425,8 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
             }
             
             @Override
-            public UndeclaredContentResolver getUndeclaredContentResolver() {
-                return new UndeclaredContentResolver() {
-
-                    @Override
-                    public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
-                        return Collections.singletonMap("myns", Collections.singletonList("my"));
-                    }
-                };
+            public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
+                return Collections.singletonMap("myns", Collections.singletonList("my"));
             }
 
         };
@@ -453,14 +447,8 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
             }
             
             @Override
-            public UndeclaredContentResolver getUndeclaredContentResolver() {
-                return new UndeclaredContentResolver() {
-
-                    @Override
-                    public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
-                        return Collections.singletonMap("myns", Collections.singletonList("my"));
-                    }
-                };
+            public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
+                return Collections.singletonMap("myns", Collections.singletonList("my"));
             }
 
         };

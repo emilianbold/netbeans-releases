@@ -59,12 +59,13 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     final private Set<TypeUsage> returnTypes;
     private boolean isAnonymous;
 
-    public JsFunctionImpl(DeclarationScope scope, JsObject parentObject, Identifier name, List<Identifier> parameters, OffsetRange offsetRange) {
-        super(scope, parentObject, name, offsetRange);
+    public JsFunctionImpl(DeclarationScope scope, JsObject parentObject, Identifier name,
+            List<Identifier> parameters, OffsetRange offsetRange, String sourceLabel) {
+        super(scope, parentObject, name, offsetRange, sourceLabel);
         this.parametersByName = new HashMap<String, JsObject>(parameters.size());
         this.parameters = new ArrayList<JsObject>(parameters.size());
         for (Identifier identifier : parameters) {
-            JsObject parameter = new ParameterObject(this, identifier);
+            JsObject parameter = new ParameterObject(this, identifier, sourceLabel);
             addParameter(parameter);
         }
         this.isAnonymous = false;
@@ -79,22 +80,27 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             this.addProperty(arguments.getName(), arguments);
         }
     }
+
+    public JsFunctionImpl(DeclarationScope scope, JsObject parentObject, Identifier name,
+            List<Identifier> parameters, OffsetRange offsetRange) {
+        this(scope, parentObject, name, parameters, offsetRange, null);
+    }
+
+    protected JsFunctionImpl(FileObject file, JsObject parentObject, Identifier name, List<Identifier> parameters) {
+        this(null, parentObject, name, parameters, name.getOffsetRange(), null);
+        this.setFileObject(file);
+        this.setDeclared(false);
+    }
+
+    private JsFunctionImpl(FileObject file, Identifier name) {
+        this(null, null, name, Collections.EMPTY_LIST, name.getOffsetRange(), null);
+        this.setFileObject(file);
+    }
     
     public static JsFunctionImpl createGlobal(FileObject fileObject, int length) {
         String name = fileObject != null ? fileObject.getName() : "VirtualSource"; //NOI18N
         Identifier ident = new IdentifierImpl(name, new OffsetRange(0, length));
         return new JsFunctionImpl(fileObject, ident);
-    }
-    
-    private JsFunctionImpl(FileObject file, Identifier name) {
-        this(null, null, name, Collections.EMPTY_LIST, name.getOffsetRange());
-        this.setFileObject(file);
-    }
-    
-    protected JsFunctionImpl(FileObject file, JsObject parentObject, Identifier name, List<Identifier> parameters) {
-        this(null, parentObject, name, parameters, name.getOffsetRange());
-        this.setFileObject(file);
-        this.setDeclared(false);
     }
     
     @Override
@@ -241,11 +247,14 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         for (TypeUsage type : returnTypes) {
             if (!(type.getType().equals(Type.UNRESOLVED) && returnTypes.size() > 1)) {
                 if (!type.isResolved()) {
-                    for(TypeUsage rType : ModelUtils.resolveTypeFromSemiType(this, type)) {
-                        if(!nameReturnTypes.contains(type.getType())) {
+                    for (TypeUsage rType : ModelUtils.resolveTypeFromSemiType(this, type)) {
+                        if (!nameReturnTypes.contains(rType.getType())) {
+                            if ("@this".equals(type.getType())) { // NOI18N
+                                rType = new TypeUsageImpl(rType.getType(), -1, rType.isResolved());
+                            }
                             resolved.add(rType);
                             nameReturnTypes.add(rType.getType());
-                        } 
+                        }
                     }
 //                    resolved.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
                 } else {
@@ -260,8 +269,14 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         for (TypeUsage type : resolved) {
             if (type.getOffset() > 0) {
                 JsObject jsObject = ModelUtils.findJsObjectByName(this, type.getType());
+                if (jsObject == null) {
+                    JsObject global = ModelUtils.getGlobalObject(this);
+                    jsObject = ModelUtils.findJsObjectByName(global, type.getType());
+                }
                 if (jsObject != null) {
-                    ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + type.getType().length()));
+                    int index = type.getType().lastIndexOf('.');
+                    int typeLength = (index > -1) ? type.getType().length() - index - 1 : type.getType().length();
+                    ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + typeLength));
                 }
             }
         }

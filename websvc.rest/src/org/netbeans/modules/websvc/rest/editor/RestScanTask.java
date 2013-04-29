@@ -48,17 +48,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
-
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Token;
@@ -127,8 +119,16 @@ class RestScanTask {
        boolean needConfiguration = true;
        try {
             if (support.isRestSupportOn()) {
+                RestApplicationModel applicationModel = support.getRestApplicationsModel();
+                List<RestApplication> l = applicationModel.runReadAction(new MetadataModelAction<RestApplications, List<RestApplication>>() {
+
+                    @Override
+                    public List<RestApplication> run(RestApplications metadata) throws Exception {
+                        return metadata.getRestApplications();
+                    }
+                });
                 if (support.getApplicationPathFromDD() != null
-                        || !support.getRestApplications().isEmpty())
+                        || !l.isEmpty())
                 {
                     needConfiguration = false;
                 }

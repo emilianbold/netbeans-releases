@@ -179,7 +179,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
                 LOGGER.log(Level.FINEST, "Locating for Smarty templates in depth={0}", scanningDepth);
                 if (locatedTplFiles(sourceDirectory, scanningDepth, 0)) {
                     preferences.putBoolean(PROP_SMARTY_AVAILABLE, true);
-                    phpModule.propertyChanged(new PropertyChangeEvent(SmartyPhpFrameworkProvider.this, PhpModule.PROPERTY_FRAMEWORKS, null, null));
+                    phpModule.notifyPropertyChanged(new PropertyChangeEvent(SmartyPhpFrameworkProvider.this, PhpModule.PROPERTY_FRAMEWORKS, null, null));
                 }
             }
         });

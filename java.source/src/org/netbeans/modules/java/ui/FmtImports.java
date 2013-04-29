@@ -106,6 +106,7 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
         buttonGroup.add(fqnRadioButton);
         singleClassImportsRadioButton.putClientProperty(OPTION_ID, useSingleClassImport);
         importInnerClassesCheckBox.putClientProperty(OPTION_ID, importInnerClasses);
+        preferStaticImportsCheckBox.putClientProperty(OPTION_ID, preferStaticImports);
         starImportTresholdCheckBox.putClientProperty(OPTION_ID, allowConvertToStarImport);
         starImportTresholdSpinner.putClientProperty(OPTION_ID, countForUsingStarImport);
         starStaticImportTresholdCheckBox.putClientProperty(OPTION_ID, allowConvertToStaticStarImport);
@@ -166,6 +167,7 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
         removeStarImportPackageButton = new javax.swing.JButton();
         packageImportsRadioButton = new javax.swing.JRadioButton();
         fqnRadioButton = new javax.swing.JRadioButton();
+        preferStaticImportsCheckBox = new javax.swing.JCheckBox();
         jSeparator1 = new javax.swing.JSeparator();
         separateStaticImportsCheckBox = new javax.swing.JCheckBox();
         importLayoutLabel = new javax.swing.JLabel();
@@ -243,6 +245,8 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(preferStaticImportsCheckBox, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_preferStaticImports")); // NOI18N
+
         org.openide.awt.Mnemonics.setLocalizedText(separateStaticImportsCheckBox, org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_imp_separateStaticImports")); // NOI18N
         separateStaticImportsCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -292,39 +296,47 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(singleClassImportsRadioButton)
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                            .addComponent(separateStaticImportsCheckBox)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(21, 21, 21)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(starImportTresholdCheckBox)
-                                            .addComponent(starImportPackagesLabel)
-                                            .addComponent(importInnerClassesCheckBox)
-                                            .addComponent(starStaticImportTresholdCheckBox))
-                                        .addGap(0, 0, Short.MAX_VALUE)))))
+                                    .addComponent(starImportTresholdCheckBox)
+                                    .addComponent(starImportPackagesLabel)
+                                    .addComponent(starStaticImportTresholdCheckBox))
+                                .addGap(0, 0, Short.MAX_VALUE)))
                         .addGap(6, 6, 6)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                 .addComponent(addStarImportPackageButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(removeStarImportPackageButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(addButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(moveUpButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(removeButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(moveDownButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(removeStarImportPackageButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addComponent(starImportTresholdSpinner, javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(startStaticImportTresholdSpinner, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 38, Short.MAX_VALUE))))
-                    .addComponent(importLayoutLabel)
-                    .addComponent(packageImportsRadioButton)
-                    .addComponent(fqnRadioButton)
-                    .addComponent(separateGroupsCheckBox)
-                    .addComponent(jSeparator1))
+                                .addComponent(startStaticImportTresholdSpinner, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                            .addComponent(separateStaticImportsCheckBox))
+                        .addGap(6, 6, 6)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(addButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(moveUpButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(removeButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(moveDownButton, javax.swing.GroupLayout.Alignment.LEADING)))
+                    .addComponent(jSeparator1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(singleClassImportsRadioButton)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(21, 21, 21)
+                                .addComponent(importInnerClassesCheckBox))
+                            .addComponent(packageImportsRadioButton)
+                            .addComponent(fqnRadioButton)
+                            .addComponent(preferStaticImportsCheckBox)
+                            .addComponent(importLayoutLabel)
+                            .addComponent(separateGroupsCheckBox))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -333,7 +345,7 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
                 .addComponent(singleClassImportsRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(importInnerClassesCheckBox)
-                .addGap(2, 2, 2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(starImportTresholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(starImportTresholdCheckBox))
@@ -349,12 +361,14 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
                         .addComponent(addStarImportPackageButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeStarImportPackageButton))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, 0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(packageImportsRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(fqnRadioButton)
-                .addGap(10, 10, 10)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(preferStaticImportsCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(11, 11, 11)
                 .addComponent(importLayoutLabel)
@@ -370,7 +384,7 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
                         .addComponent(moveDownButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeButton))
-                    .addComponent(jScrollPane2, 0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separateGroupsCheckBox)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -520,6 +534,7 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
     private javax.swing.JButton moveDownButton;
     private javax.swing.JButton moveUpButton;
     private javax.swing.JRadioButton packageImportsRadioButton;
+    private javax.swing.JCheckBox preferStaticImportsCheckBox;
     private javax.swing.JButton removeButton;
     private javax.swing.JButton removeStarImportPackageButton;
     private javax.swing.JCheckBox separateGroupsCheckBox;

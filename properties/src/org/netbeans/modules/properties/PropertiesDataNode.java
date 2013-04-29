@@ -53,6 +53,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
@@ -65,6 +66,9 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.NewType;
@@ -89,6 +93,7 @@ public class PropertiesDataNode extends DataNode {
     private final transient PropertyChangeListener dataObjectListener;
     
     private boolean multiLocale;
+    static final String PROPERTY_ENCODING = "projectEncoding";
 
     PropertiesDataNode(PropertiesDataObject propDO, Lookup lookup) {
         this(propDO, createChildren(propDO), lookup);
@@ -199,6 +204,21 @@ public class PropertiesDataNode extends DataNode {
         }
     }
 
+    @Override
+    protected Sheet createSheet() {
+        Sheet sheet = super.createSheet();
+        Sheet.Set set = new Sheet.Set();
+        set.setName("encoding"); //NOI18N
+        set.setDisplayName(NbBundle.getMessage(PropertiesDataNode.class, "ENCODING_SET_Name"));
+
+        if (set == null) {
+            set = Sheet.createPropertiesSet();
+            sheet.put(set);
+        }
+        set.put(new ProjectEncodingProperty());
+        sheet.put(set);
+        return sheet;
+    }
 
     private PropertiesDataObject getPropertiesDataObject() {
         return (PropertiesDataObject)getDataObject();
@@ -322,5 +342,44 @@ public class PropertiesDataNode extends DataNode {
                 file = f;
         }
         return file.getName().equals(newName);
+    }
+
+    private final class ProjectEncodingProperty extends PropertySupport {
+
+        public ProjectEncodingProperty() {
+            super(PROPERTY_ENCODING,
+                    Boolean.class,
+                    NbBundle.getMessage(PropertiesDataNode.class, "PROP_ENCODING_Name"), // NOI18N
+                    NbBundle.getMessage(PropertiesDataNode.class, "PROP_ENCODING_Hint"), // NOI18N
+                    true, true);
+        }
+
+        @Override
+        public Object getValue() throws InvocationTargetException {
+            Object attribute = getDataObject().getPrimaryFile().getAttribute(PROPERTY_ENCODING);
+            if (attribute == null) {
+                return false;
+            }
+            return attribute;
+        }
+
+        @Override
+        public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            try {
+                getDataObject().getPrimaryFile().setAttribute(PROPERTY_ENCODING, val);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            PropertiesEditorSupport propertiesEditor = getPropertiesFileEntry().getPropertiesEditor();
+            propertiesEditor.resetCharset();
+            if (propertiesEditor.hasOpenedEditorComponent()) {
+                NotifyDescriptor.Message message = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(PropertiesDataNode.class, "PROP_ENCODING_Warning", PropertiesDataNode.this.getDisplayName()),
+                        NotifyDescriptor.WARNING_MESSAGE);
+
+                DialogDisplayer.getDefault().notify(message);
+                propertiesEditor.close();
+            }
+        }
     }
 }

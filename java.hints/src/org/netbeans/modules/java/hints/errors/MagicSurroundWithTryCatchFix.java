@@ -91,6 +91,7 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
+import org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.FixKind;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
@@ -385,7 +386,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
 
     
     private static StatementTree createExceptionsStatement(CompilationInfo info, TreeMaker make, String name) {
-        if (!ErrorFixesFakeHint.isUseExceptions()) {
+        if (!ErrorFixesFakeHint.isUseExceptions(ErrorFixesFakeHint.getPreferences(info.getFileObject(), FixKind.SURROUND_WITH_TRY_CATCH))) {
             return null;
         }
         
@@ -399,7 +400,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
     }
 
     private static StatementTree createLogStatement(CompilationInfo info, TreeMaker make, TreePath statement, String name) {
-        if (!ErrorFixesFakeHint.isUseLogger()) {
+        if (!ErrorFixesFakeHint.isUseLogger(ErrorFixesFakeHint.getPreferences(info.getFileObject(), FixKind.SURROUND_WITH_TRY_CATCH))) {
             return null;
         }
 
@@ -444,7 +445,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
     }
         
     private static StatementTree createRethrowAsRuntimeExceptionStatement(WorkingCopy info, TreeMaker make, String name) {
-        if (!ErrorFixesFakeHint.isRethrowAsRuntimeException()) {
+        if (!ErrorFixesFakeHint.isRethrowAsRuntimeException(ErrorFixesFakeHint.getPreferences(info.getFileObject(), FixKind.SURROUND_WITH_TRY_CATCH))) {
             return null;
         }
 
@@ -463,7 +464,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
     }
 
     private static StatementTree createRethrow(WorkingCopy info, TreeMaker make, String name) {
-        if (!ErrorFixesFakeHint.isRethrow()) {
+        if (!ErrorFixesFakeHint.isRethrow(ErrorFixesFakeHint.getPreferences(info.getFileObject(), FixKind.SURROUND_WITH_TRY_CATCH))) {
             return null;
         }
 

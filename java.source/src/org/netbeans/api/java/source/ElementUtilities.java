@@ -270,7 +270,7 @@ public final class ElementUtilities {
                                 members.add(member);
                         }
                     }
-                    if (te.getKind().isClass()) {
+                    if (te.getKind().isClass() || te.getKind().isInterface() && Source.instance(ctx).allowDefaultMethods()) {
                         VarSymbol thisPseudoMember = new VarSymbol(Flags.FINAL | Flags.HASINIT, Names.instance(ctx)._this, (ClassType)te.asType(), (ClassSymbol)te);
                         if (acceptor == null || acceptor.accept(thisPseudoMember, type))
                             members.add(thisPseudoMember);

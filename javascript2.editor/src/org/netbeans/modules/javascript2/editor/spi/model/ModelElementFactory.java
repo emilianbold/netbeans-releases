@@ -97,20 +97,20 @@ public final class ModelElementFactory {
         return JsFunctionImpl.createGlobal(fileObject, length);
     }
 
-    public JsObject loadGlobalObject(FileObject fileObject, int length) throws IOException {
+    public JsObject loadGlobalObject(FileObject fileObject, int length, String sourceLabel) throws IOException {
         InputStream is = fileObject.getInputStream();
         try {
-            return loadGlobalObject(is);
+            return loadGlobalObject(is, sourceLabel);
         } finally {
             is.close();
         }
     }
 
-    public JsObject loadGlobalObject(InputStream is) throws IOException {
+    public JsObject loadGlobalObject(InputStream is, String sourceLabel) throws IOException {
         JsFunction global = newGlobalObject(null, Integer.MAX_VALUE);
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
         try {
-            for (JsObject object : Model.readModel(reader, global)) {
+            for (JsObject object : Model.readModel(reader, global, sourceLabel)) {
                 putGlobalProperty(global, object);
             }
             return global;
@@ -310,6 +310,11 @@ public final class ModelElementFactory {
         }
 
         @Override
+        public String getSourceLabel() {
+            return delegate.getSourceLabel();
+        }
+
+        @Override
         public boolean isPlatform() {
             return delegate.isPlatform();
         }
@@ -502,6 +507,11 @@ public final class ModelElementFactory {
         @Override
         public boolean isDeclared() {
             return delegate.isDeclared();
+        }
+
+        @Override
+        public String getSourceLabel() {
+            return delegate.getSourceLabel();
         }
 
         @Override

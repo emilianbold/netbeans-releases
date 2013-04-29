@@ -56,6 +56,35 @@ public final class ImportUtils {
     private ImportUtils() {
     }
     
+    /**
+     * Finds out if the given fully qualified name is imported by default or not.
+     * 
+     * @param fqn fully qualified name for the type we need to check
+     * @return true if the given fqn is defaultly imported, false otherwise
+     */
+    public static boolean isDefaultlyImported(String fqn) {
+        for (String defaultImport : getDefaultImportClasses()) {
+            if (defaultImport.equals(fqn)) {
+                return true; // We don't want to add import statement for default imports
+            }
+        }
+        
+        final String packageName = getPackageName(fqn);
+        for (String defaultImport : getDefaultImportPackages()) {
+            if (defaultImport.equals(packageName)) {
+                return true; // We don't want to add import statement for types from defaultly imported packages
+            }
+        }
+        return false;
+    }
+    
+    private static String getPackageName(String fqn) {
+        if (fqn.contains(".")) {
+            fqn = fqn.substring(0, fqn.lastIndexOf("."));
+        }
+        return fqn;
+    }
+    
     public static Set<String> getDefaultImportPackages() {
         Set<String> defaultPackages = new HashSet<String>();
         

@@ -42,13 +42,19 @@
 package org.netbeans.modules.javafx2.project.fxml;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.javafx2.project.JFXProjectUtils;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -58,21 +64,25 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Anton Chechel <anton.chechel@oracle.com>
  */
-public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListener {
+public class ConfigureFXMLCSSPanelVisual extends JPanel implements ActionListener, DocumentListener {
     
     private Panel observer;
-    private File[] srcRoots;
-    private File rootFolder;
-    private FileObject targetFolder;
-    private String fxmlName;
+    private final boolean isMaven;
+    private boolean ignoreRootCombo;
+    private RequestProcessor.Task updatePackagesTask;
+    private static final ComboBoxModel WAIT_MODEL = SourceGroupSupport.getWaitModel();
+    SourceGroupSupport support;
 
-    ConfigureFXMLCSSPanelVisual(Panel observer) {
+    ConfigureFXMLCSSPanelVisual(Panel observer, SourceGroupSupport support, boolean isMaven) {
+        this.support = support;
         this.observer = observer;
+        this.isMaven = isMaven;
         setName(NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class,"TXT_CSSNameAndLoc")); // NOI18N
         initComponents(); // Matisse
         initComponents2(); // My own
@@ -85,25 +95,22 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
     private void initComponents2() {
         createdNameTextField.getDocument().addDocumentListener(this);
         existingNameTextField.getDocument().addDocumentListener(this);
+        createdPackageComboBox.getEditor().addActionListener(this);
+        Component packageEditor = createdPackageComboBox.getEditor().getEditorComponent();
+        if (packageEditor instanceof JTextField) {
+            ((JTextField) packageEditor).getDocument().addDocumentListener(this);
+        }
+
+        createdLocationComboBox.setRenderer(new SourceGroupSupport.GroupListCellRenderer());
+        createdPackageComboBox.setRenderer(PackageView.listRenderer());
+        createdLocationComboBox.addActionListener(this);
     }
 
-    public void initValues(FileObject template, FileObject targetFolder, String fxmlName, File[] srcRoots, File rootFolder) {
+    public void initValues(FileObject template, FileObject preselectedFolder) {
         if (template == null) {
                 throw new IllegalArgumentException(
                         NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class,
                             "MSG_ConfigureFXMLPanel_Template_Error")); // NOI18N
-        }
-
-        if (targetFolder == null) {
-                throw new IllegalArgumentException(
-                        NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class,
-                            "MSG_ConfigureFXMLPanel_Target_Error")); // NOI18N
-        }
-
-        if (srcRoots == null || srcRoots.length < 1) {
-                throw new IllegalArgumentException(
-                        NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class,
-                            "MSG_ConfigureFXMLPanel_SGs_Error")); // NOI18N
         }
 
         String displayName;
@@ -115,16 +122,41 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         }
         putClientProperty("NewFileWizard_Title", displayName); // NOI18N        
 
-        this.targetFolder = targetFolder;
-        this.fxmlName = fxmlName;
-        this.srcRoots = srcRoots;
-        this.rootFolder = rootFolder;
+        createdLocationComboBox.setModel(new DefaultComboBoxModel(support.getSourceGroups().toArray()));
+        SourceGroupSupport.SourceGroupProxy preselectedGroup = isMaven ? 
+                SourceGroupSupport.getContainingSourceGroup(support, preselectedFolder) : support.getParent().getCurrentSourceGroup();
+        ignoreRootCombo = true;
+        createdLocationComboBox.setSelectedItem(preselectedGroup);
+        ignoreRootCombo = false;
+        if(isMaven) {
+            createdPackageComboBox.getEditor().setItem(FXMLTemplateWizardIterator.defaultMavenCSSPackage);
+        } else {
+            createdPackageComboBox.getEditor().setItem(support.getParent().getCurrentPackageName());
+        }
+        updatePackages();
         updateText();
         updateResult();
     }
     
     boolean isCSSEnabled() {
         return cssCheckBox.isSelected();
+    }
+
+    public FileObject getLocationFolder() {
+        final Object selectedItem  = createdLocationComboBox.getSelectedItem();
+        return (selectedItem instanceof SourceGroupSupport.SourceGroupProxy) ? ((SourceGroupSupport.SourceGroupProxy)selectedItem).getRootFolder() : null;
+    }
+
+    public String getPackageFileName() {
+        String packageName = createdPackageComboBox.getEditor().getItem().toString();
+        return packageName.replace('.', '/'); // NOI18N
+    }
+
+    /**
+     * Name of selected package, or "" for default package.
+     */
+    String getPackageName() {
+        return createdPackageComboBox.getEditor().getItem().toString();
     }
 
     String getNewCSSName() {
@@ -137,31 +169,6 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         return text.length() == 0 ? null : text;
     }
 
-    FileObject getTargetFolder() {
-        return targetFolder;
-    }
-    
-    FileObject getExistingCSS() {
-        String name = getExistingCSSName();
-        if(name != null) {
-            String rel = getPathForExistingCSS(name);
-            File f = new File(rel);
-            if(f.exists()) {
-                return FileUtil.toFileObject(f);
-            }
-        }
-        return null;
-    }
-    
-    String getExistingCSSRelative() {
-        FileObject targetFO = getTargetFolder();
-        FileObject existing = getExistingCSS();
-        if(targetFO != null && existing != null) {
-            return JFXProjectUtils.getRelativePath(targetFO, existing);
-        }
-        return getExistingCSSName();
-    }
-    
     private void radioButtonsStateChanged() {
         if (!cssCheckBox.isSelected()) {
             return;
@@ -171,6 +178,12 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         existingNameLabel.setEnabled(!createNewRadioButton.isSelected());
         existingNameTextField.setEnabled(!createNewRadioButton.isSelected());
         chooseButton.setEnabled(!createNewRadioButton.isSelected());
+
+        createdLocationLabel.setEnabled(createNewRadioButton.isSelected());
+        createdLocationComboBox.setEnabled(createNewRadioButton.isSelected());
+        createdPackageLabel.setEnabled(createNewRadioButton.isSelected());
+        createdPackageComboBox.setEnabled(createNewRadioButton.isSelected());            
+
         updateResult();
         fireChange();
     }
@@ -186,12 +199,16 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup1 = new javax.swing.ButtonGroup();
+        createNewRadioButton = new javax.swing.JRadioButton();
         cssCheckBox = new javax.swing.JCheckBox();
         createdNameLabel = new javax.swing.JLabel();
         createdNameTextField = new javax.swing.JTextField();
         fileLabel = new javax.swing.JLabel();
         fileTextField = new javax.swing.JTextField();
-        createNewRadioButton = new javax.swing.JRadioButton();
+        createdLocationLabel = new javax.swing.JLabel();
+        createdLocationComboBox = new javax.swing.JComboBox();
+        createdPackageLabel = new javax.swing.JLabel();
+        createdPackageComboBox = new javax.swing.JComboBox();
         useExistingRadioButton = new javax.swing.JRadioButton();
         existingNameLabel = new javax.swing.JLabel();
         existingNameTextField = new javax.swing.JTextField();
@@ -200,6 +217,24 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
 
         setPreferredSize(new java.awt.Dimension(500, 340));
         setLayout(new java.awt.GridBagLayout());
+
+        buttonGroup1.add(createNewRadioButton);
+        createNewRadioButton.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(createNewRadioButton, org.openide.util.NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "ConfigureFXMLCSSPanelVisual.createNewRadioButton.text")); // NOI18N
+        createNewRadioButton.setEnabled(false);
+        createNewRadioButton.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                createNewRadioButtonItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(5, 15, 0, 0);
+        add(createNewRadioButton, gridBagConstraints);
+        createNewRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "ConfigureFXMLCSSPanelVisual.createNewRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cssCheckBox, org.openide.util.NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "ConfigureFXMLCSSPanelVisual.cssCheckBox.text")); // NOI18N
         cssCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -221,7 +256,6 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 40, 0, 0);
         add(createdNameLabel, gridBagConstraints);
@@ -229,9 +263,9 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
 
         createdNameTextField.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.weightx = 0.5;
@@ -243,7 +277,7 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         fileLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(25, 15, 0, 0);
         add(fileLabel, gridBagConstraints);
@@ -252,31 +286,56 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         fileTextField.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(fileTextField, gridBagConstraints);
 
-        buttonGroup1.add(createNewRadioButton);
-        createNewRadioButton.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(createNewRadioButton, org.openide.util.NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "ConfigureFXMLCSSPanelVisual.createNewRadioButton.text")); // NOI18N
-        createNewRadioButton.setEnabled(false);
-        createNewRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                createNewRadioButtonItemStateChanged(evt);
-            }
-        });
+        createdLocationLabel.setLabelFor(createdLocationComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(createdLocationLabel, org.openide.util.NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "ConfigureFXMLCSSPanelVisual.createdLocationLabel.text")); // NOI18N
+        createdLocationLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(5, 15, 0, 0);
-        add(createNewRadioButton, gridBagConstraints);
-        createNewRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "ConfigureFXMLCSSPanelVisual.createNewRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        gridBagConstraints.insets = new java.awt.Insets(5, 40, 0, 0);
+        add(createdLocationLabel, gridBagConstraints);
+        createdLocationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "ConfigureFXMLCSSPanelVisual.createdLocationLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
+        createdLocationComboBox.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        add(createdLocationComboBox, gridBagConstraints);
+
+        createdPackageLabel.setLabelFor(createdPackageComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(createdPackageLabel, org.openide.util.NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "ConfigureFXMLCSSPanelVisual.createdPackageLabel.text")); // NOI18N
+        createdPackageLabel.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(5, 40, 0, 0);
+        add(createdPackageLabel, gridBagConstraints);
+        createdPackageLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "ConfigureFXMLCSSPanelVisual.createdPackageLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
+        createdPackageComboBox.setEditable(true);
+        createdPackageComboBox.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        add(createdPackageComboBox, gridBagConstraints);
 
         buttonGroup1.add(useExistingRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(useExistingRadioButton, org.openide.util.NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "ConfigureFXMLCSSPanelVisual.useExistingRadioButton.text")); // NOI18N
@@ -288,10 +347,10 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(5, 15, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(10, 15, 0, 0);
         add(useExistingRadioButton, gridBagConstraints);
         useExistingRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "ConfigureFXMLCSSPanelVisual.useExistingRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -300,8 +359,7 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         existingNameLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 40, 0, 0);
         add(existingNameLabel, gridBagConstraints);
@@ -309,8 +367,8 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
 
         existingNameTextField.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.weightx = 0.5;
@@ -325,16 +383,16 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(chooseButton, gridBagConstraints);
         chooseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "ConfigureFXMLCSSPanelVisual.chooseButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.weighty = 0.5;
@@ -346,6 +404,10 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         if (createNewRadioButton.isSelected()) {
             createdNameLabel.setEnabled(cssCheckBox.isSelected());
             createdNameTextField.setEnabled(cssCheckBox.isSelected());
+            createdLocationLabel.setEnabled(cssCheckBox.isSelected());
+            createdLocationComboBox.setEnabled(cssCheckBox.isSelected());
+            createdPackageLabel.setEnabled(cssCheckBox.isSelected());
+            createdPackageComboBox.setEnabled(cssCheckBox.isSelected());            
         }
         useExistingRadioButton.setEnabled(cssCheckBox.isSelected());
         if (useExistingRadioButton.isSelected()) {
@@ -359,25 +421,25 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
     }//GEN-LAST:event_cssCheckBoxItemStateChanged
 
     private void chooseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseButtonActionPerformed
-        JFileChooser chooser = new JFileChooser(new FXMLTemplateWizardIterator.SrcFileSystemView(srcRoots));
+        JFileChooser chooser = new JFileChooser(new FXMLTemplateWizardIterator.SrcFileSystemView(support.getSourceGroupsAsFiles()));
         chooser.setDialogTitle(NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "LBL_ConfigureFXMLPanel_FileChooser_Select_CSS")); // NOI18N
         chooser.setFileFilter(FXMLTemplateWizardIterator.FXMLTemplateFileFilter.createCSSFilter());
         String existingPath = existingNameTextField.getText();
         if (existingPath.length() > 0) {
-            File f = new File(rootFolder.getPath() + File.pathSeparator + existingPath);
+            File f = new File(support.getCurrentChooserFolder().getPath() + File.pathSeparator + existingPath);
             if (f.exists()) {
                 chooser.setSelectedFile(f);
             } else {
-                chooser.setCurrentDirectory(rootFolder);
+                chooser.setCurrentDirectory(FileUtil.toFile(support.getCurrentChooserFolder()));
             }
         } else {
-            chooser.setCurrentDirectory(rootFolder);
+            chooser.setCurrentDirectory(FileUtil.toFile(support.getCurrentChooserFolder()));
         }
         
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             String cssFile = FileUtil.normalizeFile(chooser.getSelectedFile()).getPath();
             // XXX check other roots ?
-            final String srcPath = FileUtil.normalizeFile(srcRoots[0]).getPath();
+            final String srcPath = FileUtil.normalizeFile(FileUtil.toFile(support.getCurrentSourceGroupFolder())).getPath();
             final String relativePath = cssFile.substring(srcPath.length() + 1);
             existingNameTextField.setText(relativePath);
         }
@@ -395,8 +457,12 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton chooseButton;
     private javax.swing.JRadioButton createNewRadioButton;
+    private javax.swing.JComboBox createdLocationComboBox;
+    private javax.swing.JLabel createdLocationLabel;
     private javax.swing.JLabel createdNameLabel;
     private javax.swing.JTextField createdNameTextField;
+    private javax.swing.JComboBox createdPackageComboBox;
+    private javax.swing.JLabel createdPackageLabel;
     private javax.swing.JCheckBox cssCheckBox;
     private javax.swing.JLabel existingNameLabel;
     private javax.swing.JTextField existingNameTextField;
@@ -406,9 +472,30 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
     private javax.swing.JRadioButton useExistingRadioButton;
     // End of variables declaration//GEN-END:variables
 
-    // DocumentListener implementation -----------------------------------------
+// ActionListener implementation -------------------------------------------
+    public void actionPerformed(ActionEvent e) {
+        if (createdLocationComboBox == e.getSource()) {
+            if (!ignoreRootCombo) {
+                updatePackages();
+            }
+            updateText();
+            updateResult();
+            fireChange();
+        } else if (createdPackageComboBox == e.getSource()) {
+            updateText();
+            updateResult();
+            fireChange();
+        } else if (createdPackageComboBox.getEditor() == e.getSource()) {
+            updateText();
+            updateResult();
+            fireChange();
+        }
+    }
+
+// DocumentListener implementation -----------------------------------------
     @Override
     public void changedUpdate(DocumentEvent e) {
+        updateText();
         updateResult();
         fireChange();
     }
@@ -424,10 +511,37 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
     }
 
     // Private methods ---------------------------------------------------------
+    private void updatePackages() {
+        final Object item = createdLocationComboBox.getSelectedItem();
+        if (!(item instanceof SourceGroupSupport.SourceGroupProxy)) {
+            return;
+        }
+        WAIT_MODEL.setSelectedItem(createdPackageComboBox.getEditor().getItem());
+        createdPackageComboBox.setModel(WAIT_MODEL);
+
+        if (updatePackagesTask != null) {
+            updatePackagesTask.cancel();
+        }
+
+        updatePackagesTask = new RequestProcessor("ComboUpdatePackages").post(new Runnable() { // NOI18N
+            @Override
+            public void run() {
+                final ComboBoxModel model = ((SourceGroupSupport.SourceGroupProxy) item).getPackagesComboBoxModel();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        model.setSelectedItem(createdPackageComboBox.getEditor().getItem());
+                        createdPackageComboBox.setModel(model);
+                    }
+                });
+            }
+        });
+    }
+    
     private void updateText() {
         String cssName = getNewCSSName();
         if (cssName == null) {
-            cssName = fxmlName.toLowerCase() + FXMLTemplateWizardIterator.CSS_FILE_EXTENSION;
+            cssName = support.getParent().getCurrentFileName().toLowerCase() + FXMLTemplateWizardIterator.CSS_FILE_EXTENSION;
             createdNameTextField.setText(cssName);
         }
     }
@@ -440,25 +554,45 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         }
 
         if (shouldCreateCSS()) {
-            String file = FileUtil.getFileDisplayName(FileUtil.toFileObject(rootFolder)) + 
-                    File.separator + cssName;
-            fileTextField.setText(file);
+            final Object selectedItem = createdLocationComboBox.getSelectedItem();
+            String createdFileName;
+            if (selectedItem instanceof SourceGroupSupport.SourceGroupProxy) {
+                SourceGroupSupport.SourceGroupProxy g = (SourceGroupSupport.SourceGroupProxy) selectedItem;
+                String packageName = getPackageName();
+                support.setCurrentSourceGroup(g);
+                support.setCurrentPackageName(packageName);
+                support.setCurrentFileName(cssName);
+                String path = support.getCurrentPackagePath();
+                createdFileName = path == null ? "" : path.replace(".", "/") + cssName;
+            } else {
+                //May be null if nothing selected
+                createdFileName = "";   //NOI18N
+            }
+            fileTextField.setText(createdFileName.replace('/', File.separatorChar)); // NOI18N
+
         } else {
             fileTextField.setText(getPathForExistingCSS(cssName));
         }
     }
 
-    private String getPathForExistingCSS(String controllerName) {
-        assert controllerName != null;
-        return FileUtil.normalizeFile(srcRoots[0]).getPath() + File.separatorChar + controllerName;
+    private String getPathForExistingCSS(String cssName) {
+        assert cssName != null;
+        if(cssName.toLowerCase().endsWith(FXMLTemplateWizardIterator.CSS_FILE_EXTENSION)) {
+            String stripped = cssName.substring(0, cssName.length() - FXMLTemplateWizardIterator.CSS_FILE_EXTENSION.length());
+            cssName = stripped.replace('.', File.separatorChar) + FXMLTemplateWizardIterator.CSS_FILE_EXTENSION;
+        }
+        return FileUtil.normalizeFile(FileUtil.toFile(support.getCurrentSourceGroupFolder())).getPath() + File.separatorChar + cssName;
     }
     
     /**
      * Returns error message or null if no error occurred
      */
     String isCSSValid() {
+        if(!isCSSEnabled()) {
+            return null;
+        }
         if (createNewRadioButton.isSelected()) {
-            return FXMLTemplateWizardIterator.canUseFileName(rootFolder, getNewCSSName());
+            return FXMLTemplateWizardIterator.canUseFileName(FileUtil.toFile(support.getCurrentChooserFolder()), getNewCSSName());
         }
         
         if (existingNameTextField.getText().isEmpty()) {
@@ -468,6 +602,10 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         return FXMLTemplateWizardIterator.fileExist(getPathForExistingCSS(getExistingCSSName()));
     }
 
+    boolean shouldUseCSS() {
+        return cssCheckBox.isSelected();
+    }
+    
     boolean shouldCreateCSS() {
         return cssCheckBox.isSelected() && createNewRadioButton.isSelected();
     }
@@ -477,9 +615,11 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         private ConfigureFXMLCSSPanelVisual component;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private WizardDescriptor settings;
+        SourceGroupSupport support;
 
-        public Panel() {
-            component = new ConfigureFXMLCSSPanelVisual(this);
+        public Panel(SourceGroupSupport support, boolean isMaven) {
+            this.support = support;
+            component = new ConfigureFXMLCSSPanelVisual(this, support, isMaven);
         }
 
         @Override
@@ -495,10 +635,8 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         @Override
         public void readSettings(WizardDescriptor settings) {
             this.settings = settings;
-            String fxmlName = Templates.getTargetName(settings);
-            File[] srcRoots = (File[]) settings.getProperty(FXMLTemplateWizardIterator.PROP_SRC_ROOTS);
-            File rootFolder = (File) settings.getProperty(FXMLTemplateWizardIterator.PROP_ROOT_FOLDER);
-            component.initValues(Templates.getTemplate(settings), Templates.getTargetFolder(settings), fxmlName, srcRoots, rootFolder);
+            FileObject preselectedFolder = Templates.getTargetFolder(settings);
+            component.initValues(Templates.getTemplate(settings), preselectedFolder);
 
             // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
             // this name is used in NewFileWizard to modify the title
@@ -517,9 +655,11 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
                 return;
             }
             if (isValid()) {
-                settings.putProperty(FXMLTemplateWizardIterator.PROP_CSS_CREATE, component.shouldCreateCSS());
+                settings.putProperty(FXMLTemplateWizardIterator.PROP_CSS_ENABLED, component.shouldUseCSS());
                 settings.putProperty(FXMLTemplateWizardIterator.PROP_CSS_NAME_PROPERTY, 
-                    component.shouldCreateCSS() ? component.getNewCSSName() : component.getExistingCSSRelative());
+                    component.shouldCreateCSS() ? component.getNewCSSName() : null);
+                settings.putProperty(FXMLTemplateWizardIterator.PROP_CSS_EXISTING_PROPERTY,
+                    component.getExistingCSSName());
             }
             settings.putProperty("NewFileWizard_Title", null); // NOI18N
         }
@@ -527,9 +667,21 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         @Override
         public boolean isValid() {
             if (component.isCSSEnabled()) {
+                if (!FXMLTemplateWizardIterator.isValidPackageName(component.getPackageName())) {
+                    FXMLTemplateWizardIterator.setErrorMessage("WARN_ConfigureFXMLPanel_Provide_Package_Name", settings); // NOI18N
+                    return false;
+                }
+
+                if (!FXMLTemplateWizardIterator.isValidPackage(component.getLocationFolder(), component.getPackageName())) {
+                    FXMLTemplateWizardIterator.setErrorMessage("WARN_ConfigureFXMLPanel_Package_Invalid", settings); // NOI18N
+                    return false;
+                }
+
                 String errorMessage = component.isCSSValid();
                 settings.getNotificationLineSupport().setErrorMessage(errorMessage);
                 return errorMessage == null;
+            } else {
+                settings.getNotificationLineSupport().setErrorMessage(null);
             }
             return true;
         }

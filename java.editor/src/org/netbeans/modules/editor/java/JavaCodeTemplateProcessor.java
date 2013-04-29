@@ -69,7 +69,6 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -541,7 +540,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 if (type != null) {
                     Types types = cInfo.getTypes();
                     for (Element e : locals) {
-                        if (e instanceof VariableElement && !ERROR.contentEquals(e.getSimpleName()) && types.isAssignable(e.asType(), type)) {
+                        if (e instanceof VariableElement && !ERROR.contentEquals(e.getSimpleName())
+                                && e.asType().getKind() != TypeKind.ERROR && types.isAssignable(e.asType(), type)) {
                             if (name == null)
                                 return (VariableElement)e;
                             int d = ElementHeaders.getDistance(e.getSimpleName().toString(), name);
@@ -579,7 +579,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                 return e.getKind().isField() && !ERROR.contentEquals(e.getSimpleName()) && !CLASS.contentEquals(e.getSimpleName()) &&
                                         (!isStatic || e.getModifiers().contains(Modifier.STATIC)) &&
                                         trees.isAccessible(scope, e, (DeclaredType)t) &&
-                                        (e.getKind().isField() && types.isAssignable(((VariableElement)e).asType(), dType) || e.getKind() == ElementKind.METHOD && types.isAssignable(((ExecutableElement)e).getReturnType(), dType));
+                                        (e.getKind().isField() && e.asType().getKind() != TypeKind.ERROR && types.isAssignable(e.asType(), dType)
+                                        || e.getKind() == ElementKind.METHOD && ((ExecutableElement)e).getReturnType().getKind() != TypeKind.ERROR && types.isAssignable(((ExecutableElement)e).getReturnType(), dType));
                             }
                         };
                         for (Element ee : cInfo.getElementUtilities().getMembers(dType, acceptor)) {

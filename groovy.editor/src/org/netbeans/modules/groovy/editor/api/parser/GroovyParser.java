@@ -45,13 +45,8 @@
 package org.netbeans.modules.groovy.editor.api.parser;
 
 import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyResourceLoader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -65,7 +60,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.Phases;
@@ -73,7 +67,6 @@ import org.codehaus.groovy.control.messages.Message;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.lexer.Token;
@@ -84,10 +77,13 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
-import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
+import org.netbeans.modules.groovy.editor.compiler.ClassNodeCache;
+import org.netbeans.modules.groovy.editor.compiler.CompilationUnit;
+import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
 import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorResolver;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -95,7 +91,6 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
@@ -665,25 +660,13 @@ public class GroovyParser extends Parser {
 
         Error error =
             new GroovyError(key, displayName, description, context.snapshot.getSource().getFileObject(),
-                startOffset, endOffset, severity, getIdForErrorMessage(description));
+                startOffset, endOffset, severity, CompilerErrorResolver.getId(description));
 
         context.errorHandler.error(error);
 
         if (sanitizing == Sanitize.NONE) {
             context.errorOffset = startOffset;
         }
-    }
-
-    static GroovyCompilerErrorID getIdForErrorMessage(String errorMessage) {
-        String ERR_PREFIX = "unable to resolve class "; // NOI18N
-
-        if (errorMessage != null) {
-            if (errorMessage.startsWith(ERR_PREFIX)) {
-                return GroovyCompilerErrorID.CLASS_NOT_FOUND;
-            }
-        }
-
-        return GroovyCompilerErrorID.UNDEFINED;
     }
 
     private void handleErrorCollector(ErrorCollector errorCollector, Context context,
@@ -800,82 +783,5 @@ public class GroovyParser extends Parser {
 
         void error(Error error);
 
-    }
-
-    static class TransformationClassLoader extends GroovyClassLoader {
-
-        public TransformationClassLoader(ClassLoader parent, ClassPath cp, CompilerConfiguration config) {
-            super(parent, config);
-            for (ClassPath.Entry entry : cp.entries()) {
-                this.addURL(entry.getURL());
-            }
-        }
-
-    }
-
-    static class ParsingClassLoader extends GroovyClassLoader {
-
-        private static final ClassNotFoundException CNF = new ClassNotFoundException();
-        
-        private final CompilerConfiguration config;
-
-        private final ClassPath path;
-        
-        private final ClassNodeCache cache;
-
-        private final GroovyResourceLoader resourceLoader = new GroovyResourceLoader() {
-
-            @Override
-            public URL loadGroovySource(final String filename) throws MalformedURLException {
-                URL file = (URL) AccessController.doPrivileged(new PrivilegedAction() {
-
-                    @Override
-                    public Object run() {
-                        return getSourceFile(filename);
-                    }
-                });
-                return file;
-            }
-        };
-
-        public ParsingClassLoader(
-                @NonNull ClassPath path,
-                @NonNull CompilerConfiguration config,
-                @NonNull ClassNodeCache cache) {
-            super(path.getClassLoader(true), config);
-            this.config = config;
-            this.path = path;
-            this.cache = cache;
-        }
-        
-        @Override
-        public Class loadClass(
-                final String name,
-                final boolean lookupScriptFiles,
-                final boolean preferClassOverScript,
-                final boolean resolve) throws ClassNotFoundException, CompilationFailedException {
-            if (preferClassOverScript && !lookupScriptFiles) {
-                //Ideally throw CNF but we need to workaround fix of issue #206811
-                //which hurts performance.
-                if (cache.isNonExistent(name)) {
-                    throw CNF;
-                }
-            }
-            return super.loadClass(name, lookupScriptFiles, preferClassOverScript, resolve);
-        }
-
-        @Override
-        public GroovyResourceLoader getResourceLoader() {
-            return resourceLoader;
-        }
-
-        private URL getSourceFile(String name) {
-            // this is slightly faster then original implementation
-            FileObject fo = path.findResource(name.replace('.', '/') + config.getDefaultScriptExtension());
-            if (fo == null || fo.isFolder()) {
-                return null;
-            }
-            return URLMapper.findURL(fo, URLMapper.EXTERNAL);
-        }
     }
 }

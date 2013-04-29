@@ -219,6 +219,10 @@ public final class PhpProject implements Project {
                 recompileSources(cssPreprocessor);
             }
         }
+        @Override
+        public void processingErrorOccured(Project project, CssPreprocessor cssPreprocessor, String error) {
+            // noop
+        }
     };
 
 
@@ -584,14 +588,6 @@ public final class PhpProject implements Project {
 
     public List<PhpTestingProvider> getTestingProviders() {
         return testingProviders.getTestingProviders();
-    }
-
-    @CheckForNull
-    public PhpTestingProvider getFirstTestingProvider() {
-        for (PhpTestingProvider testingProvider : getTestingProviders()) {
-            return testingProvider;
-        }
-        return null;
     }
 
     public String getName() {

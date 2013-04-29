@@ -188,8 +188,7 @@ public class JiraExecutor {
 
     private void checkAutoupdate() {
         try {
-            JiraAutoupdate jau = new JiraAutoupdate();
-            jau.checkAndNotify(repository);
+            JiraAutoupdate.getInstance().checkAndNotify(repository);
         } catch(Throwable t) {
             Jira.LOG.log(Level.SEVERE, "Exception in JIRA autoupdate check.", t);
         }
