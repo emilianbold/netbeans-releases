@@ -55,17 +55,29 @@ public interface IDEServices {
     public boolean providesOpenDocument();
     public void openDocument(String resourcePath, int offset);
     
-    public boolean providesFindFile();
-    // XXX to be clarified if FileObject or if URL would be eventually better.
-    // used when opening search history for a file given by a stacktrace.
-    // Note, that io.File wouldn't work for VCS on remote filesystems 
-    public FileObject findFile(String resourcePath);
-        
     public boolean providesJumpTo();
-    public void jumpTo(String label, String resource);
+    
+    /**
+     * 
+     * @param resourcePath
+     * @param title 
+     */
+    public void jumpTo(String resourcePath, String title);
 
+    /**
+     * Determines whether the functionality to download a plugin is available
+     * @return 
+     */
     public boolean providesPluginUpdate();
     
+    /**
+     * Returns a Plugin with the given code name base in case there is none installed, 
+     * or that the currently installed version is lesser than the installed.
+     * 
+     * @param cnb - the plugins code name base
+     * @param pluginName the plugins name - e.g. Bugzilla or Jira
+     * @return plugin or null if not available
+     */
     public Plugin getPluginUpdates(String cnb, String pluginName);
 
     public boolean providesPatchUtils();
@@ -96,28 +108,46 @@ public interface IDEServices {
      * 
      * @return 
      */
+    // XXX move to impl
     public File selectFileContext();
 
-    public boolean providesSearchHistory(File file);
+    /**
+     * Determines whether the functionality to open the Hisotry for a resource (file)
+     * is available.
+     * 
+     * @return <code>true</code> if available, otherwise <code>false</code>
+     */
+    public boolean providesOpenHistory();
     
     /**
      * Meant to open a VCS history view where:
-     * - it is possible to traverse the given files history entries 
+     * - it is possible to traverse the given resource history entries 
      * - a diff view is provided, showing the selected revision compared against 
      * it's parent and positioned on the given line.
      *
-     * @param file Must be a versioned file (not a folder), otherwise false is returned 
-     * and the panel won't be opened
+     * @param resource resourcePath representing a versioned file (not a folder). 
+     * <b>Note</b> that the given path musn't necessarily be the full path 
+     * - e.g. org/netbeans/modules/bugzilla/Bugzilla.jav
      * @param lineNumber requested line number to lock on
-     * @return true if parameters are valid and the search history panel is opened, otherwise false
+     * @return true if parameters are valid, the file is versioned and the history view was opened, 
+     * otherwise false.
      */
-    public boolean searchHistory(File file, int line);
+    public boolean openHistory(String resourcePath, int line);
     
     /**
      * Provides access to a downloadable plugin - e.g. from the NetBeans UC
      */
     public interface Plugin {
+        /**
+         * Returns the plugins description
+         * @return 
+         */
         String getDescription();
-        boolean openInstallWizard();
+        
+        /**
+         * Install or Update the plugin. 
+         * @return 
+         */
+        boolean installOrUpdate();
     }
 }

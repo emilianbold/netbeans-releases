@@ -808,7 +808,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
                 try {
                     if(projectServices != null) {
-                        projectServices.runWhenNotBlocked(c);
+                        projectServices.runAfterProjectOpenFinished(c);
                     } else {
                         c.call();
                     }

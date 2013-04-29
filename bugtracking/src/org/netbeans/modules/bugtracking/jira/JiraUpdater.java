@@ -128,7 +128,7 @@ public class JiraUpdater {
         if(ideServices != null) {
             IDEServices.Plugin plugin = ideServices.getPluginUpdates(JIRA_CNB, Bundle.MSG_JiraPluginName());
             if(plugin != null) {
-                plugin.openInstallWizard();
+                plugin.installOrUpdate();
             }
         }
     }

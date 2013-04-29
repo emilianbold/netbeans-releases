@@ -102,8 +102,8 @@ public class ProjectServicesImpl implements ProjectServices {
     }
 
     @Override
-    public <T> T runWhenNotBlocked(Callable<T> operation) throws Exception {
-        // w8 with loading to preject ot be opened
+    public <T> T runAfterProjectOpenFinished(Callable<T> operation) throws Exception {
+        // wait until projects are opened
         OpenProjects.getDefault().getOpenProjects();
         return operation.call();
     }
