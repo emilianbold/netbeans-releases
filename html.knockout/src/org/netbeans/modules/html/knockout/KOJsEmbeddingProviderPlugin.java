@@ -52,37 +52,39 @@ import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  * Knockout javascript virtual source extension
- *            
+ *
  * @author marekfukala
  */
 @MimeRegistration(mimeType = "text/html", service = JsEmbeddingProviderPlugin.class)
 public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
     private final Language JS_LANGUAGE;
-    
+
     public KOJsEmbeddingProviderPlugin() {
-         JS_LANGUAGE = Language.find(KOUtils.JAVASCRIPT_MIMETYPE); //NOI18N
+        JS_LANGUAGE = Language.find(KOUtils.JAVASCRIPT_MIMETYPE); //NOI18N
     }
-    
+
     @Override
     public boolean processToken(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
-        TokenSequence<KODataBindTokenId> embedded = ts.embedded(KODataBindTokenId.language());
         boolean processed = false;
-        if (embedded != null) {
-            embedded.moveStart();
-            while (embedded.moveNext()) {
-                if (embedded.embedded(JS_LANGUAGE) != null) {
-                    processed = true;
-                    //has javascript embedding
-                    embeddings.add(snapshot.create("(function(){\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+        switch (ts.token().id()) {
+            case VALUE:
+                TokenSequence<KODataBindTokenId> embedded = ts.embedded(KODataBindTokenId.language());
+                if (embedded != null) {
+                    embedded.moveStart();
+                    while (embedded.moveNext()) {
+                        if (embedded.embedded(JS_LANGUAGE) != null) {
+                            processed = true;
+                            //has javascript embedding
+                            embeddings.add(snapshot.create("(function(){\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
 //                    embeddings.add(snapshot.create("var x=new AppViewModel();\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
 //                    embeddings.add(snapshot.create("x.", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-                    embeddings.add(snapshot.create(embedded.offset(), embedded.token().length(), KOUtils.JAVASCRIPT_MIMETYPE));
-                    embeddings.add(snapshot.create("\n});\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                            embeddings.add(snapshot.create(embedded.offset(), embedded.token().length(), KOUtils.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create("\n});\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                        }
+                    }
                 }
-            }
         }
         return processed;
     }
-    
 }
