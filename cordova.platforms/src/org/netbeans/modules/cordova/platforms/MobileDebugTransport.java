@@ -57,6 +57,7 @@ public abstract class MobileDebugTransport implements TransportImplementation {
 
     protected ResponseCallback callBack;
     private String indexHtmlLocation;
+    private String bundleId;
     
     @Override
     public void registerResponseCallback(ResponseCallback callback) {
@@ -66,6 +67,8 @@ public abstract class MobileDebugTransport implements TransportImplementation {
     @Override
     public URL getConnectionURL() {
         try {
+            if (indexHtmlLocation == null)
+                return null;
             return new URL(indexHtmlLocation);
         } catch (MalformedURLException ex) {
             throw new RuntimeException(ex);
@@ -84,6 +87,14 @@ public abstract class MobileDebugTransport implements TransportImplementation {
 
     public void setBaseUrl(String documentURL) {
         this.indexHtmlLocation = documentURL;
+    }
+    
+    public void setBundleIdentifier(String name) {
+        this.bundleId=name;
+    }
+    
+    protected String getBundleIdentifier() {
+        return this.bundleId;
     }
     
     /**

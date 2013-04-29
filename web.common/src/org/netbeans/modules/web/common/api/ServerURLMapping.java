@@ -52,6 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -101,6 +102,15 @@ public final class ServerURLMapping {
     public static URL toServer(Project p, int projectContext, FileObject projectFile) {
         Parameters.notNull("project", p); //NOI18N
         Parameters.notNull("projectFile", projectFile); //NOI18N
+        
+        //TODO: hack for phonegap
+        ServerURLMappingImplementation phonegap = Lookup.getDefault().lookup(ServerURLMappingImplementation.class);
+        if (phonegap!=null) {
+            URL toServer = phonegap.toServer(projectContext, projectFile);
+            if (toServer !=null)
+                return toServer;
+        }
+        
         ServerURLMappingImplementation impl = p.getLookup().lookup(ServerURLMappingImplementation.class);
         if (impl != null) {
             URL u = impl.toServer(projectContext, projectFile);
@@ -144,6 +154,16 @@ public final class ServerURLMapping {
         Parameters.notNull("serverURL", serverURL); //NOI18N
         // #219339 - strip down query and/or fragment:
         serverURL = WebUtils.stringToUrl(WebUtils.urlToString(serverURL, true));
+
+         //TODO: hack for phonegap
+        ServerURLMappingImplementation phonegap = Lookup.getDefault().lookup(ServerURLMappingImplementation.class);
+        if (phonegap!=null) {
+            FileObject fromServer = phonegap.fromServer(projectContext, serverURL);
+            if (fromServer !=null)
+                return fromServer;
+        }
+       
+        
         ServerURLMappingImplementation impl = p.getLookup().lookup(ServerURLMappingImplementation.class);
         if (impl != null) {
             FileObject fo = impl.fromServer(projectContext, serverURL);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,75 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.ios;
+package org.netbeans.modules.html.editor.spi.embedding;
 
-import com.dd.plist.NSObject;
-import com.dd.plist.XMLPropertyListParser;
-import org.json.simple.JSONObject;
-import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
+import java.util.List;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.html.editor.embedding.JsEmbeddingProvider;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
+ * PROTOTYPE of an extension of the {@link JsEmbeddingProvider}.
+ * 
+ * The {@link JsEmbeddingProvider} is lexer based so no parser result can be used here.
+ * 
+ * Register the plugin into mime lookup.
  *
- * @author Jan Becicka
+ * @since 2.21
+ * @author marekfukala
  */
-public class DeviceDebugTransport extends IOSDebugTransport implements TransportImplementation {
+public abstract class JsEmbeddingProviderPlugin {
+  
+    /**
+     * Adds one or more embeddings for the active token of the given token sequence.
+     * 
+     * @param snapshot
+     * @param ts
+     * @param embeddings
+     * 
+     * @return true if it embedding(s) were created or false if not.
+     */
+    public abstract boolean processToken(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings);
     
-    private WebInspectorJNIBinding nativeCall;
-
-    public DeviceDebugTransport() {
-        super();
-        nativeCall = WebInspectorJNIBinding.getDefault();
-    }
-    
-    @Override
-    protected void init() throws Exception {
-        nativeCall.start();
-    }
-
-    @Override
-    public void sendCommand(JSONObject command) throws Exception {
-        sendMessage(createJSONCommand(command));
-    }
-
-    @Override
-    public void sendCommand(String command) throws Exception {
-        //System.out.println("sending " + command);
-        sendMessage(command);
-    }
-    
-    private void sendMessage(String message) {
-        //if (keepGoing)
-            nativeCall.sendMessage(message);
-    }
-
-    @Override
-    protected NSObject readData() throws Exception {
-        String content = nativeCall.receiveMessage();
-        if (content==null) {
-            Thread.sleep(100);
-            return null;
-        }
-
-        NSObject object = XMLPropertyListParser.parse(fromString(content));
-        return object;
-    }
-    
-    @Override
-    protected void stop() {
-        super.stop();
-        nativeCall.stop();
-   }
-
-    @Override
-    public String getConnectionName() {
-        return "iOS Device";
-    }
-
-    @Override
-    public String getVersion() {
-        return "1.0";
-    }
 }
-         

@@ -96,7 +96,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     /**
      * The latest "related" file, i.e. file provided through the context lookup.
      */
-    private FileObject lastRelatedFileObject;
+    private FileObject lastRelatedFOB;
     /**
      * Currently inspected page model.
      */
@@ -104,7 +104,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     /**
      * Inspected file object.
      */
-    private FileObject inspectedFileObject;
+    private FileObject inspectedFOB;
     /**
      * Panel shown when no page model is available but when we have some
      * "related" file.
@@ -166,6 +166,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         runButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                FileObject lastRelatedFileObject = getLastRelatedFileObject();
                 if (lastRelatedFileObject != null) {
                     ActionProvider provider = actionProviderForFileObject(lastRelatedFileObject);
                     if (provider != null) {
@@ -194,13 +195,15 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     }
 
     void update(FileObject fob) {
-        lastRelatedFileObject = fob;
+        setLastRelatedFileObject(fob);
         update();
     }
 
     private void update() {
         if (EventQueue.isDispatchThread()) {
             PageModel pageModel = PageInspectorImpl.getDefault().getPage();
+            FileObject lastRelatedFileObject = getLastRelatedFileObject();
+            FileObject inspectedFileObject = getInspectedFileObject();
             if (pageModel != null
                     && (inspectedFileObject == null
                         || (lastRelatedFileObject != null
@@ -248,6 +251,50 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                     update();
                 }
             });
+        }
+    }
+
+    /**
+     * Sets the last related file.
+     * 
+     * @param fob the last related file.
+     */
+    private void setLastRelatedFileObject(FileObject fob) {
+        synchronized (this) {
+            lastRelatedFOB = fob;
+        }
+    }
+
+    /**
+     * Returns the last related file.
+     * 
+     * @return the last related file.
+     */
+    FileObject getLastRelatedFileObject() {
+        synchronized (this) {
+            return lastRelatedFOB;
+        }
+    }
+
+    /**
+     * Sets the inspected file.
+     * 
+     * @param fob inspected file.
+     */
+    private void setInspectedFileObject(FileObject fob) {
+        synchronized (this) {
+            inspectedFOB = fob;
+        }
+    }
+
+    /**
+     * Returns the inspected file.
+     * 
+     * @return inspected file.
+     */
+    FileObject getInspectedFileObject() {
+        synchronized (this) {
+            return inspectedFOB;
         }
     }
 
@@ -301,13 +348,13 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                     String propName = evt.getPropertyName();
                     if (Page.PROP_DOCUMENT.equals(propName)) {
                         if (pageModel == currentPageModel) {
-                            inspectedFileObject = Utilities.inspectedFileObject(pageModel);
+                            setInspectedFileObject(Utilities.inspectedFileObject(pageModel));
                             update();
                         }
                     }
                 }
             });
-            inspectedFileObject = Utilities.inspectedFileObject(pageModel);
+            setInspectedFileObject(Utilities.inspectedFileObject(pageModel));
             PageModel.CSSStylesView view = pageModel.getCSSStylesView();
             if (active) {
                 view.activated();
