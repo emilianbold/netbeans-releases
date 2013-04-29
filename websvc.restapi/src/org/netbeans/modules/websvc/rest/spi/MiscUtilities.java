@@ -84,8 +84,10 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * The purpose of this class is to trim down RestSupport and WebRestSupport down.
- * 
+ * The purpose of this class is to trim down RestSupport and WebRestSupport down and
+ * as such it contains bunch of random static utility methods which previously
+ * were polluting and bloating RestSupport. They should be further rafactored and
+ * moved to right places.
  */
 public class MiscUtilities {
 

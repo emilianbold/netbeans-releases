@@ -90,8 +90,9 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
 /**
- *
- * @author david
+ * Bunch of static utility methods which were previously bloating RestSupprt API
+ * class without actually needed to be in the API. They should be further refactored
+ * and moved to the right places.
  */
 public class MiscPrivateUtilities {
     // copy pasted from Maven project:

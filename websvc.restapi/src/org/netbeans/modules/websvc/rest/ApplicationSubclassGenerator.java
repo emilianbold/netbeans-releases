@@ -88,6 +88,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 
+/**
+ * This class contains everything related to generation of Application subclass which used
+ * to be defined directly in RestSupport or one of its subclasses. I tried to move
+ * it here as a logical piece of functionality. The methods itself in this class
+ * were never reviewed - I just moved them from somewhere else. See also
+ * WebXmlUpdater class which has similar role for everything related to web.xml update.
+ */
 public class ApplicationSubclassGenerator {
 
     static final String GET_REST_RESOURCE_CLASSES = "getRestResourceClasses";//NOI18N

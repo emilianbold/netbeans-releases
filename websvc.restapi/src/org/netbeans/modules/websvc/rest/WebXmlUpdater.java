@@ -45,8 +45,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
@@ -55,7 +53,6 @@ import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import static org.netbeans.modules.websvc.rest.spi.RestSupport.REST_SERVLET_ADAPTOR;
 import static org.netbeans.modules.websvc.rest.spi.RestSupport.REST_SERVLET_ADAPTOR_CLASS;
@@ -69,7 +66,12 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * This class contains everything related to web.xml generation and update which used
+ * to be defined directly in RestSupport or one of its subclasses. I tried to move
+ * it here as a logical piece of functionality. The methods itself in this class
+ * were never reviewed - I just moved them from somewhere else. See also
+ * ApplicationSubclassGenerator class which has similar role for everything
+ * related to subclassing Application.
  */
 public class WebXmlUpdater {
 
