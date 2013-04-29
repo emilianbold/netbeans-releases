@@ -59,10 +59,10 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
@@ -274,7 +274,7 @@ public abstract class RestSupport {
             }
 
             if (restConfig != null && CONFIG_TYPE_DD.equals(restConfigType)) {
-                addResourceConfigToWebApp(restConfig.getResourcePath());
+                webXmlUpdater.addResourceConfigToWebApp(restConfig.getResourcePath());
             }
         }
 
@@ -344,9 +344,6 @@ public abstract class RestSupport {
         if (classPath.findResource("javax/ws/rs/core/Application.class") != null) {
             return classPath;
         }
-
-        // TODO: review this:
-        
         File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, "org.netbeans.modules.websvc.restlib", false);
         if (jerseyRoot != null && jerseyRoot.isDirectory()) {
             File[] jsr311Jars = jerseyRoot.listFiles(new MiscPrivateUtilities.JerseyFilter(JSR311_JAR_PATTERN));
@@ -558,10 +555,134 @@ public abstract class RestSupport {
         return JaxRsStackSupport.getInstance(project);
     }
 
-    // XXX: does not belong here; should be removed from here and let in WebXmlUpdater:
-    public void addResourceConfigToWebApp(String resourcePath) throws IOException {
-        webXmlUpdater.addResourceConfigToWebApp(resourcePath);
+    /**
+     * Do not call this method. It does some specific magic for pre-EE6 projects
+     * and I did not have time to refactor it completely. It was originally in
+     * org.netbeans.modules.websvc.rest.nodes.RestConfigurationAction.performAction()
+     * and that's the only place which is allowed to call it. In theory this method
+     * should be replaceable with ensureRestDevelopmentReady().
+     */
+    public final void performRestConfigurationOldWay() throws IOException {
+        String oldConfigType = getProjectProperty(PROP_REST_CONFIG_TYPE);
+        if (oldConfigType == null) {
+            // this method is called only for old EE5 projects and so CONFIG_TYPE_DD
+            // is right default:
+            oldConfigType = CONFIG_TYPE_DD;
+        }
+        String oldApplicationPath = "/webresources"; //NOI18N
+        if (oldConfigType.equals(CONFIG_TYPE_DD)) {
+            String oldPathFromDD = MiscUtilities.getApplicationPathFromDD(getWebApp());
+            if (oldPathFromDD != null) {
+                oldApplicationPath = oldPathFromDD;
+            }
+        } else if (oldConfigType.equals(CONFIG_TYPE_IDE)) {
+            String resourcesPath =
+                    getApplicationPathFromDialog(getRestApplications());
+            if (resourcesPath != null && resourcesPath.length() > 0) {
+                oldApplicationPath = resourcesPath;
+            }
+        }
+        if (!oldApplicationPath.startsWith(("/"))) { //NOI18N
+            oldApplicationPath = "/" + oldApplicationPath;
+        }
+        String oldJerseyConfig = getProjectProperty(PROP_REST_JERSEY);
+        // needs detect if Jersey Lib is present
+        boolean isJerseyLib = oldJerseyConfig != null;/*isOnClasspath(project,
+         "com/sun/jersey/spi/container/servlet/ServletContainer.class")  //NOI18N
+         */
+        ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
+                oldConfigType,
+                oldApplicationPath,
+                isJerseyLib,
+                getAntProjectHelper() != null
+                && isEESpecWithJaxRS(),
+                hasServerJerseyLibrary(), oldJerseyConfig);
+
+        DialogDescriptor desc = new DialogDescriptor(configPanel,
+                NbBundle.getMessage(RestSupport.class, "TTL_ApplicationConfigPanel")); // NOI18N
+        DialogDisplayer.getDefault().notify(desc);
+        if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
+            String newConfigType = configPanel.getConfigType();
+            String newApplicationPath = configPanel.getApplicationPath();
+            boolean addJersey = configPanel.isJerseyLibSelected();
+            if (!oldConfigType.equals(newConfigType)
+                    || !oldApplicationPath.equals(newApplicationPath)) {
+                if (!oldConfigType.equals(newConfigType)) {
+                    // set up rest.config.type property
+                    setProjectProperty(PROP_REST_CONFIG_TYPE, newConfigType);
+
+                    if (!CONFIG_TYPE_IDE.equals(newConfigType)) {
+                        //remove properties related to rest.config.type=ide
+                        removeProjectProperties(new String[]{
+                            PROP_REST_RESOURCES_PATH,});
+                    }
+                }
+
+                if (CONFIG_TYPE_IDE.equals(newConfigType)) {
+                    if (newApplicationPath.startsWith("/")) { //NOI18N
+                        newApplicationPath = newApplicationPath.substring(1);
+                    }
+                    setProjectProperty(PROP_REST_RESOURCES_PATH, newApplicationPath);
+                    if (!hasJaxRsOnClasspath(false)) {
+                        // add jsr311 library
+                        Library restApiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
+                        if (restApiLibrary != null) {
+                            FileObject srcRoot = MiscUtilities.findSourceRoot(project);
+                            if (srcRoot != null) {
+                                try {
+                                    ProjectClassPathModifier.addLibraries(new Library[]{restApiLibrary}, srcRoot, ClassPath.COMPILE);
+                                } catch (UnsupportedOperationException ex) {
+                                    Logger.getLogger(getClass().getName()).info("Can not add JSR311 Library.");
+                                }
+                            }
+                        }
+                    }
+                    applicationSubclassGenerator.refreshApplicationSubclass();
+                } else if (CONFIG_TYPE_DD.equals(newConfigType)) { // Deployment Descriptor
+                    webXmlUpdater.addResourceConfigToWebApp(newApplicationPath);
+                }
+            }
+            boolean added = false;
+            JaxRsStackSupport support = getJaxRsStackSupport();
+            if (configPanel.isServerJerseyLibSelected()) {
+                setProjectProperty(PROP_REST_JERSEY,
+                        JERSEY_CONFIG_SERVER);
+                if (support != null) {
+                    if (JERSEY_CONFIG_IDE.
+                            equals(oldJerseyConfig)) {
+                        JaxRsStackSupport.getDefault().
+                                removeJaxRsLibraries(project);
+                    }
+                    added = support
+                            .extendsJerseyProjectClasspath(project);
+                }
+            }
+            if (!added && addJersey) {
+                setProjectProperty(PROP_REST_JERSEY,
+                        JERSEY_CONFIG_IDE);
+                if (JERSEY_CONFIG_SERVER.
+                        equals(oldJerseyConfig) && support != null) {
+                    support.removeJaxRsLibraries(project);
+                }
+                added = JaxRsStackSupport.getDefault()
+                        .extendsJerseyProjectClasspath(project);
+            }
+            if (!added) {
+                if (JERSEY_CONFIG_SERVER.
+                        equals(oldJerseyConfig) && support != null) {
+                    support.removeJaxRsLibraries(project);
+                }
+                if (JERSEY_CONFIG_IDE.
+                        equals(oldJerseyConfig)) {
+                    JaxRsStackSupport.getDefault().
+                            removeJaxRsLibraries(project);
+                }
+                removeProjectProperties(new String[]{
+                    PROP_REST_JERSEY});
+            }
+        }
     }
+
 
     /**
      * Returns true if JAX-RS APIs are available for the project. That means if

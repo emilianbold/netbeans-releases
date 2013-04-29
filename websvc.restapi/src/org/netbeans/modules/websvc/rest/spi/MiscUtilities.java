@@ -304,10 +304,6 @@ public class MiscUtilities {
             if (ddFO == null || webApp == null) {
                 return;
             }
-
-            // XXX: TODO: "ServletAdaptor" looks like something from pre-Jersey 1.0 times
-            //      certainly EE6 will not have servlet with such name!
-
             Servlet adaptorServlet = getRestServletAdaptorByName(webApp,
                     REST_SERVLET_ADAPTOR);
             if (adaptorServlet == null) {

@@ -109,34 +109,6 @@ public class WebXmlUpdater {
         return null;
     }
 
-    // XXX: TODO: again this code cleans up "ServletAdaptor" servlet from web.xml
-    // which looks like EE5 solution; it cannot work in EE6 where servlet names is different
-    protected void removeResourceConfigFromWebApp() throws IOException {
-        FileObject ddFO = getOrCreateWebXml();
-        WebApp webApp = getWebApp();
-        if (webApp == null) {
-            return;
-        }
-        boolean needsSave = false;
-        Servlet restServlet = getRestServletAdaptorByName(webApp, REST_SERVLET_ADAPTOR);
-        if (restServlet != null) {
-            webApp.removeServlet(restServlet);
-            needsSave = true;
-        }
-
-        for (ServletMapping sm : webApp.getServletMapping()) {
-            if (REST_SERVLET_ADAPTOR.equals(sm.getServletName())) {
-                webApp.removeServletMapping(sm);
-                needsSave = true;
-                break;
-            }
-        }
-
-        if (needsSave) {
-            webApp.write(ddFO);
-        }
-    }
-
     public WebApp getWebApp() throws IOException {
         FileObject fo = getOrCreateWebXml();
         if (fo != null) {
@@ -368,12 +340,6 @@ public class WebXmlUpdater {
         String servletName = null;
         for (Servlet s : webApp.getServlet()) {
             String servletClass = s.getServletClass();
-
-            /// XXX: TODO: check also for servlet with name "javax.ws.rs.core.Application"
-            //  that is a case when Application subclass does not specify value for
-            //  ApplicationPath annotation - in that case web.xml must have servlet named
-            //  "javax.ws.rs.core.Application" and its mapping will be used
-
             if (REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) || REST_SPRING_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
                     REST_SERVLET_ADAPTOR_CLASS_2_0.equals(servletClass)) {
                 servletName = s.getServletName();
