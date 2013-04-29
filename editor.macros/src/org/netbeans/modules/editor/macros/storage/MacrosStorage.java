@@ -248,7 +248,11 @@ public final class MacrosStorage implements StorageDescription<String, MacroDesc
                 }
 
                 KeyStroke[] arr = StorageSupport.stringToKeyStrokes(keystrokes, true);
-                shortcuts.add(new MultiKeyBinding(arr, MacroDialogSupport.RunMacroAction.runMacroAction)); //NOI18N
+                if (arr == null) {
+                    LOG.warning("Cannot decode key bindings: " + keystrokes);
+                } else {
+                    shortcuts.add(new MultiKeyBinding(arr, MacroDialogSupport.RunMacroAction.runMacroAction)); //NOI18N
+                }
             }
         }
 
