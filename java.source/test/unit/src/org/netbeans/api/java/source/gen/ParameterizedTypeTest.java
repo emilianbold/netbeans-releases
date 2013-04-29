@@ -379,6 +379,80 @@ public class ParameterizedTypeTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void testRemoveType229123a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "import java.util.*;\n" +
+            "public class Test {\n" +
+            "    private Map<String, List<List<String>>> o = null;\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "import java.util.*;\n" +
+            "public class Test {\n" +
+            "    private Map<String, List<String>> o = null;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) classTree.getMembers().get(1);
+                ParameterizedTypeTree type = (ParameterizedTypeTree) var.getType();
+
+                workingCopy.rewrite(type, make.Type("java.util.Map<java.lang.String, java.util.List<java.lang.String>>"));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveType229123b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "import java.util.*;\n" +
+            "public class Test {\n" +
+            "    private Map<String, List<List<String>>> o = null;\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "import java.util.*;\n" +
+            "public class Test {\n" +
+            "    private List<List<String>> o = null;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) classTree.getMembers().get(1);
+                ParameterizedTypeTree type = (ParameterizedTypeTree) var.getType();
+
+                workingCopy.rewrite(type, make.Type("java.util.List<java.util.List<java.lang.String>>"));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 
     @Override
     String getGoldenPckg() {
