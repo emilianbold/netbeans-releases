@@ -60,7 +60,7 @@ import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -221,12 +221,12 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
         public void read(final WizardDescriptor wizard) {
             mainPanel.read(wizard);
             Project project = Templates.getProject(wizard);
-            final WebRestSupport restSupport = project.getLookup().
-                    lookup(WebRestSupport.class);
+            final RestSupport restSupport = project.getLookup().
+                    lookup(RestSupport.class);
             boolean hasSpringSupport = restSupport.hasSpringSupport();
-            boolean showJaxRsCustomizer = restSupport.hasJaxRsApi() || restSupport.isJersey2();
+            boolean showJaxRsCustomizer = restSupport.isEESpecWithJaxRS() || restSupport.hasJersey2(true);
             // TODO: for Jersey2 I temporarily disable Spring support:
-            if ( hasSpringSupport && !restSupport.isJersey2()) {
+            if ( hasSpringSupport && !restSupport.hasJersey2(true)) {
                 wizard.putProperty( WizardProperties.USE_JERSEY, true);
             }
             if (jaxRsConfigurationPanel != null) {

@@ -80,6 +80,7 @@ import org.netbeans.modules.websvc.rest.codegen.model.Resource;
 import org.netbeans.modules.websvc.rest.codegen.model.ResourceModel;
 import org.netbeans.modules.websvc.rest.codegen.model.WadlModeler;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.*;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
@@ -462,7 +463,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         File imagesDir = new File(cssDir, "images");
         imagesDir.mkdirs();
         for(String file: fileNames) {
-            RestSupport.copyFile(cssDir, file);
+            MiscUtilities.copyFile(cssDir, file);
         }
     }
 
