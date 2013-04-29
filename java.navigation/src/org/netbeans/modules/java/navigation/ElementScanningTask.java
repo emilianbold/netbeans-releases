@@ -486,7 +486,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     }
 
     private String print(CompilationInfo info, TypeMirror tm, boolean fqn) {
-        return fqn ? info.getTypeUtilities().getTypeName(tm, TypeNameOptions.PRINT_FQN).toString()
-                   : info.getTypeUtilities().getTypeName(tm).toString();
+        return Utils.escape(fqn ? info.getTypeUtilities().getTypeName(tm, TypeNameOptions.PRINT_FQN).toString()
+                                : info.getTypeUtilities().getTypeName(tm).toString());
     }
 }
