@@ -501,6 +501,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>com.ext4yii.editor</friend>
+                <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
                 <friend>org.netbeans.modules.html.angular</friend>
                 <friend>org.netbeans.modules.html.knockout</friend>
@@ -513,12 +514,12 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.el</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
-                <friend>org.netbeans.modules.css.visual</friend>
                 <package>org.netbeans.modules.html.editor.api</package>
                 <package>org.netbeans.modules.html.editor.api.actions</package>
                 <package>org.netbeans.modules.html.editor.api.completion</package>
                 <package>org.netbeans.modules.html.editor.api.gsf</package>
                 <package>org.netbeans.modules.html.editor.api.index</package>
+                <package>org.netbeans.modules.html.editor.spi.embedding</package>
             </friend-packages>
         </data>
     </configuration>
