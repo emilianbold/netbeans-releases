@@ -57,7 +57,7 @@ package org.netbeans.api.debugger.jpda;
  * @author   Jan Jancura
  */
 
-public interface JPDAWatch extends Variable {
+public interface JPDAWatch extends MutableVariable {
 
     /**
      * Watched expression.
@@ -105,6 +105,7 @@ public interface JPDAWatch extends Variable {
      *
      * @param value a new value of this variable represented as text
      */
+    @Override
     public abstract void setValue (String value) throws InvalidExpressionException;
 
     /**

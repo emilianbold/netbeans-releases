@@ -55,6 +55,7 @@ import com.sun.jdi.StackFrame;
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.MutableVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
@@ -66,7 +67,7 @@ import org.openide.util.Exceptions;
 /**
  * @author   Jan Jancura
  */
-class Local extends AbstractVariable implements
+class Local extends AbstractVariable implements MutableVariable,
 org.netbeans.api.debugger.jpda.LocalVariable {
         
     LocalVariable       local;

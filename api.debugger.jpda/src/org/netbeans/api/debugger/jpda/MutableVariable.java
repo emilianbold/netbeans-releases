@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,13 +34,17 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.api.debugger.jpda;
 
+import java.io.InvalidObjectException;
 
 /**
- * Represents some variable in debugged JVM.
+ * Represents a variable that can be modified.
  *
  * <pre style="background-color: rgb(255, 255, 102);">
  * Since JDI interfaces evolve from one version to another, it's strongly recommended
@@ -55,36 +53,29 @@ package org.netbeans.api.debugger.jpda;
  *
  * @see LocalVariable
  * @see Field
- * @see This
- * @see Super
- * @see JPDAThread#getContendedMonitor
- * @see JPDAThread#getOwnedMonitors
+ * @see JPDAWatch
  *
- * @author   Jan Jancura
+ * @author Martin Entlicher
+ * @since 2.44
  */
-public interface Variable {
-
+public interface MutableVariable extends Variable {
+    
     /**
-     * Type of this instance.
+     * Sets a value represented as text, to this variable.
      *
-     * @return type of this instance
+     * @param value The string value to be set to this variable
+     * @throws InvalidExpressionException if the expression is not correct
      */
-    public abstract String getType ();
-
+    void setValue (String value) throws InvalidExpressionException;
+    
     /**
-     * Text representation of current value of "this" variable.
-     *
-     * @return text representation of current value of "this" variable
-     */
-    public abstract String getValue ();
-
-    /**
-     * Create an object in this JVM, which mirrors the value of this variable in
-     * the target JVM.
+     * Set the value of this variable to match the given mirror object.
      * 
-     * @return The mirror object, or <code>null</code> when a mirror object can not be created.
-     * @since 2.44
+     * @param obj The mirror object
+     * @throws InvalidObjectException when it was not possible to set value of
+     *                                this variable from the provided object.
+     * @see Variable#createMirrorObject()
      */
-    Object createMirrorObject();
+    void setFromMirrorObject(Object obj) throws InvalidObjectException;
     
 }

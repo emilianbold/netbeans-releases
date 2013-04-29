@@ -58,7 +58,7 @@ package org.netbeans.api.debugger.jpda;
  * @see ObjectVariable
  * @author   Jan Jancura
  */
-public interface LocalVariable extends Variable {
+public interface LocalVariable extends MutableVariable {
 
     /**
      * Declared name of local.
@@ -87,6 +87,7 @@ public interface LocalVariable extends Variable {
      * @param value a new value of this local represented as text
      * @throws InvalidExpressionException if the expression is not correct
      */
+    @Override
     public abstract void setValue (String value) 
     throws InvalidExpressionException;
 }
