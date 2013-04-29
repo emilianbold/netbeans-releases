@@ -220,11 +220,6 @@ public class KODataBindLexer implements Lexer<KODataBindTokenId> {
                     break;
 
                 case IN_VALUE:
-                    //lets start with super simple case - just look for comma
-                    //TODO as the value contains javascript expressions, we need
-                    //some simple way how to ignore commas in function call params
-                    //->likely by pushing commas into a stack and return token 
-                    //only if comma is found with stack depth == 0.
                     switch (c) {
                         case ',':
                             if (parenDepth == 0 && !inSingleQuotedString && !inDoubleQuotedString) {
