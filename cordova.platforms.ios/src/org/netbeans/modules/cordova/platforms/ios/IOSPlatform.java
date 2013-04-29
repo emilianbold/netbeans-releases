@@ -60,6 +60,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -188,7 +189,13 @@ public class IOSPlatform implements MobilePlatform {
 
     @Override
     public Device getDevice(String name, EditableProperties props) {
-        return IOSDevice.IPHONE;
+        Parameters.notNull("name", name);
+        Parameters.notNull("props", props);
+        if (Device.DEVICE.equals(props.getProperty(Device.DEVICE_PROP))) {
+            return IOSDevice.CONNECTED;
+        } else {
+            return IOSDevice.IPHONE;
+        }
     }
 
     @Override

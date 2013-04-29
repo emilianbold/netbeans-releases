@@ -95,8 +95,6 @@ public class WebInspectorJNIBinding {
             return null;
         }
         final String receiveMessage = nreceiveMessage(100);
-//        System.out.println("receiving ");
-//        System.out.println(receiveMessage);
         return receiveMessage;
     }
 
@@ -105,8 +103,6 @@ public class WebInspectorJNIBinding {
             LOG.info("WebKit Debugging Service not started");
             return;
         }
-//        System.out.println("sending ");
-//        System.out.println(message);
         nsendMessage(message);
     }
 }

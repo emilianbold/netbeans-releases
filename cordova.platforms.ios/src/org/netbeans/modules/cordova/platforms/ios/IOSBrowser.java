@@ -56,6 +56,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
@@ -123,6 +124,8 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
         openBrowser(ActionProvider.COMMAND_RUN, Lookups.fixed(url), kind, project);
     }
 
+    @NbBundle.Messages(
+            "LBL_OpeningiOS=Opening url.\nMake sure, that device is attached and Mobile Safari is running.")
     public static void openBrowser(String command, final Lookup context, final IOSBrowser.Kind kind, final Project project) throws IllegalArgumentException {
         if (!Utilities.isMac()) {
             NotifyDescriptor not = new NotifyDescriptor(
@@ -145,24 +148,10 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
                 if (kind == Kind.IOS_DEVICE_DEFAULT) {
                     build.startDebugging(dev, project, context, true);
                 } else {
-                    if (kind == Kind.IOS_SIMULATOR_DEFAULT) {
-                    SimulatorDebugTransport.runWhenReady(new Runnable() {
-                        @Override
-                        public void run() {
-                            build.startDebugging(dev, project, context, false);
-                        }
-                    }, 30000);
-                } else {
-                    DeviceDebugTransport.runWhenReady(new Runnable() {
-                        @Override
-                        public void run() {
-                            build.startDebugging(dev, project, context, true);
-                        }
-                    }, 30000);
-                    }
+                    build.startDebugging(dev, project, context, false);
                 }
             }
-        }, Bundle.LBL_Opening(), new AtomicBoolean(), false);
+        }, kind== Kind.IOS_DEVICE_DEFAULT?Bundle.LBL_OpeningiOS():Bundle.LBL_Opening(), new AtomicBoolean(), false);
     }
     
 

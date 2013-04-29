@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,75 +37,73 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.ios;
+package org.netbeans.modules.cordova;
 
-import com.dd.plist.NSObject;
-import com.dd.plist.XMLPropertyListParser;
-import org.json.simple.JSONObject;
-import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
+import org.netbeans.modules.cordova.platforms.CordovaMapping;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cordova.project.ClientProjectUtilities;
+import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jan Becicka
  */
-public class DeviceDebugTransport extends IOSDebugTransport implements TransportImplementation {
-    
-    private WebInspectorJNIBinding nativeCall;
+@ServiceProvider(service = ServerURLMappingImplementation.class)
+public class CordovaMappingImpl implements ServerURLMappingImplementation, CordovaMapping {
 
-    public DeviceDebugTransport() {
-        super();
-        nativeCall = WebInspectorJNIBinding.getDefault();
-    }
+    private String url;
+    private Project p;
     
     @Override
-    protected void init() throws Exception {
-        nativeCall.start();
-    }
-
-    @Override
-    public void sendCommand(JSONObject command) throws Exception {
-        sendMessage(createJSONCommand(command));
-    }
-
-    @Override
-    public void sendCommand(String command) throws Exception {
-        //System.out.println("sending " + command);
-        sendMessage(command);
+    public void setBaseUrl(String url) {
+        if (url==null) {
+            this.url = null;
+        } else {
+            this.url = url.substring(0, url.lastIndexOf("/www/") + "/www/".length());
+        }
     }
     
-    private void sendMessage(String message) {
-        //if (keepGoing)
-            nativeCall.sendMessage(message);
-    }
-
     @Override
-    protected NSObject readData() throws Exception {
-        String content = nativeCall.receiveMessage();
-        if (content==null) {
-            Thread.sleep(100);
+    public void setProject(Project p) {
+        this. p = p;
+    }
+    
+    @Override
+    public URL toServer(int projectContext, FileObject projectFile) {
+        if (url == null || p == null) {
             return null;
         }
+        
+        FileObject root = ClientProjectUtilities.getSiteRoot(p);
+        String rel = FileUtil.getRelativePath(root, projectFile);
+        try {
+            return new URL(url+rel);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
 
-        NSObject object = XMLPropertyListParser.parse(fromString(content));
-        return object;
+    @Override
+    public FileObject fromServer(int projectContext, URL serverURL) {
+        if (url == null ||p == null ) {
+            return null;
+        }
+        
+        if (serverURL.toExternalForm().replaceAll("file:/", "file:///").startsWith(url)) {
+            final String relPath = serverURL.toExternalForm().substring(url.length()-2);
+            FileObject fileObject = ClientProjectUtilities.getSiteRoot(p).getFileObject(relPath);
+            return fileObject;
+        }
+        return null;
     }
     
-    @Override
-    protected void stop() {
-        super.stop();
-        nativeCall.stop();
-   }
-
-    @Override
-    public String getConnectionName() {
-        return "iOS Device";
-    }
-
-    @Override
-    public String getVersion() {
-        return "1.0";
-    }
 }
-         
