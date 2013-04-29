@@ -56,21 +56,76 @@ import org.netbeans.spi.lexer.TokenFactory;
 public class KODataBindLexer implements Lexer<KODataBindTokenId> {
 
     private enum State {
+
         INIT,
         IN_WS_BEFORE_KEY,
         IN_KEY,
         AFTER_KEY,
         WS_AFTER_KEY,
         IN_VALUE,
-        AFTER_VALUE, ;
+        IN_VALUE_ESCAPE,
+        AFTER_VALUE,;
+    }
+
+    private static class CompoundState {
+
+        private State state;
+        private byte parenDepth;
+        private boolean inSingleQuotedString;
+        private boolean inDoubleQuotedString;
+
+        public CompoundState(State state, byte parenDepth, boolean inSingleQuotedString, boolean inDoubleQuotedString) {
+            this.state = state;
+            this.parenDepth = parenDepth;
+            this.inSingleQuotedString = inSingleQuotedString;
+            this.inDoubleQuotedString = inDoubleQuotedString;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 11 * hash + (this.state != null ? this.state.hashCode() : 0);
+            hash = 11 * hash + this.parenDepth;
+            hash = 11 * hash + (this.inSingleQuotedString ? 1 : 0);
+            hash = 11 * hash + (this.inDoubleQuotedString ? 1 : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CompoundState other = (CompoundState) obj;
+            if (this.state != other.state) {
+                return false;
+            }
+            if (this.parenDepth != other.parenDepth) {
+                return false;
+            }
+            if (this.inSingleQuotedString != other.inSingleQuotedString) {
+                return false;
+            }
+            if (this.inDoubleQuotedString != other.inDoubleQuotedString) {
+                return false;
+            }
+            return true;
+        }
     }
     private final LexerInput input;
     private final TokenFactory<KODataBindTokenId> tokenFactory;
+
     private State state;
+    private byte parenDepth = 0; //parenthesis depth in "IN_VALUE" state
+    private boolean inSingleQuotedString;
+    private boolean inDoubleQuotedString;
 
     @Override
     public Object state() {
-        return state;
+        return new CompoundState(state, parenDepth, inSingleQuotedString, inDoubleQuotedString);
     }
 
     public KODataBindLexer(LexerRestartInfo<KODataBindTokenId> info) {
@@ -79,7 +134,9 @@ public class KODataBindLexer implements Lexer<KODataBindTokenId> {
         if (info.state() == null) {
             state = State.INIT;
         } else {
-            state = (State) info.state();
+            CompoundState compoundState = (CompoundState) info.state();
+            state = compoundState.state;
+            parenDepth = compoundState.parenDepth;
         }
     }
 
@@ -105,7 +162,7 @@ public class KODataBindLexer implements Lexer<KODataBindTokenId> {
                 case INIT:
                     if (Character.isLetter(c)) {
                         state = State.IN_KEY;
-                    } else if(Character.isWhitespace(c)) {
+                    } else if (Character.isWhitespace(c)) {
                         input.backup(1); //backup the ws
                         state = State.IN_WS_BEFORE_KEY;
                     } else {
@@ -114,18 +171,18 @@ public class KODataBindLexer implements Lexer<KODataBindTokenId> {
                     break;
 
                 case IN_WS_BEFORE_KEY:
-                   if (Character.isLetter(c)) {
-                       state = State.IN_KEY;
-                       input.backup(1); //backup the first key char
-                       return tokenFactory.createToken(KODataBindTokenId.WS);
-                    } else if(Character.isWhitespace(c)) {
+                    if (Character.isLetter(c)) {
+                        state = State.IN_KEY;
+                        input.backup(1); //backup the first key char
+                        return tokenFactory.createToken(KODataBindTokenId.WS);
+                    } else if (Character.isWhitespace(c)) {
                         //stay
                     } else {
                         //error
                         return tokenFactory.createToken(KODataBindTokenId.ERROR);
                     }
                     break;
-                    
+
                 case IN_KEY:
                     if (!Character.isLetter(c)) {
                         if (c == ':') {
@@ -148,7 +205,7 @@ public class KODataBindLexer implements Lexer<KODataBindTokenId> {
                     assert c == ':';
                     state = State.IN_VALUE;
                     return tokenFactory.createToken(KODataBindTokenId.COLON);
-                    
+
                 case WS_AFTER_KEY:
                     if (Character.isWhitespace(c)) {
                         //stay
@@ -170,16 +227,40 @@ public class KODataBindLexer implements Lexer<KODataBindTokenId> {
                     //only if comma is found with stack depth == 0.
                     switch (c) {
                         case ',':
-                            state = State.AFTER_VALUE;
-                            input.backup(1); //backup the comma
-                            
-                            if(input.readLength() > 0) {
-                                //return value token if it is not empty like here: "key:,"
-                                return tokenFactory.createToken(KODataBindTokenId.VALUE);
+                            if (parenDepth == 0 && !inSingleQuotedString && !inDoubleQuotedString) {
+                                state = State.AFTER_VALUE;
+                                input.backup(1); //backup the comma
+
+                                if (input.readLength() > 0) {
+                                    //return value token if it is not empty like here: "key:,"
+                                    return tokenFactory.createToken(KODataBindTokenId.VALUE);
+                                }
+                            }
+                            break;
+                        case '(':
+                            parenDepth++;
+                            break;
+                        case ')':
+                            parenDepth--;
+                            break;
+                        case '\'':
+                            inSingleQuotedString = !inSingleQuotedString;
+                            break;
+                        case '"':
+                            inDoubleQuotedString = !inDoubleQuotedString;
+                            break;
+                        case '\\':
+                            if(inSingleQuotedString || inDoubleQuotedString) {
+                                state = State.IN_VALUE_ESCAPE;
                             }
                     }
                     break;
 
+                case IN_VALUE_ESCAPE:
+                    //just go back to the IN_VALUE state => ignore the semantic of the char after backslash
+                    state = State.IN_VALUE;
+                    break;
+                    
                 case AFTER_VALUE:
                     assert c == ',';
                     state = State.INIT;
@@ -202,6 +283,7 @@ public class KODataBindLexer implements Lexer<KODataBindTokenId> {
             case WS_AFTER_KEY:
                 return tokenFactory.createToken(KODataBindTokenId.KEY);
             case IN_VALUE:
+            case IN_VALUE_ESCAPE:
             case AFTER_VALUE:
                 return tokenFactory.createToken(KODataBindTokenId.VALUE);
         }
