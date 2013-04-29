@@ -41,60 +41,56 @@
  */
 package org.netbeans.modules.html.knockout;
 
-import org.netbeans.modules.html.knockout.model.KOModel;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.concurrent.atomic.AtomicReference;
-import org.netbeans.editor.BaseDocument;
+import javax.swing.text.BadLocationException;
+import org.netbeans.junit.AssertionFailedErrorException;
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport;
+import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport.Match;
+import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.web.common.api.WebUtils;
 
 /**
  *
  * @author marekfukala
  */
-public class KOModelTest extends CslTestBase {
+public class KOHtmlExtensionTest extends CslTestBase {
     
-    public KOModelTest(String name) {
+    public KOHtmlExtensionTest(String name) {
         super(name);
     }
 
-    public void testBasic() {
-        KOModel model = createModel("<div data-bind=\"text: name\"></div>");
-        Collection<Attribute> bindings = model.getBindings();
-        assertNotNull(bindings);
-        assertEquals(1, bindings.size());
-        Attribute a = bindings.iterator().next();
-        assertEquals("text: name", a.unquotedValue().toString());
-        assertTrue(model.containsKnockout());
+    @Override
+    protected String getPreferredMimeType() {
+        return "text/html";
+    }
+
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new HtmlLanguage();
     }
     
-    private KOModel createModel(String code) {
-        try {        
-            BaseDocument document = getDocument(code, "text/html");
-            Source source = Source.create(document);
-            final AtomicReference<KOModel> modelRef = new AtomicReference<>();
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    ResultIterator htmlResult = WebUtils.getResultIterator(resultIterator, "text/html");
-                    assertNotNull(htmlResult);
-                    modelRef.set(KOModel.getModel((HtmlParserResult)htmlResult.getParserResult()));
-                }
-            });
-            assertNotNull(modelRef.get());
-            return modelRef.get();
-        } catch (ParseException ex) {
-            throw new RuntimeException(ex);
+    public void testCompletionWithPrefix() {
+        assertCC("<div data-bind=\"t|", Match.EXACT, "text", "template");
+        assertCC("<div data-bind=\"tex|", Match.EXACT, "text");
+        assertCC("<div data-bind=\"text|", Match.EXACT, "text");
+        assertCC("<div data-bind=\"text|:value", Match.EXACT, "text");
+        assertCC("<div data-bind=\"text:value, v|", Match.EXACT, "visible", "value");
+    }
+    
+    public void testCompletionWithoutPrefix() {
+        assertCC("<div data-bind=\"|", Match.CONTAINS, "text");
+        assertCC("<div data-bind=\"  |", Match.CONTAINS, "text");
+        assertCC("<div data-bind=\"text:value,|", Match.CONTAINS, "text");
+        assertCC("<div data-bind=\"text:value, |", Match.CONTAINS, "text");
+    }
+    
+    private void assertCC(String documentText, Match type, String... expectedItemsNames)  {
+        try {
+            HtmlCompletionTestSupport.assertItems(getDocument(documentText), expectedItemsNames, type, -1);
+        } catch (BadLocationException | ParseException ex) {
+            throw new AssertionFailedErrorException(ex);
         }
-        
     }
     
 }

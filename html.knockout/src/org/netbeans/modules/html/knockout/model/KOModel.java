@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.knockout;
+package org.netbeans.modules.html.knockout.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,6 +53,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.AttributeFilter;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.knockout.KOUtils;
 import org.netbeans.modules.html.knockout.KOUtils;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
