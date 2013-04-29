@@ -39,28 +39,31 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte;
+package org.netbeans.modules.php.latte.actions;
 
-import javax.swing.Action;
-import javax.swing.text.TextAction;
-import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.php.latte.actions.ToggleBlockCommentAction;
-import org.netbeans.modules.php.latte.csl.LatteLanguage;
+import java.awt.event.ActionEvent;
+import java.util.logging.Logger;
+import javax.swing.text.JTextComponent;
+import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.ext.ExtKit;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteEditorKit extends NbEditorKit {
+public class ToggleBlockCommentAction extends BaseAction {
+    static final long serialVersionUID = -1L;
+    private static final Logger LOGGER = Logger.getLogger(ToggleBlockCommentAction.class.getName());
+    private static final String FORCE_COMMENT = "force-comment"; //NOI18N
+    private static final String FORCE_UNCOMMENT = "force-uncomment"; //NOI18N
 
-    @Override
-    public String getContentType() {
-        return LatteLanguage.LATTE_MIME_TYPE;
+    public ToggleBlockCommentAction() {
+        super(ExtKit.toggleCommentAction);
     }
 
     @Override
-    protected Action[] createActions() {
-        return TextAction.augmentList(super.createActions(), new Action[] {new ToggleBlockCommentAction()});
+    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        LOGGER.info("TOGGLE COMMENT - not implemented");
     }
 
 }

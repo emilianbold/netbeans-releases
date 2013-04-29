@@ -39,28 +39,23 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte;
+package org.netbeans.modules.php.latte.actions;
 
-import javax.swing.Action;
-import javax.swing.text.TextAction;
-import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.php.latte.actions.ToggleBlockCommentAction;
-import org.netbeans.modules.php.latte.csl.LatteLanguage;
+import org.netbeans.modules.php.latte.LatteTestBase;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteEditorKit extends NbEditorKit {
+public class LatteActionsTestBase extends LatteTestBase {
 
-    @Override
-    public String getContentType() {
-        return LatteLanguage.LATTE_MIME_TYPE;
+    public LatteActionsTestBase(String testName) {
+        super(testName);
     }
 
     @Override
-    protected Action[] createActions() {
-        return TextAction.augmentList(super.createActions(), new Action[] {new ToggleBlockCommentAction()});
+    protected boolean runInEQ() {
+        return true;
     }
 
 }

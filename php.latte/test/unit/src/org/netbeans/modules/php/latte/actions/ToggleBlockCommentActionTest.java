@@ -39,28 +39,51 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte;
+package org.netbeans.modules.php.latte.actions;
 
+import java.awt.event.ActionEvent;
 import javax.swing.Action;
-import javax.swing.text.TextAction;
-import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.php.latte.actions.ToggleBlockCommentAction;
-import org.netbeans.modules.php.latte.csl.LatteLanguage;
+import javax.swing.JEditorPane;
+import javax.swing.text.Caret;
+import static junit.framework.Assert.assertNotNull;
+import org.netbeans.editor.BaseDocument;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteEditorKit extends NbEditorKit {
+public class ToggleBlockCommentActionTest extends LatteActionsTestBase {
 
-    @Override
-    public String getContentType() {
-        return LatteLanguage.LATTE_MIME_TYPE;
+    public ToggleBlockCommentActionTest(String testName) {
+        super(testName);
     }
 
-    @Override
-    protected Action[] createActions() {
-        return TextAction.augmentList(super.createActions(), new Action[] {new ToggleBlockCommentAction()});
+    public void testDummy() throws Exception {
+    }
+
+    private void testInFile(String file) throws Exception {
+        FileObject fo = getTestFile(file);
+        assertNotNull(fo);
+        String source = readFile(fo);
+
+        int sourcePos = source.indexOf('^');
+        assertNotNull(sourcePos);
+        String sourceWithoutMarker = source.substring(0, sourcePos) + source.substring(sourcePos+1);
+
+        JEditorPane ta = getPane(sourceWithoutMarker);
+        Caret caret = ta.getCaret();
+        caret.setDot(sourcePos);
+        BaseDocument doc = (BaseDocument) ta.getDocument();
+
+        Action a = new ToggleBlockCommentAction();
+        a.actionPerformed(new ActionEvent(ta, 0, null));
+
+        doc.getText(0, doc.getLength());
+        doc.insertString(caret.getDot(), "^", null);
+
+        String target = doc.getText(0, doc.getLength());
+        assertDescriptionMatches(file, target, false, ".toggleComment");
     }
 
 }
