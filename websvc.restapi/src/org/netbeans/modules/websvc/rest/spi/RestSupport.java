@@ -214,7 +214,8 @@ public abstract class RestSupport {
         // JAX-RS APIs. The value should be false only in case of EE5 specification
         // and server without any Jersey on its classpath, eg. Tomcat or some
         // very very old GF (v2? or older)
-        final boolean hasJaxRs = isEESpecWithJaxRS() || hasJersey1(true) || hasJersey2(true);
+        final boolean hasJaxRs = isEESpecWithJaxRS() || hasJaxRsOnClasspath(false) ||
+                hasJersey1(true) || hasJersey2(true);
 
         // if JAR-RS APIs are missing and REST support is not ON then ask
         // user in GUI how to configure the REST:
@@ -607,7 +608,7 @@ public abstract class RestSupport {
      * server used by this project?
      */
     public boolean hasJersey2(boolean checkServerClasspath) {
-        if (MiscPrivateUtilities.hasResource(getProject(), REST_SERVLET_ADAPTOR_CLASS_2_0)) {
+        if (MiscPrivateUtilities.hasResource(getProject(), "org/glassfish/jersey/servlet/ServletContainer.class")) {
             return true;
         }
         if (checkServerClasspath) {
@@ -624,7 +625,7 @@ public abstract class RestSupport {
      * server used by this project?
      */
     public boolean hasJersey1(boolean checkServerClasspath) {
-        if (MiscPrivateUtilities.hasResource(getProject(), REST_SERVLET_ADAPTOR_CLASS)) {
+        if (MiscPrivateUtilities.hasResource(getProject(), "com/sun/jersey/spi/container/servlet/ServletContainer.class")) {
             return true;
         }
         if (checkServerClasspath) {
@@ -637,7 +638,7 @@ public abstract class RestSupport {
     }
 
     public boolean hasJaxRsOnClasspath(boolean checkServerClasspath) {
-        if (MiscPrivateUtilities.hasResource(getProject(), "javax.ws.rs.core.Application")) {
+        if (MiscPrivateUtilities.hasResource(getProject(), "javax/ws/rs/core/Application.class")) {
             return true;
         }
         if (checkServerClasspath) {
