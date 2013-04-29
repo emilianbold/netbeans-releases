@@ -88,7 +88,7 @@ public class LatteCustomAttribute implements CustomAttribute {
 
             @Override
             public String getHelpContent() {
-                return "";
+                return "Not implemented yet.";
             }
 
             @Override
