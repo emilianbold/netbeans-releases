@@ -45,6 +45,7 @@ package org.netbeans.modules.bugtracking.bridge.ideservices;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -98,6 +99,13 @@ public class ProjectServicesImpl implements ProjectServices {
             ret.add(project.getProjectDirectory());
         }
         return ret.toArray(new FileObject[ret.size()]);
+    }
+
+    @Override
+    public <T> T runWhenNotBlocked(Callable<T> operation) throws Exception {
+        // w8 with loading to preject ot be opened
+        OpenProjects.getDefault().getOpenProjects();
+        return operation.call();
     }
     
 }

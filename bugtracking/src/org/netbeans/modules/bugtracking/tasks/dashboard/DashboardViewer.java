@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.AccessibleContext;
@@ -56,6 +57,7 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
 import org.netbeans.modules.team.ui.util.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.CreateCategoryAction;
@@ -77,6 +79,7 @@ import org.netbeans.modules.team.ui.util.treelist.TreeListModelListener;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -789,15 +792,29 @@ public final class DashboardViewer implements PropertyChangeListener {
             public void run() {
                 // w8 with loading to preject ot be opened
                 //TODO add w8 for open project method to the bugtracking manager a ProjectServices
-                BugtrackingManager.getInstance().getProjectServices().getOpenProjectsDirectories();
-
-                titleRepositoryNode.setProgressVisible(true);
-                titleCategoryNode.setProgressVisible(true);
-                loadRepositories();
-                titleRepositoryNode.setProgressVisible(false);
-                loadCategories();
-                titleCategoryNode.setProgressVisible(false);
-                DashboardRefresher.getInstance().setupDashboardRefresh();
+                Callable<Void> c = new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        titleRepositoryNode.setProgressVisible(true);
+                        titleCategoryNode.setProgressVisible(true);
+                        loadRepositories();
+                        titleRepositoryNode.setProgressVisible(false);
+                        loadCategories();
+                        titleCategoryNode.setProgressVisible(false);
+                        DashboardRefresher.getInstance().setupDashboardRefresh();
+                        return null;
+                    }
+                };
+                ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
+                try {
+                    if(projectServices != null) {
+                        projectServices.runWhenNotBlocked(c);
+                    } else {
+                        c.call();
+                    }
+                } catch (Exception ex) {
+                    BugtrackingManager.LOG.log(Level.WARNING, null, ex);
+                }
             }
         });
     }

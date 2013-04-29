@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.ide.spi;
 
+import java.util.concurrent.Callable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -50,6 +51,17 @@ import org.openide.util.Lookup;
  * @author Tomas Stupka
  */
 public interface ProjectServices {
+    
+    /**
+     * 
+     * 
+     * @param <T>
+     * @param operation
+     * @return
+     * @throws Exception 
+     */
+    public <T> T runWhenNotBlocked(final Callable<T> operation) throws Exception;
+    
     /**
      * Return the currently open projects
      * @return the currently open projects
