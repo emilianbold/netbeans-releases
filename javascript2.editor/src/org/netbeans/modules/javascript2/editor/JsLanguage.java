@@ -156,12 +156,6 @@ public class JsLanguage extends DefaultLanguageConfig {
         return new JsCodeCompletion();
     }
 
-    @Override
-    public KeystrokeHandler getKeystrokeHandler() {
-        // Temporary keystroke handler used till issue #217163 will be resolved.
-        return new JsKeystrokeHandler();
-    }
-
 //    @Override
 //    public EmbeddingIndexerFactory getIndexerFactory() {
 //        return new JsIndexer.Factory();

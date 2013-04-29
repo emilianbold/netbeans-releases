@@ -46,10 +46,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
@@ -124,10 +124,10 @@ public class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
     }
 
     @Override
-    public RepositoryImpl getRepository(Project project, boolean askIfUnknown) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public RepositoryImpl getRepository(FileObject fileObject, boolean askIfUnknown) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
+    
     @Override
     public RepositoryImpl getRepository(File file, String issueId, boolean askIfUnknown) {
         if (file == null) {

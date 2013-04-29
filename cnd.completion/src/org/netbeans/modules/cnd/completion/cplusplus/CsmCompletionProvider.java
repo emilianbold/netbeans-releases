@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
+import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
@@ -127,10 +128,10 @@ public class CsmCompletionProvider implements CompletionProvider {
     }
 
     public static CsmCompletionQuery getCompletionQuery() {
-        return new NbCsmCompletionQuery(null, CsmCompletionQuery.QueryScope.GLOBAL_QUERY, null);
+        return new NbCsmCompletionQuery(null, CompletionResolver.QueryScope.GLOBAL_QUERY, null);
     }
 
-    public static CsmCompletionQuery getCompletionQuery(CsmFile csmFile, CsmCompletionQuery.QueryScope queryScope, FileReferencesContext fileReferencesContext) {
+    public static CsmCompletionQuery getCompletionQuery(CsmFile csmFile, CompletionResolver.QueryScope queryScope, FileReferencesContext fileReferencesContext) {
         return new NbCsmCompletionQuery(csmFile, queryScope, fileReferencesContext);
     }
 
@@ -142,7 +143,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         private int queryAnchorOffset;
         private String filterPrefix;
         private boolean caseSensitive = false;
-        private CsmCompletionQuery.QueryScope queryScope;
+        private CompletionResolver.QueryScope queryScope;
 
         Query(int caretOffset, int queryType) {
             if (TRACE) {
@@ -151,9 +152,9 @@ public class CsmCompletionProvider implements CompletionProvider {
             this.creationCaretOffset = caretOffset;
             this.queryAnchorOffset = -1;
             if ((queryType & COMPLETION_ALL_QUERY_TYPE) != COMPLETION_ALL_QUERY_TYPE) {
-                this.queryScope = CsmCompletionQuery.QueryScope.SMART_QUERY;
+                this.queryScope = CompletionResolver.QueryScope.SMART_QUERY;
             } else {
-                this.queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
+                this.queryScope = CompletionResolver.QueryScope.GLOBAL_QUERY;
             }
             if (TRACE) {
                 System.err.println("Query created " + getTestState()); // NOI18N
@@ -244,11 +245,11 @@ public class CsmCompletionProvider implements CompletionProvider {
             if (items.size() > MAX_ITEMS_TO_DISPLAY && queryResult.isSimpleVariableExpression()) {
                 limit = true;
             }
-//            ((queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY) && queryResult.isSimpleVariableExpression())
+//            ((queryScope == CompletionResolver.QueryScope.GLOBAL_QUERY) && queryResult.isSimpleVariableExpression())
 //                             || (items.size() > MAX_ITEMS_TO_DISPLAY);
-            resultSet.setHasAdditionalItems(queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY);
+            resultSet.setHasAdditionalItems(queryScope == CompletionResolver.QueryScope.SMART_QUERY);
             if (!limit) {
-                //CsmResultItem.setEnableInstantSubstitution(queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY);
+                //CsmResultItem.setEnableInstantSubstitution(queryScope == CompletionResolver.QueryScope.GLOBAL_QUERY);
                 resultSet.estimateItems(items.size(), -1);
                 resultSet.addAllItems(items);
             } else {
@@ -275,12 +276,12 @@ public class CsmCompletionProvider implements CompletionProvider {
                 creationCaretOffset = caretOffset;
                 NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
                 NbCsmCompletionQuery.CsmCompletionResult res = query.query(component, caretOffset, true);
-                if (res == null || (res.getItems().isEmpty() && (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY))) {
+                if (res == null || (res.getItems().isEmpty() && (queryScope == CompletionResolver.QueryScope.SMART_QUERY))) {
                     // switch to global context
                     if (TRACE) {
                         System.err.println("query switch to global" + getTestState()); // NOI18N
                     }
-                    queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
+                    queryScope = CompletionResolver.QueryScope.GLOBAL_QUERY;
                     if (res == null || res.isSimpleVariableExpression()) {
                         // try once more for non dereferenced expressions
                         query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
@@ -291,10 +292,10 @@ public class CsmCompletionProvider implements CompletionProvider {
                     }
                 }
                 if (res != null) {
-                    if (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY &&
+                    if (queryScope == CompletionResolver.QueryScope.SMART_QUERY &&
                             !res.isSimpleVariableExpression()) {
                         // change to global mode
-                        queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
+                        queryScope = CompletionResolver.QueryScope.GLOBAL_QUERY;
                     }
                     queryAnchorOffset = res.getSubstituteOffset();
                     Collection<? extends CompletionItem> items = res.getItems();
@@ -586,7 +587,7 @@ public class CsmCompletionProvider implements CompletionProvider {
 
         public LastResultItem() {
             super(null, Integer.MAX_VALUE);
-            this.str = "" + Query.MAX_ITEMS_TO_DISPLAY + " " + NbBundle.getBundle(CsmCompletionProvider.class).getString("last-item-text"); // NOI18N
+            this.str = "" + Query.MAX_ITEMS_TO_DISPLAY + " " + NbBundle.getMessage(CsmCompletionProvider.class, "last-item-text"); // NOI18N
         }
 
         @Override

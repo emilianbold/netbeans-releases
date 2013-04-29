@@ -58,8 +58,10 @@ public class ReadConfigTask extends CordovaTask {
             File configFile = new File(getProject().getBaseDir().getAbsolutePath() 
                     + "/" + getProperty("site.root") + "/config.xml");
             SourceConfig config = new SourceConfig(configFile);
-            setProperty("android.project.package", config.getId()); //NOI18N       
-            setProperty("android.project.package.folder", config.getId().replace(".", "/"));//NOI18N
+            final String id = config.getId();
+            String pkg = id.substring(0, id.lastIndexOf("."));
+            setProperty("android.project.package", pkg); //NOI18N       
+            setProperty("android.project.package.folder", pkg.replace(".", "/"));//NOI18N
             setProperty("project.name", config.getName());
         } catch (IOException ex) {
             throw new BuildException(ex);

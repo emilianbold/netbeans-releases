@@ -1,4 +1,0 @@
-protected native int classDepth(String arg0) - override
-protected int classLoaderDepth() - override
-protected native Object clone() - override
-class

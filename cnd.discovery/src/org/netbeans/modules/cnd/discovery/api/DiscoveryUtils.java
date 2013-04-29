@@ -557,27 +557,30 @@ public class DiscoveryUtils {
                 // Skip redurect
                 break;
             } else {
-                if (SourcesVisibilityQuery.getDefault().isIgnored(option)) {
-                    continue;
-                }
-                if (what.isEmpty()) {
+                if (SourcesVisibilityQuery.getDefault().isVisible(option)) {
                     what.add(option);
-                } else {
-                    if (TRACE) {
-                        System.out.println("**** What is this ["+option + "] if previous was ["+ what.get(0) + "]?"); //NOI18N
-                    }
-                    if (SourcesVisibilityQuery.getDefault().isVisible(option)) {
-                        if (what.size() == 1) {
-                            if (!SourcesVisibilityQuery.getDefault().isVisible(what.get(0))) {
-                                what.set(0, option);
-                            } else {
-                                what.add(option);
-                            }
-                        } else {
-                            what.add(option);
-                        }
-                    }
                 }
+//                if (SourcesVisibilityQuery.getDefault().isIgnored(option)) {
+//                    continue;
+//                }
+//                if (what.isEmpty()) {
+//                    what.add(option);
+//                } else {
+//                    if (TRACE) {
+//                        System.out.println("**** What is this ["+option + "] if previous was ["+ what.get(0) + "]?"); //NOI18N
+//                    }
+//                    if (SourcesVisibilityQuery.getDefault().isVisible(option)) {
+//                        if (what.size() == 1) {
+//                            if (!SourcesVisibilityQuery.getDefault().isVisible(what.get(0))) {
+//                                what.set(0, option);
+//                            } else {
+//                                what.add(option);
+//                            }
+//                        } else {
+//                            what.add(option);
+//                        }
+//                    }
+//                }
             }
         }
         return what;

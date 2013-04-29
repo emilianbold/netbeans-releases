@@ -63,7 +63,6 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
@@ -78,6 +77,7 @@ import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.maven.options.DontShowAgainSettings;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -99,7 +99,7 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
     private final Project project;
     private static boolean warningShown = false;
 
-    private final Color origComPlatformFore;
+    private Color origComPlatformFore;
 
     /** Creates new form CompilePanel */
     public CompilePanel(ModelHandle2 handle, Project prj) {
@@ -128,7 +128,7 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
         new CheckBoxUpdater(cbCompileOnSave) {
             private String modifiedValue;
 
-            private final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+            private ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
 
                 @Override
                 public void performOperation(POMModel model) {
@@ -253,8 +253,8 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
         // java platform updater
         new ComboBoxUpdater<JavaPlatform>(comJavaPlatform, lblJavaPlatform) {
             private String modifiedValue;
-            private final String DEFAULT_PLATFORM_VALUE = "@@DEFAU:T@@";
-            private final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+            private String DEFAULT_PLATFORM_VALUE = "@@DEFAU:T@@";
+            private ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
 
             @Override
                 public void performOperation(POMModel model) {
@@ -283,9 +283,7 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
                     if (val.equals(DEFAULT_PLATFORM_VALUE)) {
                         return JavaPlatformManager.getDefault().getDefaultPlatform();
                     }
-                    BootClassPathImpl.PlatformSources base = BootClassPathImpl.createJavaPlatformOrigin(project.getLookup().lookup(NbMavenProjectImpl.class));
-                    base = new BootClassPathImpl.PlatformSources(val, base.enforcerRange);
-                    return BootClassPathImpl.getActivePlatform(base);
+                    return BootClassPathImpl.getActivePlatform(val);
                 } else {
                     return getSelPlatform();
                 }
@@ -324,7 +322,9 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
     }
 
     private JavaPlatform getSelPlatform () {
-        return BootClassPathImpl.getActivePlatform(BootClassPathImpl.createJavaPlatformOrigin(project.getLookup().lookup(NbMavenProjectImpl.class)));
+        String platformId = project.getLookup().lookup(AuxiliaryProperties.class).
+                get(Constants.HINT_JDK_PLATFORM, true);
+        return BootClassPathImpl.getActivePlatform(platformId);
     }
 
     /** This method is called from within the constructor to
@@ -427,6 +427,7 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnMngPlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMngPlatformActionPerformed
+        // TODO add your handling code here:
         PlatformsCustomizer.showCustomizer(getSelPlatform());
 }//GEN-LAST:event_btnMngPlatformActionPerformed
 

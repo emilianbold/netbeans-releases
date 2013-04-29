@@ -69,7 +69,6 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.shelve.ShelveChangesAction;
 import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
-import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.RootsToFile;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
@@ -552,6 +551,8 @@ public class Mercurial {
             for (;file != null; file = file.getParentFile()) {
                 if (HgUtils.isAdministrative(file)) {
                     file = file.getParentFile();
+                    // the parent folder of .hg metadata cannot be unversioned, it's nonsense
+                    unversionedParents.remove(file);
                     break;
                 }
             }
@@ -602,6 +603,7 @@ public class Mercurial {
 
     public void clearAncestorCaches() {
         unversionedParents.clear();
+        knownRoots.clear();
         rootsToFile.clear();
     }
 

@@ -142,8 +142,10 @@ implements Presenter.Menu, Presenter.Popup {
                         if (thisPers.getDisplayName().equals(handler.getSelectedPerspective().getDisplayName())) {
                             item.setSelected(true);
                         }
-                        group.add(item);
-                        add(item);
+			if (!((ContextAwareDescription) Accessor.DEFAULT.extractDescription(thisPers)).isSplitDescription()) {
+			    group.add(item);
+			    add(item);
+			}
                     }
                 } else { // handler == null
                     //No reason to enable action on any TC because now it was enabled even for Welcome page

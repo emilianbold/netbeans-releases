@@ -46,23 +46,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.lang.model.element.Modifier;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
-import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -75,7 +68,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.support.SourceGroups;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
@@ -96,7 +88,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
-import org.netbeans.modules.websvc.rest.spi.RestSupport;
 
 
 /**
@@ -248,26 +239,12 @@ public class OriginResourceIterator implements
             if (addResponseFilter) {
                 support.addInitParam(WebRestSupport.CONTAINER_RESPONSE_FILTER,
                         fqn);
-            } else {
-                if (support.isEE7()) {
-                    support.configure();
-                }
             }
         }
         
         return Collections.singleton(filterClass);
     }
 
-    static boolean isJee7Profile( Project project ) {
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        if ( webModule == null ){
-            return false;
-        }
-        Profile profile = webModule.getJ2eeProfile();
-        return  Profile.JAVA_EE_7_WEB.equals(profile) ||
-                        Profile.JAVA_EE_7_FULL.equals(profile);
-    }
-    
     private String generateFilter(JavaSource javaSource, boolean jersey2) throws IOException {
         if (jersey2) {
             generateJaxRs20Filter(javaSource);
@@ -307,7 +284,7 @@ public class OriginResourceIterator implements
                 
                 copy.rewrite( classTree, newTree);
             }
-        }).commit();        
+        }).commit();
     }
 
     private String generateJerseyFilter( JavaSource javaSource )
@@ -357,10 +334,10 @@ public class OriginResourceIterator implements
             throws IOException
     {
         Project project = Templates.getProject(myWizard);
-        if (isJee7Profile(project)){
-            return false;
-        }
         if ( support!= null ){
+            if (support.isEE7()){
+                return false;
+            }
             boolean hasRequest = RestUtils.hasClass(project, 
                     CONTAINER_CONTAINER_REQUEST.replace('.', '/')+CLASS);
             boolean hasFilter = RestUtils.hasClass(project, 

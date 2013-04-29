@@ -75,7 +75,7 @@ public class IOSUpdateTask extends CordovaTask {
             });
 
             String name = list[0].substring(0, list[0].indexOf("."));
-            File androidConfigFile = new File(
+            File iosConfigFile = new File(
                     getProject().getBaseDir().getAbsolutePath() + 
                     "/" + getProperty("cordova.platforms") + "/ios/" 
                     + name + "/" + "config.xml");
@@ -83,22 +83,31 @@ public class IOSUpdateTask extends CordovaTask {
             
             File infoPlist = new File(root.getPath() + "/" + name + "/" + name + "-Info.plist");
             InfoPlist plist = new InfoPlist(infoPlist);
-            plist.setPackage(getProject().getProperty("android.project.package"));
+            plist.setBundleIdentifier(getProject().getProperty("android.project.package"));
             plist.save();
             
-            DeviceConfig androidConfig = new DeviceConfig(androidConfigFile);
+            DeviceConfig iosConfig = new DeviceConfig(iosConfigFile);
             SourceConfig config = new SourceConfig(configFile);
 
-            updateAndroidConfig(config, androidConfig);
-            androidConfig.save();
+            updateIOSConfig(config, iosConfig);
+            iosConfig.save();
             updateResources(config);
         } catch (IOException ex) {
             throw new BuildException(ex);
         } 
     }
     
-    private void updateAndroidConfig(SourceConfig config, DeviceConfig androidConfig) {
-        androidConfig.setAccess(config.getAccess());
+    private void updateIOSConfig(SourceConfig config, DeviceConfig iosConfig) {
+        iosConfig.setAccess(config.getAccess());
+        remap(config, iosConfig, "webviewbounce", "UIWebViewBounce");
+        remap(config, iosConfig, "auto-hide-splash-screen", "AutoHideSplashScreen");
+    }
+    
+    private void remap(SourceConfig config, DeviceConfig iosConfig, String orig, String newOne) {
+        String pref = config.getPreference(orig);
+        if (pref != null) {
+            iosConfig.setPreference(newOne, pref);
+        }
     }
     
     private void updateResources(SourceConfig config) throws IOException {
@@ -142,8 +151,8 @@ public class IOSUpdateTask extends CordovaTask {
             return;
         }
         String name = getProject().getProperty("xcode.project.name");
-        
-        String ext = source.substring(source.indexOf("."));
+        final int i = source.indexOf(".");
+        String ext = i<0?"":source.substring(i);
         final String prjPath = getProject().getBaseDir().getPath();
         FileUtils.getFileUtils().copyFile(
                 prjPath + "/" + getProperty("site.root") + "/" + source, 

@@ -816,7 +816,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 for (DirEntry entry : entriesToFireChanged) {
                     RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
                     if (fo != null) {
-                        fireFileChangedEvent(getListeners(), new FileEvent(fo.getOwnerFileObject()));
+                        RemoteFileObject ownerFileObject = fo.getOwnerFileObject();
+                        fireFileChangedEvent(getListeners(), new FileEvent(ownerFileObject, ownerFileObject, false, ownerFileObject.lastModified().getTime()));
                     }
                 }
                 // rename itself
@@ -1152,7 +1153,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         if (fo.isPendingRemoteDelivery()) {
                             RemoteLogger.getInstance().log(Level.FINE, "Skipping change event for pending file {0}", fo);
                         } else {
-                            fireFileChangedEvent(getListeners(), new FileEvent(fo.getOwnerFileObject(), fo.getOwnerFileObject(), expected));
+                            RemoteFileObject ownerFileObject = fo.getOwnerFileObject();
+                            fireFileChangedEvent(getListeners(), new FileEvent(ownerFileObject, ownerFileObject, expected, ownerFileObject.lastModified().getTime()));
                         }
                     }
                 }

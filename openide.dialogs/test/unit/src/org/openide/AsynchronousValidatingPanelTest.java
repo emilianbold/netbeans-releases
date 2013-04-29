@@ -49,6 +49,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.JLabel;
 import javax.swing.event.ChangeListener;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.util.*;
 import org.openide.util.HelpCtx;
@@ -85,11 +86,12 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
     public void testAsynchronousLazyValidation () throws Exception {
         Panel panels[] = new Panel[3];
         
-        class MyPanel extends Panel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor> {
+        class MyPanel extends Panel implements WizardDescriptor.ExtendedAsynchronousValidatingPanel<WizardDescriptor> {
             public String validateMsg;
             public String failedMsg;
             public boolean running;
             public boolean wasEnabled;
+            public boolean validationFinished;
             
             public MyPanel () {
                 super ("enhanced panel");
@@ -97,13 +99,13 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
             
             public void prepareValidation () {
                 running = true;
+                validationFinished = false;
             }
             
             public synchronized void validate () throws WizardValidationException {
                 err.log ("validate() entry.");
                 wasEnabled = wd.isNextEnabled () || wd.isFinishEnabled ();
                 running = false;
-                notifyAll ();
                 if (validateMsg != null) {
                     failedMsg = validateMsg;
                     err.log ("Throw WizardValidationException.");
@@ -112,6 +114,12 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
                 err.log ("validate() exit.");
                 return;
             }
+
+            public synchronized void finishValidation() {
+                assert SwingUtilities.isEventDispatchThread();
+                validationFinished = true;
+                notifyAll ();
+        }
         }
         
         class MyFinishPanel extends MyPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
@@ -149,6 +157,7 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
         }
         assertFalse ("Finish is disabled during validation.", mp.wasEnabled);
         assertTrue ("Wizard is ready to next validation however previous failed.",  wd.isForwardEnabled ());
+        assertTrue ("finishValidation() was called even when validation failed.",  mp.validationFinished);
         assertEquals ("The lazy validation failed on Next.", mp.validateMsg, mp.failedMsg);
         assertNull ("The lazy validation failed, still no initialiaation", panels[1].component);
         assertNull ("The lazy validation failed, still no initialiaation", panels[2].component);
@@ -174,6 +183,7 @@ public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
         assertNull ("Validation on Next passes", mp.failedMsg);
         assertNotNull ("Now we switched to another panel", panels[1].component);
         assertNull ("The lazy validation failed, still no initialiaation", panels[2].component);
+        assertTrue ("finishValidation() was called when validation finished.",  mp.validationFinished);
 
         // remember previous state
         Object state = wd.getValue();

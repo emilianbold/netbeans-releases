@@ -74,6 +74,7 @@ import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.cordova.PropertyNames.*;
+import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
 import org.openide.loaders.DataObject;
@@ -88,16 +89,21 @@ public class CordovaPerformer implements BuildPerformer {
     public static final String NAME_CONFIG_XML = "config.xml";
     public static final String PATH_BUILD_XML = "nbproject/" + NAME_BUILD_XML;
     public static final String PATH_EXTRA_ANT_JAR = "ant/extra/org-netbeans-modules-cordova-projectupdate.jar";
-    public static final String DEFAULT_PACKAGE_NAME = "com.company";
+    public static final String DEFAULT_ID_PREFIX = "com.coolappz";
+    public static final String DEFAULT_EMAIL = "info@com.coolappz";
+    public static final String DEFAULT_WWW = "http://www.coolappz.com";
+    public static final String DEFAULT_VERSION = "1.0.0";
     public static final String DEFAULT_DESCRIPTION = "PhoneGap Application";
     public static final String PROP_BUILD_SCRIPT_VERSION = "cordova_build_script_version";
+    public static final String PROP_PROVISIONING_PROFILE = "ios.provisioning.profile";
+    public static final String PROP_CERTIFICATE_NAME = "ios.certificate.name";
 
     private Session debuggerSession;
     private Lookup consoleLogger;
     private Lookup networkMonitor;
     private WebKitDebugging webKitDebugging;
     private MobileDebugTransport transport;
-    private final int BUILD_SCRIPT_VERSION = 3;
+    private final int BUILD_SCRIPT_VERSION = 4;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
@@ -153,9 +159,13 @@ public class CordovaPerformer implements BuildPerformer {
            PATH_EXTRA_ANT_JAR, 
            "org.netbeans.modules.cordova" , true);
         props.put(PROP_UPDATE_TASK_JAR, antTaskJar.getAbsolutePath());
-        final String name = getConfig(p).getName();
-        props.put(PROP_ANDROID_PROJECT_ACTIVITY, name);//NOI18N
+        final String id = getConfig(p).getId();
+        String activity = id.substring(id.lastIndexOf(".")+1, id.length());
+        props.put(PROP_ANDROID_PROJECT_ACTIVITY, activity);//NOI18N
         
+        MobilePlatform iosPlatform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
+        props.put(PROP_PROVISIONING_PROFILE, iosPlatform.getProvisioningProfilePath());
+        props.put(PROP_CERTIFICATE_NAME, iosPlatform.getCodeSignIdentity());
 
         String debug = ClientProjectUtilities.getProperty(p, PROP_DEBUG_ENABLE);//NOI18N
         if (debug == null) {
@@ -211,10 +221,14 @@ public class CordovaPerformer implements BuildPerformer {
             FileObject config = project.getProjectDirectory().getFileObject(configPath);
             SourceConfig conf = new SourceConfig(FileUtil.toFile(config));
             if (fresh) {
-                conf.setId(DEFAULT_PACKAGE_NAME);
-                conf.setName(ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));
+                final String appName = ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", "");
+                conf.setId(DEFAULT_ID_PREFIX + "." + appName);
+                conf.setName(appName);
                 conf.setDescription(DEFAULT_DESCRIPTION);
                 conf.setAuthor(System.getProperty("user.name"));
+                conf.setAuthorEmail(DEFAULT_EMAIL);
+                conf.setAuthorHref(DEFAULT_WWW);
+                conf.setVersion(DEFAULT_VERSION);
                 conf.save();
             }
             return conf;
@@ -274,9 +288,10 @@ public class CordovaPerformer implements BuildPerformer {
     }
 
     @Override
-    public void startDebugging(Device device, Project p, Lookup context) {
-        transport = device.getPlatform().getDebugTransport();
-        transport.setBaseUrl(getUrl(p, context));
+    public void startDebugging(Device device, Project p, Lookup context, boolean navigateToUrl) {
+        transport = device.getDebugTransport();
+        final String url = getUrl(p, context);
+        transport.setBaseUrl(url);
         transport.attach();
         try {
             Thread.sleep(1000);
@@ -284,6 +299,9 @@ public class CordovaPerformer implements BuildPerformer {
             Exceptions.printStackTrace(ex);
         }
         webKitDebugging = Factory.createWebKitDebugging(transport);
+        if (navigateToUrl) {
+            webKitDebugging.getPage().navigate(url);
+        }
         webKitDebugging.getDebugger().enable();
         Lookup projectContext = Lookups.singleton(p);
         debuggerSession = WebKitUIManager.getDefault().createDebuggingSession(webKitDebugging, projectContext);

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.parser;
 
+import org.netbeans.modules.html.editor.lib.api.foreign.SimpleMaskingChSReader;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;

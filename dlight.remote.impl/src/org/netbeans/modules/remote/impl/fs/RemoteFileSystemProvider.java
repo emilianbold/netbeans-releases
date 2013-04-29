@@ -191,20 +191,12 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public boolean waitWrites(ExecutionEnvironment env, Collection<String> failedFiles) throws InterruptedException {
-        if (env.isRemote() && RemoteFileObjectBase.DEFER_WRITES) {
-            return WritingQueue.getInstance(env).waitFinished(failedFiles);
-        } else {
-            return true;
-        }
+        return true;
     }
 
     @Override
     public boolean waitWrites(ExecutionEnvironment env, Collection<FileObject> filesToWait, Collection<String> failedFiles) throws InterruptedException {
-        if (env.isRemote() && RemoteFileObjectBase.DEFER_WRITES) {
-            return WritingQueue.getInstance(env).waitFinished(filesToWait, failedFiles);
-        } else {
-            return true;
-        }
+        return true;
     }
 
     @Override

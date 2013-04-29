@@ -63,6 +63,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MdbPropertiesPanelVisual;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
+import org.netbeans.modules.javaee.specs.support.api.JmsSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -88,7 +89,8 @@ public class MessageGeneratorTest extends TestBase {
         // Queue based MessageDriven EJB in Java EE 1.4
         
         MessageDestination messageDestination = new MessageDestinationImpl("TestMDBQueue", MessageDestination.Type.QUEUE);
-        MessageGenerator generator = new MessageGenerator(Profile.J2EE_14, "TestMDBQueueBean", packageFileObject, messageDestination, false, Collections.<String, String>emptyMap(), true);
+        MessageGenerator generator = new MessageGenerator(Profile.J2EE_14, "TestMDBQueueBean", packageFileObject,
+                messageDestination, false, Collections.<String, String>emptyMap(), JmsSupport.getInstance(null), true);
         generator.generate();
         
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
@@ -119,7 +121,8 @@ public class MessageGeneratorTest extends TestBase {
         // Topic based MessageDriven EJB in Java EE 1.4
         
         messageDestination = new MessageDestinationImpl("TestMDBTopic", MessageDestination.Type.TOPIC);
-        generator = new MessageGenerator(Profile.J2EE_14, "TestMDBTopicBean", packageFileObject, messageDestination, false, Collections.<String, String>emptyMap(), true);
+        generator = new MessageGenerator(Profile.J2EE_14, "TestMDBTopicBean", packageFileObject, messageDestination,
+                false, Collections.<String, String>emptyMap(), JmsSupport.getInstance(null), true);
         generator.generate();
         
         messageDriven = (MessageDriven) enterpriseBeans.findBeanByName(
@@ -181,7 +184,8 @@ public class MessageGeneratorTest extends TestBase {
         MdbPropertiesPanelVisual panel = new MdbPropertiesPanelVisual(j2eeProjectCapabilities);
         panel.setDefaultProperties(messageDestination);
         Map<String, String> properties = panel.getProperties();
-        MessageGenerator generator = new MessageGenerator(Profile.JAVA_EE_5, "TestMDBQueueBean", packageFileObject, messageDestination, true, properties, true);
+        MessageGenerator generator = new MessageGenerator(Profile.JAVA_EE_5, "TestMDBQueueBean", packageFileObject,
+                messageDestination, true, properties, JmsSupport.getInstance(null), true);
         generator.generate();
         
         assertFile(
@@ -194,7 +198,8 @@ public class MessageGeneratorTest extends TestBase {
         messageDestination = new MessageDestinationImpl("TestMessageDestination", MessageDestination.Type.TOPIC);
         panel.setDefaultProperties(messageDestination);
         properties = panel.getProperties();
-        generator = new MessageGenerator(Profile.JAVA_EE_5, "TestMDBTopic", packageFileObject, messageDestination, true, properties, true);
+        generator = new MessageGenerator(Profile.JAVA_EE_5, "TestMDBTopic", packageFileObject, messageDestination,
+                true, properties, JmsSupport.getInstance(null), true);
         generator.generate();
         
         assertFile(
@@ -220,7 +225,8 @@ public class MessageGeneratorTest extends TestBase {
         panel.setDefaultProperties(messageDestination);
         Map<String, String> properties = panel.getProperties();
 
-        MessageGenerator generator = new MessageGenerator(Profile.JAVA_EE_7_FULL, "TestMDBQueueBean", packageFileObject, messageDestination, true, properties, true);
+        MessageGenerator generator = new MessageGenerator(Profile.JAVA_EE_7_FULL, "TestMDBQueueBean", packageFileObject,
+                messageDestination, true, properties, JmsSupport.getInstance(null), true);
         generator.generate();
 
         assertFile(
@@ -236,17 +242,17 @@ public class MessageGeneratorTest extends TestBase {
         panel.setProperty(org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties.CONNECTION_FACTORY_LOOKUP, "factoryLookup");
         panel.setProperty(org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties.MESSAGE_SELECTOR, "selector");
         properties = panel.getProperties();
-        generator = new MessageGenerator(Profile.JAVA_EE_7_FULL, "TestMDBTopic", packageFileObject, messageDestination, true, properties, true);
+        generator = new MessageGenerator(Profile.JAVA_EE_7_FULL, "TestMDBTopicBean", packageFileObject, messageDestination, true, properties, JmsSupport.getInstance(null), true);
         generator.generate();
 
         assertFile(
-                FileUtil.toFile(packageFileObject.getFileObject("TestMDBQueueBean.java")),
-                getGoldenFile("testGenerateJavaEE70/TestMDBQueueBean.java"),
+                FileUtil.toFile(packageFileObject.getFileObject("TestMDBTopicBean.java")),
+                getGoldenFile("testGenerateJavaEE70/TestMDBTopicBean.java"),
                 FileUtil.toFile(packageFileObject)
                 );
     }
 
-    public void testGenerateJavaEE70NoMappedName() throws IOException {
+    public void testGenerateJavaEE70AnotherDestinationLookup() throws IOException {
         TestModule testModule = createEjb32Module();
         FileObject sourceRoot = testModule.getSources()[0];
         FileObject packageFileObject = sourceRoot.getFileObject("testGenerateJavaEE70");
@@ -256,14 +262,15 @@ public class MessageGeneratorTest extends TestBase {
         packageFileObject = sourceRoot.createFolder("testGenerateJavaEE70");
 
         // Queue based MessageDriven EJB in Java EE 7 defined in annotation
-        MessageDestination messageDestination = new MessageDestinationImpl("TestMessageDestination", MessageDestination.Type.QUEUE);
+        MessageDestination messageDestination = new MessageDestinationImpl("TestMessageDestination2", MessageDestination.Type.QUEUE);
         J2eeProjectCapabilities j2eeProjectCapabilities = J2eeProjectCapabilities.forProject(testModule.getProject());
         MdbPropertiesPanelVisual panel = new MdbPropertiesPanelVisual(j2eeProjectCapabilities);
         panel.setDefaultProperties(messageDestination);
-        panel.setProperty(org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties.DESTINATION_LOOKUP, "TestMessageDestination");
+        panel.setProperty(org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties.DESTINATION_LOOKUP, "TestMessageDestination2");
         Map<String, String> properties = panel.getProperties();
 
-        MessageGenerator generator = new MessageGenerator(Profile.JAVA_EE_7_FULL, "TestMDBQueueBean2", packageFileObject, messageDestination, true, properties, true);
+        MessageGenerator generator = new MessageGenerator(Profile.JAVA_EE_7_FULL, "TestMDBQueueBean2", packageFileObject,
+                messageDestination, true, properties, JmsSupport.getInstance(null), true);
         generator.generate();
 
         assertFile(

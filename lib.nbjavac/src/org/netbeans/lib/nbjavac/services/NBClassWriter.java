@@ -56,6 +56,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Pair;
+import java.util.Collection;
 
 /**
  *
@@ -72,18 +73,28 @@ public class NBClassWriter extends ClassWriter {
     }
 
     private final NBNames nbNames;
+    private final NBMessager nbMessager;
     private final Target target;
     private final Types types;
 
     protected NBClassWriter(Context context) {
         super(context);
         nbNames = NBNames.instance(context);
+        nbMessager = NBMessager.instance(context);
         target = Target.instance(context);
         types = Types.instance(context);
     }
     
     @Override
     protected int writeExtraClassAttributes(ClassSymbol c) {
+        if (c.sourcefile != null) {
+            final Collection<? extends ClassSymbol> nip = nbMessager.removeNotInProfile(c.sourcefile.toUri());
+            if (nip != null) {
+                for (ClassSymbol s : nip) {
+                    pool.put(s.type);
+                }
+            }
+        }
         if (!target.hasEnclosingMethodAttribute())
             return writeEnclosingMethodAttribute(nbNames._org_netbeans_EnclosingMethod, c);
         else

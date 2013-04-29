@@ -50,6 +50,15 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.html.editor.lib</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.20</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -268,6 +277,8 @@ made subject to such option by the copyright holder.
                 <friend>com.ext4yii.editor</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.html</friend>
+                <friend>org.netbeans.modules.html.angular</friend>
+                <friend>org.netbeans.modules.html.knockout</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.html.navigator</friend>
                 <friend>org.netbeans.modules.html.parser</friend>
@@ -285,6 +296,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.html.editor.lib.api</package>
                 <package>org.netbeans.modules.html.editor.lib.api.dtd</package>
                 <package>org.netbeans.modules.html.editor.lib.api.elements</package>
+                <package>org.netbeans.modules.html.editor.lib.api.foreign</package>
                 <package>org.netbeans.modules.html.editor.lib.api.model</package>
                 <package>org.netbeans.modules.html.editor.lib.api.validation</package>
             </friend-packages>

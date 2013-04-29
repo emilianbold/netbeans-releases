@@ -222,6 +222,8 @@
                 <friend>org.netbeans.modules.css.prep</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.html</friend>
+                <friend>org.netbeans.modules.html.angular</friend>
+                <friend>org.netbeans.modules.html.knockout</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.html.editor.lib</friend>
                 <friend>org.netbeans.modules.html.navigator</friend>

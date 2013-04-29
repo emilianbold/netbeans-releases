@@ -115,6 +115,9 @@ public class WebKitPageModel extends PageModel {
      * the document node to the corresponding {@code RemoteObject}.
      */
     private final Map<Integer,RemoteObject> contentDocumentMap = new HashMap<Integer,RemoteObject>();
+    /** Cache of {@code RemoteObject}s. Maps node ID to the corresponding {@code RemoteObject}. */
+    private final Map<Integer,RemoteObject> remoteObjectMap = Collections.synchronizedMap(
+            new HashMap<Integer,RemoteObject>());
     /** Maps a node ID to pseudoclasses forced for the node. */
     private final Map<Integer,EnumSet<CSS.PseudoClass>> pseudoClassMap = Collections.synchronizedMap(
             new HashMap<Integer,EnumSet<CSS.PseudoClass>>());
@@ -312,6 +315,7 @@ public class WebKitPageModel extends PageModel {
                     synchronized(WebKitPageModel.this) {
                         nodes.clear();
                         contentDocumentMap.clear();
+                        remoteObjectMap.clear();
                         pseudoClassMap.clear();
                         selectedNodes = Collections.EMPTY_LIST;
                         highlightedNodes = Collections.EMPTY_LIST;
@@ -704,6 +708,25 @@ public class WebKitPageModel extends PageModel {
     }
 
     /**
+     * Returns the {@code RemoteObject} that corresponds to the specified node.
+     * 
+     * @param webKitNode node whose {@code RemoteObject} should be returned.
+     * @return {@code RemoteObject} that corresponds to the specified node
+     * or {@code null} when the retrieval of such {@code RemoteObject} failed.
+     */
+    RemoteObject getRemoteObject(Node webKitNode) {
+        int id = webKitNode.getNodeId();
+        RemoteObject remote = remoteObjectMap.get(id);
+        if (remote == null) {
+            remote = webKit.getDOM().resolveNode(webKitNode, null);
+            if (remote != null) {
+                remoteObjectMap.put(id, remote);
+            }
+        }
+        return remote;
+    }
+
+    /**
      * Converts the WebKit node into a node that should be highlighted/selected.
      * Usually this method returns the passed node, but there are some exceptions
      * like document nodes.
@@ -800,35 +823,43 @@ public class WebKitPageModel extends PageModel {
         return external;
     }
 
+    /** Request processor for {@code WebPaneSynchronizer}. */
+    private static final RequestProcessor WPRP = new RequestProcessor(WebPaneSynchronizer.class);
+    
     class WebPaneSynchronizer implements PropertyChangeListener {
         private final Object LOCK_HIGHLIGHT = new Object();
         private final Object LOCK_SELECTION = new Object();
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            String propName = evt.getPropertyName();
-            if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
-                if (shouldSynchronizeHighlight()) {
-                    updateHighlight();
+        public void propertyChange(final PropertyChangeEvent evt) {
+            WPRP.post(new Runnable() {
+                @Override
+                public void run() {
+                    String propName = evt.getPropertyName();
+                    if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
+                        if (shouldSynchronizeHighlight()) {
+                            updateHighlight();
+                        }
+                    } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
+                        if (shouldSynchronizeSelection()) {
+                            updateSelection();
+                        }
+                    } else if (propName.equals(PageModel.PROP_SELECTED_RULE)) {
+                        if (shouldSynchronizeSelection()) {
+                            updateSelectedRule(getNodesMatchingSelectedRule());
+                        }
+                    } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
+                        updateSelectionMode();
+                        updateSynchronization();
+                    } else if (propName.equals(PageModel.PROP_SYNCHRONIZE_SELECTION)) {
+                        updateSelectionMode();
+                        updateSynchronization();
+                    } else if (propName.equals(PageModel.PROP_DOCUMENT)) {
+                        initializePage();
+                        updateSelectionMode();
+                    }
                 }
-            } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
-                if (shouldSynchronizeSelection()) {
-                    updateSelection();
-                }
-            } else if (propName.equals(PageModel.PROP_SELECTED_RULE)) {
-                if (shouldSynchronizeSelection()) {
-                    updateSelectedRule(getNodesMatchingSelectedRule());
-                }
-            } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
-                updateSelectionMode();
-                updateSynchronization();
-            } else if (propName.equals(PageModel.PROP_SYNCHRONIZE_SELECTION)) {
-                updateSelectionMode();
-                updateSynchronization();
-            } else if (propName.equals(PageModel.PROP_DOCUMENT)) {
-                initializePage();
-                updateSelectionMode();
-            }
+            });
         }
 
         private boolean shouldSynchronizeSelection() {
@@ -868,7 +899,7 @@ public class WebKitPageModel extends PageModel {
                 for (org.openide.nodes.Node node : nodes) {
                     Node webKitNode = node.getLookup().lookup(Node.class);
                     webKitNode = convertNode(webKitNode);
-                    RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
+                    RemoteObject remote = getRemoteObject(webKitNode);
                     if (remote != null) {
                         webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextHighlight(this);}"); // NOI18N
                     }
@@ -900,9 +931,9 @@ public class WebKitPageModel extends PageModel {
                         continue;
                     }
                     webKitNode = convertNode(webKitNode);
-                    RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
+                    RemoteObject remote = getRemoteObject(webKitNode);
                     if (remote != null) {
-                        webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNext" + type + "Selection(this);}"); // NOI18N
+                        webKit.getRuntime().callProcedureOn(remote, "function() {NetBeans.addElementToNext" + type + "Selection(this);}"); // NOI18N
                     }
                 }
 

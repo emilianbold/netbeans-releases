@@ -67,6 +67,12 @@ public interface JmsDestination extends JndiResource {
     String getClassName();
 
     /**
+     * InterfaceName of the JmsDestination.
+     * @return JmsDestination's interfaceName
+     */
+    String getInterfaceName();
+
+    /**
      * DestinationName of the JmsDestination.
      * @return JmsDestination's destinationName
      */

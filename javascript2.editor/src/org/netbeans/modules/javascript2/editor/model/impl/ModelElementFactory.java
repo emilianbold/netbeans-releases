@@ -197,7 +197,7 @@ class ModelElementFactory {
     static JsObjectImpl createAnonymousObject(JsParserResult parserResult, ObjectNode objectNode, ModelBuilder modelBuilder) {
         String name = modelBuilder.getUnigueNameForAnonymObject();
         JsObjectImpl result = new AnonymousObject(modelBuilder.getCurrentDeclarationFunction(),
-                    name, ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish()));
+                    name, ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish()), null);
         modelBuilder.getCurrentDeclarationFunction().addProperty(name, result);
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         if (docHolder != null) {

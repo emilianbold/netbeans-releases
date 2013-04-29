@@ -46,7 +46,7 @@ bindingContext              : FUNCTION bindingContext [ANONYMOUS: false, DECLARE
                                       # PROPERTIES
                                       createChildContext : FUNCTION createChildContext [ANONYMOUS: false, DECLARED: true - createChildContext, MODIFIERS: PUBLIC, METHOD]
                                                          # RETURN TYPES
-                                                         @exp;ko@call;bindingContext, RESOLVED: false
+                                                         undefined, RESOLVED: true
                                                          # PARAMETERS
                                                          OBJECT dataItem [ANONYMOUS: false, DECLARED: true - dataItem, MODIFIERS: PUBLIC, PARAMETER]
                                                          OBJECT dataItemAlias [ANONYMOUS: false, DECLARED: true - dataItemAlias, MODIFIERS: PUBLIC, PARAMETER]
@@ -54,7 +54,6 @@ bindingContext              : FUNCTION bindingContext [ANONYMOUS: false, DECLARE
                                                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       extend             : FUNCTION extend [ANONYMOUS: false, DECLARED: true - extend, MODIFIERS: PUBLIC, METHOD]
                                                          # RETURN TYPES
-                                                         @exp;ko@pro;utils@call;extend, RESOLVED: false
                                                          # PARAMETERS
                                                          OBJECT properties [ANONYMOUS: false, DECLARED: true - properties, MODIFIERS: PUBLIC, PARAMETER]
                                                          # PROPERTIES
@@ -115,7 +114,7 @@ bindingProvider             : OBJECT bindingProvider [ANONYMOUS: false, DECLARED
                             arguments             : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             bindingCache          : OBJECT bindingCache [ANONYMOUS: false, DECLARED: true - bindingCache, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                             instance              : OBJECT instance [ANONYMOUS: false, DECLARED: false - instance, MODIFIERS: PUBLIC, PROPERTY]
-                            prototype             : OBJECT prototype [ANONYMOUS: false, DECLARED: false - prototype, MODIFIERS: PUBLIC, PROPERTY]
+                            prototype             : OBJECT prototype [ANONYMOUS: false, DECLARED: false - prototype, MODIFIERS: PUBLIC, OBJECT]
                             shouldBindDescendants : OBJECT shouldBindDescendants [ANONYMOUS: false, DECLARED: false - shouldBindDescendants, MODIFIERS: PUBLIC, PROPERTY]
 cleanNode                   : FUNCTION cleanNode [ANONYMOUS: false, DECLARED: true - cleanNode, MODIFIERS: PUBLIC, METHOD]
                             # PARAMETERS
@@ -174,7 +173,6 @@ computed                    : FUNCTION computed [ANONYMOUS: false, DECLARED: tru
                             dependentObservable                   : FUNCTION dependentObservable [ANONYMOUS: false, DECLARED: true - dependentObservable, MODIFIERS: PRIVATE, CONSTRUCTOR]
                                                                   # RETURN TYPES
                                                                   ko, RESOLVED: true
-                                                                  ko.dependentObservable._latestValue, RESOLVED: true
                                                                   # PROPERTIES
                                                                   arguments            : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, OBJECT]
                                                                                        # PROPERTIES
@@ -186,7 +184,7 @@ computed                    : FUNCTION computed [ANONYMOUS: false, DECLARED: tru
                                                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                   getDependenciesCount : FUNCTION getDependenciesCount [ANONYMOUS: false, DECLARED: true - getDependenciesCount, MODIFIERS: PUBLIC, METHOD]
                                                                                        # RETURN TYPES
-                                                                                       @exp;_subscriptionsToDependencies@pro;length, RESOLVED: false
+                                                                                       ko.dependentObservable._subscriptionsToDependencies.length, RESOLVED: true
                                                                                        # PROPERTIES
                                                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                   hasWriteFunction     : OBJECT hasWriteFunction [ANONYMOUS: false, DECLARED: true - hasWriteFunction, MODIFIERS: PUBLIC, STATIC, PROPERTY]
@@ -217,8 +215,7 @@ computed                    : FUNCTION computed [ANONYMOUS: false, DECLARED: tru
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             disposeWhen                           : FUNCTION disposeWhen [ANONYMOUS: false, DECLARED: true - disposeWhen, MODIFIERS: PUBLIC, METHOD]
                                                                   # RETURN TYPES
-                                                                  @exp;@exp;k@call;o@pro;utils@call;domNodeIsAttachedToDocumentexistingDisposeWhenFunction, RESOLVED: false
-                                                                  @exp;ko@pro;utils@call;domNodeIsAttachedToDocument, RESOLVED: false
+                                                                  Boolean, RESOLVED: true
                                                                   # PROPERTIES
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             disposeWhenNodeIsRemoved              : OBJECT disposeWhenNodeIsRemoved [ANONYMOUS: false, DECLARED: true - disposeWhenNodeIsRemoved, MODIFIERS: PRIVATE, VARIABLE]
@@ -228,7 +225,7 @@ computed                    : FUNCTION computed [ANONYMOUS: false, DECLARED: tru
                                                                   # PROPERTIES
                                                                   _L1231             : FUNCTION _L1231 [ANONYMOUS: true, DECLARED: true - _L1231, MODIFIERS: PUBLIC, METHOD]
                                                                                      # RETURN TYPES
-                                                                                     @exp;item@pro;target, RESOLVED: false
+                                                                                     ko.dependentObservable.evaluateImmediate._L1231.item.target, RESOLVED: true
                                                                                      # PARAMETERS
                                                                                      OBJECT item [ANONYMOUS: false, DECLARED: true - item, MODIFIERS: PUBLIC, PARAMETER]
                                                                                              # PROPERTIES
@@ -265,11 +262,9 @@ computed                    : FUNCTION computed [ANONYMOUS: false, DECLARED: tru
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             notifySubscribers                     : OBJECT notifySubscribers [ANONYMOUS: false, DECLARED: false - notifySubscribers, MODIFIERS: PUBLIC, PROPERTY]
                             peek                                  : FUNCTION peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PRIVATE, METHOD]
-                                                                  # RETURN TYPES
-                                                                  ko.dependentObservable._latestValue, RESOLVED: true
                                                                   # PROPERTIES
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                            readFunction                          : OBJECT readFunction [ANONYMOUS: false, DECLARED: true - readFunction, MODIFIERS: PRIVATE, OBJECT]
+                            readFunction                          : OBJECT readFunction [ANONYMOUS: false, DECLARED: true - readFunction, MODIFIERS: PRIVATE, VARIABLE]
                                                                   # PROPERTIES
                                                                   call : FUNCTION call [ANONYMOUS: false, DECLARED: false - call, MODIFIERS: PUBLIC, METHOD]
                                                                        # PARAMETERS
@@ -287,7 +282,6 @@ computed                    : FUNCTION computed [ANONYMOUS: false, DECLARED: tru
                                                                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 contextFor                  : FUNCTION contextFor [ANONYMOUS: false, DECLARED: true - contextFor, MODIFIERS: PUBLIC, METHOD]
                             # RETURN TYPES
-                            @exp;ko@call;contextFor, RESOLVED: false
                             # PARAMETERS
                             OBJECT node [ANONYMOUS: false, DECLARED: true - node, MODIFIERS: PUBLIC, PARAMETER]
                                     # PROPERTIES
@@ -356,7 +350,6 @@ dependentObservable         : FUNCTION dependentObservable [ANONYMOUS: false, DE
                             dependentObservable                   : FUNCTION dependentObservable [ANONYMOUS: false, DECLARED: true - dependentObservable, MODIFIERS: PRIVATE, CONSTRUCTOR]
                                                                   # RETURN TYPES
                                                                   ko, RESOLVED: true
-                                                                  ko.dependentObservable._latestValue, RESOLVED: true
                                                                   # PROPERTIES
                                                                   arguments            : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, OBJECT]
                                                                                        # PROPERTIES
@@ -368,7 +361,7 @@ dependentObservable         : FUNCTION dependentObservable [ANONYMOUS: false, DE
                                                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                   getDependenciesCount : FUNCTION getDependenciesCount [ANONYMOUS: false, DECLARED: true - getDependenciesCount, MODIFIERS: PUBLIC, METHOD]
                                                                                        # RETURN TYPES
-                                                                                       @exp;_subscriptionsToDependencies@pro;length, RESOLVED: false
+                                                                                       ko.dependentObservable._subscriptionsToDependencies.length, RESOLVED: true
                                                                                        # PROPERTIES
                                                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                   hasWriteFunction     : OBJECT hasWriteFunction [ANONYMOUS: false, DECLARED: true - hasWriteFunction, MODIFIERS: PUBLIC, STATIC, PROPERTY]
@@ -399,8 +392,7 @@ dependentObservable         : FUNCTION dependentObservable [ANONYMOUS: false, DE
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             disposeWhen                           : FUNCTION disposeWhen [ANONYMOUS: false, DECLARED: true - disposeWhen, MODIFIERS: PUBLIC, METHOD]
                                                                   # RETURN TYPES
-                                                                  @exp;@exp;k@call;o@pro;utils@call;domNodeIsAttachedToDocumentexistingDisposeWhenFunction, RESOLVED: false
-                                                                  @exp;ko@pro;utils@call;domNodeIsAttachedToDocument, RESOLVED: false
+                                                                  Boolean, RESOLVED: true
                                                                   # PROPERTIES
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             disposeWhenNodeIsRemoved              : OBJECT disposeWhenNodeIsRemoved [ANONYMOUS: false, DECLARED: true - disposeWhenNodeIsRemoved, MODIFIERS: PRIVATE, VARIABLE]
@@ -410,7 +402,7 @@ dependentObservable         : FUNCTION dependentObservable [ANONYMOUS: false, DE
                                                                   # PROPERTIES
                                                                   _L1231             : FUNCTION _L1231 [ANONYMOUS: true, DECLARED: true - _L1231, MODIFIERS: PUBLIC, METHOD]
                                                                                      # RETURN TYPES
-                                                                                     @exp;item@pro;target, RESOLVED: false
+                                                                                     ko.dependentObservable.evaluateImmediate._L1231.item.target, RESOLVED: true
                                                                                      # PARAMETERS
                                                                                      OBJECT item [ANONYMOUS: false, DECLARED: true - item, MODIFIERS: PUBLIC, PARAMETER]
                                                                                              # PROPERTIES
@@ -447,11 +439,9 @@ dependentObservable         : FUNCTION dependentObservable [ANONYMOUS: false, DE
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             notifySubscribers                     : OBJECT notifySubscribers [ANONYMOUS: false, DECLARED: false - notifySubscribers, MODIFIERS: PUBLIC, PROPERTY]
                             peek                                  : FUNCTION peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PRIVATE, METHOD]
-                                                                  # RETURN TYPES
-                                                                  ko.dependentObservable._latestValue, RESOLVED: true
                                                                   # PROPERTIES
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                            readFunction                          : OBJECT readFunction [ANONYMOUS: false, DECLARED: true - readFunction, MODIFIERS: PRIVATE, OBJECT]
+                            readFunction                          : OBJECT readFunction [ANONYMOUS: false, DECLARED: true - readFunction, MODIFIERS: PRIVATE, VARIABLE]
                                                                   # PROPERTIES
                                                                   call : FUNCTION call [ANONYMOUS: false, DECLARED: false - call, MODIFIERS: PUBLIC, METHOD]
                                                                        # PARAMETERS
@@ -467,7 +457,7 @@ dependentObservable         : FUNCTION dependentObservable [ANONYMOUS: false, DE
                                                                         OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
                                                                         # PROPERTIES
                                                                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-expressionRewriting         : OBJECT expressionRewriting [ANONYMOUS: true, DECLARED: true - expressionRewriting, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
+expressionRewriting         : OBJECT expressionRewriting [ANONYMOUS: false, DECLARED: true - expressionRewriting, MODIFIERS: PRIVATE, OBJECT_LITERAL]
                             # PROPERTIES
                             bindingRewriteValidators : OBJECT bindingRewriteValidators [ANONYMOUS: false, DECLARED: true - bindingRewriteValidators, MODIFIERS: PUBLIC, PROPERTY]
                             keyValueArrayContainsKey : FUNCTION keyValueArrayContainsKey [ANONYMOUS: false, DECLARED: true - keyValueArrayContainsKey, MODIFIERS: PUBLIC, METHOD]
@@ -642,7 +632,7 @@ extenders                   : OBJECT extenders [ANONYMOUS: false, DECLARED: true
                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             throttle : FUNCTION throttle [ANONYMOUS: false, DECLARED: true - throttle, MODIFIERS: PUBLIC, METHOD]
                                      # RETURN TYPES
-                                     @exp;ko@call;dependentObservable, RESOLVED: false
+                                     ko.dependentObservable.dependentObservable, RESOLVED: true
                                      # PARAMETERS
                                      OBJECT target [ANONYMOUS: false, DECLARED: true - target, MODIFIERS: PUBLIC, PARAMETER]
                                              # PROPERTIES
@@ -668,14 +658,14 @@ extenders                   : OBJECT extenders [ANONYMOUS: false, DECLARED: true
                                      writeTimeoutInstance : OBJECT writeTimeoutInstance [ANONYMOUS: false, DECLARED: true - writeTimeoutInstance, MODIFIERS: PRIVATE, VARIABLE]
 isComputed                  : FUNCTION isComputed [ANONYMOUS: false, DECLARED: true - isComputed, MODIFIERS: PUBLIC, METHOD]
                             # RETURN TYPES
-                            @exp;ko@call;hasPrototype, RESOLVED: false
+                            Boolean, RESOLVED: true
                             # PARAMETERS
                             OBJECT instance [ANONYMOUS: false, DECLARED: true - instance, MODIFIERS: PUBLIC, PARAMETER]
                             # PROPERTIES
                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 isObservable                : FUNCTION isObservable [ANONYMOUS: false, DECLARED: true - isObservable, MODIFIERS: PUBLIC, METHOD]
                             # RETURN TYPES
-                            @exp;ko@call;hasPrototype, RESOLVED: false
+                            Boolean, RESOLVED: true
                             # PARAMETERS
                             OBJECT instance [ANONYMOUS: false, DECLARED: true - instance, MODIFIERS: PUBLIC, PARAMETER]
                             # PROPERTIES
@@ -752,7 +742,7 @@ jqueryTmplTemplateEngine    : FUNCTION jqueryTmplTemplateEngine [ANONYMOUS: fals
                                                                                   OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                                                                                   # PROPERTIES
                                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                            prototype                          : OBJECT prototype [ANONYMOUS: false, DECLARED: true - prototype, MODIFIERS: PUBLIC, STATIC, PROPERTY]
+                            prototype                          : OBJECT prototype [ANONYMOUS: false, DECLARED: true - prototype, MODIFIERS: PUBLIC, STATIC, OBJECT]
                             renderTemplateSource               : FUNCTION renderTemplateSource [ANONYMOUS: false, DECLARED: true - renderTemplateSource, MODIFIERS: PUBLIC, METHOD]
                                                                # RETURN TYPES
                                                                ko.jqueryTmplTemplateEngine.renderTemplateSource.resultNodes, RESOLVED: true
@@ -779,7 +769,7 @@ jqueryTmplTemplateEngine    : FUNCTION jqueryTmplTemplateEngine [ANONYMOUS: fals
                                                                                      # PROPERTIES
                                                                                      appendTo : OBJECT appendTo [ANONYMOUS: false, DECLARED: false - appendTo, MODIFIERS: PUBLIC, PROPERTY]
                                                                templateText          : OBJECT templateText [ANONYMOUS: false, DECLARED: true - templateText, MODIFIERS: PRIVATE, VARIABLE]
-jsonExpressionRewriting     : OBJECT jsonExpressionRewriting [ANONYMOUS: true, DECLARED: true - jsonExpressionRewriting, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
+jsonExpressionRewriting     : OBJECT jsonExpressionRewriting [ANONYMOUS: false, DECLARED: true - jsonExpressionRewriting, MODIFIERS: PRIVATE, OBJECT_LITERAL]
                             # PROPERTIES
                             bindingRewriteValidators : OBJECT bindingRewriteValidators [ANONYMOUS: false, DECLARED: true - bindingRewriteValidators, MODIFIERS: PUBLIC, PROPERTY]
                             keyValueArrayContainsKey : FUNCTION keyValueArrayContainsKey [ANONYMOUS: false, DECLARED: true - keyValueArrayContainsKey, MODIFIERS: PUBLIC, METHOD]
@@ -935,7 +925,7 @@ jsonExpressionRewriting     : OBJECT jsonExpressionRewriting [ANONYMOUS: true, D
                                                      # PROPERTIES
                                                      arguments   : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                      propWriters : OBJECT propWriters [ANONYMOUS: false, DECLARED: true - propWriters, MODIFIERS: PRIVATE, VARIABLE]
-memoization                 : OBJECT memoization [ANONYMOUS: true, DECLARED: true - memoization, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
+memoization                 : OBJECT memoization [ANONYMOUS: false, DECLARED: true - memoization, MODIFIERS: PRIVATE, OBJECT_LITERAL]
                             # PROPERTIES
                             memoize                        : FUNCTION memoize [ANONYMOUS: false, DECLARED: true - memoize, MODIFIERS: PUBLIC, METHOD]
                                                            # RETURN TYPES
@@ -946,6 +936,8 @@ memoization                 : OBJECT memoization [ANONYMOUS: true, DECLARED: tru
                                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                            memoId    : OBJECT memoId [ANONYMOUS: false, DECLARED: true - memoId, MODIFIERS: PRIVATE, VARIABLE]
                             parseMemoText                  : FUNCTION parseMemoText [ANONYMOUS: false, DECLARED: true - parseMemoText, MODIFIERS: PUBLIC, METHOD]
+                                                           # RETURN TYPES
+                                                           unresolved, RESOLVED: true
                                                            # PARAMETERS
                                                            OBJECT memoText [ANONYMOUS: false, DECLARED: true - memoText, MODIFIERS: PUBLIC, PARAMETER]
                                                                    # PROPERTIES
@@ -1009,8 +1001,9 @@ nativeTemplateEngine        : FUNCTION nativeTemplateEngine [ANONYMOUS: false, D
                                       # PROPERTIES
                                       renderTemplateSource : FUNCTION renderTemplateSource [ANONYMOUS: false, DECLARED: true - renderTemplateSource, MODIFIERS: PUBLIC, METHOD]
                                                            # RETURN TYPES
-                                                           @exp;ko@pro;utils@call;makeArray, RESOLVED: false
-                                                           @exp;ko@pro;utils@call;parseHtmlFragment, RESOLVED: false
+                                                           Array, RESOLVED: true
+                                                           jQueryHtmlParse, RESOLVED: true
+                                                           simpleHtmlParse, RESOLVED: true
                                                            # PARAMETERS
                                                            OBJECT templateSource [ANONYMOUS: false, DECLARED: true - templateSource, MODIFIERS: PUBLIC, PARAMETER]
                                                                    # PROPERTIES
@@ -1020,7 +1013,7 @@ nativeTemplateEngine        : FUNCTION nativeTemplateEngine [ANONYMOUS: false, D
                                                            OBJECT options [ANONYMOUS: false, DECLARED: true - options, MODIFIERS: PUBLIC, PARAMETER]
                                                            # PROPERTIES
                                                            arguments           : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                           templateNodes       : OBJECT templateNodes [ANONYMOUS: false, DECLARED: true - templateNodes, MODIFIERS: PRIVATE, VARIABLE]
+                                                           templateNodes       : OBJECT templateNodes [ANONYMOUS: false, DECLARED: true - templateNodes, MODIFIERS: PRIVATE, OBJECT]
                                                                                # PROPERTIES
                                                                                cloneNode : FUNCTION cloneNode [ANONYMOUS: false, DECLARED: false - cloneNode, MODIFIERS: PUBLIC, METHOD]
                                                                                          # PARAMETERS
@@ -1044,7 +1037,6 @@ observable                  : FUNCTION observable [ANONYMOUS: false, DECLARED: t
                                           equalityComparer : FUNCTION equalityComparer [ANONYMOUS: false, DECLARED: true - equalityComparer, MODIFIERS: PUBLIC, METHOD]
                                                            # RETURN TYPES
                                                            Boolean, RESOLVED: true
-                                                           _L21.primitiveTypes, RESOLVED: true
                                                            # PARAMETERS
                                                            OBJECT a [ANONYMOUS: false, DECLARED: true - a, MODIFIERS: PUBLIC, PARAMETER]
                                                            OBJECT b [ANONYMOUS: false, DECLARED: true - b, MODIFIERS: PUBLIC, PARAMETER]
@@ -1054,7 +1046,6 @@ observable                  : FUNCTION observable [ANONYMOUS: false, DECLARED: t
                             observable    : FUNCTION observable [ANONYMOUS: false, DECLARED: true - observable, MODIFIERS: PRIVATE, CONSTRUCTOR]
                                           # RETURN TYPES
                                           ko, RESOLVED: true
-                                          ko.observable.observable._latestValue, RESOLVED: true
                                           # PROPERTIES
                                           _latestValue      : OBJECT _latestValue [ANONYMOUS: false, DECLARED: true - _latestValue, MODIFIERS: PUBLIC, STATIC, PROPERTY]
                                           arguments         : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, OBJECT]
@@ -1063,7 +1054,6 @@ observable                  : FUNCTION observable [ANONYMOUS: false, DECLARED: t
                                           equalityComparer  : FUNCTION equalityComparer [ANONYMOUS: false, DECLARED: true - equalityComparer, MODIFIERS: PUBLIC, METHOD]
                                                             # RETURN TYPES
                                                             Boolean, RESOLVED: true
-                                                            _L21.primitiveTypes, RESOLVED: true
                                                             # PARAMETERS
                                                             OBJECT a [ANONYMOUS: false, DECLARED: true - a, MODIFIERS: PUBLIC, PARAMETER]
                                                             OBJECT b [ANONYMOUS: false, DECLARED: true - b, MODIFIERS: PUBLIC, PARAMETER]
@@ -1072,6 +1062,8 @@ observable                  : FUNCTION observable [ANONYMOUS: false, DECLARED: t
                                                             oldValueIsPrimitive : OBJECT oldValueIsPrimitive [ANONYMOUS: false, DECLARED: true - oldValueIsPrimitive, MODIFIERS: PRIVATE, VARIABLE]
                                           notifySubscribers : OBJECT notifySubscribers [ANONYMOUS: false, DECLARED: false - notifySubscribers, MODIFIERS: PUBLIC, PROPERTY]
                                           peek              : FUNCTION peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PUBLIC, METHOD]
+                                                            # RETURN TYPES
+                                                            ko.observable.initialValue, RESOLVED: true
                                                             # PROPERTIES
                                                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                           valueHasMutated   : FUNCTION valueHasMutated [ANONYMOUS: false, DECLARED: true - valueHasMutated, MODIFIERS: PUBLIC, METHOD]
@@ -1086,6 +1078,9 @@ observable                  : FUNCTION observable [ANONYMOUS: false, DECLARED: t
                                                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             protoProperty : OBJECT protoProperty [ANONYMOUS: false, DECLARED: true - protoProperty, MODIFIERS: PUBLIC, STATIC, PROPERTY]
 observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLARED: true - observableArray, MODIFIERS: PUBLIC, METHOD]
+                            # RETURN TYPES
+                            ko.observable.observable, RESOLVED: true
+                            ko.observableArray.result, RESOLVED: true
                             # PARAMETERS
                             OBJECT initialValues [ANONYMOUS: false, DECLARED: true - initialValues, MODIFIERS: PUBLIC, PARAMETER]
                             # PROPERTIES
@@ -1142,13 +1137,19 @@ observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLAR
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       indexOf         : FUNCTION indexOf [ANONYMOUS: false, DECLARED: true - indexOf, MODIFIERS: PUBLIC, METHOD]
                                                       # RETURN TYPES
-                                                      @exp;ko@pro;utils@call;arrayIndexOf, RESOLVED: false
+                                                      Number, RESOLVED: true
                                                       # PARAMETERS
                                                       OBJECT item [ANONYMOUS: false, DECLARED: true - item, MODIFIERS: PUBLIC, PARAMETER]
                                                       # PROPERTIES
                                                       arguments       : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                       underlyingArray : OBJECT underlyingArray [ANONYMOUS: false, DECLARED: true - underlyingArray, MODIFIERS: PRIVATE, VARIABLE]
                                       peek            : FUNCTION peek [ANONYMOUS: false, DECLARED: false - peek, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      pop             : FUNCTION pop [ANONYMOUS: false, DECLARED: true - pop, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      push            : FUNCTION push [ANONYMOUS: false, DECLARED: true - push, MODIFIERS: PUBLIC, METHOD]
                                                       # PROPERTIES
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       remove          : FUNCTION remove [ANONYMOUS: false, DECLARED: true - remove, MODIFIERS: PUBLIC, METHOD]
@@ -1224,6 +1225,32 @@ observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLAR
                                                       # PROPERTIES
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                       index     : OBJECT index [ANONYMOUS: false, DECLARED: true - index, MODIFIERS: PRIVATE, VARIABLE]
+                                      reverse         : FUNCTION reverse [ANONYMOUS: false, DECLARED: true - reverse, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      shift           : FUNCTION shift [ANONYMOUS: false, DECLARED: true - shift, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      slice           : FUNCTION slice [ANONYMOUS: false, DECLARED: true - slice, MODIFIERS: PUBLIC, METHOD]
+                                                      # PARAMETERS
+                                                      OBJECT start [ANONYMOUS: false, DECLARED: true - start, MODIFIERS: PUBLIC, PARAMETER]
+                                                      OBJECT end [ANONYMOUS: false, DECLARED: true - end, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      sort            : FUNCTION sort [ANONYMOUS: false, DECLARED: true - sort, MODIFIERS: PUBLIC, METHOD]
+                                                      # PARAMETERS
+                                                      OBJECT comparefn [ANONYMOUS: false, DECLARED: true - comparefn, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      splice          : FUNCTION splice [ANONYMOUS: false, DECLARED: true - splice, MODIFIERS: PUBLIC, METHOD]
+                                                      # PARAMETERS
+                                                      OBJECT start [ANONYMOUS: false, DECLARED: true - start, MODIFIERS: PUBLIC, PARAMETER]
+                                                      OBJECT deleteCount [ANONYMOUS: false, DECLARED: true - deleteCount, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      unshift         : FUNCTION unshift [ANONYMOUS: false, DECLARED: true - unshift, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       valueHasMutated : FUNCTION valueHasMutated [ANONYMOUS: false, DECLARED: false - valueHasMutated, MODIFIERS: PUBLIC, METHOD]
                                                       # PROPERTIES
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
@@ -1274,13 +1301,19 @@ observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLAR
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       indexOf         : FUNCTION indexOf [ANONYMOUS: false, DECLARED: true - indexOf, MODIFIERS: PUBLIC, METHOD]
                                                       # RETURN TYPES
-                                                      @exp;ko@pro;utils@call;arrayIndexOf, RESOLVED: false
+                                                      Number, RESOLVED: true
                                                       # PARAMETERS
                                                       OBJECT item [ANONYMOUS: false, DECLARED: true - item, MODIFIERS: PUBLIC, PARAMETER]
                                                       # PROPERTIES
                                                       arguments       : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                       underlyingArray : OBJECT underlyingArray [ANONYMOUS: false, DECLARED: true - underlyingArray, MODIFIERS: PRIVATE, VARIABLE]
                                       peek            : FUNCTION peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      pop             : FUNCTION pop [ANONYMOUS: false, DECLARED: false - pop, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      push            : FUNCTION push [ANONYMOUS: false, DECLARED: false - push, MODIFIERS: PUBLIC, METHOD]
                                                       # PROPERTIES
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       remove          : FUNCTION remove [ANONYMOUS: false, DECLARED: true - remove, MODIFIERS: PUBLIC, METHOD]
@@ -1356,6 +1389,32 @@ observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLAR
                                                       # PROPERTIES
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                       index     : OBJECT index [ANONYMOUS: false, DECLARED: true - index, MODIFIERS: PRIVATE, VARIABLE]
+                                      reverse         : FUNCTION reverse [ANONYMOUS: false, DECLARED: false - reverse, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      shift           : FUNCTION shift [ANONYMOUS: false, DECLARED: false - shift, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      slice           : FUNCTION slice [ANONYMOUS: false, DECLARED: false - slice, MODIFIERS: PUBLIC, METHOD]
+                                                      # PARAMETERS
+                                                      OBJECT start [ANONYMOUS: false, DECLARED: true - start, MODIFIERS: PUBLIC, PARAMETER]
+                                                      OBJECT end [ANONYMOUS: false, DECLARED: true - end, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      sort            : FUNCTION sort [ANONYMOUS: false, DECLARED: false - sort, MODIFIERS: PUBLIC, METHOD]
+                                                      # PARAMETERS
+                                                      OBJECT comparefn [ANONYMOUS: false, DECLARED: true - comparefn, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      splice          : FUNCTION splice [ANONYMOUS: false, DECLARED: false - splice, MODIFIERS: PUBLIC, METHOD]
+                                                      # PARAMETERS
+                                                      OBJECT start [ANONYMOUS: false, DECLARED: true - start, MODIFIERS: PUBLIC, PARAMETER]
+                                                      OBJECT deleteCount [ANONYMOUS: false, DECLARED: true - deleteCount, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      unshift         : FUNCTION unshift [ANONYMOUS: false, DECLARED: false - unshift, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       valueHasMutated : FUNCTION valueHasMutated [ANONYMOUS: false, DECLARED: true - valueHasMutated, MODIFIERS: PUBLIC, METHOD]
                                                       # PROPERTIES
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
@@ -1397,13 +1456,13 @@ renderTemplate              : OBJECT renderTemplate [ANONYMOUS: false, DECLARED:
                                                              parentNode : OBJECT parentNode [ANONYMOUS: false, DECLARED: false - parentNode, MODIFIERS: PUBLIC, PROPERTY]
                             whenToDispose                    : FUNCTION whenToDispose [ANONYMOUS: false, DECLARED: true - whenToDispose, MODIFIERS: PRIVATE, METHOD]
                                                              # RETURN TYPES
-                                                             @exp;ko@pro;utils@call;domNodeIsAttachedToDocument, RESOLVED: false
+                                                             Boolean, RESOLVED: true
                                                              ko.renderTemplate.firstTargetNode, RESOLVED: true
                                                              # PROPERTIES
                                                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 renderTemplateForEach       : FUNCTION renderTemplateForEach [ANONYMOUS: false, DECLARED: true - renderTemplateForEach, MODIFIERS: PUBLIC, METHOD]
                             # RETURN TYPES
-                            @exp;ko@call;dependentObservable, RESOLVED: false
+                            ko.dependentObservable.dependentObservable, RESOLVED: true
                             # PARAMETERS
                             OBJECT template [ANONYMOUS: false, DECLARED: true - template, MODIFIERS: PUBLIC, PARAMETER]
                             OBJECT arrayOrObservableArray [ANONYMOUS: false, DECLARED: true - arrayOrObservableArray, MODIFIERS: PUBLIC, PARAMETER]
@@ -1431,7 +1490,7 @@ renderTemplateForEach       : FUNCTION renderTemplateForEach [ANONYMOUS: false, 
                                                                        length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                             _L3101                      : FUNCTION _L3101 [ANONYMOUS: true, DECLARED: true - _L3101, MODIFIERS: PUBLIC, METHOD]
                                                         # RETURN TYPES
-                                                        @exp;ko@pro;utils@call;unwrapObservable, RESOLVED: false
+                                                        _L43.Anonym$4.unwrapObservable.value, RESOLVED: true
                                                         # PARAMETERS
                                                         OBJECT item [ANONYMOUS: false, DECLARED: true - item, MODIFIERS: PUBLIC, PARAMETER]
                                                                 # PROPERTIES
@@ -1481,7 +1540,6 @@ slice                       : FUNCTION slice [ANONYMOUS: false, DECLARED: false 
                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 storedBindingContextForNode : FUNCTION storedBindingContextForNode [ANONYMOUS: false, DECLARED: true - storedBindingContextForNode, MODIFIERS: PUBLIC, METHOD]
                             # RETURN TYPES
-                            @exp;ko@pro;utils@pro;domData@call;get, RESOLVED: false
                             # PARAMETERS
                             OBJECT node [ANONYMOUS: false, DECLARED: true - node, MODIFIERS: PUBLIC, PARAMETER]
                             OBJECT bindingContext [ANONYMOUS: false, DECLARED: true - bindingContext, MODIFIERS: PUBLIC, PARAMETER]
@@ -1571,6 +1629,8 @@ subscribable                : FUNCTION subscribable [ANONYMOUS: false, DECLARED:
                                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                   subscribe             : FUNCTION subscribe [ANONYMOUS: false, DECLARED: true - subscribe, MODIFIERS: PUBLIC, METHOD]
+                                                                        # RETURN TYPES
+                                                                        undefined, RESOLVED: true
                                                                         # PARAMETERS
                                                                         OBJECT callback [ANONYMOUS: false, DECLARED: true - callback, MODIFIERS: PUBLIC, PARAMETER]
                                                                                 # PROPERTIES
@@ -1640,6 +1700,8 @@ subscribable                : FUNCTION subscribable [ANONYMOUS: false, DECLARED:
                                                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             subscribe             : FUNCTION subscribe [ANONYMOUS: false, DECLARED: true - subscribe, MODIFIERS: PUBLIC, METHOD]
+                                                  # RETURN TYPES
+                                                  undefined, RESOLVED: true
                                                   # PARAMETERS
                                                   OBJECT callback [ANONYMOUS: false, DECLARED: true - callback, MODIFIERS: PUBLIC, PARAMETER]
                                                           # PROPERTIES
@@ -1691,8 +1753,7 @@ templateEngine              : FUNCTION templateEngine [ANONYMOUS: false, DECLARE
                                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       makeTemplateSource             : FUNCTION makeTemplateSource [ANONYMOUS: false, DECLARED: true - makeTemplateSource, MODIFIERS: PUBLIC, METHOD]
                                                                      # RETURN TYPES
-                                                                     @exp;ko@pro;templateSources@call;anonymousTemplate, RESOLVED: false
-                                                                     @exp;ko@pro;templateSources@call;domElement, RESOLVED: false
+                                                                     undefined, RESOLVED: true
                                                                      # PARAMETERS
                                                                      OBJECT template [ANONYMOUS: false, DECLARED: true - template, MODIFIERS: PUBLIC, PARAMETER]
                                                                              # PROPERTIES
@@ -1755,7 +1816,7 @@ templateSources             : OBJECT templateSources [ANONYMOUS: false, DECLARED
                                                          # PROPERTIES
                                                          text : FUNCTION text [ANONYMOUS: false, DECLARED: true - text, MODIFIERS: PUBLIC, METHOD]
                                                               # RETURN TYPES
-                                                              @exp;templateData@pro;textData, RESOLVED: false
+                                                              ko.templateSources.anonymousTemplate.prototype.text.templateData.containerData.innerHTML, RESOLVED: true
                                                               # PROPERTIES
                                                               Anonym$24    : OBJECT Anonym$24 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                                                                            # PROPERTIES
@@ -1782,7 +1843,6 @@ templateSources             : OBJECT templateSources [ANONYMOUS: false, DECLARED
                                                          # PROPERTIES
                                                          data  : FUNCTION data [ANONYMOUS: false, DECLARED: true - data, MODIFIERS: PUBLIC, METHOD]
                                                                # RETURN TYPES
-                                                               @exp;ko@pro;utils@pro;domData@call;get, RESOLVED: false
                                                                # PARAMETERS
                                                                OBJECT key [ANONYMOUS: false, DECLARED: true - key, MODIFIERS: PUBLIC, PARAMETER]
                                                                # PROPERTIES
@@ -1791,7 +1851,7 @@ templateSources             : OBJECT templateSources [ANONYMOUS: false, DECLARED
                                                                          length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                                                          nodes : FUNCTION nodes [ANONYMOUS: false, DECLARED: true - nodes, MODIFIERS: PUBLIC, METHOD]
                                                                # RETURN TYPES
-                                                               @exp;templateData@pro;containerData, RESOLVED: false
+                                                               ko.templateSources.domElement.prototype.nodes.templateData.containerData, RESOLVED: true
                                                                # PROPERTIES
                                                                Anonym$25    : OBJECT Anonym$25 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                                                                             # PROPERTIES
@@ -1833,7 +1893,7 @@ unshift                     : FUNCTION unshift [ANONYMOUS: false, DECLARED: fals
                             OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                             # PROPERTIES
                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - utils, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
+utils                       : OBJECT utils [ANONYMOUS: false, DECLARED: true - utils, MODIFIERS: PRIVATE, OBJECT_LITERAL]
                             # PROPERTIES
                             arrayFilter                            : FUNCTION arrayFilter [ANONYMOUS: false, DECLARED: true - arrayFilter, MODIFIERS: PUBLIC, METHOD]
                                                                    # RETURN TYPES
@@ -1906,7 +1966,6 @@ utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - ut
                                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             arrayIndexOf                           : FUNCTION arrayIndexOf [ANONYMOUS: false, DECLARED: true - arrayIndexOf, MODIFIERS: PUBLIC, METHOD]
                                                                    # RETURN TYPES
-                                                                   @exp;Array@pro;prototype@pro;indexOf@call;call, RESOLVED: false
                                                                    Number, RESOLVED: true
                                                                    # PARAMETERS
                                                                    OBJECT array [ANONYMOUS: false, DECLARED: true - array, MODIFIERS: PUBLIC, PARAMETER]
@@ -1999,7 +2058,18 @@ utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - ut
                                                                                       OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                                                                                       # PROPERTIES
                                                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                            domData                                : OBJECT domData [ANONYMOUS: true, DECLARED: true - domData, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
+                            compareArrays                          : FUNCTION compareArrays [ANONYMOUS: false, DECLARED: true - compareArrays, MODIFIERS: PRIVATE, METHOD]
+                                                                   # PARAMETERS
+                                                                   OBJECT oldArray [ANONYMOUS: false, DECLARED: true - oldArray, MODIFIERS: PUBLIC, PARAMETER]
+                                                                           # PROPERTIES
+                                                                           length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
+                                                                   OBJECT newArray [ANONYMOUS: false, DECLARED: true - newArray, MODIFIERS: PUBLIC, PARAMETER]
+                                                                           # PROPERTIES
+                                                                           length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
+                                                                   OBJECT dontLimitMoves [ANONYMOUS: false, DECLARED: true - dontLimitMoves, MODIFIERS: PUBLIC, PARAMETER]
+                                                                   # PROPERTIES
+                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                            domData                                : OBJECT domData [ANONYMOUS: false, DECLARED: true - domData, MODIFIERS: PRIVATE, OBJECT_LITERAL]
                                                                    # PROPERTIES
                                                                    clear  : FUNCTION clear [ANONYMOUS: false, DECLARED: true - clear, MODIFIERS: PUBLIC, METHOD]
                                                                           # RETURN TYPES
@@ -2035,7 +2105,7 @@ utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - ut
                                                                           # PROPERTIES
                                                                           allDataForNode : OBJECT allDataForNode [ANONYMOUS: false, DECLARED: true - allDataForNode, MODIFIERS: PRIVATE, VARIABLE]
                                                                           arguments      : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                            domNodeDisposal                        : OBJECT domNodeDisposal [ANONYMOUS: true, DECLARED: true - domNodeDisposal, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
+                            domNodeDisposal                        : OBJECT domNodeDisposal [ANONYMOUS: false, DECLARED: true - domNodeDisposal, MODIFIERS: PRIVATE, OBJECT_LITERAL]
                                                                    # PROPERTIES
                                                                    addDisposeCallback    : FUNCTION addDisposeCallback [ANONYMOUS: false, DECLARED: true - addDisposeCallback, MODIFIERS: PUBLIC, METHOD]
                                                                                          # RETURN TYPES
@@ -2092,7 +2162,7 @@ utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - ut
                                                                                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             domNodeIsAttachedToDocument            : FUNCTION domNodeIsAttachedToDocument [ANONYMOUS: false, DECLARED: true - domNodeIsAttachedToDocument, MODIFIERS: PUBLIC, METHOD]
                                                                    # RETURN TYPES
-                                                                   @exp;ko@pro;utils@call;domNodeIsContainedBy, RESOLVED: false
+                                                                   Boolean, RESOLVED: true
                                                                    # PARAMETERS
                                                                    OBJECT node [ANONYMOUS: false, DECLARED: true - node, MODIFIERS: PUBLIC, PARAMETER]
                                                                            # PROPERTIES
@@ -2203,7 +2273,6 @@ utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - ut
                                                                                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                                    _L426 : FUNCTION _L426 [ANONYMOUS: false, DECLARED: true - _L426, MODIFIERS: PUBLIC, METHOD]
                                                                                          # RETURN TYPES
-                                                                                         @exp;fieldName@call;test, RESOLVED: false
                                                                                          # PARAMETERS
                                                                                          OBJECT field [ANONYMOUS: false, DECLARED: true - field, MODIFIERS: PUBLIC, PARAMETER]
                                                                                                  # PROPERTIES
@@ -2239,6 +2308,7 @@ utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - ut
                                                                                   # PROPERTIES
                                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             moveCleanedNodesToContainerElement     : FUNCTION moveCleanedNodesToContainerElement [ANONYMOUS: false, DECLARED: true - moveCleanedNodesToContainerElement, MODIFIERS: PUBLIC, METHOD]
+                                                                   # RETURN TYPES
                                                                    # PARAMETERS
                                                                    OBJECT nodes [ANONYMOUS: false, DECLARED: true - nodes, MODIFIERS: PUBLIC, PARAMETER]
                                                                    # PROPERTIES
@@ -2257,15 +2327,15 @@ utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - ut
                                                                               length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                             parseHtmlFragment                      : FUNCTION parseHtmlFragment [ANONYMOUS: false, DECLARED: true - parseHtmlFragment, MODIFIERS: PUBLIC, METHOD]
                                                                    # RETURN TYPES
-                                                                   @exp;@call;jQueryHtmlParse, RESOLVED: false
-                                                                   @exp;@exp;@@call;call;jQueryHtmlParsesimpleHtmlParse, RESOLVED: false
+                                                                   Array, RESOLVED: true
+                                                                   jQueryHtmlParse, RESOLVED: true
+                                                                   simpleHtmlParse, RESOLVED: true
                                                                    # PARAMETERS
                                                                    OBJECT html [ANONYMOUS: false, DECLARED: true - html, MODIFIERS: PUBLIC, PARAMETER]
                                                                    # PROPERTIES
                                                                    arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             parseJson                              : FUNCTION parseJson [ANONYMOUS: false, DECLARED: true - parseJson, MODIFIERS: PUBLIC, METHOD]
                                                                    # RETURN TYPES
-                                                                   @exp;window@pro;JSON@call;parse, RESOLVED: false
                                                                    Function, RESOLVED: true
                                                                    # PARAMETERS
                                                                    OBJECT jsonString [ANONYMOUS: false, DECLARED: true - jsonString, MODIFIERS: PUBLIC, PARAMETER]
@@ -2273,9 +2343,7 @@ utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - ut
                                                                    arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             peekObservable                         : FUNCTION peekObservable [ANONYMOUS: false, DECLARED: true - peekObservable, MODIFIERS: PUBLIC, METHOD]
                                                                    # RETURN TYPES
-                                                                   @exp;@exp;value@pro;peek@exp;k@call;o@call;isObservablevalue, RESOLVED: false
-                                                                   @exp;ko@call;isObservable, RESOLVED: false
-                                                                   @exp;value@pro;peek@exp;k@call;o@call;isObservable, RESOLVED: false
+                                                                   _L43.Anonym$4.peekObservable.value, RESOLVED: true
                                                                    # PARAMETERS
                                                                    OBJECT value [ANONYMOUS: false, DECLARED: true - value, MODIFIERS: PUBLIC, PARAMETER]
                                                                            # PROPERTIES
@@ -2342,7 +2410,7 @@ utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - ut
                                                                                               value : OBJECT value [ANONYMOUS: false, DECLARED: true - value, MODIFIERS: PUBLIC, PROPERTY]
                                                                    j                          : OBJECT j [ANONYMOUS: false, DECLARED: true - j, MODIFIERS: PRIVATE, VARIABLE]
                                                                    key                        : OBJECT key [ANONYMOUS: false, DECLARED: true - key, MODIFIERS: PRIVATE, VARIABLE]
-                                                                   originalForm               : OBJECT originalForm [ANONYMOUS: false, DECLARED: true - originalForm, MODIFIERS: PRIVATE, OBJECT]
+                                                                   originalForm               : OBJECT originalForm [ANONYMOUS: false, DECLARED: true - originalForm, MODIFIERS: PRIVATE, VARIABLE]
                                                                                               # PROPERTIES
                                                                                               action : OBJECT action [ANONYMOUS: false, DECLARED: false - action, MODIFIERS: PUBLIC, PROPERTY]
                                                                    params                     : OBJECT params [ANONYMOUS: false, DECLARED: true - params, MODIFIERS: PRIVATE, OBJECT_LITERAL]
@@ -2402,7 +2470,7 @@ utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - ut
                                                                                       checked                    : OBJECT checked [ANONYMOUS: false, DECLARED: true - checked, MODIFIERS: PUBLIC, PROPERTY]
                                                                                       jQuerySuppliedCheckedState : OBJECT jQuerySuppliedCheckedState [ANONYMOUS: false, DECLARED: true - jQuerySuppliedCheckedState, MODIFIERS: PRIVATE, VARIABLE]
                                                                    mustUseAttachEvent : OBJECT mustUseAttachEvent [ANONYMOUS: false, DECLARED: true - mustUseAttachEvent, MODIFIERS: PRIVATE, VARIABLE]
-                                                                   originalHandler    : OBJECT originalHandler [ANONYMOUS: false, DECLARED: true - originalHandler, MODIFIERS: PRIVATE, OBJECT]
+                                                                   originalHandler    : OBJECT originalHandler [ANONYMOUS: false, DECLARED: true - originalHandler, MODIFIERS: PRIVATE, VARIABLE]
                                                                                       # PROPERTIES
                                                                                       call : FUNCTION call [ANONYMOUS: false, DECLARED: false - call, MODIFIERS: PUBLIC, METHOD]
                                                                                            # PARAMETERS
@@ -2473,7 +2541,7 @@ utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - ut
                                                                    # PROPERTIES
                                                                    _L3358                        : FUNCTION _L3358 [ANONYMOUS: true, DECLARED: true - _L3358, MODIFIERS: PUBLIC, METHOD]
                                                                                                  # RETURN TYPES
-                                                                                                 @exp;x@pro;arrayEntry, RESOLVED: false
+                                                                                                 ko.utils.setDomNodeChildrenFromArrayMapping._L3358.x.arrayEntry, RESOLVED: true
                                                                                                  # PARAMETERS
                                                                                                  OBJECT x [ANONYMOUS: false, DECLARED: true - x, MODIFIERS: PUBLIC, PARAMETER]
                                                                                                          # PROPERTIES
@@ -2698,7 +2766,7 @@ utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - ut
                                                                    arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             stringifyJson                          : FUNCTION stringifyJson [ANONYMOUS: false, DECLARED: true - stringifyJson, MODIFIERS: PUBLIC, METHOD]
                                                                    # RETURN TYPES
-                                                                   @exp;JSON@call;stringify, RESOLVED: false
+                                                                   String, RESOLVED: true
                                                                    # PARAMETERS
                                                                    OBJECT data [ANONYMOUS: false, DECLARED: true - data, MODIFIERS: PUBLIC, PARAMETER]
                                                                    OBJECT replacer [ANONYMOUS: false, DECLARED: true - replacer, MODIFIERS: PUBLIC, PARAMETER]
@@ -2707,9 +2775,8 @@ utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - ut
                                                                    arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             tagNameLower                           : FUNCTION tagNameLower [ANONYMOUS: false, DECLARED: true - tagNameLower, MODIFIERS: PUBLIC, METHOD]
                                                                    # RETURN TYPES
-                                                                   @exp;element@pro;tagName, RESOLVED: false
-                                                                   @exp;element@pro;tagName@pro;toLowerCase@exp;e@call;lement@pro;tagName, RESOLVED: false
                                                                    _L43.Anonym$4.tagNameLower.element, RESOLVED: true
+                                                                   _L43.Anonym$4.tagNameLower.element.tagName, RESOLVED: true
                                                                    # PARAMETERS
                                                                    OBJECT element [ANONYMOUS: false, DECLARED: true - element, MODIFIERS: PUBLIC, PARAMETER]
                                                                            # PROPERTIES
@@ -2817,9 +2884,7 @@ utils                       : OBJECT utils [ANONYMOUS: true, DECLARED: true - ut
                                                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             unwrapObservable                       : FUNCTION unwrapObservable [ANONYMOUS: false, DECLARED: true - unwrapObservable, MODIFIERS: PUBLIC, METHOD]
                                                                    # RETURN TYPES
-                                                                   @exp;@exp;@exp;k@call;o@call;isObservablevaluevalue, RESOLVED: false
-                                                                   @exp;@exp;k@call;o@call;isObservablevalue, RESOLVED: false
-                                                                   @exp;ko@call;isObservable, RESOLVED: false
+                                                                   _L43.Anonym$4.unwrapObservable.value, RESOLVED: true
                                                                    # PARAMETERS
                                                                    OBJECT value [ANONYMOUS: false, DECLARED: true - value, MODIFIERS: PUBLIC, PARAMETER]
                                                                    # PROPERTIES

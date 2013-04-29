@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.css.prep.process;
 
+import java.io.File;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.editor.CPUtils;
+import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
 import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
@@ -54,6 +57,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 public final class LessProcessor extends BaseProcessor {
+
+
+    public LessProcessor(LessCssPreprocessor cssPreprocessor) {
+        super(cssPreprocessor);
+    }
 
     @Override
     protected boolean isEnabledInternal(Project project) {
@@ -66,13 +74,18 @@ public final class LessProcessor extends BaseProcessor {
     }
 
     @Override
-    protected void compile(Project project, FileObject fileObject) {
-        LessExecutable less = getLess();
+    protected List<String> getMappings(Project project) {
+        return LessPreferences.getMappings(project);
+    }
+
+    @Override
+    protected void compileInternal(Project project, File source, File target) {
+        LessExecutable less = getLess(project);
         if (less == null) {
             return;
         }
         try {
-            less.compile(fileObject);
+            less.compile(source, target);
         } catch (ExecutionException ex) {
             if (Warnings.showLessWarning()) {
                 UiUtils.processExecutionException(ex);
@@ -81,11 +94,11 @@ public final class LessProcessor extends BaseProcessor {
     }
 
     @CheckForNull
-    private LessExecutable getLess() {
+    private LessExecutable getLess(Project project) {
         try {
             return LessExecutable.getDefault();
         } catch (InvalidExternalExecutableException ex) {
-            // ignored, project problems will catch it
+            cssPreprocessor.fireProcessingErrorOccured(project, ex.getLocalizedMessage());
         }
         return null;
     }
