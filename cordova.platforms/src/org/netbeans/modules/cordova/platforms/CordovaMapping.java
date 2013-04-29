@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,75 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.ios;
+package org.netbeans.modules.cordova.platforms;
 
-import com.dd.plist.NSObject;
-import com.dd.plist.XMLPropertyListParser;
-import org.json.simple.JSONObject;
-import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
+import org.netbeans.api.project.Project;
 
 /**
  *
  * @author Jan Becicka
  */
-public class DeviceDebugTransport extends IOSDebugTransport implements TransportImplementation {
+public interface CordovaMapping {
+
+    void setBaseUrl(String url);
+
+    void setProject(Project p);
     
-    private WebInspectorJNIBinding nativeCall;
-
-    public DeviceDebugTransport() {
-        super();
-        nativeCall = WebInspectorJNIBinding.getDefault();
-    }
-    
-    @Override
-    protected void init() throws Exception {
-        nativeCall.start();
-    }
-
-    @Override
-    public void sendCommand(JSONObject command) throws Exception {
-        sendMessage(createJSONCommand(command));
-    }
-
-    @Override
-    public void sendCommand(String command) throws Exception {
-        //System.out.println("sending " + command);
-        sendMessage(command);
-    }
-    
-    private void sendMessage(String message) {
-        //if (keepGoing)
-            nativeCall.sendMessage(message);
-    }
-
-    @Override
-    protected NSObject readData() throws Exception {
-        String content = nativeCall.receiveMessage();
-        if (content==null) {
-            Thread.sleep(100);
-            return null;
-        }
-
-        NSObject object = XMLPropertyListParser.parse(fromString(content));
-        return object;
-    }
-    
-    @Override
-    protected void stop() {
-        super.stop();
-        nativeCall.stop();
-   }
-
-    @Override
-    public String getConnectionName() {
-        return "iOS Device";
-    }
-
-    @Override
-    public String getVersion() {
-        return "1.0";
-    }
 }
-         

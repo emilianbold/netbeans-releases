@@ -132,7 +132,7 @@ made subject to such option by the copyright holder.
         
         <exec executable="${cordova.home}/lib/ios/bin/create">
             <arg value="${cordova.platforms}/ios" />
-            <arg value="${android.project.package}"/>
+            <arg value="${android.project.package}.${android.project.activity}"/>
             <arg value="${android.project.activity}"/>
         </exec>
 
@@ -206,10 +206,13 @@ made subject to such option by the copyright holder.
         <echo>
             Install "${basedir}/build/ios/${project.name}.ipa" through iTunes and run it. 
         </echo> 
+        <exec executable="open">
+            <arg value="${basedir}/build/ios/${project.name}.ipa"/>
+        </exec>
     </target>
 
     <target name="ios-run-simulator" unless="build.for.device">
-        <exec executable="${ios.sim.exec}" dir="${cordova.build}/ios">
+        <exec executable="${ios.sim.exec}" dir="${cordova.build}/ios" spawn="true">
             <arg line="launch build/${project.name}.app ${ios.device.args}"/>
         </exec> 
     </target>

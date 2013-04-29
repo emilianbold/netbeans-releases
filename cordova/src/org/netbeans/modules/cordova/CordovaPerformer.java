@@ -74,9 +74,14 @@ import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.cordova.PropertyNames.*;
+import org.netbeans.modules.cordova.platforms.CordovaMapping;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
+import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.execution.ExecutorTask;
 import org.openide.loaders.DataObject;
 
 /**
@@ -103,7 +108,7 @@ public class CordovaPerformer implements BuildPerformer {
     private Lookup networkMonitor;
     private WebKitDebugging webKitDebugging;
     private MobileDebugTransport transport;
-    private final int BUILD_SCRIPT_VERSION = 4;
+    private final int BUILD_SCRIPT_VERSION = 5;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
@@ -129,7 +134,33 @@ public class CordovaPerformer implements BuildPerformer {
                 generateBuildScripts(project);
                 FileObject buildFo = project.getProjectDirectory().getFileObject(PATH_BUILD_XML);//NOI18N
                 try {
-                    ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
+                    ExecutorTask runTarget = ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
+                    if (target.equals(BuildPerformer.RUN_IOS)) {
+                        if (runTarget.result() == 0) {
+                            ProjectConfigurationProvider provider = project.getLookup().lookup(ProjectConfigurationProvider.class);
+                            if (provider != null) {
+                                ProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
+                                if (activeConfiguration instanceof MobileConfigurationImpl) {
+                                    Device device = ((MobileConfigurationImpl) activeConfiguration).getDevice();
+                                    CordovaMapping map = (CordovaMapping) Lookup.getDefault().lookup(ServerURLMappingImplementation.class);
+                                    map.setProject(project);
+                                    if (device.isEmulator()) {
+                                    try {
+                                        Thread.sleep(5000);
+                                    } catch (InterruptedException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                    } else {
+                                        DialogDescriptor dd = new DialogDescriptor("Install application using iTunes and tap on it", "Install and Run");
+                                        if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
+                                            return;
+                                        }
+                                    }
+                                    startDebugging(device, project, null, false);
+                                }
+                            }
+                        }
+                    }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (IllegalArgumentException ex) {
@@ -259,6 +290,9 @@ public class CordovaPerformer implements BuildPerformer {
 
     @Override
     public String getUrl(Project p, Lookup context) {
+        if (context == null) {
+            return null;
+        }
         URL url = context.lookup(URL.class);
         if (url!=null) {
             //TODO: hack to workaround #221791
@@ -292,6 +326,10 @@ public class CordovaPerformer implements BuildPerformer {
         transport = device.getDebugTransport();
         final String url = getUrl(p, context);
         transport.setBaseUrl(url);
+        if (url==null) {
+            String id = getConfig(p).getId();
+            transport.setBundleIdentifier(id);
+        }
         transport.attach();
         try {
             Thread.sleep(1000);
@@ -312,29 +350,35 @@ public class CordovaPerformer implements BuildPerformer {
 
     @Override
     public void stopDebugging() {
-        if (webKitDebugging == null || webKitDebugging == null) {
-            return;
+        try {
+            if (webKitDebugging == null || webKitDebugging == null) {
+                return;
+            }
+            if (debuggerSession != null) {
+                WebKitUIManager.getDefault().stopDebuggingSession(debuggerSession);
+            }
+            debuggerSession = null;
+            if (consoleLogger != null) {
+                WebKitUIManager.getDefault().stopBrowserConsoleLogger(consoleLogger);
+            }
+            consoleLogger = null;
+            if (networkMonitor != null) {
+                WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
+            }
+            networkMonitor = null;
+            if (webKitDebugging.getDebugger().isEnabled()) {
+                webKitDebugging.getDebugger().disable();
+            }
+            webKitDebugging.reset();
+            transport.detach();
+            transport = null;
+            webKitDebugging = null;
+            PageInspector.getDefault().inspectPage(Lookup.EMPTY);
+        } finally {
+            CordovaMapping map = Lookup.getDefault().lookup(CordovaMapping.class);
+            map.setBaseUrl(null);
+            map.setProject(null);
         }
-        if (debuggerSession != null) {
-            WebKitUIManager.getDefault().stopDebuggingSession(debuggerSession);
-        }
-        debuggerSession = null;
-        if (consoleLogger != null) {
-            WebKitUIManager.getDefault().stopBrowserConsoleLogger(consoleLogger);
-        }
-        consoleLogger = null;
-        if (networkMonitor != null) {
-            WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
-        }
-        networkMonitor = null;
-        if (webKitDebugging.getDebugger().isEnabled()) {
-            webKitDebugging.getDebugger().disable();
-        }
-        webKitDebugging.reset();
-        transport.detach();
-        transport = null;
-        webKitDebugging = null;
-        PageInspector.getDefault().inspectPage(Lookup.EMPTY);
     }
 
 }
