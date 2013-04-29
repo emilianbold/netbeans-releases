@@ -1,0 +1,3 @@
+token #0 T_HTML [<foo]
+token #1 T_HTML [>]
+token #2 T_HTML [     ]
