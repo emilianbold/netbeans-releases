@@ -965,14 +965,16 @@ public class WebKitPageModel extends PageModel {
                 String styleSheetId = header.getStyleSheetId();
                 StyleSheetBody body = css.getStyleSheet(styleSheetId);
                 String styleSheetText = body.getText();
-                if (selectionMode) {
-                    // Replacement of :hover is done in setStyleSheetText()
-                    css.setStyleSheetText(styleSheetId, styleSheetText);
-                } else {
-                    styleSheetText = Pattern.compile(Pattern.quote("." + CSSUtils.HOVER_CLASS)).matcher(styleSheetText).replaceAll(":hover"); // NOI18N
-                    css.setStyleSheetText(styleSheetId, styleSheetText);
+                if (styleSheetText != null) { // Issue 229137
+                    if (selectionMode) {
+                        // Replacement of :hover is done in setStyleSheetText()
+                        css.setStyleSheetText(styleSheetId, styleSheetText);
+                    } else {
+                        styleSheetText = Pattern.compile(Pattern.quote("." + CSSUtils.HOVER_CLASS)).matcher(styleSheetText).replaceAll(":hover"); // NOI18N
+                        css.setStyleSheetText(styleSheetId, styleSheetText);
+                    }
                 }
-            }            
+            }
         }
 
     }
