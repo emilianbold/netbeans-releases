@@ -47,13 +47,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.AccessibleContext;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
@@ -789,11 +788,9 @@ public final class DashboardViewer implements PropertyChangeListener {
             @Override
             public void run() {
                 // w8 with loading to preject ot be opened
-                try {
-                    OpenProjects.getDefault().openProjects().get();
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
-                }
+                //TODO add w8 for open project method to the bugtracking manager a ProjectServices
+                BugtrackingManager.getInstance().getProjectServices().getOpenProjectsDirectories();
+
                 titleRepositoryNode.setProgressVisible(true);
                 titleCategoryNode.setProgressVisible(true);
                 loadRepositories();
