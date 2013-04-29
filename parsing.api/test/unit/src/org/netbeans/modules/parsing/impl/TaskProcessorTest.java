@@ -75,6 +75,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -115,6 +116,20 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
     
     public TaskProcessorTest(String testName) {
         super(testName);
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new TaskProcessorTest("testWarningWhenRunUserTaskCalledFromAWT"));        //NOI18N
+        suite.addTest(new TaskProcessorTest("testDeadlock"));                                   //NOI18N
+        suite.addTest(new TaskProcessorTest("testCancelCall"));                                 //NOI18N
+        suite.addTest(new TaskProcessorTest("testTaskCall"));                                   //NOI18N
+        suite.addTest(new TaskProcessorTest("testParserCall"));                                 //NOI18N
+        suite.addTest(new TaskProcessorTest("testRunWhenScanFinishGetCalledUnderCCLock"));      //NOI18N
+        suite.addTest(new TaskProcessorTest("testRunLoopSuspend"));                             //NOI18N
+        suite.addTest(new TaskProcessorTest("testRunLoopSuspend2"));                            //NOI18N
+        suite.addTest(new TaskProcessorTest("testSlowCancelSampler"));                          //NOI18N
+        return suite;
     }
 
     @Override
