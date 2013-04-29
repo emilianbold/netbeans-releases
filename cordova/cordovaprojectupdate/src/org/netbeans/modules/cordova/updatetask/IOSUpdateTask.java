@@ -83,7 +83,8 @@ public class IOSUpdateTask extends CordovaTask {
             
             File infoPlist = new File(root.getPath() + "/" + name + "/" + name + "-Info.plist");
             InfoPlist plist = new InfoPlist(infoPlist);
-            plist.setBundleIdentifier(getProject().getProperty("android.project.package"));
+            final String bundleID = getProperty("android.project.package") + "." +getProperty("android.project.activity");
+            plist.setBundleIdentifier(bundleID);
             plist.save();
             
             DeviceConfig iosConfig = new DeviceConfig(iosConfigFile);
