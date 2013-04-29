@@ -82,6 +82,29 @@ public class KODataBindLexerTest extends NbTestCase {
         
     }
     
+    public void testCommaInParens() {
+        checkTokens("key: function(p1, p2, p3), key:val",
+                "key|KEY", ":|COLON", " function(p1, p2, p3)|VALUE", ",|COMMA", " |WS", "key|KEY", ":|COLON", "val|VALUE");
+        
+    }
+    
+    public void testCommaInString() {
+        checkTokens("key: \"one,two\", key:val",
+                "key|KEY", ":|COLON", " \"one,two\"|VALUE", ",|COMMA", " |WS", "key|KEY", ":|COLON", "val|VALUE");
+        
+        checkTokens("key: 'one,two', key:val",
+                "key|KEY", ":|COLON", " 'one,two'|VALUE", ",|COMMA", " |WS", "key|KEY", ":|COLON", "val|VALUE");
+    }
+
+    public void testCommaInStringWithEscape() {
+        checkTokens("key: \"one\\\"two\", key:val",
+                "key|KEY", ":|COLON", " \"one\\\"two\"|VALUE", ",|COMMA", " |WS", "key|KEY", ":|COLON", "val|VALUE");
+        
+        checkTokens("key: 'one\\'two', key:val",
+                "key|KEY", ":|COLON", " 'one\\'two'|VALUE", ",|COMMA", " |WS", "key|KEY", ":|COLON", "val|VALUE");
+        
+    }
+    
     public static void checkTokens(String text, String... descriptions) {
         TokenHierarchy<String> th = TokenHierarchy.create(text, KODataBindTokenId.language());
         TokenSequence<KODataBindTokenId> ts = th.tokenSequence(KODataBindTokenId.language());

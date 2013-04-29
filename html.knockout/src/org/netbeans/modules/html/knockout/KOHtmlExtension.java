@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.knockout;
 
+import org.netbeans.modules.html.knockout.model.KOModel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,9 +50,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -59,6 +66,7 @@ import org.netbeans.modules.html.editor.lib.api.HelpItem;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.knockout.model.Binding;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -77,7 +85,7 @@ public class KOHtmlExtension extends HtmlExtension {
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights(HtmlParserResult result, SchedulerEvent event) {
         final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<>();
         KOModel model = KOModel.getModel(result);
-        for(Attribute ngAttr : model.getBindings()) {
+        for (Attribute ngAttr : model.getBindings()) {
             highlights.put(new OffsetRange(ngAttr.from(), ngAttr.from() + ngAttr.name().length()),
                     ColoringAttributes.CONSTRUCTOR_SET);
         }
@@ -96,7 +104,7 @@ public class KOHtmlExtension extends HtmlExtension {
                     OpenTag ot = (OpenTag) element;
                     String name = ot.unqualifiedName().toString();
                     Collection<CustomAttribute> customAttributes = getCustomAttributes(name);
-                    for(CustomAttribute ca : customAttributes) {
+                    for (CustomAttribute ca : customAttributes) {
                         items.add(new KOAttributeCompletionItem(ca, context.getCCItemStartOffset(), model.containsKnockout()));
                     }
                     break;
@@ -109,7 +117,7 @@ public class KOHtmlExtension extends HtmlExtension {
             Iterator<CompletionItem> itr = items.iterator();
             while (itr.hasNext()) {
                 CharSequence insertPrefix = itr.next().getInsertPrefix();
-                if(insertPrefix != null) {
+                if (insertPrefix != null) {
                     if (!LexerUtils.startsWith(insertPrefix, context.getPrefix(), true, false)) {
                         itr.remove();
                     }
@@ -117,6 +125,71 @@ public class KOHtmlExtension extends HtmlExtension {
             }
         }
 
+        return items;
+    }
+
+    //complete keys in ko-data-bind attribute
+    //<div data-bind="tex| => text:
+    @Override
+    public List<CompletionItem> completeAttributeValue(CompletionContext context) {
+        Document document = context.getResult().getSnapshot().getSource().getDocument(true);
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(document);
+        TokenSequence<HTMLTokenId> ts = tokenHierarchy.tokenSequence(HTMLTokenId.language());
+        if (ts != null) {
+            int diff = ts.move(context.getOriginalOffset());
+            if (diff == 0 && ts.movePrevious() || ts.moveNext()) {
+                Token<HTMLTokenId> token = ts.token();
+                if (token.id() == HTMLTokenId.VALUE) {
+                    TokenSequence<KODataBindTokenId> embedded = ts.embedded(KODataBindTokenId.language());
+                    if (embedded != null) {
+                        if (embedded.isEmpty()) {
+                            //no prefix
+                            return getBindingItems("", context.getOriginalOffset());
+                        }
+                        int ediff = embedded.move(context.getOriginalOffset());
+                        if (ediff == 0 && embedded.movePrevious() || embedded.moveNext()) {
+                            //we are on a token of ko-data-bind token sequence
+                            Token<KODataBindTokenId> etoken = embedded.token();
+                            switch (etoken.id()) {
+                                case KEY:
+                                    //ke|
+                                    CharSequence prefix = ediff == 0 ? etoken.text() : etoken.text().subSequence(0, ediff);
+                                    return getBindingItems(prefix, embedded.offset());
+                                case COMMA:
+                                    //key:value,|
+                                    return getBindingItems("", context.getOriginalOffset());
+                                case WS:
+                                    //key: value, |
+                                    if(embedded.movePrevious()) {
+                                        switch(embedded.token().id()) {
+                                            case COMMA:
+                                                return getBindingItems("", context.getOriginalOffset());
+                                        }
+                                    } else {
+                                        //just WS is before the caret, no token before
+                                        //   |
+                                        return getBindingItems("", context.getOriginalOffset());
+                                        
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return Collections.emptyList();
+    }
+
+    private List<CompletionItem> getBindingItems(CharSequence prefix, int offset) {
+        List<CompletionItem> items = new ArrayList<>();
+        for (Binding b : Binding.values()) {
+            String bindingName = b.getName();
+            if (LexerUtils.startsWith(bindingName, prefix, true, false)) {
+                items.add(new KOBindingCompletionItem(bindingName, offset));
+            }
+        }
         return items;
     }
 
@@ -129,9 +202,7 @@ public class KOHtmlExtension extends HtmlExtension {
     public Collection<CustomAttribute> getCustomAttributes(String elementName) {
         return Collections.singleton(KO_DATA_BIND_CUSTOM_ATTRIBUTE);
     }
-    
     private static final CustomAttribute KO_DATA_BIND_CUSTOM_ATTRIBUTE = new CustomAttribute() {
-
         @Override
         public String getName() {
             return KOUtils.KO_DATA_BIND_ATTR_NAME;
@@ -151,6 +222,5 @@ public class KOHtmlExtension extends HtmlExtension {
         public HelpItem getHelp() {
             return null;
         }
-        
     };
 }
