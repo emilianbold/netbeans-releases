@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.lexer.*;
 import org.netbeans.lib.html.lexer.HtmlLexer;
 import org.netbeans.lib.html.lexer.HtmlPlugins;
+import org.netbeans.spi.lexer.EmbeddingPresence;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -188,6 +189,16 @@ public enum HTMLTokenId implements TokenId {
             return new HtmlLexer(info);
         }
 
+        @Override
+        protected EmbeddingPresence embeddingPresence(HTMLTokenId id) {
+            switch(id) {
+                case VALUE:
+                    return EmbeddingPresence.ALWAYS_QUERY;
+                default:
+                    return super.embeddingPresence(id);
+            }
+        }
+        
         @SuppressWarnings("unchecked")
         @Override
         protected LanguageEmbedding embedding(
