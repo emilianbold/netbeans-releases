@@ -46,9 +46,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +62,7 @@ import org.netbeans.modules.cnd.dwarfdump.Offset2LineService.AbstractFunctionToL
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
@@ -88,11 +87,11 @@ public class LddServiceTest extends NativeExecutionBaseTestCase {
         String executable = getResource("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc/main/dist/Debug/GNU-Linux-x86/main");
         SharedLibraries res1 = LddService.getPubNames(executable);
         for(String java : javaPaths()) {
-            NativeProcess process = getJavaProcess(java, LddService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
-            assertNotNull(process);
-            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream(),Charset.forName("UTF-8"))); // NOI18N
+            ProcessUtils.ExitStatus status = getJavaProcess(java, LddService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
+            assertNotNull(status);
+            assertTrue("Cannot execute "+java, status.isOK());
+            BufferedReader br = new BufferedReader(new StringReader(status.output));
             SharedLibraries res2 = LddService.getPubNames(br);
-            process.destroy();
             assertEquals(res1.getDlls().size(), res2.getDlls().size());
             assertEquals(res1.getPaths().size(), res2.getPaths().size());
             for(int i = 0; i < res1.getDlls().size(); i++) {
@@ -108,11 +107,11 @@ public class LddServiceTest extends NativeExecutionBaseTestCase {
         String executable = getResource("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/main/dist/Debug/Cygwin-Windows/main.exe");
         SharedLibraries res1 = LddService.getPubNames(executable);
         for(String java : javaPaths()) {
-            NativeProcess process = getJavaProcess(java, LddService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
-            assertNotNull(process);
-            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream(),Charset.forName("UTF-8"))); // NOI18N
+            ProcessUtils.ExitStatus status = getJavaProcess(java, LddService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
+            assertNotNull(status);
+            assertTrue("Cannot execute "+java, status.isOK());
+            BufferedReader br = new BufferedReader(new StringReader(status.output));
             SharedLibraries res2 = LddService.getPubNames(br);
-            process.destroy();
             assertEquals(res1.getDlls().size(), res2.getDlls().size());
             assertEquals(res1.getPaths().size(), res2.getPaths().size());
             for(int i = 0; i < res1.getDlls().size(); i++) {
@@ -129,11 +128,11 @@ public class LddServiceTest extends NativeExecutionBaseTestCase {
         Map<String, AbstractFunctionToLine> res1 = Offset2LineService.getOffset2Line(executable);
         res1 = new TreeMap<String, AbstractFunctionToLine>(res1);
         for(String java : javaPaths()) {
-            NativeProcess process = getJavaProcess(java, Offset2LineService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
-            assertNotNull(process);
-            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream(),Charset.forName("UTF-8"))); // NOI18N
+            ProcessUtils.ExitStatus status = getJavaProcess(java, Offset2LineService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
+            assertNotNull(status);
+            assertTrue("Cannot execute "+java, status.isOK());
+            BufferedReader br = new BufferedReader(new StringReader(status.output));
             Map<String, AbstractFunctionToLine> res2 = Offset2LineService.getOffset2Line(br);
-            process.destroy();
             assertEquals(res1.size(), res2.size());
             res2 = new TreeMap<String, AbstractFunctionToLine>(res2);
             for(String function : res1.keySet()) {
@@ -146,7 +145,7 @@ public class LddServiceTest extends NativeExecutionBaseTestCase {
         }
     }
 
-    private NativeProcess getJavaProcess(String java, Class<?> clazz, ExecutionEnvironment env, String[] arguments) throws IOException{
+    private ProcessUtils.ExitStatus getJavaProcess(String java, Class<?> clazz, ExecutionEnvironment env, String[] arguments) throws IOException{
         return RemoteJarServiceProvider.getJavaProcess(java, clazz, env, arguments);
     }
 
