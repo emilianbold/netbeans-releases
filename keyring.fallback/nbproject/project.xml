@@ -3,40 +3,14 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.keyring.impl</code-name-base>
+            <code-name-base>org.netbeans.modules.keyring.fallback</code-name-base>
             <module-dependencies>
-                <dependency>
-                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.13</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.libs.jna</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.9</specification-version>
-                    </run-dependency>
-                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.keyring</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.keyring.fallback</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.16</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -44,7 +18,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.23</specification-version>
+                        <specification-version>7.58</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -52,7 +26,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.15</specification-version>
+                        <specification-version>7.30</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -60,7 +34,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.6</specification-version>
+                        <specification-version>8.31</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -68,7 +42,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.3</specification-version>
+                        <specification-version>8.21</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -81,12 +55,15 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
-                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.keyring.impl</friend>
+                <package>org.netbeans.modules.keyring.spi</package>
+                <package>org.netbeans.modules.keyring.utils</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

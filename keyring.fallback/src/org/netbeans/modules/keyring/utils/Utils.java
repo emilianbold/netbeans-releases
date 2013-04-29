@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.keyring.impl;
+package org.netbeans.modules.keyring.utils;
 
 import java.io.File;
 import java.util.logging.Level;
