@@ -2566,7 +2566,7 @@ public class CasualDiff {
                         moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
                     }
                     tokenSequence.moveNext();
-                    int start = tokenSequence.offset();
+                    int start = Math.max(tokenSequence.offset(), pos);
                     copyTo(start, bounds[0], printer);
                     diffTree(tree, item.element, parent, bounds);
                     tokenSequence.move(bounds[1]);
@@ -2576,7 +2576,7 @@ public class CasualDiff {
                         tokenSequence.token().id() == JavaTokenId.RBRACKET) {
                         printer.print(";");
                     }
-                    copyTo(bounds[1], pos = tokenSequence.offset(), printer);
+                    copyTo(bounds[1], pos = Math.max(tokenSequence.offset(), bounds[1]), printer);
                     wasLeadingDelete = false;
                     break;
                 }
@@ -2593,9 +2593,15 @@ public class CasualDiff {
                 }
                 case DELETE:
                     wasLeadingDelete |= oldIndex++ == 0;
-                    tokenSequence.move(getBounds(item.element)[1]);
+                    int endPos = getBounds(item.element)[1];
+                    tokenSequence.move(endPos);
                     moveToSrcRelevant(tokenSequence, Direction.FORWARD);
-                    pos = tokenSequence.offset();
+                    if (tokenSequence.token().id() == JavaTokenId.COMMA) {
+                        if (tokenSequence.moveNext()) {
+                            moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                        }
+                    }
+                    pos = Math.max(tokenSequence.offset(), endPos);
                     break;
                 // just copy existing element
                 case NOCHANGE:
