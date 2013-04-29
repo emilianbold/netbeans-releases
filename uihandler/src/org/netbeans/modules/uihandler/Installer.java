@@ -677,15 +677,17 @@ public class Installer extends ModuleInstall implements Runnable {
     static LogRecord getClusterList (Logger logger) {
         LogRecord rec = new LogRecord(Level.INFO, "USG_INSTALLED_CLUSTERS");
         String dirs = System.getProperty("netbeans.dirs");
-        String [] dirsArray = dirs.split(File.pathSeparator);
-        List<String> list = new ArrayList<String>();
-        for (int i = 0; i < dirsArray.length; i++) {
-            File f = new File(dirsArray[i]);
-            if (f.exists()){
-                list.add(f.getName());
+        if (dirs != null) {
+            String [] dirsArray = dirs.split(File.pathSeparator);
+            List<String> list = new ArrayList<String>();
+            for (int i = 0; i < dirsArray.length; i++) {
+                File f = new File(dirsArray[i]);
+                if (f.exists()){
+                    list.add(f.getName());
+                }
             }
+            rec.setParameters(list.toArray());
         }
-        rec.setParameters(list.toArray());
         rec.setLoggerName(logger.getName());
         return rec;
     }
