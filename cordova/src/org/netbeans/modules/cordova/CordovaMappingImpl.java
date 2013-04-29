@@ -82,8 +82,8 @@ public class CordovaMappingImpl implements ServerURLMappingImplementation, Cordo
             return null;
         }
         
-        FileObject root = ClientProjectUtilities.getSiteRoot(p);
-        String rel = FileUtil.getRelativePath(root, projectFile);
+        String rel = projectFile.getPath();
+        rel = rel.substring(rel.lastIndexOf("/www/")+ + "/www/".length());
         try {
             return new URL(url+rel);
         } catch (MalformedURLException ex) {

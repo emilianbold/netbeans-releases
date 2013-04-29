@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.knockout;
 
+import org.netbeans.modules.html.knockout.model.KOModel;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
