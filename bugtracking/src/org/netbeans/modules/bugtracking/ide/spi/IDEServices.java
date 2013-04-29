@@ -52,21 +52,47 @@ import org.openide.filesystems.FileObject;
  */
 public interface IDEServices {
     
+    /**
+     * Determines whether the functionality to open a document for a resource (file)
+     * is available. <br>
+     * 
+     * @return <code>true</code> if available, otherwise <code>false</code>
+     */
     public boolean providesOpenDocument();
+    
+    /**
+     * Opens the document representing the given resource. 
+     * <b>Note</b> that the given path doesn't necessarily have to be a fully qualified path, but 
+     * might be in a shorter form as given by e.g. an stacktrace - org/netbeans/modules/bugzilla/Bugzilla.java
+
+     * @param resourcePath
+     * @param offset 
+     */
     public void openDocument(String resourcePath, int offset);
     
+    /**
+     * Determines whether the functionality to jump to a resource is available. 
+     * 
+     * @return <code>true</code> if available, otherwise <code>false</code>
+     */
     public boolean providesJumpTo();
     
     /**
      * 
-     * @param resourcePath
+     * Opens a search/find resource UI prefilled with the given resource. 
+     * <br>
+     * <b>Note</b> that the given resource doesn't necessarily have to be a be a fully qualified path, but 
+     * might be just an arbitrary string potentially identifying e.g. a java type.
+     * 
+     * @param resource
      * @param title 
      */
-    public void jumpTo(String resourcePath, String title);
+    public void jumpTo(String resource, String title);
 
     /**
-     * Determines whether the functionality to download a plugin is available
-     * @return 
+     * Determines whether the functionality to download a plugin is available 
+     * 
+     * @return <code>true</code> if available, otherwise <code>false</code>
      */
     public boolean providesPluginUpdate();
     
@@ -80,6 +106,11 @@ public interface IDEServices {
      */
     public Plugin getPluginUpdates(String cnb, String pluginName);
 
+    /**
+     * Determines whether patch relevant functionality is available.
+     * 
+     * @return <code>true</code> if available, otherwise <code>false</code>
+     */
     public boolean providesPatchUtils();
 
     /**
@@ -112,7 +143,7 @@ public interface IDEServices {
     public File selectFileContext();
 
     /**
-     * Determines whether the functionality to open the Hisotry for a resource (file)
+     * Determines whether the functionality to open the History for a resource (file)
      * is available.
      * 
      * @return <code>true</code> if available, otherwise <code>false</code>
@@ -126,8 +157,8 @@ public interface IDEServices {
      * it's parent and positioned on the given line.
      *
      * @param resource resourcePath representing a versioned file (not a folder). 
-     * <b>Note</b> that the given path musn't necessarily be the full path 
-     * - e.g. org/netbeans/modules/bugzilla/Bugzilla.jav
+     * <b>Note</b> that the given path doesn't necessarily have to be the full path, but 
+     * might be a shorter form as given by e.g. an stacktrace - org/netbeans/modules/bugzilla/Bugzilla.java
      * @param lineNumber requested line number to lock on
      * @return true if parameters are valid, the file is versioned and the history view was opened, 
      * otherwise false.
@@ -140,13 +171,13 @@ public interface IDEServices {
     public interface Plugin {
         /**
          * Returns the plugins description
-         * @return 
+         * @return the plugins description
          */
         String getDescription();
         
         /**
          * Install or Update the plugin. 
-         * @return 
+         * @return <code>true</code> in case it was possible to install the plugin, otherwise <code>false</code> 
          */
         boolean installOrUpdate();
     }
