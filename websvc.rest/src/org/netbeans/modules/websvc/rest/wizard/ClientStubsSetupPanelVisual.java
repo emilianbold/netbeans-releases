@@ -68,8 +68,9 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.codegen.model.State;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -211,10 +212,9 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                 Project p = ProjectManager.getDefault().findProject(projectRoot);
                 boolean reject = true;
                 RestSupport restSupport = p.getLookup().lookup(RestSupport.class);
-                if (restSupport != null && restSupport instanceof WebRestSupport) {
-                    WebRestSupport webRestSupport = (WebRestSupport) restSupport;
-                    if (webRestSupport.getApplicationPathFromDD() != null ||
-                        webRestSupport.getRestApplications().size() > 0 ) {
+                if (restSupport != null) {
+                    if (MiscUtilities.getApplicationPathFromDD(restSupport.getWebApp()) != null ||
+                        restSupport.getRestApplications().size() > 0 ) {
                         reject = false;
                     }
                 }

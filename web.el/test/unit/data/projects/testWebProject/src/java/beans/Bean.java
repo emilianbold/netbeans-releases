@@ -45,4 +45,8 @@ public class Bean {
         return Collections.<String, String>emptyMap();
     }
 
+    public Cypris getMyCypris() {
+        return new Cypris();
+    }
+
 }

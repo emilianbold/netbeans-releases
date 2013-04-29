@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,61 +34,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ws.qaf.saas;
+package org.netbeans.modules.web.el.navigation;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.web.el.ELTestBaseForTestProject;
 
 /**
  *
- * @author lukas
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class AmazonTest extends SaasTestBase {
+public class ELDeclarationFinderTest extends ELTestBaseForTestProject {
+
+    public ELDeclarationFinderTest(String name) {
+        super(name);
+    }
+
+    public void testSimpleBean() throws Exception {
+        checkDeclaration("projects/testWebProject/web/navigation/navigation01.xhtml", "#{bea^n}", "Bean.java", 276);
+    }
+
+    public void testBeanProperty() throws Exception {
+        checkDeclaration("projects/testWebProject/web/navigation/navigation02.xhtml", "#{bean.myArr^ay}", "Bean.java", 487);
+    }
+
+    public void testBeanPropertyField() throws Exception {
+        checkDeclaration("projects/testWebProject/web/navigation/navigation03.xhtml", "#{bean.myCypris.ge^tName()}", "Cypris.java", 103);
+    }
+
+    public void testResourceBundleIdentifier() throws Exception {
+        checkDeclaration("projects/testWebProject/web/navigation/navigation04.xhtml", "#{bu^ndle.cokolivJineho}", "Messages.properties", 0);
+    }
+
+    public void testResourceBundleKeyAsSuffix() throws Exception {
+        checkDeclaration("projects/testWebProject/web/navigation/navigation04.xhtml", "#{bundle.cokoliv^Jineho}", "Messages.properties", 48);
+    }
+
+    public void testResourceBundleKeyAsProperty() throws Exception {
+        checkDeclaration("projects/testWebProject/web/navigation/navigation04.xhtml", "#{bundle['cokoliv^Jineho']}", "Messages.properties", 48);
+    }
     
-    protected static Server server = Server.GLASSFISH;
-
-    public AmazonTest(String name, Server server) {
-        super(name, server);
-    }
-    
-     public AmazonTest(String name) {
-        super(name, server);
-    }
-
-    @Override
-    protected String getSaasServiceID() {
-        return "AS3S"; //Amazon S3 Service
-    }
-
-    @Override
-    protected String getSaasServiceNodePath() {
-        return "Amazon|S3 Service|[/]|getBuckets";
-    }
-
-    public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(AmazonTest.class),
-                "testRestDrop",
-                "testJspDrop",
-                "testServletDrop",
-                "testJavaDrop"
-                ).enableModules(".*").clusters(".*"));
-    }
-    
-//    public static TestSuite suite() {
-//        TestSuite ts = new NbTestSuite();
-//        ts.addTest(new AmazonTest("testRestDrop"));
-//        ts.addTest(new AmazonTest("testJspDrop"));
-//        ts.addTest(new AmazonTest("testServletDrop"));
-//        ts.addTest(new AmazonTest("testJavaDrop"));
-//        return ts;
-//    }
-//
-//    public static void main(String... args) {
-//        TestRunner.run(suite());
-//    }
 }
