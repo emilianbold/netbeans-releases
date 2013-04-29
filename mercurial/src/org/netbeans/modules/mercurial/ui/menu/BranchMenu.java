@@ -49,7 +49,6 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.netbeans.modules.mercurial.ui.branch.CloseBranchAction;
@@ -120,7 +119,7 @@ public class BranchMenu extends DynamicMenu implements Presenter.Popup {
             Actions.connect(item, action, false);
             menu.add(item);
 
-            menu.add(new JSeparator());
+            menu.addSeparator();
             
             item = new JMenuItem();
             action = (Action) SystemAction.get(CreateTagAction.class);
@@ -134,7 +133,7 @@ public class BranchMenu extends DynamicMenu implements Presenter.Popup {
             Actions.connect(item, action, false);
             menu.add(item);
             
-            menu.add(new JSeparator());
+            menu.addSeparator();
             
             item = new JMenuItem();
             action = SystemAction.get(MergeAction.class);
@@ -168,20 +167,20 @@ public class BranchMenu extends DynamicMenu implements Presenter.Popup {
                                 break;
                             }
                         }
-                        menu.add(new JSeparator());
+                        menu.addSeparator();
                     }
                 }
             }
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CloseBranchAction.class), NbBundle.getMessage(CloseBranchAction.class, "CTL_PopupMenuItem_CloseBranch"), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             
-            menu.add(new JSeparator());
+            menu.addSeparator();
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateTagAction.class), NbBundle.getMessage(CreateTagAction.class, "CTL_PopupMenuItem_CreateTag"), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(ManageTagsAction.class), NbBundle.getMessage(ManageTagsAction.class, "CTL_PopupMenuItem_ManageTags"), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             
-            menu.add(new JSeparator());
+            menu.addSeparator();
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(MergeAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Merge"),lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(RebaseAction.class), CTL_PopupMenuItem_Rebase(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));

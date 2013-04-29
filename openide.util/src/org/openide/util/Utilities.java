@@ -3138,7 +3138,16 @@ widthcheck:  {
      * @since 8.25
      */
     public static File toFile(URI u) throws IllegalArgumentException {
-        return Paths.get(u).toFile();
+        try {
+            return Paths.get(u).toFile();
+        } catch (Exception x) {
+            LOG.log(Level.FINE, "could not convert " + u + " to File", x);
+        }
+        String host = u.getHost();
+        if (host != null && !host.isEmpty() && "file".equals(u.getScheme())) {
+            return new File("\\\\" + host + u.getPath().replace('/', '\\'));
+        }
+        return new File(u);    
     }
 
     /**
