@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,72 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.ios;
- 
-import java.util.logging.Logger;
+package org.netbeans.modules.cordova.platforms;
 
+import org.netbeans.api.project.Project;
 
-public class WebInspectorJNIBinding {
+/**
+ *
+ * @author Jan Becicka
+ */
+public interface CordovaMapping {
+
+    void setBaseUrl(String url);
+
+    void setProject(Project p);
     
-    private static final Logger LOG = Logger.getLogger(WebInspectorJNIBinding.class.getName());
-    
-    private native void nstart();
-
-    private native void nstop();
-
-    private native String nreceiveMessage(Integer timeout);
-
-    private native void nsendMessage(String xml);
-    
-    private boolean started = false;
-    
-    private static WebInspectorJNIBinding instance;
-
-    private WebInspectorJNIBinding() {
-        System.loadLibrary("iDeviceNativeBinding");
-    }
-    
-    public static synchronized WebInspectorJNIBinding getDefault() {
-        if (instance==null) {
-            instance = new WebInspectorJNIBinding();
-        }
-        return instance;
-    }
-
-    public synchronized void start() {
-        if (!started) {
-            nstart();
-            started = true;
-        } else {
-            LOG.info("WebKit Debugging Service already started");
-        }
-    }
-
-    public synchronized void stop() {
-        if (started) {
-            nstop();
-            started = false;
-        } else {
-            LOG.info("WebKit Debugging Service not started");
-        }
-    }
-
-    public String receiveMessage() {
-        if (!started) {
-            LOG.info("WebKit Debugging Service not started");
-            return null;
-        }
-        final String receiveMessage = nreceiveMessage(100);
-        return receiveMessage;
-    }
-
-    public void sendMessage(String message) {
-        if (!started) {
-            LOG.info("WebKit Debugging Service not started");
-            return;
-        }
-        nsendMessage(message);
-    }
 }

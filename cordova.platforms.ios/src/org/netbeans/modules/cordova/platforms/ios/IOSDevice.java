@@ -69,7 +69,7 @@ public enum IOSDevice implements Device {
     IPHONE_RETINA("iPhone (Retina)", "--family iphone --retina", true), //NOI18N
     IPAD("iPad", "--family ipad", true), //NOI18N
     IPAD_RETINA("iPad (Retina)", "--family ipad --retina", true), //NOI18N
-    CONNECTED("Connected Device", null, false);
+    CONNECTED("Connected Device", "", false);
     
     String displayName;
     String args;

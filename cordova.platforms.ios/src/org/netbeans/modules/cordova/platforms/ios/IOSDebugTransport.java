@@ -60,6 +60,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
+import org.netbeans.modules.cordova.platforms.CordovaMapping;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
@@ -79,6 +80,10 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     private volatile boolean keepGoing = true;
     private Tabs tabs = new IOSDebugTransport.Tabs();
 
+    public IOSDebugTransport() {
+        setBundleIdentifier("com.apple.mobilesafari");
+    }
+    
     @Override
     public void registerResponseCallback(ResponseCallback callback) {
         this.callBack = callback;
@@ -134,11 +139,11 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
         try {
             Properties props = new Properties();
             props.load(IOSDebugTransport.class.getResourceAsStream("Command.properties"));
-            final String cmd = props.getProperty(name).replace("$bundleId", "com.apple.mobilesafari");
+            final String cmd = props.getProperty(name).replace("$bundleId", getBundleIdentifier());
             if (!replace) {
                 return cmd;
             }
-            return cmd.replace("$tabIdentifier", tabs.getActive());
+            return cmd.replace("$tabIdentifier", getBundleIdentifier().equals("com.apple.mobilesafari")?tabs.getActive():"1");
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -148,7 +153,6 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
         String json = translate(command.toString());
         String s = Base64.encodeBytes(json.getBytes());
         String res = getCommand("sendJSONCommand", true).replace("$json_encoded", s);
-        //System.out.println("sending " + res);
         return res;
     }
 
@@ -286,6 +290,13 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 NSObject identifier = o.objectForKey("WIRPageIdentifierKey");
                 NSObject url = o.objectForKey("WIRURLKey");
                 NSObject title = o.objectForKey("WIRTitleKey");
+                if (getConnectionURL()==null) {
+                    //auto setup for phonegap. There is always on tab
+                    setBaseUrl(url.toString());
+                    CordovaMapping mapping = Lookup.getDefault().lookup(CordovaMapping.class);
+                    mapping.setBaseUrl(url.toString());
+                    
+                }
                 map.put(s, new TabDescriptor(url.toString(), title.toString(), identifier.toString()));
             }
             synchronized (monitor) {
@@ -331,7 +342,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 if (urlFromBrowser.endsWith("/")) {
                     urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length()-1); 
                 }
-                if (getConnectionURL().toString().equals(urlFromBrowser)) {
+                if (getConnectionURL().toString().equals(urlFromBrowser.replaceAll("file:///", "file:/"))) {
                     return entry.getKey();
                 }                        
             }

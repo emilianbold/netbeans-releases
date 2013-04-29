@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,72 +37,73 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.ios;
- 
-import java.util.logging.Logger;
+package org.netbeans.modules.cordova;
 
+import org.netbeans.modules.cordova.platforms.CordovaMapping;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cordova.project.ClientProjectUtilities;
+import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
-public class WebInspectorJNIBinding {
+/**
+ *
+ * @author Jan Becicka
+ */
+@ServiceProvider(service = ServerURLMappingImplementation.class)
+public class CordovaMappingImpl implements ServerURLMappingImplementation, CordovaMapping {
+
+    private String url;
+    private Project p;
     
-    private static final Logger LOG = Logger.getLogger(WebInspectorJNIBinding.class.getName());
-    
-    private native void nstart();
-
-    private native void nstop();
-
-    private native String nreceiveMessage(Integer timeout);
-
-    private native void nsendMessage(String xml);
-    
-    private boolean started = false;
-    
-    private static WebInspectorJNIBinding instance;
-
-    private WebInspectorJNIBinding() {
-        System.loadLibrary("iDeviceNativeBinding");
-    }
-    
-    public static synchronized WebInspectorJNIBinding getDefault() {
-        if (instance==null) {
-            instance = new WebInspectorJNIBinding();
-        }
-        return instance;
-    }
-
-    public synchronized void start() {
-        if (!started) {
-            nstart();
-            started = true;
+    @Override
+    public void setBaseUrl(String url) {
+        if (url==null) {
+            this.url = null;
         } else {
-            LOG.info("WebKit Debugging Service already started");
+            this.url = url.substring(0, url.lastIndexOf("/www/") + "/www/".length());
         }
     }
-
-    public synchronized void stop() {
-        if (started) {
-            nstop();
-            started = false;
-        } else {
-            LOG.info("WebKit Debugging Service not started");
-        }
+    
+    @Override
+    public void setProject(Project p) {
+        this. p = p;
     }
-
-    public String receiveMessage() {
-        if (!started) {
-            LOG.info("WebKit Debugging Service not started");
+    
+    @Override
+    public URL toServer(int projectContext, FileObject projectFile) {
+        if (url == null || p == null) {
             return null;
         }
-        final String receiveMessage = nreceiveMessage(100);
-        return receiveMessage;
+        
+        FileObject root = ClientProjectUtilities.getSiteRoot(p);
+        String rel = FileUtil.getRelativePath(root, projectFile);
+        try {
+            return new URL(url+rel);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
-    public void sendMessage(String message) {
-        if (!started) {
-            LOG.info("WebKit Debugging Service not started");
-            return;
+    @Override
+    public FileObject fromServer(int projectContext, URL serverURL) {
+        if (url == null ||p == null ) {
+            return null;
         }
-        nsendMessage(message);
+        
+        if (serverURL.toExternalForm().replaceAll("file:/", "file:///").startsWith(url)) {
+            final String relPath = serverURL.toExternalForm().substring(url.length()-2);
+            FileObject fileObject = ClientProjectUtilities.getSiteRoot(p).getFileObject(relPath);
+            return fileObject;
+        }
+        return null;
     }
+    
 }
