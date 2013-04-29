@@ -62,6 +62,7 @@ import java.util.Stack;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 
 /**
@@ -70,9 +71,11 @@ import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
  */
 public class DwarfMacroInfoSection extends ElfSection {
     private final HashMap<Long, DwarfMacinfoTable> macinfoTables = new HashMap<Long, DwarfMacinfoTable>();
+    private final boolean isMacro;
     
-    public DwarfMacroInfoSection(DwarfReader reader, int sectionIdx) {
+    public DwarfMacroInfoSection(DwarfReader reader, int sectionIdx, boolean isMacro) {
         super(reader, sectionIdx);
+        this.isMacro = isMacro;
     }
     
     public DwarfMacinfoTable getMacinfoTable(long offset) {
@@ -94,9 +97,13 @@ public class DwarfMacroInfoSection extends ElfSection {
         long currPos = reader.getFilePointer();
         
         reader.seek(header.getSectionOffset() + offset);
-        
+        if (isMacro) {
+            int dwarfVersion = reader.readShort();
+            byte bitness = reader.readByte(); // 2 - 23, 3 - 64
+            int labelSectionAdress = reader.readInt();
+        }
         MACINFO type = MACINFO.get(reader.readByte());
-        if (baseOnly) {
+        if (baseOnly && type != null) {
             if (type.equals(MACINFO.DW_MACINFO_start_file)) {
                 long lineNum = reader.readUnsignedLEB128();
                 if (lineNum == 0) {
@@ -109,44 +116,83 @@ public class DwarfMacroInfoSection extends ElfSection {
         }
         Stack<Integer> fileIndeces = new Stack<Integer>();
         int fileIdx = -1;
-        
-        while(type != null && (!baseOnly || (baseOnly && fileIdx == -1))) {
-            DwarfMacinfoEntry entry = new DwarfMacinfoEntry(type);
-            if (type.equals(MACINFO.DW_MACINFO_define) || type.equals(MACINFO.DW_MACINFO_undef)) {
-                entry.lineNum = reader.readUnsignedLEB128();
-                entry.definition = reader.readString();
-                entry.fileIdx = fileIdx;
-            } else if (type.equals(MACINFO.DW_MACINFO_start_file)) {
-                if (baseOnly) {
+        Stack<Long> indirect = new Stack<Long>();
+        loop:while(type != null && (!baseOnly || (baseOnly && fileIdx == -1))) {
+            switch (type) {
+                case DW_MACINFO_define:
+                case DW_MACINFO_undef:
+                {
+                    DwarfMacinfoEntry entry = new DwarfMacinfoEntry(type);
+                    entry.lineNum = reader.readUnsignedLEB128();
+                    entry.definition = reader.readString();
+                    entry.fileIdx = fileIdx;
+                    table.addEntry(entry);
                     break;
                 }
-                entry.lineNum = reader.readUnsignedLEB128();
-                entry.fileIdx = reader.readUnsignedLEB128();
-                fileIndeces.push(fileIdx);
-                fileIdx = entry.fileIdx;
-            } else if (type.equals(MACINFO.DW_MACINFO_end_file)) {
-                /*
-                 * Stack COULD be empty. This happens when readMacinfoTable() is
-                 * invoked twice - first time for base definitions only and the 
-                 * second one for others. In this case on the second invokation 
-                 * at the end we will get DW_MACINFO_end_file for file with idx 
-                 * -1 (base).
-                 */
-                if (!fileIndeces.empty()) {
-                    fileIdx = fileIndeces.pop();
+                case DW_MACINFO_start_file:
+                {
+                    if (baseOnly) {
+                        break loop;
+                    }
+                    DwarfMacinfoEntry entry = new DwarfMacinfoEntry(type);
+                    entry.lineNum = reader.readUnsignedLEB128();
+                    entry.fileIdx = reader.readUnsignedLEB128();
+                    fileIndeces.push(fileIdx);
+                    fileIdx = entry.fileIdx;
+                    table.addEntry(entry);
+                    break;
                 }
-            } else if (type.equals(MACINFO.DW_MACINFO_vendor_ext)) {
-                // Just skip...
-                reader.readUnsignedLEB128();
-                reader.readString();
-            } else if (type.equals(MACINFO.DW_MACRO_define_indirect) || type.equals(MACINFO.DW_MACRO_undef_indirect)){
-                //System.err.println("");
-            } else if (type.equals(MACINFO.DW_MACRO_transparent_include)){
-                //System.err.println("");
+                case DW_MACINFO_end_file:
+                {
+                    /*
+                     * Stack COULD be empty. This happens when readMacinfoTable() is
+                     * invoked twice - first time for base definitions only and the 
+                     * second one for others. In this case on the second invokation 
+                     * at the end we will get DW_MACINFO_end_file for file with idx 
+                     * -1 (base).
+                     */
+                    DwarfMacinfoEntry entry = new DwarfMacinfoEntry(type);
+                    entry.fileIdx = fileIdx;
+                    table.addEntry(entry);
+                    if (!fileIndeces.empty()) {
+                        fileIdx = fileIndeces.pop();
+                    }
+                    break;
+                }
+                case DW_MACINFO_vendor_ext:
+                {
+                    // Just skip...
+                    reader.readUnsignedLEB128();
+                    reader.readString();
+                    break;
+                }
+                case DW_MACRO_define_indirect:
+                case DW_MACRO_undef_indirect:
+                {
+                    DwarfMacinfoEntry entry = new DwarfMacinfoEntry(type);
+                    entry.lineNum = reader.readUnsignedLEB128();
+                    int adress = reader.readInt();
+                    entry.definition = ((StringTableSection)reader.getSection(SECTIONS.DEBUG_STR)).getString(adress);
+                    entry.fileIdx = fileIdx;
+                    table.addEntry(entry);
+                    break;
+                }
+                case DW_MACRO_transparent_include:
+                {
+                    int index = reader.readInt();
+                    long savePosition = reader.getFilePointer();
+                    indirect.push(savePosition);
+                    reader.seek(header.getSectionOffset() + offset + index + 3);
+                    break;
+                }
             }
-            
-            table.addEntry(entry);
-            type = MACINFO.get(reader.readByte());
+            byte readByte = reader.readByte();
+            while(readByte == 0  && !indirect.empty()) {
+                long savePosition = indirect.pop();
+                reader.seek(savePosition);
+                readByte = reader.readByte();
+            }
+            type = MACINFO.get(readByte);
         }
         
         long readBytes = reader.getFilePointer() - (header.getSectionOffset() + offset + 1);
@@ -155,14 +201,21 @@ public class DwarfMacroInfoSection extends ElfSection {
         return readBytes;
     }
 
-    public List<Integer> getCommandIncudedFiles(DwarfMacinfoTable table, long offset) throws IOException{
+    public List<Integer> getCommandIncudedFiles(DwarfMacinfoTable table, long offset, long base) throws IOException{
         List<Integer> res = new ArrayList<Integer>();
         reader.seek(header.getSectionOffset() + offset);
         int level = 0;
         int lineNum;
         int  fileIdx;
+        Stack<Long> indirect = new Stack<Long>();
         loop:while (true) {
-            MACINFO type = MACINFO.get(reader.readByte());
+            byte readByte = reader.readByte();
+            while(readByte == 0  && !indirect.empty()) {
+                long savePosition = indirect.pop();
+                reader.seek(savePosition);
+                readByte = reader.readByte();
+            }
+            MACINFO type = MACINFO.get(readByte);
             if (type == null) {
                 break;
             }
@@ -193,7 +246,14 @@ public class DwarfMacroInfoSection extends ElfSection {
                     break;
                 case DW_MACRO_define_indirect:
                 case DW_MACRO_undef_indirect:
+                    lineNum = reader.readUnsignedLEB128();
+                    int adress = reader.readInt();
+                    break;
                 case DW_MACRO_transparent_include:
+                    int index = reader.readInt();
+                    long savePosition = reader.getFilePointer();
+                    indirect.push(savePosition);
+                    reader.seek(header.getSectionOffset() + offset + index + 3);
                     break;
             }
         }
