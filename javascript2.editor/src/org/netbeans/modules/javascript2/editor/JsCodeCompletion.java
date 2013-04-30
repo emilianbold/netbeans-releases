@@ -203,6 +203,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
         
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting JS CC took {0}ms ",  (end - start));
+        jsParserResult.getModel().writeModel(new Model.Printer() {
+
+            @Override
+            public void println(String str) {
+                System.out.println(str);
+            }
+        });
         for (CompletionProvider interceptor : EditorExtender.getDefault().getCompletionProviders()) {
             resultList.addAll(interceptor.complete(ccContext, context, pref));
         }
