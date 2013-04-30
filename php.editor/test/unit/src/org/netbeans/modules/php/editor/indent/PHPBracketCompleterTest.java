@@ -112,14 +112,14 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
 
     @Override
     public void insertBreak(String original, String expected) throws Exception {
-        super.insertBreak(wrapAsPhp(original), wrapAsPhp(expected));
+        insertBreak(original, expected, new HashMap<String, Object>(FmtOptions.getDefaults()));
     }
 
     public void insertBreak(String original, String expected, Map<String, Object> options) throws Exception {
         JEditorPane ta = getPane(original);
         Document doc = ta.getDocument();
         setOptionsForDocument(doc, options);
-        insertBreak(original, expected);
+        super.insertBreak(wrapAsPhp(original), wrapAsPhp(expected));
     }
 
     private void setOptionsForDocument(Document doc, Map<String, Object> options) throws Exception {
