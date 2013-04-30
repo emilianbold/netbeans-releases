@@ -184,8 +184,8 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             Application app = null;
             try {
                 app = earProject.getAppModule().getApplication();
-                app.setDisplayName(name);
-                if (EarProjectUtil.isDDWritable(earProject)) {
+                if (app != null && EarProjectUtil.isDDWritable(earProject)) {
+                    app.setDisplayName(name);
                     app.write(earProject.getAppModule().getDeploymentDescriptor());
                 }
             } catch (IOException ioe) {
