@@ -26,7 +26,7 @@ void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
 End cursor position = 480
-[<% session.| %>, Object getAttribute (String name ), <% session.getAttribute(name) %>, 576]
+[<% session.| %>, Object getAttribute (String name ), <% session.getAttribute(name) %>, 577]
 boolean equals (Object obj )
 Object getAttribute (String na
 Enumeration <String> getAttrib
@@ -53,7 +53,7 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 605
+End cursor position = 606
 [<%! void f() { this.|, ServletConfig getServletConfig (), <%! void f() { this.getServletConfig(), 754]
 Object clone ()
 void destroy ()
@@ -90,6 +90,7 @@ void wait (long timeout )
 void wait (long timeout , int 
 End cursor position = 793
 [<%= request.|, String getContextPath (), <%= request.getContextPath(), 903]
+String changeSessionId ()
 String getAuthType ()
 String getCharacterEncoding ()
 String getContentType ()
@@ -120,6 +121,7 @@ Object getAttribute (String na
 Enumeration <String> getAttrib
 Class  getClass ()
 int getContentLength ()
+long getContentLengthLong ()
 Cookie[] getCookies ()
 long getDateHeader (String nam
 DispatcherType getDispatcherTy
@@ -162,6 +164,7 @@ void setAttribute (String name
 void setCharacterEncoding (Str
 AsyncContext startAsync ()
 AsyncContext startAsync (Servl
+T upgrade (Class <T> handlerCl
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 

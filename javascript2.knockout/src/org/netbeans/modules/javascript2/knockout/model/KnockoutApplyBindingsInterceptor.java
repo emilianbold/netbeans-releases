@@ -69,8 +69,6 @@ public class KnockoutApplyBindingsInterceptor implements FunctionInterceptor {
 
     private static final String BINDINGS_OBJECT = "$bindings"; // NOI18N
 
-    private static final Logger LOGGER = Logger.getLogger(KnockoutApplyBindingsInterceptor.class.getName());
-
     @Override
     public Pattern getNamePattern() {
         return Pattern.compile("ko\\.applyBindings"); // NOI18N

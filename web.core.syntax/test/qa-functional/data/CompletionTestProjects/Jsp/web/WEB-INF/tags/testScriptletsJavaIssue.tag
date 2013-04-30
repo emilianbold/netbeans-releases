@@ -29,7 +29,7 @@ Card
 <%--CC
 <% LinkedList l = new LinkedList();l.|
 void clear ()
-<% LinkedList l = new LinkedList();l.clear()
+<% LinkedList l = new LinkedList();l.clear();
 --%>
 
 <%-- issue 91026: [cc] Object methods code completion doesn't work in scriptlets for imported classes --%>

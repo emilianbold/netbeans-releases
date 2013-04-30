@@ -10,6 +10,7 @@
 <html >
 End cursor position = 132
 [<a |, href, <a href="", 199]
+data-bind
 ng-bind
 ng-bind-html-unsafe
 ng-bind-template

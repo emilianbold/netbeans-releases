@@ -649,100 +649,43 @@ java java
 javax javax
 End cursor position = 1032
 [#{calendar.|, timeInMillis, #{calendar.timeInMillis, 1083]
-int actualMaximum(int field)
-int actualMinimum(int field)
 void add(int field,int amount)
 boolean after(Object when)
-Locale[] availableLocales
 boolean before(Object when)
 void clear()
 void clear(int field)
 Object clone()
 int compareTo(Calendar another
-String displayName(int field,i
-Map displayNames(int field,int
 boolean equals(Object obj)
-void firstDayOfWeek(int value)
 int firstDayOfWeek
 int get(int field)
-int greatestMinimum(int field)
+int getActualMaximum(int field
+int getActualMinimum(int field
+String getDisplayName(int fiel
+Map getDisplayNames(int field,
+int getGreatestMinimum(int fie
+int getLeastMaximum(int field)
+int getMaximum(int field)
+int getMinimum(int field)
 int hashCode()
-Calendar instance
-Calendar instance(TimeZone zon
-Calendar instance(Locale aLoca
-Calendar instance(TimeZone zon
-int leastMaximum(int field)
-void lenient(boolean lenient)
 boolean lenient
-int maximum(int field)
-void minimalDaysInFirstWeek(in
 int minimalDaysInFirstWeek
-int minimum(int field)
 void roll(int field,boolean up
 void roll(int field,int amount
 void set(int field,int value)
 void set(int year,int month,in
 void set(int year,int month,in
 void set(int year,int month,in
-boolean set(int field)
+void setFirstDayOfWeek(int val
+void setLenient(boolean lenien
+void setMinimalDaysInFirstWeek
+void setTimeZone(TimeZone valu
+void setWeekDate(int weekYear,
 Date time
-void time(Date date)
 long timeInMillis
-void timeInMillis(long millis)
-void timeZone(TimeZone value)
 TimeZone timeZone
 String toString()
-void weekDate(int weekYear,int
 boolean weekDateSupported
 int weekYear
 int weeksInWeekYear
 End cursor position = 1107
-[#{calendar.|, toString, #{calendar.toString, 1137]
-int actualMaximum(int field)
-int actualMinimum(int field)
-void add(int field,int amount)
-boolean after(Object when)
-Locale[] availableLocales
-boolean before(Object when)
-void clear()
-void clear(int field)
-Object clone()
-int compareTo(Calendar another
-String displayName(int field,i
-Map displayNames(int field,int
-boolean equals(Object obj)
-void firstDayOfWeek(int value)
-int firstDayOfWeek
-int get(int field)
-int greatestMinimum(int field)
-int hashCode()
-Calendar instance
-Calendar instance(TimeZone zon
-Calendar instance(Locale aLoca
-Calendar instance(TimeZone zon
-int leastMaximum(int field)
-void lenient(boolean lenient)
-boolean lenient
-int maximum(int field)
-void minimalDaysInFirstWeek(in
-int minimalDaysInFirstWeek
-int minimum(int field)
-void roll(int field,boolean up
-void roll(int field,int amount
-void set(int field,int value)
-void set(int year,int month,in
-void set(int year,int month,in
-void set(int year,int month,in
-boolean set(int field)
-Date time
-void time(Date date)
-long timeInMillis
-void timeInMillis(long millis)
-void timeZone(TimeZone value)
-TimeZone timeZone
-String toString()
-void weekDate(int weekYear,int
-boolean weekDateSupported
-int weekYear
-int weeksInWeekYear
-End cursor position = 1158

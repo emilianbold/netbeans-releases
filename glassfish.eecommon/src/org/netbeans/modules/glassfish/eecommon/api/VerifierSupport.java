@@ -109,7 +109,7 @@ import org.openide.windows.WindowManager;
  * Main TopComponent to display the output of the Sun J2EE Verifier Tool from an archive file.
  * @author ludo
  */
-public class VerifierSupport extends TopComponent{
+public class VerifierSupport extends TopComponent {
 
     /** Local logger. */
     private static final Logger LOGGER
@@ -175,7 +175,8 @@ public class VerifierSupport extends TopComponent{
     }
 
     /**
-     *
+     * Run GlassFish verifier tool.
+     * <p/>
      * @param fileName
      * @param outs
      * @param server GlassFish server instance.
@@ -646,6 +647,20 @@ public class VerifierSupport extends TopComponent{
         resultPanel.add("North", controlPanel); //NOI18N
         resultPanel.add("Center", splitPane);   // NOI18N
     }
+
+    /**
+     * @return the verifierIsStillRunning
+     */
+    public boolean isVerifierIsStillRunning() {
+        return verifierIsStillRunning;
+    }
+
+    /**
+     * @param verifierIsStillRunning the verifierIsStillRunning to set
+     */
+    public void setVerifierIsStillRunning(boolean verifierIsStillRunning) {
+        this.verifierIsStillRunning = verifierIsStillRunning;
+    }
     
     class RadioListener implements ActionListener {
         @Override
@@ -876,15 +891,15 @@ public class VerifierSupport extends TopComponent{
         }
     }
     
-    private void savePassResultsForDisplay(Test r){
+    public void savePassResultsForDisplay(Test r){
         passResults.addElement(r);
     }
     
-    private void saveWarnResultsForDisplay(Test r){
+    public void saveWarnResultsForDisplay(Test r){
         warnResults.addElement(r);
     }
     
-    private void saveFailResultsForDisplay(Test r){
+    public void saveFailResultsForDisplay(Test r){
         failResults.addElement(r);
     }
     
@@ -896,39 +911,39 @@ public class VerifierSupport extends TopComponent{
         errorResults.addElement(r);
     }
     
-    private void saveNaResultsForDisplay(Test r){
+    public void saveNaResultsForDisplay(Test r){
         naResults.addElement(r);
     }
         
-    private Vector getPassResultsForDisplay(){
+    public Vector getPassResultsForDisplay(){
         return passResults;
     }
     
-    private Vector getWarnResultsForDisplay(){
+    public Vector getWarnResultsForDisplay(){
         return warnResults;
     }
     
-    private Vector getFailResultsForDisplay(){
+    public Vector getFailResultsForDisplay(){
         return failResults;
     }
     
-    private Vector getErrorResultsForDisplay(){
+    public Vector getErrorResultsForDisplay(){
         return errorResults;
     }
     
-    private Vector getNaResultsForDisplay(){
+    public Vector getNaResultsForDisplay(){
         return naResults;
     }
     
-    private Vector getNotImplementedResultsForDisplay(){
+    public Vector getNotImplementedResultsForDisplay(){
         return notImplementedResults;
     }
     
-    private Vector getNotRunResultsForDisplay(){
+    public Vector getNotRunResultsForDisplay(){
         return notRunResults;
     }
     
-    private Vector getDefaultResultsForDisplay(){
+    public Vector getDefaultResultsForDisplay(){
         return defaultResults;
     }
     
