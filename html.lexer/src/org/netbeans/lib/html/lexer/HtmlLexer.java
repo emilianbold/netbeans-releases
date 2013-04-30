@@ -92,8 +92,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         private String attribute;
         private String tag;
         private String scriptType;
+        private boolean quoteType;
 
-        public CompoundState(int lexerState, int lexerSubState, int lexerEmbeddingState, String attributeName, String tagName, String scriptType, byte customELIndex) {
+        public CompoundState(int lexerState, int lexerSubState, int lexerEmbeddingState, String attributeName, String tagName, String scriptType, byte customELIndex, boolean quoteType) {
             this.lexerState = lexerState;
             this.lexerSubState = lexerSubState;
             this.lexerEmbeddingState = lexerEmbeddingState;
@@ -101,6 +102,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             this.tag = tagName;
             this.scriptType = scriptType;
             this.customELIndex = customELIndex;
+            this.quoteType = quoteType;
         }
 
         @Override
@@ -133,6 +135,10 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             if (this.customELIndex != other.customELIndex) {
                 return false;
             }
+            if (this.quoteType != other.quoteType) {
+                return false;
+            }
+            
             return true;
         }
 
@@ -149,6 +155,15 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                 //do not alter hash code if there's no custom el index set
                 hash = 17 * hash + this.customELIndex;
             }
+            //do not alter the hash code out of the related area
+            switch(lexerState) {
+                case ISI_VAL_QUOT:
+                case ISI_VAL_QUOT_EL:
+                case ISI_VAL_QUOT_ESC:
+                    hash = 17 * hash + (quoteType ? 1 : 0);
+                    break;
+            }
+            
             return hash;
         }
 
@@ -190,7 +205,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     @Override
     public Object state() {
         //cache the states so lexing of large files do not eat too much memory
-        CompoundState currentState = new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, attribute, tag, scriptType, customELIndex);
+        CompoundState currentState = new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, attribute, tag, scriptType, customELIndex, quoteType);
         CompoundState cached = STATES_CACHE.get(currentState);
         if(cached == null) {
             STATES_CACHE.put(currentState, currentState);
@@ -232,6 +247,13 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     
     private byte customELIndex = INIT;
     
+    /**
+     * Indicates the quote type in ISI_VAL_QUOT state.
+     * 
+     * true means double qoute, false single quote.
+     */
+    private boolean quoteType;
+    
     public static final String EL_CONTENT_PROVIDER_INDEX = "elci"; //NOI18N
 
     // internal 'in script' state. 'scriptState' internal state is set to it when the
@@ -257,8 +279,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     private static final int ISP_EQ = 14;     // X-switch after '=' in TAG's ARGUMENT
     private static final int ISP_EQ_WS = 15;  // In WS after '='
     private static final int ISI_VAL = 16;    // Non-quoted value
-    private static final int ISI_VAL_QUOT = 17;   // Single-quoted value - may contain " chars
-    private static final int ISI_VAL_DQUOT = 18;  // Double-quoted value - may contain ' chars
+    private static final int ISI_VAL_QUOT = 17;   // quoted value
+    private static final int ISI_VAL_QUOT_EL = 18;   // in EL in quoted value
     private static final int ISA_SGML_ESCAPE = 19;  // After "<!"
     private static final int ISA_SGML_DASH = 20;    // After "<!-"
     private static final int ISI_HTML_COMMENT = 21; // Somewhere after "<!--"
@@ -287,7 +309,6 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     private static final int ISI_SGML_DECL_WS = 41; //after whitespace in SGML declaration
 
     private static final int ISI_VAL_QUOT_ESC = 42;
-    private static final int ISI_VAL_DQUOT_ESC = 43;
     
     private static final int ISA_ARG_UNDERSCORE = 44; //after _ in attribute name
     private static final int ISP_TAG_X_ERROR = 45; //error in tag content
@@ -357,6 +378,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             this.lexerState = INIT;
             this.lexerEmbeddingState = INIT;
             this.customELIndex = INIT;
+            this.quoteType = false;
         } else {
             CompoundState cs = (CompoundState) info.state();
             lexerState = cs.lexerState;
@@ -365,6 +387,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             attribute = cs.attribute;
             tag = cs.tag;
             customELIndex = cs.customELIndex;
+            quoteType = cs.quoteType;
         }
 
         InputAttributes inputAttributes = info.inputAttributes();
@@ -944,10 +967,12 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     }
                     switch( actChar ) {
                         case '\'':
+                            quoteType = false;
                             lexerState = ISI_VAL_QUOT;
                             break;
                         case '"':
-                            lexerState = ISI_VAL_DQUOT;
+                            quoteType = true;
+                            lexerState = ISI_VAL_QUOT;
                             break;
                         case '/':
                         case '>':
@@ -989,12 +1014,55 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     lexerState = ISP_TAG_X;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
-                        return resolveValueToken();
+                        Token<HTMLTokenId> resolveValueToken = resolveValueToken();
+                        attribute = null;
+                        return resolveValueToken;
                     }
                     
                     break;
 
                 case ISI_VAL_QUOT:
+                     //custom EL support
+                    delimiters: for(byte delimiterIndex = 0; delimiterIndex < customELQuery.getOpenDelimiters().length; delimiterIndex++ ) {
+                        String openDelimiter = customELQuery.getOpenDelimiters()[delimiterIndex];
+                        if(openDelimiter == null) {
+                            continue;
+                        }
+                        int alreadyRead = input.readLength();
+                        char read = (char)actChar; //first char is already read
+                        for(int i = 0; i < openDelimiter.length(); i++) {
+                            char delimChar = openDelimiter.charAt(i);
+                            if(read != delimChar) {
+                                //no match
+                                input.backup(input.readLength() - alreadyRead); //backup text
+                                continue delimiters; //and try next one
+                            }
+                            if((i+1) < openDelimiter.length()) {
+                                //will be next loop, read char
+                                read = (char)input.read();
+                            }
+                        }
+                        
+                        //we've found an open delimiter
+                        //check if the there was already something read before checking the delimiter,
+                        //if so then return it and re-run this step again so then we can return
+                        //clean token for the delimiter
+                        if(input.readLength() > openDelimiter.length()) {
+                            input.backup(openDelimiter.length());
+                            return resolveValueToken();
+                        } else {
+                            //return the open symbol token and switch to "in el" state
+                            lexerState = ISI_VAL_QUOT_EL;
+                            customELIndex = (byte)(delimiterIndex + 1); //0 is reserved for "no delimiter", 1 means delimiter with index 0
+                            //save the provider's index in the delimiter token's property so once can recognize what should be 
+                            //the delimiters' content if it is empty
+                            //TODO "contentMimetype" INTO API???
+                            return token(HTMLTokenId.EL_OPEN_DELIMITER, 
+                                    new HtmlTokenPropertyProvider(EL_EXPRESSION_CONTENT_MIMETYPE_TOKEN_PROPERTY_KEY, customELQuery.getMimeTypes()[delimiterIndex])); 
+                        }
+                        
+                    }
+                    
                     switch (actChar) {
                         case '\\':
                             //may be escaped quote
@@ -1002,50 +1070,66 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             break;
 
                         case '\'':
-                            //reset the 'script embedding will follow state' if the value represents a
-                            //type attribute value of a script tag
-                            if(equals(SCRIPT, tag, true, true) && equals("type", attribute, true, true)) { //NOI18N
-                                //inside script tag
-                                scriptType = getScriptType(input.readText(), true).toString();
-                            }
-
-                            lexerState = ISP_TAG_X;
-                            return resolveValueToken();
-                    }
-                    break;  // else simply consume next char of VALUE
-
-                case ISI_VAL_DQUOT:
-                    switch (actChar) {
-                        case '\\':
-                            //may be escaped quote
-                            lexerState = ISI_VAL_DQUOT_ESC;
-                            break;
-
                         case '"':
-                            //reset the 'script embedding will follow state' if the value represents a
-                            //type attribute value of a script tag
-                            if(equals(SCRIPT, tag, true, true) && equals("type", attribute, true, true)) { //NOI18N
-                                //inside script tag
-                                scriptType = getScriptType(input.readText(), true).toString();
-                            }
+                            if(actChar == '\'' && !quoteType || actChar == '"' && quoteType) {
+                                //reset the 'script embedding will follow state' if the value represents a
+                                //type attribute value of a script tag
+                                if(equals(SCRIPT, tag, true, true) && equals("type", attribute, true, true)) { //NOI18N
+                                    //inside script tag
+                                    scriptType = getScriptType(input.readText(), true).toString();
+                                }
 
-                            lexerState = ISP_TAG_X;
-                            return resolveValueToken();
+                                lexerState = ISP_TAG_X;
+                                Token<HTMLTokenId> resolveValueToken = resolveValueToken();
+                                attribute = null;
+                                return resolveValueToken;
+                            }
                     }
                     break;  // else simply consume next char of VALUE
 
+                case ISI_VAL_QUOT_EL:
+                     delimiters: for(byte delimiterIndex = 0; delimiterIndex < customELQuery.getOpenDelimiters().length; delimiterIndex++ ) {
+                        String closeDelimiter = customELQuery.getCloseDelimiters()[delimiterIndex];
+                        if(closeDelimiter == null) {
+                            continue;
+                        }
+                        int alreadyRead = input.readLength();
+                        char read = (char)actChar; //first char is already read
+                        for(int i = 0; i < closeDelimiter.length(); i++) {
+                            char delimChar = closeDelimiter.charAt(i);
+                            if(read != delimChar) {
+                                //no match
+                                input.backup(input.readLength() - alreadyRead); //backup text
+                                continue delimiters; //and try next one
+                            }
+                            if((i+1) < closeDelimiter.length()) {
+                                //will be next loop, read char
+                                read = (char)input.read();
+                            }
+                        }
+                        //we've found a close delimiter
+                        //check if the there was already something read before checking the delimiter,
+                        //if so then return it and re-run this step again so then we can return
+                        //clean token for the delimiter
+                        if(input.readLength() > closeDelimiter.length()) {
+                            input.backup(closeDelimiter.length());
+                            //save the provider's index in the token's property so we can set the corresponding embdding in HTMLTokenId.language()
+                            return token(HTMLTokenId.EL_CONTENT, new HtmlTokenPropertyProvider(EL_CONTENT_PROVIDER_INDEX, new Byte((byte)(customELIndex - 1)))); 
+                        } else {
+                            //return the close symbol token and switch to "in value" state
+                            lexerState = ISI_VAL_QUOT;
+                            customELIndex = INIT;
+                            return token(HTMLTokenId.EL_CLOSE_DELIMITER);
+                        }
+                    }
+                    
+                    break;
+                    
                 case ISI_VAL_QUOT_ESC:
                     //Just consume the escaped char.
                     //The state prevents the quoted value
                     //to be finished by an escaped quote.
                     lexerState = ISI_VAL_QUOT;
-                    break;
-
-                case ISI_VAL_DQUOT_ESC:
-                    //Just consume the escaped char.
-                    //The state prevents the quoted value
-                    //to be finished by an escaped quote.
-                    lexerState = ISI_VAL_DQUOT;
                     break;
 
                 case ISA_SGML_ESCAPE:       // DONE
@@ -1330,9 +1414,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
             case ISI_VAL:
             case ISI_VAL_QUOT:
-            case ISI_VAL_DQUOT:
             case ISI_VAL_QUOT_ESC:
-            case ISI_VAL_DQUOT_ESC:
                 return resolveValueToken();
 
             case ISI_SGML_DECL:
@@ -1359,6 +1441,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                 return token(HTMLTokenId.STYLE);
                 
             case ISI_EL:
+            case ISI_VAL_QUOT_EL:
                 return token(HTMLTokenId.EL_CONTENT, new HtmlTokenPropertyProvider(EL_CONTENT_PROVIDER_INDEX, new Byte((byte)(customELIndex - 1)))); 
 
 
@@ -1377,35 +1460,33 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     private static final String ID_ATTR_NAME = "id"; //NOI18N
 
     private Token<HTMLTokenId> resolveValueToken() {
-        try {
-            //onclick and similar method javascript embedding
-            if (isJavascriptEventHandlerName(attribute)) {
-                return token(HTMLTokenId.VALUE_JAVASCRIPT);
-            }
-            //style, id or class attribute value css embeddeding
-            if (isStyleAttributeName(attribute)) {
-                return createCssValueToken();
-            }
-
-            //generic css "class" embedding
-            if (cssClassTagAttrMap != null && tag != null) {
-                Collection attrs = cssClassTagAttrMap.get(tag);
-                if (attrs != null && attrs.contains(attribute)) {
-                    //yup the attribute's value should have css "class" selector embedding
-                    return token(HTMLTokenId.VALUE_CSS, CLASS_TOKEN_PP);
-                }
-            }
-            //lexer plugins:
-            String embeddingMimeType = HtmlPlugins.getDefault().createAttributeEmbedding(tag, attribute);
-            if(embeddingMimeType != null) {
-                LOGGER.log(Level.FINE, "creating html attribute value token {0} in tag {1} with embedding {2}", 
-                        new Object[]{attribute, tag, embeddingMimeType});
-                return token(HTMLTokenId.VALUE, new HtmlTokenPropertyProvider(ATTRIBUTE_VALUE_EMBEDDING_MIMETYPE_TOKEN_PROPERTY_KEY, embeddingMimeType));
-            }
-
-        } finally {
-            attribute = null;
+        assert attribute != null;
+        
+        //onclick and similar method javascript embedding
+        if (isJavascriptEventHandlerName(attribute)) {
+            return token(HTMLTokenId.VALUE_JAVASCRIPT);
         }
+        //style, id or class attribute value css embeddeding
+        if (isStyleAttributeName(attribute)) {
+            return createCssValueToken();
+        }
+
+        //generic css "class" embedding
+        if (cssClassTagAttrMap != null && tag != null) {
+            Collection attrs = cssClassTagAttrMap.get(tag);
+            if (attrs != null && attrs.contains(attribute)) {
+                //yup the attribute's value should have css "class" selector embedding
+                return token(HTMLTokenId.VALUE_CSS, CLASS_TOKEN_PP);
+            }
+        }
+        //lexer plugins:
+        String embeddingMimeType = HtmlPlugins.getDefault().createAttributeEmbedding(tag, attribute);
+        if (embeddingMimeType != null) {
+            LOGGER.log(Level.FINE, "creating html attribute value token {0} in tag {1} with embedding {2}",
+                    new Object[]{attribute, tag, embeddingMimeType});
+            return token(HTMLTokenId.VALUE, new HtmlTokenPropertyProvider(ATTRIBUTE_VALUE_EMBEDDING_MIMETYPE_TOKEN_PROPERTY_KEY, embeddingMimeType));
+        }
+
         return token(HTMLTokenId.VALUE);
     }
 

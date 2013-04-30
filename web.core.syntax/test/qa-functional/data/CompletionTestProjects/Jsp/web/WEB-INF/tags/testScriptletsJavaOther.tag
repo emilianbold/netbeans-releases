@@ -19,7 +19,7 @@ void removeAttribute (String name )
 <%-- Java completion for session object --%>
 <%--CC
 <% session.| %>
-Object getAttribute (String name )
+Object getAttribute (String name );
 <% session.getAttribute(name) %>
 --%>
 

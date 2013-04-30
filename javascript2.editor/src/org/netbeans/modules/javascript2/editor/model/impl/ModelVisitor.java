@@ -412,42 +412,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         Collection<FunctionArgument> funcArg = new ArrayList<FunctionArgument>();
                         for (int i = 0; i < callNode.getArgs().size(); i++) {
                             Node argument = callNode.getArgs().get(i);
-                            if (argument instanceof LiteralNode) {
-                                LiteralNode ln = (LiteralNode)argument;
-                                if (ln.isString()) {
-                                    funcArg.add(FunctionArgumentAccessor.getDefault().createForString(i, argument.getStart(), ln.getString()));
-                                }
-                            } else if (argument instanceof ObjectNode) {
-                                for (JsObjectImpl jsObject: functionArguments) {
-                                    if (jsObject.getOffset() == argument.getStart()) {
-                                        funcArg.add(FunctionArgumentAccessor.getDefault().createForAnonymousObject(i, jsObject.getOffset(), jsObject));
-                                        break;
-                                    }
-                                }
-                            } else if (argument instanceof AccessNode) {
-                                List<String> strFqn = new ArrayList<String>();
-                                if(fillName((AccessNode) argument, strFqn)) {
-                                    funcArg.add(FunctionArgumentAccessor.getDefault().createForReference(
-                                            i, argument.getStart(), strFqn));
-                                } else {
-                                    funcArg.add(FunctionArgumentAccessor.getDefault().createForUnknown(i));
-                                }
-                            } else if (argument instanceof IndexNode) {
-                                List<String> strFqn = new ArrayList<String>();
-                                if(fillName((IndexNode) argument, strFqn)) {
-                                    funcArg.add(FunctionArgumentAccessor.getDefault().createForReference(
-                                            i, argument.getStart(), strFqn));
-                                } else {
-                                    funcArg.add(FunctionArgumentAccessor.getDefault().createForUnknown(i));
-                                }
-                            } else if (argument instanceof IdentNode) {
-                                IdentNode in = (IdentNode) argument;
-                                String inName = in.getName();
-                                funcArg.add(FunctionArgumentAccessor.getDefault().createForReference(
-                                        i, argument.getStart(), Collections.singletonList(inName)));
-                            } else {
-                                funcArg.add(FunctionArgumentAccessor.getDefault().createForUnknown(i));
-                            }
+                            createFunctionArgument(argument, i, functionArguments, funcArg);
                         }
                         Collection<FunctionCall> calls = functionCalls.get(interceptorToUse);
                         if (calls == null) {
@@ -459,7 +424,57 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
-        return super.leave(callNode); //To change body of generated methods, choose Tools | Templates.
+        return super.leave(callNode);
+    }
+
+    private void createFunctionArgument(Node argument, int position, Collection<JsObjectImpl> functionArguments,
+            Collection<FunctionArgument> result) {
+
+        if (argument instanceof LiteralNode) {
+            LiteralNode ln = (LiteralNode)argument;
+            if (ln.isString()) {
+                result.add(FunctionArgumentAccessor.getDefault().createForString(
+                        position, LexUtilities.getLexerOffset(parserResult, argument.getStart()), ln.getString()));
+            }
+        } else if (argument instanceof ObjectNode) {
+            for (JsObjectImpl jsObject: functionArguments) {
+                if (jsObject.getOffset() == LexUtilities.getLexerOffset(parserResult, argument.getStart())) {
+                    result.add(FunctionArgumentAccessor.getDefault().createForAnonymousObject(position, jsObject.getOffset(), jsObject));
+                    break;
+                }
+            }
+        } else if (argument instanceof AccessNode) {
+            List<String> strFqn = new ArrayList<String>();
+            if(fillName((AccessNode) argument, strFqn)) {
+                result.add(FunctionArgumentAccessor.getDefault().createForReference(
+                        position, LexUtilities.getLexerOffset(parserResult, argument.getStart()), strFqn));
+            } else {
+                result.add(FunctionArgumentAccessor.getDefault().createForUnknown(position));
+            }
+        } else if (argument instanceof IndexNode) {
+            List<String> strFqn = new ArrayList<String>();
+            if(fillName((IndexNode) argument, strFqn)) {
+                result.add(FunctionArgumentAccessor.getDefault().createForReference(
+                        position, LexUtilities.getLexerOffset(parserResult, argument.getStart()), strFqn));
+            } else {
+                result.add(FunctionArgumentAccessor.getDefault().createForUnknown(position));
+            }
+        } else if (argument instanceof IdentNode) {
+            IdentNode in = (IdentNode) argument;
+            String inName = in.getName();
+            result.add(FunctionArgumentAccessor.getDefault().createForReference(
+                    position, LexUtilities.getLexerOffset(parserResult, argument.getStart()),
+                    Collections.singletonList(inName)));
+        } else if (argument instanceof UnaryNode) {
+            // we are handling foo(new Something())
+            UnaryNode un = (UnaryNode) argument;
+            if (un.tokenType() == TokenType.NEW) {
+                CallNode constructor = (CallNode) un.rhs();
+                createFunctionArgument(constructor.getFunction(), position, functionArguments, result);
+            }
+        } else {
+            result.add(FunctionArgumentAccessor.getDefault().createForUnknown(position));
+        }
     }
 
     @Override
