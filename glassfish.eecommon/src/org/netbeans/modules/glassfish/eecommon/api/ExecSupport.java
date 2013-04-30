@@ -53,7 +53,7 @@ import org.openide.ErrorManager;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
-class ExecSupport {
+public class ExecSupport {
 
     /** Creates a new instance of ExecSupport */
     ExecSupport() {
@@ -104,7 +104,7 @@ class ExecSupport {
     }
 
     /** This thread simply reads from given Reader and writes read chars to given Writer. */
-    static class OutputCopier extends Thread {
+    public static class OutputCopier extends Thread {
         final Writer os;
         final Reader is;
         /** while set to false at streams that writes to the OutputWindow it must be
@@ -113,7 +113,7 @@ class ExecSupport {
         final boolean autoflush;
         private boolean done = false;
 
-        OutputCopier(Reader is, Writer os, boolean b) {
+        public OutputCopier(Reader is, Writer os, boolean b) {
             this.os = os;
             this.is = is;
             autoflush = b;
