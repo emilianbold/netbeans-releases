@@ -504,6 +504,9 @@ public class ElementsParser implements Iterator<Element> {
                     case VALUE:
                     case VALUE_JAVASCRIPT:
                     case VALUE_CSS:
+                    case EL_OPEN_DELIMITER:
+                    case EL_CONTENT:
+                    case EL_CLOSE_DELIMITER:
                         int index = attr_keys.indexOf(attrib);
                         if (index == -1) {
                             List<TokenInfo> values = new ArrayList<TokenInfo>();
