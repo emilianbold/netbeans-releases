@@ -60,16 +60,23 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -79,13 +86,20 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.spi.ScreenshotUIManager;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.actions.SaveAction;
+import org.openide.awt.Actions;
 import org.openide.explorer.ExplorerManager;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -197,6 +211,8 @@ public class ScreenshotComponent extends TopComponent {
         toolBar.add(createZoomFitButton());
         toolBar.addSeparator();
         toolBar.add(createZoomPercent());
+        toolBar.addSeparator();
+        toolBar.add(createSaveButton());
         toolBar.addSeparator();
         return toolBar;
     }
@@ -346,6 +362,14 @@ public class ScreenshotComponent extends TopComponent {
         });
         cb.setAlignmentX(CENTER_ALIGNMENT);
         return cb;
+    }
+    
+    private JButton createSaveButton() {
+        SaveAction sa = SaveAction.get(SaveAction.class);
+        Action saveAction = sa.createContextAwareInstance(Lookups.singleton(new ScreenshotSavable()));
+        JButton jb = new JButton();
+        Actions.connect(jb, saveAction);
+        return jb;
     }
     
     private static ComponentInfo getFirstCustomComponent(Node node) {
@@ -680,6 +704,33 @@ public class ScreenshotComponent extends TopComponent {
             scrollPane.getViewport().setViewPosition(p);
         }
         
+        void save(File file) throws IOException {
+            ImageWriter iw = null;
+            String name = file.getName();
+            int i = name.lastIndexOf('.');
+            if (i >= 0) {
+                String extension = name.substring(i + 1);
+                Iterator<ImageWriter> imageWritersBySuffix = ImageIO.getImageWritersBySuffix(extension);
+                if (imageWritersBySuffix.hasNext()) {
+                    iw = imageWritersBySuffix.next();
+                }
+            }
+            if (iw != null) {
+                file.delete();
+                ImageOutputStream ios = ImageIO.createImageOutputStream(file);
+                iw.setOutput(ios);
+                try {
+                    iw.write((BufferedImage) image);
+                } finally {
+                    iw.dispose();
+                    ios.flush();
+                    ios.close();
+                }
+            } else {
+                ImageIO.write((BufferedImage) image, "PNG", file);
+            }
+        }
+        
         private class Listener implements MouseListener, PropertyChangeListener {
 
             @Override
@@ -781,6 +832,36 @@ public class ScreenshotComponent extends TopComponent {
                 }
             }
 
+        }
+        
+    }
+    
+    @NbBundle.Messages({"# {0} - The file name to overwrite",
+                        "MSG_Overwrite=Do you want to overwrite {0}?",
+                        "CTL_ImageFiles=Image Files"})
+    private class ScreenshotSavable implements Savable {
+
+        @Override
+        public void save() throws IOException {
+            FileChooserBuilder fchb = new FileChooserBuilder(ScreenshotComponent.class);
+            String[] writerFileSuffixes = ImageIO.getWriterFileSuffixes();
+            fchb.setFileFilter(new FileNameExtensionFilter(Bundle.CTL_ImageFiles(), writerFileSuffixes));
+            File file = fchb.showSaveDialog();
+            if (file != null) {
+                if (file.exists()) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(Bundle.MSG_Overwrite(file.getName()), toString());
+                    Object doOverwrite = DialogDisplayer.getDefault().notify(nd);
+                    if (!NotifyDescriptor.YES_OPTION.equals(doOverwrite)) {
+                        return ;
+                    }
+                }
+                canvas.save(file);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return ScreenshotComponent.this.getDisplayName();
         }
         
     }
