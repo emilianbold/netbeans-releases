@@ -102,4 +102,12 @@ public class IdentifiersTest extends HintTestBase {
         checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers11.xhtml", null);
     }
 
+    public void testPropertyCustomMap01() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers12.xhtml", null);
+    }
+
+    public void testPropertyImplicitMap01() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers13.xhtml", null);
+    }
+
 }

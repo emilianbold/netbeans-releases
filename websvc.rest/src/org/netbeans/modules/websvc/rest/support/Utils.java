@@ -70,6 +70,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.rest.nodes.TestRestServicesAction;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDescriptor;
@@ -223,7 +224,7 @@ public class Utils {
         }
     }
 
-    private static void generateRemoteTester( Project restProject, Project remoteProject ) {
+    private static void generateRemoteTester( final Project restProject, Project remoteProject ) {
         final RestSupport rs = remoteProject.getLookup().lookup(RestSupport.class);
         final RestSupport localSupport = restProject.getLookup().lookup(RestSupport.class);
         SourceGroup[] sourceGroups = ProjectUtils.getSources(remoteProject).
@@ -260,7 +261,7 @@ public class Utils {
                         try {
                             localSupport.deploy();
                             rs.deploy();
-                            URL url = new URL(rs.getContextRootURL() + 
+                            URL url = new URL(MiscUtilities.getContextRootURL(restProject) +
                                     testFO[0].getNameExt());
                             if (url != null) {
                                 HtmlBrowser.URLDisplayer.getDefault().showURL(url);
@@ -280,7 +281,7 @@ public class Utils {
                 if ( localSupport!= rs ){
                     rs.deploy();
                 }
-                URL url = new URL(rs.getContextRootURL() + testFO.getNameExt());
+                URL url = new URL(MiscUtilities.getContextRootURL(restProject) + testFO.getNameExt());
                 if (url != null) {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                 }
@@ -432,7 +433,7 @@ public class Utils {
                     p.setProperty(RestSupport.PROP_APPLICATION_PATH, applicationPath);
                 }
                 File testdir = rs.getLocalTargetTestRest();
-                FileObject testFO = rs.generateTestClient(testdir);
+                FileObject testFO = MiscUtilities.generateTestClient(testdir);
                 p.setProperty(RestSupport.PROP_RESTBEANS_TEST_URL, 
                         testFO.getURL().toString());
                 p.setProperty(RestSupport.PROP_RESTBEANS_TEST_FILE, 

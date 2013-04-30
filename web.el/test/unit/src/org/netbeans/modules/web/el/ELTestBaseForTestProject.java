@@ -126,7 +126,7 @@ public class ELTestBaseForTestProject extends ELTestBase {
                 new TestMultiProjectFactory(projects),
                 new SimpleFileOwnerQueryImplementation(),
                 new FakeWebModuleProvider(webFo, srcFo),
-                new TestFaceletPlugin(),
+                new TestFaceletPlugin(srcFo),
                 new TestVariableResolver());
 
         refreshIndexAndWait();
@@ -175,6 +175,12 @@ public class ELTestBaseForTestProject extends ELTestBase {
 
     public static class TestFaceletPlugin extends ELPlugin {
 
+        private final FileObject srcFolder;
+
+        public TestFaceletPlugin(FileObject srcFolder) {
+            this.srcFolder = srcFolder;
+        }
+
         @Override
         public String getName() {
             return "testPlugin";
@@ -196,7 +202,7 @@ public class ELTestBaseForTestProject extends ELTestBase {
             if (project == null) {
                 return Collections.emptyList();
             }
-            ResourceBundle rb = new ResourceBundle("java/beans/Messages", "bundle");
+            ResourceBundle rb = new ResourceBundle("java/beans/Messages", "bundle", Collections.singletonList(srcFolder.getFileObject("java/beans/Messages.properties")));
             return Arrays.asList(rb);
         }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -48,11 +48,16 @@ import java.io.File;
 import java.io.OutputStream;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
+import org.glassfish.tools.ide.data.GlassFishServer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.glassfish.common.ui.JavaSEPlatformPanel;
+import org.netbeans.modules.glassfish.common.utils.JavaUtils;
 import org.netbeans.modules.glassfish.eecommon.api.VerifierSupport;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -65,7 +70,7 @@ public  class VerifierImpl extends org.netbeans.modules.j2ee.deployment.plugins.
     /** Creates a new instance of VerifierImpl */
     public VerifierImpl() {
     }
-    
+
     /**
      * Verify the provided target J2EE module or application, including both
      * standard J2EE and platform specific deployment info.  The provided
@@ -82,12 +87,27 @@ public  class VerifierImpl extends org.netbeans.modules.j2ee.deployment.plugins.
         DeploymentManager dm;
         try {
             dm = getAssociatedSunDM(target);
-        if (dm instanceof Hk2DeploymentManager) {
-            Hk2DeploymentManager hk2dm = (Hk2DeploymentManager) dm;
-            VerifierSupport.launchVerifier(jname,logger, new File(hk2dm.getProperties().getGlassfishRoot()));
-        }
+            if (dm instanceof Hk2DeploymentManager) {
+                Hk2DeploymentManager hk2dm = (Hk2DeploymentManager) dm;
+                GlassfishModule gm = hk2dm.getCommonServerSupport();
+                GlassFishServer server = gm.getInstance();
+                String javaHome = gm.getInstanceProperties()
+                        .get(GlassfishModule.JAVA_PLATFORM_ATTR);
+                if (javaHome == null || javaHome.length() < 1) {
+                    javaHome = JavaUtils.getDefaultJavaHome();
+                }
+                File javaHomeFile = new File(javaHome);
+                if (!JavaUtils.isJavaPlatformSupported(
+                        (GlassfishInstance)server, javaHomeFile)) {
+                    FileObject javaFO
+                            = JavaSEPlatformPanel.selectServerSEPlatform(
+                            (GlassfishInstance)server, javaHomeFile);
+                    javaHome = FileUtil.toFile(javaFO).getAbsolutePath();
+                }
+                VerifierSupport.launchVerifier(jname, logger, server, javaHome);
+            }
         } catch (DeploymentManagerCreationException ex) {
-            ValidationException ve =  new ValidationException("Bad DM");
+            ValidationException ve = new ValidationException("Bad DM");
             ve.initCause(ex);
             throw ve;
         }

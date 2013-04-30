@@ -76,9 +76,11 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -92,13 +94,6 @@ import org.w3c.dom.NodeList;
  */
 public class RestUtils {
    
-    public static void upgrade(Project project) {
-         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if (restSupport != null) {
-            restSupport.upgrade();
-        }
-    }
-    
     /**
      *  Makes sure project is ready for REST development.
      *  @param project project to make REST development ready
@@ -148,6 +143,14 @@ public class RestUtils {
         return false;
     }
     
+    public static FileObject getDeploymentDescriptor(Project p) {
+        WebModuleProvider wmp = p.getLookup().lookup(WebModuleProvider.class);
+        if (wmp != null) {
+            return wmp.findWebModule(p.getProjectDirectory()).getDeploymentDescriptor();
+        }
+        return null;
+    }
+
     public static boolean hasSpringSupport(Project project) {
         RestSupport support = getRestSupport(project);
         
@@ -189,13 +192,7 @@ public class RestUtils {
     }
 
     public static Datasource getDatasource(Project project, String jndiName) {
-        RestSupport support = getRestSupport(project);
-        
-        if (support != null) {
-            return support.getDatasource(jndiName);
-        }
-        
-        return null;
+        return MiscUtilities.getDatasource(project, jndiName);
     }
     
     //

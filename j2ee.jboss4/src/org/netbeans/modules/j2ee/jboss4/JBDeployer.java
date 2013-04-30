@@ -116,7 +116,7 @@ public class JBDeployer implements ProgressObject, Runnable {
             String server_url = "http://" + host + ":" + port; // NOI18N
 
             if (file.getName().endsWith(".war")) {
-                mainModuleID.setContextURL(server_url + JbossWeb.createGraph(file2).getContextRoot());
+                mainModuleID.setContextURL(getWebUrl(server_url, JbossWeb.createGraph(file2).getContextRoot()));
             } else if (file.getName().endsWith(".ear")) {
                 JarFileSystem jfs = new JarFileSystem();
                 jfs.setJarFile(file);
@@ -128,7 +128,7 @@ public class JBDeployer implements ProgressObject, Runnable {
                         JBTargetModuleID mod_id = new JBTargetModuleID(target[0]);
                         if (modules[i].getWeb() != null) {
                             mod_id.setJARName(modules[i].getWeb().getWebUri());
-                            mod_id.setContextURL(server_url + modules[i].getWeb().getContextRoot());
+                            mod_id.setContextURL(getWebUrl(server_url, modules[i].getWeb().getContextRoot()));
                         }
                         mainModuleID.addChild(mod_id);
                     }
@@ -160,7 +160,7 @@ public class JBDeployer implements ProgressObject, Runnable {
                                     zis.close();
                                 }
 
-                                mod_id.setContextURL(server_url + contextRoot);
+                                mod_id.setContextURL(getWebUrl(server_url, contextRoot));
                             }
                             mainModuleID.addChild(mod_id);
                         }
@@ -387,6 +387,17 @@ public class JBDeployer implements ProgressObject, Runnable {
         }
 
         return false;
+    }
+
+    private static String getWebUrl(String serverUrl, String webContext) {
+        StringBuilder sb = new StringBuilder(serverUrl);
+        if (webContext != null && !webContext.startsWith("/") && !serverUrl.endsWith("/")) { // NOI18N
+            sb.append("/"); // NOI18N
+        }
+        if (webContext != null) {
+            sb.append(webContext);
+        }
+        return sb.toString();
     }
 
     private static class ZipEntryInputStream extends InputStream {

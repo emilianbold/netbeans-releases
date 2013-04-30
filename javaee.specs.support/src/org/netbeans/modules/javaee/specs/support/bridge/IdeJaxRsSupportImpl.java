@@ -87,7 +87,7 @@ public class IdeJaxRsSupportImpl implements JaxRsStackSupportImplementation {
         if (restapiLibrary == null) {
             return false;
         }
-        return addSwdpLibrary( project , restapiLibrary);
+        return addLibrary( project , restapiLibrary);
     }
 
     /* (non-Javadoc)
@@ -103,7 +103,7 @@ public class IdeJaxRsSupportImpl implements JaxRsStackSupportImplementation {
         if ( support != null ){
             support.configureCustomJersey(project);
         }
-        return addSwdpLibrary( project , swdpLibrary);
+        return addLibrary( project , swdpLibrary);
     }
     
     /* (non-Javadoc)
@@ -165,7 +165,7 @@ public class IdeJaxRsSupportImpl implements JaxRsStackSupportImplementation {
         return false;
     }
     
-    private boolean addSwdpLibrary( Project project , Library lib)  {
+    private boolean addLibrary( Project project , Library lib)  {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).
             getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sourceGroups == null || sourceGroups.length < 1) {

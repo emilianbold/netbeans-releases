@@ -100,8 +100,6 @@ public interface WizardConstants {
     public static final String __Enabled = "enabled";
     public static final String __JdbcResource = "jdbc-resource";
     
-    
-
     //persistence-manager-factory
     //Contains __BeanjndiName and __BeanisEnabled and __Description
     public static final String __FactoryClass = "factory-class";
@@ -199,6 +197,8 @@ public interface WizardConstants {
     
     //Suffixes to create Resource File Names (for Zero Config)
     public static final String __ConnPoolSuffix = "Pool"; 
+    /** Suffix to create connector connection pool for JMS Resource. */
+    public static final String __ConnPoolSuffixJMS = "-Connection-Pool";
     
     public static final String __QUEUE = "javax.jms.Queue"; // NOI18N
     public static final String __TOPIC = "javax.jms.Topic"; // NOI18N

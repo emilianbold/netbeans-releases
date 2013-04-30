@@ -127,6 +127,10 @@ public class LibraryDeclarationChecker extends HintsProvider {
         //ugly, grr, the whole namespace support needs to be fixed
         final Map<String, Attribute> namespace2Attribute = new HashMap<String, Attribute>();
         Node root = result.root();
+        if (root.children().isEmpty()) {
+            Node faceletsRoot = result.root(DefaultLibraryInfo.FACELETS.getLegacyNamespace());
+            root = !faceletsRoot.children().isEmpty() ? faceletsRoot : result.root(DefaultLibraryInfo.FACELETS.getNamespace());
+        }
         final CharSequence docText = getSourceText(snapshot.getSource());
         final String jsfNsPrefix = NamespaceUtils.getForNs(result.getNamespaces(), DefaultLibraryInfo.JSF.getNamespace());
         final String passthroughNsPrefix = NamespaceUtils.getForNs(result.getNamespaces(), DefaultLibraryInfo.PASSTHROUGH.getNamespace());
@@ -166,7 +170,6 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     }
                 }
             }
-
         };
 
         ElementUtils.visitChildren(root, prefixCollector, ElementType.OPEN_TAG);

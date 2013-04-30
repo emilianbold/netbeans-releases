@@ -14,7 +14,7 @@ import javax.jms.MessageListener;
  *
  * @author jskrivanek
  */
-@JMSDestinationDefinition(name = "QueueMdb", className = "javax.jms.Queue", resourceAdapter = "jmsra", destinationName = "QueueMdb")
+@JMSDestinationDefinition(name = "QueueMdb", interfaceName = "javax.jms.Queue", resourceAdapter = "jmsra", destinationName = "QueueMdb")
 @MessageDriven(activationConfig = {
     @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
     @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "QueueMdb")

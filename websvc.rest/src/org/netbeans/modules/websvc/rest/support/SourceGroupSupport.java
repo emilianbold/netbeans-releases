@@ -74,6 +74,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.ErrorManager;
@@ -266,8 +267,7 @@ public class SourceGroupSupport {
     public static ElementHandle<TypeElement> getHandleClassName(String qualifiedClassName, 
             Project project) throws IOException 
     {
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        FileObject root = restSupport.findSourceRoot();
+        FileObject root = MiscUtilities.findSourceRoot(project);
         ClassPathProvider provider = project.getLookup().lookup( 
                 ClassPathProvider.class);
         ClassPath sourceCp = provider.findClassPath(root, ClassPath.SOURCE);
@@ -299,8 +299,7 @@ public class SourceGroupSupport {
         }
         ClassPathProvider provider = project.getLookup().lookup( 
                 ClassPathProvider.class);
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        FileObject root = restSupport.findSourceRoot();
+        FileObject root = MiscUtilities.findSourceRoot(project);
         ClassPath sourceCp = provider.findClassPath(root, ClassPath.SOURCE);
         final ClassPath compileCp = provider.findClassPath(root, ClassPath.COMPILE);
         ClassPath bootCp = provider.findClassPath(root, ClassPath.BOOT);
