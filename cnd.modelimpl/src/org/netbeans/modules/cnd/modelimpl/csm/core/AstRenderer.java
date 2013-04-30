@@ -78,6 +78,8 @@ public class AstRenderer {
     private boolean registeredFakeInclude = false;
     protected final Map<Integer, CsmObject> objects;
 
+    private static final boolean SKIP_AST_RENDERER_EXCEPTIONS = Boolean.getBoolean("cnd.skip.ast.renderer.exceptions"); //NOI18N
+
     public AstRenderer(FileImpl fileImpl, FileContent fileContent, Map<Integer, CsmObject> objects) {
         if (isBeingParsed(fileImpl)) {
             CndUtils.assertNotNullInConsole(fileContent, "null file content"); // NOI18N
@@ -350,7 +352,10 @@ public class AstRenderer {
                         renderNSP(token, currentNamespace, container, file);
                 }
             }  catch (AstRendererException e) {
-                DiagnosticExceptoins.register(e);
+                if (!SKIP_AST_RENDERER_EXCEPTIONS) {
+                    // In MySQL related tests we see endless "empty function name" exceptions
+                    DiagnosticExceptoins.register(e);
+                }
             }
         }
     }
