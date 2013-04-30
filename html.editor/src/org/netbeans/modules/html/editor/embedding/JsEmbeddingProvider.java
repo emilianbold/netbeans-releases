@@ -77,6 +77,13 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
+        if(snapshot.getMimePath().size() > 1) {
+            //do not create any js embeddings in already embedded html code
+            //another js embedding provider for such cases exists in 
+            //javascript2.editor module.
+            return Collections.emptyList();
+        }
+        
         cancelled = false; //resume
         List<Embedding> embeddings = new ArrayList<>();
         TokenSequence<HTMLTokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence(HTMLTokenId.language());
