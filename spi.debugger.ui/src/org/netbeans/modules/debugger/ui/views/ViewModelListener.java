@@ -100,6 +100,10 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.Models.CompoundModel;
 import org.netbeans.spi.viewmodel.ReorderableTreeModel;
 import org.netbeans.spi.viewmodel.ReorderableTreeModelFilter;
+import org.netbeans.spi.viewmodel.TableHTMLModel;
+import org.netbeans.spi.viewmodel.TableHTMLModelFilter;
+import org.netbeans.spi.viewmodel.TablePropertyEditorsModel;
+import org.netbeans.spi.viewmodel.TablePropertyEditorsModelFilter;
 import org.netbeans.spi.viewmodel.TableRendererModel;
 import org.netbeans.spi.viewmodel.TableRendererModelFilter;
 import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
@@ -124,6 +128,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private static final Class[] NODE_MODELS = { NodeModel.class, CheckNodeModel.class, DnDNodeModel.class, ExtendedNodeModel.class };
     private static final Class[] NODE_MODEL_FILTERS = { NodeModelFilter.class, CheckNodeModelFilter.class, DnDNodeModelFilter.class, ExtendedNodeModelFilter.class };
     
+    private static final Class[] TABLE_MODELS = { TableModel.class, TableHTMLModel.class };
+    
     private static final String VIEW_PREFERENCES_NAME = "view_preferences"; // NOI18N
     private static final String VIEW_TYPE = "view_type";                    // NOI18N
     private static final String VIEW_TREE_DISPLAY_FORMAT = "view_tree_display_format"; // NOI18N
@@ -145,8 +151,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private List treeExpansionModelFilters;
     private List[] nodeModels = new List[NODE_MODELS.length];
     private List[] nodeModelFilters = new List[NODE_MODEL_FILTERS.length];
-    private List tableModels;
+    private List[] tableModels = new List[TABLE_MODELS.length];
     private List tableModelFilters;
+    private List tableHTMLModelFilters;
     private List nodeActionsProviders;
     private List nodeActionsProviderFilters;
     private List columnModels;
@@ -154,6 +161,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private List asynchModelFilters;
     private List tableRenderers;
     private List tableRendererFilters;
+    private List tablePropertyEditors;
+    private List tablePropertyEditorsFilters;
     //private RequestProcessor rp;
 
     private List<? extends Component> buttons;
@@ -269,7 +278,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                     break;
                 }
             }
-            final boolean haveModels = haveTreeModels || haveNodeModels || tableModels != null && tableModels.size() > 0;
+            boolean haveTableModels = false;
+            for (List tms : tableModels) {
+                if (tms != null && tms.size() > 0) {
+                    haveTableModels = true;
+                    break;
+                }
+            }
+            final boolean haveModels = haveTreeModels || haveNodeModels || haveTableModels;
             if (haveModels && view != null && view.getComponentCount() > 0) {
                 JComponent tree = (JComponent) view.getComponent(0);
                 if (!(tree instanceof javax.swing.JTabbedPane)) {
@@ -284,8 +300,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 treeExpansionModelFilters = null;
                 nodeModels = new List[NODE_MODELS.length];
                 nodeModelFilters = new List[NODE_MODEL_FILTERS.length];
-                tableModels = null;
+                tableModels = new List[TABLE_MODELS.length];
                 tableModelFilters = null;
+                tableHTMLModelFilters = null;
                 nodeActionsProviders = null;
                 nodeActionsProviderFilters = null;
                 columnModels = null;
@@ -293,6 +310,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 asynchModelFilters = null;
                 tableRenderers = null;
                 tableRendererFilters = null;
+                tablePropertyEditors = null;
+                tablePropertyEditorsFilters = null;
                 //rp = null;
                 sessionProviders = null;
                 currentSession = null;
@@ -386,8 +405,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         treeExpansionModelFilters = cp.lookup (viewType, TreeExpansionModelFilter.class);
         getMultiModels(cp, viewPath, nodeModels, NODE_MODELS);
         getMultiModels(cp, viewPath, nodeModelFilters, NODE_MODEL_FILTERS);
-        tableModels =           cp.lookup (viewPath, TableModel.class);
+        getMultiModels(cp, viewPath, tableModels, TABLE_MODELS);
         tableModelFilters =     cp.lookup (viewPath, TableModelFilter.class);
+        tableHTMLModelFilters =     cp.lookup (viewPath, TableHTMLModelFilter.class);
         nodeActionsProviders =  cp.lookup (viewPath, NodeActionsProvider.class);
         nodeActionsProviderFilters = cp.lookup (viewPath, NodeActionsProviderFilter.class);
         columnModels =          cp.lookup (viewPath, ColumnModel.class);
@@ -395,6 +415,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         asynchModelFilters =    cp.lookup (viewPath, AsynchronousModelFilter.class);
         tableRenderers =        cp.lookup (viewPath, TableRendererModel.class);
         tableRendererFilters =  cp.lookup (viewPath, TableRendererModelFilter.class);
+        tablePropertyEditors =  cp.lookup (viewPath, TablePropertyEditorsModel.class);
+        tablePropertyEditorsFilters = cp.lookup (viewPath, TablePropertyEditorsModelFilter.class);
         String searchPath = viewPath; // Try to find the AsynchronousModelFilter in upper folders...
         while (asynchModelFilters.isEmpty() && searchPath != null) {
             int i = searchPath.lastIndexOf('/');
@@ -486,8 +508,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             (Customizer) treeExpansionModelFilters,
             //(Customizer) nodeModels,
             //(Customizer) nodeModelFilters,
-            (Customizer) tableModels,
+            //(Customizer) tableModels,
             (Customizer) tableModelFilters,
+            (Customizer) tableHTMLModelFilters,
             (Customizer) nodeActionsProviders,
             (Customizer) nodeActionsProviderFilters,
             (Customizer) columnModels,
@@ -495,6 +518,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             (Customizer) asynchModelFilters,
             (Customizer) tableRenderers,
             (Customizer) tableRendererFilters,
+            (Customizer) tablePropertyEditors,
+            (Customizer) tablePropertyEditorsFilters,
         };
         List<Customizer> modelListCustomizerLists = new ArrayList<Customizer>(50);
         modelListCustomizerLists.addAll(Arrays.asList(modelListCustomizers));
@@ -502,6 +527,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         addAsCustomizers(modelListCustomizerLists, treeModelFilters);
         addAsCustomizers(modelListCustomizerLists, nodeModels);
         addAsCustomizers(modelListCustomizerLists, nodeModelFilters);
+        addAsCustomizers(modelListCustomizerLists, tableModels);
         for (int i = 0; i < modelListCustomizers.length; i++) {
             Customizer c = modelListCustomizers[i];
             if (c != null) { // Can be null when debugger is finishing
@@ -556,7 +582,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             models.add(joinLists(nodeModelFilters));
         }
         synchronized (tableModels) {
-            models.add(new ArrayList(tableModels));
+            models.add(joinLists(tableModels));
         }
         synchronized (tableModelFilters) {
             models.add(new ArrayList(tableModelFilters));
@@ -585,6 +611,15 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         synchronized (tableRendererFilters) {
             models.add(new ArrayList(tableRendererFilters));
         }
+        synchronized (tableHTMLModelFilters) {
+            models.add(new ArrayList(tableHTMLModelFilters));
+        }
+        synchronized (tablePropertyEditors) {
+            models.add(new ArrayList(tablePropertyEditors));
+        }
+        synchronized (tablePropertyEditorsFilters) {
+            models.add(new ArrayList(tablePropertyEditorsFilters));
+        }
         /*if (rp != null) {
             models.add(rp);
         }*/
@@ -612,7 +647,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 break;
             }
         }
-        final boolean haveModels = haveTreeModels || haveNodeModels || tableModels.size() > 0 || hyperModels != null;
+        boolean haveTableModels = false;
+        for (List tms : tableModels) {
+            if (tms.size() > 0) {
+                haveTableModels = true;
+                break;
+            }
+        }
+        final boolean haveModels = haveTreeModels || haveNodeModels || haveTableModels || hyperModels != null;
         final Models.CompoundModel newModel;
         if (hyperModels != null) {
             newModel = Models.createCompoundModel (hyperModels, propertiesHelpID);
@@ -823,8 +865,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         List treeExpansionModelFilters;
         List[] nodeModels = new List[NODE_MODELS.length];
         List[] nodeModelFilters = new List[NODE_MODEL_FILTERS.length];
-        List tableModels;
+        List[] tableModels = new List[TABLE_MODELS.length];
         List tableModelFilters;
+        List tableHTMLModelFilters;
         List nodeActionsProviders;
         List nodeActionsProviderFilters;
         List columnModels;
@@ -832,6 +875,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         List asynchModelFilters;
         List tableRenderers;
         List tableRendererFilters;
+        List tablePropertyEditors;
+        List tablePropertyEditorsFilters;
 
         getMultiModels(cp, viewPath, treeModels, TREE_MODELS);
         getMultiModels(cp, viewPath, treeModelFilters, TREE_MODEL_FILTERS);
@@ -839,8 +884,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         treeExpansionModelFilters = cp.lookup (viewPath, TreeExpansionModelFilter.class);
         getMultiModels(cp, viewPath, nodeModels, NODE_MODELS);
         getMultiModels(cp, viewPath, nodeModelFilters, NODE_MODEL_FILTERS);
-        tableModels =           cp.lookup (viewPath, TableModel.class);
+        getMultiModels(cp, viewPath, tableModels, TABLE_MODELS);
         tableModelFilters =     cp.lookup (viewPath, TableModelFilter.class);
+        tableHTMLModelFilters =     cp.lookup (viewPath, TableHTMLModelFilter.class);
         nodeActionsProviders =  cp.lookup (viewPath, NodeActionsProvider.class);
         nodeActionsProviderFilters = cp.lookup (viewPath, NodeActionsProviderFilter.class);
         columnModels =          cp.lookup (viewPath, ColumnModel.class);
@@ -848,6 +894,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         asynchModelFilters =    cp.lookup (viewPath, AsynchronousModelFilter.class);
         tableRenderers =        cp.lookup (viewPath, TableRendererModel.class);
         tableRendererFilters =  cp.lookup (viewPath, TableRendererModelFilter.class);
+        tablePropertyEditors =  cp.lookup (viewPath, TablePropertyEditorsModel.class);
+        tablePropertyEditorsFilters = cp.lookup (viewPath, TablePropertyEditorsModelFilter.class);
         String searchPath = viewPath; // Try to find the AsynchronousModelFilter in upper folders...
         while (asynchModelFilters.isEmpty() && searchPath != null) {
             int i = searchPath.lastIndexOf('/');
@@ -865,7 +913,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         treeNodeModelsCompound.add(treeExpansionModels); // TreeExpansionModel
         treeNodeModelsCompound.add(joinLists(nodeModels));
         treeNodeModelsCompound.add(joinLists(nodeModelFilters));
-        treeNodeModelsCompound.add(tableModels); // TableModel
+        treeNodeModelsCompound.add(joinLists(tableModels)); // TableModel, TableHTMLModel
         treeNodeModelsCompound.add(tableModelFilters); // TableModelFilter
         treeNodeModelsCompound.add(nodeActionsProviders);
         treeNodeModelsCompound.add(nodeActionsProviderFilters);
@@ -875,6 +923,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         treeNodeModelsCompound.add(asynchModelFilters); // AsynchronousModelFilter
         treeNodeModelsCompound.add(tableRenderers);
         treeNodeModelsCompound.add(tableRendererFilters);
+        treeNodeModelsCompound.add(tableHTMLModelFilters);
+        treeNodeModelsCompound.add(tablePropertyEditors);
+        treeNodeModelsCompound.add(tablePropertyEditorsFilters);
         Preferences viewPref = NbPreferences.forModule(ContextProvider.class).node(VIEW_PREFERENCES_NAME).node(viewName);
         MessageFormat treeFormat = createTreeDisplayFormat(viewPref, columnModels);
         if (treeFormat != null) {

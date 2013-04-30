@@ -139,7 +139,7 @@ public final class AutoupdateSupport {
                             Bundle.CTL_AutoupdateTitle(pluginName),
                             Bundle.CTL_Yes()))
                     {
-                        plugin.openInstallWizard();
+                        plugin.installOrUpdate();
                     }
                 }
             }

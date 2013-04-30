@@ -152,7 +152,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
     
     public void register(final JTextPane pane) {
         IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
-        if(ideServices == null || !ideServices.providesFindFile() || !ideServices.providesJumpTo()) {
+        if(ideServices == null || !ideServices.providesJumpTo()) {
             return;
         }
         long t = System.currentTimeMillis();
@@ -322,7 +322,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
         public void jumpTo(String resource) {
             IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
             if(ideServices != null) {
-                ideServices.jumpTo(NbBundle.getMessage(FindTypesSupport.class, "LBL_FindType"), resource);  // NOI18N
+                ideServices.jumpTo(resource, NbBundle.getMessage(FindTypesSupport.class, "LBL_FindType"));  // NOI18N
             }
         }
     }

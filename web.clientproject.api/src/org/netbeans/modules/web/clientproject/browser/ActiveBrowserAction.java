@@ -258,44 +258,19 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
 
     @Override
     public Component getToolbarPresenter() {
-        final JPopupMenu menu = new JPopupMenu();
         final JButton button = new JButton();
         button.setAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                menu.show(button, 0, button.getHeight());
+                BrowserMenu menu = new BrowserMenu(getBrowserProvider());
+                menu.show( button, 0, button.getHeight() );
             }
         });
         button.setDisabledIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-disabled.png"))));
         button.setEnabled(false);
-        menu.add(new JMenuItem("xxx")); // NOI18N
         ProjectBrowserProvider pbp = getBrowserProvider();
         toolbarButton = button;
         updateButton(pbp);
-        menu.addPopupMenuListener(new PopupMenuListener() {
-
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                JPopupMenu menu = (JPopupMenu) e.getSource();
-                menu.removeAll();
-                ProjectBrowserProvider pbp = ActiveBrowserAction.this.getBrowserProvider();
-                for (Component mi : createMenuItems(pbp.getActiveBrowser())) {
-                    if (mi instanceof JSeparator) {
-                        menu.addSeparator();
-                    } else {
-                        menu.add(mi);
-                    }
-                }
-            }
-
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-            }
-
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-            }
-        });
         return button;
     }
 
