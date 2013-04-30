@@ -78,8 +78,22 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                             //has javascript embedding
                             embeddings.add(snapshot.create("(function(){\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
                             embeddings.add(snapshot.create("ko.$bindings.", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-                            embeddings.add(snapshot.create(embedded.offset(), embedded.token().length(), KOUtils.JAVASCRIPT_MIMETYPE));
-//                            embeddings.add(snapshot.create("placeholder\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+
+                            CharSequence seq = embedded.token().text();
+                            int emptyLength = 0;
+                            for (int i = 0; i < seq.length(); i++) {
+                                if (Character.isWhitespace(seq.charAt(i))) {
+                                    emptyLength++;
+                                } else {
+                                    break;
+                                }
+                            }
+                            if (emptyLength < seq.length()) {
+                                embeddings.add(snapshot.create(embedded.offset() + emptyLength, embedded.token().length() - emptyLength, KOUtils.JAVASCRIPT_MIMETYPE));
+                            } else {
+                                embeddings.add(snapshot.create(embedded.offset(), embedded.token().length(), KOUtils.JAVASCRIPT_MIMETYPE));
+                            }
+
                             embeddings.add(snapshot.create("\n});\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
                         }
                     }
