@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.browser.api;
 
 import java.awt.Image;
+import javax.swing.ImageIcon;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
 
@@ -80,7 +81,8 @@ public final class WebBrowser {
     public Image getIconImage() {
         Image im = factoryDesc.getIconImage();
         if (im == null) {
-            im = ImageUtilities.loadImage(getIconFile(getBrowserFamily()));
+            ImageIcon icon = ImageUtilities.loadImageIcon( getIconFile(getBrowserFamily()), true );
+            im = ImageUtilities.icon2Image( icon );
         }
         if (hasNetBeansIntegration() && factoryDesc.getBrowserFamily() != BrowserFamilyId.JAVAFX_WEBVIEW) {
             im = ImageUtilities.mergeImages(
