@@ -121,7 +121,7 @@ is the proper place.
                     In method <code>getActions</code> added package actions from <code>Projects/package/Actions</code>.
                 </p>
             </description>
-            <class package="org.netbeans.spi.java.project.support.ui" name="PackageViewChildren"/>
+            <!--<class package="org.netbeans.spi.java.project.support.ui" name="PackageViewChildren"/>-->
             <issue number="200833"/>
         </change>
         <change id="BrokenReferencesSupport-Profiles">

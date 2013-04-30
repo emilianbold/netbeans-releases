@@ -134,27 +134,29 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
     }
     
     void applyChanges() {
-        final TableCellEditor cellEditor = table.getCellEditor();
-        if (cellEditor != null) {
-            cellEditor.stopCellEditing();
-        }
-        DefaultTableModel model = (DefaultTableModel)table.getModel();
-        ArrayList<String> patterns = new ArrayList<String>( model.getRowCount() );
-        for( int i=0; i<model.getRowCount(); i++ ) {
-            Object value = model.getValueAt(i, 0);
-            if (value == null) {
-                continue;
+        if (isChanged() && isDataValid()) {
+            final TableCellEditor cellEditor = table.getCellEditor();
+            if (cellEditor != null) {
+                cellEditor.stopCellEditing();
             }
-            String pattern = value.toString();
-            //remove empty patterns
-            if (!pattern.trim().isEmpty() && !pattern.trim().equals(getDummyPattern())) {
-                patterns.add(pattern);
+            DefaultTableModel model = (DefaultTableModel) table.getModel();
+            ArrayList<String> patterns = new ArrayList<String>(model.getRowCount());
+            for (int i = 0; i < model.getRowCount(); i++) {
+                Object value = model.getValueAt(i, 0);
+                if (value == null) {
+                    continue;
+                }
+                String pattern = value.toString();
+                //remove empty patterns
+                if (!pattern.trim().isEmpty() && !pattern.trim().equals(getDummyPattern())) {
+                    patterns.add(pattern);
+                }
             }
-        }
-        Settings.getDefault().setPatterns( patterns );
-        Settings.getDefault().setScanCommentsOnly( checkScanCommentsOnly.isSelected() );
+            Settings.getDefault().setPatterns(patterns);
+            Settings.getDefault().setScanCommentsOnly(checkScanCommentsOnly.isSelected());
 
-        Settings.getDefault().setIdentifiers(mimeIdentifiers, extensionIdentifiers);
+            Settings.getDefault().setIdentifiers(mimeIdentifiers, extensionIdentifiers);
+        }
     }
     
     boolean isDataValid() {
@@ -170,10 +172,16 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
 
     private boolean isListValid() {
         saveDetails(selectedIndex);
+        if (mimeIdentifiers == null) {
+            return false;
+        }
         for (MimeIdentifier mimeIdentifier : mimeIdentifiers) {
             if (!mimeIdentifier.isValid()) {
                 return false;
             }
+        }
+        if (extensionIdentifiers == null) {
+            return false;
         }
         for (ExtensionIdentifier extensionIdentifier : extensionIdentifiers) {
             if (!extensionIdentifier.isValid()) {

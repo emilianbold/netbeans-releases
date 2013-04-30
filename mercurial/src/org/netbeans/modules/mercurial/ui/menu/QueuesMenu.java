@@ -47,7 +47,6 @@ package org.netbeans.modules.mercurial.ui.menu;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
 import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.netbeans.modules.mercurial.ui.queues.QCreatePatchAction;
 import org.netbeans.modules.mercurial.ui.queues.QDiffAction;
@@ -111,7 +110,7 @@ public class QueuesMenu extends DynamicMenu implements Presenter.Popup {
             Actions.connect(item, action, false);
             menu.add(item);
             
-            menu.add(new JSeparator());
+            menu.addSeparator();
             
             item = new JMenuItem();
             action = SystemAction.get(QCreatePatchAction.class);
@@ -139,7 +138,7 @@ public class QueuesMenu extends DynamicMenu implements Presenter.Popup {
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(QPushAllPatchesAction.class), NbBundle.getMessage(QPushAllPatchesAction.class, "CTL_PopupMenuItem_QPushAllPatches"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            menu.add(new JSeparator());
+            menu.addSeparator();
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(QCreatePatchAction.class), NbBundle.getMessage(QCreatePatchAction.class, "CTL_PopupMenuItem_QCreatePatch"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(QRefreshPatchAction.class), NbBundle.getMessage(QRefreshPatchAction.class, "CTL_PopupMenuItem_QRefreshPatch"), lkp)); //NOI18N

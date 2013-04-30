@@ -534,7 +534,6 @@ subversion = versioncontrol/subversion
 svg.perseus = mobility/-- other --
 swingapp = guibuilder/app framework
 swing.validation = platform/window system
-tasks.ui = connecteddeveloper/task dashboard
 tasklist.kit = platform/tasklist
 tasklist.projectint = platform/tasklist
 tasklist.todo = platform/tasklist
