@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,67 +37,90 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.launchers;
 
-package org.netbeans.modules.cnd.debugger.common2.debugger;
-
-import javax.swing.text.StyledDocument;
-import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.openide.filesystems.FileObject;
-import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
- * @author Egor Ushakov
+ * @author Henk
  */
-public class MacroSupport {
-    // utility class
-    private MacroSupport() {
-    }
-    
-    public static String expandMacro(NativeDebugger debugger, String expr) {
-        Frame currentFrame = debugger.getCurrentFrame();
-        if (currentFrame != null) {
-            StyledDocument doc = getDocument(debugger, currentFrame);
-            if (doc != null) {
-                int offset = getOffset(currentFrame, doc);
-                if (offset >= 0) {
-                    String expand = CsmMacroExpansion.expand(doc, offset, expr);
-                    if (expand != null) {
-                        return expand;
-                    }
-                }
-            }
-        }
-        return expr;
-    }
-    
-    private static StyledDocument getDocument(NativeDebugger debugger, Frame frame) {
-        String fullPath = frame.getFullPath();
-        if (fullPath == null) {
-            return null;
-        }
-        FileObject fo = EditorBridge.findFileObject(fullPath, debugger);
-        if (fo != null /*paranoia*/ && fo.isValid()) {
-            return (StyledDocument) CsmUtilities.getDocument(fo);
-        }
-        return null;
+public final class Launcher {
+    //displayed name, can be null
+    private String name;
+    //command is required field, cannot be null
+    //if you want to change command -> delete launcher and add new one
+    private final String command;
+    private String runDir;
+    private Map<String, String> env = new HashMap<String, String>();
+    private String symbolFiles;
+    //can not be set after the creation
+    private final Launcher common;
+
+    public Launcher(String command, Launcher common) {
+        this.command = command;
+        this.common = common;
     }
 
-    private static int getOffset(Frame frame, StyledDocument doc) {
-        try {
-            int lineNumber = Integer.valueOf(frame.getLineNo());
-            if (lineNumber >= 0 && doc != null) {
-                return NbDocument.findLineOffset(doc, lineNumber-1);
-            }
-        } catch(NumberFormatException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IndexOutOfBoundsException ex) {
-            return doc.getLength();
+    public String getName() {
+        return name;
+    }
+
+    /*package*/ void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCommand() {
+        return command;
+    }
+
+    public String getRunDir() {
+        if (runDir != null) {
+            return runDir;
+        } else if (common != null){
+            return common.getRunDir();
+        } else {
+            return null;
         }
-        return -1;
+    }
+
+    /*package*/ void setRunDir(String runDir) {
+        this.runDir = runDir;
+    }
+
+    public Map<String, String> getEnv() {
+        Map<String, String> ret;
+        if (common != null) {
+            ret = common.getEnv();
+        } else {
+            ret = new HashMap<String, String>();
+        }
+        ret.putAll(env);
+        return ret;
+    }
+
+    /*package*/ void putEnv(String key, String value) {
+        env.put(key, value);
+    }
+
+    public String getSymbolFiles() {
+        if (symbolFiles != null) {
+            return symbolFiles;
+        } else if (common != null) {
+            return common.getSymbolFiles();
+        } else {
+            return null;
+        }
+    }
+
+    /*package*/ void setSymbolFiles(String symbolFiles) {
+        this.symbolFiles = symbolFiles;
+    }
+
+    public String getDisplayedName() {
+        return (name == null ? command : name);
     }
 }

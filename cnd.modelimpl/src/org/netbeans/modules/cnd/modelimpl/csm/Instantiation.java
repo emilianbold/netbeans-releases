@@ -1126,7 +1126,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                 parameter = paramType.getParameter();
                 newType = Instantiation.resolveTemplateParameterType(type, instantiation);
                 if (newType != null) {
-                    newType = TypeFactory.createType(newType, origType.getPointerDepth(), origType.isReference(), origType.getArrayDepth(), origType.isConst());
+                    newType = TypeFactory.createType(newType, origType.getPointerDepth(), TypeFactory.getReferenceValue(origType), origType.getArrayDepth(), origType.isConst());
                     CsmTemplateParameter p = paramType.getParameter();
                     if (CsmKindUtilities.isTemplate(p)) {
                         CsmType paramTemplateType = paramType.getTemplateType();
@@ -1300,6 +1300,15 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
             }
         }
 
+        @Override
+        public boolean isRValueReference() {
+            if (instantiationHappened()) {
+                return originalType.isRValueReference() || instantiatedType.isRValueReference();
+            } else {
+                return originalType.isRValueReference();
+            }
+        }
+        
         @Override
         public boolean isPointer() {
             if(instantiationHappened()) {

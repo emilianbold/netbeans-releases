@@ -163,6 +163,7 @@ public class CssParser extends Parser {
                 //the "premature end of file" error has position pointing after the last char (=text.length())!
                 if(p.getFrom() == text.length()) {
                     listIterator.remove(); //consider this as hidden error
+                    continue;
                 }
                 
                 int from, to;
