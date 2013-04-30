@@ -102,7 +102,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         this.caseSensitive = ccContext.isCaseSensitive();
         
         ParserResult info = ccContext.getParserResult();
-        int caretOffset = ccContext.getCaretOffset();
+        int caretOffset = ccContext.getParserResult().getSnapshot().getEmbeddedOffset(ccContext.getCaretOffset());
         FileObject fileObject = ccContext.getParserResult().getSnapshot().getSource().getFileObject();
         JsParserResult jsParserResult = (JsParserResult)info;
         CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
@@ -285,7 +285,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             return null;
         }
 
-        caretOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        //caretOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(info.getSnapshot(), caretOffset);
         if (ts == null) {
             return null;
