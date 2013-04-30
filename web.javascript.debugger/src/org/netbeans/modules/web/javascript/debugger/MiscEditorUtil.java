@@ -166,26 +166,30 @@ public final class MiscEditorUtil {
         }
 
         FileObject fileObject = null;
-        if (filePath.startsWith("http:") || filePath.startsWith("https:")) {    // NOI18N
+        if (filePath.startsWith("file:/")) {                                    // NOI18N
+            File file = Utilities.toFile(URI.create(filePath));
+            if (file.exists()) {
+                fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            }
+        }
+        if (fileObject == null) {
             try {
-                URL url = URI.create(filePath).toURL();
-                if (project != null) {
-                    fileObject = ServerURLMapping.fromServer(project, url);
-                }
-                if (fileObject == null) {
-                    fileObject = RemoteFileCache.getRemoteFile(url);
+                URI uri = URI.create(filePath);
+                if (uri.isAbsolute()) {
+                    URL url = uri.toURL();
+                    if (project != null) {
+                        fileObject = ServerURLMapping.fromServer(project, url);
+                    }
+                    if (fileObject == null && (filePath.startsWith("http:") || filePath.startsWith("https:"))) {    // NOI18N
+                        fileObject = RemoteFileCache.getRemoteFile(url);
+                    }
+                } else {
+                    File file = new File(filePath);
+                    fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-        } else {
-            File file;
-            if (filePath.startsWith("file:/")) {                                // NOI18N
-                file = Utilities.toFile(URI.create(filePath));
-            } else {
-                file = new File(filePath);
-            }
-            fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         }
         if (fileObject == null) {
             LOG.log(Level.INFO, "Cannot resolve \"{0}\"", filePath);
