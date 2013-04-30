@@ -90,7 +90,6 @@ import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.SubResourceLocator;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
@@ -118,6 +117,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import org.netbeans.modules.websvc.rest.RestUtils;
 
 /**
  *
@@ -273,8 +273,8 @@ public class ClientJavaSourceHelper {
                             (Security.Authentication.SESSION_KEY == security.getAuthentication() || Security.Authentication.OAUTH == security.getAuthentication())) {
                         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
 
-                        if (restSupport != null && restSupport instanceof WebRestSupport) {
-                            security.setDeploymentDescriptor(((WebRestSupport)restSupport).getDeploymentDescriptor());
+                        if (restSupport != null) {
+                            security.setDeploymentDescriptor(RestUtils.getDeploymentDescriptor(project));
                         }
                     }
 
@@ -785,9 +785,7 @@ public class ClientJavaSourceHelper {
         String applicationPath = "webresources"; //NOI18N
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         if (restSupport != null) {
-            try {
-                applicationPath = restSupport.getApplicationPath();
-            } catch (IOException ex) {}
+            applicationPath = restSupport.getApplicationPath();
         }
         return "http://" + hostName + ":" + portNumber + "/" + //NOI18N
                 (contextRoot != null && !contextRoot.equals("") ? contextRoot : "") + //NOI18N

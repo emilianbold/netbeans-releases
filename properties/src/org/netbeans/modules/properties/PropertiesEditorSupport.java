@@ -162,10 +162,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     /** Generated serial version UID. */
     static final long serialVersionUID =1787354011149868490L;
     
-    /** can hold the right charset to be used during save, needed for communication
-     * between saveFromKitToStream and saveDocument
-     */
-    private static Map<DataObject,Charset> charsets = Collections.synchronizedMap(new HashMap<DataObject,Charset>());
+    private Charset charset;
     
     /** Constructor. */
     public PropertiesEditorSupport(PropertiesFileEntry entry) {
@@ -324,12 +321,10 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @see #saveFromKitToStream
      */
     @Override
-    protected void loadFromStreamToKit(StyledDocument document, InputStream inputStream, EditorKit editorKit)
-    throws IOException, BadLocationException {
-        final Charset charset = new PropCharset(myEntry.getFile());
-        final Reader reader
-                = new BufferedReader(new InputStreamReader(inputStream, charset));
-        
+    protected void loadFromStreamToKit(StyledDocument document, InputStream inputStream, EditorKit editorKit) throws IOException, BadLocationException {
+        final Charset c = getCharset();
+        final Reader reader = new BufferedReader(new InputStreamReader(inputStream, c));
+
         try {
             editorKit.read(reader, document, 0);
         } finally {
@@ -348,13 +343,16 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @see #loadFromStreamToKit
      */
     @Override
-    protected void saveFromKitToStream(StyledDocument document, EditorKit editorKit, OutputStream outputStream)
-    throws IOException, BadLocationException {
-        final PropCharsetEncoder encoder
-                = new PropCharsetEncoder();
-        final Writer writer
-                = new BufferedWriter(new OutputStreamWriter(outputStream, encoder));
-        
+    protected void saveFromKitToStream(StyledDocument document, EditorKit editorKit, OutputStream outputStream) throws IOException, BadLocationException {
+        final Writer writer;
+        final Charset c = getCharset();
+        if (c.name().equals(PropertiesEncoding.PROP_CHARSET_NAME)) {
+            final PropCharsetEncoder encoder = new PropCharsetEncoder();
+            writer = new BufferedWriter(new OutputStreamWriter(outputStream, encoder));
+        } else {
+            writer = new BufferedWriter(new OutputStreamWriter(outputStream, c));
+        }
+
         try {
             editorKit.write(writer, document, 0, document.getLength());
         } finally {
@@ -363,6 +361,17 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         }
     }
     
+    private Charset getCharset() {
+        if (charset == null) {
+            charset = FileEncodingQuery.getEncoding(myEntry.getDataObject().getPrimaryFile());
+        }
+        return charset;
+    }
+
+    void resetCharset() {
+        charset = null;
+    }
+
     /** 
      * Adds a save cookie if the document has been marked modified. Overrides superclass method. 
      * @return <code>true</code> if the environment accepted being marked as modified
@@ -1644,14 +1653,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
 //                UIException.annotateUser(e, null, org.openide.util.NbBundle.getMessage(org.openide.loaders.DataObject.class, "MSG_FileReadOnlySaving", new java.lang.Object[]{((org.netbeans.modules.properties.PropertiesEditorSupport.Environment) des.env).getFileImpl().getNameExt()}), null, null);
                 throw e;
             }
-            DataObject tmpObj = des.getDataObject();
-            Charset c = FileEncodingQuery.getEncoding(tmpObj.getPrimaryFile());
-            try {
-                charsets.put(tmpObj, c);
-                des.superSaveDoc();
-            } finally {
-                charsets.remove(tmpObj);
-            }
+            des.superSaveDoc();
         }
 
         @Override

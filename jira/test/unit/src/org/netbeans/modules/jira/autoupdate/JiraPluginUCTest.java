@@ -43,20 +43,18 @@
 package org.netbeans.modules.jira.autoupdate;
 
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.text.MessageFormat;
-import java.util.Calendar;
-import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.bugtracking.util.AutoupdatePluginUCTestCase;
+import org.netbeans.modules.bugtracking.util.AutoupdateSupport;
+import org.netbeans.modules.jira.JiraTestUtil;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author tomas
  */
-public class JiraPluginUCTest extends JiraPluginUCTestCase {
+public class JiraPluginUCTest extends AutoupdatePluginUCTestCase {
 
     String CATALOG_CONTENTS_FORMAT =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -129,36 +127,16 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
             "</module>" +
             "</module_updates>";
 
-    public JiraPluginUCTest(String testName) {
+    public JiraPluginUCTest(String testName) throws IOException {
         super(testName);
     }
 
-    public void testNewJIRAvailable() throws Throwable {
-        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, JiraAutoupdate.JIRA_MODULE_CODE_NAME, "9.9.9");
-        populateCatalog(contents);
-
-        JiraAutoupdate jau = new JiraAutoupdate();
-        assertNotNull(jau.checkNewJiraPluginAvailable());
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(JiraPluginUCTest.class, null, null);
     }
-
-    public void testNewJIRANotAvailable() throws Throwable {
-        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, JiraAutoupdate.JIRA_MODULE_CODE_NAME, "0.0.0");
-        populateCatalog(contents);
-
-        JiraAutoupdate jau = new JiraAutoupdate();
-        assertNull(jau.checkNewJiraPluginAvailable());
-    }
-
-    public void testJIRAIsNotAtUCAvailable() throws Throwable {
-        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, "org.netbeans.modules.ketchup", "1.0.0");
-        populateCatalog(contents);
-
-        JiraAutoupdate jau = new JiraAutoupdate();
-        assertNull(jau.checkNewJiraPluginAvailable());
-    }
-
+        
     public void testIsSupported() {
-        JiraAutoupdate jau = new JiraAutoupdate();
+        JiraAutoupdate jau = JiraAutoupdate.getInstance();
         assertTrue(jau.isSupportedVersion(JiraVersion.MIN_VERSION));
         assertTrue(jau.isSupportedVersion(new JiraVersion("3.3.0")));
         assertTrue(jau.isSupportedVersion(new JiraVersion("3.3.1")));
@@ -167,14 +145,14 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
     }
 
     public void testIsNotSupported() {
-        JiraAutoupdate jau = new JiraAutoupdate();
+        JiraAutoupdate jau = JiraAutoupdate.getInstance();
         assertFalse(jau.isSupportedVersion(getHigherMicro(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
         assertFalse(jau.isSupportedVersion(getHigherMinor(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
         assertFalse(jau.isSupportedVersion(getHigherMajor(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
     }
 
     public void testGetVersion() {
-        JiraAutoupdate jau = new JiraAutoupdate();
+        JiraAutoupdate jau = JiraAutoupdate.getInstance();
 
         assertEquals(new JiraVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1 test").toString());
         assertEquals(new JiraVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1 test").toString());
@@ -184,38 +162,13 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
     }
 
     public void testGotVersion() {
-        JiraAutoupdate jau = new JiraAutoupdate();
+        JiraAutoupdate jau = JiraAutoupdate.getInstance();
         String desc = NbBundle.getBundle("org/netbeans/modules/jira/Bundle").getString("OpenIDE-Module-Long-Description");
         JiraVersion version = jau.getVersion(desc);
         assertNotNull(version);
         assertEquals(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString(), version.toString());
     }
     
-    public void testCheckedToday() {
-
-        JiraAutoupdate jau = new JiraAutoupdate();
-
-        assertFalse(jau.wasCheckedToday(-1));                           // never
-
-        assertFalse(jau.wasCheckedToday(1L));                           // a long long time ago
-
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.HOUR, -24);                                      // yesterday
-        assertFalse(jau.wasCheckedToday(c.getTime().getTime()));
-
-        assertTrue(jau.wasCheckedToday(System.currentTimeMillis()));    // now
-    }
-
-    private void populateCatalog(String contents) throws FileNotFoundException, IOException {
-        OutputStream os = new FileOutputStream(catalogFile);
-        try {
-            os.write(contents.getBytes());
-        } finally {
-            os.close();
-        }
-        UpdateUnitProviderFactory.getDefault().refreshProviders (null, true);
-    }
-
     private JiraVersion getHigherMicro(String version) {
         String[] segments = version == null ? new String[0] : version.split("\\."); //$NON-NLS-1$
         int major = segments.length > 0 ? toInt(segments[0]) : 0;
@@ -268,6 +221,21 @@ public class JiraPluginUCTest extends JiraPluginUCTestCase {
     private String getVersion(String segment) {
         int n = segment.indexOf('-');
         return n == -1 ? segment : segment.substring(0, n);
+    }
+
+    @Override
+    protected AutoupdateSupport getAutoupdateSupport() {
+        return JiraAutoupdate.getInstance().getAutoupdateSupport();
+    }
+
+    @Override
+    protected String getContentFormat() {
+        return CATALOG_CONTENTS_FORMAT;
+    }
+
+    @Override
+    protected String getCNB() {
+        return JiraAutoupdate.JIRA_MODULE_CODE_NAME;
     }
 
 }

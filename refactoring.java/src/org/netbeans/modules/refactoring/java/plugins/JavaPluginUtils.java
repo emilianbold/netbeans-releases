@@ -298,17 +298,27 @@ public final class JavaPluginUtils {
     
     //<editor-fold defaultstate="collapsed" desc="TODO: Copy from org.netbeans.modules.java.hints.errors.Utilities">
     public static final String DEFAULT_NAME = "par"; // NOI18N
-    public static String makeNameUnique(CompilationInfo info, Scope s, String name, MethodTree method) {
+    public static String makeNameUnique(CompilationInfo info, Scope s, String name) {
+        return makeNameUnique(info, s, name, Collections.EMPTY_LIST);
+    }
+    public static String makeNameUnique(CompilationInfo info, Scope s, String name, List<String> definedIds) {
         int counter = 0;
         boolean cont = true;
         String proposedName = name;
         
         while (cont) {
-            proposedName = name + (counter != 0 ? String.valueOf(counter) : "");
+            proposedName = (counter != 0 ? name + String.valueOf(counter) : name);
             
             cont = false;
             
             if (s != null) {
+                for (String id : definedIds) {
+                    if (proposedName.equals(id)) {
+                        counter++;
+                        cont = true;
+                        break;
+                    }
+                }
                 for (Element e : info.getElementUtilities().getLocalMembersAndVars(s, new VariablesFilter())) {
                     if (proposedName.equals(e.getSimpleName().toString())) {
                         counter++;

@@ -60,6 +60,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -87,18 +88,23 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     /** preferred dimension of the panel */
     private static final Dimension PREF_DIM = new Dimension(500, 340);
     
-    private Project project;
-    private String expectedExtension;
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final Project project;
+    private final SourceGroup groups[];
+    private final List<ChangeListener> listeners = new ArrayList<>();
     private final Type type;
-    private SourceGroup groups[];
+    private final ThreadLocal<Boolean> ignoreChange;
+
+    private String expectedExtension;
     private boolean ignoreRootCombo;
+    private boolean wasPreviouslyFQN = false;
+    private String originalPackageName;
     
     /** Creates new form SimpleTargetChooserGUI */
     public JavaTargetChooserPanelGUI(Project p, SourceGroup[] groups, Component bottomPanel, Type type) {
         this.type = type;
         this.project = p;
         this.groups = groups;
+        this.ignoreChange = new ThreadLocal<>();
         for (SourceGroup sourceGroup : groups)
             if (sourceGroup == null)
                 throw new NullPointerException ();
@@ -163,7 +169,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         projectTextField.setText( ProjectUtils.getInformation(project).getDisplayName() );
         assert template != null;
         
-        String displayName = null;
+        String displayName;
         try {
             DataObject templateDo = DataObject.find (template);
             displayName = templateDo.getNodeDelegate ().getDisplayName ();
@@ -267,7 +273,14 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     }    
     
     public String getTargetName() {
-        String text = documentNameTextField.getText().trim();
+        String text;
+        final String rawName = documentNameTextField.getText().trim();
+        final String[] pkgNamePair = JavaTargetChooserPanel.getPackageAndSimpleName(rawName);
+        if (pkgNamePair[0].length() == 0) {
+            text = rawName;
+        } else {
+            text = pkgNamePair[1];
+        }
         
         if ( text.length() == 0 ) {
             return null;
@@ -455,7 +468,11 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
 
     // ActionListener implementation -------------------------------------------
         
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent e) {
+        if (ignoreChange.get() == Boolean.TRUE) {
+            return;
+        }
         if ( rootComboBox == e.getSource() ) {            
             if (!ignoreRootCombo && type != Type.PACKAGE) {
                 updatePackages();
@@ -475,15 +492,18 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     
     // DocumentListener implementation -----------------------------------------
     
+    @Override
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
         updateText();
         fireChange();        
     }    
     
+    @Override
     public void insertUpdate(javax.swing.event.DocumentEvent e) {
         changedUpdate( e );
     }
     
+    @Override
     public void removeUpdate(javax.swing.event.DocumentEvent e) {
         changedUpdate( e );
     }
@@ -524,7 +544,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             }
         });                
     }
-        
+            
     private void updateText() {
         final Object selectedItem =  rootComboBox.getSelectedItem();
         String createdFileName;
@@ -533,6 +553,29 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             FileObject rootFolder = g.getRootFolder();
             String packageName = getPackageFileName();
             String documentName = documentNameTextField.getText().trim();
+            if (Type.FILE.equals(type)) {
+                final String[] pkgNamePair = JavaTargetChooserPanel.getPackageAndSimpleName(documentName);
+                final boolean fqn = !pkgNamePair[0].isEmpty();
+                if (fqn) {
+                    if (!wasPreviouslyFQN) {
+                        //backup the original package name
+                        originalPackageName = getPackageName();
+                    }
+                    //set the textfield from the parsed FQN text
+                    packageName = pkgNamePair[0];
+                    documentName = pkgNamePair[1];
+                    setPackageIgnoreEvents(packageName);
+                    packageName = packageName.replace('.', '/');    //NOI18N
+                    wasPreviouslyFQN = true;
+                } else {
+                    if (wasPreviouslyFQN) {
+                        //reset the package name, if the user reverts his previously entered FQN
+                        setPackageIgnoreEvents(originalPackageName);
+                        wasPreviouslyFQN = false;
+                    }
+                }
+                packageComboBox.setEnabled(!fqn);
+            }
             if (type == Type.PACKAGE) {
                 documentName = documentName.replace( '.', '/' ); // NOI18N
             }
@@ -595,6 +638,15 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             // #49954: should nonetheless show something in the combo box.
             return name;
         }        
+    }
+
+    private void setPackageIgnoreEvents(@NonNull final String text) {
+        ignoreChange.set(true);
+        try {
+            packageComboBox.setSelectedItem(text);
+        } finally {
+            ignoreChange.remove();
+        }
     }
     
     // Private innerclasses ----------------------------------------------------

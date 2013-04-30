@@ -21,13 +21,6 @@ rtl
 <p dir="rtl
 --%>
 
-<%-- completion for HTML entities --%>
-<%--CC
-&q|
-&quot;
-&quot;
---%>
-
 <%-- completion for body HTML tag --%>
 <%--CC
 <b|

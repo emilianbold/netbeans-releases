@@ -21,7 +21,6 @@ FormattingToken{kind=TEXT, offset=8, text=else}
 FormattingToken{kind=ELSE_IF_INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=ELSE_IF_AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=12, text= }
-FormattingToken{kind=BEFORE_ELSE_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=13, text=if}
 FormattingToken{kind=AFTER_IF_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=15, text= }
@@ -308,7 +307,6 @@ FormattingToken{kind=TEXT, offset=402, text=else}
 FormattingToken{kind=ELSE_IF_INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=ELSE_IF_AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=406, text= }
-FormattingToken{kind=BEFORE_ELSE_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=407, text=if}
 FormattingToken{kind=AFTER_IF_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=409, text= }

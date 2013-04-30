@@ -389,6 +389,8 @@ public class RulesManager implements FileChangeListener {
         }
     }
 
+    public static final ThreadLocal<Preferences> currentHintPreferences = new ThreadLocal<Preferences>();
+    
     private static class WorkerImpl implements Worker {
         private final TreeRule tr;
 
@@ -397,7 +399,9 @@ public class RulesManager implements FileChangeListener {
         }
 
         public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
+            currentHintPreferences.set(ctx.getPreferences());
             Collection<? extends ErrorDescription> result = tr.run(ctx.getInfo(), ctx.getPath());
+            currentHintPreferences.set(null); //XXX: in finally
 
             if (result == null) return result;
 

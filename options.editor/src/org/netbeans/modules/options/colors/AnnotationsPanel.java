@@ -139,7 +139,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
 
         lCategory = new javax.swing.JLabel();
         cpCategories = new javax.swing.JScrollPane();
-        lCategories = new javax.swing.JList();
+        lCategories = new javax.swing.JList<AttributeSet>();
         lForeground = new javax.swing.JLabel();
         lbackground = new javax.swing.JLabel();
         lWaveUnderlined = new javax.swing.JLabel();
@@ -209,7 +209,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     private javax.swing.JComboBox cbForeground;
     private javax.swing.JComboBox cbWaveUnderlined;
     private javax.swing.JScrollPane cpCategories;
-    private javax.swing.JList lCategories;
+    private javax.swing.JList<AttributeSet> lCategories;
     private javax.swing.JLabel lCategory;
     private javax.swing.JLabel lForeground;
     private javax.swing.JLabel lWaveUnderlined;

@@ -45,6 +45,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.openide.filesystems.FileObject;
@@ -154,11 +155,7 @@ public class SpringHelper {
     }
 
     private FileObject getApplicationContextXml(Project project) {
-        RestSupport rs = RestUtils.getRestSupport(project);
-        if (rs != null) {
-            return rs.getApplicationContextXml();
-        }
-        return null;
+        return MiscUtilities.getApplicationContextXml(project);
     }
 
     private Element createBean(String id, String clazz) {

@@ -142,5 +142,10 @@ public class FortranFileModelTest extends TraceModelTestBase {
         // Bug 207681 - Navigator does not show the list of subroutines in fortran file
         performTest("bug207681.f"); // NOI18N
     }
+    
+    public void testBug228631() throws Exception {
+        // Bug 228631 - Infinite parsing of fortran source
+        performTest("bug228631.f"); // NOI18N
+    }
 
 }

@@ -47,7 +47,6 @@ import java.util.Date;
 import javax.swing.Action;
 import org.netbeans.modules.versioning.core.*;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryEntry;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.MessageEditProvider;

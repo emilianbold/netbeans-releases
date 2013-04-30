@@ -566,7 +566,7 @@ public class HtmlCompletionQuery extends UserTask {
                         }
                     }
 
-                    HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, "", itemText, node, argName, false);
+                    HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, offset, astOffset, anchor, "", itemText, node, argName, false);
                     for (HtmlExtension e : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
                         result.addAll(e.completeAttributeValue(context));
                     }
@@ -594,7 +594,7 @@ public class HtmlCompletionQuery extends UserTask {
                         }
                     }
 
-                    HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, itemText, node, argName, quotationChar != null);
+                    HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, offset, astOffset, anchor, prefix, itemText, node, argName, quotationChar != null);
                     for (HtmlExtension e : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
                         result.addAll(e.completeAttributeValue(context));
                     }

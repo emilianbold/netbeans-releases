@@ -495,8 +495,13 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
                     Collection<Mark> added = new LinkedHashSet<Mark>(nue);
                     Collection<Mark> removed = new LinkedHashSet<Mark>(old);
                     
-                    added.removeAll(old);
-                    removed.removeAll(nue);
+                    // own removeAll since indexof on HashSet is faster than on ArrayList and AbstractSet call indexof on smaller collection
+                    for (Iterator<Mark> old_it = old.iterator(); old_it.hasNext();) {
+                        added.remove(old_it.next());
+                    }
+                    for (Iterator<Mark> nue_it = nue.iterator(); nue_it.hasNext();) {
+                        removed.remove(nue_it.next());   
+                    }
                     
                     if (marksMap != null) {
                         for(Mark mark : removed) {

@@ -92,12 +92,13 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         } else {
             Node [] nodes = getActivatedNodes();
             if (nodes.length > 0) {
-                Set<VersioningSystem> owners = getOwnersForProjectNodes(nodes);
+                Set<VCSFileProxy> rootFiles = getRootFilesForProjectNodes(nodes);
+                Set<VersioningSystem> owners = getOwnersForProjectNodes(rootFiles);
                 if (owners.size() != 1) {
                     return new JComponent[0];
                 }
                 VersioningSystem owner = owners.iterator().next();
-                VersioningSystem localHistory = getLocalHistory(nodes);
+                VersioningSystem localHistory = getLocalHistory(rootFiles);
 
                 if (owner == null || owner.getVCSAnnotator() != null) {
                     // prepare a lazy menu, it's items will be properly created at the time the menu is expanded
@@ -114,8 +115,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         return popups.toArray(new JComponent[popups.size()]);        
     }
 
-    private VersioningSystem getLocalHistory(Node [] nodes) {
-        Set<VCSFileProxy> rootFiles = getRootFilesForProjectNodes(nodes);
+    private VersioningSystem getLocalHistory (Set<VCSFileProxy> rootFiles) {
         VersioningSystem owner = null;
         for (VCSFileProxy file : rootFiles) {
             VersioningSystem fileOwner = VersioningManager.getInstance().getLocalHistory(file);
@@ -128,8 +128,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         return owner;
     }
     
-    private Set<VersioningSystem> getOwnersForProjectNodes(Node [] nodes) {
-        Set<VCSFileProxy> rootFiles = getRootFilesForProjectNodes(nodes);
+    private Set<VersioningSystem> getOwnersForProjectNodes (Set<VCSFileProxy> rootFiles) {
         Set<VersioningSystem> owners = new HashSet<VersioningSystem>(2);
         boolean someUnversioned = false;
         for (VCSFileProxy file : rootFiles) {

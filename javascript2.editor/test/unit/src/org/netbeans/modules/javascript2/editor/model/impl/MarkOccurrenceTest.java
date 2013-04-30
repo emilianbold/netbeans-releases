@@ -727,6 +727,19 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue225399.js","        version.ver^sion = 10;", true);
     }
     
+    public void testIssue228634_01() throws Exception {
+        checkOccurrences("testfiles/completion/issue228634/issue228634.js","    var ret2 = co^n.x();", true);
+    }
+    
+    public void testIssue228634_02() throws Exception {
+        checkOccurrences("testfiles/completion/issue228634/issue228634.js","    var ret2 = con.x^();", true);
+    }
+    
+    public void testIssue228634_03() throws Exception {
+        checkOccurrences("testfiles/completion/issue228634/issue228634.js","    return re^t;", true);
+    }
+
+    
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }

@@ -292,19 +292,26 @@ public class TestMethodNode extends AbstractNode {
             result.put(Status.FAILED, "MSG_TestMethodFailed_HTML_cause"); //NOI18N
             result.put(Status.PENDING, "MSG_TestMethodPending_HTML_cause"); //NOI18N
             result.put(Status.SKIPPED, "MSG_TestMethodSkipped_HTML_cause"); //NOI18N
+            result.put(Status.ABORTED, "MSG_TestMethodAborted_HTML_cause"); //NOI18N
             return result;
         }
 
         static String getCauseKey(Status status) {
-            return CAUSE_KEYS.get(status);
+            String result = CAUSE_KEYS.get(status);
+            assert result != null : "Unknown status: " + status;
+            return result;
         }
         
         static String getNoTimeKey(Status status) {
-            return NO_TIME_KEYS.get(status);
+            String result = NO_TIME_KEYS.get(status);
+            assert result != null : "Unknown status: " + status;
+            return result;
         }
 
         static String getTimeKey(Status status) {
-            return TIME_KEYS.get(status);
+            String result = TIME_KEYS.get(status);
+            assert result != null : "Unknown status: " + status;
+            return result;
         }
     }
 }

@@ -56,9 +56,10 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.classpath.BootClassPathImpl;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
@@ -117,11 +118,11 @@ public class JavaPlatformProblemProvider implements ProjectProblemsProvider {
             @Override
             public Collection<? extends ProjectProblem> collectProblems() {
                 List<ProjectProblem> toRet = new ArrayList<ProjectProblem>();
-                BootClassPathImpl.PlatformSources jdk = BootClassPathImpl.createJavaPlatformOrigin(project.getLookup().lookup(NbMavenProjectImpl.class));               
-                    JavaPlatform plat = BootClassPathImpl.getActivePlatform(jdk);
+                String val = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_JDK_PLATFORM, true);
+                if (val != null) {
+                    JavaPlatform plat = BootClassPathImpl.getActivePlatform(val);
                     if (plat == null) {
                         //we have a problem.
-                        String val = jdk.hintProperty != null ? jdk.hintProperty : jdk.enforcerRange;
                         toRet.add(ProjectProblemsProvider.ProjectProblem.createWarning(MGS_No_such_JDK(val), DESC_No_such_JDK(val),
                                 new ProjectProblemResolver() {
                                     @Override
@@ -136,6 +137,7 @@ public class JavaPlatformProblemProvider implements ProjectProblemsProvider {
                                     }
                         }));
                     }
+                }
                 return toRet;
             }
         });

@@ -43,22 +43,19 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
 
 /**
- * Used to call "Window|Navigating|Navigator" main menu item,
+ * Used to call "Window|Navigator" main menu item,
  * "org.netbeans.modules.form.actions.InspectorAction" or shortcut.
  *
  * @see Action
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  * @deprecated Navigator is used instead of Inspector. Use NavigatorOperator.
  */
 public class InspectorAction extends Action {
 
-    // Window|GUI Editor|Inspector
+    // Window|Navigator
     private static final String inspectorMenu =
             Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
-            + "|"
-            + Bundle.getStringTrimmed("org.netbeans.modules.navigator.Bundle", "Menu/Window/Navigator")
-            + "|"
-            + Bundle.getStringTrimmed("org.netbeans.modules.navigator.Bundle", "LBL_Action");
+            + "|Navigator";
 
     /** Creates new InspectorAction instance */
     public InspectorAction() {

@@ -337,7 +337,7 @@ public final class PhpUnit {
                 .additionalParameters(params);
         try {
             if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
-                return phpUnit.runAndWait(getDescriptor(), "Running tests..."); // NOI18N
+                return phpUnit.runAndWait(getDescriptor(), "Running PhpUnit tests..."); // NOI18N
             }
             return phpUnit.debug(runInfo.getStartFile(), getDescriptor(), null);
         } catch (CancellationException ex) {
@@ -559,7 +559,7 @@ public final class PhpUnit {
         FileObject testDirectory = phpModule.getTestDirectory();
         assert testDirectory != null : "Test directory must already be set";
 
-        final FileObject configFile = FileUtil.getConfigFile("Templates/PHPUnit/PHPUnitBootstrap"); // NOI18N
+        final FileObject configFile = FileUtil.getConfigFile("Templates/Scripting/Tests/PHPUnitBootstrap.php"); // NOI18N
         final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
         final File bootstrapFile = new File(getBootstrapFilepath(testDirectory));
         final File[] files = new File[1];
@@ -654,7 +654,7 @@ public final class PhpUnit {
         FileObject testDirectory = phpModule.getTestDirectory();
         assert testDirectory != null : "Test directory must already be set";
 
-        final FileObject configFile = FileUtil.getConfigFile("Templates/PHPUnit/PHPUnitConfiguration.xml"); // NOI18N
+        final FileObject configFile = FileUtil.getConfigFile("Templates/Scripting/Tests/PHPUnitConfiguration.xml"); // NOI18N
         final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
         final File configurationFile = new File(getConfigurationFilepath(testDirectory));
         File file = null;

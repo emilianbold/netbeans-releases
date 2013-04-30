@@ -49,6 +49,7 @@ import javax.swing.ActionMap;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import org.netbeans.editor.BaseAction;
@@ -66,6 +67,7 @@ import org.netbeans.modules.mobility.project.J2MEProjectUtils;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -76,16 +78,16 @@ public class PreprocessorActions {
     public static final String generatePreprocessorPopupAction = "generate-preprocessor-popup"; // NOI18N
     public static final String PROJECT_CLIENT_PROPERTY = "projoject-client-property"; // NOI18N
 
-    protected static JMenu createMenu(JMenu menu, final JTextComponent c) {
+    private static final RequestProcessor RP = new RequestProcessor(PreprocessorActions.class);
+
+    protected static JMenu createMenu(JMenu menu, final JTextComponent c, ProjectConfigurationsHelper cfgHelper) {
         final String menuText = NbBundle.getMessage(PreprocessorActions.class, "Menu/Edit/PreprocessorBlocks"); //NOI18N
         if (menu == null) menu = new JMenu(); else menu.removeAll();
         Mnemonics.setLocalizedText(menu, menuText);
         final BaseKit kit = Utilities.getKit(c);
-        if (kit == null) return menu;
-        ProjectConfigurationsHelper cfgHelper = null;
+        if (kit == null) return menu;       
         ArrayList<PPLine> lineList = null;
         if (c != null && c.getDocument() != null) {
-            cfgHelper = J2MEProjectUtils.getCfgHelperForDoc(c.getDocument());
             lineList = (ArrayList<PPLine>)c.getDocument().getProperty(DocumentPreprocessor.PREPROCESSOR_LINE_LIST);
         }
         if (lineList == null) lineList = new ArrayList<PPLine>();
@@ -145,7 +147,11 @@ public class PreprocessorActions {
 
         @Override
         public JMenuItem getPopupMenuItem(final JTextComponent target) {
-            return createMenu(null, target);
+            ProjectConfigurationsHelper cfgHelper = null;
+            if (target != null && target.getDocument() != null) {
+                cfgHelper = J2MEProjectUtils.getCfgHelperForDoc(target.getDocument());
+            }
+            return createMenu(null, target, cfgHelper);
         }
     }
 
@@ -166,44 +172,69 @@ public class PreprocessorActions {
          * setMenu impl
          */
         @Override
-        protected synchronized void setMenu() {
-            PREPROCESSOR_MENU = createMenu(PREPROCESSOR_MENU, Utilities.getFocusedComponent());
-            final ActionMap am = getContextActionMap();
-            Action action = null;
-            final JMenuItem presenter = getMenuPresenter();
+        protected void setMenu() {
+            synchronized (this) {
+                PREPROCESSOR_MENU = null;
+            }
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    JTextComponent target = Utilities.getLastActiveComponent();
+                    final ProjectConfigurationsHelper cfgHelper =
+                            target != null && target.getDocument() != null ?
+                            J2MEProjectUtils.getCfgHelperForDoc(target.getDocument()) :
+                            null;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            synchronized (PreprocessorMenuAction.this) {
+                                PREPROCESSOR_MENU = createMenu(PREPROCESSOR_MENU, Utilities.getFocusedComponent(), cfgHelper);
+                                final ActionMap am = getContextActionMap();
+                                Action action = null;
+                                final JMenuItem presenter = getMenuPresenter();
 
-            if (am!=null){
-                action = am.get(getActionName());
-                final Action presenterAction = presenter.getAction();
-                if (presenterAction == null){
-                    if (action != null){
-                        presenter.setAction(action);
-                        menuInitialized = false;
-                    }
-                }else{
-                    if ((action!=null && !action.equals(presenterAction))){
-                        presenter.setAction(action);
-                        menuInitialized = false;
-                    }else if (action == null){
-                        presenter.setEnabled(false);
-                    }
+                                if (am!=null){
+                                    action = am.get(getActionName());
+                                    final Action presenterAction = presenter.getAction();
+                                    if (presenterAction == null){
+                                        if (action != null){
+                                            presenter.setAction(action);
+                                            menuInitialized = false;
+                                        }
+                                    }else{
+                                        if ((action!=null && !action.equals(presenterAction))){
+                                            presenter.setAction(action);
+                                            menuInitialized = false;
+                                        }else if (action == null){
+                                            presenter.setEnabled(false);
+                                        }
+                                    }
+                                }
+
+                                if (!menuInitialized){
+                                    Mnemonics.setLocalizedText(presenter, getMenuItemText());
+                                    menuInitialized = true;
+                                }
+
+                                presenter.setEnabled(action != null);
+                            }
+                        }
+                    });
                 }
-            }
-
-            if (!menuInitialized){
-                Mnemonics.setLocalizedText(presenter, getMenuItemText());
-                menuInitialized = true;
-            }
-
-            presenter.setEnabled(action != null);
+            });
         }
 
         protected String getMenuItemText(){
             return NbBundle.getMessage(PreprocessorActions.class, "Menu/Edit/PreprocessorBlocks"); //NOI18N
         }
 
-        public JMenuItem getMenuPresenter() {
-            return PREPROCESSOR_MENU;
+        public synchronized JMenuItem getMenuPresenter() {
+            if (PREPROCESSOR_MENU != null) {
+                return PREPROCESSOR_MENU;
+            }
+            final JMenuItem item = new JMenuItem(NbBundle.getMessage(PreprocessorActions.class, "LBL_Loading"));
+            item.setEnabled(false);
+            return item;
         }
 
         protected String getActionName() {

@@ -1132,6 +1132,8 @@ public class Gdb {
         protected void execAsyncOutput(MIRecord record) {
             // dispatch async messages without a token here
             if (debugger == null) {
+                /* Debugger can not be initialized before the readiness "(gdb)" prompt
+                 * but some service output may appear. Debugger should not handle it.*/
                 return;
             }
             if (record.token() == 0) {
@@ -1155,6 +1157,11 @@ public class Gdb {
         
         @Override
         protected void notifyAsyncOutput(MIRecord record) {
+            if (debugger == null) {
+                /* Debugger can not be initialized before the readiness "(gdb)" prompt
+                 * but some service output may appear. Debugger should not handle it.*/
+                return;
+            }
             if (record.token() == 0) {
                 if (record.cls().equals("thread-group-started")) { //NOI18N
                     debugger.session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());

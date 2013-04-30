@@ -72,7 +72,9 @@ public class ModuleManagerPersistanceTest extends NbTestCase {
         clearWorkDir();
         
         File home = new File(getWorkDir(), "home");
-        new File(new File(home, "config"), "Modules").mkdirs();
+        final File configModules = new File(new File(home, "config"), "Modules");
+        configModules.mkdirs();
+        new File(configModules, "a-b-c.xml").createNewFile();
         File moduleDir = new File(home, "modules");
         moduleDir.mkdirs();
         System.setProperty("netbeans.home", home.getPath());

@@ -56,6 +56,10 @@ public class JQueryModelInterceptor implements ModelInterceptor {
 
     @Override
     public Collection<JsObject> interceptGlobal(ModelElementFactory factory) {
-        return Collections.singleton(JQueryModel.getGlobalObject(factory));
+        JsObject object = JQueryModel.getGlobalObject(factory);
+        if (object != null) {
+            return Collections.singleton(object);
+        }
+        return Collections.emptyList();
     }
 }

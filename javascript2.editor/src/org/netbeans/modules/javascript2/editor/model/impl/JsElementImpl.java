@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
@@ -66,20 +67,24 @@ public abstract class JsElementImpl implements JsElement {
 
     private final Set<Modifier> modifiers;
 
+    private final String sourceLabel;
+
     private FileObject fileObject;
 
     private boolean isDeclared;
-    
-    public JsElementImpl(FileObject fileObject, String name, boolean isDeclared, OffsetRange offsetRange, Set<Modifier> modifiers) {
+
+    public JsElementImpl(FileObject fileObject, String name, boolean isDeclared,
+            OffsetRange offsetRange, Set<Modifier> modifiers, String sourceLabel) {
         this.fileObject = fileObject;
         this.name = name;
         this.offsetRange = offsetRange;
         this.modifiers = modifiers;
         this.isDeclared = isDeclared;
+        this.sourceLabel = sourceLabel;
     }
     
     public JsElementImpl(FileObject fileObject, String name, boolean isDeclared, OffsetRange offsetRange) {
-        this(fileObject, name, isDeclared, offsetRange, Collections.<Modifier>emptySet());
+        this(fileObject, name, isDeclared, offsetRange, Collections.<Modifier>emptySet(), null);
     }
            
     @Override
@@ -181,6 +186,12 @@ public abstract class JsElementImpl implements JsElement {
     
     public void addModifier(Modifier modifier) {
         modifiers.add(modifier);
+    }
+
+    @CheckForNull
+    @Override
+    public String getSourceLabel() {
+        return sourceLabel;
     }
 
     @Override

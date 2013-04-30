@@ -50,6 +50,20 @@ made subject to such option by the copyright holder.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+<change id="topcomponent.SubComponent_lookup_and_showing">
+    <api name="winsys"/>
+    <summary>Added methods getLookup() and isShowing() in TopComponent.SubComponent.</summary>
+    <version major="6" minor="63"/>
+    <date day="17" month="4" year="2013"/>
+    <author login="theofanis"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        <p>The new methods can be used in conjunction with split multiview window, where e.g. the pallette
+	    needs to know which two of the available subcomponents are showing and query their lookup.</p>
+    </description>
+    <class package="org.openide.windows" name="TopComponent"/>
+    <issue number="228448"/>
+</change>
 <change id="stop_request_attention">
     <api name="winsys"/>
     <summary>Allow TopComponent's header to be permanently highlighted to draw user's attention.

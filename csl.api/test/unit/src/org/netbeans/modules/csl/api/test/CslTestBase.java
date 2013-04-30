@@ -123,7 +123,9 @@ import org.openide.util.Exceptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -139,6 +141,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import junit.framework.Assert;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -199,6 +202,9 @@ import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.test.MockLookup;
@@ -213,6 +219,7 @@ public abstract class CslTestBase extends NbTestCase {
     }
 
     private Map<String, ClassPath> classPathsForTest;
+    private static Object[] extraLookupContent = null;
 
     @Override
     protected void setUp() throws Exception {
@@ -227,8 +234,35 @@ public abstract class CslTestBase extends NbTestCase {
         assert cache != null;
         CacheFolder.setCacheFolder(cache);
 
-        // This has to be before touching ClassPath class
-        MockLookup.setInstances(new TestClassPathProvider(), new TestPathRecognizer());
+        List<URL> layers = new LinkedList<URL>();
+        String[] additionalLayers = new String[]{"META-INF/generated-layer.xml"};
+        Object[] additionalLookupContent = new Object[0];
+
+        for (int cntr = 0; cntr < additionalLayers.length; cntr++) {
+            boolean found = false;
+
+            for (Enumeration<URL> en = Thread.currentThread().getContextClassLoader().getResources(additionalLayers[cntr]); en.hasMoreElements(); ) {
+                found = true;
+                layers.add(en.nextElement());
+            }
+
+            Assert.assertTrue(additionalLayers[cntr], found);
+        }
+
+        XMLFileSystem xmlFS = new XMLFileSystem();
+        xmlFS.setXmlUrls(layers.toArray(new URL[0]));
+
+        FileSystem system = new MultiFileSystem(new FileSystem[] {FileUtil.createMemoryFileSystem(), xmlFS});
+
+        Repository repository = new Repository(system);
+        // This has to be before touching ClassPath cla
+
+        extraLookupContent = new Object[additionalLookupContent.length + 1];
+
+        System.arraycopy(additionalLookupContent, 0, extraLookupContent, 1, additionalLookupContent.length);
+
+        extraLookupContent[0] = repository;
+        MockLookup.setInstances(extraLookupContent, new TestClassPathProvider(), new TestPathRecognizer());
 
         classPathsForTest = createClassPathsForTest();
         if (classPathsForTest != null) {
@@ -4394,7 +4428,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         public void waitForScanToFinish() {
             try {
-                latch.await(600000, TimeUnit.MILLISECONDS);
+                latch.await(60000, TimeUnit.MILLISECONDS);
                 if (latch.getCount() > 0) {
                     fail("Waiting for classpath scanning to finish timed out");
                 }

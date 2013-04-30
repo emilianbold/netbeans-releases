@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.project.CompilationOnlyClassPathModifier;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
@@ -493,11 +494,6 @@ public final class EarProjectGenerator {
         return setupDD(j2eeProfile, docBase, earProject, false);
     }
 
-    @Deprecated
-    public static FileObject setupDD(final String j2eeLevel, final FileObject docBase,
-                final Project earProject, boolean force) throws IOException {
-        return setupDD(Profile.fromPropertiesString(j2eeLevel), docBase, earProject, force);
-    }
     /**
      * Generate deployment descriptor (<i>application.xml</i>) if needed or forced (applies for JAVA EE 5).
      * <p>
@@ -517,26 +513,9 @@ public final class EarProjectGenerator {
         if (dd != null) {
             return dd; // already created
         }
-        boolean create = force || EarProjectUtil.isDDCompulsory(earProject);
-        FileObject template = null;
-        if (create) {
-            if (Profile.J2EE_14.equals(j2eeProfile) || Profile.J2EE_13.equals(j2eeProfile)) {
-                template = FileUtil.getConfigFile(
-                        "org-netbeans-modules-j2ee-earproject/ear-1.4.xml"); // NOI18N
-            } else if (Profile.JAVA_EE_5.equals(j2eeProfile)) {
-                template = FileUtil.getConfigFile(
-                        "org-netbeans-modules-j2ee-earproject/ear-5.xml"); // NOI18N
-            } else if (Util.isAtLeastJavaEE7Web(j2eeProfile)) {
-                template = FileUtil.getConfigFile("org-netbeans-modules-j2ee-earproject/ear-7.xml"); // NOI18N
-            } else if (Util.isAtLeastJavaEE6Web(j2eeProfile)) {
-                template = FileUtil.getConfigFile("org-netbeans-modules-j2ee-earproject/ear-6.xml"); // NOI18N
-            } else {
-                assert false : "Unknown j2eeProfile: " + j2eeProfile;
-            }
-        }
-
-        if (template != null) {
-            dd = FileUtil.copyFile(template, docBase, "application"); // NOI18N
+        boolean create = force || DDHelper.isApplicationXMLCompulsory(earProject);
+        dd = DDHelper.createApplicationXml(j2eeProfile, docBase, create);
+        if (dd != null) {
             Application app = DDProvider.getDefault().getDDRoot(dd);
             app.setDisplayName(ProjectUtils.getInformation(earProject).getDisplayName());
             //#118047 avoiding the use of EarProject not possible here.

@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.websvc.api.support.LogUtils;
@@ -59,7 +60,7 @@ import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -68,7 +69,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -78,34 +78,38 @@ import org.openide.util.RequestProcessor;
  * @author Peter Liu
  * @author ads
  */
-public class EntityResourcesIterator implements TemplateWizard.Iterator {
+public class EntityResourcesIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
     
     private static final long serialVersionUID = -1555851385128542149L;
     private int index;
     private transient WizardDescriptor.Panel<?>[] panels;
     private transient RequestProcessor.Task transformTask;
+    private WizardDescriptor wizard;
     
-    public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
+    @Override
+    public Set instantiate() throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Set instantiate(ProgressHandle pHandle) throws IOException {
         final Project project = Templates.getProject(wizard);
 
         String restAppPackage = null;
         String restAppClass = null;
         
         final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if( restSupport instanceof WebRestSupport) {
-            Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
-            if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
-                ((WebRestSupport)restSupport).enableRestSupport( WebRestSupport.RestConfig.DD);
-            }
-            else {
-                restAppPackage = (String) wizard
-                        .getProperty(WizardProperties.APPLICATION_PACKAGE);
-                restAppClass = (String) wizard
-                        .getProperty(WizardProperties.APPLICATION_CLASS);
-                if (restAppPackage != null && restAppClass != null) {
-                    ((WebRestSupport) restSupport)
-                            .enableRestSupport(WebRestSupport.RestConfig.IDE);
-                }
+        Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
+        if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
+            restSupport.enableRestSupport( RestSupport.RestConfig.DD);
+        }
+        else {
+            restAppPackage = (String) wizard
+                    .getProperty(WizardProperties.APPLICATION_PACKAGE);
+            restAppClass = (String) wizard
+                    .getProperty(WizardProperties.APPLICATION_CLASS);
+            if (restAppPackage != null && restAppClass != null) {
+                restSupport.enableRestSupport(RestSupport.RestConfig.IDE);
             }
         }
         if ( restSupport!= null ){
@@ -147,32 +151,23 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         final EntityResourcesGenerator generator = EntityResourcesGeneratorFactory.newInstance(project);
         generator.initialize(model, project, targetFolder, targetPackage, 
                 resourcePackage, controllerPackage, pu);
-        final ProgressDialog progressDialog = new ProgressDialog(NbBundle.getMessage(
-                EntityResourcesIterator.class,
-                "LBL_RestSevicicesFromEntitiesProgress"));
         
         // create application config class if required
         final FileObject restAppPack = restAppPackage == null ? null :  
             FileUtil.createFolder(targetFolder, restAppPackage.replace('.', '/'));
         final String appClassName = restAppClass;
-        transformTask = RequestProcessor.getDefault().create(new Runnable() {
-            public void run() {
-                try {
-                    if ( restAppPack != null && appClassName!= null ){
-                        RestUtils.createApplicationConfigClass( restAppPack, appClassName);
-                    }
-                    RestUtils.disableRestServicesChangeListner(project);
-                    generator.generate(progressDialog.getProgressHandle());
-                    restSupport.configure(resourcePackage);
-                } catch(Exception iox) {
-                    Exceptions.printStackTrace(iox);
-                } finally {
-                    RestUtils.enableRestServicesChangeListner(project);
-                    progressDialog.close();
-                }
+        try {
+            if ( restAppPack != null && appClassName!= null ){
+                RestUtils.createApplicationConfigClass( restAppPack, appClassName);
             }
-        });
-        transformTask.schedule(50);
+            RestUtils.disableRestServicesChangeListner(project);
+            generator.generate(pHandle);
+            restSupport.configure(resourcePackage);
+        } catch(Exception iox) {
+            Exceptions.printStackTrace(iox);
+        } finally {
+            RestUtils.enableRestServicesChangeListner(project);
+        }
 
         // logging usage of wizard
         Object[] params = new Object[5];
@@ -183,12 +178,12 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         params[3] = "REST FROM ENTITY"; //NOI18N
         LogUtils.logWsWizard(params);
         
-        progressDialog.open();   
         return Collections.<DataObject>singleton(DataFolder.findFolder(targetFolder));
     }
     
  
-    public void initialize(TemplateWizard wizard) {
+    public void initialize(WizardDescriptor wizard) {
+        this.wizard = wizard;
         index = 0;
         WizardDescriptor.Panel<?> secondPanel = new EntitySelectionPanel(
                 NbBundle.getMessage(EntityResourcesIterator.class, 
@@ -211,7 +206,7 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         Util.mergeSteps(wizard, panels, names);
     }
     
-    public void uninitialize(TemplateWizard wiz) {
+    public void uninitialize(WizardDescriptor wizard) {
         panels = null;
     }
     

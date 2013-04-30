@@ -81,6 +81,7 @@ import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
@@ -436,10 +437,6 @@ public class MavenProjectSupport {
 
     public static void setJ2eeVersion(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, true);
-    }
-    
-    public static void setJDK(Project project, String value) {
-        setSettings(project, Constants.HINT_JDK_PLATFORM, value, true);
     }
     
     public static void setServerID(Project project, String value) {
