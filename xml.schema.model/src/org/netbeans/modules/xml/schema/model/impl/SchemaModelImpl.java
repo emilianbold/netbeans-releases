@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.schema.model.Import;
@@ -408,12 +409,15 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         return null;
     }
     
+    private final AtomicBoolean atomicCalled = new AtomicBoolean(false);
+    
     @Override
     public DocumentModelAccess getAccess() {
-        if (access == null) {
+        DocumentModelAccess acc = super.getAccess();
+        if (atomicCalled.getAndSet(true) == false) {
             super.getAccess().setAutoSync(true);  // default autosync true
         }
-        return super.getAccess();
+        return acc;
     }
     
     @Override

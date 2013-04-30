@@ -48,17 +48,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
-
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Token;
@@ -74,7 +66,6 @@ import org.netbeans.modules.websvc.rest.model.api.RestApplications;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -92,6 +83,8 @@ import java.io.IOException;
 import java.util.Collections;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 
 
 /**
@@ -119,16 +112,24 @@ class RestScanTask {
        if( webModule == null ){
            return;
        }
-       final WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
-       if ( support ==null || !support.hasJaxRsApi() ){
+       final RestSupport support = project.getLookup().lookup(RestSupport.class);
+       if ( support ==null || !support.isEESpecWithJaxRS() ){
            return;
        }
        
        boolean needConfiguration = true;
        try {
             if (support.isRestSupportOn()) {
-                if (support.getApplicationPathFromDD() != null
-                        || !support.getRestApplications().isEmpty())
+                RestApplicationModel applicationModel = support.getRestApplicationsModel();
+                List<RestApplication> l = applicationModel.runReadAction(new MetadataModelAction<RestApplications, List<RestApplication>>() {
+
+                    @Override
+                    public List<RestApplication> run(RestApplications metadata) throws Exception {
+                        return metadata.getRestApplications();
+                    }
+                });
+                if (MiscUtilities.getApplicationPathFromDD(support.getWebApp()) != null
+                        || !l.isEmpty())
                 {
                     needConfiguration = false;
                 }
@@ -147,7 +148,7 @@ class RestScanTask {
     }
 
     private void checkApplicationConfiguration( final Project project,
-            final WebRestSupport support, RestServicesModel servicesModel )
+            final RestSupport support, RestServicesModel servicesModel )
             throws MetadataModelException, IOException
     {
         RestApplicationModel applicationModel = support.getRestApplicationsModel();
@@ -227,7 +228,7 @@ class RestScanTask {
         return hints;
     }
     
-    private void doCheckApplicationConfiguration( Project project, WebRestSupport support,
+    private void doCheckApplicationConfiguration( Project project, RestSupport support,
             List<RestApplication>  applications, RestServicesMetadata metadata) 
     {
         List<TypeElement> restResources = getRestResources(metadata);
@@ -236,7 +237,7 @@ class RestScanTask {
             if ( isCancelled() ){
                 return; 
             }
-            if ( !support.hasApplicationResourceClass(fqn ) ){
+            if ( !MiscUtilities.hasApplicationResourceClass(support, fqn ) ){
                 ClassTree tree = info.getTrees().getTree(typeElement);
                 List<Integer> position = getElementPosition(info, tree);
                 

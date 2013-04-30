@@ -830,7 +830,23 @@ public final class CndLexerUtilities {
             CppTokenId.__IS_CLASS,
             CppTokenId.__IS_POD,
             CppTokenId.__IS_BASE_OF,
-            CppTokenId.__HAS_TRIVIAL_CONSTRUCTOR,};
+            CppTokenId.__HAS_TRIVIAL_CONSTRUCTOR,
+            CppTokenId.__HAS_NOTHROW_ASSIGN,
+            CppTokenId.__HAS_NOTHROW_COPY,
+            CppTokenId.__HAS_NOTHROW_CONSTRUCTOR,
+            CppTokenId.__HAS_TRIVIAL_ASSIGN,
+            CppTokenId.__HAS_TRIVIAL_COPY,
+            CppTokenId.__HAS_TRIVIAL_DESTRUCTOR,
+            CppTokenId.__HAS_VIRTUAL_DESTRUCTOR,
+            CppTokenId.__IS_ABSTRACT,
+            CppTokenId.__IS_EMPTY,
+            CppTokenId.__IS_LITERAL_TYPE,
+            CppTokenId.__IS_POLYMORPHIC,
+            CppTokenId.__IS_STANDARD_LAYOUT,
+            CppTokenId.__IS_TRIVIAL,
+            CppTokenId.__IS_UNION,
+            CppTokenId.__UNDERLYING_TYPE   
+        };
         addToFilter(ids, filterToModify);
     }
 

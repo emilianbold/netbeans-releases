@@ -70,6 +70,7 @@ import org.openide.windows.WindowManager;
  *
  * @author  Jarda Tulach
  */
+@RandomlyFails // NB-Core-Build #9876, #9889, #9924, #9968, #10010
 public class InitializeOnBackgroundTest extends NbTestCase implements CloneableEditorSupport.Env {
 
     public static Test suite() {
@@ -208,11 +209,15 @@ public class InitializeOnBackgroundTest extends NbTestCase implements CloneableE
             JEditorPane p;
             Document doc;
             
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
-                   CloneableEditor ed = (CloneableEditor)WindowManager.getDefault().getRegistry().getActivated();
-                   p = ed.getEditorPane();
-                   doc = ed.getEditorPane().getDocument();
+                    final TopComponent atc = WindowManager.getDefault().getRegistry().getActivated();
+                    if (atc instanceof CloneableEditor) {
+                        CloneableEditor ed = (CloneableEditor)atc;
+                        p = ed.getEditorPane();
+                        doc = ed.getEditorPane().getDocument();
+                    }
                 }
             }
         }

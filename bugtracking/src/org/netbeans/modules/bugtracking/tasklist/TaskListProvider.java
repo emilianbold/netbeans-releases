@@ -46,8 +46,8 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -59,9 +59,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.bugtracking.*;
+import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
 import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider.LazyIssue;
@@ -69,7 +68,6 @@ import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
@@ -430,22 +428,24 @@ public final class TaskListProvider extends PushTaskScanner {
     }
 
     private List<String> getRepositoriesFor (TaskScanningScope scope) {
-        Collection<? extends Project> projects = scope.getLookup().lookupAll(Project.class);        
-        if(projects == null || projects.isEmpty()) {
+        ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
+        if(projectServices == null) {
+            return Collections.EMPTY_LIST;
+        }
+        FileObject[] fos = projectServices.getProjectDirectories(scope.getLookup());
+        if(fos == null || fos.length == 0) {
             // one file scope?
             FileObject fo = scope.getLookup().lookup(FileObject.class);
             if(fo != null) {
-                Project project = FileOwnerQuery.getOwner(fo);
-                if(project != null) {
-                    List<Project> list = new ArrayList<Project>(1);
-                    list.add(project);
-                    projects = list;
+                fo = projectServices.getFileOwnerDirectory(fo);
+                if(fo != null) {
+                    fos = new FileObject[] {projectServices.getFileOwnerDirectory(fo)};
                 }
             }
         }
         LinkedList<String> repositoryUrls = new LinkedList<String>();
-        if (!projects.isEmpty()) {
-            for (Project p : projects) {
+        if (fos.length > 0) {
+            for (FileObject fo : fos) {
                 if (Thread.interrupted()) {
                     return null;
                 }
@@ -454,9 +454,9 @@ public final class TaskListProvider extends PushTaskScanner {
                     startTime = System.currentTimeMillis();
                 }
                 // lookup a repository registered with current projects
-                RepositoryImpl repository = BugtrackingOwnerSupport.getInstance().getRepository(p, false);
+                RepositoryImpl repository = BugtrackingOwnerSupport.getInstance().getRepository(fo, false);
                 if (LOG.isLoggable(Level.FINER)) {
-                    LOG.log(Level.FINER, "getRepositoriesFor: repository: {0} for {1} after {2}", new Object[] {repository, p, (System.currentTimeMillis() - startTime)});
+                    LOG.log(Level.FINER, "getRepositoriesFor: repository: {0} for {1} after {2}", new Object[] {repository, fo, (System.currentTimeMillis() - startTime)});
                 }
                 if (repository != null) {
                     repositoryUrls.add(repository.getUrl());

@@ -62,6 +62,8 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.Filter;
 import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
+import org.netbeans.modules.cnd.repository.support.RepositoryStatistics;
+import org.netbeans.modules.cnd.repository.testbench.RepositoryStatisticsImpl;
 
 /**
  * Implements FilesAccessStrategy
@@ -122,7 +124,11 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                 final PersistentFactory factory = key.getPersistentFactory();
                 assert factory != null;
                 long size = fis.size();
-                return fis.read(factory, 0, (int)size);
+                Persistent obj = fis.read(factory, 0, (int)size);
+                if (RepositoryStatistics.ENABLED) {
+                    RepositoryStatisticsImpl.getInstance().logDataRead(key, (int) size);
+                }
+                return obj;
             }
         } finally {
             if (fis != null) {

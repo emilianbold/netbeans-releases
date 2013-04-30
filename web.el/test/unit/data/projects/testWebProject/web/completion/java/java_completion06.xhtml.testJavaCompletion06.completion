@@ -1,6 +1,5 @@
 Code completion result for source line:
-#{T(Bo|)}
+#{Bo|}
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      Boolean                                    java.lang.Boolean
-CLASS      BootstrapMethodError                       java.lang.BootstrapMethodError

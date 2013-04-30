@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -388,6 +389,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
             }
         }
 
+        @Override
         public void setVisibility(CsmVisibility visibility) {
             this.visibility = visibility;
         }
@@ -441,6 +443,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
             return instance;
         }
         
+        @Override
         public void setScope(CsmScope scope) {
             assert scope != null;
             this.scope = scope;
@@ -460,7 +463,8 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
             return scope;
         }
         
-        public UsingDeclarationImpl create() {
+        @Override
+        public UsingDeclarationImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
             UsingDeclarationImpl using = getUsingDeclarationInstance();
             CsmScope s = getScope();
             if (using == null && s != null && name != null && getScope() != null) {

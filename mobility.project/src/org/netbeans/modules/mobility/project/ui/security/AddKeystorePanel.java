@@ -285,6 +285,13 @@ public class AddKeystorePanel extends javax.swing.JPanel implements ActionListen
             final String text = tName.getText();
             if (text == null  ||  "".equals(text)) // NOI18N
                 return "ERR_EmptyKSFileName"; // NOI18N
+            // Fix for #201484 - The keystore manager should not allow to use special characters in the keystore name
+            if (tName.getText().contains("\\") || tName.getText().contains("/") // NOI18N 
+                    || tName.getText().contains("<") || tName.getText().contains(">") // NOI18N 
+                    || tName.getText().contains(":") || tName.getText().contains("|") // NOI18N 
+                    || tName.getText().contains("\"")) { // NOI18N 
+                return "ERR_KSInvalidFile"; // NOI18N 
+            }
             file = new File(tLocation.getText());
             if (! file.exists()  ||  ! file.isDirectory()  ||  ! file.canWrite())
                 return "ERR_KSFolderNotExists"; // NOI18N

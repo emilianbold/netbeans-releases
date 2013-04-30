@@ -1031,6 +1031,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
                 Exceptions.printStackTrace(ex);
             }
             makeProject.getProjectDirectory().refresh(true);
+            conf1.getParent().refresh(true);
             Type genericSuperclass = conf1.getClass().getGenericSuperclass();
             if (genericSuperclass instanceof Class) {
                 Type genericSuperclass1 = ((Class)genericSuperclass).getGenericSuperclass();

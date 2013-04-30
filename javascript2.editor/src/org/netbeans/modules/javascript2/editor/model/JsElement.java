@@ -111,4 +111,6 @@ public interface JsElement extends ElementHandle {
     boolean isDeclared();
 
     boolean isPlatform();
+
+    String getSourceLabel();
 }

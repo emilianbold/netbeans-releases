@@ -58,6 +58,8 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.Collection;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.BooleanOption;
@@ -66,6 +68,7 @@ import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.IntegerOption;
 import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.netbeans.spi.java.hints.UseOptions;
 import org.openide.util.NbBundle;
@@ -108,8 +111,28 @@ import static org.netbeans.modules.java.metrics.hints.Bundle.*;
     "TEXT_MethodMultipleLoops=Method ''{0}'' contains {1} loops",
     "# {0} - method name",
     "# {1} - number of dependencies",
-    "TEXT_MethodTooCoupled=Method ''{0}'' is too coupled. References {1} types"
-    
+    "TEXT_MethodTooCoupled=Method ''{0}'' is too coupled. References {1} types",
+
+    "# {0} - cyclomatic complexity of the method",
+    "TEXT_ConstructorTooComplex=Constructor is too complex; cyclomatic complexity: {0}",
+    "# {0} - maximum depth of statements in method",
+    "TEXT_ConstructorTooDeepNesting=Constructor contains too deep statement structure: {0}",
+    "# {0} - number of lines in method",
+    "TEXT_ConstructorTooLongLines=Constructor is too long: {0} lines",
+    "# {0} - number of lines in method",
+    "TEXT_ConstructorTooLongStatements=Constructor is too long: {0} statements",
+    "# {0} - number of exceptions declared by the method",
+    "TEXT_ConstructorTooManyExceptions=Constructor declares too many exceptions: {0}",
+    "# {0} - number of parameters declared by the method",
+    "TEXT_ConstructorTooManyParameters=Constructor takes too many parameters: {0}",
+    "# {0} - number of return points",
+    "TEXT_ConstructorMultipleReturns=Constructor has multiple return points: {0}",
+    "# {0} - number of negations",
+    "TEXT_ConstructorMultipleNegations=Constructor contains too many negations: {0}",
+    "# {0} - number of loops",
+    "TEXT_ConstructorMultipleLoops=Constructor contains {0} loops",
+    "# {0 - number of dependencies",
+    "TEXT_ConstructorTooCoupled=Constructor is too coupled. References {0} types"
 })
 public class MethodMetrics {
     static final int DEFAULT_COMPLEXITY_LIMIT = 10;
@@ -117,7 +140,8 @@ public class MethodMetrics {
     static final int DEFAULT_LINES_LIMIT = 60;
     static final int DEFAULT_EXCEPTIONS_LIMIT = 3;
     static final int DEFAULT_STATEMENTS_LIMIT = 30;
-    static final int DEFAULT_PARAMETERS_LIMIT = 8;
+    static final int DEFAULT_METHOD_PARAMETERS_LIMIT = 8;
+    static final int DEFAULT_CTOR_PARAMETERS_LIMIT = 12;
     static final boolean DEFAULT_IGNORE_RETURN_GUARDS = true;
     static final boolean DEFAULT_IGNORE_EQUALS = true;
     static final int DEFAULT_RETURN_LIMIT = 2;
@@ -180,10 +204,20 @@ public class MethodMetrics {
         maxValue = 100,
         minValue = 2,
         step = 1,
-        defaultValue = DEFAULT_PARAMETERS_LIMIT
+        defaultValue = DEFAULT_METHOD_PARAMETERS_LIMIT
     )
-    public static final String OPTION_PARAMETERS_LIMIT = "metrics.method.parameters.limit"; // NOI18N
+    public static final String OPTION_METHOD_PARAMETERS_LIMIT = "metrics.method.parameters.limit"; // NOI18N
     
+    @IntegerOption(
+        displayName = "#OPTNAME_CtorParametersLimit",
+        tooltip = "#OPTDESC_CtorParametersLimit",
+        maxValue = 100,
+        minValue = 2,
+        step = 1,
+        defaultValue = DEFAULT_CTOR_PARAMETERS_LIMIT
+    )
+    public static final String OPTION_CTOR_PARAMETERS_LIMIT = "metrics.constructor.parameters.limit"; // NOI18N
+
     @IntegerOption(
         displayName = "#OPTNAME_MethodReturnLimit",
         tooltip = "#OPTDESC_MethodReturnLimit",
@@ -259,6 +293,11 @@ public class MethodMetrics {
     
     public static final String OPTION_COUPLING_IGNORE_LIBS = "metrics.method.coupling.nolibraries"; // NOI18N
 
+    private static boolean methodOrConstructor(HintContext ctx) {
+        Element el = ctx.getInfo().getTrees().getElement(ctx.getPath());
+        return el.getKind() == ElementKind.CONSTRUCTOR;
+    }
+    
     @Hint(category = "metrics",
           displayName = "#DN_MethodTooComplex",
           description = "#DESC_MethodTooComplex",
@@ -279,6 +318,8 @@ public class MethodMetrics {
             return null;
         }
         return ErrorDescriptionFactory.forName(ctx, t, 
+                methodOrConstructor(ctx) ?
+                TEXT_ConstructorTooComplex(complexity) :
                 TEXT_MethodTooComplex(method.getName().toString(), complexity)
         );
     }
@@ -304,6 +345,8 @@ public class MethodMetrics {
             return null;
         }
         return ErrorDescriptionFactory.forName(ctx, t, 
+                methodOrConstructor(ctx) ?
+                TEXT_ConstructorTooDeepNesting(depth) :
                 TEXT_MethodTooDeepNesting(method.getName().toString(), depth)
         );
     }
@@ -327,6 +370,8 @@ public class MethodMetrics {
         int treshold = ctx.getPreferences().getInt(OPTION_LINES_LIMIT, DEFAULT_LINES_LIMIT);
         if (count > treshold) {
             return ErrorDescriptionFactory.forName(ctx, t, 
+                    methodOrConstructor(ctx) ?
+                    TEXT_ConstructorTooLongLines(count) :
                     TEXT_MethodTooLongLines(method.getName().toString(), count)
             );
         }
@@ -334,6 +379,8 @@ public class MethodMetrics {
         treshold = ctx.getPreferences().getInt(OPTION_STATEMENTS_LIMIT, DEFAULT_STATEMENTS_LIMIT);
         if (count > treshold) {
             return ErrorDescriptionFactory.forName(ctx, t, 
+                    methodOrConstructor(ctx) ?
+                    TEXT_ConstructorTooLongStatements(count) :
                     TEXT_MethodTooLongStatements(method.getName().toString(), count)
             );
         } else {
@@ -349,7 +396,10 @@ public class MethodMetrics {
         enabled = false
     )
     @UseOptions(value = { OPTION_EXCEPTIONS_LIMIT })
-    @TriggerPattern("$modifiers$ <$typeParams$> $returnType $name($args$) throws $thrown1, $thrown2$ { $body$; }")
+    @TriggerPatterns({
+        @TriggerPattern("$modifiers$ <$typeParams$> $returnType $name($args$) throws $thrown1, $thrown2$ { $body$; }"),
+        @TriggerPattern("$modifiers$ <$typeParams$> $name($args$) throws $thrown1, $thrown2$ { $body$; }"),
+    })
     public static ErrorDescription tooManyExceptions(HintContext ctx) {
         Tree t = ctx.getPath().getLeaf();
         MethodTree method = (MethodTree)t;
@@ -360,7 +410,10 @@ public class MethodMetrics {
         if (count <= limit) {
             return null;
         }
-        return ErrorDescriptionFactory.forName(ctx, t, 
+        Element el = ctx.getInfo().getTrees().getElement(ctx.getPath());
+        return ErrorDescriptionFactory.forName(ctx, t,
+                methodOrConstructor(ctx) ?
+                TEXT_ConstructorTooManyExceptions(count) :
                 TEXT_MethodTooManyExceptions(method.getName().toString(), count)
         );
     }
@@ -372,14 +425,40 @@ public class MethodMetrics {
         options = { Hint.Options.QUERY, Hint.Options.HEAVY },
         enabled = false
     )
-    @UseOptions(value = { OPTION_PARAMETERS_LIMIT })
+    @UseOptions(value = { OPTION_METHOD_PARAMETERS_LIMIT })
     @TriggerPattern("$modifiers$ <$typeParams$> $returnType $name($args1, $arg2, $args$) throws $whatever$ { $body$; }")
     public static ErrorDescription tooManyParameters(HintContext ctx) {
         Tree t = ctx.getPath().getLeaf();
         MethodTree method = (MethodTree)t;
         
         Collection<? extends TreePath> args = ctx.getMultiVariables().get("$args$"); // NOI18N
-        int limit = ctx.getPreferences().getInt(OPTION_PARAMETERS_LIMIT, DEFAULT_PARAMETERS_LIMIT);
+        int limit = ctx.getPreferences().getInt(OPTION_METHOD_PARAMETERS_LIMIT, DEFAULT_METHOD_PARAMETERS_LIMIT);
+        int count = args.size() + 2;
+        if (count <= limit) {
+            return null;
+        }
+        return ErrorDescriptionFactory.forName(ctx, t, 
+                methodOrConstructor(ctx) ?
+                TEXT_ConstructorTooManyParameters(count) :
+                TEXT_MethodTooManyParameters(method.getName().toString(), count)
+        );
+    }
+    
+    @Hint(
+        category = "metrics",
+        displayName = "#DN_CtorTooManyParameters",
+        description = "#DESC_CtorTooManyParameters",
+        options = { Hint.Options.QUERY, Hint.Options.HEAVY },
+        enabled = false
+    )
+    @UseOptions(value = { OPTION_METHOD_PARAMETERS_LIMIT })
+    @TriggerPattern("$modifiers$ <$typeParams$> $name($args1, $arg2, $args$) throws $whatever$ { $body$; }")
+    public static ErrorDescription tooManyParametersCtor(HintContext ctx) {
+        Tree t = ctx.getPath().getLeaf();
+        MethodTree method = (MethodTree)t;
+        
+        Collection<? extends TreePath> args = ctx.getMultiVariables().get("$args$"); // NOI18N
+        int limit = ctx.getPreferences().getInt(OPTION_METHOD_PARAMETERS_LIMIT, DEFAULT_METHOD_PARAMETERS_LIMIT);
         int count = args.size() + 2;
         if (count <= limit) {
             return null;

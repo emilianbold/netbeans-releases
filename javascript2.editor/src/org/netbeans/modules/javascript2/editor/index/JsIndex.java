@@ -45,10 +45,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -61,8 +65,6 @@ import org.openide.filesystems.FileObject;
  */
 public class JsIndex {
 
-    private static final Logger LOG = Logger.getLogger(JsIndex.class.getName());
-    private final QuerySupport querySupport;
     public static final String FIELD_BASE_NAME = "bn"; //NOI18N
     /**
      * In this field is in the lucene also coded, whether the object is anonymous (last char is 'A')
@@ -78,8 +80,25 @@ public class JsIndex {
 
     @org.netbeans.api.annotations.common.SuppressWarnings("MS_MUTABLE_ARRAY")
     public static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_OFFSET, FIELD_RETURN_TYPES, FIELD_PARAMETERS, FIELD_FLAG, FIELD_ASSIGNMENS};
-    
-       
+
+    private static final Logger LOG = Logger.getLogger(JsIndex.class.getName());
+
+    private static final WeakHashMap<FileObject, JsIndex> CACHE = new WeakHashMap<FileObject, JsIndex>();
+
+    private static final int MAX_ENTRIES_CACHE_INDEX_RESULT = 300;
+    // cache to keep latest index results. The cache is cleaned if a file is saved
+    // or a file has to be reindexed due to an external change
+    private static final Map <String, Collection<? extends IndexResult>> CACHE_INDEX_RESULT = new LinkedHashMap<String, Collection<? extends IndexResult>>(MAX_ENTRIES_CACHE_INDEX_RESULT + 1, 0.75F, true) {
+        @Override
+        public boolean removeEldestEntry(Map.Entry eldest) {
+            return size() > MAX_ENTRIES_CACHE_INDEX_RESULT;
+        }
+    };
+
+    private static final AtomicBoolean IS_INDEX_CHANGED = new AtomicBoolean(true);
+
+    private final QuerySupport querySupport;
+
     private JsIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;
     }
@@ -89,20 +108,16 @@ public class JsIndex {
         return new JsIndex(QuerySupportFactory.get(roots));
     }
 
-    private static WeakHashMap<FileObject, JsIndex> cache = new WeakHashMap<FileObject, JsIndex>();
-
-    private static AtomicBoolean isIndexChanged = new AtomicBoolean(true);
-
-    public static synchronized void changeInIndex() {
-        isIndexChanged.set(true);
+    public static void changeInIndex() {
+        IS_INDEX_CHANGED.set(true);
     }
 
     public static JsIndex get(FileObject fo) {
-        JsIndex index = cache.get(fo);
+        JsIndex index = CACHE.get(fo);
         if (index == null) {
             LOG.log(Level.FINE, "Creating JsIndex for FileObject: {0}", fo); //NOI18N
             index = new JsIndex(QuerySupportFactory.get(fo));
-            cache.put(fo, index);
+            CACHE.put(fo, index);
         }
         return index;
     }
@@ -112,7 +127,16 @@ public class JsIndex {
             final QuerySupport.Kind kind, final String... fieldsToLoad) {
         if (querySupport != null) {
             try {
-                Collection<? extends IndexResult> result = querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
+                if (IS_INDEX_CHANGED.get()) {
+                    CACHE_INDEX_RESULT.clear();
+                    IS_INDEX_CHANGED.set(false);
+                }
+                String key = fieldName + fieldValue + kind;
+                Collection<? extends IndexResult> result = CACHE_INDEX_RESULT.get(key);
+                if (result == null) {
+                    result = querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
+                    CACHE_INDEX_RESULT.put(key, result);
+                }
                 return result;
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, null, ioe);
@@ -201,6 +225,6 @@ public class JsIndex {
     }
     
     private String escapeRegExp(String text) {
-        return text.replace(".", "\\.").replace("$", "\\$").replace("?", "\\?").replace("^", "\\^").replace("[", "\\[").replace("]", "\\]");
+        return Pattern.quote(text);
     }
 }

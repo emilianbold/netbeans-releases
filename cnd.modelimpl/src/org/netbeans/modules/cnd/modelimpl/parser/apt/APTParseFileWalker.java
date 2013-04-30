@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTError;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
+import org.netbeans.modules.cnd.apt.structure.APTPragma;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
@@ -65,8 +66,10 @@ import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
+import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
@@ -134,7 +137,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     }
 
     public TokenStream getFilteredTokenStream(APTLanguageFilter lang) {
-        TokenStream ts = lang.getFilteredStream(getTokenStream());
+        TokenStream ts = new LdScopeFilter(lang.getFilteredStream(getTokenStream()));
         // apply preprocessed text indexing
         // disabled for now
 //        if (CndTraceFlags.TEXT_INDEX) {
@@ -186,6 +189,17 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         super.onPragmaNode(apt);
         if (isStopped()) {
             evalCallback.onStoppedDirective(apt);
+        } else {
+            APTPragma pragma = (APTPragma) apt;
+            APTToken name = pragma.getName();
+            if (name != null) {
+                CharSequence textID = name.getTextID();
+                if (DISABLE_LDSCOPE.contentEquals(textID)) {
+                    ldScopeEnabled = false;
+                } else if (ENABLE_LDSCOPE.contentEquals(textID)) {
+                    ldScopeEnabled = true;
+                }
+            }            
         }
     }
 
@@ -480,5 +494,30 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     @Override
     protected void onEval(APT apt, boolean result) {
         evalCallback.onEval(apt, result);
+    }
+    
+    // #pragme disable_ldscope
+    // force the __global keyword to be just an identifier
+    private static final String DISABLE_LDSCOPE = "disable_ldscope"; // NOI18N
+    private static final String ENABLE_LDSCOPE = "enable_ldscope"; // NOI18N
+    private boolean ldScopeEnabled = true;    
+    private final class LdScopeFilter implements TokenStream {
+
+        private final TokenStream orig;
+
+        public LdScopeFilter(TokenStream orig) {
+            this.orig = orig;
+        }
+
+        @Override
+        public Token nextToken() throws TokenStreamException {
+            Token nextToken = orig.nextToken();
+            if (!ldScopeEnabled) {
+                if (nextToken.getType() == APTTokenTypes.LITERAL___global) {
+                    nextToken = new APTBaseLanguageFilter.FilterToken((APTToken) nextToken, APTTokenTypes.IDENT);
+                }
+            }
+            return nextToken;
+        }
     }
 }

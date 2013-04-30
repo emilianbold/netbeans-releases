@@ -59,6 +59,7 @@ import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescrip
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.MessageGenerator;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
+import org.netbeans.modules.javaee.specs.support.api.JmsSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -120,7 +121,8 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
                 pkg,
                 ejbPanel.getDestination(),
                 isSimplified,
-                propertiesPanel.getProperties());
+                propertiesPanel.getProperties(),
+                JmsSupport.getInstance(Util.getPlatform(Templates.getProject(wiz))));
         FileObject result = generator.generate();
         return result == null ? Collections.EMPTY_SET : Collections.singleton(result);
     }

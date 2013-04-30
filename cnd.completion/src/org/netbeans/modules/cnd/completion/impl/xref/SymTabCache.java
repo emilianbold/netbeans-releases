@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
  */
 public final class SymTabCache {
 
-    private Map<CacheEntry, Result> cache = new HashMap<CacheEntry, Result>();
+    private final Map<CacheEntry, Result> cache = new HashMap<CacheEntry, Result>();
 
     /*package-local*/ SymTabCache() {
     }
@@ -86,10 +86,10 @@ public final class SymTabCache {
     }
 
     public static final class CacheEntry {
-        private int resolve;
-        private int hide;
-        private String name;
-        private CsmUID scope;
+        private final int resolve;
+        private final int hide;
+        private final String name;
+        private final CsmUID scope;
 
         public CacheEntry(int resolve, int hide, String name, CsmUID scope){
             this.resolve = resolve;

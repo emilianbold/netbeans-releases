@@ -41,7 +41,34 @@
  */
 package org.netbeans.modules.javascript2.knockout.model;
 
+import java.io.File;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.api.OffsetRange;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.modules.javascript2.editor.index.IndexedElement;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -60,7 +87,64 @@ public class KnockoutModelTest extends ModelTestBase {
     }
 
     public void testKnockout() throws Exception {
-        checkModel("testfiles/model/knockout-2.2.1.debug.js");
+        String file = "testfiles/model/knockout-2.2.1.debug.js";
+        if (!new File(getDataDir(), file).canRead()) {
+            return;
+        }
+        FileObject fo = getTestFile(file);
+
+        Model model = getModel(file);
+        JsObject ko = model.getGlobalObject().getProperty("ko");
+
+        // HACK remove ko.ko
+        ko.getProperties().remove("ko");
+
+        // HACK fix observableArray
+        // extend the fn and result with certain methods from Array
+        JsObject observableArray = ko.getProperty("observableArray");
+        if (observableArray instanceof JsFunction) {
+            JsFunction func = (JsFunction) observableArray;
+            func.addReturnType(new TypeUsageImpl("ko.observableArray.result", -1, true));
+
+            Set<String> arrayMethods = new HashSet<String>();
+            Collections.addAll(arrayMethods,
+                    "pop", "push", "reverse", "shift", "sort", "splice", "unshift", "slice");
+            JsObject fn = observableArray.getProperty("fn");
+            JsObject result = observableArray.getProperty("result");
+            if (fn != null) {
+                JsIndex index = JsIndex.get(fo);
+                for (IndexedElement elem : index.getProperties("Array.prototype")) {
+                    if (arrayMethods.contains(elem.getName())) {
+                        IndexedElement.FunctionIndexedElement felem = (IndexedElement.FunctionIndexedElement) elem;
+                        List<Identifier> params = new ArrayList<Identifier>(felem.getParameters().size());
+                        for (String paramName : felem.getParameters().keySet()) {
+                            params.add(new IdentifierImpl(paramName, OffsetRange.NONE));
+                        }
+
+                        JsFunction function = new JsFunctionImpl(func, fn,
+                                new IdentifierImpl(elem.getName(), OffsetRange.NONE), params, OffsetRange.NONE);
+                        fn.addProperty(elem.getName(), function);
+                        result.addProperty(elem.getName(),
+                                new JsFunctionReference(result, new IdentifierImpl(elem.getName(), OffsetRange.NONE),
+                                function, false, null));
+                    }
+                }
+            }
+        }
+
+        final StringWriter sw = new StringWriter();
+        Model.Printer p = new Model.Printer() {
+
+            @Override
+            public void println(String str) {
+                // XXX hacks improving the model
+                String real = str;
+                real = real.replaceAll("_L21.ko", "ko");
+                sw.append(real).append("\n");
+            }
+        };
+        model.writeObject(p, ko, true);
+        assertDescriptionMatches(fo, sw.toString(), false, ".model", true);
     }
 
     public void testExtend1() throws Exception {
@@ -69,5 +153,19 @@ public class KnockoutModelTest extends ModelTestBase {
 
     public void testExtend2() throws Exception {
         checkModel("testfiles/model/extend2.js");
+    }
+
+    public void testBindings1() throws Exception {
+        checkModel("testfiles/model/bindings1.js");
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/model")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
     }
 }

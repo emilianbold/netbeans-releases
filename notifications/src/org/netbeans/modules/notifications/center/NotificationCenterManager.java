@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.notifications.center;
 
-import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -56,7 +55,6 @@ import org.netbeans.modules.notifications.filter.FilterRepository;
 import org.netbeans.modules.notifications.filter.TitleFilter;
 import org.netbeans.modules.notifications.filter.NotificationFilter;
 import org.openide.awt.NotificationDisplayer.Category;
-import org.openide.awt.QuickSearch;
 
 /**
  *

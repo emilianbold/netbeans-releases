@@ -47,10 +47,10 @@ import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.completion.interference.TypeInferenceVisitor;
 
 /**
  *
@@ -65,18 +65,22 @@ public class GroovyTypeAnalyzer {
     }
 
     public Set<ClassNode> getTypes(AstPath path, int astOffset) {
-        ASTNode closest = path.leaf();
-        if (closest instanceof VariableExpression) {
+        ASTNode caller = path.leaf();
+        if (caller instanceof VariableExpression) {
             ModuleNode moduleNode = (ModuleNode) path.root();
-            TypeInferenceVisitor typeVisitor = new TypeInferenceVisitor(moduleNode.getContext(),
-                    path, document, astOffset);
+            TypeInferenceVisitor typeVisitor = new TypeInferenceVisitor(moduleNode.getContext(), path, document, astOffset);
             typeVisitor.collect();
+            
             ClassNode guessedType = typeVisitor.getGuessedType();
             if (guessedType != null) {
                 return Collections.singleton(guessedType);
             }
         }
-
+        
+        if (caller instanceof MethodCallExpression) {
+            return Collections.singleton(MethodInferenceVisitor.findCallerType(caller));
+        }
+        
         return Collections.emptySet();
     }
 }

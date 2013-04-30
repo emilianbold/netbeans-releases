@@ -2137,6 +2137,24 @@ public class ReformatterImpl {
                     case SIZEOF:
                     case TYPEID:
                     case TYPEOF:
+                    case __HAS_TRIVIAL_CONSTRUCTOR:
+                    case __HAS_NOTHROW_ASSIGN:
+                    case __HAS_NOTHROW_COPY:
+                    case __HAS_NOTHROW_CONSTRUCTOR:
+                    case __HAS_TRIVIAL_ASSIGN:
+                    case __HAS_TRIVIAL_COPY:
+                    case __HAS_TRIVIAL_DESTRUCTOR:
+                    case __IS_ABSTRACT:
+                    case __IS_EMPTY:
+                    case __IS_LITERAL_TYPE:
+                    case __IS_POLYMORPHIC:
+                    case __IS_STANDARD_LAYOUT:
+                    case __IS_TRIVIAL:
+                    case __IS_UNION:
+                    case __UNDERLYING_TYPE:
+                    case __IS_CLASS:
+                    case __IS_BASE_OF:
+                    case __IS_POD:                        
                     case __TYPEOF:
                     case __TYPEOF__:
                     case ALIGNOF:
@@ -2207,7 +2225,7 @@ public class ReformatterImpl {
                     }
                 }
                 spaceBefore(previous, codeStyle.spaceWithinMethodCallParens(), codeStyle.spaceKeepExtra());
-            } else if (p != null && (p.id() == TYPEID || p.id() == SIZEOF || p.id() == TYPEOF)) {
+            } else if (p != null && checkTokenIsBuiltInTypeTraitFunction(p.id())) {
                 spaceBefore(previous, codeStyle.spaceWithinParens(), codeStyle.spaceKeepExtra());
             } else if (ts.isTypeCast()){
                 spaceBefore(previous, codeStyle.spaceWithinTypeCastParens(), codeStyle.spaceKeepExtra());
@@ -2216,6 +2234,30 @@ public class ReformatterImpl {
                 spaceBefore(previous, codeStyle.spaceWithinParens(), codeStyle.spaceKeepExtra());
             }
         }
+    }
+    
+    private boolean checkTokenIsBuiltInTypeTraitFunction(CppTokenId tokenId) {
+        return tokenId == TYPEID ||
+                tokenId == SIZEOF ||
+                tokenId == TYPEOF ||
+                tokenId == __HAS_TRIVIAL_CONSTRUCTOR ||
+                tokenId == __HAS_NOTHROW_ASSIGN ||
+                tokenId == __HAS_NOTHROW_COPY ||
+                tokenId == __HAS_NOTHROW_CONSTRUCTOR ||
+                tokenId == __HAS_TRIVIAL_ASSIGN ||
+                tokenId == __HAS_TRIVIAL_COPY ||
+                tokenId == __HAS_TRIVIAL_DESTRUCTOR ||
+                tokenId == __IS_ABSTRACT ||
+                tokenId == __IS_EMPTY ||
+                tokenId == __IS_LITERAL_TYPE ||
+                tokenId == __IS_POLYMORPHIC ||
+                tokenId == __IS_STANDARD_LAYOUT ||
+                tokenId == __IS_TRIVIAL ||
+                tokenId == __IS_UNION ||
+                tokenId == __UNDERLYING_TYPE ||
+                tokenId == __IS_CLASS ||
+                tokenId == __IS_BASE_OF ||
+                tokenId == __IS_POD;
     }
 
     private Token<CppTokenId> getImportantBeforeBrace(){

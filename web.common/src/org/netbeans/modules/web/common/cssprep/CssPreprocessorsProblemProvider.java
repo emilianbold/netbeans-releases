@@ -123,6 +123,13 @@ public final class CssPreprocessorsProblemProvider implements ProjectProblemsPro
             }
         }
 
+        @Override
+        public void processingErrorOccured(Project project, CssPreprocessor cssPreprocessor, String error) {
+            if (support.getProject().equals(project)) {
+                problemsProviderSupport.fireProblemsChange();
+            }
+        }
+
     }
 
 }

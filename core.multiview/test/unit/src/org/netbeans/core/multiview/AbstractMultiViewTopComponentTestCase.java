@@ -159,9 +159,10 @@ public abstract class AbstractMultiViewTopComponentTestCase extends NbTestCase {
         TopComponent result = TopComponent.getRegistry().getActivated();
         Action[] acts = result.getActions();
         assertNotNull(acts);
-        assertEquals("Three actions: " + Arrays.toString(acts), 3, acts.length);
+        assertEquals("Four actions: " + Arrays.toString(acts), 4, acts.length);
         assertEquals("Second is null", null, acts[1]);
-        assertTrue("Last one instance of tab switching",  acts[2] instanceof EditorsAction);
+        assertTrue("Second from last one instance of tab switching",  acts[2] instanceof EditorsAction);
+        assertTrue("Last one instance of spliting",  acts[3] instanceof SplitAction);
         Object name = acts[0].getValue(Action.NAME);
         assertEquals("act2", name);
         
@@ -171,7 +172,7 @@ public abstract class AbstractMultiViewTopComponentTestCase extends NbTestCase {
         hand.requestActive(Accessor.DEFAULT.createPerspective(desc1));
         acts = result.getActions();
         assertNotNull(acts);
-        assertEquals(3, acts.length);
+        assertEquals(4, acts.length);
         name = acts[0].getValue(Action.NAME);
         assertEquals("act1", name);
         

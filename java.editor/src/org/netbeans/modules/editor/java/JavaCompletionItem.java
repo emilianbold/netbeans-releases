@@ -241,15 +241,19 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new AttributeValueItem(info, value, documentation, element, substitutionOffset, referencesCount, whiteList);
     }
 
-    public static JavaCompletionItem createStaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, boolean addSemicolon, WhiteListQuery.WhiteList whiteList) {
+    public static JavaCompletionItem createStaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, boolean multipleVersions, int substitutionOffset, boolean isDeprecated, boolean addSemicolon, WhiteListQuery.WhiteList whiteList) {
         switch (memberElem.getKind()) {
             case METHOD:
             case ENUM_CONSTANT:
             case FIELD:
-                return new StaticMemberItem(info, type, memberElem, memberType, substitutionOffset, isDeprecated, addSemicolon, whiteList);
+                return new StaticMemberItem(info, type, memberElem, memberType, multipleVersions, substitutionOffset, isDeprecated, addSemicolon, whiteList);
             default:
                 throw new IllegalArgumentException("kind=" + memberElem.getKind());
         }
+    }
+
+    public static JavaCompletionItem createChainedMembersItem(CompilationInfo info, List<? extends Element> chainedElems, List<? extends TypeMirror> chainedTypes, int substitutionOffset, boolean isDeprecated, boolean addSemicolon, WhiteListQuery.WhiteList whiteList) {
+        return new ChainedMembersItem(info, chainedElems, chainedTypes, substitutionOffset, isDeprecated, addSemicolon, whiteList);
     }
 
     public static JavaCompletionItem createInitializeAllConstructorItem(CompilationInfo info, Iterable<? extends VariableElement> fields, ExecutableElement superConstructor, TypeElement parent, int substitutionOffset) {
@@ -290,7 +294,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         && !(this instanceof GetterSetterMethodItem)
                         && !(this instanceof InitializeAllConstructorItem)
                         && !(this instanceof OverrideMethodItem)
-                        && !(this instanceof StaticMemberItem)) {
+                        && !(this instanceof StaticMemberItem)
+                        && !(this instanceof ChainedMembersItem)) {
                     return;
                 }
                 Completion.get().hideDocumentation();
@@ -542,15 +547,27 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String WARNING = "org/netbeans/modules/java/editor/resources/warning_badge.gif";   //NOI18N
         private static ImageIcon warningIcon;
         private final WhiteListQuery.WhiteList whiteList;
-        private final ElementHandle<T> handle;
+        private final List<ElementHandle<? extends Element>> handles;
         private Boolean isBlackListed;
 
         protected WhiteListJavaCompletionItem(
                 final int substitutionOffset,
-                final ElementHandle<T> handle,
+                final ElementHandle<? extends Element> handle,
                 final WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset);
-            this.handle = handle;
+            this.handles = (List<ElementHandle<? extends Element>>) Collections.singletonList(handle);
+            this.whiteList = whiteList;
+        }
+
+        protected WhiteListJavaCompletionItem(
+                final int substitutionOffset,
+                final List<? extends Element> elements,
+                final WhiteListQuery.WhiteList whiteList) {
+            super(substitutionOffset);
+            this.handles = new ArrayList<>(elements.size());
+            for (Element e : elements) {
+                this.handles.add(e.getKind().isField() || e.getKind() == ElementKind.METHOD ? ElementHandle.create(e) : null);
+            }
             this.whiteList = whiteList;
         }
 
@@ -559,14 +576,26 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected final ElementHandle<T> getElementHandle() {
-            return this.handle;
+            return (ElementHandle<T>) (this.handles.isEmpty() ? null : this.handles.get(this.handles.size() - 1));
+        }
+
+        protected final List<ElementHandle<? extends Element>> getElementHandles() {
+            return this.handles;
         }
 
         protected final boolean isBlackListed() {
             if (isBlackListed == null) {
-                isBlackListed = whiteList == null ? false : !whiteList.check(handle, WhiteListQuery.Operation.USAGE).isAllowed();
+                isBlackListed = whiteList == null ? false : !checkIsAllowed();
             }
             return isBlackListed;
+        }
+        
+        private boolean checkIsAllowed() {
+            for (ElementHandle<? extends Element> handle : handles) {
+                if (handle != null && whiteList.check(handle, WhiteListQuery.Operation.USAGE).isAllowed())
+                    return false;                
+            }
+            return true;
         }
 
         @Override
@@ -2746,7 +2775,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         private JavaCompletionItem delegate;
         private String value;
-        private boolean quoteAdded;
         private String documentation;
         private String leftText;
 
@@ -2754,9 +2782,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
             super(substitutionOffset, element != null ? ElementHandle.create(element) : null, whiteList);
             if (value.charAt(0) == '\"' && value.charAt(value.length() - 1) != '\"') { //NOI18N
                 value = value + '\"'; //NOI18N
-                quoteAdded = true;
-            } else {
-                quoteAdded = false;
             }
             this.value = value;
             this.documentation = documentation;
@@ -2907,7 +2932,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
 
-        private StaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, boolean addSemicolon, WhiteListQuery.WhiteList whiteList) {
+        private StaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, boolean multipleVersions, int substitutionOffset, boolean isDeprecated, boolean addSemicolon, WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset, ElementHandle.create(memberElem), whiteList);
             type = (DeclaredType) info.getTypes().erasure(type);
             this.typeHandle = TypeMirrorHandle.create(type);
@@ -2918,7 +2943,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.memberTypeName = Utilities.getTypeName(info, mtm, false).toString();
             this.addSemicolon = addSemicolon && mtm.getKind() == TypeKind.VOID;
             this.modifiers = memberElem.getModifiers();
-            if (!memberElem.getKind().isField()) {
+            if (!memberElem.getKind().isField() && !multipleVersions) {
                 this.params = new ArrayList<ParamDesc>();
                 Iterator<? extends VariableElement> it = ((ExecutableElement)memberElem).getParameters().iterator();
                 Iterator<? extends TypeMirror> tIt = ((ExecutableType)memberType).getParameterTypes().iterator();
@@ -2931,25 +2956,29 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return (params == null ? 700 : 750) - SMART_TYPE;
+            return (getElementHandle().getKind().isField() ? 720 : 750) - SMART_TYPE;
         }
 
         @Override
         public CharSequence getSortText() {
             if (sortText == null) {
-                if (params == null) {
+                if (getElementHandle().getKind().isField()) {
                     sortText = memberName + "#" + typeName; //NOI18N
                 } else {
                     StringBuilder sortParams = new StringBuilder();
                     sortParams.append('(');
                     int cnt = 0;
-                    for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
-                        ParamDesc paramDesc = it.next();
-                        sortParams.append(paramDesc.typeName);
-                        if (it.hasNext()) {
-                            sortParams.append(',');
+                    if (params == null) {
+                        sortParams.append("..."); //NOI18N
+                    } else {
+                        for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                            ParamDesc paramDesc = it.next();
+                            sortParams.append(paramDesc.typeName);
+                            if (it.hasNext()) {
+                                sortParams.append(',');
+                            }
+                            cnt++;
                         }
-                        cnt++;
                     }
                     sortParams.append(')');
                     sortText = memberName + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString() + "#" + typeName; //NOI18N
@@ -2988,17 +3017,21 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     lText.append(STRIKE_END);
                 }
                 lText.append(COLOR_END);
-                if (params != null) {
+                if (!getElementHandle().getKind().isField()) {
                     lText.append('(');
-                    for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
-                        ParamDesc paramDesc = it.next();
-                        lText.append(escape(paramDesc.typeName));
-                        lText.append(' '); //NOI18N
-                        lText.append(PARAMETER_NAME_COLOR);
-                        lText.append(paramDesc.name);
-                        lText.append(COLOR_END);
-                        if (it.hasNext()) {
-                            lText.append(", "); //NOI18N
+                    if (params == null) {
+                        lText.append("..."); //NOI18N
+                    } else {
+                        for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                            ParamDesc paramDesc = it.next();
+                            lText.append(escape(paramDesc.typeName));
+                            lText.append(' '); //NOI18N
+                            lText.append(PARAMETER_NAME_COLOR);
+                            lText.append(paramDesc.name);
+                            lText.append(COLOR_END);
+                            if (it.hasNext()) {
+                                lText.append(", "); //NOI18N
+                            }
                         }
                     }
                     lText.append(')');
@@ -3066,6 +3099,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
+            super.substituteText(c, offset, length, null, null);
             final BaseDocument doc = (BaseDocument)c.getDocument();
             final StringBuilder template = new StringBuilder();
             final AtomicBoolean cancel = new AtomicBoolean();
@@ -3073,83 +3107,94 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 @Override
                 public void run() {
                     try {
-                        ParserManager.parse(Collections.singletonList(Source.create(doc)), new UserTask() {
+                         ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
                             @Override
                             public void run(ResultIterator resultIterator) throws Exception {
                                 if (cancel.get()) {
                                     return;
                                 }
-                                final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
-                                controller.toPhase(Phase.RESOLVED);
+                                final WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult(offset));
+                                copy.toPhase(Phase.RESOLVED);
                                 if (cancel.get()) {
                                     return;
                                 }
-                                DeclaredType type = typeHandle.resolve(controller);
-                                int cnt = 1;
-                                template.append("${PAR#"); //NOI18N
-                                template.append(cnt++);
-                                template.append(" type=\""); //NOI18N
-                                template.append(((TypeElement)type.asElement()).getQualifiedName());
-                                template.append("\" default=\""); //NOI18N
-                                template.append(((TypeElement)type.asElement()).getSimpleName());
-                                template.append("\" editable=false}"); //NOI18N
-                                Iterator<? extends TypeMirror> tas = type.getTypeArguments().iterator();
-                                if (tas.hasNext()) {
-                                    template.append('<'); //NOI18N
-                                    while (tas.hasNext()) {
-                                        TypeMirror ta = tas.next();
-                                        template.append("${PAR#"); //NOI18N
-                                        template.append(cnt++);
-                                        if (ta.getKind() == TypeKind.TYPEVAR) {
-                                            template.append(" type=\""); //NOI18N
-                                            ta = ((TypeVariable)ta).getUpperBound();
-                                            template.append(Utilities.getTypeName(controller, ta, true));
-                                            template.append("\" default=\""); //NOI18N
-                                            template.append(Utilities.getTypeName(controller, ta, false));
-                                            template.append("\"}"); //NOI18N
-                                        } else if (ta.getKind() == TypeKind.WILDCARD) {
-                                            template.append(" type=\""); //NOI18N
-                                            TypeMirror bound = ((WildcardType)ta).getExtendsBound();
-                                            if (bound == null) {
-                                                bound = ((WildcardType)ta).getSuperBound();
-                                            }
-                                            template.append(bound != null ? Utilities.getTypeName(controller, bound, true) : "Object"); //NOI18N
-                                            template.append("\" default=\""); //NOI18N
-                                            template.append(bound != null ? Utilities.getTypeName(controller, bound, false) : "Object"); //NOI18N
-                                            template.append("\"}"); //NOI18N
-                                        } else if (ta.getKind() == TypeKind.ERROR) {
-                                            template.append(" default=\""); //NOI18N
-                                            template.append(((ErrorType)ta).asElement().getSimpleName());
-                                            template.append("\"}"); //NOI18N
-                                        } else {
-                                            template.append(" type=\""); //NOI18N
-                                            template.append(Utilities.getTypeName(controller, ta, true));
-                                            template.append("\" default=\""); //NOI18N
-                                            template.append(Utilities.getTypeName(controller, ta, false));
-                                            template.append("\" editable=false}"); //NOI18N
-                                        }
-                                        if (tas.hasNext()) {
-                                            template.append(", "); //NOI18N
-                                        }
+                                if (CodeStyle.getDefault(doc).preferStaticImports()) {
+                                    Element e = getElementHandle().resolve(copy);
+                                    if (e != null) {
+                                        copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(copy.getCompilationUnit(), Collections.singleton(e)));
                                     }
-                                    template.append('>'); //NOI18N
-                                }
-                                template.append('.'); //NOI18N
-                                template.append(memberName);
-                                if (params != null) {
-                                    boolean guessArgs = Utilities.guessMethodArguments();
-                                    template.append("("); //NOI18N
-                                    for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
-                                        ParamDesc paramDesc = it.next();
-                                        template.append("${"); //NOI18N
-                                        template.append(paramDesc.name);
-                                        if (guessArgs) {
-                                            template.append(" named instanceof="); //NOI18N
-                                            template.append(paramDesc.fullTypeName);
+                                } else {
+                                    DeclaredType type = typeHandle.resolve(copy);
+                                    int cnt = 1;
+                                    template.append("${PAR#"); //NOI18N
+                                    template.append(cnt++);
+                                    template.append(" type=\""); //NOI18N
+                                    template.append(((TypeElement)type.asElement()).getQualifiedName());
+                                    template.append("\" default=\""); //NOI18N
+                                    template.append(((TypeElement)type.asElement()).getSimpleName());
+                                    template.append("\" editable=false}"); //NOI18N
+                                    Iterator<? extends TypeMirror> tas = type.getTypeArguments().iterator();
+                                    if (tas.hasNext()) {
+                                        template.append('<'); //NOI18N
+                                        while (tas.hasNext()) {
+                                            TypeMirror ta = tas.next();
+                                            template.append("${PAR#"); //NOI18N
+                                            template.append(cnt++);
+                                            if (ta.getKind() == TypeKind.TYPEVAR) {
+                                                template.append(" type=\""); //NOI18N
+                                                ta = ((TypeVariable)ta).getUpperBound();
+                                                template.append(Utilities.getTypeName(copy, ta, true));
+                                                template.append("\" default=\""); //NOI18N
+                                                template.append(Utilities.getTypeName(copy, ta, false));
+                                                template.append("\"}"); //NOI18N
+                                            } else if (ta.getKind() == TypeKind.WILDCARD) {
+                                                template.append(" type=\""); //NOI18N
+                                                TypeMirror bound = ((WildcardType)ta).getExtendsBound();
+                                                if (bound == null) {
+                                                    bound = ((WildcardType)ta).getSuperBound();
+                                                }
+                                                template.append(bound != null ? Utilities.getTypeName(copy, bound, true) : "Object"); //NOI18N
+                                                template.append("\" default=\""); //NOI18N
+                                                template.append(bound != null ? Utilities.getTypeName(copy, bound, false) : "Object"); //NOI18N
+                                                template.append("\"}"); //NOI18N
+                                            } else if (ta.getKind() == TypeKind.ERROR) {
+                                                template.append(" default=\""); //NOI18N
+                                                template.append(((ErrorType)ta).asElement().getSimpleName());
+                                                template.append("\"}"); //NOI18N
+                                            } else {
+                                                template.append(" type=\""); //NOI18N
+                                                template.append(Utilities.getTypeName(copy, ta, true));
+                                                template.append("\" default=\""); //NOI18N
+                                                template.append(Utilities.getTypeName(copy, ta, false));
+                                                template.append("\" editable=false}"); //NOI18N
+                                            }
+                                            if (tas.hasNext()) {
+                                                template.append(", "); //NOI18N
+                                            }
                                         }
-                                        template.append("}"); //NOI18N
-                                        if (it.hasNext()) {
-                                            template.append(", "); //NOI18N
+                                        template.append('>'); //NOI18N
+                                    }
+                                    template.append('.'); //NOI18N
+                                }
+                                template.append(memberName);
+                                if (!getElementHandle().getKind().isField()) {
+                                    template.append("("); //NOI18N
+                                    if (params == null) {
+                                        template.append("${cursor completionInvoke}"); // NOI18N
+                                    } else {
+                                        boolean guessArgs = Utilities.guessMethodArguments();
+                                        for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                                            ParamDesc paramDesc = it.next();
+                                            template.append("${"); //NOI18N
+                                            template.append(paramDesc.name);
+                                            if (guessArgs) {
+                                                template.append(" named instanceof="); //NOI18N
+                                                template.append(paramDesc.fullTypeName);
+                                            }
+                                            template.append("}"); //NOI18N
+                                            if (it.hasNext()) {
+                                                template.append(", "); //NOI18N
+                                            }
                                         }
                                     }
                                     template.append(")");//NOI18N
@@ -3158,12 +3203,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     template.append(toAdd);
                                 }
                             }
-                        });
-                    } catch (ParseException pe) {
+                        }).commit();
+                    } catch (Exception ex) {
                     }
                 }
             }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-import_resolve"), cancel, false); //NOI18N
-            super.substituteText(c, offset, length, null, null);
             return template;
         }
 
@@ -3179,18 +3223,316 @@ public abstract class JavaCompletionItem implements CompletionItem {
             sb.append(typeName);
             sb.append('.');
             sb.append(memberName);
-            if (params != null) {
+            if (!getElementHandle().getKind().isField()) {
                 sb.append('('); //NOI18N
-                for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
-                    ParamDesc paramDesc = it.next();
-                    sb.append(paramDesc.typeName);
-                    sb.append(' ');
-                    sb.append(paramDesc.name);
-                    if (it.hasNext()) {
-                        sb.append(", "); //NOI18N
+                if (params == null) {
+                    sb.append("..."); //NOI18N
+                } else {
+                    for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                        ParamDesc paramDesc = it.next();
+                        sb.append(paramDesc.typeName);
+                        sb.append(' ');
+                        sb.append(paramDesc.name);
+                        if (it.hasNext()) {
+                            sb.append(", "); //NOI18N
+                        }
                     }
                 }
                 sb.append(')');
+            }
+            return sb.toString();
+        }
+    }
+
+    static class ChainedMembersItem extends WhiteListJavaCompletionItem<Element> {
+
+        private static final String FIELD_ST_PUBLIC = "org/netbeans/modules/editor/resources/completion/field_static_16.png"; //NOI18N
+        private static final String FIELD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/field_static_protected_16.png"; //NOI18N
+        private static final String FIELD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/field_static_package_private_16.png"; //NOI18N
+        private static final String FIELD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/field_static_private_16.png"; //NOI18N
+        private static final String FIELD_COLOR = "<font color=#0000b2>"; //NOI18N
+        private static final String METHOD_ST_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_static_16.png"; //NOI18N
+        private static final String METHOD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_static_protected_16.png"; //NOI18N
+        private static final String METHOD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/method_static_package_private_16.png"; //NOI18N
+        private static final String METHOD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/method_static_private_16.png"; //NOI18N
+        private static final String METHOD_COLOR = "<font color=#7c0000>"; //NOI18N
+        private static final String PARAMETER_NAME_COLOR = "<font color=#b200b2>"; //NOI18N
+        private static ImageIcon icon[][] = new ImageIcon[2][4];
+
+        private List<MemberDesc> members;
+        private String firstMemberName;
+        private String lastMemberTypeName;
+        private boolean isLastMethod;
+        private boolean isDeprecated;
+        private boolean addSemicolon;
+        private Set<Modifier> modifiers;
+        private String sortText;
+        private String leftText;
+        private String rightText;
+
+        private ChainedMembersItem(CompilationInfo info, List<? extends Element> chainedElems, List<? extends TypeMirror> chainedTypes, int substitutionOffset, boolean isDeprecated, boolean addSemicolon, WhiteListQuery.WhiteList whiteList) {
+            super(substitutionOffset, chainedElems, whiteList);
+            assert chainedElems.size() == chainedTypes.size();
+            this.isDeprecated = isDeprecated;
+            this.members = new ArrayList<>(chainedElems.size());
+            Element lastMemberElem = null;
+            TypeMirror lastMemberType = null;
+            Iterator<? extends TypeMirror> typesIt = chainedTypes.iterator();
+            for (Element element : chainedElems) {
+                TypeMirror type = typesIt.next();
+                String elementName = element.getSimpleName().toString();
+                if (this.firstMemberName == null) {
+                    this.firstMemberName = elementName;
+                }
+                List<ParamDesc> params = null;
+                if (element.getKind() == ElementKind.METHOD) {
+                    params = new ArrayList<ParamDesc>();
+                    Iterator<? extends VariableElement> it = ((ExecutableElement)element).getParameters().iterator();
+                    Iterator<? extends TypeMirror> tIt = ((ExecutableType)type).getParameterTypes().iterator();
+                    while(it.hasNext() && tIt.hasNext()) {
+                        TypeMirror tm = tIt.next();
+                        params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(info, tm, false, ((ExecutableElement)element).isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
+                    }
+                }
+                this.members.add(new MemberDesc(element.getKind(), elementName, params));
+                lastMemberElem = element;
+                lastMemberType = type;
+            }
+            this.isLastMethod = lastMemberElem.getKind() == ElementKind.METHOD;
+            TypeMirror mtm = this.isLastMethod ? ((ExecutableType)lastMemberType).getReturnType() : lastMemberType;
+            this.lastMemberTypeName = Utilities.getTypeName(info, mtm, false).toString();
+            this.addSemicolon = addSemicolon && mtm.getKind() == TypeKind.VOID;
+            this.modifiers = lastMemberElem.getModifiers();
+        }
+
+        @Override
+        public int getSortPriority() {
+            return (getElementHandle().getKind().isField() ? 710 : 740) - SMART_TYPE;
+        }
+
+        @Override
+        public CharSequence getSortText() {
+            if (sortText == null) {
+                StringBuilder sb = new StringBuilder();
+                for (Iterator<MemberDesc> membersIt = members.iterator(); membersIt.hasNext();) {
+                    MemberDesc member = membersIt.next();
+                    sb.append(member.name);
+                    if (member.params != null) {
+                        StringBuilder sortParams = new StringBuilder();
+                        sortParams.append("#("); //NOI18N
+                        int cnt = 0;
+                        for (Iterator<ParamDesc> paramsIt = member.params.iterator(); paramsIt.hasNext();) {
+                            ParamDesc paramDesc = paramsIt.next();
+                            sortParams.append(paramDesc.typeName);
+                            if (paramsIt.hasNext()) {
+                                sortParams.append(',');
+                            }
+                            cnt++;
+                        }
+                        sortParams.append(')');
+                        sb.append(cnt < 10 ? "0" : "").append(cnt).append("#").append(sortParams); //NOI18N
+                    }
+                    if (membersIt.hasNext()) {
+                        sb.append('#');
+                    }
+                }
+                sortText = sb.toString();
+            }
+            return sortText;
+        }
+
+        @Override
+        public CharSequence getInsertPrefix() {
+            return firstMemberName;
+        }
+
+        @Override
+        protected CharSequence getInsertPostfix(JTextComponent c) {
+            StringBuilder sb = new StringBuilder();
+            if (isLastMethod) {
+                sb.append(CodeStyle.getDefault(c.getDocument()).spaceBeforeMethodCallParen() ? " ()" : "()"); //NOI18N
+            }
+            if (addSemicolon) {
+                sb.append(';');
+            }
+            return sb;
+        }
+
+        @Override
+        public CompletionTask createDocumentationTask() {
+            return JavaCompletionProvider.createDocTask(getElementHandle());
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            if (leftText == null) {
+                StringBuilder lText = new StringBuilder();
+                for (Iterator<MemberDesc> membersIt = members.iterator(); membersIt.hasNext();) {
+                    MemberDesc member = membersIt.next();
+                    lText.append(member.kind == ElementKind.METHOD ? METHOD_COLOR : member.kind.isField() ? FIELD_COLOR : PARAMETER_NAME_COLOR);
+                    if (isDeprecated || isBlackListed()) {
+                        lText.append(STRIKE);
+                    }
+                    lText.append(member.name);
+                    if (isDeprecated || isBlackListed()) {
+                        lText.append(STRIKE_END);
+                    }
+                    lText.append(COLOR_END);
+                    if (member.params != null) {
+                        lText.append('(');
+                        for (Iterator<ParamDesc> paramsIt = member.params.iterator(); paramsIt.hasNext();) {
+                            ParamDesc paramDesc = paramsIt.next();
+                            lText.append(escape(paramDesc.typeName));
+                            lText.append(' '); //NOI18N
+                            lText.append(PARAMETER_NAME_COLOR);
+                            lText.append(paramDesc.name);
+                            lText.append(COLOR_END);
+                            if (paramsIt.hasNext()) {
+                                lText.append(", "); //NOI18N
+                            }
+                        }
+                        lText.append(')');
+                    }
+                    if (membersIt.hasNext()) {
+                        lText.append('.');
+                    }
+                }
+                leftText = lText.toString();
+            }
+            return leftText;
+        }
+
+        @Override
+        protected String getRightHtmlText() {
+            if (rightText == null) {
+                rightText = escape(lastMemberTypeName);
+            }
+            return rightText;
+        }
+
+        @Override
+        protected ImageIcon getBaseIcon(){
+            int level = getProtectionLevel(modifiers);
+            boolean isField = getElementHandle().getKind().isField();
+            ImageIcon cachedIcon = icon[isField ? 0 : 1][level];
+            if (cachedIcon != null) {
+                return cachedIcon;
+            }
+            String iconPath = null;
+            if (isField) {
+                switch (level) {
+                    case PRIVATE_LEVEL:
+                        iconPath = FIELD_ST_PRIVATE;
+                        break;
+                    case PACKAGE_LEVEL:
+                        iconPath = FIELD_ST_PACKAGE;
+                        break;
+                    case PROTECTED_LEVEL:
+                        iconPath = FIELD_ST_PROTECTED;
+                        break;
+                    case PUBLIC_LEVEL:
+                        iconPath = FIELD_ST_PUBLIC;
+                        break;
+                }
+            } else {
+                switch (level) {
+                    case PRIVATE_LEVEL:
+                        iconPath = METHOD_ST_PRIVATE;
+                        break;
+                    case PACKAGE_LEVEL:
+                        iconPath = METHOD_ST_PACKAGE;
+                        break;
+                    case PROTECTED_LEVEL:
+                        iconPath = METHOD_ST_PROTECTED;
+                        break;
+                    case PUBLIC_LEVEL:
+                        iconPath = METHOD_ST_PUBLIC;
+                        break;
+                }
+            }
+            if (iconPath == null) {
+                return null;
+            }
+            ImageIcon newIcon = ImageUtilities.loadImageIcon(iconPath, false);
+            icon[isField ? 0 : 1][level] = newIcon;
+            return newIcon;
+        }
+
+        @Override
+        protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
+            final BaseDocument doc = (BaseDocument)c.getDocument();
+            StringBuilder sb = new StringBuilder();
+            boolean asTemplate = false;
+            for (Iterator<MemberDesc> membersIt = members.iterator(); membersIt.hasNext();) {
+                MemberDesc member = membersIt.next();
+                sb.append(member.name);
+                if (member.params != null) {
+                    if (asTemplate || membersIt.hasNext() || !member.params.isEmpty()) {
+                        sb.append(CodeStyle.getDefault(c.getDocument()).spaceBeforeMethodCallParen() ? " (" : "("); //NOI18N
+                        boolean guessArgs = Utilities.guessMethodArguments();
+                        for (Iterator<ParamDesc> paramsIt = member.params.iterator(); paramsIt.hasNext();) {
+                            ParamDesc paramDesc = paramsIt.next();
+                            sb.append("${"); //NOI18N
+                            sb.append(paramDesc.name);
+                            if (guessArgs) {
+                                sb.append(" named instanceof="); //NOI18N
+                                sb.append(paramDesc.fullTypeName);
+                            }
+                            sb.append('}');
+                            if (paramsIt.hasNext()) {
+                                sb.append(", "); //NOI18N
+                            }
+                            asTemplate = true;
+                        }
+                        sb.append(')');//NOI18N
+                    }
+                }
+                if (membersIt.hasNext()) {
+                    sb.append('.');
+                }
+            }
+            if (!asTemplate) {
+                return super.substituteText(c, offset, length, sb, toAdd);
+            }
+            if (toAdd != null) {
+                String toAddText = toAdd.toString();
+                int idx = toAddText.indexOf(')');
+                if (idx > 0) {
+                    if (toAddText.length() > idx + 1) {
+                        sb.append(toAddText.substring(idx + 1));
+                    }
+                }
+            }
+            super.substituteText(c, offset, length, null, null);
+            return sb;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            for(Modifier mod : modifiers) {
+               sb.append(mod.toString());
+               sb.append(' '); // NOI18N
+            }
+            for (Iterator<MemberDesc> membersIt = members.iterator(); membersIt.hasNext();) {
+                MemberDesc member = membersIt.next();
+                sb.append(member.name);
+                if (member.params != null) {
+                    sb.append('(');
+                    for (Iterator<ParamDesc> paramsIt = member.params.iterator(); paramsIt.hasNext();) {
+                        ParamDesc paramDesc = paramsIt.next();
+                        sb.append(escape(paramDesc.typeName));
+                        sb.append(' ');
+                        sb.append(paramDesc.name);
+                        if (paramsIt.hasNext()) {
+                            sb.append(", "); //NOI18N
+                        }
+                    }
+                    sb.append(')');
+                }
+                if (membersIt.hasNext()) {
+                    sb.append('.');
+                }
             }
             return sb.toString();
         }
@@ -3549,10 +3891,22 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
 
+    static class MemberDesc {
+        private final ElementKind kind;
+        private final String name;
+        private final List<ParamDesc> params;
+
+        public MemberDesc(ElementKind kind, String name, List<ParamDesc> params) {
+            this.kind = kind;
+            this.name = name;
+            this.params = params;
+        }
+    }
+    
     static class ParamDesc {
-        private String fullTypeName;
-        private String typeName;
-        private String name;
+        private final String fullTypeName;
+        private final String typeName;
+        private final String name;
 
         public ParamDesc(String fullTypeName, String typeName, String name) {
             this.fullTypeName = fullTypeName;

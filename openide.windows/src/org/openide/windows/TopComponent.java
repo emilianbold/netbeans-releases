@@ -1589,6 +1589,8 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         private final String description;
         private final boolean active;
         private final ActionListener activator;
+        private final Lookup lookup;
+        private final boolean showing;
 
         /**
          * C'tor
@@ -1612,11 +1614,43 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
          * e.g. multiview sub-tab is selected.
          */
         public SubComponent( String displayName, String description, ActionListener activator, boolean active ) {
+            this(displayName, description, activator, active, Lookup.EMPTY, false);
+        }
+
+	/**
+         * C'tor
+         * @param displayName Subcomponent's display name.
+         * @param description Short description to show in a tooltip.
+         * @param activator ActionListener to invoke when the sub-component needs
+         * to be actived.
+         * @param active True if the given sub-component is currently active,
+         * e.g. multiview sub-tab is selected.
+         * @param lookup the lookup of the given sub-component
+         * @param showing True if the given sub-component is currently showing,
+         * e.g. multiview sub-tab is selected or part of a split.
+         */
+        public SubComponent( String displayName, String description, ActionListener activator, boolean active, Lookup lookup, boolean showing ) {
             this.displayName = displayName;
             this.description = description;
             this.active = active;
             this.activator = activator;
+            this.lookup = lookup;
+	    this.showing = showing;
         }
+
+	/**
+         * @return the lookup of the given sub-component, could be null
+         */
+        public Lookup getLookup() {
+	    return lookup;
+	}
+
+	/**
+         * @return True if this sub-component is the active/selected one or part of a split.
+         */
+        public boolean isShowing() {
+	    return showing;
+	}
 
         /**
          * @return True if this sub-component is the active/selected one.

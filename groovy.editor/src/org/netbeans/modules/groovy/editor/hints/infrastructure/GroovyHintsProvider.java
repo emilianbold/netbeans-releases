@@ -56,8 +56,8 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyError;
+import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorID;
+import org.netbeans.modules.groovy.editor.compiler.error.GroovyError;
 
 /**
  *
@@ -70,17 +70,15 @@ public class GroovyHintsProvider implements HintsProvider {
 
     @Override
     public RuleContext createRuleContext() {
-        return new GroovyRuleContext();
+        return new RuleContext();
     }
 
     @Override
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
-        return;
     }
 
     @Override
     public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
-        return;
     }
 
     @Override
@@ -127,14 +125,14 @@ public class GroovyHintsProvider implements HintsProvider {
         List<? extends Error> errors = rpr.getDiagnostics();
         LOG.log(Level.FINEST, "@@@ errors.size() : {0}", errors.size());
 
-        if (errors == null || errors.isEmpty()) {
+        if (errors.isEmpty()) {
             return;
         }
 
         cancelled = false;
         
         @SuppressWarnings("unchecked")
-        Map<GroovyCompilerErrorID,List<GroovyErrorRule>> hints = (Map)manager.getErrors();
+        Map<CompilerErrorID,List<GroovyErrorRule>> hints = (Map)manager.getErrors();
 
         if (hints.isEmpty() || isCancelled()) {
             unhandled.addAll(errors);
@@ -164,7 +162,6 @@ public class GroovyHintsProvider implements HintsProvider {
 
     @Override
     public void cancel() {
-        return;
     }
 
     @Override
@@ -179,37 +176,34 @@ public class GroovyHintsProvider implements HintsProvider {
     private void applyRules(RuleContext context, List<GroovySelectionRule> rules, int start, int end, 
             List<Hint> result) {
 
-        GroovyRuleContext groovyContext = (GroovyRuleContext)context;
-        
         for (GroovySelectionRule rule : rules) {
             if (!rule.appliesTo(context)) {
                 continue;
             }
 
-            rule.run(groovyContext, result);
+            rule.run(context, result);
         }
     }
 
     /** Apply error rules and return true iff somebody added an error description for it */
-    private boolean applyRules(GroovyError error, RuleContext context, Map<GroovyCompilerErrorID,List<GroovyErrorRule>> hints,
+    private boolean applyRules(GroovyError error, RuleContext context, Map<CompilerErrorID,List<GroovyErrorRule>> hints,
             List<Hint> result) {
         
        // LOG.setLevel(Level.FINEST);
        LOG.log(Level.FINEST, "applyRules(...)");
         
-        GroovyCompilerErrorID code = error.getId();
+        CompilerErrorID code = error.getId();
         if (code != null) {
             List<GroovyErrorRule> rules = hints.get(code);
 
             if (rules != null) {
                 int countBefore = result.size();
-                GroovyRuleContext groovyContext = (GroovyRuleContext)context;
                 
                 for (GroovyErrorRule rule : rules) {
                     if (!rule.appliesTo(context)) {
                         continue;
                     }
-                    rule.run(groovyContext, error, result);
+                    rule.run(context, error, result);
                 }
                 
                 return countBefore < result.size();

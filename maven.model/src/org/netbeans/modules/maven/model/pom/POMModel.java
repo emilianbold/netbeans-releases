@@ -69,7 +69,7 @@ public abstract class POMModel extends AbstractDocumentModel<POMComponent> {
         super.refresh();
     }
     
-    public <T> T findComponent(int position, Class<T> clazz, boolean recursive) {
+    public <T/* extends POMComponent is this safe to add?*/> T findComponent(int position, Class<T> clazz, boolean recursive) {
         Component dc = findComponent(position);
         while (dc != null) {
             if (clazz.isAssignableFrom(dc.getClass())) {

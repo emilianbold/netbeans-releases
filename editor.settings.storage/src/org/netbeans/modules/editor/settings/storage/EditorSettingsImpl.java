@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -102,6 +103,7 @@ public class EditorSettingsImpl extends EditorSettings {
     private static final String [] EMPTY = new String[0];
     
     private static EditorSettingsImpl instance = null;
+    private final Set<String> cacheFontColorProfiles = new HashSet<>();
     
     public static synchronized EditorSettingsImpl getInstance() {
         if (instance == null) {
@@ -155,8 +157,15 @@ public class EditorSettingsImpl extends EditorSettings {
      *
      * @return set of font & colors profiles
      */
-    public Set<String> getFontColorProfiles () {
-	return ProfilesTracker.get(ColoringStorage.ID, EDITORS_FOLDER).getProfilesDisplayNames();
+    @Override
+    public  Set<String> getFontColorProfiles () {
+        Set<String> result = new HashSet<>();
+        result.addAll(ProfilesTracker.get(ColoringStorage.ID, EDITORS_FOLDER).getProfilesDisplayNames());
+        synchronized (this) {
+            cacheFontColorProfiles.removeAll(result);
+            result.addAll(cacheFontColorProfiles);
+        }
+	return result;
     }
     
     /**
@@ -165,10 +174,14 @@ public class EditorSettingsImpl extends EditorSettings {
      * @param profile a profile name
      * @return true for user defined profile
      */
+    @Override
     public boolean isCustomFontColorProfile(String profile) {
         ProfilesTracker tracker = ProfilesTracker.get(ColoringStorage.ID, EDITORS_FOLDER);
         ProfilesTracker.ProfileDescription pd = tracker.getProfileByDisplayName(profile);
-        return pd != null && !pd.isRollbackAllowed();
+        synchronized(this) {
+            boolean inCache = cacheFontColorProfiles.contains(profile);
+            return (pd != null && !pd.isRollbackAllowed()) || inCache;
+        }
     }
 
     // XXX: Rewrite this using NbPreferences
@@ -179,7 +192,8 @@ public class EditorSettingsImpl extends EditorSettings {
      *
      * @return name of current font & colors profile
      */
-    public String getCurrentFontColorProfile () {
+    @Override
+    public synchronized String getCurrentFontColorProfile () {
         if (currentFontColorProfile == null) {
             FileObject fo = FileUtil.getConfigFile(EDITORS_FOLDER);
             if (fo != null) {
@@ -203,11 +217,16 @@ public class EditorSettingsImpl extends EditorSettings {
      *
      * @param profile a profile name
      */
-    public void setCurrentFontColorProfile (String profile) {
+    @Override
+    public synchronized void setCurrentFontColorProfile (String profile) {
         String oldProfile = getCurrentFontColorProfile ();
         if (oldProfile.equals (profile)) return;
 
         currentFontColorProfile = profile;
+        
+        if (!getFontColorProfiles ().contains (currentFontColorProfile)) {
+            cacheFontColorProfiles.add(currentFontColorProfile);
+        }
         
         // Persist the change
 	FileObject fo = FileUtil.getConfigFile (EDITORS_FOLDER);

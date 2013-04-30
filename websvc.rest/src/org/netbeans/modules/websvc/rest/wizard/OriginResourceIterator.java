@@ -46,23 +46,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.lang.model.element.Modifier;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
-import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -75,10 +68,9 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.support.SourceGroups;
 import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.wizard.HttpMethodsPanel.HttpMethods;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -96,7 +88,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
-import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 
 
 /**
@@ -234,46 +226,48 @@ public class OriginResourceIterator implements
         FileObject filterClass = GenerationUtils.createClass(dir,filterName, null );
         
         Project project = Templates.getProject(myWizard);
-        WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
-        boolean addResponseFilter = extendClasspath(handle, support);
+        RestSupport support = project.getLookup().lookup(RestSupport.class);
+
+        // if project has JAX-RS 2.0 API (that is it is EE7 spec level or
+        // has Jersey 2 on its classpath) then generated code will use directly
+        // JAX-RS 2.0 APIs
+        boolean hasJaxRs2 = support.isEE7() || support.hasJersey2(true);
+
+        if (!hasJaxRs2 && !support.hasJersey1(true)) {
+            // extend classpath with Jersey if project does not have
+            // JAX-RS 2.0 on its classpath nor Jersey 1.0
+            extendClasspath(handle, support);
+
+            // recheck which jersey version was added:
+            hasJaxRs2 = support.hasJersey2(false);
+        }
         
         handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
                 "MSG_GenerateClassFilter"));                                // NOI18N
         JavaSource javaSource = JavaSource.forFileObject(filterClass);
         if (javaSource != null) {
-            String fqn = generateFilter(javaSource, support.isEE7());
+            String fqn = generateFilter(javaSource, hasJaxRs2);
 
             handle.progress(NbBundle.getMessage(OriginResourceIterator.class,
                     "MSG_UpdateDescriptor")); // NOI18N
-            if (addResponseFilter) {
-                support.addInitParam(WebRestSupport.CONTAINER_RESPONSE_FILTER,
+            // if JAX-RS 1.0 then Jersey specific parms needs to be added to Jersey servlet:
+            if (!hasJaxRs2) {
+                assert fqn != null;
+                MiscUtilities.addInitParam(support, RestSupport.CONTAINER_RESPONSE_FILTER,
                         fqn);
-            } else {
-                if (support.isEE7()) {
-                    support.configure();
-                }
             }
         }
         
         return Collections.singleton(filterClass);
     }
 
-    static boolean isJee7Profile( Project project ) {
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        if ( webModule == null ){
-            return false;
-        }
-        Profile profile = webModule.getJ2eeProfile();
-        return  Profile.JAVA_EE_7_WEB.equals(profile) ||
-                        Profile.JAVA_EE_7_FULL.equals(profile);
-    }
-    
-    private String generateFilter(JavaSource javaSource, boolean jersey2) throws IOException {
-        if (jersey2) {
+    private String generateFilter(JavaSource javaSource, boolean hasJaxRs2) throws IOException {
+        if (hasJaxRs2) {
             generateJaxRs20Filter(javaSource);
             return null;
+        } else {
+            return generateJerseyFilter(javaSource);
         }
-        return generateJerseyFilter(javaSource);
     }
 
     private void generateJaxRs20Filter( JavaSource javaSource ) throws IOException {
@@ -307,7 +301,7 @@ public class OriginResourceIterator implements
                 
                 copy.rewrite( classTree, newTree);
             }
-        }).commit();        
+        }).commit();
     }
 
     private String generateJerseyFilter( JavaSource javaSource )
@@ -353,14 +347,11 @@ public class OriginResourceIterator implements
         return fqn[0];
     }
 
-    private boolean extendClasspath( ProgressHandle handle,WebRestSupport support )
+    private boolean extendClasspath( ProgressHandle handle,RestSupport support )
             throws IOException
     {
         Project project = Templates.getProject(myWizard);
-        if (isJee7Profile(project)){
-            return false;
-        }
-        if ( support!= null ){
+        if ( support!= null ) {
             boolean hasRequest = RestUtils.hasClass(project, 
                     CONTAINER_CONTAINER_REQUEST.replace('.', '/')+CLASS);
             boolean hasFilter = RestUtils.hasClass(project, 
@@ -375,9 +366,10 @@ public class OriginResourceIterator implements
                     jaxRsSupport = JaxRsStackSupport.getDefault();
                 }
                 jaxRsSupport.extendsJerseyProjectClasspath(project);
+                return true;
             }
         }
-        return support!=null;
+        return false;
     }
 
     private String getFilterBody(boolean isJersey){

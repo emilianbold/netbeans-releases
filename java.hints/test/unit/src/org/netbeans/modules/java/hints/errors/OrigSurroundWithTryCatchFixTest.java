@@ -44,7 +44,9 @@ package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.util.TreePath;
 import java.util.List;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.FixKind;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
 
@@ -63,15 +65,17 @@ public class OrigSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        
-        origUseLogger = ErrorFixesFakeHint.isUseLogger();
 
-        ErrorFixesFakeHint.setUseLogger(false);
+        Preferences prefs = ErrorFixesFakeHint.getPreferences(null, FixKind.SURROUND_WITH_TRY_CATCH);
+        origUseLogger = ErrorFixesFakeHint.isUseLogger(prefs);
+
+        ErrorFixesFakeHint.setUseLogger(prefs, false);
     }
 
     @Override
     protected void tearDown() throws Exception {
-        ErrorFixesFakeHint.setUseLogger(origUseLogger);
+        Preferences prefs = ErrorFixesFakeHint.getPreferences(null, FixKind.SURROUND_WITH_TRY_CATCH);
+        ErrorFixesFakeHint.setUseLogger(prefs, origUseLogger);
         
         super.tearDown();
     }

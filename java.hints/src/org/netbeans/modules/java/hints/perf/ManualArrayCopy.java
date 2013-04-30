@@ -42,6 +42,13 @@
 
 package org.netbeans.modules.java.hints.perf;
 
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
@@ -49,7 +56,6 @@ import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.MatcherUtilities;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -76,7 +82,7 @@ public class ManualArrayCopy {
                               "    $tarr[$i + $o2] = $arr[$i];\n"+
                               "}")
     })
-    public static ErrorDescription arrayCopy(HintContext ctx) {
+    public static ErrorDescription arrayCopy(final HintContext ctx) {
         TypeMirror sourceType = ctx.getInfo().getTrees().getTypeMirror(ctx.getVariables().get("$arr"));
         TypeMirror targetType = ctx.getInfo().getTrees().getTypeMirror(ctx.getVariables().get("$tarr"));
 
@@ -88,6 +94,32 @@ public class ManualArrayCopy {
         String startTarget;
         String length;
         boolean isSZero = MatcherUtilities.matches(ctx, ctx.getVariables().get("$s"), "0");
+        
+        Map<String, TreePath> innerVariables = new HashMap<>();
+        TreePath base = ctx.getVariables().get("$arr");
+        final Element i = ctx.getInfo().getTrees().getElement(ctx.getVariables().get("$i"));
+        
+        if (i != null) {
+            final boolean[] used = new boolean[1];
+            new TreePathScanner<Void, Void>() {
+                @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                    Element use = ctx.getInfo().getTrees().getElement(getCurrentPath());
+                    
+                    if (i.equals(use)) {
+                        used[0] |= true;
+                    }
+                    
+                    return super.visitIdentifier(node, p);
+                }
+            }.scan(base, null);
+            
+            if (used[0]) return null;
+        }
+        
+        while (MatcherUtilities.matches(ctx, base, "$oarr[$innerIndex]", innerVariables, new HashMap<String, Collection<? extends TreePath>>(), new HashMap<String, String>())) {
+            base = innerVariables.get("$oarr");
+            
+        }
 
         if (ctx.getVariables().containsKey("$o1")) {
             if (isSZero) {

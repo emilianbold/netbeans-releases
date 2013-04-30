@@ -202,7 +202,7 @@ public final class MultiViewFactory {
     }
     
     static MultiViewDescription createMultiViewDescription(Map map) {
-        return new MapMVD(map, null);
+        return new MapMVD(map, null, false);
     }
     
     private static final class Blank implements MultiViewElement, Serializable {
@@ -368,9 +368,11 @@ public final class MultiViewFactory {
     MultiViewDescription, ContextAwareDescription , SourceCheckDescription {
         private final Map map;
         private final Lookup context;
-        public MapMVD(Map map, Lookup context) {
+	private boolean isSplitDescription;
+        public MapMVD(Map map, Lookup context, boolean isSplitDescription) {
             this.map = map;
             this.context = context;
+	    this.isSplitDescription = isSplitDescription;
         }
         
         private <T> T get(String attr, Class<T> type) {
@@ -461,13 +463,18 @@ public final class MultiViewFactory {
         }
 
         @Override
-        public ContextAwareDescription createContextAwareDescription(Lookup context) {
-            return new MapMVD(map, context);
-        }
+	public ContextAwareDescription createContextAwareDescription(Lookup context, boolean isSplitDescription) {
+	    return new MapMVD(map, context, isSplitDescription);
+	}
 
         @Override
         public boolean isSourceView() {
             return Boolean.TRUE.equals(map.get("sourceview")); // NOI18N
         }
+
+	@Override
+	public boolean isSplitDescription() {
+	    return isSplitDescription;
+	}
     }
 }
