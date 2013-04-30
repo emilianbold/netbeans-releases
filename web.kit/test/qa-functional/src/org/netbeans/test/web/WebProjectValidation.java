@@ -283,7 +283,7 @@ public class WebProjectValidation extends J2eeTestCase {
         // check class is opened in Editor and close it
         new EditorOperator("Servlet1.java").close();
         // check the servlet is specified in web.xml
-        if (J2EE_4.equals(getEEVersion())) {
+        if (J2EE_4.equals(getEEVersion()) && !PROJECT_NAME.equals("WebModuleNB36")) {
             WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
             webPages.setComparator(new Operator.DefaultStringComparator(true, true));
             Node webXml = new Node(webPages, "WEB-INF|web.xml");
