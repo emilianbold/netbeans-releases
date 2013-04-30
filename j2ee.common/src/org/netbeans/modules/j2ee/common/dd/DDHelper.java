@@ -50,10 +50,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -310,8 +310,8 @@ public class DDHelper {
                 return true;
             }
         }
-        EarImplementation2 impl = project.getLookup().lookup(EarImplementation2.class);
-        if (impl != null && Profile.J2EE_14.equals(impl.getJ2eeProfile())) {
+        Ear ear = Ear.getEar(project.getProjectDirectory());
+        if (ear != null && Profile.J2EE_14.equals(ear.getJ2eeProfile())) {
             return true;
         }
         return false;
