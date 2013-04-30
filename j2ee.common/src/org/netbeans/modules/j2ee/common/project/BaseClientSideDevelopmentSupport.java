@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -173,7 +174,11 @@ public abstract class BaseClientSideDevelopmentSupport implements
     }
 
     public boolean canReload() {
-        return getBrowserSupport().canReload();
+        BrowserSupport bs = getBrowserSupport();
+        if (bs != null) {
+            return bs.canReload();
+        }
+        return false;
     }
     
     protected abstract String getBrowserID();
@@ -207,7 +212,7 @@ public abstract class BaseClientSideDevelopmentSupport implements
         browserSupportInitialized = false;
     }
 
-    private synchronized BrowserSupport getBrowserSupport() {
+    @CheckForNull private synchronized BrowserSupport getBrowserSupport() {
         if (browserSupportInitialized) {
             return browserSupport;
         }
