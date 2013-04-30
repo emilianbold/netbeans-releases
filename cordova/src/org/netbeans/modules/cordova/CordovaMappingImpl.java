@@ -67,7 +67,7 @@ public class CordovaMappingImpl implements ServerURLMappingImplementation, Cordo
         if (url==null) {
             this.url = null;
         } else {
-            this.url = url.substring(0, url.lastIndexOf("/www/") + "/www/".length());
+            this.url = url.substring(0, url.lastIndexOf("/www/") + "/www/".length()).replaceAll("file:///", "file:/").replaceAll("file:/", "file:///");
         }
     }
     
@@ -83,7 +83,8 @@ public class CordovaMappingImpl implements ServerURLMappingImplementation, Cordo
         }
         
         String rel = projectFile.getPath();
-        rel = rel.substring(rel.lastIndexOf("/www/")+ + "/www/".length());
+        String name = ClientProjectUtilities.getSiteRoot(p).getNameExt();
+        rel = rel.substring(rel.lastIndexOf(name) +  name.length() + 1 );
         try {
             return new URL(url+rel);
         } catch (MalformedURLException ex) {
@@ -97,9 +98,10 @@ public class CordovaMappingImpl implements ServerURLMappingImplementation, Cordo
         if (url == null ||p == null ) {
             return null;
         }
-        
-        if (serverURL.toExternalForm().replaceAll("file:/", "file:///").startsWith(url)) {
-            final String relPath = serverURL.toExternalForm().substring(url.length()-2);
+        String url2 = url.replaceAll("file:///", "file:/");
+        final String serverUrl2 = serverURL.toExternalForm().replaceAll("file:///", "file:/");
+        if (serverUrl2.startsWith(url2)) {
+            final String relPath = serverUrl2.substring(url2.length());
             FileObject fileObject = ClientProjectUtilities.getSiteRoot(p).getFileObject(relPath);
             return fileObject;
         }

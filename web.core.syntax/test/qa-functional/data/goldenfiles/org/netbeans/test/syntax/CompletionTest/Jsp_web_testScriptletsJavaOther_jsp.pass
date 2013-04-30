@@ -90,6 +90,7 @@ void wait (long timeout )
 void wait (long timeout , int 
 End cursor position = 825
 [<%= request.|, String getContextPath (), <%= request.getContextPath(), 935]
+String changeSessionId ()
 String getAuthType ()
 String getCharacterEncoding ()
 String getContentType ()
@@ -120,6 +121,7 @@ Object getAttribute (String na
 Enumeration <String> getAttrib
 Class  getClass ()
 int getContentLength ()
+long getContentLengthLong ()
 Cookie[] getCookies ()
 long getDateHeader (String nam
 DispatcherType getDispatcherTy
@@ -162,6 +164,7 @@ void setAttribute (String name
 void setCharacterEncoding (Str
 AsyncContext startAsync ()
 AsyncContext startAsync (Servl
+T upgrade (Class <T> handlerCl
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
