@@ -79,6 +79,11 @@ public class NoType implements CsmType {
     public boolean isReference() {
         return false;
     }
+
+    @Override
+    public boolean isRValueReference() {
+        return false;
+    }
     
     @Override
     public boolean isPointer() {

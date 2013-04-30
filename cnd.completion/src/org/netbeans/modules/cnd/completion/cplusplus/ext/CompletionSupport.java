@@ -599,7 +599,7 @@ public final class CompletionSupport implements DocumentListener {
                         typeName = typeName.substring(0, indexOfRBracket);
                         CsmClassifier cls = getClassFromName(getFinder(), typeName, true);
                         if (cls != null) {
-                            CsmType type = CsmCompletion.getType(cls, 0, false, 0, false);
+                            CsmType type = CsmCompletion.createType(cls, 0, 0, 0, false);
                             return type;
                         }
                     }
@@ -609,7 +609,7 @@ public final class CompletionSupport implements DocumentListener {
                 if (type.getArrayDepth() > 0) {
                     CsmClassifier cls = type.getClassifier();
                     if (cls != null) {
-                        type = CsmCompletion.getType(cls, 0, false, 0, false);
+                        type = CsmCompletion.createType(cls, 0, 0, 0, false);
                     }
                 }
                 return type;
@@ -626,7 +626,7 @@ public final class CompletionSupport implements DocumentListener {
                     String typeName = e.replaceAll("((\\W|\n)*)return((\\W|\n|&)*)\\((.*)\\)((\\W|\n)*)\\{((.|\n)*)\\}((.|\n)*)", "$5"); // NOI18N
                     CsmClassifier cls = getClassFromName(getFinder(), typeName, true);
                     if (cls != null) {
-                        CsmType type = CsmCompletion.getType(cls, 0, false, 0, false);
+                        CsmType type = CsmCompletion.createType(cls, 0, 0, 0, false);
                         return type;
                     }
                 } catch (BadLocationException ex) {
@@ -639,7 +639,7 @@ public final class CompletionSupport implements DocumentListener {
                     String typeName = e.replaceAll("((.|\n)*)=((\\W|\n|&)*)\\((.*)\\)((\\W|\n)*)\\{((.|\n)*)\\}((.|\n)*)", "$5"); // NOI18N
                     CsmClassifier cls = getClassFromName(getFinder(), typeName, true);
                     if (cls != null) {
-                        CsmType type = CsmCompletion.getType(cls, 0, false, 0, false);
+                        CsmType type = CsmCompletion.createType(cls, 0, 0, 0, false);
                         return type;
                     }
                 } catch (BadLocationException ex) {
