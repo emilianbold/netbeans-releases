@@ -41,13 +41,11 @@
  */
 package org.netbeans.modules.debugger.jpda.ui.models;
 
-import java.awt.EventQueue;
 import java.beans.PropertyEditor;
 import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -57,23 +55,21 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import static org.netbeans.spi.debugger.ui.Constants.*;
 
 /**
- *
- * @author martin
+ * 
+ * @author Martin Entlicher
  */
 @DebuggerServiceRegistrations({
     @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
                                  types=TablePropertyEditorsModel.class,
-                                 position=100),
+                                 position=25000),
 })
 public class VariablesPropertyEditorsModel implements TablePropertyEditorsModel {
     
     private static final Map<Variable, PropertyEditorRef> propertyEditors = new WeakHashMap<Variable, PropertyEditorRef>();
     
-    private JPDADebugger debugger;
     private ContextProvider contextProvider;
     
     public VariablesPropertyEditorsModel(ContextProvider contextProvider) {
-        debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
         this.contextProvider = contextProvider;
     }
 
