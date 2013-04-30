@@ -2064,10 +2064,24 @@ abstract public class CsmCompletionQuery {
                         CsmCompletionExpression param = item.getParameter(0);
                         staticOnly = false;
                         lastType = resolveType(param);
-                        // TODO: we need to wrap lastType with pointer and address-of
-                        // based on the zero token of 'item' expression
                         if(lastType != null) {
-                            lastType = CsmCompletion.createType(lastType.getClassifier(), lastType.getPointerDepth() + 1, getReferenceValue(lastType), lastType.getArrayDepth(), lastType.isConst());
+                            int ref = getReferenceValue(lastType);
+                            int ptrLevel = lastType.getPointerDepth();
+                            if (item.getTokenCount() > 0) {
+                                switch (item.getTokenID(0)) {
+                                    case AMP:
+                                        ref = 1;
+                                        break;
+                                    case AMPAMP:
+                                        ref = 2;
+                                        break;
+                                    case STAR:
+                                        ptrLevel++;
+                                        break;
+                                    default:
+                                }
+                            }
+                            lastType = CsmCompletion.createType(lastType.getClassifier(), ptrLevel, ref, lastType.getArrayDepth(), lastType.isConst());                        
                         }
                     }
                     break;
