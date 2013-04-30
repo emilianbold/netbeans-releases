@@ -39,52 +39,57 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.knockout.model;
+package org.netbeans.modules.javascript2.knockout.editor;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
-import org.openide.util.NbBundle;
+import java.util.List;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
+import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 
 /**
  *
  * @author Petr Hejl
  */
-@ModelInterceptor.Registration(priority=200)
-public class KnockoutModelInterceptor implements ModelInterceptor {
+@CompletionProvider.Registration(priority=20)
+public class KnockoutBindingCompletionProvider implements CompletionProvider {
 
-    private static final Logger LOGGER = Logger.getLogger(KnockoutModelInterceptor.class.getName());
-
-    // for unit testing
-    static boolean disabled = false;
-
-    @NbBundle.Messages("label_knockout=Knockout")
     @Override
-    public Collection<JsObject> interceptGlobal(ModelElementFactory factory) {
-        if (disabled) {
-            return Collections.emptySet();
-        }
-
-        InputStream is = getClass().getClassLoader().getResourceAsStream(
-                "org/netbeans/modules/javascript2/knockout/model/resources/knockout-2.2.1.model"); // NOI18N
-        try {
-            return Collections.singleton(factory.loadGlobalObject(is, Bundle.label_knockout()));
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-            return Collections.emptySet();
-        } finally {
-            try {
-                is.close();
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, null, ex);
+    public List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContext jsCompletionContext, String prefix) {
+        int offset = ccContext.getParserResult().getSnapshot().getEmbeddedOffset(ccContext.getCaretOffset());
+        if (offset >= 0) {
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                    ccContext.getParserResult().getSnapshot().getTokenHierarchy(), offset, JsTokenId.javascriptLanguage());
+            if (ts == null) {
+                return Collections.emptyList();
             }
+            ts.move(offset);
+            if (!(ts.moveNext() && ts.movePrevious())) {
+                return Collections.emptyList();
+            }
+            if (ts.token().id() == JsTokenId.EOL || ts.token().id() == JsTokenId.WHITESPACE) {
+                ts.movePrevious();
+            }
+            Token<? extends JsTokenId> lastToken = ts.token();
+            if (lastToken.id() == JsTokenId.IDENTIFIER && "$bindings".equals(lastToken.text())) {
+                
+            }
+            //System.out.println("=====" + ccContext.getParserResult().getSnapshot().getText());
         }
+        
+        return Collections.emptyList();
+    }
+
+    @Override
+    public String getHelpDocumentation(ParserResult info, ElementHandle element) {
+        return null;
     }
 
 }
