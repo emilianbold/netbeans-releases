@@ -81,7 +81,7 @@ public class KnockoutBindingCompletionProvider implements CompletionProvider {
             if (lastToken.id() == JsTokenId.IDENTIFIER && "$bindings".equals(lastToken.text())) {
                 
             }
-            System.out.println("=====" + ccContext.getParserResult().getSnapshot().getText());
+            //System.out.println("=====" + ccContext.getParserResult().getSnapshot().getText());
         }
         
         return Collections.emptyList();
