@@ -46,7 +46,12 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.tools.javac.code.Source;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -54,6 +59,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
+import static junit.framework.Assert.assertEquals;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -67,6 +74,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -284,6 +292,60 @@ public class JavacParserTest extends NbTestCase {
         }, true);
     }
     
+    public void testIfMissingObjectOnBootCPUseCPToGuessSourceLevel() throws Exception {
+        Source ret = guessSourceLevel(false, false);
+        assertEquals("Downgraded to 1.4", Source.JDK1_4, ret);
+    }
+
+    public void testIfObjectPresentOnBootDontUseCPToGuessSourceLevel() throws Exception {
+        Source ret = guessSourceLevel(true, false);
+        assertEquals("Downgraded to 1.4, as Object on bootCP, but no AssertError", Source.JDK1_3, ret);
+    }
+
+    public void testIfMissingObjectOnBootCPUseCPToGuessSourceLevelWithStringBuilder() throws Exception {
+        Source ret = guessSourceLevel(false, true);
+        assertEquals("Kept to 1.7", Source.JDK1_7, ret);
+    }
+    
+    private Source guessSourceLevel(boolean objectOnBCP, boolean sbOnCP) throws Exception {
+        clearWorkDir();
+        File bcp = new File(getWorkDir(), "bootcp");
+        bcp.mkdirs();
+        
+        File cp = new File(getWorkDir(), "cp");
+        cp.mkdirs();
+        
+        File src = new File(getWorkDir(), "src");
+        src.mkdirs();
+
+        if (objectOnBCP) {
+            copyResource(
+                JavacParserTest.class.getResource("/java/lang/Object.class"),
+                new File(new File(new File(bcp, "java"), "lang"), "Object.class")
+            );
+        }
+
+        copyResource(
+            JavacParserTest.class.getResource("/java/lang/AssertionError.class"),
+            new File(new File(new File(cp, "java"), "lang"), "AssertionError.class")
+        );
+        
+        if (sbOnCP) {
+            copyResource(
+                JavacParserTest.class.getResource("/java/lang/StringBuilder.class"),
+                new File(new File(new File(cp, "java"), "lang"), "StringBuilder.class")
+            );
+        }
+        
+        ClasspathInfo info = ClasspathInfo.create(
+            ClassPathSupport.createClassPath(bcp.toURI().toURL()), 
+            ClassPathSupport.createClassPath(cp.toURI().toURL()), 
+            ClassPathSupport.createClassPath(src.toURI().toURL())
+        );
+        
+        return JavacParser.validateSourceLevel("1.7", info);
+    }
+    
     private FileObject createFile(String path, String content) throws Exception {
         FileObject file = FileUtil.createData(sourceRoot, path);
         TestUtilities.copyStringToFile(file, content);
@@ -304,5 +366,15 @@ public class JavacParserTest extends NbTestCase {
 
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache);
     }
-
+    
+    private static void copyResource(URL resource, File file) throws IOException {
+        assertNotNull("Resource found", resource);
+        file.getParentFile().mkdirs();
+        assertTrue("New file " + file + " created", file.createNewFile());
+        FileOutputStream os = new FileOutputStream(file);
+        InputStream is = resource.openStream();
+        FileUtil.copy(is, os);
+        is.close();
+        os.close();
+    }
 }

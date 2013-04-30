@@ -73,7 +73,7 @@ id = "org.netbeans.modules.java.navigation.actions.ShowMembersAction")
 @ActionRegistration(
     displayName = "#CTL_ShowMembersAction", lazy=false)
 @ActionReference(path = "Menu/GoTo/Inspect", position = 1100)
-@NbBundle.Messages("CTL_ShowMembersAction=File Members")
+@NbBundle.Messages("CTL_ShowMembersAction=&File Members")
 public class ShowMembersAction extends AbstractAction {
 
     public ShowMembersAction() {

@@ -279,7 +279,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                     }
                                 }
                             },
-                            NotificationDisplayer.Priority.NORMAL);
+                            NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.ERROR);
                     }
                     
                 } finally {

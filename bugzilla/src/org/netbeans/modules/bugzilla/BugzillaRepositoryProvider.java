@@ -41,6 +41,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
@@ -102,11 +103,6 @@ public class BugzillaRepositoryProvider extends KenaiRepositoryProvider<Bugzilla
     }
 
     @Override
-    public Lookup getLookup(BugzillaRepository r) {
-        return r.getLookup();
-    }
-    
-    @Override
     public void removePropertyChangeListener(BugzillaRepository r, PropertyChangeListener listener) {
         r.removePropertyChangeListener(listener);
     }
@@ -130,5 +126,12 @@ public class BugzillaRepositoryProvider extends KenaiRepositoryProvider<Bugzilla
     public BugzillaQuery getMyIssuesQuery(BugzillaRepository repository) {
         assert repository instanceof KenaiRepository;
         return ((KenaiRepository)repository).getMyIssuesQuery();
+    }
+
+    @Override
+    public KenaiProject getKenaiProject(BugzillaRepository repository) {
+        return repository instanceof KenaiRepository ? 
+                ((KenaiRepository)repository).getKenaiProject() :
+                null;
     }
 }

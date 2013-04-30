@@ -286,6 +286,12 @@ implements PropertyChangeListener, DebuggerManagerListener {
         }
     }
     
+    public BreakpointImpl getBreakpointImpl(Breakpoint bp) {
+        synchronized (breakpointToImpl) {
+            return breakpointToImpl.get(bp);
+        }
+    }
+    
     public void fixBreakpointImpls () {
         List<BreakpointImpl> bpis;
         synchronized (breakpointToImpl) {

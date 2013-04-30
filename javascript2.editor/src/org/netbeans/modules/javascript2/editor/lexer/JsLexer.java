@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.javascript2.editor.lexer;
 
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;

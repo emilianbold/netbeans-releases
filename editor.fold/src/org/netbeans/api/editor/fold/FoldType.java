@@ -152,7 +152,7 @@ public final class FoldType {
         "FT_display_tag=<.../>"
     })
     public static final FoldType    TAG = create("tags", FT_Label_tag(), 
-            new FoldTemplate(1, 2, FT_display_tag()));
+            new FoldTemplate(1, 1, FT_display_tag()));
     
     /**
      * Nested part; for example an embedded type, or nested namespace. Do not use

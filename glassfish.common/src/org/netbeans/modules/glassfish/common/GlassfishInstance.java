@@ -51,8 +51,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.data.GlassFishAdminInterface;
@@ -64,8 +62,8 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
-import org.netbeans.modules.glassfish.common.ui.InstanceCustomizer;
-import org.netbeans.modules.glassfish.common.ui.VmCustomizer;
+import org.netbeans.modules.glassfish.common.ui.GlassFishPropertiesCustomizer;
+import org.netbeans.modules.glassfish.common.ui.WarnPanel;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.*;
 import org.netbeans.spi.server.ServerInstanceFactory;
@@ -257,6 +255,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     public static final int DEFAULT_ADMIN_PORT = 4848;
     public static final String DEFAULT_DOMAINS_FOLDER = "domains"; //NOI18N
     public static final String DEFAULT_DOMAIN_NAME = "domain1"; // NOI18N
+
+    static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
 
     /** GlassFish user account instance key ring name space. */
     static final String KEYRING_NAME_SPACE="GlassFish.admin";
@@ -492,6 +492,199 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         }
         return result;
     }
+
+    /**
+     * Check if given GlassFish instance properties keys should be filtered
+     * when persisting GlassFish instance.
+     * <p/>
+     * @param key GlassFish instance properties key to be checked.
+     * @return Value of <code>true</code> when property with given key shall not
+     *         be persisted or <code>false</code> otherwise.
+     */
+
+    private static boolean filterKey(String key) {
+        return INSTANCE_FO_ATTR.equals(key);
+    }
+
+    /**
+     * Fix attributes being imported from old NetBeans.
+     * <p/>
+     * Password for local server is changed from <code>"adminadmin"</code>
+     * to <code>""</code>.
+     * Fixed attributes are marked with new property to avoid multiple fixes
+     * in the future.
+     * <p/>
+     * Argument <code>ip</code> shall not be <code>null</code>.
+     * <p/>
+     * @param ip Instance properties <code>Map</code>.
+     * @param fo Instance file object.
+     */
+    private static void fixImportedAttributes(Map<String, String> ip,
+            FileObject fo) {
+        if (!ip.containsKey(GlassfishModule.NB73_IMPORT_FIXED)) {
+            String password = ip.get(GlassfishModule.PASSWORD_ATTR);
+            if (password != null) {
+                boolean local
+                        = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) != null;
+                if (local && GlassfishInstance.OLD_DEFAULT_ADMIN_PASSWORD
+                        .equals(password)) {
+                    ip.put(GlassfishModule.PASSWORD_ATTR,
+                            GlassfishInstance.DEFAULT_ADMIN_PASSWORD);
+                    org.netbeans.modules.glassfish.common.utils.ServerUtils
+                            .setStringAttribute(fo,
+                            GlassfishModule.PASSWORD_ATTR,
+                            GlassfishInstance.DEFAULT_ADMIN_PASSWORD);
+                }
+            }
+            ip.put(GlassfishModule.NB73_IMPORT_FIXED, Boolean.toString(true));
+        }
+    }
+
+    // Password from keyring (GlassfishModule.PASSWORD_ATTR) is read on demand
+    // using code in GlassfishInstance.Props class.
+    /**
+     * Read GlassFish server instance data from persistent storage.
+     * <p/>
+     * @param instanceFO  Persistent storage file.
+     * @param uriFragment GlassFish server URI fragment.
+     * @return GlassFish server instance reconstructed from persistent storage.
+     * @throws IOException 
+     */
+    public static GlassfishInstance readInstanceFromFile(
+            FileObject instanceFO) throws IOException {
+        GlassfishInstance instance = null;
+
+        String installRoot
+                = org.netbeans.modules.glassfish.common.utils.ServerUtils
+                .getStringAttribute(instanceFO,
+                GlassfishModule.INSTALL_FOLDER_ATTR);
+        String glassfishRoot
+                = org.netbeans.modules.glassfish.common.utils.ServerUtils
+                .getStringAttribute(instanceFO,
+                GlassfishModule.GLASSFISH_FOLDER_ATTR);
+        
+        // Existing installs may lack "installRoot", but glassfishRoot and 
+        // installRoot are the same in that case.
+        if(installRoot == null) {
+            installRoot = glassfishRoot;
+        }
+        // TODO: Implement better folders content validation.
+        if(org.netbeans.modules.glassfish.common.utils.ServerUtils
+                .isValidFolder(installRoot)
+                && org.netbeans.modules.glassfish.common.utils.ServerUtils
+                .isValidFolder(glassfishRoot)) {
+            // collect attributes and pass to create()
+            Map<String, String> ip = new HashMap<String, String>();
+            Enumeration<String> iter = instanceFO.getAttributes();
+            while(iter.hasMoreElements()) {
+                String name = iter.nextElement();
+                String value
+                        = org.netbeans.modules.glassfish.common.utils
+                        .ServerUtils.getStringAttribute(instanceFO, name);
+                ip.put(name, value);
+            }
+            ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
+            fixImportedAttributes(ip, instanceFO);
+            instance = create(ip,GlassfishInstanceProvider.getProvider(),false);
+            // Display warning popup message for GlassFish 3.1.2 which is known
+            // to have bug in WS.
+            if (instance.getVersion() == GlassFishVersion.GF_3_1_2) {
+                WarnPanel.gf312WSWarning(instance.getName());
+            }
+        } else {
+            LOGGER.log(Level.FINER,
+                    "GlassFish folder {0} is not a valid install.",
+                    instanceFO.getPath()); // NOI18N
+            instanceFO.delete();
+        }
+
+        return instance;
+    }
+
+    /**
+     * Write GlassFish server instance data into persistent storage.
+     * <p/>
+     * @param instance GlassFish server instance to be written.
+     * @throws IOException 
+     */
+    public static void writeInstanceToFile(
+            GlassfishInstance instance) throws IOException {
+        String glassfishRoot = instance.getGlassfishRoot();
+        if(glassfishRoot == null) {
+            LOGGER.log(Level.SEVERE,
+                    NbBundle.getMessage(GlassfishInstanceProvider.class,
+                    "MSG_NullServerFolder")); // NOI18N
+            return;
+        }
+
+        String url = instance.getDeployerUri();
+
+        // For GFV3 managed instance files
+        {
+            FileObject dir
+                    = org.netbeans.modules.glassfish.common.utils.ServerUtils
+                    .getRepositoryDir(GlassfishInstanceProvider.getProvider()
+                    .getInstancesDirFirstName(), true);
+            FileObject[] instanceFOs = dir.getChildren();
+            FileObject instanceFO = null;
+
+            for(int i = 0; i < instanceFOs.length; i++) {
+                if(url.equals(instanceFOs[i]
+                        .getAttribute(GlassfishModule.URL_ATTR))) {
+                    instanceFO = instanceFOs[i];
+                }
+            }
+
+            if(instanceFO == null) {
+                String name = FileUtil.findFreeFileName(dir, "instance", null); // NOI18N
+                instanceFO = dir.createData(name);
+            }
+
+            Map<String, String> attrMap = instance.getProperties();
+            for(Map.Entry<String, String> entry: attrMap.entrySet()) {
+                String key = entry.getKey();
+                if(!filterKey(key)) {
+                    Object currentValue = instanceFO.getAttribute(key);
+                    if (null != currentValue && currentValue.equals(entry.getValue())) {
+                        // do nothing
+                    } else {
+                        if (key.equals(GlassfishModule.PASSWORD_ATTR)) {
+                            String serverName = attrMap.get(GlassfishModule.DISPLAY_NAME_ATTR);
+                            String userName = attrMap.get(GlassfishModule.USERNAME_ATTR);
+                            Keyring.save(GlassfishInstance.passwordKey(
+                                    serverName, userName),
+                                    entry.getValue().toCharArray(),
+                                    "GlassFish administrator user password");
+                            LOGGER.log(Level.FINEST,
+                                    "{0} attribute stored in keyring: {1}",
+                                    new String[] {instance.getDisplayName(),
+                                        key});
+                        } else {
+                            instanceFO.setAttribute(key, entry.getValue());
+                            LOGGER.log(Level.FINEST,
+                                    "{0} attribute stored: {1} = {2}",
+                                    new String[] {instance.getDisplayName(),
+                                        key, entry.getValue()});
+                        }
+                    }
+                }
+            }
+            // Remove FO attributes that are no more stored in server instance.
+            for (Enumeration<String> foAttrs = instanceFO.getAttributes(); foAttrs.hasMoreElements(); ) {
+                String foAttr = foAttrs.nextElement();
+                if (!attrMap.containsKey(foAttr)) {
+                    instanceFO.setAttribute(foAttr, null);
+                    LOGGER.log(Level.FINEST,
+                            "{0} attribute deleted: {1}",
+                            new String[]{instance.getDisplayName(),
+                        foAttr});
+                }
+            }
+            
+            instance.putProperty(INSTANCE_FO_ATTR, instanceFO.getName());
+            instance.getCommonSupport().setFileObject(instanceFO);
+        }
+    }   
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
@@ -1269,34 +1462,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         Logger.getLogger("glassfish").finer("Creating GF Instance node [BASIC]"); // NOI18N
         return new Hk2InstanceNode(this, false);
     }
-    
+
     @Override
     public JComponent getCustomizer() {
-        // CommonServerSupport is stored in shared localLookup instance.
-        // But this should be made independent on CommonServerSupport object.
-        CommonServerSupport commonSupport = getCommonSupport();
-        JPanel commonCustomizer = new InstanceCustomizer(commonSupport);
-        JPanel vmCustomizer = new VmCustomizer(this);
-
-        Collection<JPanel> pages = new LinkedList<JPanel>();
-        Collection<? extends CustomizerCookie> lookupAll
-                = localLookup.lookupAll(CustomizerCookie.class);
-        for(CustomizerCookie cookie : lookupAll) {
-            pages.addAll(cookie.getCustomizerPages());
-        }
-        pages.add(vmCustomizer);
-
-        JTabbedPane tabbedPane = null;
-        for(JPanel page : pages) {
-            if(tabbedPane == null) {
-                tabbedPane = new JTabbedPane();
-                tabbedPane.add(commonCustomizer);
-            }
-            
-            tabbedPane.add(page);
-        }
-        
-        return tabbedPane;
+        return new GlassFishPropertiesCustomizer(this, localLookup);
     }
 
     @Override
@@ -1364,7 +1533,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     /**
      * Generate hash code for GlassFish instance data object.
      * <p/>
-     * Hash code is based on server addres, port, domain name and domains root
+     * Hash code is based on server address, port, domain name and domains root
      * directory.
      * <p/>
      * @return Hash code for GlassFish instance data object.

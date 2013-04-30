@@ -49,7 +49,10 @@ package org.netbeans.modules.javafx2.project.ui;
 
 import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
+import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -58,9 +61,10 @@ import org.openide.util.NbBundle;
  * @author Petr Somol
  * @author Tomas Zezula
  */
-public class JFXSigningPanel extends javax.swing.JPanel {
+public class JFXSigningPanel extends javax.swing.JPanel implements DocumentListener {
 
     private final JFXProjectProperties jfxProps;
+    private DialogDescriptor desc;
     
     /** Creates new form JFXSigningPanel */
     public JFXSigningPanel(JFXProjectProperties props) {
@@ -80,6 +84,40 @@ public class JFXSigningPanel extends javax.swing.JPanel {
         refreshComponents();
     }
 
+    void setDialogDescriptor(DialogDescriptor desc) {
+        this.desc = desc;
+        updateDialogButtonsAndMessage();
+    }
+    
+    void registerListeners() {
+        textFieldPath.getDocument().addDocumentListener(this);
+        passwordField.getDocument().addDocumentListener(this);
+        textFieldKeyAlias.getDocument().addDocumentListener(this);
+        passwordFieldKey.getDocument().addDocumentListener(this);
+    }
+    
+    void unregisterListeners() {
+        textFieldPath.getDocument().removeDocumentListener(this);
+        passwordField.getDocument().removeDocumentListener(this);
+        textFieldKeyAlias.getDocument().removeDocumentListener(this);
+        passwordFieldKey.getDocument().removeDocumentListener(this);
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        updateDialogButtonsAndMessage();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        updateDialogButtonsAndMessage();
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        updateDialogButtonsAndMessage();
+    }
+        
     private void refreshComponents() {
         boolean keyAlias = radioButtonSpecKey.isSelected();
         textFieldPath.setEnabled(keyAlias);
@@ -127,9 +165,10 @@ public class JFXSigningPanel extends javax.swing.JPanel {
         textFieldKeyAlias = new javax.swing.JTextField();
         labelKeyPassword = new javax.swing.JLabel();
         passwordFieldKey = new javax.swing.JPasswordField();
+        warningSigning = new javax.swing.JLabel();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
 
-        setPreferredSize(new java.awt.Dimension(604, 180));
+        setPreferredSize(new java.awt.Dimension(570, 215));
         setLayout(new java.awt.GridBagLayout());
 
         buttonGroupSigning.add(radioButtonSelfSign);
@@ -145,7 +184,7 @@ public class JFXSigningPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 0);
         add(radioButtonSelfSign, gridBagConstraints);
         radioButtonSelfSign.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "AN_JFXSigningPanel.radioButtonSelfSign.text")); // NOI18N
         radioButtonSelfSign.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "AD_JFXSigningPanel.radioButtonSelfSign.text")); // NOI18N
@@ -178,7 +217,7 @@ public class JFXSigningPanel extends javax.swing.JPanel {
         labelPath.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "AN_JFXSigningPanel.labelPath.text")); // NOI18N
         labelPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "AD_JFXSigningPanel.labelPath.text")); // NOI18N
 
-        textFieldPath.setText(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "JFXSigningPanel.textFieldPath.text")); // NOI18N
+        textFieldPath.setPreferredSize(new java.awt.Dimension(350, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -214,7 +253,6 @@ public class JFXSigningPanel extends javax.swing.JPanel {
         labelPassword.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "AN_JFXSigningPanel.labelPassword.text")); // NOI18N
         labelPassword.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "AD_JFXSigningPanel.labelPassword.text")); // NOI18N
 
-        passwordField.setText(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "JFXSigningPanel.passwordField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -235,7 +273,6 @@ public class JFXSigningPanel extends javax.swing.JPanel {
         labelKeyAlias.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "AN_JFXSigningPanel.labelKeyAlias.text")); // NOI18N
         labelKeyAlias.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "AD_JFXSigningPanel.labelKeyAlias.text")); // NOI18N
 
-        textFieldKeyAlias.setText(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "JFXSigningPanel.textFieldKeyAlias.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -256,7 +293,6 @@ public class JFXSigningPanel extends javax.swing.JPanel {
         labelKeyPassword.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "AN_JFXSigningPanel.labelKeyPassword.text")); // NOI18N
         labelKeyPassword.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "AD_JFXSigningPanel.labelKeyPassword.text")); // NOI18N
 
-        passwordFieldKey.setText(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "JFXSigningPanel.passwordFieldKey.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -265,19 +301,35 @@ public class JFXSigningPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 12, 0);
         add(passwordFieldKey, gridBagConstraints);
+
+        warningSigning.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        warningSigning.setPreferredSize(new java.awt.Dimension(400, 35));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 0);
+        add(warningSigning, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.weighty = 0.1;
         add(filler1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void radioButtonSpecKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioButtonSpecKeyActionPerformed
         refreshComponents();
+        updateDialogButtonsAndMessage();
     }//GEN-LAST:event_radioButtonSpecKeyActionPerformed
 
     private void radioButtonSelfSignActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioButtonSelfSignActionPerformed
         refreshComponents();
+        updateDialogButtonsAndMessage();
     }//GEN-LAST:event_radioButtonSelfSignActionPerformed
 
     private void buttonPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonPathActionPerformed
@@ -305,5 +357,25 @@ public class JFXSigningPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton radioButtonSpecKey;
     private javax.swing.JTextField textFieldKeyAlias;
     private javax.swing.JTextField textFieldPath;
+    private javax.swing.JLabel warningSigning;
     // End of variables declaration//GEN-END:variables
+
+    private void updateDialogButtonsAndMessage() {
+        if(!radioButtonSpecKey.isSelected()) {
+            warningSigning.setText(NbBundle.getMessage(JFXSigningPanel.class, "JFXSigningPanel.warningSigning.message")); //NOI18N
+            warningSigning.setVisible(true);
+        } else {
+            if(textFieldPath.getDocument().getLength()>0 && passwordField.getDocument().getLength()>5 && 
+                    textFieldKeyAlias.getDocument().getLength()>0 && passwordFieldKey.getDocument().getLength()>5 ) {
+                desc.setValid(true);
+                warningSigning.setText(null);
+                warningSigning.setVisible(false);
+            } else {
+                desc.setValid(false);
+                warningSigning.setText(NbBundle.getMessage(JFXSigningPanel.class, "JFXSigningPanel.WarnMissingInfo")); // NOI18N
+                warningSigning.setVisible(true);
+            }
+        }
+    }
+
 }

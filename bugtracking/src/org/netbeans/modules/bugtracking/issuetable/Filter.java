@@ -71,8 +71,8 @@ public abstract class Filter {
     public static Filter getNotSeenFilter(QueryImpl query) {
         return getFilter(query, NotSeenFilter.class);
     }
-    public static Filter getNewFilter(QueryImpl query) {
-        return getFilter(query, NewFilter.class);
+    public static Filter getNewFilter() {
+        return getFilter(null, NewFilter.class);
     }
     public static Filter getObsoleteDateFilter(QueryImpl query) {
         return getFilter(query, ObsoleteDateFilter.class);
@@ -135,9 +135,7 @@ public abstract class Filter {
         }
     }
     private static class NewFilter extends Filter {
-        private final QueryImpl query;
-        NewFilter(QueryImpl query) {
-            this.query = query;
+        NewFilter() {
         }
         @Override
         public String getDisplayName() {

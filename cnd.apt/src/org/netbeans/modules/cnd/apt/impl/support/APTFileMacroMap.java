@@ -176,7 +176,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     public State getState() {
         //Create new snapshot instance in the tree
         changeActiveSnapshotIfNeeded();
-        return new FileStateImpl(active.parent, sysMacroMap, crc1, crc2);
+        return new FileStateImpl(active.getParent(), sysMacroMap, crc1, crc2);
     }
 
     @Override
@@ -196,7 +196,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     private void initCache() {
         if (macroCache == NO_CACHE) {
             // fill cache to speedup getMacro
-            macroCache = APTMacroMapSnapshot.addAllMacros(active, null);
+            macroCache = active.getAll();
             if (crc1 == 0 && crc2 == 0) {
                 for(Map.Entry<CharSequence, APTMacro> entry : macroCache.entrySet()){
                     int i1 = entry.getKey().hashCode();

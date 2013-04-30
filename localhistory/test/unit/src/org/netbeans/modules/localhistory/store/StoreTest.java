@@ -790,7 +790,8 @@ public class StoreTest extends LHTestCase {
         final File file = new File(dataDir, "file");
         final Exception[] e = new Exception[1];
         final boolean event[] = new boolean[] {false};
-        store.addVersioningListener(new VersioningListener() {
+        VersioningListener list;
+        store.addVersioningListener(list = new VersioningListener() {
             @Override
             public void versioningEvent(VersioningEvent evt) {
                 event[0] = true;
@@ -803,14 +804,18 @@ public class StoreTest extends LHTestCase {
             }
         });
 
-        lhBlock.block(1000000);   // start blocking so that we can try to access after created, but before filed with data
-        changeFile(store, file, ts, "data2");    
-        long ts1 = System.currentTimeMillis();
-        while(!event[0] && !(System.currentTimeMillis() - ts1 < 10000)) {
-            Thread.sleep(200);
+        try {
+            lhBlock.block(1000000);   // start blocking so that we can try to access after created, but before filed with data
+            changeFile(store, file, ts, "data2");    
+            long ts1 = System.currentTimeMillis();
+            while(!event[0] && !(System.currentTimeMillis() - ts1 < 10000)) {
+                Thread.sleep(200);
+            }
+            lhBlock.unblock();   
+            lh.waitUntilDone();
+        } finally {
+            store.removeVersioningListener(list);
         }
-        lhBlock.unblock();   
-        lh.waitUntilDone();
     }
     
     private class ExceptionHandler extends Handler {

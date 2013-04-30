@@ -1,24 +1,24 @@
-aProt int
-aProtSt int
-aPub int
-aPubSt int
-bPriv int
-bPrivSt int
-bProt int
-bProtSt int
-bPub int
-bPubSt int
-dPub int
-dPubSt int
-aProtFun() void
-aProtFunSt() void
-aPubFun() void
-aPubFunSt() void
-bPrivFun() void
-bPrivFunSt() void
-bProtFun() void
-bProtFunSt() void
-bPubFun() void
-bPubFunSt() void
-dPubFun() void
-dPubFunSt() void
+aProt int	$	    d.aProt
+aProtSt int	$	    d.aProtSt
+aPub int	$	    d.aPub
+aPubSt int	$	    d.aPubSt
+bPriv int	$	    d.bPriv
+bPrivSt int	$	    d.bPrivSt
+bProt int	$	    d.bProt
+bProtSt int	$	    d.bProtSt
+bPub int	$	    d.bPub
+bPubSt int	$	    d.bPubSt
+dPub int	$	    d.dPub
+dPubSt int	$	    d.dPubSt
+aProtFun() void	$	    d.aProtFun()
+aProtFunSt() void	$	    d.aProtFunSt()
+aPubFun() void	$	    d.aPubFun()
+aPubFunSt() void	$	    d.aPubFunSt()
+bPrivFun() void	$	    d.bPrivFun()
+bPrivFunSt() void	$	    d.bPrivFunSt()
+bProtFun() void	$	    d.bProtFun()
+bProtFunSt() void	$	    d.bProtFunSt()
+bPubFun() void	$	    d.bPubFun()
+bPubFunSt() void	$	    d.bPubFunSt()
+dPubFun() void	$	    d.dPubFun()
+dPubFunSt() void	$	    d.dPubFunSt()

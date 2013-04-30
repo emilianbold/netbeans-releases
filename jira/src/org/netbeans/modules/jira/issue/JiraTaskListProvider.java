@@ -67,7 +67,7 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.jira.Jira;
@@ -551,9 +551,9 @@ public final class JiraTaskListProvider extends TaskListIssueProvider implements
     private NbJiraIssue getIssue(final JiraRepository repository, final String issueKey) {
         assert !EventQueue.isDispatchThread();
         // XXX is there a simpler way to obtain an issue?
-        int status = repository.getIssueCache().getStatus(issueKey);
+        IssueCache.Status status = repository.getIssueCache().getStatus(issueKey);
         final NbJiraIssue[] issue = new NbJiraIssue[1];
-        if (status == IssueCache.ISSUE_STATUS_UNKNOWN) { // not yet cached
+        if (status == IssueCache.Status.ISSUE_STATUS_UNKNOWN) { // not yet cached
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {

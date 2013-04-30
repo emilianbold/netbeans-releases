@@ -45,6 +45,7 @@ package org.netbeans.modules.csl.editor.fold;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
 import org.netbeans.modules.csl.core.AbstractTaskFactory;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -71,8 +72,15 @@ public final class GsfFoldManagerTaskFactory extends AbstractTaskFactory {
     protected Collection<? extends SchedulerTask> createTasks(Language l, Snapshot snapshot) {
         FileObject file = snapshot.getSource().getFileObject();
         if (file != null) {
-            return Collections.singleton(GsfFoldManager.JavaElementFoldTask.getTask(file));
+            SchedulerTask t = GsfFoldManager.JavaElementFoldTask.getTask(file);
+            if (GsfFoldManager.LOG.isLoggable(Level.FINER)) {
+                GsfFoldManager.LOG.log(Level.FINER, "Scheduling task for file: {0} -> {1}, Thread: {2}", new Object[] { file, t, Thread.currentThread() });
+            }
+            return Collections.singleton(t);
         } else {
+            if (GsfFoldManager.LOG.isLoggable(Level.FINE)) {
+                GsfFoldManager.LOG.log(Level.FINE, "FileObject is null: {0}", snapshot.getSource());
+            }
             return null;
         }
     }

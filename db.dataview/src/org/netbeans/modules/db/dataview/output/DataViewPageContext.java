@@ -173,10 +173,6 @@ class DataViewPageContext {
         return (isLastPage() && model.getRowCount() <= pageSize);
     }
 
-    boolean hasDataRows() {
-        return model.getRowCount() > 0;
-    }
-
     String pageOf() {
         String curPage = NbBundle.getMessage(DataViewUI.class, "LBL_not_available");
         String totalPages = NbBundle.getMessage(DataViewUI.class, "LBL_not_available");

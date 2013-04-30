@@ -189,7 +189,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
     /**
      * Loads data over network.
      */
-    synchronized void init() throws IOException {
+    public synchronized void init() throws IOException {
         if (remoteFile != null || revision == null) return;
         if (isDirectory || baseFile != null && baseFile.isDirectory()) {
             mimeType = "content/unknown"; //NOI18N

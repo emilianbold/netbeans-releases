@@ -62,6 +62,7 @@ import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.ToolbarPool;
 import org.openide.cookies.InstanceCookie;
+import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFilter;
@@ -84,12 +85,14 @@ import org.openide.util.datatransfer.ExTransferable;
  *
  * @author  Stanislav Aubrecht
  */
-public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnable {
+public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnable, ExplorerManager.Provider {
 
     private static final Logger LOG = Logger.getLogger(ConfigureToolbarPanel.class.getName());
     private static WeakReference<Dialog> dialogRef; // is weak reference necessary?
     
     private Node root;
+
+    private final ExplorerManager explorerManager = new ExplorerManager();
 
     /** Creates new form ConfigureToolbarPanel */
     private ConfigureToolbarPanel() {
@@ -116,21 +119,21 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         return new FolderActionNode(new AbstractNode(df.createNodeChildren(new ActionIconDataFilter())));
     }
     
+    @Override
     public void run() {
-        ActionsTree tree = new ActionsTree( root );
+        final ActionsTree tree = new ActionsTree();
         tree.getAccessibleContext().setAccessibleDescription( getBundleString("ACSD_ActionsTree") );
         tree.getAccessibleContext().setAccessibleName( getBundleString("ACSN_ActionsTree") );
         palettePanel.removeAll();
-        palettePanel.setBorder( BorderFactory.createEmptyBorder() );
-        JScrollPane scrollPane = new JScrollPane(tree);
-        scrollPane.getVerticalScrollBar().getAccessibleContext().setAccessibleName( getBundleString("ACSN_ActionsScrollBar") );
-        scrollPane.getVerticalScrollBar().getAccessibleContext().setAccessibleDescription( getBundleString("ACSD_ActionsScrollBar") );
-        palettePanel.add( scrollPane, BorderLayout.CENTER );
+        palettePanel.setBorder( BorderFactory.createEtchedBorder() );
+        palettePanel.add( tree, BorderLayout.CENTER );
         lblHint.setLabelFor( tree );
         invalidate();
         validate();
         repaint();
         setCursor( Cursor.getDefaultCursor() );
+        explorerManager.setRootContext( root );
+        tree.expandAll();
     }
     
     public static void showConfigureDialog() {
@@ -391,6 +394,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
             if( null != subFolder && subFolder.getChildren().length == 0 ) {
                 SwingUtilities.invokeLater( new Runnable() {
 
+                    @Override
                     public void run() {
                         try {
                             subFolder.delete();
@@ -407,6 +411,11 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                 });
             }
         }
+    }
+
+    @Override
+    public ExplorerManager getExplorerManager() {
+        return explorerManager;
     }
     
     private static class FolderActionNode extends FilterNode {

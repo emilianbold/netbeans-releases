@@ -90,7 +90,7 @@ public final class TreeViewTest extends NbTestCase {
     }
 
     protected @Override int timeOut() {
-        return 500000;
+        return 50000;
     }
     
     private ExplorerWindow testWindow;
@@ -537,6 +537,7 @@ public final class TreeViewTest extends NbTestCase {
         doTestNodesGCedAfterSetChildren(true);
     }
 
+    @RandomlyFails // NB-Core-Build #9918: Unstable, NB-Core-Build #9919 on the same sources passed
     public void testNodesGCedAfterSetChildrenEager() {
         doTestNodesGCedAfterSetChildren(false);
     }
@@ -572,6 +573,7 @@ public final class TreeViewTest extends NbTestCase {
         assertGC("should gc children", ref);
     }
 
+    @RandomlyFails // NB-Core-Build Unstable: #9954, locally passes
     public void testSetSelectedNodeIsSynchronizedEager() throws Exception {
         doSetSelectedNodeIsSynchronized(false);
     }
@@ -631,6 +633,7 @@ public final class TreeViewTest extends NbTestCase {
         doTestPartialNodeSelection(false);
     }
 
+    @RandomlyFails // NB-Core-Build Unstable: #9953, locally passes
     public void testPartialNodeSelectionLazy() throws Exception {
         doTestPartialNodeSelection(true);
     }

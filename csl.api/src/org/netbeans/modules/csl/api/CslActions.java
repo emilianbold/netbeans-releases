@@ -43,6 +43,7 @@
 package org.netbeans.modules.csl.api;
 
 import javax.swing.Action;
+import org.netbeans.spi.editor.typinghooks.CamelCaseInterceptor;
 
 /**
  * A factory class for creating actions provided by CSL.
@@ -119,6 +120,7 @@ public final class CslActions {
      * @param originalAction - the action to wrap around; may be {@code null}.
      * @param next - {@code true} for navigating to next; {@code false} for previous.
      * 
+     * @deprecated use {@link CamelCaseInterceptor} instead
      * @return the action; never {@code null}.
      */
     public static Action createCamelCasePositionAction(Action originalAction, boolean next) {
@@ -132,6 +134,7 @@ public final class CslActions {
      * @param originalAction - the action to wrap around; may be {@code null}.
      * @param next - {@code true} for navigating to next; {@code false} for previous.
      *
+     * @deprecated use {@link CamelCaseInterceptor} instead
      * @return the action; never {@code null}.
      */
     public static Action createDeleteToCamelCasePositionAction(Action originalAction, boolean next) {
@@ -145,6 +148,7 @@ public final class CslActions {
      * @param originalAction - the action to wrap around; may be {@code null}.
      * @param next - {@code true} for navigating to next; {@code false} for previous.
      *
+     * @deprecated use {@link CamelCaseInterceptor} instead
      * @return the action; never {@code null}.
      */
     public static Action createSelectCamelCasePositionAction(Action originalAction, boolean next) {

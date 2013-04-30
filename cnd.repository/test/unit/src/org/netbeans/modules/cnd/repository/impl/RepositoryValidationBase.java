@@ -37,18 +37,11 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.util.CsmTracer;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImplTest;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
+import org.netbeans.modules.cnd.repository.util.RepositoryTestSupport;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -109,32 +102,10 @@ public class RepositoryValidationBase extends TraceModelTestBase {
                 }
             }
         }
-        Map<CharSequence, FileImpl> map = new TreeMap<CharSequence, FileImpl>();
-        for (CsmFile f : getTraceModel().getProject().getAllFiles()){
-            map.put(f.getAbsolutePath(), (FileImpl)f);
-            if (!f.isParsed()){
-                if (returnOnShutdown()) {
-                    return;
-                }
-                System.err.printf("not parsed on closing: %s\n", f.toString());
-                CndUtils.threadsDump();
-            }
-        }
         if (dumpModel()) {
-            for (FileImpl file : map.values()){
-                CsmTracer tracer = new CsmTracer(false);
-                tracer.setDeep(true);
-                tracer.setDumpTemplateParameters(false);
-                tracer.setTestUniqueName(false);
-                tracer.dumpModel(file);
-            }
-            dumpProjectContainers(getTraceModel().getProject());
+            RepositoryTestSupport.dumpCsmProject(getTraceModel().getProject(), System.out, returnOnShutdown());
             super.postTest(args, params);
         }
-    }
-
-    private void dumpProjectContainers(CsmProject project){
-        ModelImplTest.dumpProjectContainers(System.out, (ProjectBase) project, true);
     }
 
     protected static String getGoldenDirectory() {

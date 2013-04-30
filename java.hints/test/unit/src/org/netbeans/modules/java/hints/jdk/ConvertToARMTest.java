@@ -1223,4 +1223,26 @@ public class ConvertToARMTest extends NbTestCase {
                               "     }\n" +
                               "}\n");
     }
+
+    public void test227787() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.io.*;\n" +
+                       "public class Test {\n" +
+                       "    public void test() throws Exception {\n" +
+                       "         try (InputStream in = new FileInputStream(\"\")) {\n" +
+                       "              in.read();\n" +
+                       "              OutputStream out = new FileOutputStream(\"\");\n" +
+                       "              int r;\n" +
+                       "              while ((r = in.read()) != (-1)) {\n" +
+                       "                    out.write(r);\n" +
+                       "              }\n" +
+                       "              out.close();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(ConvertToARM.class)
+                .assertWarnings("6:27-6:30:verifier:TXT_ConvertToARM");
+    }
 }

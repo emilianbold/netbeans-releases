@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.mercurial.ui.annotate;
 
-import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -222,18 +221,22 @@ public class AnnotateAction extends ContextAction {
             ab.setAnnotationMessage(NbBundle.getMessage(AnnotateAction.class, "CTL_AnnotationFailed")); // NOI18N;
             return;
         }
-        if (list == null) return;
+        if (list == null) {
+            ab.setAnnotationMessage(NbBundle.getMessage(AnnotateAction.class, "CTL_AnnotationFailed")); // NOI18N;
+            return;
+        }
         AnnotateLine [] lines = toAnnotateLines(list);
         List<String> revisions = getRevisionNumbers(lines);
         HgLogMessage initialRevision = null;
+        HgLogMessage [] logs = new HgLogMessage[0];
         if (!revisions.isEmpty()) {
-            HgLogMessage [] logs = HgCommand.getLogMessages(repository, Collections.singleton(file), 
+            logs = HgCommand.getLogMessages(repository, Collections.singleton(file), 
                     revisions.get(0), "0", false, false, false, 1, Collections.<String>emptyList(), OutputLogger.getLogger(null), true);
             if (logs.length == 1) {
                 initialRevision = logs[0];
             }
+            logs = HgCommand.getRevisionInfo(repository, revisions, progress.getLogger());
         }
-        HgLogMessage [] logs = HgCommand.getRevisionInfo(repository, revisions, progress.getLogger());
         if (progress.isCanceled()) {
             return;
         }

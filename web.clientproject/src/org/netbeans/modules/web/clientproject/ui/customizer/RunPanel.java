@@ -57,8 +57,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport.BrowserComboBoxModel;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport.BrowserComboBoxModel;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
@@ -131,8 +131,15 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     }
 
     private void init() {
-        jBrowserComboBox.setRenderer(WebBrowserSupport.createBrowserRenderer());
-        jBrowserComboBox.setModel(WebBrowserSupport.createBrowserModel(uiProperties.getSelectedBrowser(), false));
+        jBrowserComboBox.setRenderer(BrowserUISupport.createBrowserRenderer());
+        String selectedBrowser = uiProperties.getSelectedBrowser();
+        if (selectedBrowser == null || BrowserUISupport.getBrowser(selectedBrowser) == null) {
+            WebBrowser wb = project.getProjectWebBrowser();
+            if (wb != null) {
+                selectedBrowser = wb.getId();
+            }
+        }
+        jBrowserComboBox.setModel(BrowserUISupport.createBrowserModel(selectedBrowser, false, true));
         updateConfigurationCustomizer();
         // start file
         jFileToRunTextField.setText(uiProperties.getStartFile());

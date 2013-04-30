@@ -318,20 +318,12 @@ public class WindowsNativeUtils extends NativeUtils {
             // tmp = server\folder;
             File parent = file;
             File previous = null;
-            File can;
-            try {
-                while(parent.getParentFile()!=null) {
-                    can = parent.getCanonicalFile();
-                    previous = parent;
-                    parent = parent.getParentFile();
-                }
-                
-            } catch (IOException e) {
-                // this occurs when file path is equal the server name : \\server
-                // then go to finally and return previous file
-            } finally {
-                return previous;
+            while(parent.getParentFile()!=null) {
+                previous = parent;
+                parent = parent.getParentFile();
             }
+
+            return previous;
         } else {
             return super.getRoot(file);
         }

@@ -33,8 +33,6 @@ systemPropertiesEnum = (Enumeration) systemProperties.propertyNames ();
 } catch (Exception e){
 error = e.getMessage ();
 }
-
-
 %>
 
 
@@ -53,7 +51,6 @@ error = e.getMessage ();
 <div>
 
 <%
-
 out.println ("The system container is " + serverInfo + "<br />");
 out.println ("<hr />");
 

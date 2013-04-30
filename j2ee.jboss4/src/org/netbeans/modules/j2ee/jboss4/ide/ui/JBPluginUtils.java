@@ -60,6 +60,8 @@ import java.util.jar.Attributes;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.openide.filesystems.JarFileSystem;
@@ -100,7 +102,10 @@ public class JBPluginUtils {
 
     public static final String LIB = "lib" + File.separator;
 
-    public static final String MODULES = "modules" + File.separator;
+    public static final String MODULES_BASE = "modules" + File.separator;
+
+    public static final String MODULES_BASE_7 = "modules" + File.separator + "system"
+            + File.separator + "layers" + File.separator + "base" + File.separator;
 
     public static final String CLIENT = "client" + File.separator;
 
@@ -278,6 +283,15 @@ public class JBPluginUtils {
                     "jboss-modules.jar"); // NOI18N
         }
         return serverRequirements7x;
+    }
+
+    @NonNull
+    public static String getModulesBase(String serverRoot) {
+        File file = new File(serverRoot, MODULES_BASE_7);
+        if (file.isDirectory()) {
+            return MODULES_BASE_7;
+        }
+        return MODULES_BASE;
     }
 
     //------------  getting exists servers---------------------------
@@ -728,19 +742,23 @@ public class JBPluginUtils {
      * @param serverPath path to the server directory
      * @return specification version of the server
      */
+    @CheckForNull
     public static Version getServerVersion(File serverPath) {
         assert serverPath != null : "Can't determine version with null server path"; // NOI18N
 
         File systemJarFile = new File(serverPath, "lib/jboss-system.jar"); // NOI18N
         Version version = getVersion(systemJarFile);
-        if(version == null) {
+        if (version == null) {
             // check for JBoss AS 7
-            File serverDir = new File(serverPath, "modules/org/jboss/as/server/main");
-            for (File jarFile : serverDir.listFiles(new JarFileFilter())) {
-                version = getVersion(jarFile);
-                if(version != null) {
-                    break;
-    }
+            File serverDir = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org/jboss/as/server/main");
+            File[] files = serverDir.listFiles(new JarFileFilter());
+            if (files != null) {
+                for (File jarFile : files) {
+                    version = getVersion(jarFile);
+                    if(version != null) {
+                        break;
+                    }
+                }
             }
         }
         return version;

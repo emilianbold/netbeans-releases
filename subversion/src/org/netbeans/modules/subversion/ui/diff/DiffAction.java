@@ -44,16 +44,23 @@
 
 package org.netbeans.modules.subversion.ui.diff;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
 import java.io.File;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.ui.actions.ActionUtils;
 import org.netbeans.modules.subversion.ui.status.SyncFileNode;
 import org.netbeans.modules.subversion.util.ClientCheckSupport;
+import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Diff action shows local changes
@@ -88,12 +95,57 @@ public class DiffAction extends ContextAction {
         return ICON_RESOURCE;
     }
     
-    public static void diff(Context ctx, int type, String contextName, boolean initialStatusRefreshDisabled) {
-        MultiDiffPanel panel = new MultiDiffPanel(ctx, type, contextName, initialStatusRefreshDisabled); // spawns bacground DiffPrepareTask
-        DiffTopComponent tc = new DiffTopComponent(panel);
-        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); // NOI18N
-        tc.open();
-        tc.requestActive();        
+    public static void diff (final Context ctx, final int type, final String contextName,
+            final boolean initialStatusRefreshDisabled) {
+        Utils.post(new Runnable() {
+            @Override
+            public void run () {
+                SVNUrl repositoryUrl = null, fileUrl = null;
+                RepositoryFile left = null, right = null;
+                File[] roots = SvnUtils.getActionRoots(ctx, false);
+                if (roots != null) {
+                    try {
+                        File interestingFile;
+                        if(roots.length == 1) {
+                            interestingFile = roots[0];
+                        } else {
+                            interestingFile = SvnUtils.getPrimaryFile(roots[0]);
+                        }
+                        repositoryUrl = SvnUtils.getRepositoryRootUrl(interestingFile);
+                        fileUrl = SvnUtils.getRepositoryUrl(interestingFile);
+                    } catch (SVNClientException ex) {
+                        Subversion.LOG.log(Level.INFO, null, ex);
+                    }
+                }
+                if (repositoryUrl != null && fileUrl != null) {
+                    if (type == Setup.DIFFTYPE_LOCAL) {
+                        left = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.BASE);
+                        right = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.WORKING);
+                    } else if (type == Setup.DIFFTYPE_REMOTE) {
+                        left = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD);
+                        right = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.BASE);
+                    } else {
+                        left = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD);
+                        right = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.WORKING);
+                    }
+                }
+                final SVNUrl fRepositoryUrl = repositoryUrl;
+                final SVNUrl fFileUrl = fileUrl;
+                final RepositoryFile fLeft = left;
+                final RepositoryFile fRight = right;
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        MultiDiffPanel panel = new MultiDiffPanel(ctx, type, contextName, initialStatusRefreshDisabled,
+                                fRepositoryUrl, fFileUrl, fLeft, fRight);
+                        DiffTopComponent tc = new DiffTopComponent(panel);
+                        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); // NOI18N
+                        tc.open();
+                        tc.requestActive();        
+                    }
+                });
+            }
+        });
     }
 
     public static void diff(File file, String rev1, String rev2) {
@@ -140,4 +192,64 @@ public class DiffAction extends ContextAction {
         }
         return fromSubversionView;
     }   
+    
+    public static class DiffToBaseAction extends ContextAction {
+        @Override
+        protected String getBaseName(Node[] nodes) {
+            return "CTL_MenuItem_DiffToBase"; //NOI18N
+        }
+
+        @Override
+        protected int getFileEnabledStatus() {
+            return getDirectoryEnabledStatus();
+        }
+
+        @Override
+        protected int getDirectoryEnabledStatus() {
+            return FileInformation.STATUS_MANAGED 
+                 & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED; 
+        }
+
+        @Override
+        protected void performContextAction (final Node[] nodes) {
+            ClientCheckSupport.getInstance().runInAWTIfAvailable(ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
+                @Override
+                public void run() {
+                    Context ctx = getContext(nodes);
+                    String contextName = getContextDisplayName(nodes);
+                    diff(ctx, Setup.DIFFTYPE_LOCAL, contextName, isSvnNodes(nodes));
+                }
+            });
+        }
+    }
+    
+    public static class DiffToRepositoryAction extends ContextAction {
+        @Override
+        protected String getBaseName(Node[] nodes) {
+            return "CTL_MenuItem_DiffToRepository"; //NOI18N
+        }
+
+        @Override
+        protected int getFileEnabledStatus() {
+            return getDirectoryEnabledStatus();
+        }
+
+        @Override
+        protected int getDirectoryEnabledStatus() {
+            return FileInformation.STATUS_MANAGED 
+                 & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED; 
+        }
+
+        @Override
+        protected void performContextAction (final Node[] nodes) {
+            ClientCheckSupport.getInstance().runInAWTIfAvailable(ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
+                @Override
+                public void run() {
+                    Context ctx = getContext(nodes);
+                    String contextName = getContextDisplayName(nodes);
+                    diff(ctx, Setup.DIFFTYPE_ALL, contextName, isSvnNodes(nodes));
+                }
+            });
+        }
+    }
 }

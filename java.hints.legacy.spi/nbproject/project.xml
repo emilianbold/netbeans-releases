@@ -97,6 +97,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.apisupport.ant</friend>
                 <friend>org.netbeans.modules.javadoc</friend>
                 <friend>org.netbeans.modules.javahints</friend>
                 <friend>org.netbeans.modules.maven.hints</friend>

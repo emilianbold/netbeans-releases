@@ -107,11 +107,6 @@ public class HookRepository extends TestRepository {
     }
 
     @Override
-    public Lookup getLookup() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) { }
 
     @Override

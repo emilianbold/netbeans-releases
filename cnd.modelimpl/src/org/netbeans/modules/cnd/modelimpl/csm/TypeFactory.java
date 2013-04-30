@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
@@ -351,13 +352,29 @@ public class TypeFactory {
         public NameBuilder getNameBuilder() {
             return nameBuilder;
         }
-        
+                
         public void setClassifier(CsmClassifier cls) {
             this.cls = cls;
         }
+        
+        public CsmClassifier getClassifier() {
+            return cls;
+        }        
 
         public void setTypedef() {
             this.typedef = true;
+        }
+
+        public void setConst() {
+            this._const = true;
+        }
+        
+        public void incPointerDepth() {
+            this.pointerDepth++;
+        }
+        
+        public void setReference() {
+            this.reference = true;
         }
         
         public void setSimpleTypeSpecifier(CharSequence specifier) {
@@ -406,6 +423,9 @@ public class TypeFactory {
             } else if (specifierBuilder != null) {
                 CsmClassifier classifier = BuiltinTypes.getBuiltIn(specifierBuilder.toString());
                 type = new TypeImpl(classifier, pointerDepth, reference, arrayDepth, _const, getFile(), getStartOffset(), getEndOffset());
+            } else if (cls != null) {
+                type = new TypeImpl(cls, pointerDepth, reference, arrayDepth, _const, getFile(), getStartOffset(), getEndOffset());
+                type.setTypeOfTypedef();    
             }
             return TemplateUtils.checkTemplateType(type, scope);
         }
@@ -419,7 +439,7 @@ public class TypeFactory {
                     super.toString() + '}'; //NOI18N
         }
     }
-   
+    
     public static CsmType createType(CsmType type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
         if(type.getPointerDepth() == pointerDepth &&
             type.isReference() == reference &&
@@ -466,6 +486,29 @@ public class TypeFactory {
         type.setQName(l.toArray(new CharSequence[l.size()]));
         type.initClassifier(cls);
         return type;
+    }
+    
+    public static CsmType createFunPtrType(CsmFile file, 
+                                           int pointerDepth, 
+                                           boolean reference, 
+                                           int arrayDepth, 
+                                           boolean _const, 
+                                           int startOffset, 
+                                           int endOffset,
+                                           Collection<CsmParameter> functionParams,
+                                           CsmType returnType)
+    {
+        return new TypeFunPtrImpl(
+                returnType.getClassifier(), 
+                file, 
+                pointerDepth,
+                reference, 
+                arrayDepth,
+                _const, 
+                startOffset, 
+                endOffset, 
+                functionParams
+        );
     }
     
     

@@ -116,27 +116,27 @@ final class ModuleListParser {
     /**
      * Find all NBM projects in a root, possibly from cache.
      */
-    private static Map<String,Entry> scanNetBeansOrgSources(File root, Map<String,String> properties, Project project) throws IOException {
+    private static Map<String,Entry> scanNetBeansOrgSources(File root, Map<String,Object> properties, Project project) throws IOException {
         Map<String,Entry> entries = SOURCE_SCAN_CACHE.get(root);
         if (entries == null) {
             // Similar to #62221: if just invoked from a module in standard clusters, only scan those clusters (faster):
             Set<String> standardModules = new HashSet<String>();
             boolean doFastScan = false;
-            String basedir = properties.get("basedir");
+            String basedir = (String) properties.get("basedir");
             if (basedir != null) {
                 File basedirF = new File(basedir);
-                String clusterList = properties.get("nb.clusters.list");
+                String clusterList = (String) properties.get("nb.clusters.list");
                 if (clusterList == null) {
-                    String config = properties.get("cluster.config");
+                    String config = (String) properties.get("cluster.config");
                     if (config != null) {
-                        clusterList = properties.get("clusters.config." + config + ".list");
+                        clusterList = (String) properties.get("clusters.config." + config + ".list");
                     }
                 }
                 if (clusterList != null) {
                     StringTokenizer tok = new StringTokenizer(clusterList, ", ");
                     while (tok.hasMoreTokens()) {
                         String clusterName = tok.nextToken();
-                        String moduleList = properties.get(clusterName);
+                        String moduleList = (String) properties.get(clusterName);
                         if (moduleList != null) {
                             // Hack to treat libs.junit4 as if it were in platform for purposes of building, yet build to another cluster.
                             if (clusterName.equals("nb.cluster.platform")) {
@@ -156,7 +156,7 @@ final class ModuleListParser {
                     }
                 }
             }
-            String p = properties.get("netbeans.dest.dir"); // NOI18N
+            String p = (String) properties.get("netbeans.dest.dir"); // NOI18N
             int hash = root.hashCode() * 7 + (p == null ? 1 : p.hashCode());
             File scanCache = new File(System.getProperty("java.io.tmpdir"), "nb-scan-cache-" + String.format("%x", hash) + "-" + (doFastScan ? "standard" : "full") + ".ser");
             if (scanCache.isFile()) {
@@ -279,7 +279,7 @@ final class ModuleListParser {
     /**
      * Check a single dir to see if it is an NBM project, and if so, register it.
      */
-    private static boolean scanPossibleProject(File dir, Map<String,Entry> entries, Map<String,String> properties,
+    private static boolean scanPossibleProject(File dir, Map<String,Entry> entries, Map<String,Object> properties,
             String path, ModuleType moduleType, Project project, Map<File,Long[]> timestampsAndSizes) throws IOException {
         File nbproject = new File(dir, "nbproject");
         File projectxml = new File(nbproject, "project.xml");
@@ -375,17 +375,17 @@ final class ModuleListParser {
             assert path != null;
             // Find the associated cluster.
             // first try direct mapping in nbbuild/netbeans/moduleCluster.properties
-            String clusterDir = properties.get(path + ".dir");
+            String clusterDir = (String) properties.get(path + ".dir");
             if (clusterDir != null) {
                 clusterDir = clusterDir.substring(clusterDir.lastIndexOf('/') + 1);
             } else {
                 // not found, try indirect nbbuild/cluster.properties
-                for (Map.Entry<String, String> entry : properties.entrySet()) {
-                    String val = entry.getValue();
+                for (Map.Entry<String,Object> entry : properties.entrySet()) {
+                    String val = (String) entry.getValue();
                     String[] modules = val.split(", *");
                     if (Arrays.asList(modules).contains(path)) {
                         String key = entry.getKey();
-                        clusterDir = properties.get(key + ".dir");
+                        clusterDir = (String) properties.get(key + ".dir");
                         if (clusterDir != null) {
                             faketask.setName("cluster.dir");
                             faketask.setValue(clusterDir);
@@ -441,7 +441,7 @@ final class ModuleListParser {
             File origBin = null;
             if (binaryOrigin != null) {
                 String reltext = XMLUtil.findText(binaryOrigin);
-                String nball = properties.get("nb_all");
+                String nball = (String) properties.get("nb_all");
                 if (nball != null) {
                     faketask.setName("nb_all");
                     faketask.setValue(nball);
@@ -631,9 +631,9 @@ final class ModuleListParser {
             }
     }
     
-    private static Map<String,Entry> scanSuiteSources(Map<String,String> properties, Project project) throws IOException {
-        File basedir = new File(properties.get("basedir"));
-        String suiteDir = properties.get("suite.dir");
+    private static Map<String,Entry> scanSuiteSources(Map<String,Object> properties, Project project) throws IOException {
+        File basedir = new File((String) properties.get("basedir"));
+        String suiteDir = (String) properties.get("suite.dir");
         if (suiteDir == null) {
             throw new IOException("No definition of suite.dir in " + basedir);
         }
@@ -656,7 +656,7 @@ final class ModuleListParser {
         return entries;
     }
     
-    private static void doScanSuite(Map<String,Entry> entries, File suite, Map<String,String> properties, Project project) throws IOException {
+    private static void doScanSuite(Map<String,Entry> entries, File suite, Map<String,Object> properties, Project project) throws IOException {
         Project fakeproj = new Project();
         fakeproj.setBaseDir(suite); // in case ${basedir} is used somewhere
         Property faketask = new Property();
@@ -681,9 +681,9 @@ final class ModuleListParser {
         }
     }
     
-    private static Entry scanStandaloneSource(Map<String,String> properties, Project project) throws IOException {
+    private static Entry scanStandaloneSource(Map<String,Object> properties, Project project) throws IOException {
         if (properties.get("project") == null) return null; //Not a standalone module
-        File basedir = new File(properties.get("project"));
+        File basedir = new File((String) properties.get("project"));
         Entry entry = STANDALONE_SCAN_CACHE.get(basedir);
         if (entry == null) {
             Map<String,Entry> entries = new HashMap<String,Entry>();
@@ -718,16 +718,16 @@ final class ModuleListParser {
      * @param type the type of project
      * @param project a project ref, only for logging (may be null with no loss of semantics)
      */
-    public ModuleListParser(Map<String,String> properties, ModuleType type, Project project) throws IOException {
-        String nball = properties.get("nb_all");
-        File basedir = new File(properties.get("basedir"));
+    public ModuleListParser(Map<String,Object> properties, ModuleType type, Project project) throws IOException {
+        String nball = (String) properties.get("nb_all");
+        File basedir = new File((String) properties.get("basedir"));
         final FileUtils fu = FileUtils.getFileUtils();
 
         if (type != ModuleType.NB_ORG) {
             // add extra clusters
-            String suiteDirS = properties.get("suite.dir");
+            String suiteDirS = (String) properties.get("suite.dir");
             boolean hasSuiteDir = suiteDirS != null && suiteDirS.length() > 0;
-            String clusterPath = properties.get("cluster.path.final");
+            String clusterPath = (String) properties.get("cluster.path.final");
             File[] clusters = null;
 
             if (clusterPath != null) {
@@ -769,7 +769,7 @@ final class ModuleListParser {
             }
         } else {
             // netbeans.org module.
-            String buildS = properties.get("netbeans.dest.dir");
+            String buildS = (String) properties.get("netbeans.dest.dir");
             if (buildS == null) {
                 throw new IOException("No definition of netbeans.dest.dir in " + basedir);
             }
@@ -777,9 +777,9 @@ final class ModuleListParser {
             // Neither operation is likely to be needed, but just in case.
             File build = fu.normalize(fu.resolveFile(basedir, buildS).getAbsolutePath());
             if (nball == null) {
-                throw new IOException("You must declare either <suite-component/> or <standalone/> for an external module in " + new File(properties.get("basedir")));
+                throw new IOException("You must declare either <suite-component/> or <standalone/> for an external module in " + new File((String) properties.get("basedir")));
             }
-            String nbBuildDir = properties.get("nb.build.dir");
+            String nbBuildDir = (String) properties.get("nb.build.dir");
             if (!build.equals(new File(new File(nball, "nbbuild"), "netbeans")) && !(nbBuildDir != null && build.equals(new File(nbBuildDir, "netbeans")))) {
                 // Potentially orphaned module to be built against specific binaries, plus perhaps other source deps.
                 if (!build.isDirectory()) {

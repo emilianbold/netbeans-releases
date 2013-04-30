@@ -53,34 +53,24 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-
-import javax.swing.SwingUtilities;
-
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
+import org.netbeans.modules.websvc.rest.model.api.RestApplication;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -92,9 +82,9 @@ import org.openide.util.NbBundle;
  *
  * @author Nam Nguyen
  */
-@ProjectServiceProvider(service={RestSupport.class, WebRestSupport.class}, 
+@ProjectServiceProvider(service={RestSupport.class},
     projectType="org-netbeans-modules-maven/war")
-public class MavenProjectRestSupport extends WebRestSupport {
+public class MavenProjectRestSupport extends RestSupport {
 
     private static final String DEPLOYMENT_GOAL = "package";             //NOI18N   
 
@@ -116,117 +106,13 @@ public class MavenProjectRestSupport extends WebRestSupport {
     }
     
     @Override
-    public void ensureRestDevelopmentReady() throws IOException {
-        String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
-        WebRestSupport.RestConfig restConfig = null;
-        
-        /*WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        // Fix for BZ#217231 : don't check not Web projects
-        if ( webModule == null ){
-            return;
-        }*/
-        // Fix for BZ#217557 : do not show REST config dialog in JEE6 case
-        boolean hasJaxRs = hasJaxRsApi();
-        
-        if (!hasJaxRs && configType == null && getApplicationPathFromDD() == null) {
-            restConfig = setApplicationConfigProperty(false);
-            if (restConfig == WebRestSupport.RestConfig.DD) {
-                addResourceConfigToWebApp(restConfig.getResourcePath());
-            }
+    public String getBaseURL() {
+        WebApp webApp = null;
+        try {
+            webApp = getWebApp();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-
-        if ( SwingUtilities.isEventDispatchThread() ){
-            final WebRestSupport.RestConfig config = restConfig;
-            final IOException[] exception = new IOException[1];
-            Runnable runnable = new Runnable() {
-                
-                @Override
-                public void run() {
-                    try {
-                        addSwdpLibrary( config );
-                    }
-                    catch( IOException e ){
-                        exception[0] = e;
-                    }
-                }
-            };
-            AtomicBoolean cancel = new AtomicBoolean();
-            ProgressUtils.runOffEventDispatchThread( runnable , 
-                    NbBundle.getMessage(MavenProjectRestSupport.class, 
-                    "TTL_ExtendProjectClasspath"), cancel, false );  // NOI18N
-            if ( exception[0]!= null ){
-                throw exception[0];
-            }
-        }
-        else {
-            addSwdpLibrary( restConfig );
-        }
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.websvc.rest.spi.WebRestSupport#enableRestSupport(org.netbeans.modules.websvc.rest.spi.WebRestSupport.RestConfig)
-     */
-    @Override
-    public void enableRestSupport( final RestConfig config ) {
-        if ( SwingUtilities.isEventDispatchThread() ){
-            Runnable runnable = new Runnable() {
-                
-                @Override
-                public void run() {
-                    enableRestSupport(config);
-                }
-            };
-            AtomicBoolean cancel = new AtomicBoolean();
-            ProgressUtils.runOffEventDispatchThread( runnable , 
-                    NbBundle.getMessage(MavenProjectRestSupport.class, 
-                    "TTL_ExtendProjectClasspath"), cancel, false );  // NOI18N
-        }
-        else {
-            super.enableRestSupport(config);
-        }
-    }
-
-    @Override
-    public void removeRestDevelopmentReadiness() throws IOException {
-        removeResourceConfigFromWebApp();
-        removeSwdpLibrary(new String[]{ClassPath.COMPILE} );
-    }
-
-    @Override
-    public boolean isReady() {
-        return isRestSupportOn() && hasSwdpLibrary() && hasRestServletAdaptor();
-    }
-    
-    @Override
-    public String getContextRootURL() {
-        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        String serverInstanceID = provider.getServerInstanceID();
-        if (WSStackUtils.DEVNULL.equals(serverInstanceID)) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(RestSupport.class, "MSG_MissingServer"), 
-                    NotifyDescriptor.ERROR_MESSAGE));
-            return "";
-        } 
-        else {
-            return super.getContextRootURL();
-        }
-    }
-
-    @Override
-    public boolean hasSwdpLibrary() {
-        SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(
-        JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (srcGroups.length > 0) {
-            ClassPath classPath = ClassPath.getClassPath(srcGroups[0].getRootFolder(), ClassPath.COMPILE);
-            FileObject contextFO = classPath.findResource("javax/ws/rs/core/Context.class"); // NOI18N
-            return contextFO != null;
-        }
-        return false;
-    }
-    
-    @Override
-    public String getBaseURL() throws IOException {
-        WebApp webApp = getWebApp();
         if (webApp != null) {
             StringBuilder servletNames = new StringBuilder();
             StringBuilder urlPatterns = new StringBuilder();
@@ -238,57 +124,10 @@ public class MavenProjectRestSupport extends WebRestSupport {
                 urlPatterns.append(mapping.getUrlPattern());
                 i++;
             }
-            http://localhost:8084/mavenprojectWeb3/||ServletAdaptor||resources/*
-            return getContextRootURL()+"||"+servletNames+"||"+urlPatterns;
-        } else {
-            throw new IOException("Cannot read web.xml");
+            // http://localhost:8084/mavenprojectWeb3/||ServletAdaptor||resources/*
+            return MiscUtilities.getContextRootURL(getProject())+"||"+servletNames+"||"+urlPatterns;
         }
-    }
-
-    private void addSwdpLibrary( RestConfig config ) throws IOException {
-        boolean addLibrary = false;
-        if (!hasSwdpLibrary()) { //platform does not have rest-api library, so add defaults
-            addLibrary = true;
-            boolean jsr311Added = false;
-            if (config != null && config.isServerJerseyLibSelected() ) {
-                JaxRsStackSupport support = getJaxRsStackSupport();
-                if ( support != null ){
-                    jsr311Added  = support.addJsr311Api(project);
-                }
-            }
-            if ( !jsr311Added ){
-                JaxRsStackSupport.getDefault().addJsr311Api(project);
-            }
-        }
-        
-        if (config != null) {
-            boolean added = false;
-            if (config.isServerJerseyLibSelected()) {
-                JaxRsStackSupport support = getJaxRsStackSupport();
-                if ( support != null ){
-                    added  = support.extendsJerseyProjectClasspath(project);
-                }
-            }
-            if (!added && config.isJerseyLibSelected()) {
-                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
-            }
-        }
-        else if (addLibrary ){
-            JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
-        }
-    }
-
-    @Override
-    public Datasource getDatasource(String jndiName) {
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-
-        try {
-            return provider.getConfigSupport().findDatasource(jndiName);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        return null;
+        return super.getBaseURL();
     }
 
     @Override
@@ -302,14 +141,9 @@ public class MavenProjectRestSupport extends WebRestSupport {
     }
     
     @Override
-    public FileObject generateTestClient(File testdir ) throws IOException {
-        return generateMavenTester(testdir, getBaseURL() );
-    }
-    
-    @Override
     public void deploy() {
         RunConfig config = RunUtils.createRunConfig(FileUtil.toFile(
-                getProject().getProjectDirectory()), project, 
+                getProject().getProjectDirectory()), getProject(),
                 NbBundle.getMessage(MavenProjectRestSupport.class, "MSG_Deploy",    // NOI18N
                         getProject().getLookup().lookup(
                                 ProjectInformation.class).getDisplayName()), 
@@ -322,7 +156,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
     @Override
     public File getLocalTargetTestRest(){
         try {
-            FileObject mainFolder = project.getProjectDirectory()
+            FileObject mainFolder = getProject().getProjectDirectory()
                     .getFileObject("src/main"); // NOI18N
             if (mainFolder != null) {
                 FileObject resourcesFolder = mainFolder
@@ -367,33 +201,33 @@ public class MavenProjectRestSupport extends WebRestSupport {
 
         };
         FileObject testFO = copyFileAndReplaceBaseUrl(testdir, TEST_SERVICES_HTML, replaceKeys1, baseURL);
-        copyFile(testdir, TEST_RESBEANS_JS, replaceKeys2, false);
-        copyFile(testdir, TEST_RESBEANS_CSS);
-        copyFile(testdir, TEST_RESBEANS_CSS2);
-        copyFile(testdir, "expand.gif");
-        copyFile(testdir, "collapse.gif");
-        copyFile(testdir, "item.gif");
-        copyFile(testdir, "cc.gif");
-        copyFile(testdir, "og.gif");
-        copyFile(testdir, "cg.gif");
-        copyFile(testdir, "app.gif");
+        MiscUtilities.copyFile(testdir, RestSupport.TEST_RESBEANS_JS, replaceKeys2, false);
+        MiscUtilities.copyFile(testdir, RestSupport.TEST_RESBEANS_CSS);
+        MiscUtilities.copyFile(testdir, RestSupport.TEST_RESBEANS_CSS2);
+        MiscUtilities.copyFile(testdir, "expand.gif");
+        MiscUtilities.copyFile(testdir, "collapse.gif");
+        MiscUtilities.copyFile(testdir, "item.gif");
+        MiscUtilities.copyFile(testdir, "cc.gif");
+        MiscUtilities.copyFile(testdir, "og.gif");
+        MiscUtilities.copyFile(testdir, "cg.gif");
+        MiscUtilities.copyFile(testdir, "app.gif");
 
         File testdir2 = new File(testdir, "images");
         testdir2.mkdir();
-        copyFile(testdir, "images/background_border_bottom.gif");
-        copyFile(testdir, "images/pbsel.png");
-        copyFile(testdir, "images/bg_gradient.gif");
-        copyFile(testdir, "images/pname.png");
-        copyFile(testdir, "images/level1_selected-1lvl.jpg");
-        copyFile(testdir, "images/primary-enabled.gif");
-        copyFile(testdir, "images/masthead.png");
-        copyFile(testdir, "images/primary-roll.gif");
-        copyFile(testdir, "images/pbdis.png");
-        copyFile(testdir, "images/secondary-enabled.gif");
-        copyFile(testdir, "images/pbena.png");
-        copyFile(testdir, "images/tbsel.png");
-        copyFile(testdir, "images/pbmou.png");
-        copyFile(testdir, "images/tbuns.png");
+        MiscUtilities.copyFile(testdir, "images/background_border_bottom.gif");
+        MiscUtilities.copyFile(testdir, "images/pbsel.png");
+        MiscUtilities.copyFile(testdir, "images/bg_gradient.gif");
+        MiscUtilities.copyFile(testdir, "images/pname.png");
+        MiscUtilities.copyFile(testdir, "images/level1_selected-1lvl.jpg");
+        MiscUtilities.copyFile(testdir, "images/primary-enabled.gif");
+        MiscUtilities.copyFile(testdir, "images/masthead.png");
+        MiscUtilities.copyFile(testdir, "images/primary-roll.gif");
+        MiscUtilities.copyFile(testdir, "images/pbdis.png");
+        MiscUtilities.copyFile(testdir, "images/secondary-enabled.gif");
+        MiscUtilities.copyFile(testdir, "images/pbena.png");
+        MiscUtilities.copyFile(testdir, "images/tbsel.png");
+        MiscUtilities.copyFile(testdir, "images/pbmou.png");
+        MiscUtilities.copyFile(testdir, "images/tbuns.png");
         return testFO;
     }
 
@@ -449,17 +283,17 @@ public class MavenProjectRestSupport extends WebRestSupport {
     }
 
     @Override
-    protected void logResourceCreation(Project prj) {
+    public void logResourceCreation() {
         Object[] params = new Object[3];
         params[0] = LogUtils.WS_STACK_JAXRS;
-        params[1] = project.getClass().getName();
+        params[1] = getProject().getClass().getName();
         params[2] = "RESOURCE"; // NOI18N
         LogUtils.logWsDetect(params);
     }
 
     @Override
     public String getProjectProperty(String name) {
-        Preferences prefs = ProjectUtils.getPreferences(project, MavenProjectRestSupport.class, true);
+        Preferences prefs = ProjectUtils.getPreferences(getProject(), MavenProjectRestSupport.class, true);
         if (prefs != null) {
             return prefs.get(name, null);
         }
@@ -473,7 +307,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
 
     @Override
     public void setProjectProperty(String name, String value) {
-        Preferences prefs = ProjectUtils.getPreferences(project, MavenProjectRestSupport.class, true);
+        Preferences prefs = ProjectUtils.getPreferences(getProject(), MavenProjectRestSupport.class, true);
         if (prefs != null) {
             prefs.put(name, value);
         }
@@ -481,7 +315,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
 
     @Override
     public void removeProjectProperties(String[] propertyNames) {
-        Preferences prefs = ProjectUtils.getPreferences(project, MavenProjectRestSupport.class, true);
+        Preferences prefs = ProjectUtils.getPreferences(getProject(), MavenProjectRestSupport.class, true);
         if (prefs != null) {
             for (String p : propertyNames) {
                 prefs.remove(p);
@@ -491,7 +325,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
 
     @Override
     public int getProjectType() {
-        NbMavenProject nbMavenProject = project.getLookup().lookup(NbMavenProject.class);
+        NbMavenProject nbMavenProject = getProject().getLookup().lookup(NbMavenProject.class);
         if (nbMavenProject != null) {
             String packagingType = nbMavenProject.getPackagingType();
             if (packagingType != null)
@@ -506,7 +340,23 @@ public class MavenProjectRestSupport extends WebRestSupport {
         }
         return PROJECT_TYPE_DESKTOP;
     }
-    
 
+    @Override
+    public String getApplicationPathFromDialog(List<RestApplication> restApplications) {
+        if (restApplications.size() == 1) {
+            return restApplications.get(0).getApplicationPath();
+        }
+        return null;
+    }
+
+    @Override
+    protected void extendBuildScripts() throws IOException {
+        //
+    }
+
+    @Override
+    protected void handleSpring() throws IOException {
+        // TBD ?
+    }
    
 }

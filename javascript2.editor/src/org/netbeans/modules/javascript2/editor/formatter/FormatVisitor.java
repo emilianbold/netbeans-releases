@@ -76,7 +76,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 
 /**
  *
@@ -277,9 +277,6 @@ public class FormatVisitor extends NodeVisitor {
         // fail block
         body = ifNode.getFail();
         if (body != null) {
-            // mark space before left brace
-            markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_ELSE_BRACE);
-
             if (isVirtual(body)) {
                 // do the standard block related things
                 List<Node> statements = body.getStatements();
@@ -289,9 +286,15 @@ public class FormatVisitor extends NodeVisitor {
                     handleVirtualBlock(body, FormatToken.Kind.ELSE_IF_INDENTATION_INC,
                             FormatToken.Kind.ELSE_IF_INDENTATION_DEC, FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START);
                 } else {
+                    // mark space before left brace
+                    markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_ELSE_BRACE);
+
                     handleVirtualBlock(body, FormatToken.Kind.AFTER_ELSE_START);
                 }
             } else {
+                // mark space before left brace
+                markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_ELSE_BRACE);
+
                 enter(body);
             }
         }

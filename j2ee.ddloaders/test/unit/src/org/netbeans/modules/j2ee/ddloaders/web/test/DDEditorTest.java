@@ -70,6 +70,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -91,9 +92,15 @@ public class DDEditorTest extends NbTestCase {
         return new NbTestSuite(DDEditorTest.class);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+    }
+
     public void testReplaceParamValueFromDDAPI() throws IOException {
         initDataObject();
-        FileObject fo = FileUtil.toFileObject(getDDFile());
+        FileObject fo = dObj.getPrimaryFile();
         WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
         webApp.getContextParam()[0].setParamValue(CAR_VOLVO);
         webApp.write(fo);
@@ -207,8 +214,8 @@ public class DDEditorTest extends NbTestCase {
             public boolean step() throws Exception {
                 // get context params table model
                 DDBeanTableModel model = getDDBeanModel();
-                if (model.getRowCount() > 2) {
-                    paramValue = (String) model.getValueAt(2, 0);
+                if (model.getRowCount() == 2) {
+                    paramValue = (String) model.getValueAt(1, 0);
                     return "cylinders".equals(paramValue);
                 } else {
                     return false;
@@ -230,7 +237,7 @@ public class DDEditorTest extends NbTestCase {
     public void testReplaceParamValueFromDDAPI2() throws IOException {
         initDataObject();
         openInXmlView(dObj);
-        final FileObject fo = FileUtil.toFileObject(getDDFile());
+        final FileObject fo = dObj.getPrimaryFile();
         WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
         webApp.getContextParam()[0].setParamValue(CAR_AUDI);
         webApp.write(fo);
@@ -263,12 +270,12 @@ public class DDEditorTest extends NbTestCase {
 
             public boolean step() throws Exception {
                 paramValue = (String) getDDBeanModel().getValueAt(0, 1);
-                return CAR_AUDI.equals(paramValue);
+                return CAR_VOLVO.equals(paramValue);
             }
             
             @Override
             public void finalCheck() {
-                assertEquals("Context Params Table wasn't changed: ", CAR_AUDI, paramValue);
+                assertEquals("Context Params Table wasn't changed: ", CAR_VOLVO, paramValue);
             }
         };
     }
@@ -293,11 +300,18 @@ public class DDEditorTest extends NbTestCase {
     }
 
     private File getDDFile() {
-        return Helper.getDDFile(getDataDir());
+        try {
+            final FileObject originalDD = FileUtil.toFileObject(Helper.getDDFile(getDataDir()));
+            FileObject result = FileUtil.copyFile(originalDD, FileUtil.toFileObject(getWorkDir()), originalDD.getName());
+            return FileUtil.toFile(result);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
 
     private void compareGoldenFile(String goldenFileName) throws IOException {
-        assertFile(getDDFile(), getGoldenFile(goldenFileName), getWorkDir());
+        assertFile(FileUtil.toFile(dObj.getPrimaryFile()), getGoldenFile(goldenFileName), getWorkDir());
     }
 
     private void initDataObject() throws DataObjectNotFoundException {

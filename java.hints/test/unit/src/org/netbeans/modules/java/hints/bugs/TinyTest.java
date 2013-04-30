@@ -41,8 +41,15 @@
  */
 package org.netbeans.modules.java.hints.bugs;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.test.api.HintTest;
+import org.netbeans.modules.java.ui.FmtOptions;
 
 /**
  *
@@ -201,5 +208,182 @@ public class TinyTest extends NbTestCase {
                        "}\n")
                 .run(Tiny.class)
                 .assertWarnings("3:23-3:24:verifier:ERR_ResultSetZero");
+    }
+
+    public void testInconsistentIndentationIf() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(boolean b) {\n" +
+                       "        if (b)\n" +
+                       "            System.err.println(1);\n" +
+                       "            System.err.println(1);\n" +
+                       "    }" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings("5:12-5:34:verifier:" + Bundle.ERR_indentation());
+    }
+    
+    public void testInconsistentIndentationNeg() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(boolean b) {\n" +
+                       "        if (b)\n" +
+                       "            System.err.println(1);\n" +
+                       "        System.err.println(1);\n" +
+                       "    }" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings();
+    }
+
+    public void testInconsistentIndentationIfElse() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(boolean b) {\n" +
+                       "        if (b)\n" +
+                       "            System.err.println(1);\n" +
+                       "        else\n" +
+                       "            System.err.println(2);\n" +
+                       "            System.err.println(2);\n" +
+                       "    }" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings("7:12-7:34:verifier:" + Bundle.ERR_indentation());
+    }
+
+    public void testInconsistentIndentationWhile() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(boolean b) {\n" +
+                       "        while (b = !b)\n" +
+                       "            System.err.println(1);\n" +
+                       "            System.err.println(1);\n" +
+                       "    }" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings("5:12-5:34:verifier:" + Bundle.ERR_indentation());
+    }
+
+    public void testInconsistentIndentationFor() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(boolean b) {\n" +
+                       "        for (; b = !b; )\n" +
+                       "            System.err.println(1);\n" +
+                       "            System.err.println(1);\n" +
+                       "    }" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings("5:12-5:34:verifier:" + Bundle.ERR_indentation());
+    }
+
+    public void testInconsistentIndentationEnhancedFor() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(Iterable<String> inp) {\n" +
+                       "        for (String s : inp)\n" +
+                       "            System.err.println(1);\n" +
+                       "            System.err.println(1);\n" +
+                       "    }" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings("5:12-5:34:verifier:" + Bundle.ERR_indentation());
+    }
+
+    public void testInconsistentIndentationTabHandling1() throws Exception {
+        Map<String, String> original = alterSettings(FmtOptions.tabSize, "8");
+        
+        try {
+            HintTest.create()
+                    .input("package test;\n" +
+                           "public class Test {\n" +
+                           "    public void test(boolean b) {\n" +
+                           "        if (b)\n" +
+                           "            System.err.println(1);\n" +
+                           "    \tSystem.err.println(1);\n" +
+                           "    }" +
+                           "}\n")
+                    .run(Tiny.class)
+                    .assertWarnings("5:5-5:27:verifier:" + Bundle.ERR_indentation());
+        } finally {
+            reset(original);
+        }
+    }
+    
+    public void testInconsistentIndentationTabHandling2() throws Exception {
+        Map<String, String> original = alterSettings(FmtOptions.tabSize, "8");
+        
+        try {
+            HintTest.create()
+                    .input("package test;\n" +
+                           "public class Test {\n" +
+                           "    public void test(boolean b) {\n" +
+                           "        if (b)\n" +
+                           "            System.err.println(1);\n" +
+                           "\t    System.err.println(1);\n" +
+                           "    }" +
+                           "}\n")
+                    .run(Tiny.class)
+                    .assertWarnings("5:5-5:27:verifier:" + Bundle.ERR_indentation());
+        } finally {
+            reset(original);
+        }
+    }
+    
+    public void testInconsistentIndentationLast() throws Exception {
+        Map<String, String> original = alterSettings(FmtOptions.tabSize, "8");
+        
+        try {
+            HintTest.create()
+                    .input("package test;\n" +
+                           "public class Test {\n" +
+                           "    public void test(boolean b) {\n" +
+                           "        if (b)\n" +
+                           "            System.err.println(1);\n" +
+                           "    }" +
+                           "}\n")
+                    .run(Tiny.class)
+                    .assertWarnings();
+        } finally {
+            reset(original);
+        }
+    }
+
+    private static Map<String, String> alterSettings(String... settings) throws Exception {
+        //XXX: hack, need to initialize the HintTest's lookup before setting the
+        //formatting preferences
+        HintTest.create();
+        
+        Map<String, String> adjustPreferences = new HashMap<String, String>();
+        for (int i = 0; i < settings.length; i += 2) {
+            adjustPreferences.put(settings[i], settings[i + 1]);
+        }
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        Map<String, String> origValues = new HashMap<String, String>();
+        for (String key : adjustPreferences.keySet()) {
+            origValues.put(key, preferences.get(key, null));
+        }
+        setValues(preferences, adjustPreferences);
+        return origValues;
+    }
+    
+    private static void reset(Map<String, String> values) {
+        setValues(MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class), values);
+    }
+    
+    private static void setValues(Preferences p, Map<String, String> values) {
+        for (Entry<String, String> e : values.entrySet()) {
+            if (e.getValue() != null) {
+                p.put(e.getKey(), e.getValue());
+            } else {
+                p.remove(e.getKey());
+            }
+        }
     }
 }

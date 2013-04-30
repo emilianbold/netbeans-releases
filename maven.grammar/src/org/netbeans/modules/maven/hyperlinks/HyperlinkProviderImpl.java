@@ -66,6 +66,7 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.grammar.POMDataObject;
@@ -243,7 +244,7 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
                             //TODO eventually we want to process everything through an evaluation engine..
                             InputLocation iloc = nbprj.getMavenProject().getModel().getLocation(val);
                             if (iloc != null) {
-                                openAtSource(iloc);
+                                ModelUtils.openAtSource(iloc);
                                 return;
                             }
                         }
@@ -251,7 +252,7 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
                         if (propLoc != null) { //#212984
                             InputLocation location = propLoc.getLocation(prop);
                             if (location != null) {
-                                openAtSource(location);
+                                ModelUtils.openAtSource(location);
                             }
                         }
                     }

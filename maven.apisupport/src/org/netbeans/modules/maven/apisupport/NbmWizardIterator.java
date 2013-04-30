@@ -90,7 +90,7 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
 
         NB_APP_ARCH = new Archetype();
         NB_APP_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_APP_ARCH.setVersion("1.12"); //NOI18N
+        NB_APP_ARCH.setVersion("1.13"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
 
     }
@@ -160,10 +160,31 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
                     addModuleToApplication(appDir, new ProjectInfo("${project.groupId}", nbm.artifactId, "${project.version}", nbm.packageName), null); // NOI18N
                 }
             }
+            List<ModelOperation<POMModel>> opers = new ArrayList<ModelOperation<POMModel>>();
             if (Boolean.TRUE.equals(wiz.getProperty(OSGIDEPENDENCIES))) {
                 //now we have the nbm-archetype (or the netbeans platform one).
-                addNbmPluginOsgiParameter(projFile);
+                ModelOperation<POMModel> osgi = addNbmPluginOsgiParameter(projFile);
+                if (osgi != null) {
+                    opers.add(osgi);
+                }
             }
+            if ("SNAPSHOT".equals(version)) { // NOI18N
+                opers.add(addSnapshotRepo());
+            }
+            if (!opers.isEmpty()) {
+                FileObject prjDir = FileUtil.toFileObject(projFile);
+                if (prjDir != null) {
+                    FileObject pom = prjDir.getFileObject("pom.xml");
+                    if (pom != null) {
+                        Project prj = ProjectManager.getDefault().findProject(prjDir);
+                        if (prj != null) {
+                           Utilities.performPOMModelOperations(pom, opers);
+                        }
+                    }
+                }
+            }           
+            
+            //TODO what is this supposed to do?
             Set<FileObject> projects = ArchetypeWizards.openProjects(projFile, new File(projFile, "application"));
             for (FileObject project : projects) {
                 Project prj = ProjectManager.getDefault().findProject(project);
@@ -175,9 +196,7 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
                     continue;
                 }
             }
-            if ("SNAPSHOT".equals(version)) { // NOI18N
-                addSnapshotRepo(projFile);
-            }
+            
             return projects;
     }
     
@@ -258,34 +277,26 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
     @Override
     public final void removeChangeListener(ChangeListener l) {}
 
-    private static void addNbmPluginOsgiParameter(File projFile) throws IOException {
+    private static ModelOperation<POMModel> addNbmPluginOsgiParameter(File projFile) throws IOException {
         FileObject prjDir = FileUtil.toFileObject(projFile);
         if (prjDir != null) {
             FileObject pom = prjDir.getFileObject("pom.xml");
             if (pom != null) {
                 Project prj = ProjectManager.getDefault().findProject(prjDir);
                 if (prj == null) {
-                    return; // invalid? #184466
+                    return null; // invalid? #184466
                 }
                 NbMavenProject mav = prj.getLookup().lookup(NbMavenProject.class);
-                ModelOperation<POMModel> op = new AddOSGiParamToNbmPluginConfiguration(true, mav.getMavenProject());
-                Utilities.performPOMModelOperations(pom, Collections.singletonList(op));
+                return  new AddOSGiParamToNbmPluginConfiguration(true, mav.getMavenProject());
             }
         }
         //TODO report inability to create? or if the file doesn't exist, it was already
         //reported?
+        return null;
    }
 
-    private static void addSnapshotRepo(File projFile) throws IOException {
-        FileObject prjDir = FileUtil.toFileObject(projFile);
-        if (prjDir != null) {
-            FileObject pom = prjDir.getFileObject("pom.xml");
-            if (pom != null) {
-                Project prj = ProjectManager.getDefault().findProject(prjDir);
-                if (prj == null) {
-                    return;
-                }
-                Utilities.performPOMModelOperations(pom, Collections.singletonList(new ModelOperation<POMModel>() {
+    private static ModelOperation<POMModel> addSnapshotRepo() throws IOException {
+        return new ModelOperation<POMModel>() {
                     public @Override void performOperation(POMModel model) {
                         Repository repo = model.getFactory().createRepository();
                         repo.setId("netbeans-snapshot"); // NOI18N
@@ -298,9 +309,7 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
                         repo.setUrl("http://bits.netbeans.org/netbeans/trunk/maven-snapshot/"); // NOI18N
                         model.getProject().addRepository(repo);
                     }
-                }));
-            }
-        }
+                };
    }
 
     private static void trimInheritedFromNbmProject(File projFile) throws IOException {

@@ -88,46 +88,6 @@ public class TypeUsageImpl implements TypeUsage {
     public String getDisplayName() {
         return ModelUtils.getDisplayName(type);
     }
-
-    /**
-     * 
-     * @param fqn fully qualified name of the type
-     * @param generated the generated prefix
-     * @return the fully qualified name without the generated part or empty string if the generated name is the last one.
-     * 
-     */
-    private String removeGeneratedFromFQN(String fqn, String generated) {
-        String[] parts = type.split("\\."); //NOI18N
-        String part = parts[parts.length - 1];
-        if(part.contains(generated)) {
-            try {
-                Integer.parseInt(part.substring(generated.length()));
-                return ""; // return empty name if the last name is generated
-            } catch (NumberFormatException nfe) {
-                // do nothing
-            }
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < parts.length; i++) {
-            part = parts[i];
-            boolean add = true;
-            if (part.startsWith(generated)) {
-                try {
-                    Integer.parseInt(part.substring(generated.length()));
-                    add = false;
-                } catch (NumberFormatException nfe) {
-                    // do nothing
-                }
-            }
-            if (add) {
-                sb.append(part);
-                if (i < (parts.length - 1)) {
-                    sb.append(".");
-                }
-            }
-        }
-        return sb.toString();
-    }
     
     @Override
     public boolean equals(Object obj) {
@@ -157,5 +117,10 @@ public class TypeUsageImpl implements TypeUsage {
         hash = 83 * hash + this.offset;
         hash = 83 * hash + (this.resolved ? 1 : 0);
         return hash;
+    }
+
+    @Override
+    public String toString() {
+        return "TypeUsageImpl{" + "type=" + type + ", offset=" + offset + ", resolved=" + resolved + '}';
     }
 }

@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.jboss4;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -64,6 +65,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.openide.util.NbBundle;
 import javax.enterprise.deploy.spi.DeploymentManager;
@@ -173,7 +175,8 @@ public class JBDeploymentFactory implements DeploymentFactory {
 
             String sep = File.separator;
             if (!domFile.exists() && jbossVersion != null && "7".equals(jbossVersion.getMajorNumber())) {
-                domFile = new File(serverRoot, JBPluginUtils.MODULES + "org" + sep + "dom4j" + sep + "main" + sep + "dom4j-1.6.1.jar"); // NOI18N
+                domFile = new File(serverRoot, JBPluginUtils.getModulesBase(serverRoot)
+                        + "org" + sep + "dom4j" + sep + "main" + sep + "dom4j-1.6.1.jar"); // NOI18N
             }
             if (!domFile.exists()) {
                 domFile = null;
@@ -199,10 +202,9 @@ public class JBDeploymentFactory implements DeploymentFactory {
             }
 
             if (jbossVersion != null && "7".equals(jbossVersion.getMajorNumber())) {
-                File org = new File(serverRoot, JBPluginUtils.MODULES + "org");
+                File org = new File(serverRoot, JBPluginUtils.getModulesBase(serverRoot) + "org");
                 File jboss = new File(org, "jboss");
                 File as = new File(jboss, "as");
-                String versionString = jbossVersion.getMajorNumber()+"."+jbossVersion.getMinorNumber()+"."+jbossVersion.getMicroNumber()+"."+jbossVersion.getUpdate();
                 
                 if (domFile != null && domFile.exists()) {
                     urlList.add(domFile.toURI().toURL());
@@ -210,18 +212,19 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 
                 urlList.add(new File(serverRoot, "jboss-modules.jar").toURI().toURL());
                 urlList.add(new File(serverRoot, "bin"+sep+"client"+sep+"jboss-client.jar").toURI().toURL());
-                urlList.add(new File(jboss, "logging" + sep + "main" + sep + "jboss-logging-3.1.0.GA.jar").toURI().toURL());
-                urlList.add(new File(jboss, "threads" + sep + "main" + sep + "jboss-threads-2.0.0.GA.jar").toURI().toURL());
-                urlList.add(new File(jboss, "remoting3" + sep + "main" + sep + "jboss-remoting-3.2.3.GA.jar").toURI().toURL());
-                urlList.add(new File(jboss, "xnio" + sep + "main" + sep + "xnio-api-3.0.3.GA.jar").toURI().toURL());
-                urlList.add(new File(jboss, "xnio" + sep + "nio" + sep + "main" + sep + "xnio-nio-3.0.3.GA.jar").toURI().toURL());
-                urlList.add(new File(jboss, "dmr" + sep + "main"+ sep + "jboss-dmr-1.1.1.Final.jar").toURI().toURL());
-                urlList.add(new File(jboss, "msc" + sep + "main" + sep + "jboss-msc-1.0.2.GA.jar").toURI().toURL());
-                urlList.add(new File(jboss, "common-core" + sep + "main" + sep + "jboss-common-core-2.2.17.GA.jar").toURI().toURL());
-                urlList.add(new File(as, "ee" + sep + "deployment" + sep + "main" + sep + "jboss-as-ee-deployment-" + versionString + ".jar").toURI().toURL());
-                urlList.add(new File(as, "naming" + sep + "main" + sep + "jboss-as-naming-" + versionString + ".jar").toURI().toURL());
-                urlList.add(new File(as, "controller-client" + sep + "main" + sep + "jboss-as-controller-client-" + versionString + ".jar").toURI().toURL());
-                urlList.add(new File(as, "protocol" + sep + "main" + sep + "jboss-as-protocol-" + versionString + ".jar").toURI().toURL());
+
+                addUrl(urlList, jboss, "logging" + sep + "main", Pattern.compile("jboss-logging-.*.jar"));
+                addUrl(urlList, jboss, "threads" + sep + "main", Pattern.compile("jboss-threads-.*.jar"));
+                addUrl(urlList, jboss, "remoting3" + sep + "main", Pattern.compile("jboss-remoting-.*.jar"));
+                addUrl(urlList, jboss, "xnio" + sep + "main", Pattern.compile("xnio-api-.*.jar"));
+                addUrl(urlList, jboss, "xnio" + sep + "nio" + sep + "main", Pattern.compile("xnio-nio-.*.jar"));
+                addUrl(urlList, jboss, "dmr" + sep + "main", Pattern.compile("jboss-dmr-.*.jar"));
+                addUrl(urlList, jboss, "msc" + sep + "main", Pattern.compile("jboss-msc-.*.jar"));
+                addUrl(urlList, jboss, "common-core" + sep + "main", Pattern.compile("jboss-common-core-.*.jar"));
+                addUrl(urlList, as, "ee" + sep + "deployment" + sep + "main", Pattern.compile("jboss-as-ee-deployment-.*.jar"));
+                addUrl(urlList, as, "naming" + sep + "main", Pattern.compile("jboss-as-naming-.*.jar"));
+                addUrl(urlList, as, "controller-client" + sep + "main", Pattern.compile("jboss-as-controller-client-.*.jar"));
+                addUrl(urlList, as, "protocol" + sep + "main", Pattern.compile("jboss-as-protocol-.*.jar"));
 
             } else if (version5Above) {
                 // get lient class path for Jboss 5.0
@@ -275,6 +278,27 @@ public class JBDeploymentFactory implements DeploymentFactory {
         return null;
     }
 
+    private static void addUrl(List<URL> result, File root, String path, final Pattern pattern) {
+        File folder = new File(root, path);
+        File[] children = folder.listFiles(new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String name) {
+                return pattern.matcher(name).matches();
+            }
+        });
+        if (children != null) {
+            for (File child : children) {
+                try {
+                    result.add(child.toURI().toURL());
+                } catch (MalformedURLException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                }
+            }
+        }
+    }
+
+    @Override
     public boolean handlesURI(String uri) {
         if (uri != null && uri.startsWith(URI_PREFIX)) {
             return true;
@@ -306,11 +330,24 @@ public class JBDeploymentFactory implements DeploymentFactory {
 
                 String jbURI = uri;
                 try {
-                    jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
+                    int index1 = uri.indexOf('#'); // NOI18N
+                    int index2 = uri.indexOf('&'); // NOI18N
+                    int index = Math.min(index1, index2);
+                    jbURI = uri.substring(0, index); // NOI18N
                 } catch (Exception e) {
                     LOGGER.log(Level.INFO, null, e);
                 }
 
+                // see #228619
+                // The default host where the DM is connecting is based on
+                // serverHost parameter if it is null it uses InetAddress.getLocalHost()
+                // which is however based on hostname. If hostname is not mapped
+                // to localhost (the interface where the JB is running) we get
+                // an excpetion
+                if (jbURI.endsWith("as7")) { // NOI18N
+                    jbURI = jbURI + "&serverHost=" // NOI18N
+                            + (ip != null ? ip.getProperty(JBPluginProperties.PROPERTY_HOST) : "localhost"); // NOI18N
+                }
                 JBDeploymentManager dm = new JBDeploymentManager(df, uri, jbURI, uname, passwd);
                 if (ip != null) {
                     managerCache.put(ip, dm);
@@ -339,6 +376,17 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 }
             }
 
+            if (ip != null) {
+                String root = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+                if (root == null || !new File(root).isDirectory()) {
+                    throw new DeploymentManagerCreationException("Non existent server root " + root); // NOI18N
+                }
+                String server = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
+                if (server == null || !new File(server).isDirectory()) {
+                    throw new DeploymentManagerCreationException("Non existent domain root " + server); // NOI18N
+                }
+            }
+            
             return new JBDeploymentManager(null, uri, null, null, null);
         } catch (NoClassDefFoundError e) {
             DeploymentManagerCreationException dmce = new DeploymentManagerCreationException("Classpath is incomplete"); // NOI18N

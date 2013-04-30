@@ -86,10 +86,7 @@ public class NavigatorOperator extends TopComponentOperator {
     private static final class NavigatorAction extends Action {
 
         private static final String navigatorActionName = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
-                + "|"
-                + Bundle.getStringTrimmed("org.netbeans.modules.navigator.Bundle", "Menu/Window/Navigator")
-                + "|"
-                + Bundle.getStringTrimmed("org.netbeans.modules.navigator.Bundle", "LBL_Action");
+                + "|Navigator";
 
         public NavigatorAction() {
             super(navigatorActionName, null, "org.netbeans.modules.navigator.ShowNavigatorAction");

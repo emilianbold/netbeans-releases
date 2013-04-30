@@ -79,7 +79,6 @@ import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -475,9 +474,9 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     @Override
     public void disableModel(Project makeProject) {
         final CsmModel model = CsmModelAccessor.getModel();
-        if (model instanceof ModelImpl && makeProject != null) {
+        if (model != null && makeProject != null) {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
-            ((ModelImpl) model).disableProject(np);
+            model.disableProject(np);
         }
     }
 

@@ -261,6 +261,9 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
 
         CompilationUnitTree cu = info.getCompilationUnit();
         TreePath tp = info.getTreeUtilities().pathFor(caretPosition);
+        if (tp.getParentPath() != null && tp.getParentPath().getLeaf().getKind() == Kind.ANNOTATED_TYPE) {
+            tp = tp.getParentPath();
+        }
         TreePath typePath = findTypePath(tp);
 
         if (isCancelled())

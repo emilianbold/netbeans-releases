@@ -63,6 +63,15 @@ made subject to such option by the copyright holder.
          project.setProperty(attributes.get("property"), true);
        }
      ]]>
+    
+    </scriptdef>
+    <scriptdef name="forDevice" language="javascript">
+     <![CDATA[
+       var dev = project.getProperty("device");
+       if (dev == "device") {
+         project.setProperty("build.for.device", true);
+       }
+     ]]>
     </scriptdef>
 
         <taskdef 
@@ -74,6 +83,7 @@ made subject to such option by the copyright holder.
         <checkVersion first="${cordova.version}" property="phonegap.ver.2"/>
         <fail message="PhoneGap version 2.4 or greater required." unless="phonegap.ver.2"/>
         <readconfig/>
+        <forDevice/>
     </target>
     
     <target name="check-android-template">
@@ -87,8 +97,9 @@ made subject to such option by the copyright holder.
     <target name="create-android" depends="check-android-template,check-phonegap-version" unless="android.generated.exists">
         <mkdir dir="${cordova.platforms}"/>
         
-        <exec dir="${cordova.platforms}" executable="/bin/sh" osfamily="unix" resolveexecutable="true" failonerror="true">
-            <env key="PATH" path="/usr/bin:/bin:${android.sdk.home}/tools"/>
+        <exec dir="${cordova.platforms}" executable="/bin/bash" osfamily="unix" resolveexecutable="true" failonerror="true">
+            <env key="PATH" path="${env.PATH}:/usr/bin:/bin:${android.sdk.home}/tools"/>
+            <env key="JAVA_HOME" path="${jdk.home}"/>
             <arg value="${cordova.home}/lib/android/bin/create"/>
             <arg value="android"/>
             <arg value="${android.project.package}"/>
@@ -96,7 +107,7 @@ made subject to such option by the copyright holder.
         </exec>
 
         <exec dir="${cordova.platforms}" executable="cmd" osfamily="windows" resolveexecutable="true" failonerror="true" >
-            <env key="PATH" path="%PATH%;c:\Windows\System32;${android.sdk.home}\tools;${ant.home}\bin;${jdk.home}\bin"/>
+            <env key="PATH" path="${env.PATH};c:\Windows\System32;${android.sdk.home}\tools;${ant.home}\bin;${jdk.home}\bin"/>
             <env key="JAVA_HOME" path="${jdk.home}"/>
             <arg value="/C"/>
             <arg value="${cordova.home}/lib/android/bin/create.bat"/>
@@ -121,7 +132,7 @@ made subject to such option by the copyright holder.
         
         <exec executable="${cordova.home}/lib/ios/bin/create">
             <arg value="${cordova.platforms}/ios" />
-            <arg value="${android.project.package}"/>
+            <arg value="${android.project.package}.${android.project.activity}"/>
             <arg value="${android.project.activity}"/>
         </exec>
 
@@ -151,7 +162,8 @@ made subject to such option by the copyright holder.
               file="${cordova.home}/lib/ios/CordovaLib/cordova.ios.js"/>
 
     </target>
-    <target name="build-ios" depends="setup-ios">
+    <target name="build-ios" depends="build-ios-xcodebuild,build-ios-ipa"/>
+    <target name="build-ios-xcodebuild" depends="setup-ios">
         <property name="path" location="./build/ios/build"/>
         <exec executable="xcodebuild" dir="${cordova.build}/ios">
             <arg value="-project"/>
@@ -166,11 +178,41 @@ made subject to such option by the copyright holder.
             <arg value="${ios.build.sdk}" />
             <arg value="build"/>
             <arg value="CONFIGURATION_BUILD_DIR=${path}"/>
+            <arg value="CODE_SIGN_IDENTITY=${ios.certificate.name}"/>
+        </exec>
+    </target>
+    
+    <target name="build-ios-ipa" if="build.for.device">
+            <exec executable="xcrun" dir="${cordova.build}/ios" >
+            <arg value="-sdk"/>
+            <arg value="${ios.build.sdk}" />            
+            <arg value="PackageApplication"/>
+            <arg value="-v"/>
+            <arg value="build/${project.name}.app"/>
+            <arg value="-o"/>
+            <arg value="${basedir}/build/ios/${project.name}.ipa"/>
+            <arg value="--sign"/>
+            <arg value="${ios.certificate.name}"/>
+            <arg value="--embed"/>
+            <arg value="${ios.provisioning.profile}"/>
+         </exec>
+    </target>
+         
+
+    <target name="sim-ios" depends="build-ios,ios-run-device,ios-run-simulator">
+    </target>
+    
+    <target name="ios-run-device" if="build.for.device">
+        <echo>
+            Install "${basedir}/build/ios/${project.name}.ipa" through iTunes and run it. 
+        </echo> 
+        <exec executable="open">
+            <arg value="${basedir}/build/ios/${project.name}.ipa"/>
         </exec>
     </target>
 
-    <target name="sim-ios" depends="build-ios">
-        <exec executable="${ios.sim.exec}" dir="${cordova.build}/ios">
+    <target name="ios-run-simulator" unless="build.for.device">
+        <exec executable="${ios.sim.exec}" dir="${cordova.build}/ios" spawn="true">
             <arg line="launch build/${project.name}.app ${ios.device.args}"/>
         </exec> 
     </target>

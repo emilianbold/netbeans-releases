@@ -63,8 +63,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     protected JsElement.Kind kind;
     private boolean deprecated;
     
-    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
-        super((parent != null ? parent.getFileObject() : null), name.getName(), ModelUtils.PROTOTYPE.equals(name.getName()),  offsetRange, EnumSet.of(Modifier.PUBLIC));
+    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, String sourceLabel) {
+        super((parent != null ? parent.getFileObject() : null), name.getName(),
+                ModelUtils.PROTOTYPE.equals(name.getName()),  offsetRange, EnumSet.of(Modifier.PUBLIC), sourceLabel);
         this.declarationName = name;
         this.parent = parent;
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
@@ -73,20 +74,27 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared, Set<Modifier> modifiers) {
-        super((parent != null ? parent.getFileObject() : null), name.getName(), isDeclared,  offsetRange, modifiers);
+        super((parent != null ? parent.getFileObject() : null), name.getName(),
+                isDeclared,  offsetRange, modifiers, null);
         this.declarationName = name;
         this.parent = parent;
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
         this.deprecated = false;
     }
-    
+
+    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
+        this(parent, name, offsetRange, null);
+    }
+
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared) {
         this(parent, name, offsetRange, isDeclared, EnumSet.of(Modifier.PUBLIC));
     }
   
-    protected JsObjectImpl(JsObject parent, String name, boolean isDeclared, OffsetRange offsetRange, Set<Modifier> modifiers) {
-        super((parent != null ? parent.getFileObject() : null), name, isDeclared, offsetRange, modifiers);
+    protected JsObjectImpl(JsObject parent, String name, boolean isDeclared,
+            OffsetRange offsetRange, Set<Modifier> modifiers, String sourceLabel) {
+        super((parent != null ? parent.getFileObject() : null), name, isDeclared,
+                offsetRange, modifiers, sourceLabel);
         this.declarationName = null;
         this.parent = parent;
         this.hasName = false;
@@ -215,6 +223,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         types.addAll(typeNames);
     }
     
+    @Override
     public void addAssignment(TypeUsage typeName, int offset){
         Collection<TypeUsage> types = assignments.get(offset);
         if (types == null) { 
@@ -272,6 +281,22 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
     
     @Override
+    public String getFullyQualifiedName() {
+        if (getParent() == null) {
+            return getName();
+        }
+        StringBuilder result = new StringBuilder();
+        JsObject pObject = this;
+        result.append(getName());
+      
+        while((pObject = pObject.getParent()).getParent() != null) {
+            result.insert(0, ".");
+            result.insert(0, pObject.getName());
+        }
+        return result.toString();
+    }
+    
+    @Override
     public boolean isAnonymous() {
         return false;
     }
@@ -283,7 +308,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return hasName;
     }
     
-    protected void setJsKind(JsElement.Kind kind) {
+    public final void setJsKind(JsElement.Kind kind) {
         this.kind = kind;
     }
         
@@ -294,7 +319,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     
     protected Collection<TypeUsage> resolveAssignments(JsObject jsObject, int offset, Collection<String> visited) {
         Collection<TypeUsage> result = new HashSet();
-        String fqn = ModelUtils.createFQN(jsObject);
+        String fqn = jsObject.getFullyQualifiedName();
         if(visited.contains(fqn)) {
            return result; 
         }
@@ -305,21 +330,29 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             offsetAssignments = found.getValue();
         }
         if (offsetAssignments.isEmpty() && !jsObject.getProperties().isEmpty()) {
-            result.add(new TypeUsageImpl(ModelUtils.createFQN(jsObject), jsObject.getOffset(), true));
+            result.add(new TypeUsageImpl(jsObject.getFullyQualifiedName(), jsObject.getOffset(), true));
         } else {
             for (TypeUsage assignment : offsetAssignments) {
                 if (!visited.contains(assignment.getType())) {
                     if(assignment.isResolved()) {
                         result.add(assignment);
                     } else {
-                        DeclarationScope scope = ModelUtils.getDeclarationScope(jsObject);
-                        JsObject object = ModelUtils.getJsObjectByName(scope, assignment.getType());
-                        if(object != null) {
-                            Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, found != null ? found.getKey() : -1, visited);
-                            if(resolvedFromObject.isEmpty()) {
-                                result.add(new TypeUsageImpl(ModelUtils.createFQN(object), assignment.getOffset(), true));
-                            } else {
-                                result.addAll(resolvedFromObject);
+                        if (assignment.getType().startsWith("@")) {
+                            result.addAll(ModelUtils.resolveTypeFromSemiType(jsObject, assignment));
+                        } else {
+                            DeclarationScope scope = ModelUtils.getDeclarationScope(jsObject);
+                            JsObject object = ModelUtils.getJsObjectByName(scope, assignment.getType());
+                            if (object == null) {
+                                JsObject gloal = ModelUtils.getGlobalObject(jsObject);
+                                object = ModelUtils.findJsObjectByName(gloal, assignment.getType());
+                            }
+                            if(object != null) {
+                                Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, found != null ? found.getKey() : -1, visited);
+                                if(resolvedFromObject.isEmpty()) {
+                                    result.add(new TypeUsageImpl(object.getFullyQualifiedName(), assignment.getOffset(), true));
+                                } else {
+                                    result.addAll(resolvedFromObject);
+                                }
                             }
                         }
                     }
@@ -363,7 +396,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                                 }
                             }
                             if (jsObject != null) {
-                                ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(typeHere.getOffset(), typeHere.getOffset() + typeHere.getType().length()));
+                                int index = typeHere.getType().lastIndexOf('.');
+                                int typeLength = (index > -1) ? typeHere.getType().length() - index - 1 : typeHere.getType().length();
+                                ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(typeHere.getOffset(), typeHere.getOffset() + typeLength));
                                 moveOccurrenceOfProperties((JsObjectImpl)jsObject, this);
                             }
                         }
@@ -483,4 +518,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     public void setDeprecated(boolean depreceted) {
         this.deprecated = depreceted;
     }
+
+//    @Override
+//    public String toString() {
+//        return "JsObjectImpl{" + "declarationName=" + declarationName + ", parent=" + parent + ", kind=" + kind + '}';
+//    }
 }

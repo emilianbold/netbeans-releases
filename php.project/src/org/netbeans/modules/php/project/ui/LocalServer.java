@@ -411,7 +411,7 @@ public class LocalServer implements Comparable<LocalServer> {
         public void setSelectedItem(Object object) {
             if ((selected != null && !selected.equals(object))
                     || selected == null && object != null) {
-                assert object == null || object instanceof LocalServer : "Trying to set object of type: " + (object == null ? "null" : object.getClass().getName());
+                assert object == null || object instanceof LocalServer : "Trying to set object of type: " + object.getClass().getName();
                 selected = (LocalServer) object;
                 fireContentsChanged(this, -1, -1);
             }

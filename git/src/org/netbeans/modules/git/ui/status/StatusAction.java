@@ -67,7 +67,12 @@ import org.openide.util.NbBundle;
 @ActionID(id = "org.netbeans.modules.git.ui.status.StatusAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_StatusAction_Name")
 public class StatusAction extends GitAction {
-
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/show_changes.png"; //NOI18N
+    
+    public StatusAction () {
+        super(ICON_RESOURCE);
+    }
+    
     @Override
     protected final void performContextAction (Node[] nodes) {
         VCSContext context = getCurrentContext(nodes);

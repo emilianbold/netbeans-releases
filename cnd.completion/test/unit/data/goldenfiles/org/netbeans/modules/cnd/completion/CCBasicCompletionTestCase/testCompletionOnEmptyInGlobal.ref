@@ -1,8 +1,8 @@
-A
-B
-C
-In_Macro
-globInt int
-checkZero() void
-globFoo() void
-main(int argc, char** argv) int
+A	$	A
+B	$	B
+C	$	C
+In_Macro	$	In_Macro
+globInt int	$	globInt
+checkZero() void	$	checkZero()
+globFoo() void	$	globFoo()
+main(int argc, char** argv) int	$	main(int argc, char** argv)

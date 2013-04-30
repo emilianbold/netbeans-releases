@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.model;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
  *
@@ -62,6 +63,9 @@ public interface JsObject extends JsElement {
     public JsObject getParent();  
     List<Occurrence> getOccurrences();
 
+    public void addOccurrence(OffsetRange offsetRange);
+
+    public String getFullyQualifiedName();
     /**
      * 
      * @param offset
@@ -70,6 +74,8 @@ public interface JsObject extends JsElement {
     Collection<? extends TypeUsage> getAssignmentForOffset(int offset);
     
     Collection<? extends TypeUsage> getAssignments();
+    
+    public void addAssignment(TypeUsage typeName, int offset);
     
     public boolean isAnonymous();
     

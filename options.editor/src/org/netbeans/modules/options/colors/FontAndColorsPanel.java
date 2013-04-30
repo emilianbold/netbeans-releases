@@ -48,6 +48,7 @@ import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collection;
@@ -134,6 +135,14 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
         }
     }
     
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        for (ComponentListener l : getComponentListeners()) {
+            super.removeComponentListener(l);
+        }
+    }
+  
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -143,7 +152,8 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
     private void initComponents() {
 
         lProfile = new javax.swing.JLabel();
-        cbProfile = new javax.swing.JComboBox();
+        cbProfile = new javax.swing.JComboBox<String>
+        ();
         tpCustomizers = new javax.swing.JTabbedPane();
         bDuplicate = new javax.swing.JButton();
         bDelete = new javax.swing.JButton();
@@ -198,7 +208,8 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bDelete;
     private javax.swing.JButton bDuplicate;
-    private javax.swing.JComboBox cbProfile;
+    private javax.swing.JComboBox<String>
+    cbProfile;
     private javax.swing.JLabel lProfile;
     private javax.swing.JTabbedPane tpCustomizers;
     // End of variables declaration//GEN-END:variables
@@ -246,7 +257,7 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
 
         // init schemes
         listen = false;
-        Iterator it = colorModel.getProfiles ().iterator ();
+        Iterator<String> it = colorModel.getProfiles ().iterator ();
         cbProfile.removeAllItems ();
         while (it.hasNext ())
             cbProfile.addItem (it.next ());

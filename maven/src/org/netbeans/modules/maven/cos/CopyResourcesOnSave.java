@@ -181,7 +181,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
         if (mvn == null) {
             return null;
         }
-        if (RunUtils.hasTestCompileOnSaveEnabled(prj) || RunUtils.hasApplicationCompileOnSaveEnabled(prj)) {
+        if (RunUtils.isCompileOnSaveEnabled(prj)) {
             return prj;
         }
         return null;
@@ -351,16 +351,12 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
     private Tuple findAppropriateResourceRoots(FileObject child, Project prj) {
         NbMavenProject nbproj = prj.getLookup().lookup(NbMavenProject.class);
         assert nbproj != null;
-        boolean test = RunUtils.hasTestCompileOnSaveEnabled(prj);
-        if (test) {
+        if (RunUtils.isCompileOnSaveEnabled(prj)) {
             Tuple tup = findResource(nbproj.getMavenProject().getTestResources(), prj, nbproj, child, true);
             if (tup != null) {
                 return tup;
             }
-        }
-        boolean main = RunUtils.hasApplicationCompileOnSaveEnabled(prj);
-        if (test || main) {
-            Tuple tup = findResource(nbproj.getMavenProject().getResources(), prj, nbproj, child, false);
+            tup = findResource(nbproj.getMavenProject().getResources(), prj, nbproj, child, false);
             if (tup != null) {
                 return tup;
             }

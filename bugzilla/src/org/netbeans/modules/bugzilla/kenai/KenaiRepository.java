@@ -147,6 +147,10 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return queries;
     }
 
+    public KenaiProject getKenaiProject() {
+        return kenaiProject;
+    }
+    
     public synchronized BugzillaQuery getAllIssuesQuery() throws MissingResourceException {
         if(!providePredefinedQueries() || BugzillaUtil.isNbRepository(this)) return null;
         if (allIssues == null) {

@@ -44,31 +44,30 @@
 
 package org.netbeans.modules.project.ui.groups;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import static org.netbeans.modules.project.ui.groups.Bundle.*;
-import org.openide.NotificationLineSupport;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.NbBundle.Messages;
 
 /**
  * Interface used by the various group editing panels.
  * @author Jesse Glick
  */
-public abstract class GroupEditPanel extends JPanel {
+public abstract class GroupEditPanel extends JPanel{
 
-    private NotificationLineSupport supp;
+    private Category category;
 
-    public abstract void applyChanges();
-
-    void setNotificationLineSupport(NotificationLineSupport s) {
-        supp = s;
+    public Category getCategory() {
+        return category;
     }
 
-    NotificationLineSupport getNotificationLineSupport() {
-        return supp;
-    }
+    protected abstract void applyChanges();
 
     @Messages("WARN_GroupExists=Another group with the same name exists.")
     void startPerformingNameChecks(final JTextField field, final String initial) {
@@ -83,12 +82,13 @@ public abstract class GroupEditPanel extends JPanel {
                 doCheck();
             }
             private void doCheck() {
-                getNotificationLineSupport().clearMessages();
+                getCategory().setErrorMessage(null);
+                getCategory().setValid(true);
                 String newText = field.getText();
                 if (!newText.equals(initial)) {
                     for (Group g : Group.allGroups()) {
                         if (newText.equals(g.getNameOrNull())) {
-                            getNotificationLineSupport().setWarningMessage(WARN_GroupExists());
+                            getCategory().setErrorMessage(WARN_GroupExists());
                         }
                     }
                 }
@@ -96,4 +96,13 @@ public abstract class GroupEditPanel extends JPanel {
         });
     }
 
+    void setCategory(ProjectCustomizer.Category category) {
+        this.category = category;
+        category.setStoreListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                applyChanges();
+            }
+        });
+    }
 }

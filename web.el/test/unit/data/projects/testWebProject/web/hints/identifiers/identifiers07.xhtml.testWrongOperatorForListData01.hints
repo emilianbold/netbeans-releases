@@ -1,2 +1,2 @@
-#{[1,2,3].skipy(5).sum()}          --------
-HINT:Unknown method "skipy"
+#{[1,2,3].stream().limity(2).sum()}                   ---------
+HINT:Unknown method "limity"

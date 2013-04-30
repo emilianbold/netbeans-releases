@@ -65,8 +65,8 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.util.Exceptions;
 
@@ -984,18 +984,26 @@ public class JsFormatter implements Formatter {
             return false;
         }
 
+        boolean hasSpaceMarker = false;
+        boolean hasSpace = false;
         FormatToken next = token;
         while (next != null && (next.isVirtual()
                 || skipWitespace && next.getKind() == FormatToken.Kind.WHITESPACE
                 || skipWitespace && next.getKind() == FormatToken.Kind.EOL)) {
             if (next.getKind() != FormatToken.Kind.WHITESPACE
-                    && next.getKind() != FormatToken.Kind.EOL
-                    && isSpace(next, context)) {
-                return true;
+                    && next.getKind() != FormatToken.Kind.EOL) {
+                if (isSpace(next, context)) {
+                    return true;
+                }
+                if (next.getKind().isSpaceMarker()) {
+                    hasSpaceMarker = true;
+                }
+            } else {
+                hasSpace = true;
             }
             next = next.next();
         }
-        return false;
+        return !hasSpaceMarker && hasSpace;
     }
 
     private static boolean isSpace(FormatToken token, FormatContext formatContext) {

@@ -45,15 +45,6 @@
 package org.netbeans.spi.viewmodel;
 
 import java.beans.PropertyEditor;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import org.openide.util.Exceptions;
 
 
 /**

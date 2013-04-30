@@ -44,9 +44,18 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.concurrent.Future;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.*;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
@@ -57,6 +66,12 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -85,13 +100,36 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     private final Action GO_TO_SOURCE_ACTION = Models.createAction (
         NbBundle.getMessage(VariablesActionsProvider.class, "CTL_GoToSource"), 
         new Models.ActionPerformer () {
+            @Override
             public boolean isEnabled (Object node) {
                 return true;
             }
+            @Override
             public void perform (final Object[] nodes) {
                 lookupProvider.lookupFirst(null, RequestProcessor.class).post(new Runnable() {
+                    @Override
                     public void run() {
                         goToSource ((Field) nodes [0]);
+                    }
+                });
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
+        
+    private final Action GO_TO_TYPE_SOURCE_ACTION = Models.createAction (
+        NbBundle.getMessage(VariablesActionsProvider.class, "CTL_GoToTypeSource"), 
+        new Models.ActionPerformer () {
+            @Override
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            @Override
+            public void perform (final Object[] nodes) {
+                lookupProvider.lookupFirst(null, RequestProcessor.class).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        showSource (((ObjectVariable) nodes [0]).getType());
                     }
                 });
             }
@@ -107,14 +145,27 @@ public class VariablesActionsProvider implements NodeActionsProvider {
         this.lookupProvider = lookupProvider;
     }
 
+    @Override
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT)
             return new Action[] {
                 WatchesActionsProvider.NEW_WATCH_ACTION
             };
-        if (node instanceof Field)
+        if (node instanceof Field) {
+            if (node instanceof ObjectVariable) {
+                return new Action [] {
+                    GO_TO_SOURCE_ACTION,
+                    GO_TO_TYPE_SOURCE_ACTION,
+                };
+            } else {
+                return new Action [] {
+                    GO_TO_SOURCE_ACTION,
+                };
+            }
+        }
+        if (node instanceof ObjectVariable)
             return new Action [] {
-                GO_TO_SOURCE_ACTION
+                GO_TO_TYPE_SOURCE_ACTION,
             };
         if (node instanceof Variable)
             return new Action [] {
@@ -128,11 +179,13 @@ public class VariablesActionsProvider implements NodeActionsProvider {
         throw new UnknownTypeException (node);
     }
     
+    @Override
     public void performDefaultAction (final Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) 
             return;
         if (node instanceof Field) {
             lookupProvider.lookupFirst(null, RequestProcessor.class).post(new Runnable() {
+                @Override
                 public void run() {
                     goToSource ((Field) node);
                 }
@@ -169,4 +222,69 @@ public class VariablesActionsProvider implements NodeActionsProvider {
         SourcePath ectx = lookupProvider.lookupFirst(null, SourcePath.class);
         return ectx.sourceAvailable (v);
     }
+    
+    private void showSource(final String type) {
+        DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (engine != null) {
+            JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
+            final String typePath = EditorContextBridge.getRelativePath (type);
+            final String url = ((JPDADebuggerImpl) debugger).getEngineContext().getURL(typePath, true);
+            final int lineNumber = findClassLine(url, type);
+            SwingUtilities.invokeLater (new Runnable () {
+                @Override
+                public void run () {
+                    boolean success = EditorContextBridge.getContext().showSource(url, lineNumber, null);
+                    if (!success) {
+                        NotifyDescriptor d = new NotifyDescriptor.Message(NbBundle.getMessage(VariablesActionsProvider.class, "MSG_NoSourceFile", typePath, type), NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(d);
+                    }
+                }
+            });
+        }
+    }
+    
+    private static int findClassLine(String url, String clazz) {
+        FileObject fo;
+        try {
+            fo = URLMapper.findFileObject(new URL(url));
+        } catch (MalformedURLException ex) {
+            return 1;
+        }
+        // TODO: Add getClassLineNumber() into EditorContext
+        String editorContextImplName = "org.netbeans.modules.debugger.jpda.projects.EditorContextImpl"; // NOI18N
+        Class editorContextImpl;
+        try {
+            editorContextImpl = Thread.currentThread().getContextClassLoader().loadClass(editorContextImplName);
+        } catch (ClassNotFoundException cnfex) {
+            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+            if (cl == null) {
+                return 1;
+            }
+            try {
+                editorContextImpl = cl.loadClass(editorContextImplName);
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+                return 1;
+            }
+        }
+        try {
+            Method getClassLineNumber = editorContextImpl.getDeclaredMethod(
+                    "getClassLineNumber", FileObject.class, String.class, String[].class);  // NOI18N
+            getClassLineNumber.setAccessible(true);
+            Future<Integer> lineNumberFuture = (Future<Integer>) getClassLineNumber.invoke(null, fo, clazz, new String[] {});
+            if (lineNumberFuture == null) {
+                return 1;
+            }
+            Integer line = lineNumberFuture.get();
+            if (line == null) {
+                return 1;
+            } else {
+                return line.intValue();
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return 1;
+        }
+    }
+
 }

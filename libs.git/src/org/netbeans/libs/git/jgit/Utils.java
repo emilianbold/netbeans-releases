@@ -343,8 +343,10 @@ public final class Utils {
                 String name = refName.substring(prefix.length());
                 ObjectId id = ref.getLeaf().getObjectId();
                 if (id == null) {
-                    Logger.getLogger(Utils.class.getName()).log(Level.WARNING, "Null object id for ref: {0}, {1}:{2}, {3}", //NOI18N
+                    // can happen, e.g. when the repository has no HEAD yet
+                    Logger.getLogger(Utils.class.getName()).log(Level.INFO, "Null object id for ref: {0}, {1}:{2}, {3}", //NOI18N
                             new Object[] { ref.toString(), ref.getName(), ref.getObjectId(), ref.getLeaf() } );
+                    continue;
                 }
                 branches.put(
                     name, 

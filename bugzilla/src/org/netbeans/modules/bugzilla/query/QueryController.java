@@ -109,7 +109,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, IssueTable.IssueTableProvider {
+public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
 
     protected QueryPanel panel;
 
@@ -157,7 +157,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         
         issueTable = new IssueTable(BugzillaUtil.getRepository(repository), query, query.getColumnDescriptors());
         setupRenderer(issueTable);
-        panel = new QueryPanel(issueTable.getComponent(), this);
+        panel = new QueryPanel(issueTable.getComponent());
 
         isNetbeans = BugzillaUtil.isNbRepository(repository);
         panel.setNBFieldsVisible(isNetbeans);
@@ -165,11 +165,9 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
-        panel.refreshCheckBox.addActionListener(this);
         panel.keywordsButton.addActionListener(this);
         panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
-        panel.gotoIssueButton.addActionListener(this);
         panel.webButton.addActionListener(this);
         panel.saveButton.addActionListener(this);
         panel.urlToggleButton.addActionListener(this);
@@ -178,11 +176,9 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         panel.seenButton.addActionListener(this);
         panel.removeButton.addActionListener(this);
         panel.refreshConfigurationButton.addActionListener(this);
-        panel.findIssuesButton.addActionListener(this);
         panel.cloneQueryButton.addActionListener(this);
         panel.changedFromTextField.addFocusListener(this);
 
-        panel.idTextField.addActionListener(this);
         panel.productList.addKeyListener(this);
         panel.componentList.addKeyListener(this);
         panel.versionList.addKeyListener(this);
@@ -264,10 +260,6 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
     @Override
     public void opened() {
-        boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
-        if(autoRefresh) {
-            scheduleForRefresh();
-        }
         if(query.isSaved()) {
             setIssueCount(query.getSize()); // XXX this probably won't work
                                             // if the query is alredy open and
@@ -433,11 +425,6 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
                     setParameters(urlParameters != null ? urlParameters : getDefaultParameters());
 
-                    if(query.isSaved()) {
-                        final boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
-                        panel.refreshCheckBox.setSelected(autoRefresh);
-                    }
-                    
                     populated = true;
                     Bugzilla.LOG.log(Level.FINE, "populated query {0}", query.getDisplayName()); // NOI18N
                     
@@ -515,8 +502,6 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.searchButton) {
             onRefresh();
-        } else if (e.getSource() == panel.gotoIssueButton) {
-            onGotoIssue();
         } else if (e.getSource() == panel.keywordsButton) {
             onKeywords();
         } else if (e.getSource() == panel.searchButton) {
@@ -525,8 +510,6 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             onSave(true); // refresh
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
-        } else if (e.getSource() == panel.gotoIssueButton) {
-            onGotoIssue();
         } else if (e.getSource() == panel.webButton) {
             onWeb();
         } else if (e.getSource() == panel.saveButton) {
@@ -541,20 +524,10 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             onMarkSeen();
         } else if (e.getSource() == panel.removeButton) {
             onRemove();
-        } else if (e.getSource() == panel.refreshCheckBox) {
-            onAutoRefresh();
-        } else if (e.getSource() == panel.refreshConfigurationButton) {
             onRefreshConfiguration();
-        } else if (e.getSource() == panel.findIssuesButton) {
-            onFindIssues();
         } else if (e.getSource() == panel.cloneQueryButton) {
             onCloneQuery();
-        } else if (e.getSource() == panel.idTextField) {
-            if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
-                onGotoIssue();
-            }
-        } else if (e.getSource() == panel.idTextField ||
-                   e.getSource() == panel.summaryTextField ||
+        } else if (e.getSource() == panel.summaryTextField ||
                    e.getSource() == panel.commentTextField ||
                    e.getSource() == panel.keywordsTextField ||
                    e.getSource() == panel.peopleTextField ||
@@ -616,8 +589,9 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                 if(refresh) {
                     onRefresh();
                 }
+                
+                BugtrackingUtil.openTasksDashboard();
             }
-
        });
     }
 
@@ -695,7 +669,6 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     private void setAsSaved() {
         panel.setSaved(query.getDisplayName(), getLastRefresh());
         panel.setModifyVisible(false);
-        panel.refreshCheckBox.setVisible(true);
     }
 
     private String getLastRefresh() throws MissingResourceException {
@@ -703,39 +676,6 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         return l > 0 ?
             dateFormat.format(new Date(l)) :
             NbBundle.getMessage(QueryController.class, "LBL_Never"); // NOI18N
-    }
-
-    private void onGotoIssue() {
-        String idText = panel.idTextField.getText().trim();
-        if(idText == null || idText.trim().equals("") ) {                       // NOI18N
-            return;
-        }
-
-        final String id = idText.replaceAll("\\s", "");                         // NOI18N
-        
-        final Task[] t = new Task[1];
-        Cancellable c = new Cancellable() {
-            @Override
-            public boolean cancel() {
-                if(t[0] != null) {
-                    return t[0].cancel();
-                }
-                return true;
-            }
-        };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {id}), c); // NOI18N
-        t[0] = Bugzilla.getInstance().getRequestProcessor().create(new Runnable() {
-            @Override
-            public void run() {
-                handle.start();
-                try {
-                    openIssue((BugzillaIssue)repository.getIssue(id));
-                } finally {
-                    handle.finish();
-                }
-            }
-        });
-        t[0].schedule(0);
     }
 
     protected void openIssue(BugzillaIssue issue) {
@@ -858,36 +798,11 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         }
     }
 
-    private void onFindIssues() {
-        Util.createNewQuery(BugzillaUtil.getRepository(repository));
-    }
-
     private void onCloneQuery() {
         String p = getUrlParameters(false);
         BugzillaQuery q = new BugzillaQuery(null, getRepository(), p, false, false, true);
         BugzillaUtil.openQuery(q);
     }
-
-    private void onAutoRefresh() {
-        final boolean autoRefresh = panel.refreshCheckBox.isSelected();
-        BugzillaConfig.getInstance().setQueryAutoRefresh(query.getDisplayName(), autoRefresh);
-        logAutoRefreshEvent(autoRefresh);
-        if(autoRefresh) {
-            scheduleForRefresh();
-        } else {
-            repository.stopRefreshing(query);
-        }
-    }
-
-    protected void logAutoRefreshEvent(boolean autoRefresh) {
-        LogUtils.logAutoRefreshEvent(
-            BugzillaConnector.getConnectorName(),
-            query.getDisplayName(),
-            false,
-            autoRefresh
-        );
-    }
-
 
     private void onRefreshConfiguration() {
         postPopulate(getUrlParameters(false), true);
@@ -1037,11 +952,6 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                 refreshTask.addProgressUnit(issueDesc);
             }
         }
-    }
-
-    @Override
-    public IssueTable getIssueTable() {
-        return issueTable;
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {

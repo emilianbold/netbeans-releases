@@ -42,6 +42,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.options.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.35</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.parsing.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -57,6 +66,15 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.29</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.70</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -204,6 +222,8 @@
                 <friend>org.netbeans.modules.css.prep</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.html</friend>
+                <friend>org.netbeans.modules.html.angular</friend>
+                <friend>org.netbeans.modules.html.knockout</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.html.editor.lib</friend>
                 <friend>org.netbeans.modules.html.navigator</friend>
@@ -212,6 +232,7 @@
                 <friend>org.netbeans.modules.j2ee.common</friend>
                 <friend>org.netbeans.modules.javascript.jstestdriver</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
+                <friend>org.netbeans.modules.php.latte</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.web.browser.api</friend>

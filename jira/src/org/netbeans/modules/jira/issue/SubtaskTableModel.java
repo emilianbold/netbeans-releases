@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.table.DefaultTableModel;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.NbBundle;

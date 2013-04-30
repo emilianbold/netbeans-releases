@@ -60,6 +60,7 @@ final class WebBrowserFactoryDescriptor {
     private HtmlBrowser.Factory factory;
     private BrowserFamilyId browserFamily;
     private Image iconImage;
+    private boolean hasNetBeansIntegration;
 
     public WebBrowserFactoryDescriptor(String id, DataObject dob, boolean def, Factory factory) {
         this.id = id;
@@ -70,9 +71,11 @@ final class WebBrowserFactoryDescriptor {
             browserFamily = ((EnhancedBrowserFactory)factory).getBrowserFamilyId();
             iconImage = ((EnhancedBrowserFactory)factory).getIconImage();
             name = ((EnhancedBrowserFactory)factory).getDisplayName();
+            hasNetBeansIntegration = ((EnhancedBrowserFactory)factory).hasNetBeansIntegration();
         } else {
             browserFamily = BrowserFamilyId.UNKNOWN;
             iconImage = null;
+            hasNetBeansIntegration = false;
         }
     }
     
@@ -109,6 +112,10 @@ final class WebBrowserFactoryDescriptor {
      */
     public boolean isDefault() {
         return def;
+    }
+
+    public boolean hasNetBeansIntegration() {
+        return hasNetBeansIntegration;
     }
 
     /**

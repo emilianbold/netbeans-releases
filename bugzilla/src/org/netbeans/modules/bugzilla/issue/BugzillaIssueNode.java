@@ -44,6 +44,7 @@ package org.netbeans.modules.bugzilla.issue;
 
 import java.util.List;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
+import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -56,7 +57,7 @@ import org.openide.util.NbBundle;
  */
 public class BugzillaIssueNode extends IssueNode<BugzillaIssue> {
     public BugzillaIssueNode(BugzillaIssue issue) {
-        super(BugzillaUtil.getRepository(issue.getRepository()), issue);
+        super(BugzillaUtil.getRepository(issue.getRepository()), issue, Bugzilla.getInstance().getChangesProvider());
     }
 
     BugzillaIssue getBugzillaIssue() {

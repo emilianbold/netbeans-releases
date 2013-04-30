@@ -43,7 +43,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Menu">
         <folder name="View">
@@ -51,7 +51,25 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="100"/>
                 <attr name="misplaced.action.allowed" boolvalue="true"/>
             </file>
+            <file name="org-netbeans-core-multiview-SplitAction.instance">
+                <!--org.netbeans.core.multiview.SplitAction-->
+                <attr bundlevalue="org.netbeans.core.multiview.Bundle#CTL_SplitAction" name="displayName"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.multiview.SplitAction.createSplitAction"/>
+                <attr intvalue="150" name="position"/>
+                <attr name="misplaced.action.allowed" boolvalue="true"/>
+            </file>
+        </folder>
+        <folder name="Window">
+            <folder name="ConfigureWindow">
+		<file name="org-netbeans-core-multiview-SplitAction.instance">
+		    <!--org.netbeans.core.multiview.SplitAction-->
+		    <attr bundlevalue="org.netbeans.core.multiview.Bundle#CTL_SplitDocumentAction" name="displayName"/>
+		    <attr name="instanceCreate" methodvalue="org.netbeans.core.multiview.SplitAction.createSplitAction"/>
+                    <attr intvalue="950" name="position"/>
+		    <attr name="misplaced.action.allowed" boolvalue="true"/>
+		</file>
             </folder>
+        </folder>
     </folder>
     <!--    folder name="Actions">
         <folder name="Window">

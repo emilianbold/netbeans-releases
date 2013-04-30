@@ -1010,6 +1010,12 @@
                 <equals arg1="${javafx.rebase.libs}" arg2="true" trim="true"/>
             </and>
         </condition>
+        <condition property="use-blob-signing">
+            <and>
+                <isset property="javafx.signing.blob"/>
+                <equals arg1="${javafx.signing.blob}" arg2="true" trim="true"/>
+            </and>
+        </condition>
         <echo message="main-class-available = ${main-class-available}" level="verbose"/>
         <echo message="vmargs-available = ${vmargs-available}" level="verbose"/>
         <echo message="preloader-available = ${preloader-available}" level="verbose"/>
@@ -1028,6 +1034,7 @@
         <echo message="permissions-elevated = ${permissions-elevated}" level="verbose"/>
         <echo message="binary-encode-css = ${binary-encode-css}" level="verbose"/>
         <echo message="rebase-lib-jars = ${rebase-lib-jars}" level="verbose"/>
+        <echo message="use-blob-signing = ${use-blob-signing}" level="verbose"/>
     </target>
 
     <target name="-swing-api-check" depends="-check-project,-check-jfx-deployment" if="fx-in-swing-app">
@@ -1146,35 +1153,45 @@
             <echo message="JavaScript: -jfx-copylibs" level="verbose"/>
             <script language="javascript">
                 <![CDATA[
+                    function prefix(s, len) {
+                        if(s == null || len <= 0 || s.length == 0) {
+                            return new String("");
+                        }
+                        return new String(s.substr(0, len));
+                    }
+                    function defined(s) {
+                        return (s != null) && (s != "null") && (s.length > 0);
+                    }
                     var pathConvert = project.createTask("pathconvert");
                     pathConvert.setProperty("run.and.lib.classpath");
-                    var classPath = project.getProperty("run.classpath.without.build.classes.and.dist.dir");
-                    var fileSeparator = project.getProperty("file.separator");
-                    if(classPath != null) {
+                    var classPath = new String(project.getProperty("run.classpath.without.build.classes.and.dist.dir"));
+                    var fileSeparator = new String(project.getProperty("file.separator"));
+                    if(defined(classPath)) {
                         var classPathCopy = pathConvert.createPath();
                         classPathCopy.setPath(classPath);
+                        var pathArray;
                         if(classPath.indexOf(";") != -1) {
-                            var pathArray = classPath.split(";");
+                            pathArray = classPath.split(";");
                         } else {
-                            var pathArray = classPath.split(":");
+                            pathArray = classPath.split(":");
                         }
-                        var added = "";
-                        for (var i=0; i<pathArray.length; i++) {
+                        var added = new java.lang.StringBuilder();
+                        for (var i = 0; i < pathArray.length; i++) {
                             var index = pathArray[i].lastIndexOf(fileSeparator);
-                            if (index >=0) {
-                                var onePath = pathArray[i].substr(0,index+1) + "lib";
+                            if (index >= 0) {
+                                var onePath = prefix(pathArray[i], index+1).concat("lib");
                                 var oneDir = new java.io.File(onePath);
                                 if(oneDir.exists()) {
-                                    var fs = project.createDataType("fileset");
+                                    var fs = project.createDataType( "fileset" );
                                     fs.setDir( oneDir );
                                     fs.setIncludes("*.jar");
                                     var ds = fs.getDirectoryScanner(project);
                                     var srcFiles = ds.getIncludedFiles();
-                                    for (j=0; j<srcFiles.length; j++) {
-                                        if(classPath.indexOf(srcFiles[j]) == -1 && added.indexOf(srcFiles[j]) == -1) {
+                                    for (var j = 0; j < srcFiles.length; j++) {
+                                        if(classPath.indexOf( srcFiles[j] ) == -1 && added.indexOf( srcFiles[j] ) == -1) {
                                             var path = pathConvert.createPath();
-                                            path.setPath(onePath + fileSeparator + srcFiles[j]);
-                                            added += srcFiles[j];
+                                            path.setPath( onePath.concat(fileSeparator).concat(srcFiles[j]) );
+                                            added.append( srcFiles[j] );
                                         }
                                     }
                                 }
@@ -1230,21 +1247,21 @@
             <echo message="JavaScript: -rebase-libs-js-impl" level="verbose"/>
             <script language="javascript">
                 <![CDATA[
-                    var dir = project.getProperty("pp_rebase_dir");
+                    var dir = new String(project.getProperty("pp_rebase_dir"));
                     var fDir = new java.io.File(dir);
                     if( fDir.exists() ) {
                         var callTask = project.createTask("antcall");
                         callTask.setTarget("-rebase-libs-macro-call");
                         var param = callTask.createParam();
                         param.setName("jar.file.to.rebase");
-                        var includes = project.getProperty("pp_rebase_fs");
+                        var includes = new String(project.getProperty("pp_rebase_fs"));
                         var fs = project.createDataType("fileset");
                         fs.setDir( fDir );
                         fs.setIncludes(includes);
                         var ds = fs.getDirectoryScanner(project);
                         var srcFiles = ds.getIncludedFiles();
-                        for (i=0; i<srcFiles.length; i++) {
-                            param.setValue(dir + "${file.separator}" + srcFiles[i]);
+                        for (var i = 0; i < srcFiles.length; i++) {
+                            param.setValue(dir.concat("${file.separator}").concat(srcFiles[i]));
                             callTask.perform();
                         }
                     }
@@ -1279,16 +1296,20 @@
                     var UTF_8 = "UTF-8";
                     var ATTR_CLASS_PATH = "Class-Path";
                     var ATTR_CLASS_PATH_FX = "JavaFX-Class-Path";
+                    function endsWith(s, suffix) {
+                        var i = s.lastIndexOf(suffix);
+                        return  (i != -1) && (i == (s.length - suffix.length));
+                    }
                     function isSigned(manifest) {        
                         var sections = manifest.getSectionNames();
                         while(sections.hasMoreElements()) {
-                            var sectionname = sections.nextElement();
+                            var sectionname = new String(sections.nextElement());
                             var section = manifest.getSection(sectionname);
                             if(section != null) {
                                 var sectionKeys = section.getAttributeKeys();
                                 while (sectionKeys.hasMoreElements()) {
-                                    var element = sectionKeys.nextElement();
-                                    if (element.endsWith("-Digest") || element.endsWith("-digest")) {
+                                    var element = new String(sectionKeys.nextElement());
+                                    if (endsWith(element, "-Digest") || endsWith(element, "-digest")) {
                                         return true;
                                     }
                                 }
@@ -1296,14 +1317,15 @@
                         }
                         return false;
                     }
-                    var src = project.getProperty("manifest.file.temp");
+                    var src = new String(project.getProperty("manifest.file.temp"));
                     var srf = new java.io.File(src);
+                    var manifest;
                     try {
                         var fis = new java.io.FileInputStream(srf);
                         try {
                             var isr = new java.io.InputStreamReader(fis, UTF_8);
                             try {
-                                var manifest = new org.apache.tools.ant.taskdefs.Manifest(isr);
+                                manifest = new org.apache.tools.ant.taskdefs.Manifest(isr);
                             } finally {
                                 isr.close();
                             }
@@ -1311,32 +1333,33 @@
                             fis.close();
                         }
                     } catch(e) {
-                        var manifest = null;
+                        manifest = null;
                     }
                     if(manifest != null) {
                         if(isSigned(manifest)) {
-                            println("Warning: Signed JAR can not be rebased.");
+                            print("Warning: Signed JAR can not be rebased.");
                         } else {
                             var mainSection = manifest.getMainSection();
                             var classPath = mainSection.getAttributeValue(ATTR_CLASS_PATH);
+                            var classPathAttr = null;
                             if (classPath != null) {
-                                var classPathAttr = ATTR_CLASS_PATH;
+                                classPathAttr = ATTR_CLASS_PATH;
                             } else {
                                 classPath = mainSection.getAttributeValue(ATTR_CLASS_PATH_FX);
                                 if(classPath != null) {
-                                    var classPathAttr = ATTR_CLASS_PATH_FX;
+                                    classPathAttr = ATTR_CLASS_PATH_FX;
                                 }
                             }
                             if(classPath != null) {
                                 var result = new java.lang.StringBuilder();
                                 var changed = false;
                                 var pathArray = classPath.split(" ");
-                                for (var i=0; i<pathArray.length; i++) {
+                                for (var i = 0; i < pathArray.length; i++) {
                                     if (result.length() > 0) {
                                         result.append(' ');
                                     }
                                     var index = pathArray[i].lastIndexOf('/');
-                                    if (index >=0 && index < pathArray[i].length()-1) {
+                                    if (index >= 0 && index < pathArray[i].length - 1) {
                                         pathArray[i] = pathArray[i].substring(index+1);
                                         changed = true;
                                     }
@@ -1344,7 +1367,7 @@
                                 }
                                 mainSection.removeAttribute(classPathAttr);
                                 mainSection.addAttributeAndCheck(new org.apache.tools.ant.taskdefs.Manifest.Attribute(classPathAttr, result.toString()));
-                                var tgt = project.getProperty("manifest.file.temp.new");
+                                var tgt = new String(project.getProperty("manifest.file.temp.new"));
                                 var tgf = new java.io.File(tgt);
                                 try {
                                     var fos = new java.io.FileOutputStream(tgf);
@@ -1361,7 +1384,7 @@
                                         fos.close();
                                     }
                                 } catch(e) {
-                                    println("Warning: problem storing rebased manifest file.");
+                                    print("Warning: problem storing rebased manifest file.");
                                 }
                             }
                         }
@@ -1450,6 +1473,12 @@
         -deploy-app-sign-preloader-template,
         -deploy-app-sign-nopreloader-notemplate-swing,
         -deploy-app-sign-nopreloader-template-swing,
+        -deploy-app-sign-blob-nopreloader-notemplate,
+        -deploy-app-sign-blob-preloader-notemplate,
+        -deploy-app-sign-blob-nopreloader-template,
+        -deploy-app-sign-blob-preloader-template,
+        -deploy-app-sign-blob-nopreloader-notemplate-swing,
+        -deploy-app-sign-blob-nopreloader-template-swing,
         -deploy-app-nosign-nopreloader-notemplate,
         -deploy-app-nosign-preloader-notemplate,
         -deploy-app-nosign-nopreloader-template,
@@ -1470,6 +1499,12 @@
         -fallback-deploy-app-sign-preloader-template,
         -fallback-deploy-app-sign-nopreloader-notemplate-swing,
         -fallback-deploy-app-sign-nopreloader-template-swing,
+        -fallback-deploy-app-sign-blob-nopreloader-notemplate,
+        -fallback-deploy-app-sign-blob-preloader-notemplate,
+        -fallback-deploy-app-sign-blob-nopreloader-template,
+        -fallback-deploy-app-sign-blob-preloader-template,
+        -fallback-deploy-app-sign-blob-nopreloader-notemplate-swing,
+        -fallback-deploy-app-sign-blob-nopreloader-template-swing,
         -fallback-deploy-app-nosign-nopreloader-notemplate,
         -fallback-deploy-app-nosign-preloader-notemplate,
         -fallback-deploy-app-nosign-nopreloader-template,
@@ -1502,15 +1537,21 @@
     </target>
     
     <target name="-javafx-init-keystore" depends="-check-signing-possible,-javafx-init-signing,-javafx-init-keystore1,-javafx-init-keystore2,-check-keystore-exists" 
-            if="javafx.signed.true+signjars.task.available" unless="javafx.signjar.keystore.exists">
+            if="javafx.signed.true+signjars.task.available" unless="do.not.init.keystore">
         <property name="javafx.signjar.vendor" value="CN=${application.vendor}"/>
         <echo message="Going to create default keystore in ${javafx.signjar.keystore}"/>
         <genkey dname="${javafx.signjar.vendor}" alias="${javafx.signjar.alias}" keystore="${javafx.signjar.keystore}"
             storepass="${javafx.signjar.storepass}" keypass="${javafx.signjar.keypass}"/>
     </target>
     
-    <target name="-check-keystore-exists">
+    <target name="-check-keystore-exists" depends="-security-props-check">
         <available property="javafx.signjar.keystore.exists" file="${javafx.signjar.keystore}"/>
+        <condition property="do.not.init.keystore">
+            <or>
+                <not><isset property="javafx.signed.true"/></not>
+                <isset property="javafx.signjar.keystore.exists"/>
+            </or>
+        </condition>
     </target>
 
     <target name="-javafx-init-signing">
@@ -1531,6 +1572,19 @@
         <property name="javafx.signjar.storepass" value="${javafx.signing.keystore.password}"/>
         <property name="javafx.signjar.keypass" value="${javafx.signing.keyalias.password}"/>
         <property name="javafx.signjar.alias" value="${javafx.signing.keyalias}"/>
+    </target>
+
+    <target name="-check-signing-security" depends="-security-props-check">
+        <condition property="is.signing.unsafe">
+            <or>
+                <not><isset property="javafx.signed.true"/></not>
+                <not><equals arg1="${javafx.signing.type}" arg2="key" casesensitive="false" trim="true"/></not>
+            </or>
+        </condition>
+    </target>
+
+    <target name="-warn-insufficient-signing" depends="-check-signing-security" if="is.signing.unsafe">
+        <echo message="Warning: Unsigned and self-signed WebStart applications are deprecated from JDK7u21 onwards due to security reasons.${line.separator}         To ensure future correct functionality please sign WebStart applications using trusted certificate."/>
     </target>
 
     
@@ -1576,39 +1630,58 @@
             <script language="javascript">
                 <![CDATA[
                     function isTrue(prop) {
-                        return prop != null && 
-                           (prop.toLowerCase()=="true" || prop.toLowerCase()=="yes" || prop.toLowerCase()=="on");
+                        return prop != null &&
+                           ( prop.toLowerCase() == "true" || prop.toLowerCase() == "yes" || prop.toLowerCase() == "on" );
                     }                    
+                    function prefix(s, len) {
+                        if(s == null || len <= 0 || s.length == 0) {
+                            return new String("");
+                        }
+                        return new String(s.substr(0, len));
+                    }
+                    function replaceSuffix(s, os, ns) {
+                        return prefix(s, s.indexOf(os)).concat(ns);
+                    }
+                    function startsWith(s, prefix) {
+                        return (s != null) && (s.indexOf(prefix) == 0);
+                    }
+                    function endsWith(s, suffix) {
+                        var i = s.lastIndexOf(suffix);
+                        return  (i != -1) && (i == (s.length - suffix.length));
+                    }
+                    function defined(s) {
+                        return (s != null) && (s != "null") && (s.length > 0);
+                    }
                     function contains(array, prop) {
-                        for ( i=0; i < array.length; i++) {
+                        for (var i = 0; i < array.length; i++) {
                             var s1 = new String(array[i]);
                             var s2 = new String(prop);
-                            if( s1.equalsIgnoreCase(s2) ) {
+                            if( s1.toLowerCase() == s2.toLowerCase() ) {
                                 return true;
                             }
                         }
                         return false;
                     }
-                    var S = java.io.File.separator;
+                    var S = new String(java.io.File.separator);
                     var JFXPAR = "javafx.param";
                     var JFXMAN = "javafx.manifest.entry";
                     var JFXPARN = "name";
                     var JFXPARV = "value";
                     var JFXPARH = "hidden";
                     var JFXLAZY = "download.mode.lazy.jar";
-                    var withpreloader = project.getProperty("app-with-preloader");
-                    var fx_ant_api_1_1 = project.getProperty("have-fx-ant-api-1.1");
-                    var fx_ant_api_1_2 = project.getProperty("have-fx-ant-api-1.2");
-                    var fx_in_swing_app = project.getProperty("fx-in-swing-app");
+                    var withpreloader = new String(project.getProperty("app-with-preloader"));
+                    var fx_ant_api_1_1 = new String(project.getProperty("have-fx-ant-api-1.1"));
+                    var fx_ant_api_1_2 = new String(project.getProperty("have-fx-ant-api-1.2"));
+                    var fx_in_swing_app = new String(project.getProperty("fx-in-swing-app"));
 
                     // get jars with lazy download mode property set
                     function getLazyJars() {
                         var jars = new Array();
                         var keys = project.getProperties().keys();
                         while(keys.hasMoreElements()) {
-                            var pn = keys.nextElement();
-                            if(pn.substr(0,JFXLAZY.length) == JFXLAZY) {
-                                var fname = pn.substring(JFXLAZY.length+1);
+                            var pn = new String(keys.nextElement());
+                            if(startsWith(pn, JFXLAZY)) {
+                                var fname = new String(pn.substring(JFXLAZY.length+1));
                                 jars.push(fname);
                             }
                         }
@@ -1616,7 +1689,7 @@
                     }
                     // set download mode of dependent libraries
                     function setDownloadMode(fsEager, fsLazy, jars) {
-                        for(i = 0; i < jars.length; i++) {
+                        for(var i = 0; i < jars.length; i++) {
                             fsEager.setExcludes("lib" + S + jars[i]);
                             fsLazy.setIncludes("lib" + S + jars[i]);
                         }
@@ -1625,29 +1698,30 @@
                     // fx:jar
                     var jar = project.createTask("fx_jar");
                     jar.setProject(project);
-                    var destfile = project.getProperty("pp_jar_destfile");
+                    var destfile = new String(project.getProperty("pp_jar_destfile"));
                     jar.setDestfile(destfile);
 
                     // fx:application
                     var app = jar.createApplication();
                     app.setProject(project);
-                    var title = project.getProperty("application.title");
+                    var title = new String(project.getProperty("application.title"));
+                    var mainclass;
                     if(isTrue(fx_in_swing_app) && isTrue(fx_ant_api_1_2)) {
-                        var mainclass = project.getProperty("main.class");
+                        mainclass = new String(project.getProperty("main.class"));
                         app.setToolkit("swing");
                     } else {
-                        var mainclass = project.getProperty("javafx.main.class");
+                        mainclass = new String(project.getProperty("javafx.main.class"));
                     }
-                    var fallback = project.getProperty("javafx.fallback.class");
+                    var fallback = new String(project.getProperty("javafx.fallback.class"));
                     app.setName(title);
                     app.setMainClass(mainclass);
                     app.setFallbackClass(fallback);
                     if(isTrue(withpreloader)) {
-                        preloaderclass = project.getProperty("javafx.preloader.class");
+                        preloaderclass = new String(project.getProperty("javafx.preloader.class"));
                         app.setPreloaderClass(preloaderclass);
                     }
-                    var appversion = project.getProperty("javafx.application.implementation.version");
-                    if(appversion != null) {
+                    var appversion = new String(project.getProperty("javafx.application.implementation.version"));
+                    if(defined(appversion)) {
                         app.setVersion(appversion);
                     } else {
                         app.setVersion("1.0");
@@ -1657,11 +1731,11 @@
                     var hides = new Array();
                     while(searchHides.hasMoreElements()) {
                         // collect all hidden property names
-                        var pns = searchHides.nextElement();
-                        if(pns.substr(0,JFXPAR.length) == JFXPAR && pns.indexOf(JFXPARN) == (pns.length()-JFXPARN.length)) {
-                            var propns = project.getProperty(pns);
-                            var phs = pns.substr(0,pns.indexOf(JFXPARN)) + JFXPARH;
-                            var proph = project.getProperty(phs);
+                        var pns = new String(searchHides.nextElement());
+                        if(startsWith(pns, JFXPAR) && endsWith(pns, JFXPARN)) {
+                            var propns = new String(project.getProperty(pns));
+                            var phs = replaceSuffix(pns, JFXPARN, JFXPARH);
+                            var proph = new String(project.getProperty(phs));
                             if(isTrue(proph)) {
                                 hides.push(propns);
                             }
@@ -1669,13 +1743,13 @@
                     }
                     var keys = project.getProperties().keys();
                     while(keys.hasMoreElements()) {
-                        var pn = keys.nextElement();
-                        if(pn.substr(0,JFXPAR.length) == JFXPAR && pn.indexOf(JFXPARN) == (pn.length()-JFXPARN.length)) {
-                            var propn = project.getProperty(pn);
-                            if(propn != null && propn.trim().length() > 0 && !contains(hides, propn)) {
-                                var pv = pn.substr(0,pn.indexOf(JFXPARN)) + JFXPARV;
-                                var propv = project.getProperty(pv);
-                                if(propv != null && propv.length() > 0) {
+                        var pn = new String(keys.nextElement());
+                        if(startsWith(pn, JFXPAR) && endsWith(pn, JFXPARN)) {
+                            var propn = new String(project.getProperty(pn));
+                            if(defined(propn) && !contains(hides, propn)) {
+                                var pv = replaceSuffix(pn, JFXPARN, JFXPARV);
+                                var propv = new String(project.getProperty(pv));
+                                if(defined(propv)) {
                                     var par = app.createParam();
                                     par.setName(propn);
                                     par.setValue(propv);
@@ -1684,7 +1758,7 @@
                                         var arg = app.createArgument();
                                         arg.addText(propn);
                                     } else {
-                                        println("Warning: Unnamed parameters not supported by this version of JavaFX SDK deployment Ant tasks. Upgrade JavaFX to 2.0.2 or higher.");
+                                        print("Warning: Unnamed parameters not supported by this version of JavaFX SDK deployment Ant tasks. Upgrade JavaFX to 2.0.2 or higher.");
                                     }
                                 }
                             }
@@ -1694,20 +1768,20 @@
                     // fx:resources
                     var res = jar.createResources();
                     res.setProject(project);
-                    var pdir = project.getProperty("pp_jar_dir");
+                    var pdir = new String(project.getProperty("pp_jar_dir"));
                     if(isTrue(withpreloader)) {
                         var f1 = res.createFileSet();
                         f1.setProject(project);
                         f1.setDir(new java.io.File(pdir));
-                        var i1 = project.getProperty("pp_jar_fs1");
+                        var i1 = new String(project.getProperty("pp_jar_fs1"));
                         f1.setIncludes(i1);
                         f1.setRequiredFor("preloader");
                         var f2 = res.createFileSet();
                         f2.setProject(project);
                         f2.setDir(new java.io.File(pdir));
-                        var i2a = project.getProperty("jfx.deployment.jar");
-                        var i2b = project.getProperty("pp_jar_fs2");
-                        var e2c = project.getProperty("pp_jar_fs1");
+                        var i2a = new String(project.getProperty("jfx.deployment.jar"));
+                        var i2b = new String(project.getProperty("pp_jar_fs2"));
+                        var e2c = new String(project.getProperty("pp_jar_fs1"));
                         f2.setIncludes(i2a);
                         f2.setIncludes(i2b);
                         f2.setExcludes(e2c);
@@ -1724,8 +1798,8 @@
                         var fn = res.createFileSet();
                         fn.setProject(project);
                         fn.setDir(new java.io.File(pdir));
-                        var ia = project.getProperty("jfx.deployment.jar");
-                        var ib = project.getProperty("pp_jar_fs2");
+                        var ia = new String(project.getProperty("jfx.deployment.jar"));
+                        var ib = new String(project.getProperty("pp_jar_fs2"));
                         fn.setIncludes(ia);
                         fn.setIncludes(ib);
                         fn.setRequiredFor("startup");
@@ -1742,30 +1816,30 @@
                     // fileset to exclude *.css or *.bss
                     var fs = jar.createFileSet();
                     fs.setProject(project);
-                    var buildcls = project.getProperty("pp_jar_buildclasses");
-                    var exc = project.getProperty("pp_jar_cssbss");
+                    var buildcls = new String(project.getProperty("pp_jar_buildclasses"));
+                    var exc = new String(project.getProperty("pp_jar_cssbss"));
                     fs.setDir(new java.io.File(buildcls));
                     fs.setExcludes(exc);
                     
                     // manifest
                     var man = jar.createManifest();
-                    var a1val = project.getProperty("application.vendor");
+                    var a1val = new String(project.getProperty("application.vendor"));
                     var a1 = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
                     a1.setName("Implementation-Vendor");
                     a1.setValue(a1val);
                     man.addConfiguredAttribute(a1);
-                    var a2val = project.getProperty("application.title");
+                    var a2val = new String(project.getProperty("application.title"));
                     var a2 = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
                     a2.setName("Implementation-Title");
                     a2.setValue(a2val);
                     man.addConfiguredAttribute(a2);
-                    if(appversion != null && appversion.length() > 0) {
+                    if(defined(appversion)) {
                         var a3 = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
                         a3.setName("Implementation-Version");
                         a3.setValue(appversion);
                         man.addConfiguredAttribute(a3);
                     }
-                    var a4prop = project.getProperty("javafx.deploy.disable.proxy");
+                    var a4prop = new String(project.getProperty("javafx.deploy.disable.proxy"));
                     if(isTrue(a4prop)) {
                         var a4 = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
                         a4.setName("JavaFX-Feature-Proxy");
@@ -1777,11 +1851,11 @@
                     var manifestHides = new Array();
                     while(searchManifestHides.hasMoreElements()) {
                         // collect all hidden property names
-                        var pns = searchManifestHides.nextElement();
-                        if(pns.substr(0,JFXMAN.length) == JFXMAN && pns.indexOf(JFXPARN) == (pns.length()-JFXPARN.length)) {
-                            var propns = project.getProperty(pns);
-                            var phs = pns.substr(0,pns.indexOf(JFXPARN)) + JFXPARH;
-                            var proph = project.getProperty(phs);
+                        var pns = new String(searchManifestHides.nextElement());
+                        if(startsWith(pns, JFXMAN) && endsWith(pns, JFXPARN)) {
+                            var propns = new String(project.getProperty(pns));
+                            var phs = replaceSuffix(pns, JFXPARN, JFXPARH);
+                            var proph = new String(project.getProperty(phs));
                             if(isTrue(proph)) {
                                 manifestHides.push(propns);
                             }
@@ -1789,17 +1863,16 @@
                     }
                     var manifestKeys = project.getProperties().keys();
                     while(manifestKeys.hasMoreElements()) {
-                        var pn = manifestKeys.nextElement();
-                        if(pn.substr(0,JFXMAN.length) == JFXMAN && pn.indexOf(JFXPARN) == (pn.length()-JFXPARN.length)) {
-                            var propn = project.getProperty(pn);
-                            if(propn != null && propn.trim().length() > 0 && !contains(manifestHides, propn)) {
-                                var tmp = new String(propn.trim());
-                                var propnr = tmp.replace(/\s/g, "-");
+                        var pn = new String(manifestKeys.nextElement());
+                        if(startsWith(pn, JFXMAN) && endsWith(pn, JFXPARN)) {
+                            var propn = new String(project.getProperty(pn));
+                            if(defined(propn) && !contains(manifestHides, propn)) {
+                                var propnr = propn.replace(/\s/g, "-");
                                 var entry = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
                                 entry.setName(propnr);
-                                var pv = pn.substr(0,pn.indexOf(JFXPARN)) + JFXPARV;
-                                var propv = project.getProperty(pv);
-                                if(propv != null && propv.length() > 0) {
+                                var pv = replaceSuffix(pn, JFXPARN, JFXPARV);
+                                var propv = new String(project.getProperty(pv));
+                                if(defined(propv)) {
                                     entry.setValue(propv);
                                 } else {
                                     entry.setValue("");
@@ -1834,6 +1907,25 @@
         </sequential>
     </macrodef>
 
+    <macrodef name="deploy-sign-blob">
+        <sequential>
+            <echo message="keystore=${javafx.signjar.keystore}" level="verbose"/>
+            <echo message="storepass=${javafx.signjar.storepass}" level="verbose"/>
+            <echo message="alias=${javafx.signjar.alias}" level="verbose"/>
+            <echo message="keypass=${javafx.signjar.keypass}" level="verbose"/>
+            <echo message="Launching &lt;fx:signjar&gt; task from ${ant-javafx.jar.location}" level="info"/>
+            <fx:signjar keystore="${javafx.signjar.keystore}"
+                storepass="${javafx.signjar.storepass}"
+                alias="${javafx.signjar.alias}"
+                keypass="${javafx.signjar.keypass}">
+                <fileset dir="${jfx.deployment.dir}">
+                    <include name="${jfx.deployment.jar}"/>
+                    <include name="lib${file.separator}*.jar"/>
+                </fileset>
+            </fx:signjar>
+        </sequential>
+    </macrodef>
+
     <macrodef name="deploy-sign-preloader">
         <sequential>
             <echo message="keystore=${javafx.signjar.keystore}" level="verbose"/>
@@ -1858,6 +1950,34 @@
                     <exclude name="lib${file.separator}${javafx.preloader.jar.filename}"/>
                 </fileset>
             </signjar>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="deploy-sign-blob-preloader">
+        <sequential>
+            <echo message="keystore=${javafx.signjar.keystore}" level="verbose"/>
+            <echo message="storepass=${javafx.signjar.storepass}" level="verbose"/>
+            <echo message="alias=${javafx.signjar.alias}" level="verbose"/>
+            <echo message="keypass=${javafx.signjar.keypass}" level="verbose"/>
+            <signjar keystore="${javafx.signjar.keystore}"
+                storepass="${javafx.signjar.storepass}"
+                alias="${javafx.signjar.alias}"
+                keypass="${javafx.signjar.keypass}">
+                <fileset dir="${jfx.deployment.dir}">
+                    <include name="lib${file.separator}${javafx.preloader.jar.filename}"/>
+                </fileset>
+            </signjar>
+            <echo message="Launching &lt;fx:signjar&gt; task from ${ant-javafx.jar.location}" level="info"/>
+            <fx:signjar keystore="${javafx.signjar.keystore}"
+                storepass="${javafx.signjar.storepass}"
+                alias="${javafx.signjar.alias}"
+                keypass="${javafx.signjar.keypass}">
+                <fileset dir="${jfx.deployment.dir}">
+                    <include name="${jfx.deployment.jar}"/>
+                    <include name="lib${file.separator}*.jar"/>
+                    <exclude name="lib${file.separator}${javafx.preloader.jar.filename}"/>
+                </fileset>
+            </fx:signjar>
         </sequential>
     </macrodef>
 
@@ -1899,11 +2019,30 @@
                         return prop != null && 
                            (prop.toLowerCase()=="true" || prop.toLowerCase()=="yes" || prop.toLowerCase()=="on");
                     }                    
+                    function prefix(s, len) {
+                        if(s == null || len <= 0 || s.length == 0) {
+                            return new String("");
+                        }
+                        return new String(s.substr(0, len));
+                    }
+                    function replaceSuffix(s, os, ns) {
+                        return prefix(s, s.indexOf(os)).concat(ns);
+                    }
+                    function startsWith(s, prefix) {
+                        return (s != null) && (s.indexOf(prefix) == 0);
+                    }
+                    function endsWith(s, suffix) {
+                        var i = s.lastIndexOf(suffix);
+                        return  (i != -1) && (i == (s.length - suffix.length));
+                    }
+                    function defined(s) {
+                        return (s != null) && (s != "null") && (s.length > 0);
+                    }
                     function contains(array, prop) {
-                        for ( i=0; i < array.length; i++) {
+                        for (var i = 0; i < array.length; i++) {
                             var s1 = new String(array[i]);
                             var s2 = new String(prop);
-                            if( s1.equalsIgnoreCase(s2) ) {
+                            if( s1.toLowerCase() == s2.toLowerCase() ) {
                                 return true;
                             }
                         }
@@ -1916,19 +2055,19 @@
                     var JFXPARH = "hidden";
                     var JFXCALLB = "javafx.jscallback";
                     var JFXLAZY = "download.mode.lazy.jar";
-                    var withpreloader = project.getProperty("app-with-preloader");
-                    var fx_ant_api_1_1 = project.getProperty("have-fx-ant-api-1.1");
-                    var fx_ant_api_1_2 = project.getProperty("have-fx-ant-api-1.2");
-                    var have_jdk_pre7u14 = project.getProperty("have-jdk-pre7u14");
-                    var fx_in_swing_app = project.getProperty("fx-in-swing-app");
+                    var withpreloader = new String(project.getProperty("app-with-preloader"));
+                    var fx_ant_api_1_1 = new String(project.getProperty("have-fx-ant-api-1.1"));
+                    var fx_ant_api_1_2 = new String(project.getProperty("have-fx-ant-api-1.2"));
+                    var have_jdk_pre7u14 = new String(project.getProperty("have-jdk-pre7u14"));
+                    var fx_in_swing_app = new String(project.getProperty("fx-in-swing-app"));
 
                     // get jars with lazy download mode property set
                     function getLazyJars() {
                         var jars = new Array();
                         var keys = project.getProperties().keys();
                         while(keys.hasMoreElements()) {
-                            var pn = keys.nextElement();
-                            if(pn.substr(0,JFXLAZY.length) == JFXLAZY) {
+                            var pn = new String(keys.nextElement());
+                            if(startsWith(pn, JFXLAZY)) {
                                 var fname = pn.substring(JFXLAZY.length+1);
                                 jars.push(fname);
                             }
@@ -1937,7 +2076,7 @@
                     }
                     // set download mode of dependent libraries
                     function setDownloadMode(fsEager, fsLazy, jars) {
-                        for(i = 0; i < jars.length; i++) {
+                        for(var i = 0; i < jars.length; i++) {
                             fsEager.setExcludes("lib" + S + jars[i]);
                             fsLazy.setIncludes("lib" + S + jars[i]);
                         }
@@ -1946,7 +2085,7 @@
                     function derelativizePath(path) {
                         var f = new java.io.File(path);
                         if(!f.exists()) {
-                            f = new java.io.File(project.getBaseDir() + S + path);
+                            f = new java.io.File(new String(project.getBaseDir()) + S + path);
                         }
                         if(f.exists()) {
                             try {
@@ -1961,14 +2100,14 @@
                     // fx:deploy
                     var deploy = project.createTask("fx_deploy");
                     deploy.setProject(project);
-                    var width = project.getProperty("javafx.width");
-                    var height = project.getProperty("javafx.height");
-                    var outdir = project.getProperty("jfx.deployment.dir");
-                    var embedJNLP = project.getProperty("javafx.deploy.embedJNLP");
-                    var updatemode = project.getProperty("update-mode");
-                    var outfile = project.getProperty("application.title");
-                    var includeDT = project.getProperty("javafx.deploy.includeDT");
-                    var offline = project.getProperty("javafx.deploy.allowoffline");
+                    var width = new String(project.getProperty("javafx.width"));
+                    var height = new String(project.getProperty("javafx.height"));
+                    var outdir = new String(project.getProperty("jfx.deployment.dir"));
+                    var embedJNLP = new String(project.getProperty("javafx.deploy.embedJNLP"));
+                    var updatemode = new String(project.getProperty("update-mode"));
+                    var outfile = new String(project.getProperty("application.title"));
+                    var includeDT = new String(project.getProperty("javafx.deploy.includeDT"));
+                    var offline = new String(project.getProperty("javafx.deploy.allowoffline"));
                     deploy.setWidth(width);
                     deploy.setHeight(height);
                     deploy.setOutdir(outdir);
@@ -1976,28 +2115,28 @@
                     deploy.setUpdateMode(updatemode);
                     deploy.setOutfile(outfile);
                     deploy.setIncludeDT(isTrue(includeDT));
-                    if(offline != null) {
+                    if(defined(offline)) {
                         if(isTrue(fx_ant_api_1_1)) {
                             deploy.setOfflineAllowed(isTrue(offline));
                         } else {
-                            println("Warning: offlineAllowed not supported by this version of JavaFX SDK deployment Ant task. Please upgrade JavaFX to 2.0.2 or higher.");
+                            print("Warning: offlineAllowed not supported by this version of JavaFX SDK deployment Ant task. Please upgrade JavaFX to 2.0.2 or higher.");
                         }
                     }
                     // native packaging (time consuming, thus applied in explicit build only)
-                    var nativeEnabled = project.getProperty("do.build.native.package");
-                    var nativeType = project.getProperty("javafx.native.bundling.type");
-                    var projStateRun = project.getProperty("project.state.running");
-                    var projStateDbg = project.getProperty("project.state.debugging");
-                    var projStatePrf = project.getProperty("project.state.profiling");
-                    if(isTrue(nativeEnabled) && nativeType != null && nativeType != "none") {
+                    var nativeEnabled = new String(project.getProperty("do.build.native.package"));
+                    var nativeType = new String(project.getProperty("javafx.native.bundling.type"));
+                    var projStateRun = new String(project.getProperty("project.state.running"));
+                    var projStateDbg = new String(project.getProperty("project.state.debugging"));
+                    var projStatePrf = new String(project.getProperty("project.state.profiling"));
+                    if(isTrue(nativeEnabled) && defined(nativeType) && nativeType != "none") {
                         if(!isTrue(projStateRun) && !isTrue(projStateDbg) && !isTrue(projStatePrf)) {
                             if(isTrue(fx_ant_api_1_2)) {
                                 deploy.setNativeBundles(nativeType);
-                                println("Note: To create native bundles the <fx:deploy> task may require external tools. See JavaFX 2.2+ documentation for details.");
-                                println("");
-                                println("Launching <fx:deploy> in native packager mode...");
+                                print("Note: To create native bundles the <fx:deploy> task may require external tools. See JavaFX 2.2+ documentation for details.");
+                                print("");
+                                print("Launching <fx:deploy> in native packager mode...");
                             } else {
-                                println("Warning: Native packaging is not supported by this version of JavaFX SDK deployment Ant task. Please upgrade to JDK 7u6 or higher.");
+                                print("Warning: Native packaging is not supported by this version of JavaFX SDK deployment Ant task. Please upgrade to JDK 7u6 or higher.");
                             }
                         }
                     }
@@ -2005,23 +2144,24 @@
                     // fx:application
                     var app = deploy.createApplication();
                     app.setProject(project);
-                    var title = project.getProperty("application.title");
+                    var title = new String(project.getProperty("application.title"));
+                    var mainclass;
                     if(isTrue(fx_in_swing_app) && isTrue(fx_ant_api_1_2)) {
-                        var mainclass = project.getProperty("main.class");
+                        mainclass = new String(project.getProperty("main.class"));
                         app.setToolkit("swing");
                     } else {
-                        var mainclass = project.getProperty("javafx.main.class");
+                        mainclass = new String(project.getProperty("javafx.main.class"));
                     }
-                    var fallback = project.getProperty("javafx.fallback.class");
+                    var fallback = new String(project.getProperty("javafx.fallback.class"));
                     app.setName(title);
                     app.setMainClass(mainclass);
                     app.setFallbackClass(fallback);
                     if(isTrue(withpreloader)) {
-                        preloaderclass = project.getProperty("javafx.preloader.class");
+                        preloaderclass = new String(project.getProperty("javafx.preloader.class"));
                         app.setPreloaderClass(preloaderclass);
                     }
-                    var appversion = project.getProperty("javafx.application.implementation.version");
-                    if(appversion != null) {
+                    var appversion = new String(project.getProperty("javafx.application.implementation.version"));
+                    if(defined(appversion)) {
                         app.setVersion(appversion);
                     } else {
                         app.setVersion("1.0");
@@ -2031,11 +2171,11 @@
                     var hides = new Array();
                     while(searchHides.hasMoreElements()) {
                         // collect all hidden property names
-                        var pns = searchHides.nextElement();
-                        if(pns.substr(0,JFXPAR.length) == JFXPAR && pns.indexOf(JFXPARN) == (pns.length()-JFXPARN.length)) {
-                            var propns = project.getProperty(pns);
-                            var phs = pns.substr(0,pns.indexOf(JFXPARN)) + JFXPARH;
-                            var proph = project.getProperty(phs);
+                        var pns = new String(searchHides.nextElement());
+                        if(startsWith(pns, JFXPAR) && endsWith(pns, JFXPARN)) {
+                            var propns = new String(project.getProperty(pns));
+                            var phs = replaceSuffix(pns, JFXPARN, JFXPARH);
+                            var proph = new String(project.getProperty(phs));
                             if(isTrue(proph)) {
                                 hides.push(propns);
                             }
@@ -2043,13 +2183,13 @@
                     }
                     var keys = project.getProperties().keys();
                     while(keys.hasMoreElements()) {
-                        var pn = keys.nextElement();
-                        if(pn.substr(0,JFXPAR.length) == JFXPAR && pn.indexOf(JFXPARN) == (pn.length()-JFXPARN.length)) {
-                            var propn = project.getProperty(pn);
-                            if(propn != null && propn.trim().length() > 0 && !contains(hides, propn)) {
-                                var pv = pn.substr(0,pn.indexOf(JFXPARN)) + JFXPARV;
-                                var propv = project.getProperty(pv);
-                                if(propv != null && propv.length() > 0) {
+                        var pn = new String(keys.nextElement());
+                        if(startsWith(pn, JFXPAR) && endsWith(pn, JFXPARN)) {
+                            var propn = new String(project.getProperty(pn));
+                            if(defined(propn) && !contains(hides, propn)) {
+                                var pv = replaceSuffix(pn, JFXPARN, JFXPARV);
+                                var propv = new String(project.getProperty(pv));
+                                if(defined(propv)) {
                                     var par = app.createParam();
                                     par.setName(propn);
                                     par.setValue(propv);
@@ -2058,7 +2198,7 @@
                                         var arg = app.createArgument();
                                         arg.addText(propn);
                                     } else {
-                                        println("Warning: Unnamed parameters not supported by this version of JavaFX SDK deployment Ant tasks. Upgrade JavaFX to 2.0.2 or higher.");
+                                        print("Warning: Unnamed parameters not supported by this version of JavaFX SDK deployment Ant tasks. Upgrade JavaFX to 2.0.2 or higher.");
                                     }
                                 }
                             }
@@ -2068,20 +2208,20 @@
                     // fx:resources
                     var res = deploy.createResources();
                     res.setProject(project);
-                    var deploydir = project.getProperty("pp_deploy_dir");
+                    var deploydir = new String(project.getProperty("pp_deploy_dir"));
                     if(isTrue(withpreloader)) {
                         var f1 = res.createFileSet();
                         f1.setProject(project);
                         f1.setDir(new java.io.File(deploydir));
-                        var i1 = project.getProperty("pp_deploy_fs1");
+                        var i1 = new String(project.getProperty("pp_deploy_fs1"));
                         f1.setIncludes(i1);
                         f1.setRequiredFor("preloader");
                         var f2 = res.createFileSet();
                         f2.setProject(project);
                         f2.setDir(new java.io.File(deploydir));
-                        var i2a = project.getProperty("jfx.deployment.jar");
-                        var i2b = project.getProperty("pp_deploy_fs2");
-                        var e2c = project.getProperty("pp_deploy_fs1");
+                        var i2a = new String(project.getProperty("jfx.deployment.jar"));
+                        var i2b = new String(project.getProperty("pp_deploy_fs2"));
+                        var e2c = new String(project.getProperty("pp_deploy_fs1"));
                         f2.setIncludes(i2a);
                         f2.setIncludes(i2b);
                         f2.setExcludes(e2c);
@@ -2098,8 +2238,8 @@
                         var fn = res.createFileSet();
                         fn.setProject(project);
                         fn.setDir(new java.io.File(deploydir));
-                        var ia = project.getProperty("jfx.deployment.jar");
-                        var ib = project.getProperty("pp_deploy_fs2");
+                        var ia = new String(project.getProperty("jfx.deployment.jar"));
+                        var ib = new String(project.getProperty("pp_deploy_fs2"));
                         fn.setIncludes(ia);
                         fn.setIncludes(ib);
                         fn.setRequiredFor("startup");
@@ -2116,72 +2256,74 @@
                     // fx:info
                     var info = deploy.createInfo();
                     info.setProject(project);
-                    var vendor = project.getProperty("application.vendor");
-                    var description = project.getProperty("application.desc");
+                    var vendor = new String(project.getProperty("application.vendor"));
+                    var description = new String(project.getProperty("application.desc"));
                     info.setTitle(title); // title known from before
                     info.setVendor(vendor);
                     info.setDescription(description);
-                    var splash = project.getProperty("javafx.deploy.splash");
-                    if(splash != null && splash.length() > 0) {
+                    var splash = new String(project.getProperty("javafx.deploy.splash"));
+                    if(defined(splash)) {
                         if(isTrue(fx_ant_api_1_1)) {
                             var sicon = info.createSplash();
                             sicon.setHref(splash);
                             sicon.setMode("any");
-                            println("Adding splash image reference: " + splash);
+                            print("Adding splash image reference: " + splash);
                         } else {
-                            println("Warning: Splash Image not supported by this version of JavaFX SDK deployment Ant task. Please upgrade JavaFX to 2.0.2 or higher.");
+                            print("Warning: Splash Image not supported by this version of JavaFX SDK deployment Ant task. Please upgrade JavaFX to 2.0.2 or higher.");
                         }
                     }
-                    if(isTrue(nativeEnabled) && nativeType != null && nativeType != "none") {
-                        var icon = project.getProperty("javafx.deploy.icon.native");
-                        if(icon != null && icon.length() > 0) {
+                    if(isTrue(nativeEnabled) && defined(nativeType) && nativeType != "none") {
+                        var icon = new String(project.getProperty("javafx.deploy.icon.native"));
+                        if(defined(icon)) {
                             if(isTrue(fx_ant_api_1_2) && !isTrue(have_jdk_pre7u14)) {
                                 var dicon = derelativizePath(icon);
                                 // create temporary icon copy renamed to application name (required by native packager)
-                                var baseDir = project.getProperty("basedir");
-                                var buildDir = project.getProperty("build.dir");
-                                var deployBase = project.getProperty("jfx.deployment.base");
+                                var baseDir = new String(project.getProperty("basedir"));
+                                var buildDir = new String(project.getProperty("build.dir"));
+                                var deployBase = new String(project.getProperty("jfx.deployment.base"));
                                 var copyTask = project.createTask("copy");
                                 var source = new java.io.File(dicon);
-                                var sourceName = source.getName();
+                                var sourceName = new String(source.getName());
                                 var lastDot = sourceName.lastIndexOf(".");
+                                var sourceExt;
                                 if(lastDot >=0) {
-                                    var sourceExt = sourceName.substr(lastDot);
+                                    sourceExt = sourceName.substr(lastDot);
                                 } else {
-                                    var sourceExt = "";
+                                    sourceExt = new String("");
                                 }
-                                var target = new java.io.File(baseDir + S + buildDir + S + "icon" + S + deployBase + sourceExt);
+                                var target = new java.io.File(baseDir.concat(S).concat(buildDir).concat(S).concat("icon").concat(S).concat(deployBase).concat(sourceExt));
                                 copyTask.setFile(source);
                                 copyTask.setTofile(target);
                                 copyTask.setFlatten(true);
                                 copyTask.setFailOnError(false);
                                 copyTask.perform();
+                                var tempicon;
                                 if(target.exists()) {
                                     try {
-                                        var tempicon = target.getCanonicalPath();
+                                        tempicon = target.getCanonicalPath();
                                     } catch(err) {
-                                        var tempicon = dicon;
+                                        tempicon = dicon;
                                     }
                                 } else {
-                                    var tempicon = dicon;
+                                    tempicon = dicon;
                                 }
                                 var nicon = info.createIcon();
                                 nicon.setHref(tempicon);
-                                println("Source native icon reference: " + dicon);
-                                println("Processed native icon reference: " + tempicon);
+                                print("Source native icon reference: " + dicon);
+                                print("Processed native icon reference: " + tempicon);
                             } else {
-                                println("Warning: Native Package icon not supported by this version of JavaFX SDK deployment Ant task. Please upgrade to JDK7u14.");
+                                print("Warning: Native Package icon not supported by this version of JavaFX SDK deployment Ant task. Please upgrade to JDK7u14.");
                             }
                         }
                     } else {
-                        var icon = project.getProperty("javafx.deploy.icon");
-                        if(icon != null && icon.length() > 0) {
+                        var icon = new String(project.getProperty("javafx.deploy.icon"));
+                        if(defined(icon)) {
                             if(isTrue(fx_ant_api_1_1)) {
                                 var iicon = info.createIcon();
                                 iicon.setHref(icon);
-                                println("Adding WebStart icon reference: " + icon);
+                                print("Adding WebStart icon reference: " + icon);
                             } else {
-                                println("Warning: WebStart Icon not supported by this version of JavaFX SDK deployment Ant task. Please upgrade JavaFX to 2.0.2 or higher.");
+                                print("Warning: WebStart Icon not supported by this version of JavaFX SDK deployment Ant task. Please upgrade JavaFX to 2.0.2 or higher.");
                             }
                         }
                     }
@@ -2189,23 +2331,23 @@
                     // fx:permissions
                     var perm = deploy.createPermissions();
                     perm.setProject(project);
-                    var elev = project.getProperty("permissions.elevated");
+                    var elev = new String(project.getProperty("permissions.elevated"));
                     perm.setElevated(isTrue(elev));
                     
                     // fx:preferences
                     var pref = deploy.createPreferences();
                     pref.setProject(project);
-                    var scut = project.getProperty("javafx.deploy.adddesktopshortcut");
-                    var instp = project.getProperty("javafx.deploy.installpermanently");
-                    var smenu = project.getProperty("javafx.deploy.addstartmenushortcut");
+                    var scut = new String(project.getProperty("javafx.deploy.adddesktopshortcut"));
+                    var instp = new String(project.getProperty("javafx.deploy.installpermanently"));
+                    var smenu = new String(project.getProperty("javafx.deploy.addstartmenushortcut"));
                     pref.setShortcut(isTrue(scut));
                     pref.setInstall(isTrue(instp));
                     pref.setMenu(isTrue(smenu));
 
                     // fx:template
-                    var templ = project.getProperty("javafx.run.htmltemplate");
-                    var templp = project.getProperty("javafx.run.htmltemplate.processed");
-                    if(templ != null && templp != null && templ.length() > 0 && templp.length() > 0) {
+                    var templ = new String(project.getProperty("javafx.run.htmltemplate"));
+                    var templp = new String(project.getProperty("javafx.run.htmltemplate.processed"));
+                    if(defined(templ) && defined(templp)) {
                         var temp = deploy.createTemplate();
                         temp.setProject(project);
                         temp.setFile(new java.io.File(templ));
@@ -2215,17 +2357,29 @@
                     // fx:platform
                     var plat = deploy.createPlatform();
                     plat.setProject(project);
-                    var requestRT = project.getProperty("javafx.deploy.request.runtime");
-                    if(requestRT != null && requestRT.length() > 0) {
+                    var requestRT = new String(project.getProperty("javafx.deploy.request.runtime"));
+                    if(defined(requestRT)) {
                         plat.setJavafx(requestRT);
                     }
-                    var jvmargs = project.getProperty("run.jvmargs");
-                    if(jvmargs != null && jvmargs.length() > 0) {
+                    var jvmargs = new String(project.getProperty("run.jvmargs"));
+                    if(defined(jvmargs)) {
                         var jvmargss = jvmargs.split(" ");
-                        for(i = 0; i < jvmargss.length; i++) {
-                            if(jvmargss[i] != null && jvmargss[i].length() > 0) {
+                        for(var i = 0; i < jvmargss.length; i++) {
+                            if(defined(jvmargss[i])) {
                                 var vmarg = plat.createJvmarg();
                                 vmarg.setValue(jvmargss[i]);
+                            }
+                        }
+                    }
+                    if(isTrue(nativeEnabled) && defined(nativeType) && nativeType != "none") {
+                        if(!isTrue(projStateRun) && !isTrue(projStateDbg) && !isTrue(projStatePrf)) {
+                            if(plat.setBasedir) {
+                                var sdkdir = new String(project.getProperty("javafx.sdk"));
+                                if(defined(sdkdir)) {
+                                    plat.setBasedir(sdkdir);
+                                }
+                            } else {
+                                print("Note: the current version of native packager Ant task can bundle the default JRE only.");
                             }
                         }
                     }
@@ -2235,10 +2389,10 @@
                     callbs.setProject(project);
                     var keys = project.getProperties().keys();
                     while(keys.hasMoreElements()) {
-                        var pn = keys.nextElement();
-                        if(pn.substr(0,JFXCALLB.length) == JFXCALLB) {
-                            var prop = project.getProperty(pn);
-                            if(prop != null && prop.length() > 0) {
+                        var pn = new String(keys.nextElement());
+                        if(startsWith(pn, JFXCALLB)) {
+                            var prop = new String(project.getProperty(pn));
+                            if(defined(prop)) {
                                 var cname = pn.substring(JFXCALLB.length+1);
                                 var cb = callbs.createCallback();
                                 cb.setProject(project);
@@ -2311,32 +2465,63 @@
             <echo message="JavaScript: deploy-deploy-swing 1" level="verbose"/>
             <script language="javascript">
                 <![CDATA[
+                    function prefix(s, len) {
+                        if(s == null || len <= 0 || s.length == 0) {
+                            return new String("");
+                        }
+                        return new String(s.substr(0, len));
+                    }
+                    function replaceSuffix(s, os, ns) {
+                        return prefix(s, s.indexOf(os)).concat(ns);
+                    }
+                    function startsWith(s, prefix) {
+                        return (s != null) && (s.indexOf(prefix) == 0);
+                    }
+                    function endsWith(s, suffix) {
+                        var i = s.lastIndexOf(suffix);
+                        return  (i != -1) && (i == (s.length - suffix.length));
+                    }
+                    function defined(s) {
+                        return (s != null) && (s != "null") && (s.length > 0);
+                    }
                     var JFXPAR = "javafx.param";
                     var JFXPARN = "name";
                     var JFXPARV = "value";
 
-                    var params = "";
-                    var args = "";
+                    var params = new java.lang.StringBuilder();
+                    var args = new java.lang.StringBuilder();
                     var keys = project.getProperties().keys();
                     while(keys.hasMoreElements()) {
-                        var pn = keys.nextElement();
-                        if(pn.substr(0,JFXPAR.length) == JFXPAR && pn.indexOf(JFXPARN) == (pn.length()-JFXPARN.length)) {
-                            var propn = project.getProperty(pn);
-                            if(propn != null && propn.length() > 0) {
-                                var pv = pn.substr(0,pn.indexOf(JFXPARN)) + JFXPARV;
-                                var propv = project.getProperty(pv);
-                                if(propv != null && propv.length() > 0) {
-                                    params += "\n        <param name=\"" + propn + "\" value=\"" + propv + "\"/>";
-                                    args += "\n        <argument>" + propn + "=" + propv + "</argument>";
+                        var pn = new String(keys.nextElement());
+                        if(startsWith(pn, JFXPAR) && endsWith(pn, JFXPARN)) {
+                            var propn = new String(project.getProperty(pn));
+                            if(defined(propn)) {
+                                var pv = replaceSuffix(pn, JFXPARN, JFXPARV);
+                                var propv = new String(project.getProperty(pv));
+                                if(defined(propv)) {
+                                    params.append("\n        <param name=\"");
+                                    params.append(propn);
+                                    params.append("\" value=\"");
+                                    params.append(propv);
+                                    params.append("\"/>");
+                                    args.append("\n        <argument>");
+                                    args.append(propn);
+                                    args.append("=");
+                                    args.append(propv);
+                                    args.append("</argument>");
                                 } else {
-                                    params += "\n        <param name=\"" + propn + "\" value=\"\"/>";
-                                    args += "\n        <argument>" + propn + "</argument>";
+                                    params.append("\n        <param name=\"");
+                                    params.append(propn);
+                                    params.append("\" value=\"\"/>");
+                                    args.append("\n        <argument>");
+                                    args.append(propn);
+                                    args.append("</argument>");
                                 }
                             }
                         }
                     }
-                    project.setProperty("applet-params-token", params);
-                    project.setProperty("application-args-token", args);
+                    project.setProperty("applet-params-token", new String(params.toString()));
+                    project.setProperty("application-args-token", new String(args.toString()));
                 ]]>
             </script>
             <local name="application.desc.processed"/>
@@ -2377,43 +2562,49 @@
             <echo message="JavaScript: deploy-deploy-swing 2" level="verbose"/>
             <script language="javascript">
                 <![CDATA[
+                    function startsWith(s, prefix) {
+                        return (s != null) && (s.indexOf(prefix) == 0);
+                    }
+                    function defined(s) {
+                        return (s != null) && (s != "null") && (s.length > 0);
+                    }
                     var PREF = "file:";
-                    var doCopyIcon = project.getProperty("local-icon-filename-available");
-                    if(doCopyIcon != null) {
-                        var iconProp = project.getProperty("javafx.deploy.icon");
-                        if(iconProp.indexOf(PREF) == 0) {
+                    var doCopyIcon = new String(project.getProperty("local-icon-filename-available"));
+                    if(defined(doCopyIcon)) {
+                        var iconProp = new String(project.getProperty("javafx.deploy.icon"));
+                        if(startsWith(iconProp, PREF)) {
                             iconProp = iconProp.slice(PREF.length);
                         }
                         while(iconProp.charAt(0) == "/") {
                             iconProp = iconProp.slice(1);
                         }
                         var S = java.io.File.separator;
-                        var baseDir = project.getProperty("basedir");
-                        var distDir = project.getProperty("dist.dir");
-                        var copyTask = project.createTask("copy");
+                        var baseDir = new String(project.getProperty("basedir"));
+                        var distDir = new String(project.getProperty("dist.dir"));
+                        var copyTask = new String(project.createTask("copy"));
                         var source = new java.io.File(iconProp);
-                        var target = new java.io.File(baseDir + S + distDir);
+                        var target = new java.io.File(baseDir.concat(S).concat(distDir));
                         copyTask.setFile(source);
                         copyTask.setTodir(target);
                         copyTask.setFlatten(true);
                         copyTask.setFailOnError(false);
                         copyTask.perform();
                     }
-                    var doCopyHTMLFrom = project.getProperty("html-template-available");
-                    var doCopyHTMLTo = project.getProperty("html-template-processed-available");
-                    if(doCopyHTMLFrom != null && doCopyHTMLTo != null) {
-                        var htmlFrom = project.getProperty("javafx.run.htmltemplate");
-                        if(htmlFrom.indexOf(PREF) == 0) {
+                    var doCopyHTMLFrom = new String(project.getProperty("html-template-available"));
+                    var doCopyHTMLTo = new String(project.getProperty("html-template-processed-available"));
+                    if(defined(doCopyHTMLFrom) && defined(doCopyHTMLTo)) {
+                        var htmlFrom = new String(project.getProperty("javafx.run.htmltemplate"));
+                        if(startsWith(htmlFrom, PREF)) {
                             htmlFrom = htmlFrom.slice(PREF.length);
                         }
-                        while(htmlFrom.charAt(0) == "/") {
+                        while(startsWith(htmlFrom, "/")) {
                             htmlFrom = htmlFrom.slice(1);
                         }
-                        var htmlTo = project.getProperty("javafx.run.htmltemplate.processed");
-                        if(htmlTo.indexOf(PREF) == 0) {
+                        var htmlTo = new String(project.getProperty("javafx.run.htmltemplate.processed"));
+                        if(startsWith(htmlTo, PREF)) {
                             htmlTo = htmlTo.slice(PREF.length);
                         }
-                        while(htmlTo.charAt(0) == "/") {
+                        while(startsWith(htmlTo, "/")) {
                             htmlTo = htmlTo.slice(1);
                         }
                         var copyTask = project.createTask("copy");
@@ -2567,6 +2758,7 @@
                 <isset property="app-without-preloader"/>
                 <not><isset property="html-template-available"/></not>
                 <not><isset property="fx-in-swing-app-workaround"/></not>
+                <not><isset property="use-blob-signing"/></not>
             </and>
         </condition>
         <condition property="sign-preloader-notemplate">
@@ -2574,6 +2766,7 @@
                 <isset property="app-with-preloader"/>
                 <not><isset property="html-template-available"/></not>
                 <not><isset property="fx-in-swing-app-workaround"/></not>
+                <not><isset property="use-blob-signing"/></not>
             </and>
         </condition>
         <condition property="sign-nopreloader-template">
@@ -2581,6 +2774,7 @@
                 <isset property="app-without-preloader"/>
                 <isset property="html-template-available"/>
                 <not><isset property="fx-in-swing-app-workaround"/></not>
+                <not><isset property="use-blob-signing"/></not>
             </and>
         </condition>
         <condition property="sign-preloader-template">
@@ -2588,6 +2782,7 @@
                 <isset property="app-with-preloader"/>
                 <isset property="html-template-available"/>
                 <not><isset property="fx-in-swing-app-workaround"/></not>
+                <not><isset property="use-blob-signing"/></not>
             </and>
         </condition>
         <condition property="sign-nopreloader-notemplate-swing">
@@ -2595,6 +2790,7 @@
                 <isset property="app-without-preloader"/>
                 <not><isset property="html-template-available"/></not>
                 <isset property="fx-in-swing-app-workaround"/>
+                <not><isset property="use-blob-signing"/></not>
             </and>
         </condition>
         <condition property="sign-nopreloader-template-swing">
@@ -2602,6 +2798,55 @@
                 <isset property="app-without-preloader"/>
                 <isset property="html-template-available"/>
                 <isset property="fx-in-swing-app-workaround"/>
+                <not><isset property="use-blob-signing"/></not>
+            </and>
+        </condition>
+        <condition property="sign-blob-nopreloader-notemplate">
+            <and>
+                <isset property="app-without-preloader"/>
+                <not><isset property="html-template-available"/></not>
+                <not><isset property="fx-in-swing-app-workaround"/></not>
+                <isset property="use-blob-signing"/>
+            </and>
+        </condition>
+        <condition property="sign-blob-preloader-notemplate">
+            <and>
+                <isset property="app-with-preloader"/>
+                <not><isset property="html-template-available"/></not>
+                <not><isset property="fx-in-swing-app-workaround"/></not>
+                <isset property="use-blob-signing"/>
+            </and>
+        </condition>
+        <condition property="sign-blob-nopreloader-template">
+            <and>
+                <isset property="app-without-preloader"/>
+                <isset property="html-template-available"/>
+                <not><isset property="fx-in-swing-app-workaround"/></not>
+                <isset property="use-blob-signing"/>
+            </and>
+        </condition>
+        <condition property="sign-blob-preloader-template">
+            <and>
+                <isset property="app-with-preloader"/>
+                <isset property="html-template-available"/>
+                <not><isset property="fx-in-swing-app-workaround"/></not>
+                <isset property="use-blob-signing"/>
+            </and>
+        </condition>
+        <condition property="sign-blob-nopreloader-notemplate-swing">
+            <and>
+                <isset property="app-without-preloader"/>
+                <not><isset property="html-template-available"/></not>
+                <isset property="fx-in-swing-app-workaround"/>
+                <isset property="use-blob-signing"/>
+            </and>
+        </condition>
+        <condition property="sign-blob-nopreloader-template-swing">
+            <and>
+                <isset property="app-without-preloader"/>
+                <isset property="html-template-available"/>
+                <isset property="fx-in-swing-app-workaround"/>
+                <isset property="use-blob-signing"/>
             </and>
         </condition>
     </target>
@@ -2669,6 +2914,14 @@
         <deploy-sign/>
         <deploy-deploy/>
     </target>
+    <target name="-deploy-app-sign-blob-nopreloader-notemplate" depends="-check-sign" if="sign-blob-nopreloader-notemplate" unless="preloader-app">
+        <echo message="-deploy-app-sign-blob-nopreloader-notemplate" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-sign-blob/>
+        <deploy-deploy/>
+    </target>
 
     <!-- project with preloader -->
     <!-- no html template -->
@@ -2680,6 +2933,14 @@
         <deploy-sign-preloader/>
         <deploy-deploy/>
     </target>
+    <target name="-deploy-app-sign-blob-preloader-notemplate" depends="-check-sign" if="sign-blob-preloader-notemplate" unless="preloader-app">
+        <echo message="-deploy-app-sign-blob-preloader-notemplate" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-sign-blob-preloader/>
+        <deploy-deploy/>
+    </target>
 
     <!-- project without preloader -->
     <!-- html template -->
@@ -2689,6 +2950,15 @@
         <deploy-preprocess/>
         <deploy-jar/>
         <deploy-sign/>
+        <deploy-process-template/>
+        <deploy-deploy/>
+    </target>
+    <target name="-deploy-app-sign-blob-nopreloader-template" depends="-check-sign" if="sign-blob-nopreloader-template" unless="preloader-app">
+        <echo message="-deploy-app-sign-blob-nopreloader-template" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-sign-blob/>
         <deploy-process-template/>
         <deploy-deploy/>
     </target>
@@ -2704,6 +2974,15 @@
         <deploy-process-template/>
         <deploy-deploy/>
     </target>
+    <target name="-deploy-app-sign-blob-preloader-template" depends="-check-sign" if="sign-blob-preloader-template" unless="preloader-app">
+        <echo message="-deploy-app-sign-blob-preloader-template" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-sign-blob-preloader/>
+        <deploy-process-template/>
+        <deploy-deploy/>
+    </target>
 
     <!-- project without preloader -->
     <!-- no html template -->
@@ -2716,6 +2995,14 @@
         <deploy-sign/>
         <deploy-deploy-swing/>
     </target>
+    <target name="-deploy-app-sign-blob-nopreloader-notemplate-swing" depends="-check-sign" if="sign-blob-nopreloader-notemplate-swing" unless="preloader-app-no-workaround">
+        <echo message="-deploy-app-sign-blob-nopreloader-notemplate-swing" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-sign-blob/>
+        <deploy-deploy-swing/>
+    </target>
 
     <!-- project without preloader -->
     <!-- html template -->
@@ -2726,6 +3013,15 @@
         <deploy-preprocess/>
         <deploy-jar/>
         <deploy-sign/>
+        <deploy-process-template/>
+        <deploy-deploy-swing/>
+    </target>
+    <target name="-deploy-app-sign-blob-nopreloader-template-swing" depends="-check-sign" if="sign-blob-nopreloader-template-swing" unless="preloader-app-no-workaround">
+        <echo message="-deploy-app-sign-blob-nopreloader-template-swing" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <deploy-jar/>
+        <deploy-sign-blob/>
         <deploy-process-template/>
         <deploy-deploy-swing/>
     </target>
@@ -2828,6 +3124,16 @@
         <deploy-sign/>
         <fallback-deploy-deploy/>
     </target>
+    <target name="-fallback-deploy-app-sign-blob-nopreloader-notemplate" depends="-check-sign" if="sign-blob-nopreloader-notemplate" unless="preloader-app">
+        <echo message="-fallback-deploy-app-sign-blob-nopreloader-notemplate" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <fallback-deploy-application-def/>
+        <fallback-deploy-resources/>
+        <fallback-deploy-jar/>
+        <deploy-sign-blob/>
+        <fallback-deploy-deploy/>
+    </target>
 
     <!-- FALLBACK project with preloader -->
     <!-- FALLBACK no html template -->
@@ -2839,6 +3145,16 @@
         <fallback-deploy-resources-preloader/>
         <fallback-deploy-jar/>
         <deploy-sign-preloader/>
+        <fallback-deploy-deploy/>
+    </target>
+    <target name="-fallback-deploy-app-sign-blob-preloader-notemplate" depends="-check-sign" if="sign-blob-preloader-notemplate" unless="preloader-app">
+        <echo message="-fallback-deploy-app-sign-blob-preloader-notemplate" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <fallback-deploy-application-def-preloader/>
+        <fallback-deploy-resources-preloader/>
+        <fallback-deploy-jar/>
+        <deploy-sign-blob-preloader/>
         <fallback-deploy-deploy/>
     </target>
 
@@ -2854,6 +3170,16 @@
         <deploy-sign/>
         <fallback-deploy-deploy-template/>
     </target>
+    <target name="-fallback-deploy-app-sign-blob-nopreloader-template" depends="-check-sign" if="sign-blob-nopreloader-template" unless="preloader-app">
+        <echo message="-fallback-deploy-app-sign-blob-nopreloader-template" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <fallback-deploy-application-def/>
+        <fallback-deploy-resources/>
+        <fallback-deploy-jar/>
+        <deploy-sign-blob/>
+        <fallback-deploy-deploy-template/>
+    </target>
 
     <!-- FALLBACK project with preloader -->
     <!-- FALLBACK html template -->
@@ -2865,6 +3191,16 @@
         <fallback-deploy-resources-preloader/>
         <fallback-deploy-jar/>
         <deploy-sign-preloader/>
+        <fallback-deploy-deploy-template/>
+    </target>
+    <target name="-fallback-deploy-app-sign-blob-preloader-template" depends="-check-sign" if="sign-blob-preloader-template" unless="preloader-app">
+        <echo message="-fallback-deploy-app-sign-blob-preloader-template" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <fallback-deploy-application-def-preloader/>
+        <fallback-deploy-resources-preloader/>
+        <fallback-deploy-jar/>
+        <deploy-sign-blob-preloader/>
         <fallback-deploy-deploy-template/>
     </target>
 
@@ -2881,6 +3217,16 @@
         <deploy-sign/>
         <fallback-deploy-deploy/>
     </target>
+    <target name="-fallback-deploy-app-sign-blob-nopreloader-notemplate-swing" depends="-check-fallback-sign-deploy-swing-possible" if="sign-nopreloader-notemplate-swing" unless="preloader-app-no-workaround">
+        <echo message="-fallback-deploy-app-sign-blob-nopreloader-notemplate-swing" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <fallback-deploy-application-def-swing/>
+        <fallback-deploy-resources/>
+        <fallback-deploy-jar/>
+        <deploy-sign-blob/>
+        <fallback-deploy-deploy/>
+    </target>
 
     <!-- FALLBACK project without preloader -->
     <!-- FALLBACK html template -->
@@ -2893,6 +3239,16 @@
         <fallback-deploy-resources/>
         <fallback-deploy-jar/>
         <deploy-sign/>
+        <fallback-deploy-deploy-template/>
+    </target>
+    <target name="-fallback-deploy-app-sign-blob-nopreloader-template-swing" depends="-check-fallback-sign-deploy-swing-possible" if="sign-nopreloader-template-swing" unless="preloader-app-no-workaround">
+        <echo message="-fallback-deploy-app-sign-blob-nopreloader-template-swing" level="verbose"/>
+        <deploy-defines/>
+        <deploy-preprocess/>
+        <fallback-deploy-application-def-swing/>
+        <fallback-deploy-resources/>
+        <fallback-deploy-jar/>
+        <deploy-sign-blob/>
         <fallback-deploy-deploy-template/>
     </target>
 
@@ -3307,7 +3663,7 @@
 
 
     <!-- Running/Debugging/Profiling as WebStart -->
-    
+
     <target name="-check-jnlp-file-fx" depends="-swing-api-check" unless="fx-in-swing-app-workaround">
         <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
         <property name="jfx.deployment.jnlp" location="${jfx.deployment.dir}${file.separator}${jfx.deployment.base}.jnlp"/>
@@ -3352,7 +3708,7 @@
     </target>
 
     <target name="jfxws-run" if="jnlp-file-exists" depends="-mark-project-state-running,-clean-if-config-changed,-mark-project-needs-jnlp,-check-jdk-7u4or5-mac,jar,
-            -check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,-check-concurrent-jnlp-runs,-create-temp-run-dir" 
+            -check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,-check-concurrent-jnlp-runs,-create-temp-run-dir,-warn-insufficient-signing" 
             description="Start JavaFX javaws execution">
         <echo message="Executing ${temp.run.jnlp} using ${active.webstart.executable}"/>
         <exec executable="${active.webstart.executable}">
@@ -3362,7 +3718,7 @@
     </target>
     
     <target name="jfxws-debug" if="jnlp-file-exists+netbeans.home" depends="-mark-project-state-debugging,-clean-if-config-changed,-mark-project-needs-jnlp,
-            -check-jdk-7u4or5-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,
+            -check-jdk-7u4or5-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,-warn-insufficient-signing,
             -debug-start-debugger,-debug-javaws-debuggee" description="Debug JavaFX javaws project in IDE"/>
         
     <target name="-debug-javaws-debuggee" depends="-init-debug-args">
@@ -3389,7 +3745,7 @@
     </target>
     
     <target name="-do-jfxws-profile" depends="-mark-project-state-profiling,-mark-project-needs-jnlp,
-            -check-jdk-7u4or5-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime">
+            -check-jdk-7u4or5-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,-warn-insufficient-signing">
         <echo message="Executing ${jfx.deployment.jnlp} in profile mode using ${active.webstart.executable}"/>
         <property name="run.jvmargs.ide" value=""/>        
         <exec executable="${active.webstart.executable}">
@@ -3494,7 +3850,7 @@
     </target>
 
     <target name="jfxbe-run" if="html-file-exists" depends="-mark-project-state-running,-clean-if-config-changed,-mark-project-needs-jnlp,-check-jdk-7u4or5-mac,jar,
-            -check-selected-browser-path,-set-html-file,-check-jfx-runtime,-check-concurrent-html-runs,-create-temp-run-dir"
+            -check-selected-browser-path,-set-html-file,-check-jfx-runtime,-check-concurrent-html-runs,-create-temp-run-dir,-warn-insufficient-signing"
             description="Start JavaFX execution in browser">
         <echo message="Executing ${temp.run.html} using ${javafx.run.inbrowser}"/>
         <echo message="(${javafx.run.inbrowser.path})"/>
@@ -3505,7 +3861,7 @@
     </target>
     
     <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="-mark-project-state-debugging,-clean-if-config-changed,-mark-project-needs-jnlp,
-            -check-jdk-7u4or5-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime,
+            -check-jdk-7u4or5-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime,-warn-insufficient-signing,
             -debug-start-debugger,-debug-jfxbe-debuggee" description="Debug JavaFX project in browser"/>
         
     <target name="-debug-jfxbe-debuggee" depends="-init-debug-args">
@@ -3522,7 +3878,7 @@
     </target>
 
     <target name="-do-jfxbe-profile" depends="-mark-project-state-profiling,-mark-project-needs-jnlp,
-            -check-jdk-7u4or5-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime">
+            -check-jdk-7u4or5-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime,-warn-insufficient-signing">
         <echo message="Executing ${jfx.deployment.html} in profile mode using ${javafx.run.inbrowser}"/>
         <echo message="(${javafx.run.inbrowser.path})"/>
         <property name="run.jvmargs.ide" value=""/>        

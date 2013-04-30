@@ -80,8 +80,11 @@ public class ModelUtils {
             selectorsGroup.addSelector(factory.createSelector(selectorName));
         }
         Declarations decls = factory.createDeclarations();
-        for (String declaration : declarations) {
-            decls.addDeclaration(createDeclaration(declaration));
+        for (String declarationCode : declarations) {
+            PropertyDeclaration propertyDeclaration = createPropertyDeclaration(declarationCode);
+            Declaration declaration = factory.createDeclaration();
+            declaration.setPropertyDeclaration(propertyDeclaration);
+            decls.addDeclaration(declaration);
         }
         return factory.createRule(selectorsGroup, decls);
     }
@@ -103,7 +106,7 @@ public class ModelUtils {
         return body;
     }
 
-    public Declaration createDeclaration(String code) {
+    public PropertyDeclaration createPropertyDeclaration(String code) {
         int separatorIndex = code.indexOf(':');
         if (separatorIndex == -1) {
             throw new IllegalArgumentException(String.format("Bad declaration value (forgotten colon): %s", code));
@@ -114,7 +117,7 @@ public class ModelUtils {
         Property property = factory.createProperty(propertyImg);
         PropertyValue propertyValue = factory.createPropertyValue(factory.createExpression(valueImg));
 
-        return factory.createDeclaration(property, propertyValue, false);
+        return factory.createPropertyDeclaration(property, propertyValue, false);
     }
     
     /**

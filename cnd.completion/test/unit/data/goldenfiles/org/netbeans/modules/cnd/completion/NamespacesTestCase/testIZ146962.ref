@@ -1,2 +1,2 @@
-C
-i int
+C	$	    Gtk::C
+i int	$	    Gtk::i

@@ -438,12 +438,12 @@ public class TaskProcessor {
         return parserLock.isHeldByCurrentThread();
     }
     
-    static void scheduleSpecialTask (final Runnable runnable, final int priority) {
+    static void scheduleSpecialTask (@NonNull final Runnable runnable, final int priority) {
         assert runnable != null;
         final ParserResultTask<? extends Result> task = new ParserResultTask<Result>() {
             @Override
             public int getPriority() {
-                return 0;
+                return priority;
             }
 
             @Override

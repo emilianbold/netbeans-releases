@@ -45,6 +45,7 @@
 package org.openide.text;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -73,6 +74,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.windows.TopComponent;
@@ -125,7 +127,7 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
     }
 
     protected @Override int timeOut() {
-        return 500000;
+        return 10000;
     }
 
     public void testInitializeOnBackground() throws Exception {
@@ -209,9 +211,12 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
             
             public void propertyChange(PropertyChangeEvent evt) {
                 if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
-                   CloneableEditor ed = (CloneableEditor)WindowManager.getDefault().getRegistry().getActivated();
-                   p = ed.getEditorPane();
-                   doc = ed.getEditorPane().getDocument();
+                    final TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
+                    if (tc instanceof CloneableEditor) {
+                        CloneableEditor ed = (CloneableEditor)tc;
+                        p = ed.getEditorPane();
+                        doc = ed.getEditorPane().getDocument();
+                    }
                 }
             }
         }
@@ -383,7 +388,7 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
 
     }
 
-    static final class FindActionCheck implements LookupListener {
+    static final class FindActionCheck implements LookupListener, Mutex.Action<Void> {
         private Result<ActionMap> res;
 
         private Action last;
@@ -392,10 +397,8 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
             res = Utilities.actionsGlobalContext().lookupResult(ActionMap.class);
             resultChanged(null);
             res.addLookupListener(this);
-
-            TopComponent tc =new TopComponent();
-            tc.open();
-            tc.requestActive();
+            
+            Mutex.EVENT.readAccess(this);
 
             assertEquals("No action provided now", null, last);
         }
@@ -412,6 +415,15 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
         public void assertAction() {
             res.removeLookupListener(this);
             assertNotNull("Result found", last);
+        }
+
+        @Override
+        public Void run() {
+            assertTrue("Is EDT", EventQueue.isDispatchThread());
+            TopComponent tc =new TopComponent();
+            tc.open();
+            tc.requestActive();
+            return null;
         }
     }
 }

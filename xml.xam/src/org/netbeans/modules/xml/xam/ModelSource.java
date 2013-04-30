@@ -54,6 +54,7 @@ public class ModelSource implements Lookup.Provider {
     
     private Lookup lookup;
     private boolean editable;
+    /* package access */ Throwable creation;
     
     /**
      * Create a model source object given the lookup context.  If editable is false
@@ -67,6 +68,7 @@ public class ModelSource implements Lookup.Provider {
     public ModelSource(Lookup lookup, boolean editable){
         this.editable = editable;
         this.lookup = lookup;
+        this.creation = new Throwable();
     }
     
     /**

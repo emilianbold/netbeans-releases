@@ -56,6 +56,9 @@ NetBeans.ATTR_SELECTED = ':netbeans_selected';
 // Name of attribute used to mark (temporarily) highlighted elements
 NetBeans.ATTR_HIGHLIGHTED = ':netbeans_highlighted';
 
+// Name of the class used to simulate hovering
+NetBeans.CLASS_HOVER = '-netbeans-hover';
+
 // ID of canvas element that serves as a glass-pane
 NetBeans.GLASSPANE_ID = 'netbeans_glasspane';
 
@@ -254,8 +257,27 @@ NetBeans.setSelectionMode = function(selectionMode) {
     var canvas = document.getElementById(NetBeans.GLASSPANE_ID);
     canvas.style.pointerEvents = value;
     this.lastHighlighted = null;
+    var element = NetBeans.lastHoveredElement;
     this.selectionMode = selectionMode;
     this.handleBlockedEvents();
+
+    // Add/remove the class that simulates hovering
+    if (selectionMode) {
+        while (element !== null) {
+            element.classList.add(NetBeans.CLASS_HOVER);
+            element = element.parentElement;
+        }
+    } else {
+        while (element !== null) {
+            element.classList.remove(NetBeans.CLASS_HOVER);
+            if (element.classList.length === 0) {
+                // add() + remove() may result in class="" attribute
+                // that breaks our source-browser matching algorithm
+                element.removeAttribute('class');
+            }
+            element = element.parentElement;
+        }
+    }
 };
 
 // Repaints the glass-pane
@@ -332,10 +354,22 @@ NetBeans.paintSelectedElements = function(ctx, elements, color) {
 
 // Fills the area/frame between the given outer and inner rectangles
 NetBeans.paintFrame = function(ctx, inner, outer) {
-    ctx.fillRect(outer.left, outer.top, outer.width, (inner.top-outer.top));
-    ctx.fillRect(outer.left, inner.top+inner.height, outer.width, (outer.top+outer.height-inner.top-inner.height));
-    ctx.fillRect(outer.left, inner.top, (inner.left-outer.left), inner.height);
-    ctx.fillRect(inner.left+inner.width, inner.top, (outer.left+outer.width-inner.left-inner.width), inner.height);
+    var height = inner.top-outer.top;
+    if (height > 0) {
+        ctx.fillRect(outer.left, outer.top, outer.width, height);
+    }
+    height = outer.top+outer.height-inner.top-inner.height;
+    if (height > 0) {
+        ctx.fillRect(outer.left, inner.top+inner.height, outer.width, height);
+    }
+    var width = inner.left-outer.left;
+    if (width > 0) {
+        ctx.fillRect(outer.left, inner.top, width, inner.height);
+    }
+    width = outer.left+outer.width-inner.left-inner.width;
+    if (width > 0) {
+        ctx.fillRect(inner.left+inner.width, inner.top, width, inner.height);
+    }
 };
 
 NetBeans.paintHighlightedElements = function(ctx, elements) {
@@ -390,10 +424,10 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             this.paintFrame(ctx, borderRect, marginRect);
 
             ctx.fillStyle = '#FFFF00';
-            this.paintFrame(ctx, marginRect, paddingRect);
+            this.paintFrame(ctx, paddingRect, borderRect);
 
             ctx.fillStyle = '#00FF00';
-            this.paintFrame(ctx, paddingRect, contentRect);
+            this.paintFrame(ctx, contentRect, paddingRect);
 
             ctx.fillStyle = '#0000FF';
             ctx.fillRect(contentRect.left, contentRect.top, contentRect.width, contentRect.height);
@@ -409,7 +443,11 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             var classList = highlightedElement.classList;
             if (classList.length !== 0) {
                 for (var k=0; k<classList.length; k++) {
-                    text += '.' + classList[k];
+                    var clazz = classList[k];
+                    // Do not show the class that simulates hovering
+                    if (clazz !== NetBeans.CLASS_HOVER) {
+                        text += '.' + clazz;
+                    }
                 }
             }
             var text = ' ' + text + ' ' + borderRect.width + 'px \xD7 ' + borderRect.height + 'px ';
@@ -451,6 +489,9 @@ NetBeans.handleBlockedEvents = function() {
     }
 };
 
+/** The last element we were hovering over. */
+NetBeans.lastHoveredElement = null;
+
 // Filters/blocks some mouse events when Select/Inspect mode is turned on.
 // This, for example, allows design/selection of JavaScript-based menus.
 NetBeans.installMouseEventFilters = function() {
@@ -464,14 +505,26 @@ NetBeans.installMouseEventFilters = function() {
             }
         }
     };
+    var mousemoveListener = function(e) {
+        if (!NetBeans.selectionMode) {
+            NetBeans.lastHoveredElement = e.target;
+        }
+        blockingListener(e);
+    };
+    var mouseoutListener = function(e) {
+        if (!NetBeans.selectionMode && (e.relatedTarget === null)) {
+            NetBeans.lastHoveredElement = null;
+        }
+        blockingListener(e);
+    };
     document.documentElement.addEventListener('click', blockingListener, true);
     document.documentElement.addEventListener('contextmenu', blockingListener, true);
     document.documentElement.addEventListener('dblclick', blockingListener, true);
     document.documentElement.addEventListener('mousedown', blockingListener, true);
     document.documentElement.addEventListener('mouseenter', blockingListener, true);
     document.documentElement.addEventListener('mouseleave', blockingListener, true);
-    document.documentElement.addEventListener('mousemove', blockingListener, true);
-    document.documentElement.addEventListener('mouseout', blockingListener, true);
+    document.documentElement.addEventListener('mousemove', mousemoveListener, true);
+    document.documentElement.addEventListener('mouseout', mouseoutListener, true);
     document.documentElement.addEventListener('mouseover', blockingListener, true);
     document.documentElement.addEventListener('mouseup', blockingListener, true);
     document.documentElement.addEventListener('mousewheel', blockingListener, true);

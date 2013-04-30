@@ -136,4 +136,14 @@ public class BrowserFactory implements HtmlBrowser.Factory, EnhancedBrowserFacto
     public String getId() {
         return null;
     }
+
+    @Override
+    public boolean hasNetBeansIntegration() {
+        return true;
+    }
+
+    @Override
+    public boolean canCreateHtmlBrowserImpl() {
+        return !isHidden();
+    }
 }

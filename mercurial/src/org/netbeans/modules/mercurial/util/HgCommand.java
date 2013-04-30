@@ -177,6 +177,7 @@ public class HgCommand {
     private static final String HG_LOG_LIMIT_CMD = "-l"; // NOI18N
     private static final String HG_PARENT_CMD = "parents";              //NOI18N
     private static final String HG_PARAM_BRANCH = "-b"; //NOI18N
+    private static final String HG_PARAM_PUSH_NEW_BRANCH = "--new-branch"; //NOI18N
 
     private static final String HG_LOG_NO_MERGES_CMD = "-M";
     private static final String HG_LOG_DEBUG_CMD = "--debug";
@@ -296,8 +297,6 @@ public class HgCommand {
     private static final String HG_FETCH_CMD = "fetch"; // NOI18N
     public static final String HG_PROXY_ENV = "http_proxy="; // NOI18N
 
-    private static final String HG_MERGE_NEEDED_ERR = "(run 'hg heads' to see heads, 'hg merge' to merge)"; // NOI18N
-    private static final String HG_HEADS_NEEDED_ERR = "(run 'hg heads' to see heads)"; //NOI18N
     private static final String HG_UPDATE_NEEDED_ERR = "(run 'hg update' to get a working copy)"; //NOI18N
     public static final String HG_MERGE_CONFLICT_ERR = "conflicts detected in "; // NOI18N
     public static final String HG_MERGE_FAILED1_ERR = "merging"; // NOI18N
@@ -357,7 +356,7 @@ public class HgCommand {
     private static final String HG_NO_UPDATES_ERR = "0 files updated, 0 files merged, 0 files removed, 0 files unresolved"; // NOI18N
     private static final String HG_NO_VIEW_ERR = "hg: unknown command 'view'"; // NOI18N
     private static final String HG_HGK_NOT_FOUND_ERR = "sh: hgk: not found"; // NOI18N
-    private static final String HG_NO_SUCH_FILE_ERR = "No such file"; // NOI18N
+    private static final String HG_NO_SUCH_FILE_ERR = "no such file"; // NOI18N
 
     private static final String HG_NO_REV_STRIP_ERR = "abort: unknown revision"; // NOI18N
     private static final String HG_LOCAL_CHANGES_STRIP_ERR = "abort: local changes found"; // NOI18N
@@ -518,6 +517,11 @@ public class HgCommand {
      * @return hg update output
      * @throws org.netbeans.modules.mercurial.HgException
      */
+    @NbBundle.Messages({
+        "MSG_WARN_UPDATE_MERGE_TEXT=Cannot update because it would end on a different head - \"Merge\" or \"Rebase\" is needed.",
+        "MSG_WARN_UPDATE_COMMIT_TEXT=Merge has been done, invoke \"Commit\" menu item\n "
+            + "to commit these changes before doing an \"Update\""
+    })
     public static List<String> doUpdateAll(File repository, boolean bForce, String revision, boolean bThrowException) throws HgException {
         if (repository == null ) return null;
         List<String> command = new ArrayList<String>();
@@ -540,9 +544,14 @@ public class HgCommand {
         if (bThrowException) {
             if (!list.isEmpty()) {
                 if  (isErrorUpdateSpansBranches(list.get(0))) {
-                    throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_MERGE_TEXT"));
+                    handleError(command, list, Bundle.MSG_WARN_UPDATE_MERGE_TEXT(),
+                            OutputLogger.getLogger(repository));
                 } else if (isMergeAbortUncommittedMsg(list.get(0))) {
-                    throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_COMMIT_TEXT"));
+                    handleError(command, list, Bundle.MSG_WARN_UPDATE_COMMIT_TEXT(),
+                            OutputLogger.getLogger(repository));
+                } else if (isErrorAbort(list.get(list.size() -1))) {
+                    handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"),
+                            OutputLogger.getLogger(repository));
                 }
             }
         }
@@ -915,7 +924,9 @@ public class HgCommand {
      * @return hg push output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doPush(File repository, final HgURL toUrl, String revision, String branch, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
+    public static List<String> doPush (File repository, final HgURL toUrl,
+            String revision, String branch, boolean allowNewBranch,
+            OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || toUrl == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -931,7 +942,10 @@ public class HgCommand {
         }
         if (branch != null) {
             command.additionalOptions.add(HG_PARAM_BRANCH);
-            command.additionalOptions.add(branch);            
+            command.additionalOptions.add(branch);
+            command.additionalOptions.add(HG_PARAM_PUSH_NEW_BRANCH);
+        } else if (allowNewBranch) {
+            command.additionalOptions.add(HG_PARAM_PUSH_NEW_BRANCH);
         }
         command.urlPathProperties = new String[] {HgConfigFiles.HG_DEFAULT_PUSH};
 
@@ -970,7 +984,7 @@ public class HgCommand {
                 throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_NO_VIEW_TEXT"));
              }
             else if (isErrorHgkNotFound(list.get(0)) || isErrorNoSuchFile(list.get(0))) {
-                OutputLogger.getLogger(repository.getAbsolutePath()).outputInRed(list.toString());
+                OutputLogger.getLogger(repository).outputInRed(list.toString());
                 throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_HGK_NOT_FOUND_TEXT"));
             } else if (isErrorAbort(list.get(list.size() -1))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
@@ -1037,6 +1051,22 @@ public class HgCommand {
             handleError(command, list, Bundle.MSG_HgCommand_Rebase_failed(), logger);
         }
         return RebaseResult.build(repository, list);
+    }
+
+    private static final ThreadLocal<Boolean> disabledUI = new ThreadLocal<Boolean>();
+    
+    public static <T> T runWithoutUI (Callable<T> callable) throws HgException {
+        try {
+            disabledUI.set(true);
+            return callable.call();
+        } catch (HgException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            Mercurial.LOG.log(Level.INFO, null, ex);
+            throw new HgException(ex.getMessage());
+        } finally {
+            disabledUI.remove();
+        }
     }
 
     private static String getGlobalProxyIfNeeded(String defaultPath, boolean bOutputDetails, OutputLogger logger){
@@ -1304,16 +1334,12 @@ public class HgCommand {
 
     public static HgLogMessage[] getIncomingMessages(final File root, String toRevision, String branchName,
             boolean bShowMerges, boolean bGetFileInfo, boolean getParents,
-            int limitRevisions, OutputLogger logger) {
+            int limitRevisions, OutputLogger logger) throws HgException {
         List<HgLogMessage> messages = Collections.<HgLogMessage>emptyList();
 
         try {
             List<String> list = HgCommand.doIncomingForSearch(root, toRevision, branchName, bShowMerges, bGetFileInfo, getParents, limitRevisions, logger);
             messages = processLogMessages(root, null, list, true);
-        } catch (HgException.HgCommandCanceledException ex) {
-            // do not take any action
-        } catch (HgException ex) {
-            HgUtils.notifyException(ex);
         } finally {
             logger.closeLog();
         }
@@ -1322,16 +1348,12 @@ public class HgCommand {
     }
 
     public static HgLogMessage[] getOutMessages(final File root, String toRevision, String branchName,
-            boolean bShowMerges, boolean getParents, int limitRevisions, OutputLogger logger) {
+            boolean bShowMerges, boolean getParents, int limitRevisions, OutputLogger logger) throws HgException {
         List<HgLogMessage> messages = Collections.<HgLogMessage>emptyList();
 
         try {
             List<String> list = HgCommand.doOutForSearch(root, toRevision, branchName, bShowMerges, getParents, limitRevisions, logger);
             messages = processLogMessages(root, null, list, true);
-        } catch (HgException.HgCommandCanceledException ex) {
-            // do not take any action
-        } catch (HgException ex) {
-            HgUtils.notifyException(ex);
         } finally {
             logger.closeLog();
         }
@@ -1683,6 +1705,10 @@ public class HgCommand {
         if(revStr != null){
             command.add(HG_FLAG_REV_CMD);
             command.add(revStr);
+        }
+        if (branchName != null) {
+            command.add(HG_PARAM_BRANCH);
+            command.add(branchName);
         }
         if (limit > 0) {
             command.add(HG_LOG_LIMIT_CMD);
@@ -3472,7 +3498,7 @@ public class HgCommand {
             finalCommand.addAll(attributes);
             List<String> list = exec(finalCommand);
             if (!list.isEmpty() && isErrorNoRepository(list.get(0))) {
-                OutputLogger logger = OutputLogger.getLogger(repository.getAbsolutePath());
+                OutputLogger logger = OutputLogger.getLogger(repository);
                 try {
                     handleError(finalCommand, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
                 } finally {
@@ -4327,12 +4353,12 @@ public class HgCommand {
         return handleAuthenticationError(cmdOutput, repository, url, userName, credentialsSupport, hgCommand, true);
     }
 
-    private static PasswordAuthentication handleAuthenticationError(List<String> cmdOutput, File repository, String url, String userName, UserCredentialsSupport credentialsSupport, String hgCommand, boolean showKenaiLoginDialog) throws HgException {
+    private static PasswordAuthentication handleAuthenticationError(List<String> cmdOutput, File repository, String url, String userName, UserCredentialsSupport credentialsSupport, String hgCommand, boolean showLoginDialog) throws HgException {
         PasswordAuthentication credentials = null;
         String msg = cmdOutput.get(cmdOutput.size() - 1).toLowerCase();
-        if (isAuthMsg(msg)) {
+        if (isAuthMsg(msg) && showLoginDialog) {
             HgKenaiAccessor support = HgKenaiAccessor.getInstance();
-            if(support.isKenai(url) && showKenaiLoginDialog) {
+            if(support.isKenai(url)) {
                 checkKenaiPermissions(hgCommand, url, support);
                 // try to login
                 credentials = handleKenaiAuthorisation(support, url);
@@ -4353,8 +4379,12 @@ public class HgCommand {
                 || msg.contains(HG_AUTHORIZATION_FAILED_ERR);
     }
 
-    public static boolean isMergeNeededMsg(String msg) {
-        return msg.indexOf(HG_MERGE_NEEDED_ERR) > -1;                       // NOI18N
+    public static boolean isMergeNeededMsg (String msg) {
+        return msg.contains("run") //NOI18N
+                && msg.contains("hg heads") //NOI18N
+                && msg.contains("to see heads") //NOI18N
+                && msg.contains("hg merge") //NOI18N
+                && msg.contains("to merge"); //NOI18N
     }
 
     public static boolean isUpdateNeededMsg (String msg) {
@@ -4362,7 +4392,9 @@ public class HgCommand {
     }
 
     public static boolean isHeadsNeededMsg (String msg) {
-        return msg.contains(HG_HEADS_NEEDED_ERR);
+        return msg.contains("run") //NOI18N
+                && msg.contains("hg heads") //NOI18N
+                && msg.contains("to see heads"); //NOI18N
     }
 
     public static boolean isBackoutMergeNeededMsg(String msg) {
@@ -4504,7 +4536,7 @@ public class HgCommand {
     }
 
     private static boolean isErrorNoSuchFile(String msg) {
-        return msg.indexOf(HG_NO_SUCH_FILE_ERR) > -1;                               // NOI18N
+        return msg.toLowerCase().indexOf(HG_NO_SUCH_FILE_ERR) > -1;                               // NOI18N
     }
 
     private static boolean isErrorNoResponse(String msg) {
@@ -4849,7 +4881,7 @@ public class HgCommand {
         List<String> list = exec(command);
         List<String> changedFiles = new ArrayList<String>(list.size());
         if (!list.isEmpty() && isErrorNoRepository(list.get(0))) {
-            OutputLogger logger = OutputLogger.getLogger(repository.getAbsolutePath());
+            OutputLogger logger = OutputLogger.getLogger(repository);
             try {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
             } finally {
@@ -4969,7 +5001,7 @@ public class HgCommand {
         public List<String> invoke() throws HgException {
             List<String> list = null;
             boolean retry = true;
-            boolean showLoginWindow = true;
+            boolean showLoginWindow = !Boolean.TRUE.equals(disabledUI.get());
             credentials = null;
             HgKenaiAccessor supp = HgKenaiAccessor.getInstance();
             String rawUrl = remoteUrl.toUrlStringWithoutUserInfo();

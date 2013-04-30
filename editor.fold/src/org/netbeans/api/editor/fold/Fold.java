@@ -83,28 +83,37 @@ public final class Fold {
     
     private static final String DEFAULT_DESCRIPTION = "..."; // NOI18N
     
-    private final FoldOperationImpl operation;
+    private final FoldOperationImpl operation; // + 4
 
-    private final FoldType type;
+    private final FoldType type;   // + 4 = 8
     
-    private boolean collapsed;
+    /**
+     * Flags to encode fold state. A damaged to a fold will be never undone.
+     */
+    private static final byte FLAG_COLLAPSED = FoldUtilitiesImpl.FLAG_COLLAPSED;
+    private static final byte FLAG_START_DAMAGED = FoldUtilitiesImpl.FLAG_START_DAMAGED;
+    private static final byte FLAG_END_DAMAGED = FoldUtilitiesImpl.FLAG_END_DAMAGED;
     
-    private String description;
+    private volatile byte flags;     // + 4 = 12
     
-    private Fold parent;
+    // TODO: consider offloading description to FoldTemplate, especially if a FoldTemplate pointer is added
+    // to Fold object.
+    private String description;    // + 4 = 16
     
-    private FoldChildren children;
+    private Fold parent;           // + 4 = 20
     
-    private int rawIndex;
+    private FoldChildren children; // + 4 = 24
     
-    private int startGuardedLength;
-    private int endGuardedLength;
+    private int rawIndex;          // + 4 = 28
+     
+    // TODO: these two are typically provided by a FoldTemplate; especially after the Fold receives
+    // a FoldTemplate pointer, we could get rid of these two numbers.
     
-    private Position startPos;
-    private Position endPos;
+    private int startGuardedLength; // +4 = 32
+    private int endGuardedLength;   // + 4 = 36
     
-    private Position guardedEndPos;
-    private Position guardedStartPos;
+    private Position startPos;  // + 4 = 40
+    private Position endPos;    // + 4 = 44
     
     private Object extraInfo;
     
@@ -138,7 +147,7 @@ public final class Fold {
         this.operation = operation;
         this.type = type;
 
-        this.collapsed = collapsed;
+        this.flags = collapsed ? FLAG_COLLAPSED : 0;
         this.description = description;
 
         this.startPos = doc.createPosition(startOffset);
@@ -148,14 +157,6 @@ public final class Fold {
         this.endGuardedLength = endGuardedLength;
         
         this.extraInfo = extraInfo;
-        
-        // Must assign guarded areas positions
-        // Even if the particular guarded area is zero the particular inner area
-        // has at least 1 character to detect changes leading
-        // to automatic forced expanding of the fold.
-        updateGuardedStartPos(doc, startOffset);
-        updateGuardedEndPos(doc, endOffset);
-
     }
 
     /**
@@ -237,7 +238,6 @@ public final class Fold {
             throw new IllegalStateException("Cannot set endOffset of root fold"); // NOI18N
         } else {
             this.startPos = doc.createPosition(startOffset);
-            updateGuardedStartPos(doc, startOffset);
         }
     }
 
@@ -264,7 +264,6 @@ public final class Fold {
             throw new IllegalStateException("Cannot set endOffset of root fold"); // NOI18N
         } else {
             this.endPos = doc.createPosition(endOffset);
-            updateGuardedEndPos(doc, endOffset);
         }
     }
 
@@ -277,14 +276,14 @@ public final class Fold {
      * @return true if this fold is collapsed or false if it's expanded.
      */
     public boolean isCollapsed() {
-    	return collapsed;
+    	return (flags & FLAG_COLLAPSED) > 0;
     }
     
     void setCollapsed(boolean collapsed) {
         if (isRootFold()) {
             throw new IllegalStateException("Cannot set collapsed flag on root fold."); // NOI18N
         }
-        this.collapsed = collapsed;
+        this.flags = (byte)((this.flags & ~FLAG_COLLAPSED) | (collapsed ? FLAG_COLLAPSED : 0));
     }
 
     /**
@@ -434,29 +433,19 @@ public final class Fold {
     public int getGuardedEnd() {
         if (isRootFold()) {
             return getEndOffset();
-        } else if (isZeroStartGuardedLength()) {
+        } else if (isZeroEndGuardedLength()) {
             return getEndOffset();
         } else {
             return getEndOffset() - endGuardedLength;
         }
     }
     
-    private void updateGuardedStartPos(Document doc, int startOffset) throws BadLocationException {
-        if (!isRootFold()) {
-            int guardedStartOffset = isZeroStartGuardedLength()
-                ? startOffset + 1
-                : startOffset + startGuardedLength;
-            this.guardedStartPos = doc.createPosition(guardedStartOffset);
-        }
+    int getStartGuardedLength() {
+        return startGuardedLength;
     }
-
-    private void updateGuardedEndPos(Document doc, int endOffset) throws BadLocationException {
-        if (!isRootFold()) {
-            int guardedEndOffset = isZeroEndGuardedLength()
-                ? endOffset - 1
-                : endOffset - endGuardedLength;
-            this.guardedEndPos = doc.createPosition(guardedEndOffset);
-        }
+    
+    int getEndGuardedLength() {
+        return endGuardedLength;
     }
 
     private boolean isZeroStartGuardedLength() {
@@ -467,44 +456,12 @@ public final class Fold {
         return (endGuardedLength == 0);
     }
     
-    private int getGuardedStartOffset() {
-        return isRootFold() ? getStartOffset() : guardedStartPos.getOffset();
-    }
-    
-    private int getGuardedEndOffset() {
-        return isRootFold() ? getEndOffset() : guardedEndPos.getOffset();
-    }
-    
-    void insertUpdate(DocumentEvent evt) {
-        if (evt.getOffset() + evt.getLength() == getGuardedStartOffset()) {
-             // inserted right at the end of the guarded area
-            try {
-                updateGuardedStartPos(evt.getDocument(), getStartOffset());
-            } catch (BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
-            }
-        }
-    }
-    
-    void removeUpdate(DocumentEvent evt) {
-        try {
-            if (getStartOffset() == getGuardedStartOffset()) {
-                updateGuardedStartPos(evt.getDocument(), getStartOffset());
-            }
-            if (getEndOffset() == getGuardedEndOffset()) {
-                updateGuardedEndPos(evt.getDocument(), getEndOffset());
-            }
-        } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
-        }
-    }
-    
     /**
      * Return true if the starting guarded area is damaged by a document modification.
      */
     boolean isStartDamaged() {
         return (!isZeroStartGuardedLength() // no additional check if zero guarded length
-                && (getInnerStartOffset() - getStartOffset() != startGuardedLength));
+                && (flags & FLAG_START_DAMAGED) > 0);
     }
     
     /**
@@ -512,33 +469,9 @@ public final class Fold {
      */
     boolean isEndDamaged() {
         return (!isZeroEndGuardedLength() // no additional check if zero guarded length
-                && (getEndOffset() - getInnerEndOffset() != endGuardedLength));
+                && (flags & FLAG_END_DAMAGED) > 0);
     }
     
-    boolean isExpandNecessary() {
-        // Only operate in case when isZero*() methods return true
-        // because if not the fold would already be marked as damaged
-        // and removed (isDamaged*() gets asked prior to this one).
-        return (isZeroStartGuardedLength() && (getStartOffset() == getGuardedStartOffset()))
-            || (isZeroEndGuardedLength() && (getEndOffset() == getGuardedEndOffset()));
-    }
-    
-    /**
-     * Get the position where the inner part of the fold starts
-     * (and the initial guarded area ends).
-     */
-    private int getInnerStartOffset() {
-        return isZeroStartGuardedLength() ? getStartOffset() : getGuardedStartOffset();
-    }
-
-    /**
-     * Get the position where the inner part of the fold ends
-     * (and the ending guarded area starts).
-     */
-    private int getInnerEndOffset() {
-        return isZeroEndGuardedLength() ? getEndOffset() : getGuardedEndOffset();
-    }
-
     /**
      * Get the raw index of this fold in the parent.
      * <br>
@@ -567,10 +500,14 @@ public final class Fold {
     }
     
     public String toString() {
-        return FoldUtilitiesImpl.foldToString(this) + ", [" + getInnerStartOffset() // NOI18N
-            + ", " + getInnerEndOffset() + "] {" // NOI18N
-            + getGuardedStartOffset() + ", " // NOI18N
-            + getGuardedEndOffset() + '}'; // NOI18N
+        return FoldUtilitiesImpl.foldToString(this) + ", [" + getStartOffset()// NOI18N
+            + ", " + getEndOffset() + "] {" // NOI18N
+            + getGuardedStart() + ", " // NOI18N
+            + getGuardedEnd() + '}'; // NOI18N
+    }
+    
+    void setDamaged(byte f) {
+        flags = (byte)((flags & (byte)~FoldUtilitiesImpl.FLAGS_DAMAGED) | f);
     }
     
 }

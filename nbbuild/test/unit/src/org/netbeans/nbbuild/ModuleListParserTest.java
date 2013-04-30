@@ -94,7 +94,7 @@ public class ModuleListParserTest extends TestBase {
     }
 
     public void testScanSourcesInNetBeansOrg() throws Exception {
-        Hashtable<String,String> properties = new Hashtable<String,String>();
+        Hashtable<String,Object> properties = new Hashtable<String,Object>();
         properties.put("nb_all", nball.getAbsolutePath());
         File build = file(nball, "nbbuild/netbeans");
         properties.put("netbeans.dest.dir", build.getAbsolutePath());
@@ -157,7 +157,7 @@ public class ModuleListParserTest extends TestBase {
             public void buildStarted(BuildEvent buildEvent) {}
             public void buildFinished(BuildEvent buildEvent) {}
         });
-        Hashtable<String,String> properties = new Hashtable<String,String>();
+        Hashtable<String,Object> properties = new Hashtable<String,Object>();
         properties.put("cluster.path.final", filePath(nball, "nbbuild/netbeans/platform")
                 + File.pathSeparator + filePath(nball, "nbbuild/netbeans/ide"));
         properties.put("basedir", filePath(nball, "apisupport.ant/test/unit/data/example-external-projects/suite1/action-project"));
@@ -250,7 +250,7 @@ public class ModuleListParserTest extends TestBase {
         assertEquals("One file generated", 1, arr.length);
         assertEquals(dashCnb + ".xml", arr[0]);
 
-        Hashtable<String,String> properties = new Hashtable<String,String>();
+        Hashtable<String,Object> properties = new Hashtable<String,Object>();
         properties.put("cluster.path.final", filePath(nball, "nbbuild/netbeans/platform")
                 + File.pathSeparator + getWorkDir());
         properties.put("basedir", filePath(nball, "apisupport.ant/test/unit/data/example-external-projects/suite1/action-project"));
@@ -263,7 +263,7 @@ public class ModuleListParserTest extends TestBase {
     }
     
     public void testScanSourcesAndBinariesForExternalStandaloneModule() throws Exception {
-        Hashtable<String,String> properties = new Hashtable<String,String>();
+        Hashtable<String,Object> properties = new Hashtable<String,Object>();
         properties.put("cluster.path.final", filePath(nball, "apisupport.ant/test/unit/data/example-external-projects/suite3/nbplatform/platform5") +
                 File.pathSeparator + filePath(nball, "apisupport.ant/test/unit/data/example-external-projects/suite3/nbplatform/random"));
         properties.put("basedir", filePath(nball, "apisupport.ant/test/unit/data/example-external-projects/suite3/dummy-project"));

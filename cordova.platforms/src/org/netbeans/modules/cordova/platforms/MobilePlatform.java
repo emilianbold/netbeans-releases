@@ -131,14 +131,18 @@ public interface MobilePlatform {
      * @return 
      */
     String getSimulatorPath();
+    
+    String getCodeSignIdentity();
+    
+    String getProvisioningProfilePath();
 
-    /**
-     * Debugger transport
-     * @return 
-     */
-    public MobileDebugTransport getDebugTransport();
+    void setCodeSignIdentity(String identity);
+    
+    void setProvisioningProfilePath(String path);
 
     void removePropertyChangeListener(PropertyChangeListener listener);
     
     void addPropertyChangeListener(PropertyChangeListener listener);
+    
+    Collection<? extends ProvisioningProfile> getProvisioningProfiles();
 }

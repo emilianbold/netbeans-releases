@@ -68,9 +68,11 @@ public class IndexedElement extends JsElementImpl {
     private final boolean isAnonymous;
     private final boolean isPlatform;
     private final Collection<TypeUsage> assignments;
+    public final static char ANONYMOUS_POSFIX = 'A';
+    public final static char OBJECT_POSFIX = 'O';
     
     public IndexedElement(FileObject fileObject, String name, String fqn, boolean isDeclared, boolean isAnonymous, JsElement.Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, Collection<TypeUsage> assignments, boolean isPlatform) {
-        super(fileObject, name, isDeclared, offsetRange, modifiers);
+        super(fileObject, name, isDeclared, offsetRange, modifiers, null);
         this.jsKind = kind;
         this.fqn = fqn;
         this.isAnonymous = isAnonymous;
@@ -100,26 +102,28 @@ public class IndexedElement extends JsElementImpl {
         return isPlatform;
     }
 
-    public static IndexDocument createDocument(JsObject object, IndexingSupport support, Indexable indexable) {
+    protected static IndexDocument createDocument(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
         IndexDocument elementDocument = support.createDocument(indexable);
         elementDocument.addPair(JsIndex.FIELD_BASE_NAME, object.getName(), true, true);
-        elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  ModelUtils.createFQN(object), true, true);
-        boolean isGlobal = object.getParent() != null ? ModelUtils.isGlobal(object.getParent()) : ModelUtils.isGlobal(object);
-        elementDocument.addPair(JsIndex.FIELD_IS_GLOBAL, (isGlobal ? "1" : "0"), true, true);
+        elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  fqn + (object.isAnonymous() ? ANONYMOUS_POSFIX : OBJECT_POSFIX), true, true);
+//        boolean isGlobal = object.getParent() != null ? ModelUtils.isGlobal(object.getParent()) : ModelUtils.isGlobal(object);
+//        elementDocument.addPair(JsIndex.FIELD_IS_GLOBAL, (isGlobal ? "1" : "0"), true, true);
         elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
         elementDocument.addPair(JsIndex.FIELD_FLAG, Integer.toString(Flag.getFlag(object)), false, true);
+//        StringBuilder sb = new StringBuilder();
+//        for (JsObject property : object.getProperties().values()) {
+//            if (!property.getModifiers().contains(Modifier.PRIVATE)) {
+//                sb.append(codeProperty(property)).append("#@#");
+//            }
+//        }
+//        elementDocument.addPair(JsIndex.FIELD_PROPERTY, sb.toString(), false, true);
         StringBuilder sb = new StringBuilder();
-        for (JsObject property : object.getProperties().values()) {
-            if (!property.getModifiers().contains(Modifier.PRIVATE)) {
-                sb.append(codeProperty(property)).append("#@#");
-            }
-        }
-        elementDocument.addPair(JsIndex.FIELD_PROPERTY, sb.toString(), false, true);
-        sb = new StringBuilder();
         for (TypeUsage type : object.getAssignments()) {
             sb.append(type.getType());
             sb.append(":"); //NOI18N
             sb.append(type.getOffset());
+            sb.append(":"); //NOI18N
+            sb.append(type.isResolved() ? "1" : "0");  //NOI18N
             sb.append("|");
         }
         elementDocument.addPair(JsIndex.FIELD_ASSIGNMENS, sb.toString(), false, true);
@@ -130,6 +134,8 @@ public class IndexedElement extends JsElementImpl {
                 sb.append(type.getType());
                 sb.append(","); //NOI18N
                 sb.append(type.getOffset());
+                sb.append(","); //NOI18N
+                sb.append(type.isResolved() ? "1" : "0");  //NOI18N
                 sb.append("|");
             }
             elementDocument.addPair(JsIndex.FIELD_RETURN_TYPES, sb.toString(), false, true);
@@ -143,6 +149,7 @@ public class IndexedElement extends JsElementImpl {
         FileObject fo = indexResult.getFile();
         String name = indexResult.getValue(JsIndex.FIELD_BASE_NAME);
         String fqn = indexResult.getValue(JsIndex.FIELD_FQ_NAME);
+        fqn = fqn.substring(0, fqn.length() - 1);
         int flag = Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG));
         boolean isDeclared = Flag.isDeclared(flag);
         boolean isAnonymous = Flag.isAnonymous(flag);
@@ -167,20 +174,20 @@ public class IndexedElement extends JsElementImpl {
         return result;
     }
     
-    public static Collection<IndexedElement> createProperties(IndexResult indexResult, String fqn) {
-        Collection<IndexedElement> result = new ArrayList<IndexedElement>();
-        FileObject fo = indexResult.getFile();
-        for(String sProperties : indexResult.getValues(JsIndex.FIELD_PROPERTY)) {
-            String[] split = sProperties.split("#@#");
-            for (int i = 0; i < split.length; i++) {
-                if  (!split[i].isEmpty()) {
-                    result.add(decodeProperty(split[i], fo, fqn));
-                }
-            }
-            
-        }
-        return result;
-    }
+//    public static Collection<IndexedElement> createProperties(IndexResult indexResult, String fqn) {
+//        Collection<IndexedElement> result = new ArrayList<IndexedElement>();
+//        FileObject fo = indexResult.getFile();
+//        for(String sProperties : indexResult.getValues(JsIndex.FIELD_PROPERTY)) {
+//            String[] split = sProperties.split("#@#");
+//            for (int i = 0; i < split.length; i++) {
+//                if  (!split[i].isEmpty()) {
+//                    result.add(decodeProperty(split[i], fo, fqn));
+//                }
+//            }
+//            
+//        }
+//        return result;
+//    }
     
     public static Collection<TypeUsage> getAssignments(IndexResult indexResult) {
         return getAssignments(indexResult.getValue(JsIndex.FIELD_ASSIGNMENS));
@@ -191,17 +198,18 @@ public class IndexedElement extends JsElementImpl {
         if (sAssignments != null) {
             for (StringTokenizer st = new StringTokenizer(sAssignments, "|"); st.hasMoreTokens();) {
                 String token = st.nextToken();
-                int index = token.indexOf(':');
-                if (index > -1) {
-                    String type = token.substring(0, index);
-                    String sOffset = token.substring(index + 1);
+                String[] parts = token.split(":");
+                if (parts.length > 2) {
+                    String type = parts[0];
+                    String sOffset = parts[1];
                     int offset;
                     try {
                         offset = Integer.parseInt(sOffset);
                     } catch (NumberFormatException nfe) {
                         offset = -1;
                     }
-                    result.add(new TypeUsageImpl(type, offset, true));
+                    boolean resolve = parts[2].equals("1");
+                    result.add(new TypeUsageImpl(type, offset, resolve));
                 }
             }
         }
@@ -214,17 +222,16 @@ public class IndexedElement extends JsElementImpl {
         if (text != null) {
             for (StringTokenizer st = new StringTokenizer(text, "|"); st.hasMoreTokens();) {
                 String token = st.nextToken();
-                int index = token.indexOf(',');
-                if(index > -1) {
-                    String type = token.substring(0, index);
-                    String sOffset = token.substring(index + 1);
+                String[] parts = token.split(",");
+                if (parts.length > 2) {
                     int offset;
                     try {
-                        offset = Integer.parseInt(sOffset);
+                        offset = Integer.parseInt(parts[1]);
                     } catch (NumberFormatException nfe) {
                         offset = -1;
                     }
-                    result.add(new TypeUsageImpl(type, offset, true));
+                    boolean resolve = parts[2].equals("1");
+                    result.add(new TypeUsageImpl(parts[0], offset, resolve));
                 }
             }
         }
@@ -299,29 +306,29 @@ public class IndexedElement extends JsElementImpl {
         return parameters;
     }
     
-    private static IndexedElement decodeProperty(String text, FileObject fo, String fqn) {
-        String[] parts = text.split(";");
-        String name = parts[0];
-        JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(parts[1]));
-        int flag = Integer.parseInt(parts[2]);
-        String fqnOfProperty = fqn + "." + name;
-        Collection<TypeUsage> assignments = (parts.length > 3) ? getAssignments(parts[3]) : Collections.EMPTY_LIST;
-        if (parts.length > 4) {
-            if (jsKind.isFunction()) {
-                String paramsText = parts[4];
-                LinkedHashMap<String, Collection<String>> parameters = decodeParameters(paramsText);
-                Collection<String> returnTypes = new ArrayList();
-                if (parts.length > 5) {
-                    String returnTypesText = parts[5];
-                    for (StringTokenizer stringTokenizer = new StringTokenizer(returnTypesText, ","); stringTokenizer.hasMoreTokens();) {
-                        returnTypes.add(stringTokenizer.nextToken());
-                    }
-                }
-                return new FunctionIndexedElement(fo, name, fqnOfProperty, OffsetRange.NONE, flag, parameters, returnTypes, assignments);
-            }
-        }
-        return new IndexedElement(fo, name, fqnOfProperty, Flag.isDeclared(flag), Flag.isAnonymous(flag), jsKind,OffsetRange.NONE, Flag.getModifiers(flag), assignments, Flag.isPlatform(flag));
-    }
+//    private static IndexedElement decodeProperty(String text, FileObject fo, String fqn) {
+//        String[] parts = text.split(";");
+//        String name = parts[0];
+//        JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(parts[1]));
+//        int flag = Integer.parseInt(parts[2]);
+//        String fqnOfProperty = fqn + "." + name;
+//        Collection<TypeUsage> assignments = (parts.length > 3) ? getAssignments(parts[3]) : Collections.EMPTY_LIST;
+//        if (parts.length > 4) {
+//            if (jsKind.isFunction()) {
+//                String paramsText = parts[4];
+//                LinkedHashMap<String, Collection<String>> parameters = decodeParameters(paramsText);
+//                Collection<String> returnTypes = new ArrayList();
+//                if (parts.length > 5) {
+//                    String returnTypesText = parts[5];
+//                    for (StringTokenizer stringTokenizer = new StringTokenizer(returnTypesText, ","); stringTokenizer.hasMoreTokens();) {
+//                        returnTypes.add(stringTokenizer.nextToken());
+//                    }
+//                }
+//                return new FunctionIndexedElement(fo, name, fqnOfProperty, OffsetRange.NONE, flag, parameters, returnTypes, assignments);
+//            }
+//        }
+//        return new IndexedElement(fo, name, fqnOfProperty, Flag.isDeclared(flag), Flag.isAnonymous(flag), jsKind,OffsetRange.NONE, Flag.getModifiers(flag), assignments, Flag.isPlatform(flag));
+//    }
     
     public static class FunctionIndexedElement extends IndexedElement {
         private final LinkedHashMap<String, Collection<String>> parameters;

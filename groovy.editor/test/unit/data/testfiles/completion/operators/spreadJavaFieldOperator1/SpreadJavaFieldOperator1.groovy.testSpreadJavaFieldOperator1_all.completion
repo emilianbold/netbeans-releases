@@ -3,6 +3,6 @@ Code completion result for source line:
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 FIELD      CASE_INSENSITIVE_ORDER          [STATIC,   Comparator<String>
-FIELD      bytes                                      byte[]
-FIELD      class                                      Class
-FIELD      empty                                      boolean
+FIELD      bytes                           [PUBLIC]   byte[]
+FIELD      class                           [PUBLIC]   Class
+FIELD      empty                           [PUBLIC]   boolean

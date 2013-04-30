@@ -151,7 +151,7 @@ class DiffFileTable implements FileViewComponent<DiffNode>, MouseListener, ListS
         table = new SortedTable(sorter);
         table.getSelectionModel().addListSelectionListener(this);
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        table.setRowHeight(table.getFontMetrics(table.getFont()).getHeight());
+        table.setRowHeight(table.getFontMetrics(table.getFont()).getHeight() * 6 / 5);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         component.getViewport().setBackground(table.getBackground());
         Color borderColor = UIManager.getColor("scrollpane_border"); // NOI18N

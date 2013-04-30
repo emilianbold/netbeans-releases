@@ -71,16 +71,22 @@ public class DoubleFoldManagerTest extends NbTestCase {
     /**
      * Test the creation of several folds.
      */
-    public void test() {
+    public void test() throws BadLocationException {
         FoldHierarchyTestEnv env = 
                 new FoldHierarchyTestEnv(new FoldManagerFactory[] {new Simple1FoldManagerFactory(), new Simple2FoldManagerFactory()});
-        
+        AbstractDocument doc = env.getDocument();
+        doc.insertString(0, "1234567890", null);
+        doc.insertString(0, "1234567890", null);
+        doc.insertString(0, "1234567890", null);
+        doc.insertString(0, "1234567890", null);
+        doc.insertString(0, "1234567890", null);
+        doc.insertString(0, "1234567890", null);
+        doc.insertString(0, "1234567890", null);
         FoldHierarchy hierarchy = env.getHierarchy();
 
         Simple1FoldManager man1 = Simple1FoldManager.getLast();
         Simple2FoldManager man2 = Simple2FoldManager.getLast();
         
-        AbstractDocument doc = env.getDocument();
         doc.readLock();
         try {
             hierarchy.lock();

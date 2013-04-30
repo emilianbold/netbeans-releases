@@ -27,4 +27,4 @@ METHOD     toString(): String              [PUBLIC]   JS Platform
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform
 FIELD      constructor: Function           [PUBLIC]   JS Platform
 FIELD      length: Number                  [PUBLIC]   JS Platform
-FIELD      name                            [PUBLIC]   arguments.js
+FIELD      name                            [PUBLIC]   argumentsTestFile.js

@@ -724,6 +724,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                         else if ( superActions[i] instanceof FileSystemAction ) {
                             actionList.add (null); // insert separator and new action
                             actionList.add (FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, LBL_CompilePackage_Action(), null));                           
+                            actionList.addAll((List<Action>) org.openide.util.Utilities.actionsForPath("Projects/package/Actions"));
                         }
                         
                         actionList.add( superActions[i] );                                                  

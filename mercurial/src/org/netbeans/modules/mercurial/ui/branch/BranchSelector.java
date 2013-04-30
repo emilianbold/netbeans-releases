@@ -242,7 +242,7 @@ public class BranchSelector implements ListSelectionListener, DocumentListener {
 
         private void refreshRevisions (HgProgressSupport supp) {
             bGettingRevisions = true;
-            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+            OutputLogger logger = Mercurial.getInstance().getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
             HgBranch[] fetchedBranches;
             try {
                 fetchedBranches = HgCommand.getBranches(repository, logger);

@@ -79,18 +79,20 @@ public class DeclarationsITest extends ModelTestBase {
         Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
         assertNotNull(ds);
         
-        Declaration margin = ds.getDeclarations().get(1);
-        assertNotNull(margin);
+        Declaration marginDecl = ds.getDeclarations().get(1);
+        assertNotNull(marginDecl);
         
-        ds.removeDeclaration(margin);
+        ds.removeDeclaration(marginDecl);
         
         ElementFactory ef = model.getElementFactory();
-        Declaration newMargin = ef.createDeclaration(
+        PropertyDeclaration newMargin = ef.createPropertyDeclaration(
                 ef.createProperty("margin"),
                 ef.createPropertyValue(ef.createExpression("3px")),
                 false);
+        Declaration newMarginDecl = ef.createDeclaration();
+        newMarginDecl.setPropertyDeclaration(newMargin);
         
-        ds.addDeclaration(newMargin);
+        ds.addDeclaration(newMarginDecl);
         
 //        System.out.println(model.getModelSource());
         
@@ -116,15 +118,17 @@ public class DeclarationsITest extends ModelTestBase {
         
         assertNotNull(rule.getDeclarations());
         
-        Declaration newMargin = ef.createDeclaration(
+        PropertyDeclaration newMargin = ef.createPropertyDeclaration(
                 ef.createProperty("margin"),
                 ef.createPropertyValue(ef.createExpression("3px")),
                 false);
+        Declaration newMarginDecl = ef.createDeclaration();
+        newMarginDecl.setPropertyDeclaration(newMargin);
         
-        ds.addDeclaration(newMargin);
+        ds.addDeclaration(newMarginDecl);
         assertEquals(1, ds.getDeclarations().size());
         
-        ds.removeDeclaration(newMargin);
+        ds.removeDeclaration(newMarginDecl);
         assertEquals(0, ds.getDeclarations().size());
         
     }
@@ -143,18 +147,23 @@ public class DeclarationsITest extends ModelTestBase {
         Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
         assertNotNull(ds);
         
-        Declaration margin = ds.getDeclarations().get(1);
+        Declaration marginDecl = ds.getDeclarations().get(1);
+        assertNotNull(marginDecl);
+        
+        PropertyDeclaration margin = marginDecl.getPropertyDeclaration();
         assertNotNull(margin);
         
-        ds.removeDeclaration(margin);
+        ds.removeDeclaration(marginDecl);
         
         ElementFactory ef = model.getElementFactory();
-        Declaration newMargin = ef.createDeclaration(
+        PropertyDeclaration newMargin = ef.createPropertyDeclaration(
                 ef.createProperty("margin"),
                 ef.createPropertyValue(ef.createExpression("3px")),
                 false);
+        Declaration newMarginDecl = ef.createDeclaration();
+        newMarginDecl.setPropertyDeclaration(newMargin);
         
-        ds.addDeclaration(newMargin);
+        ds.addDeclaration(newMarginDecl);
         
 //        System.out.println(model.getModelSource());
         
@@ -180,10 +189,10 @@ public class DeclarationsITest extends ModelTestBase {
         Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
         assertNotNull(ds);
         
-        Declaration margin = ds.getDeclarations().get(1);
-        assertNotNull(margin);
-        
-        ds.removeDeclaration(margin);
+        Declaration marginDecl = ds.getDeclarations().get(1);
+        assertNotNull(marginDecl);
+                
+        ds.removeDeclaration(marginDecl);
         
 //        System.out.println(model.getModelSource());
         
@@ -205,12 +214,15 @@ public class DeclarationsITest extends ModelTestBase {
         assertNotNull(ds);
         
         ElementFactory ef = model.getElementFactory();
-        Declaration newMargin = ef.createDeclaration(
+        PropertyDeclaration newMargin = ef.createPropertyDeclaration(
                 ef.createProperty("margin"),
                 ef.createPropertyValue(ef.createExpression("3px")),
                 false);
         
-        ds.addDeclaration(newMargin);
+        Declaration newMarginDecl = ef.createDeclaration();
+        newMarginDecl.setPropertyDeclaration(newMargin);
+        
+        ds.addDeclaration(newMarginDecl);
         
         assertEquals("div {\n"
                 + "    font-size: 222px;\n"
@@ -231,12 +243,14 @@ public class DeclarationsITest extends ModelTestBase {
         assertNotNull(ds);
         
         ElementFactory ef = model.getElementFactory();
-        Declaration newMargin = ef.createDeclaration(
+        PropertyDeclaration newMargin = ef.createPropertyDeclaration(
                 ef.createProperty("margin"),
                 ef.createPropertyValue(ef.createExpression("3px")),
                 false);
+        Declaration newMarginDecl = ef.createDeclaration();
+        newMarginDecl.setPropertyDeclaration(newMargin);
         
-        ds.addDeclaration(newMargin);
+        ds.addDeclaration(newMarginDecl);
         
         assertEquals("div {\n"
                 + "    font-size: 222px;\n"

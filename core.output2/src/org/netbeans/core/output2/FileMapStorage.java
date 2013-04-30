@@ -113,6 +113,12 @@ class FileMapStorage implements Storage {
     
     private int outstandingBufferCount = 0;
     
+    /**
+     * Byte in the file that corresponds to logical start of the storage data.
+     * Data before this offset are "forgotten".
+     */
+    private long startOffset = 0;
+
     private boolean closed;
 
     static {
@@ -335,14 +341,15 @@ class FileMapStorage implements Storage {
             throws IOException {
 
         ByteBuffer cont;
+        long fileStart = startOffset + start;
         synchronized (this) {
             cont = this.contents == null ? null : this.contents.getBuffer();
-            if (cont == null || start + byteCount > mappedRange || start < mappedStart) {
+            if (cont == null || fileStart + byteCount > mappedRange || fileStart < mappedStart) {
                 FileChannel ch = fileChannel();
-                mappedStart = Math.max((long)0, start - (MAX_MAP_RANGE /2));
+                mappedStart = Math.max((long)0, fileStart - (MAX_MAP_RANGE /2));
                 long prevMappedRange = mappedRange;
                 long map = byteCount > (MAX_MAP_RANGE / 2) ? (byteCount + byteCount / 10) : (MAX_MAP_RANGE / 2);
-                mappedRange = Math.min(ch.size(), start + map);
+                mappedRange = Math.min(ch.size(), fileStart + map);
                 try {
                     try {
                         cont = ch.map(FileChannel.MapMode.READ_ONLY, mappedStart, mappedRange - mappedStart);
@@ -364,10 +371,10 @@ class FileMapStorage implements Storage {
                     throw new IOException(msg, e);
                 }
             }
-            if (start - mappedStart > cont.limit() - byteCount) {
+            if (fileStart - mappedStart > cont.limit() - byteCount) {
                 cont.position(Math.max(0, cont.limit() - byteCount));
             } else {
-                cont.position((int) (start - mappedStart));
+                cont.position((int) (fileStart - mappedStart));
             }
         }
         int limit = Math.min(cont.limit(), byteCount);
@@ -418,6 +425,14 @@ class FileMapStorage implements Storage {
 
     private static synchronized void removeUndisposed(FileMapStorage fms) {
         undisposed.remove(fms);
+    }
+
+    @Override
+    public void shiftStart(int byteOffset) {
+        synchronized (this) {
+            startOffset += byteOffset;
+            bytesWritten -= byteOffset;
+        }
     }
 
     private class ChildBufferResource implements BufferResource<ByteBuffer> {

@@ -62,6 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.model.InputLocation;
 import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.grammar.effpom.LocationAwareMavenXpp3Writer.Location;
 import org.netbeans.modules.maven.hyperlinks.HyperlinkProviderImpl;
 import static org.netbeans.modules.maven.grammar.effpom.Bundle.*;
@@ -220,7 +221,7 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
                     if (elementAnnotations != null) {
                         Location al = getAnnotateLine(getLineFromMouseEvent(me));
                         if (al != null) {
-                            HyperlinkProviderImpl.openAtSource(al.loc);
+                            ModelUtils.openAtSource(al.loc);
                         }
                     }
                     
@@ -291,7 +292,7 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
                     public void actionPerformed(ActionEvent ae) {
                         InputLocation loc = al.loc;
                         if (loc != null) {
-                            HyperlinkProviderImpl.openAtSource(loc);
+                            ModelUtils.openAtSource(loc);
                         }
                     }
                 });

@@ -45,6 +45,8 @@
 package org.openide;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -1089,8 +1091,8 @@ public class WizardDescriptor extends DialogDescriptor {
         // only enlarge if needed, don't shrink
         if ((curSize.width > prevSize.width) || (curSize.height > prevSize.height)) {
             Rectangle origBounds = parentWindow.getBounds();
-            int newWidth = Math.max(origBounds.width + (curSize.width - prevSize.width), origBounds.width);
-            int newHeight = Math.max(origBounds.height + (curSize.height - prevSize.height), origBounds.height);
+            int newWidth = origBounds.width;
+            int newHeight = origBounds.height;
             Rectangle screenBounds = Utilities.getUsableScreenBounds();
             Rectangle newBounds;
 
@@ -1469,28 +1471,30 @@ public class WizardDescriptor extends DialogDescriptor {
                             public void run () {
                                 if( initialized.get() ) {  //#220286
                                     err.log (Level.FINE, "Runs onValidPerformer from invokeLater."); // NOI18N
+                                    if( panel instanceof ExtendedAsynchronousValidatingPanel ) {
+                                        ((ExtendedAsynchronousValidatingPanel)panel).finishValidation();
+                                    }
                                     onValidPerformer.run();
                                 }
                             }
                         });
                     }
-                } catch (WizardValidationException wve) {
+                } catch (final WizardValidationException wve) {
 
                     validationRuns = false;
                     err.log (Level.FINE, "validation failed", wve); // NOI18N
                     if( FINISH_OPTION.equals( getValue() ) )
                         setValue( getDefaultValue() );
-                    _updateState ();
-                    // cannot continue, notify user
-                    if (wizardPanel != null) {
-                        wizardPanel.setMessage(WizardPanel.MSG_TYPE_ERROR, wve.getLocalizedMessage());
-                    }
 
-                    // focus source of this problem
-                    final JComponent comp = wve.getSource();
-                    if (comp != null && comp.isFocusable()) {
-                        comp.requestFocus();
-                    }
+                    SwingUtilities.invokeLater( new Runnable() {
+                        @Override
+                        public void run() {
+                            if( panel instanceof ExtendedAsynchronousValidatingPanel ) {
+                                ((ExtendedAsynchronousValidatingPanel)panel).finishValidation();
+                            }
+                            onValidationFailed( wve );
+                        }
+                    });
                 }
 
             }
@@ -1512,6 +1516,31 @@ public class WizardDescriptor extends DialogDescriptor {
             onValidPerformer.run();
         }
 
+    }
+
+    private void onValidationFailed( final WizardValidationException wve ) {
+        assert SwingUtilities.isEventDispatchThread();
+        _updateState ();
+
+        //delay the display of error message as isValid() is called in _updateState() above
+        //and the clients may set their own error/warning messages which are actually invokedLater()
+        //(otherwise the validation message just flashes briefly and is replaced with
+        //whatever is provided by the current panel's validation)
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                // cannot continue, notify user
+                if (wizardPanel != null) {
+                    wizardPanel.setMessage(WizardPanel.MSG_TYPE_ERROR, wve.getLocalizedMessage());
+                }
+            }
+        });
+
+        // focus source of this problem
+        JComponent srcComp = wve.getSource();
+        if (srcComp != null && srcComp.isFocusable()) {
+            srcComp.requestFocus();
+        }
     }
 
     // helper methods which call to InstantiatingIterator
@@ -1831,12 +1860,16 @@ public class WizardDescriptor extends DialogDescriptor {
      * A special interface for panels that need to do additional
      * asynchronous validation when Next or Finish button is clicked.
      *
-     * <p>During backround validation is Next or Finish button
+     * <p>During background validation is Next or Finish button
      * disabled. On validation success wizard automatically
      * progress to next panel or finishes.
      *
-     * <p>During backround validation Cancel button is hooked
+     * <p>During background validation Cancel button is hooked
      * to signal the validation thread using interrupt().
+     *
+     * <p>Note: It is recommended to use ExtendedAsynchronousValidatingPanel instead
+     * as it adds a method to conveniently unlock wizard's user interface when
+     * the validation is finished.
      *
      * @since 6.2 (16 May 2005)
      */
@@ -1858,6 +1891,49 @@ public class WizardDescriptor extends DialogDescriptor {
          */
         @Override
         public void validate() throws WizardValidationException;
+    }
+
+    /**
+     * A special interface for panels that need to do additional
+     * asynchronous validation when Next or Finish button is clicked.
+     *
+     * <p>During background validation is Next or Finish button
+     * disabled. On validation success wizard automatically
+     * progress to next panel or finishes.
+     *
+     * <p>During background validation Cancel button is hooked
+     * to signal the validation thread using interrupt().
+     *
+     * @param <Data>
+     *
+     * @since 7.31
+     */
+    public interface ExtendedAsynchronousValidatingPanel<Data> extends AsynchronousValidatingPanel<Data> {
+
+        /**
+         * Called synchronously from UI thread when Next
+         * of Finish buttons clicked. It allows to lock user
+         * input to assure official data for background validation.
+         */
+        @Override
+        public void prepareValidation();
+
+        /**
+         * Is called in separate thread when Next of Finish buttons
+         * are clicked and allows deeper check to find out that panel
+         * is in valid state and it is ok to leave it.
+         *
+         * @throws WizardValidationException when validation fails
+         */
+        @Override
+        public void validate() throws WizardValidationException;
+
+        /**
+         * Called synchronously from UI thread when the background validation
+         * is finished (even when throwing validation exception).
+         * It allows to enable user input locked in prepareValidation() method.
+         */
+        public void finishValidation();
     }
 
 
@@ -3169,6 +3245,31 @@ public class WizardDescriptor extends DialogDescriptor {
                     }
                 }
             });
+            addMouseListener( new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    showCopyToClipboardPopupMenu( e );
+                }
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    showCopyToClipboardPopupMenu( e );
+                }
+
+                private void showCopyToClipboardPopupMenu(MouseEvent e) {
+                    if( e.isPopupTrigger() && null != getToolTipText() && !getToolTipText().isEmpty() ) {
+                        JPopupMenu pm = new JPopupMenu();
+                        pm.add(new AbstractAction(NbBundle.getMessage(WizardDescriptor.class, "Lbl_CopyToClipboard")) { //NOI18N
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
+                                c.setContents(new StringSelection(getToolTipText()), null);
+                            }
+                        });
+                        pm.show(e.getComponent(), e.getX(), e.getY());
+                    }
+                }
+
+            } );
         }
 
         @Override

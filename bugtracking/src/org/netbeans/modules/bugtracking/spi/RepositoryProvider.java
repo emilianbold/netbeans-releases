@@ -118,8 +118,6 @@ public abstract class RepositoryProvider<R, Q, I> {
      */
     public abstract Collection<Q> getQueries(R r);
 
-    public abstract Lookup getLookup(R r);
-    
     /**
      * Runs a query against the bugtracking repository to get all issues
      * which applies that their ID or summary contains the given criteria string

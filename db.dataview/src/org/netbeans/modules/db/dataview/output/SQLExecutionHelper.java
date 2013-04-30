@@ -60,6 +60,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -70,6 +71,7 @@ import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -92,6 +94,7 @@ class SQLExecutionHelper {
     }
 
     void initialDataLoad() throws SQLException {
+        assert (! SwingUtilities.isEventDispatchThread()) : "Must be called of the EDT!";
 
         /**
          * Wrap initializing the SQL result into a runnable. This makes it
@@ -295,6 +298,8 @@ class SQLExecutionHelper {
             final DBTable table,
             final String insertSQL,
             final Object[] insertedRow) {
+        dataView.setEditable(false);
+
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_insert");
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
 
@@ -337,17 +342,27 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
-                if (pageContext.getTotalRows() < 0) {
-                    pageContext.setTotalRows(0);
-                    pageContext.first();
-                }
-                pageContext.incrementRowSize(1);
-
                 // refresh when required
-                if (pageContext.refreshRequiredOnInsert()) {
+                Boolean needRequery = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
+                    @Override
+                    public Boolean run() {
+                        if (pageContext.getTotalRows() < 0) {
+                            pageContext.setTotalRows(0);
+                            pageContext.first();
+                        }
+                        pageContext.incrementRowSize(1);
+                        return pageContext.refreshRequiredOnInsert();
+                    };
+                });
+                if(needRequery) {
                     SQLExecutionHelper.this.executeQuery();
                 } else {
-                    reinstateToolbar();
+                    Mutex.EVENT.readAccess(new Runnable() {
+                        @Override
+                        public void run() {
+                            reinstateToolbar();
+                        }
+                    });
                 }
             }
         };
@@ -358,36 +373,43 @@ class SQLExecutionHelper {
     }
 
     void executeDeleteRow(final DataViewPageContext pageContext, final DBTable table, final DataViewTableUI rsTable) {
-        String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_delete");
-        final int[] rows = rsTable.getSelectedRows();
-        for(int i = 0; i < rows.length; i++) {
-            rows[i] = rsTable.convertRowIndexToModel(rows[i]);
-        }
-        Arrays.sort(rows);
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
+        dataView.setEditable(false);
 
+        SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
+        String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_delete");
+
+        class DeleteElement {
+            public List<Object> values = new ArrayList<Object>();
+            public List<Integer> types = new ArrayList<Integer>();
+            public String sql;
+        }
+
+        final List<DeleteElement> rows = new ArrayList<DeleteElement>();
+        for(int viewRow: rsTable.getSelectedRows()) {
+            int modelRow = rsTable.convertRowIndexToModel(viewRow);
+            DeleteElement de = new DeleteElement();
+            de.sql = generator.generateDeleteStatement(table, de.types, de.values, modelRow, rsTable.getModel());
+            rows.add(de);
+        }
+
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
             @Override
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
-                for (int j = (rows.length - 1); j >= 0 && !error; j--) {
-                    if (Thread.currentThread().isInterrupted()) {
+                for (DeleteElement de: rows) {
+                    if (Thread.currentThread().isInterrupted() || error) {
                         break;
                     }
-                    deleteARow(rows[j], rsTable.getModel());
+                    deleteARow(de);
                 }
             }
 
-            private void deleteARow(int rowNum, DataViewTableUIModel tblModel) throws SQLException, DBException {
-                final List<Object> values = new ArrayList<Object>();
-                final List<Integer> types = new ArrayList<Integer>();
-
-                SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
-                final String deleteStmt = generator.generateDeleteStatement(table, types, values, rowNum, tblModel);
-                PreparedStatement pstmt = conn.prepareStatement(deleteStmt);
+            private void deleteARow(DeleteElement deleteRow) throws SQLException, DBException {
+                PreparedStatement pstmt = conn.prepareStatement(deleteRow.sql);
                 try {
                     int pos = 1;
-                    for (Object val : values) {
-                        DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
+                    for (Object val : deleteRow.values) {
+                        DBReadWriteHelper.setAttributeValue(pstmt, pos, deleteRow.types.get(pos - 1), val);
                         pos++;
                     }
 
@@ -413,7 +435,7 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
-                pageContext.decrementRowSize(rows.length);
+                pageContext.decrementRowSize(rows.size());
                 SQLExecutionHelper.this.executeQuery();
             }
         };
@@ -424,8 +446,43 @@ class SQLExecutionHelper {
     }
 
     void executeUpdateRow(final DBTable table, final DataViewTableUI rsTable, final boolean selectedOnly) {
+        dataView.setEditable(false);
+
+        SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
         final DataViewTableUIModel dataViewTableUIModel = rsTable.getModel();
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_update");
+
+        class UpdateElement {
+            public List<Object> values = new ArrayList<Object>();
+            public List<Integer> types = new ArrayList<Integer>();
+            public String sql;
+            public Integer key;
+        }
+
+        final List<UpdateElement> updateSet = new ArrayList<UpdateElement>();
+
+        int[] viewRows = rsTable.getSelectedRows();
+        List<Integer> modelRows = new ArrayList<Integer>();
+        for(Integer viewRow: viewRows) {
+            modelRows.add(rsTable.convertRowIndexToModel(viewRow));
+        }
+
+        for (Integer key : dataViewTableUIModel.getUpdateKeys()) {
+            if (modelRows.contains(key) || (!selectedOnly)) {
+                UpdateElement ue = new UpdateElement();
+                try {
+                    ue.key = key;
+                    ue.sql = generator.generateUpdateStatement(table, key,
+                            dataViewTableUIModel.getChangedData(key), ue.values, ue.types,
+                            rsTable.getModel());
+                    updateSet.add(ue);
+                } catch (DBException ex) {
+                    // The model protects against illegal values, so rethrow
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
 
             private PreparedStatement pstmt;
@@ -433,47 +490,20 @@ class SQLExecutionHelper {
 
             @Override
             public void execute() throws SQLException, DBException {
-                dataView.setEditable(false);
-                if (selectedOnly) {
-                    updateSelected();
-                } else {
-                    for (Integer key : dataViewTableUIModel.getUpdateKeys()) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        } else {
-                            updateARow(key);
-                            keysToRemove.add(key);
-                        }
+                for (UpdateElement ue : updateSet) {
+                    if(Thread.interrupted()) {
+                        break;
                     }
+                    updateARow(ue);
+                    keysToRemove.add(ue.key);
                 }
             }
 
-            private void updateSelected() throws SQLException, DBException {
-                int[] rows = rsTable.getSelectedRows();
-                for (int j = 0; j < rows.length && !error; j++) {
-                    Set<Integer> keys = dataViewTableUIModel.getUpdateKeys();
-                    for (Integer key : keys) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        } else if (key == rows[j]) {
-                            updateARow(key);
-                            keysToRemove.add(key);
-                        }
-                    }
-                }
-            }
-
-            private void updateARow(Integer key) throws SQLException, DBException {
-                SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
-
-                List<Object> values = new ArrayList<Object>();
-                List<Integer> types = new ArrayList<Integer>();
-                String updateStmt = generator.generateUpdateStatement(table, key, dataViewTableUIModel.getChangedData(key), values, types, rsTable.getModel());
-
-                pstmt = conn.prepareStatement(updateStmt);
+            private void updateARow(UpdateElement ue) throws SQLException, DBException {
+                pstmt = conn.prepareStatement(ue.sql);
                 int pos = 1;
-                for (Object val : values) {
-                    DBReadWriteHelper.setAttributeValue(pstmt, pos, types.get(pos - 1), val);
+                for (Object val : ue.values) {
+                    DBReadWriteHelper.setAttributeValue(pstmt, pos, ue.types.get(pos - 1), val);
                     pos++;
                 }
 
@@ -500,11 +530,16 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
-                DataViewTableUIModel tblContext = rsTable.getModel();
-                for (Integer key : keysToRemove) {
-                    tblContext.removeUpdateForSelectedRow(key, false);
-                }
-                reinstateToolbar();
+                Mutex.EVENT.writeAccess(new Runnable() {
+                    @Override
+                    public void run() {
+                        DataViewTableUIModel tblContext = rsTable.getModel();
+                        for (Integer key : keysToRemove) {
+                            tblContext.removeUpdateForSelectedRow(key, false);
+                        }
+                        reinstateToolbar();
+                    }
+                });
             }
         };
         RequestProcessor.Task task = rp.create(executor);
@@ -555,8 +590,19 @@ class SQLExecutionHelper {
         task.schedule(0);
     }
 
+    void executeQueryOffEDT() {
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                executeQuery();
+            }
+        });
+    }
+
     // Once Data View is created the it assumes the query never changes.
     void executeQuery() {
+        assert (! SwingUtilities.isEventDispatchThread());
+
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_executequery");
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, dataView.getSQLString()) {
 
@@ -662,7 +708,7 @@ class SQLExecutionHelper {
         task.schedule(0);
     }
 
-    void loadDataFrom(DataViewPageContext pageContext, ResultSet rs, boolean getTotal) throws SQLException {
+    private void loadDataFrom(final DataViewPageContext pageContext, ResultSet rs, boolean getTotal) throws SQLException {
         if (rs == null) {
             return;
         }
@@ -670,7 +716,7 @@ class SQLExecutionHelper {
         int pageSize = pageContext.getPageSize();
         int startFrom = pageContext.getCurrentPos();
 
-        List<Object[]> rows = new ArrayList<Object[]>();
+        final List<Object[]> rows = new ArrayList<Object[]>();
         int colCnt = pageContext.getTableMetaData().getColumnCount();
         try {
             boolean hasNext = false;
@@ -742,7 +788,13 @@ class SQLExecutionHelper {
             LOGGER.log(Level.SEVERE, "Failed to set up table model.", e); // NOI18N
             throw e;
         } finally {
-            pageContext.getModel().setData(rows);
+            Mutex.EVENT.writeAccess(new Mutex.Action<Void>() {
+                @Override
+                public Void run() {
+                    pageContext.getModel().setData(rows);
+                    return null;
+                }
+            });
         }
     }
 
@@ -754,12 +806,7 @@ class SQLExecutionHelper {
             stmt = conn.createStatement(resultSetScrollType, ResultSet.CONCUR_READ_ONLY);
 
             // set a reasonable fetchsize
-            try {
-                stmt.setFetchSize(50);
-            } catch (SQLException e) {
-                // ignore -  used only as a hint to the driver to optimize
-                LOGGER.log(Level.WARNING, "Unable to set Fetch size", e); // NOI18N
-            }
+            setFetchSize(stmt, 50);
 
             // hint to only query a certain number of rows -> potentially
             // improve performance for low page numbers
@@ -869,5 +916,22 @@ class SQLExecutionHelper {
             }
         }
         return false;
+    }
+
+    /**
+     * Guarded version of setFetchSize. See #227756.
+     */
+    private static void setFetchSize(Statement stmt, int fetchSize) {
+        try {
+            stmt.setFetchSize(fetchSize);
+        } catch (SQLException e) {
+            // ignore -  used only as a hint to the driver to optimize
+            LOGGER.log(Level.INFO, "Unable to set Fetch size", e); // NOI18N
+            // But try to reset to default behaviour
+            try {
+                stmt.setFetchSize(0);
+            } catch (SQLException ex) {
+            }
+        }
     }
 }

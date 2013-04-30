@@ -76,6 +76,7 @@ public abstract class AbstractOutputHandler {
     public enum Level {DEBUG, INFO, WARNING, ERROR, FATAL}
 
     protected static final String PRJ_EXECUTE = "project-execute"; //NOI18N
+    protected static final String SESSION_EXECUTE = "session-execute"; //NOI18N
     
     protected HashMap<String, Set<OutputProcessor>> processors;
     protected Set<OutputProcessor> currentProcessors;
@@ -86,10 +87,10 @@ public abstract class AbstractOutputHandler {
     private RequestProcessor.Task sleepTask;
     private static final int SLEEP_DELAY = 5000;
 
-    protected AbstractOutputHandler(final ProgressHandle hand) {
+    protected AbstractOutputHandler(final ProgressHandle hand, OutputVisitor visitor) {
         processors = new HashMap<String, Set<OutputProcessor>>();
         currentProcessors = new HashSet<OutputProcessor>();
-        visitor = new OutputVisitor();
+        this.visitor = visitor;
         toFinishProcessors = new HashSet<NotifyFinishOutputProcessor>();
         sleepTask = new RequestProcessor(AbstractOutputHandler.class).create(new Runnable() {
             public @Override void run() {
@@ -139,15 +140,16 @@ public abstract class AbstractOutputHandler {
 //TODO - replacement?    abstract MavenEmbedderLogger getLogger();
 
     protected final String getEventId(String eventName, String target) {
-        if (PRJ_EXECUTE.equals(eventName)) {
+        if (PRJ_EXECUTE.equals(eventName) || SESSION_EXECUTE.equals(eventName)) {
             return eventName;
         }
+        
         return eventName + "#" + target; //NOI18N
     }
     
     protected final void initProcessorList(Project proj, RunConfig config) {
         // get the registered processors.
-        Lookup.Result<OutputProcessorFactory> result  = Lookup.getDefault().lookup(new Lookup.Template<OutputProcessorFactory>(OutputProcessorFactory.class));
+        Lookup.Result<OutputProcessorFactory> result  = Lookup.getDefault().lookupResult(OutputProcessorFactory.class);
         Iterator<? extends OutputProcessorFactory> it = result.allInstances().iterator();
         while (it.hasNext()) {
             OutputProcessorFactory factory = it.next();
@@ -157,9 +159,7 @@ public abstract class AbstractOutputHandler {
                 _procs.addAll(((ContextOutputProcessorFactory)factory).createProcessorsSet(proj, config));
                 procs = _procs;
             }
-            Iterator it2 = procs.iterator();
-            while (it2.hasNext()) {
-                OutputProcessor proc = (OutputProcessor)it2.next();
+            for (OutputProcessor proc : procs) {
                 String[] regs = proc.getRegisteredOutputSequences();
                 for (int i = 0; i < regs.length; i++) {
                     String str = regs[i];
@@ -181,9 +181,7 @@ public abstract class AbstractOutputHandler {
             currentProcessors.addAll(set);
         }
         visitor.resetVisitor();
-        Iterator it = currentProcessors.iterator();
-        while (it.hasNext()) {
-            OutputProcessor proc = (OutputProcessor)it.next();
+        for (OutputProcessor proc : currentProcessors) {
             proc.sequenceStart(id, visitor);
         }
         if (visitor.getLine() != null) {
@@ -241,9 +239,7 @@ public abstract class AbstractOutputHandler {
     protected final void processFail(String id, OutputWriter writer) {
         checkSleepiness();
         visitor.resetVisitor();
-        Iterator it = currentProcessors.iterator();
-        while (it.hasNext()) {
-            OutputProcessor proc = (OutputProcessor)it.next();
+        for (OutputProcessor proc : currentProcessors) {
             if (proc instanceof NotifyFinishOutputProcessor) {
                 toFinishProcessors.add((NotifyFinishOutputProcessor)proc);
             }
@@ -294,9 +290,7 @@ public abstract class AbstractOutputHandler {
         checkSleepiness();
         
         visitor.resetVisitor();
-        Iterator it = currentProcessors.iterator();
-        while (it.hasNext()) {
-            OutputProcessor proc = (OutputProcessor)it.next();
+        for (OutputProcessor proc : currentProcessors) {
             proc.processLine(input, visitor);
         }
         if (!visitor.isLineSkipped()) {

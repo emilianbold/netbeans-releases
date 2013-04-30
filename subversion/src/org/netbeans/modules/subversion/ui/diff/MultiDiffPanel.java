@@ -81,12 +81,23 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.subversion.Annotator;
+import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.ui.blame.BlameAction;
+import org.netbeans.modules.subversion.ui.commit.DeleteLocalAction;
+import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
+import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
+import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
+import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
+import org.netbeans.modules.subversion.ui.status.OpenInEditorAction;
+import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
@@ -101,6 +112,10 @@ import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.openide.awt.Mnemonics;
+import org.openide.util.actions.SystemAction;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
@@ -137,7 +152,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      */ 
     private final String contextName;
     
-    private int currentType;
+    private int currentType = -1;
     private int currentIndex = -1;
     private int currentModelIndex = -1;
     
@@ -146,16 +161,24 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
     private AbstractAction nextAction;
     private AbstractAction          prevAction;
-    
-    /**
-     * null for view that are not
-     */
-    private RequestProcessor.Task   refreshTask;
 
     private JComponent              diffView;
     private DiffFileTable           fileTable;
     private boolean                 dividerSet;
     private boolean                 initialRefreshDisabled;
+    private final RepositoryFile repositoryTreeOriginalLeft;
+    private final RepositoryFile repositoryTreeOriginalRight;
+    private RepositoryFile repositoryTreeLeft;
+    private RepositoryFile repositoryTreeRight;
+    private SVNUrl repositoryUrl;
+    private SVNUrl fileUrl;
+    @NbBundle.Messages("MSG_Revision_Select=Select...")
+    private static final String REVISION_SELECT = Bundle.MSG_Revision_Select();
+    @NbBundle.Messages("MSG_Revision_Select_Separator=----------------------")
+    private static final String REVISION_SELECT_SEP = Bundle.MSG_Revision_Select_Separator();
+    private static final Logger LOG = Logger.getLogger(MultiDiffPanel.class.getName());
+    private final boolean fixedRevisions;
+    private final FileStatusCache cache = Subversion.getInstance().getStatusCache();
 
     /**
      * panel that is used for displaying the diff if {@code JSplitPane}
@@ -164,28 +187,40 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private final PlaceholderPanel diffViewPanel;
     private JComponent infoPanelLoadingFromRepo;
 
+    private SvnProgressSupport refreshSetupsSupport;
     private SvnProgressSupport executeStatusSupport;
+    private boolean internalChange;
+    private boolean propertiesVisible;
     
     /**
      * Creates diff panel and immediatelly starts loading...
      */
-    public MultiDiffPanel(Context context, int initialType, String contextName, boolean initialRefreshDisabled) {
+    public MultiDiffPanel(Context context, int initialType, String contextName, boolean initialRefreshDisabled,
+            SVNUrl repositoryUrl, SVNUrl fileUrl, RepositoryFile left, RepositoryFile right) {
         assert EventQueue.isDispatchThread();
         this.context = context;
         this.diffedFile = null;
         this.contextName = contextName;
         this.initialRefreshDisabled = initialRefreshDisabled;
         currentType = initialType;
+        this.repositoryUrl = repositoryUrl;
+        this.fileUrl = fileUrl;
+        assert repositoryUrl == null && fileUrl == null || left != null && right != null;
+        repositoryTreeLeft = repositoryTreeOriginalLeft = left;
+        repositoryTreeRight = repositoryTreeOriginalRight = right;
+        fixedRevisions = false;
         initComponents();
         aquaBackgroundWorkaround();
         initFileTable();
         initToolbarButtons();
         initNextPrevActions();
+        initSelectionCombos();
+        refreshSelectionCombos();
+        
         diffViewPanel = null;
         refreshComponents();
-        refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
         if (initialRefreshDisabled) {
-            refreshTask.schedule(0);
+            refreshSetups(); 
         } else {
             onRefreshButton(); // refresh statuses for the first time
         }
@@ -200,6 +235,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             jPanel2.setBackground(color); 
             jPanel4.setBackground(color); 
             jPanel5.setBackground(color); 
+            treeSelectionPanel.setBackground(color);
         }
     }
     
@@ -207,14 +243,18 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      * Construct diff component showing just one file.
      * It hides All, Local, Remote toggles and file chooser combo.
      */
-    public MultiDiffPanel(File file, String rev1, String rev2, boolean forceNonEditable) {
+    public MultiDiffPanel (File file, String rev1, String rev2, boolean forceNonEditable) {
         assert EventQueue.isDispatchThread();
         context = null;
         diffedFile = file;
         contextName = file.getName();
+        repositoryTreeOriginalLeft = null;
+        repositoryTreeOriginalRight = null;
+        fixedRevisions = true;
         initComponents();
         initToolbarButtons();
         initNextPrevActions();
+        initSelectionCombos();
 
         diffViewPanel = new PlaceholderPanel();
         diffViewPanel.setComponent(getInfoPanelLoading());
@@ -239,10 +279,15 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         context = null;
         diffedFile = file;
         contextName = file.getName();
+        repositoryTreeOriginalLeft = null;
+        repositoryTreeOriginalRight = null;
+        fixedRevisions = true;
+        
         initComponents();
         initToolbarButtons();
         initNextPrevActions();
-
+        initSelectionCombos();
+        
         diffViewPanel = new PlaceholderPanel();
         diffViewPanel.setComponent(getInfoPanelLoading());
         replaceVerticalSplitPane(diffViewPanel);
@@ -288,6 +333,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         }
         if(executeStatusSupport!=null) {
             executeStatusSupport.cancel();
+        }
+        if (refreshSetupsSupport != null) {
+            refreshSetupsSupport.cancel();
         }
     }
 
@@ -396,18 +444,21 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             localToggle.addActionListener(this);
             remoteToggle.addActionListener(this);
             allToggle.addActionListener(this);
+            filterPropertiesButton.addActionListener(this);
 
             commitButton.setToolTipText(NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Commit_Tooltip"));
             updateButton.setToolTipText(NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Update_Tooltip"));
-            ButtonGroup grp = new ButtonGroup();
-            grp.add(localToggle);
-            grp.add(remoteToggle);
-            grp.add(allToggle);
             if (currentType == Setup.DIFFTYPE_LOCAL) localToggle.setSelected(true);
             else if (currentType == Setup.DIFFTYPE_REMOTE) remoteToggle.setSelected(true);
             else if (currentType == Setup.DIFFTYPE_ALL) allToggle.setSelected(true);
 
             commitButton.setEnabled(false);
+            boolean propsVisible = SvnModuleConfig.getDefault().isFilterPropertiesEnabled();
+            filterPropertiesButton.setSelected(propsVisible);
+            if (currentType == -1) {
+                filterPropertiesButton.setEnabled(false);
+            }
+            propertiesVisible = propsVisible && filterPropertiesButton.isEnabled();
         } else {
             commitButton.setVisible(false);
             updateButton.setVisible(false);
@@ -415,6 +466,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             remoteToggle.setVisible(false);
             allToggle.setVisible(false);
             refreshButton.setVisible(false);
+            filterPropertiesButton.setVisible(false);
         }
     }
 
@@ -465,8 +517,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     @Override
     public void addNotify() {
         super.addNotify();
-        if (refreshTask != null) {
-            Subversion.getInstance().getStatusCache().addVersioningListener(this);
+        if (fileTable != null) {
+            cache.addVersioningListener(this);
             SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         }
         JComponent parent = (JComponent) getParent();
@@ -501,8 +553,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     
     @Override
     public void removeNotify() {
-        Subversion.getInstance().getStatusCache().removeVersioningListener(this);
-        if (refreshTask != null) {
+        cache.removeVersioningListener(this);
+        if (fileTable != null) {
             SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         }
         super.removeNotify();
@@ -514,8 +566,102 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             if (!affectsView(event)) {
                 return;
             }
-            refreshTask.schedule(200);
+            refreshSetups();
         }
+    }
+    
+    JPopupMenu getPopup () {
+        JPopupMenu menu = null;
+        if (currentType != -1) {
+            menu = new JPopupMenu();
+            JMenuItem item;
+
+            item = menu.add(new OpenInEditorAction());
+            Mnemonics.setLocalizedText(item, item.getText());
+            menu.addSeparator();
+            item = menu.add(new SystemActionBridge(SystemAction.get(UpdateAction.class), actionString("CTL_PopupMenuItem_Update"))); // NOI18N
+            Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), actionString("CTL_PopupMenuItem_Commit"))); // NOI18N
+            Mnemonics.setLocalizedText(item, item.getText());
+
+            menu.addSeparator();
+            item = menu.add(new SystemActionBridge(SystemAction.get(BlameAction.class),
+                                                   ((BlameAction)SystemAction.get(BlameAction.class)).visible(null) ?
+                                                   actionString("CTL_PopupMenuItem_HideBlame") : // NOI18N
+                                                   actionString("CTL_PopupMenuItem_Blame"))); // NOI18N
+            Mnemonics.setLocalizedText(item, item.getText());
+
+            item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionString("CTL_PopupMenuItem_SearchHistory"))); // NOI18N
+            Mnemonics.setLocalizedText(item, item.getText());
+
+            menu.addSeparator();
+            String label;
+            ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
+            if (exclude.getActionStatus(null) == ExcludeFromCommitAction.INCLUDING) {
+                label = org.openide.util.NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_IncludeInCommit"); // NOI18N
+            } else {
+                label = org.openide.util.NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_ExcludeFromCommit"); // NOI18N
+            }
+            item = menu.add(new SystemActionBridge(exclude, label));
+            Mnemonics.setLocalizedText(item, item.getText());
+
+            Action revertAction;
+            boolean allLocallyNew = true;
+            boolean allLocallyDeleted = true;
+            File [] files = SvnUtils.getCurrentContext(null).getFiles();
+
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+                FileInformation info = cache.getStatus(file);
+                if ((info.getStatus() & DeleteLocalAction.LOCALLY_DELETABLE_MASK) == 0 ) {
+                    allLocallyNew = false;
+                }
+                if (info.getStatus() != FileInformation.STATUS_VERSIONED_DELETEDLOCALLY && info.getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
+                    allLocallyDeleted = false;
+                }
+            }
+            if (allLocallyNew) {
+                SystemAction systemAction = SystemAction.get(DeleteLocalAction.class);
+                revertAction = new SystemActionBridge(systemAction, actionString("CTL_PopupMenuItem_Delete")); // NOI18N
+            } else if (allLocallyDeleted) {
+                revertAction = new SystemActionBridge(SystemAction.get(RevertModificationsAction.class), actionString("CTL_PopupMenuItem_RevertDelete")); // NOI18N
+            } else {
+                revertAction = new SystemActionBridge(SystemAction.get(RevertModificationsAction.class), actionString("CTL_PopupMenuItem_GetClean")); // NOI18N
+            }
+            item = menu.add(revertAction);
+            Mnemonics.setLocalizedText(item, item.getText());
+
+            item = menu.add(new AbstractAction(actionString("CTL_PopupMenuItem_ExportDiff")) { //NOI18N
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    SystemAction.get(ExportDiffAction.class).performContextAction(TopComponent.getRegistry().getActivatedNodes(), true);
+                }
+            });
+            Mnemonics.setLocalizedText(item, item.getText());
+            Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
+            if (activatedNodes.length > 0 && activatedNodes[0] instanceof DiffNode) {
+                // we currently don't know how to export changes on folders or properties
+                Setup setup = ((DiffNode) activatedNodes[0]).getSetup();
+                FileInformation info = setup.getInfo();
+                item.setEnabled(setup.getPropertyName() == null && info != null && !info.isDirectory());
+            }
+
+            Action ignoreAction = new SystemActionBridge(SystemAction.get(IgnoreAction.class),
+               ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(files) == IgnoreAction.UNIGNORING ?
+               actionString("CTL_PopupMenuItem_Unignore") : // NOI18N
+               actionString("CTL_PopupMenuItem_Ignore")); // NOI18N
+            item = menu.add(ignoreAction);
+            Mnemonics.setLocalizedText(item, item.getText());
+            Action infoAction = new SystemActionBridge(SystemAction.get(VersioningInfoAction.class), actionString("CTL_PopupMenuItem_VersioningInfo")); // NOI18N
+            item = menu.add(infoAction);
+            Mnemonics.setLocalizedText(item, item.getText());
+        }
+        return menu;
+    }
+
+    private String actionString(String key) {
+        ResourceBundle actionsLoc = NbBundle.getBundle(Annotator.class);
+        return actionsLoc.getString(key);
     }
     
     private boolean affectsView(VersioningEvent event) {
@@ -601,6 +747,81 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         Object source = e.getSource();
         if (source == commitButton) onCommitButton();
         else if (source == localToggle || source == remoteToggle || source == allToggle) onDiffTypeChanged();
+        else if (source == cmbDiffTreeSecond) {
+            RepositoryFile oldSelection = repositoryTreeLeft;
+            RepositoryFile newSelection = getSelectedRevision(cmbDiffTreeSecond, repositoryTreeLeft);
+            if (newSelection != null) {
+                repositoryTreeLeft = newSelection;
+            }
+            boolean refresh = !oldSelection.equals(repositoryTreeLeft);
+            if (refresh) {
+                synchronizeButtons();
+                refreshStatuses();
+            }
+        } else if (source == cmbDiffTreeFirst) {
+            RepositoryFile oldSelection = repositoryTreeRight;
+            RepositoryFile newSelection = getSelectedRevision(cmbDiffTreeFirst, repositoryTreeRight);
+            if (newSelection != null) {
+                repositoryTreeRight = newSelection;
+            }
+            boolean refresh = !oldSelection.equals(repositoryTreeRight);
+            if (refresh) {
+                synchronizeButtons();
+                refreshStatuses();
+            }
+        } else if (source == filterPropertiesButton) {
+            boolean propsVisible = filterPropertiesButton.isSelected();
+            SvnModuleConfig.getDefault().setFilterPropertiesEnabled(propsVisible);
+            propertiesVisible = propsVisible && filterPropertiesButton.isEnabled();
+            refreshStatuses();
+        }
+    }
+    
+    private RepositoryFile getSelectedRevision (JComboBox cmbDiffTree, RepositoryFile initial) {
+        Object selectedItem = cmbDiffTree.getSelectedItem();
+        RepositoryFile selection = null;
+        if (selectedItem == REVISION_SELECT) {
+            File[] roots = SvnUtils.getActionRoots(context, false);
+            if (roots != null) {
+                File interestingFile;
+                if(roots.length == 1) {
+                    interestingFile = roots[0];
+                } else {
+                    interestingFile = SvnUtils.getPrimaryFile(roots[0]);
+                }
+                SelectDiffTree dialog = new SelectDiffTree(repositoryTreeLeft, interestingFile);
+                if (dialog.showDialog()) {
+                    selection = dialog.getRepositoryFile();
+                    addToModel(selection, cmbDiffTree);
+                }
+            }
+        } else if (selectedItem instanceof RepositoryFile) {
+            selection = (RepositoryFile) selectedItem;
+        }
+        return selection;
+    }
+
+    private void addToModel (final RepositoryFile newItem, final JComboBox cmbDiffTree) {
+        DefaultComboBoxModel model = (DefaultComboBoxModel) cmbDiffTree.getModel();
+        for (int i = 0; i < model.getSize(); ++i) {
+            final Object item = model.getElementAt(i);
+            if (newItem.toString().equals(item.toString())) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        cmbDiffTree.setSelectedItem(item);
+                    }
+                });
+                return;
+            }
+        }
+        model.addElement(newItem);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                cmbDiffTree.setSelectedItem(newItem);
+            }
+        });
     }
 
     private void onRefreshButton() {
@@ -612,6 +833,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             executeStatusSupport.cancel();
             executeStatusSupport = null;
         }
+        if (refreshSetupsSupport != null) {
+            refreshSetupsSupport.cancel();
+        }
         
         LifecycleManager.getDefault().saveAll();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
@@ -619,9 +843,11 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         SvnProgressSupport supp = new SvnProgressSupport() {
             @Override
             public void perform() {                                         
-                StatusAction.executeStatus(context, this, contactServer);
+                if (currentType != -1) {
+                    StatusAction.executeStatus(context, this, contactServer);
+                }
                 if (!isCanceled()) {
-                    refreshTask.schedule(50);
+                    refreshSetups();
                 }
             }
         };
@@ -730,8 +956,161 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     public String getSetupDisplayName() {
         return contextName;
     }
+    
+    private void refreshSelectionCombos () {
+        if (!fixedRevisions && repositoryTreeOriginalLeft != null && repositoryTreeOriginalRight != null) {
+            List<Object> modelRight = new ArrayList<Object>(10);
+            List<Object> modelLeft = new ArrayList<Object>(10);
+            modelLeft.add(repositoryTreeOriginalLeft);
+            if (!SVNRevision.BASE.equals(repositoryTreeOriginalLeft.getRevision())) {
+                modelLeft.add(new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.BASE));
+            }
+            if (!SVNRevision.HEAD.equals(repositoryTreeOriginalLeft.getRevision())) {
+                modelLeft.add(new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD));
+            }
+            modelRight.add(repositoryTreeOriginalRight);            
+            if (!SVNRevision.WORKING.equals(repositoryTreeOriginalRight.getRevision())) {
+                modelRight.add(new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.WORKING));
+            }
+            if (!SVNRevision.BASE.equals(repositoryTreeOriginalRight.getRevision())) {
+                modelRight.add(new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.BASE));
+            }
+            if (!SVNRevision.HEAD.equals(repositoryTreeOriginalRight.getRevision())) {
+                modelRight.add(new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD));
+            }
+            modelLeft.add(REVISION_SELECT_SEP);
+            modelLeft.add(REVISION_SELECT);
+            modelLeft.add(REVISION_SELECT_SEP);
+            modelRight.add(REVISION_SELECT_SEP);
+            modelRight.add(REVISION_SELECT);
+            modelRight.add(REVISION_SELECT_SEP);
+            cmbDiffTreeFirst.setModel(new DefaultComboBoxModel(modelRight.toArray(new Object[modelRight.size()])));
+            cmbDiffTreeSecond.setModel(new DefaultComboBoxModel(modelLeft.toArray(new Object[modelLeft.size()])));
+            if (SvnUtils.getActionRoots(context, false) != null) {
+                cmbDiffTreeFirst.setEnabled(true);
+                cmbDiffTreeSecond.setEnabled(true);
+            }
+        }
+    }
+
+    private void initSelectionCombos () {
+        if (fixedRevisions || repositoryTreeLeft == null || repositoryTreeRight == null) {
+            treeSelectionPanel.setVisible(false);
+        } else {
+            cmbDiffTreeFirst.setMinimumSize(cmbDiffTreeFirst.getMinimumSize());
+            cmbDiffTreeSecond.setMinimumSize(cmbDiffTreeSecond.getMinimumSize());
+            treeSelectionPanel.setMinimumSize(treeSelectionPanel.getMinimumSize());
+            ListCellRenderer renderer = new RepositoryFileCellRenderer();
+            cmbDiffTreeFirst.setRenderer(renderer);
+            cmbDiffTreeFirst.setModel(new DefaultComboBoxModel(new Object[] { repositoryTreeRight }));
+            cmbDiffTreeFirst.addActionListener(this);
+            cmbDiffTreeSecond.setRenderer(renderer);
+            cmbDiffTreeSecond.setModel(new DefaultComboBoxModel(new Object[] { repositoryTreeLeft }));
+            cmbDiffTreeSecond.addActionListener(this);
+        }
+    }
+
+    private void selectItem (JComboBox cmbDiffTree, SVNRevision revision) {
+        Object toSelect = null;
+        if (fileUrl != null) {
+            DefaultComboBoxModel model = (DefaultComboBoxModel) cmbDiffTree.getModel();
+            for (int i = 0; i < model.getSize(); ++i) {
+                Object o = model.getElementAt(i);
+                if (o instanceof RepositoryFile) {
+                    RepositoryFile inModel = (RepositoryFile) o;
+                    if (inModel.getFileUrl().equals(fileUrl) && revision.equals(inModel.getRevision())) {
+                        toSelect = o;
+                        break;
+                    }
+                }
+            }
+        }
+        if (toSelect != null) {
+            cmbDiffTree.setSelectedItem(toSelect);
+        }
+    }
+
+    private void synchronizeButtons () {
+        if (!internalChange && repositoryTreeOriginalLeft != null && repositoryTreeLeft != null
+                && repositoryTreeOriginalRight != null && repositoryTreeRight != null) {
+            boolean original = internalChange;
+            try {
+                internalChange = true;
+                boolean none = false;
+                if (repositoryTreeLeft.getFileUrl().equals(repositoryTreeOriginalLeft.getFileUrl())
+                        && repositoryTreeRight.getFileUrl().equals(repositoryTreeOriginalRight.getFileUrl())
+                        && repositoryTreeLeft.getFileUrl().equals(repositoryTreeRight.getFileUrl())) {
+                    if (repositoryTreeLeft.getRevision().equals(SVNRevision.BASE)
+                            && repositoryTreeRight.getRevision().equals(SVNRevision.WORKING)) {
+                        localToggle.setSelected(true);
+                    } else if (repositoryTreeLeft.getRevision().equals(SVNRevision.HEAD)
+                            && repositoryTreeRight.getRevision().equals(SVNRevision.BASE)) {
+                        remoteToggle.setSelected(true);
+                    } else if (repositoryTreeLeft.getRevision().equals(SVNRevision.HEAD)
+                            && repositoryTreeRight.getRevision().equals(SVNRevision.WORKING)) {
+                        allToggle.setSelected(true);
+                    } else {
+                        none = true;
+                    }
+                } else {
+                    none = true;
+                }
+                if (none) {
+                    btnGroup.clearSelection();
+                    filterPropertiesButton.setEnabled(false);
+                    propertiesVisible = false;
+                    currentType = -1;
+                } else {
+                    filterPropertiesButton.setEnabled(true);
+                    propertiesVisible = filterPropertiesButton.isSelected();
+                }
+                commitButton.setEnabled(!none);
+                updateButton.setEnabled(!none);
+                onDiffTypeChanged();
+            } finally {
+                internalChange = original;
+            }
+        }
+    }
+
+    private void refreshSetups () {
+        SvnProgressSupport supp = refreshSetupsSupport;
+        if (supp != null) {
+            supp.cancel();
+        }
+        supp = new SetupsPrepareSupport();
+        supp.start(Subversion.getInstance().getRequestProcessor(), null,
+            NbBundle.getMessage(MultiDiffPanel.class, "MSG_PrepareSetups_Progress")); //NOI18N
+        refreshSetupsSupport = supp;
+    }
+    
+    @NbBundle.Messages({
+        "MSG_Revision_Select_Tooltip=Select a tree to diff"
+    })
+    private static class RepositoryFileCellRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            String tooltip = null;
+            if (value instanceof RepositoryFile) {
+                RepositoryFile repoFile = (RepositoryFile) value;
+                value = repoFile.getName() + "@" + repoFile.getRevision().toString() + " - " + repoFile.getPath();
+                tooltip = repoFile.toString();
+            } else if (value instanceof String) {
+                value = "<html><i>" + value + "</i></html>"; //NOI18N
+                tooltip = Bundle.MSG_Revision_Select_Tooltip();
+            }
+            Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (comp instanceof JComponent) {
+                ((JComponent) comp).setToolTipText(tooltip);
+            }
+            return comp;
+        }
+
+    }
 
     private class SetupsPrepareSupport extends SvnProgressSupport {
+        
         @Override
         protected void perform() {
             if (dpt != null) {
@@ -749,18 +1128,36 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 case Setup.DIFFTYPE_ALL:
                     status = FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_REMOTE_CHANGE;
                     break;
+                case -1:
+                    status = 0;
+                    break;
                 default:
                     throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
             }
-            File[] files = SvnUtils.getModifiedFiles(context, status);
-            if (isCanceled()) {
-                return;
-            }
             final int localDisplayStatuses = status;
-            final Setup[] localSetups = computeSetups(files, status);
+            final Setup[] localSetups;
+            if (status == 0) {
+                RevisionSetupsSupport rdc = new RevisionSetupsSupport(
+                        repositoryTreeLeft, repositoryTreeRight, repositoryUrl, context);
+                if (repositoryTreeRight.getRevision() == SVNRevision.WORKING) {
+                    File[] files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+                    if (isCanceled()) {
+                        return;
+                    }
+                    rdc.setWCSetups(computeSetups(files, FileInformation.STATUS_LOCAL_CHANGE, Setup.DIFFTYPE_LOCAL));
+                }
+                localSetups = rdc.computeSetupsBetweenRevisions(this);
+            } else {
+                File[] files = SvnUtils.getModifiedFiles(context, status);
+                if (isCanceled()) {
+                    return;
+                }
+                localSetups = computeSetups(files, status, currentType);
+            }
             if (localSetups == null) {
                 return;
             }
+            Arrays.sort(localSetups, new MultiDiffPanel.SetupsComparator());
             final EditorCookie[] cookies = DiffUtils.setupsToEditorCookies(localSetups);
             Runnable runnable = new Runnable() {
                 @Override
@@ -790,6 +1187,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                             case Setup.DIFFTYPE_ALL:
                                 noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoAllChanges");
                                 break;
+                            case -1:
+                                noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoChanges");
+                                break;
                             default:
                                 throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
                         }
@@ -812,7 +1212,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                         Dimension dim = fileTable.getComponent().getPreferredSize();
                         fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
                         setDiffIndex(0, 0, false);
-                        commitButton.setEnabled(true);
+                        commitButton.setEnabled(currentType != -1);
                         dpt = new DiffPrepareTask(setups);
                         prepareTask = Subversion.getInstance().getRequestProcessor().post(dpt);
                     }
@@ -831,24 +1231,27 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             }
         }
 
-        private Setup[] computeSetups(File[] files, int displayStatus) {
+        private Setup[] computeSetups(File[] files, int displayStatus, int setupType) {
             List<Setup> newSetups = new ArrayList<Setup>(files.length);
+            int statusWithoutProperties = displayStatus & ~FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY_PROPERTY;
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
-                if (!file.isDirectory()) {
-                    Setup setup = new Setup(file, null, currentType);
+                if (!file.isDirectory() && (cache.getStatus(file).getStatus() & statusWithoutProperties) != 0) {
+                    Setup setup = new Setup(file, null, setupType);
                     setup.setNode(new DiffNode(setup, new SvnFileNode(file), displayStatus));
                     newSetups.add(setup);
                 }
-                addPropertiesSetups(file, newSetups, displayStatus);
+                if (propertiesVisible) {
+                    addPropertiesSetups(file, newSetups, displayStatus);
+                }
                 if (isCanceled()) {
                     return null;
                 }
             }
-            Collections.sort(newSetups, new SetupsComparator());
             return newSetups.toArray(new Setup[newSetups.size()]);
         }
     }
+    
 
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
@@ -887,7 +1290,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         } catch (IOException e) {
             // no need to litter log with expected exceptions:
             // when parent is not versioned, the exception will allways be thrown
-            FileInformation parentInfo = Subversion.getInstance().getStatusCache().getCachedStatus(base.getParentFile());
+            FileInformation parentInfo = cache.getCachedStatus(base.getParentFile());
             Level logLevel = parentInfo != null && (parentInfo.getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0
                     ? Level.FINE : Level.INFO;
             Subversion.LOG.log(logLevel, null, e);
@@ -896,23 +1299,48 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
     private void onDiffTypeChanged() {
         assert EventQueue.isDispatchThread();
-        if (localToggle.isSelected()) {
-            if (currentType == Setup.DIFFTYPE_LOCAL) return;
-            currentType = Setup.DIFFTYPE_LOCAL;
-        } else if (remoteToggle.isSelected()) {
-            if (currentType == Setup.DIFFTYPE_REMOTE) return;
-            currentType = Setup.DIFFTYPE_REMOTE;
-        } else if (allToggle.isSelected()) {
-            if (currentType == Setup.DIFFTYPE_ALL) return;
-            currentType = Setup.DIFFTYPE_ALL;
+        boolean orig = internalChange;
+        try {
+            internalChange = true;
+            if (localToggle.isSelected()) {
+                if (!orig) {
+                    selectItem(cmbDiffTreeFirst, SVNRevision.WORKING);
+                    selectItem(cmbDiffTreeSecond, SVNRevision.BASE);
+                }
+                if (currentType == Setup.DIFFTYPE_LOCAL) return;
+                currentType = Setup.DIFFTYPE_LOCAL;
+            } else if (remoteToggle.isSelected()) {
+                if (!orig) {
+                    selectItem(cmbDiffTreeFirst, SVNRevision.BASE);
+                    selectItem(cmbDiffTreeSecond, SVNRevision.HEAD);
+                }
+                if (currentType == Setup.DIFFTYPE_REMOTE) return;
+                currentType = Setup.DIFFTYPE_REMOTE;
+            } else if (allToggle.isSelected()) {
+                if (!orig) {
+                    selectItem(cmbDiffTreeFirst, SVNRevision.WORKING);
+                    selectItem(cmbDiffTreeSecond, SVNRevision.HEAD);
+                }
+                if (currentType == Setup.DIFFTYPE_ALL) return;
+                currentType = Setup.DIFFTYPE_ALL;
+            }
+        } finally {
+            internalChange = orig;
         }
         SvnModuleConfig.getDefault().setLastUsedModificationContext(currentType);
+        refreshStatuses();
+    }
+    
+    private void refreshStatuses () {
+        if (internalChange) {
+            return;
+        }
         if (!initialRefreshDisabled && currentType != Setup.DIFFTYPE_LOCAL) {
             // current mode is not local and remote status has not yet been called, so remote statuses need to be refreshed
             onRefreshButton();
         } else {
             // local and remote statuses already refreshed, no need to call status action
-            refreshTask.schedule(0);
+            refreshSetups();
         }
     }
 
@@ -1038,14 +1466,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             return cmp;
         }
     }
-
-    private class RefreshViewTask implements Runnable {
-        @Override
-        public void run() {
-            new SetupsPrepareSupport().start(Subversion.getInstance().getRequestProcessor(), null,
-                    NbBundle.getMessage(MultiDiffPanel.class, "MSG_PrepareSetups_Progress")).waitFinished(); //NOI18N
-        }
-    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -1055,6 +1475,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        btnGroup = new javax.swing.ButtonGroup();
         controlsToolBar = new javax.swing.JToolBar();
         allToggle = new javax.swing.JToggleButton();
         jPanel3 = new javax.swing.JPanel();
@@ -1067,13 +1488,18 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         jPanel2 = new javax.swing.JPanel();
         refreshButton = new javax.swing.JButton();
         updateButton = new javax.swing.JButton();
-        jPanel5 = new javax.swing.JPanel();
         commitButton = new javax.swing.JButton();
+        jPanel5 = new javax.swing.JPanel();
+        filterPropertiesButton = new javax.swing.JToggleButton();
         splitPane = new javax.swing.JSplitPane();
+        jLabel1 = new javax.swing.JLabel();
+        cmbDiffTreeFirst = new javax.swing.JComboBox();
+        jLabel2 = new javax.swing.JLabel();
 
         controlsToolBar.setFloatable(false);
         controlsToolBar.setRollover(true);
 
+        btnGroup.add(allToggle);
         allToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/remote_vs_local.png"))); // NOI18N
         allToggle.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_All_Tooltip")); // NOI18N
         allToggle.setFocusable(false);
@@ -1087,15 +1513,16 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 12, Short.MAX_VALUE)
+            .addGap(0, 11, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 21, Short.MAX_VALUE)
+            .addGap(0, 28, Short.MAX_VALUE)
         );
 
         controlsToolBar.add(jPanel3);
 
+        btnGroup.add(localToggle);
         localToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/local_vs_local.png"))); // NOI18N
         localToggle.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Local_Tooltip")); // NOI18N
         localToggle.setFocusable(false);
@@ -1109,15 +1536,16 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 12, Short.MAX_VALUE)
+            .addGap(0, 11, Short.MAX_VALUE)
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 21, Short.MAX_VALUE)
+            .addGap(0, 28, Short.MAX_VALUE)
         );
 
         controlsToolBar.add(jPanel4);
 
+        btnGroup.add(remoteToggle);
         remoteToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/remote_vs_remote.png"))); // NOI18N
         remoteToggle.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Remote_Tooltip")); // NOI18N
         remoteToggle.setFocusable(false);
@@ -1131,11 +1559,11 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 80, Short.MAX_VALUE)
+            .addGap(0, 79, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 21, Short.MAX_VALUE)
+            .addGap(0, 28, Short.MAX_VALUE)
         );
 
         controlsToolBar.add(jPanel1);
@@ -1160,11 +1588,11 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 30, Short.MAX_VALUE)
+            .addGap(0, 29, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 21, Short.MAX_VALUE)
+            .addGap(0, 28, Short.MAX_VALUE)
         );
 
         controlsToolBar.add(jPanel2);
@@ -1192,21 +1620,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         });
         controlsToolBar.add(updateButton);
 
-        jPanel5.setMaximumSize(new java.awt.Dimension(20, 32767));
-
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 20, Short.MAX_VALUE)
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 21, Short.MAX_VALUE)
-        );
-
-        controlsToolBar.add(jPanel5);
-
         commitButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/commit.png"))); // NOI18N
         commitButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MSG_CommitDiff_Tooltip")); // NOI18N
         commitButton.setFocusable(false);
@@ -1214,21 +1627,79 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         commitButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         controlsToolBar.add(commitButton);
 
+        jPanel5.setMaximumSize(new java.awt.Dimension(20, 32767));
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 19, Short.MAX_VALUE)
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 28, Short.MAX_VALUE)
+        );
+
+        controlsToolBar.add(jPanel5);
+
+        filterPropertiesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/properties.png"))); // NOI18N
+        filterPropertiesButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.filterPropertiesButton.toolTipText")); // NOI18N
+        filterPropertiesButton.setFocusable(false);
+        controlsToolBar.add(filterPropertiesButton);
+
         splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+
+        jLabel1.setLabelFor(cmbDiffTreeFirst);
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.jLabel1.text")); // NOI18N
+        jLabel1.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.jLabel1.TTtext")); // NOI18N
+
+        cmbDiffTreeFirst.setEnabled(false);
+
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.jLabel2.text")); // NOI18N
+        jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.jLabel2.TTtext")); // NOI18N
+
+        cmbDiffTreeSecond.setEnabled(false);
+
+        javax.swing.GroupLayout treeSelectionPanelLayout = new javax.swing.GroupLayout(treeSelectionPanel);
+        treeSelectionPanel.setLayout(treeSelectionPanelLayout);
+        treeSelectionPanelLayout.setHorizontalGroup(
+            treeSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(treeSelectionPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cmbDiffTreeFirst, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cmbDiffTreeSecond, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        treeSelectionPanelLayout.setVerticalGroup(
+            treeSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(treeSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(jLabel1)
+                .addComponent(cmbDiffTreeFirst, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel2)
+                .addComponent(cmbDiffTreeSecond, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(controlsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE)
-            .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE)
+            .addComponent(controlsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+            .addComponent(splitPane)
+            .addComponent(treeSelectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(controlsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(controlsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(treeSelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE))
+                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 370, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1243,8 +1714,14 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton allToggle;
+    private javax.swing.ButtonGroup btnGroup;
+    private javax.swing.JComboBox cmbDiffTreeFirst;
+    final javax.swing.JComboBox cmbDiffTreeSecond = new javax.swing.JComboBox();
     private javax.swing.JButton commitButton;
     private javax.swing.JToolBar controlsToolBar;
+    private javax.swing.JToggleButton filterPropertiesButton;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -1256,6 +1733,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private javax.swing.JButton refreshButton;
     private javax.swing.JToggleButton remoteToggle;
     private javax.swing.JSplitPane splitPane;
+    final javax.swing.JPanel treeSelectionPanel = new javax.swing.JPanel();
     private javax.swing.JButton updateButton;
     // End of variables declaration//GEN-END:variables
     

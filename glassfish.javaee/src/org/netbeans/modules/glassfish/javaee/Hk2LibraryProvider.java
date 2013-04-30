@@ -293,6 +293,15 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
     }
 
     /**
+     * Get {@see List} of class path {@see URL}s for Jersey libraries.
+     * <p/>
+     * @return {@see List} of class path {@see URL}s for Jersey libraries.
+     */
+    public List<URL> getJerseyClassPathURLs() {
+        return getLibraryClassPathURLs(JERSEY_PATTERN);
+    }
+
+    /**
      * Return JAX-RS libraries available in GlassFish.
      * <p/>
      * @return JAX-RS libraries available in GlassFish.
@@ -311,6 +320,15 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
     public void setJaxRsLibraryImplementation(
             LibraryImplementation lib, String libraryName) {
         setLibraryImplementationContent(lib, JAXRS_PATTERN, libraryName);
+    }
+
+    /**
+     * Get {@see List} of class path {@see URL}s for JAX-RS libraries.
+     * <p/>
+     * @return {@see List} of class path {@see URL}s for JAX-RS libraries.
+     */
+    public List<URL> getJaxRsClassPathURLs() {
+        return getLibraryClassPathURLs(JAXRS_PATTERN);
     }
 
     /**

@@ -127,7 +127,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
@@ -1963,7 +1963,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                IssueCache<NbJiraIssue, TaskData> cache = issue.getRepository().getIssueCache();
+                IssueCache<NbJiraIssue> cache = issue.getRepository().getIssueCache();
                 String parentKey = issue.getParentKey();
                 if ((parentKey != null) && (parentKey.trim().length()>0)) {
                     NbJiraIssue parentIssue = cache.getIssue(parentKey);

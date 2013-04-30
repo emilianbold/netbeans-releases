@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.editor.semantic;
 
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.IdentifierTree;
@@ -285,6 +286,9 @@ public class Utilities {
         if (class2Kind.get(ParameterizedTypeTree.class).contains(leaf.getKind())) {
             return findIdentifierSpanImpl(info, new TreePath(decl, ((ParameterizedTypeTree) leaf).getType()));
         }
+        if (class2Kind.get(AnnotatedTypeTree.class).contains(leaf.getKind())) {
+            return findIdentifierSpanImpl(info, new TreePath(decl, ((AnnotatedTypeTree) leaf).getUnderlyingType()));
+        }
         if (class2Kind.get(BreakTree.class).contains(leaf.getKind())) {
             Name name = ((BreakTree) leaf).getLabel();
             
@@ -336,7 +340,7 @@ public class Utilities {
             
            return findTokenWithText(info, name.toString(), start, end);
         }
-        throw new IllegalArgumentException("Only MethodDecl, VariableDecl, MemberSelectTree, IdentifierTree, ClassDecl, BreakTree, ContinueTree, and LabeledStatementTree are accepted by this method. Got: " + leaf.getKind());
+        throw new IllegalArgumentException("Only MethodDecl, VariableDecl, MemberSelectTree, IdentifierTree, ParameterizedTypeTree, AnnotatedTypeTree, ClassDecl, BreakTree, ContinueTree, and LabeledStatementTree are accepted by this method. Got: " + leaf.getKind());
     }
 
     public static int[] findIdentifierSpan( final TreePath decl, final CompilationInfo info, final Document doc) {
@@ -477,7 +481,8 @@ public class Utilities {
         CompilationUnitTree cu = info.getCompilationUnit();
         
         //XXX: do not use instanceof:
-        if (leaf instanceof MethodTree || leaf instanceof VariableTree || leaf instanceof ClassTree || leaf instanceof MemberSelectTree) {
+        if (leaf instanceof MethodTree || leaf instanceof VariableTree || leaf instanceof ClassTree
+                || leaf instanceof MemberSelectTree || leaf instanceof AnnotatedTypeTree) {
             return findIdentifierSpan(info, doc, tree);
         }
         

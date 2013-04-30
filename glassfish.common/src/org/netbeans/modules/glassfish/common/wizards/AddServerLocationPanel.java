@@ -55,7 +55,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.ServerDetails;
-import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;

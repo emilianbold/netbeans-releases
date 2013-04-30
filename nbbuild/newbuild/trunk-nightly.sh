@@ -102,11 +102,7 @@ fi
 
 if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}/zip
-#    cp -rp $DIST/zip/stableuc-l10n-*.zip  $DIST_SERVER2/${BUILD_ID}/zip/
-#    cp -rp $DIST/uc  $DIST_SERVER2/${BUILD_ID}
     cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
-#    cp $DIST/uc/catalog.*  $DIST_SERVER2/${BUILD_ID}/uc/
-#    cp -rp $DIST/uc2  $DIST_SERVER2/${BUILD_ID}
     if [ -n "${TESTING_SCRIPT}" ]; then
         cd $NB_ALL
         TIP_REV=`hg tip --template "{node}"`
@@ -118,7 +114,6 @@ fi
 if [ $UPLOAD_ML == 1 ]; then
     cp $DIST/zip/$BASENAME-platform-src.zip $DIST/ml/zip/
     cp $DIST/zip/$BASENAME-src.zip $DIST/ml/zip/
-#    cp $DIST/zip/$BASENAME-javadoc.zip $DIST/ml/zip/
     cp $DIST/zip/hg-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
     cp $DIST/zip/ide-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
     cp $DIST/zip/stable-UC-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
@@ -137,11 +132,7 @@ fi
 
 if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}/zip
-#    cp -rp $DIST/zip/stableuc-l10n-*.zip  $DIST_SERVER2/${BUILD_ID}/zip/
-#    cp -rp $DIST/uc  $DIST_SERVER2/${BUILD_ID}
     cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
-#    cp $DIST/uc/catalog.*  $DIST_SERVER2/${BUILD_ID}/uc/
-#    cp -rp $DIST/uc2  $DIST_SERVER2/${BUILD_ID}
     rm $DIST_SERVER2/latest.old
     mv $DIST_SERVER2/latest $DIST_SERVER2/latest.old
     ln -s $DIST_SERVER2/${BUILD_ID} $DIST_SERVER2/latest
@@ -149,11 +140,6 @@ if [ -n $BUILD_ID ]; then
         rm -r $DIST/ml
     fi
 fi
-
-#if [ $UPLOAD_ML == 1 ]; then
-#    mv $DIST/jnlp $DIST/ml/
-#    mv $DIST/javadoc $DIST/ml/
-#fi
 
 if [ -z $DIST_SERVER ]; then
     exit 0;

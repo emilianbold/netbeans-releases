@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -112,9 +114,15 @@ public class JsCompletionItem implements CompletionProposal {
     @Override
     public String getRhsHtml(HtmlFormatter formatter) {
         String location = null;
-        if (element instanceof JsElement && ((JsElement) element).isPlatform()) {
-            location = Bundle.JsCompletionItem_lbl_js_platform();
-        } else {
+        if (element instanceof JsElement) {
+            JsElement jsElement = (JsElement) element;
+            if (jsElement.isPlatform()) {
+                location = Bundle.JsCompletionItem_lbl_js_platform();
+            } else if (jsElement.getSourceLabel() != null) {
+                location = jsElement.getSourceLabel();
+            }
+        }
+        if (location == null) {
             location = getFileNameURL();
         }
         if (location == null) {
@@ -181,8 +189,12 @@ public class JsCompletionItem implements CompletionProposal {
     
     public static class JsFunctionCompletionItem extends JsCompletionItem {
         
-        JsFunctionCompletionItem(ElementHandle element, CompletionRequest request) {
+        private final Set<String> returnTypes;
+        private final Map<String, Set<String>> parametersTypes;
+        JsFunctionCompletionItem(ElementHandle element, CompletionRequest request, Set<String> resolvedReturnTypes, Map<String, Set<String>> parametersTypes) {
             super(element, request);
+            this.returnTypes = resolvedReturnTypes != null ? resolvedReturnTypes : Collections.EMPTY_SET;
+            this.parametersTypes = parametersTypes != null ? parametersTypes : Collections.EMPTY_MAP;
         }
 
         @Override
@@ -198,22 +210,8 @@ public class JsCompletionItem implements CompletionProposal {
         }
 
         private void appendParamsStr(HtmlFormatter formatter){
-            LinkedHashMap<String, Collection<String>> allParameters = new LinkedHashMap<String, Collection<String>>();
-
-            ElementHandle element = getElement();
-            if(element instanceof JsFunction) {
-                for (JsObject jsObject: ((JsFunction) element).getParameters()) {
-                    Collection<String> types = new ArrayList();
-                    for (TypeUsage type : jsObject.getAssignmentForOffset(jsObject.getOffset() + 1)) {
-                        types.add(type.getType());
-                    }
-                    allParameters.put(jsObject.getName(), types);
-                }
-            } else if (element instanceof IndexedElement.FunctionIndexedElement) {
-                allParameters = ((IndexedElement.FunctionIndexedElement) element).getParameters();
-            }
-            for (Iterator<Map.Entry<String, Collection<String>>> it = allParameters.entrySet().iterator(); it.hasNext();) {
-                Map.Entry<String, Collection<String>> entry = it.next();
+            for (Iterator<Map.Entry<String, Set<String>>> it = parametersTypes.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<String, Set<String>> entry = it.next();
                 formatter.parameters(true);
                 formatter.appendText(entry.getKey());
                 formatter.parameters(false);
@@ -236,14 +234,6 @@ public class JsCompletionItem implements CompletionProposal {
         }
 
         private void appendReturnTypes(HtmlFormatter formatter) {
-            Collection<String> returnTypes = new ArrayList<String>();
-
-            ElementHandle element = getElement();
-            if (element instanceof JsFunction) {
-                returnTypes.addAll(Utils.getDisplayNames(((JsFunction) element).getReturnTypes()));
-            } else if (element instanceof IndexedElement.FunctionIndexedElement) {
-                returnTypes.addAll(Utils.getDisplayNamesFromStrings(((IndexedElement.FunctionIndexedElement) element).getReturnTypes()));
-            }
             if (!returnTypes.isEmpty()) {
                 formatter.appendText(": "); //NOI18N
                 formatter.type(true);
@@ -320,9 +310,7 @@ public class JsCompletionItem implements CompletionProposal {
             if (type == null) {
                 return getName();
             }
-            //CodeStyle codeStyle = CodeStyle.get(EditorRegistry.lastFocusedComponent().getDocument());
-            boolean appendSpace = true;
-            String name = null;
+
             switch(type) {
                 case ENDS_WITH_SPACE:
                     builder.append(getName());
@@ -362,38 +350,26 @@ public class JsCompletionItem implements CompletionProposal {
 
     public static class JsPropertyCompletionItem extends JsCompletionItem {
 
-        JsPropertyCompletionItem(ElementHandle element, CompletionRequest request) {
+        private final Set<String> resolvedTypes;
+        
+        JsPropertyCompletionItem(ElementHandle element, CompletionRequest request, Set<String> resolvedTypes) {
             super(element, request);
+            this.resolvedTypes = resolvedTypes != null ? resolvedTypes : Collections.EMPTY_SET;
         }
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             formatter.appendText(getName());
-            Collection<? extends TypeUsage> assignment = null;
-            ElementHandle element = getElement();
-            if (element instanceof JsObject) {
-                JsObject jsObject = (JsObject) element;
-                assignment = jsObject.getAssignmentForOffset(request.anchor);
-            } else if (element instanceof IndexedElement) {
-                IndexedElement iElement = (IndexedElement) element;
-                assignment = iElement.getAssignments();
-            }
-            if (assignment != null) {
-                if (!assignment.isEmpty()) {
-                    Collection<TypeUsage> resolved = new ArrayList<TypeUsage>(assignment);
-                    resolved = ModelUtils.resolveTypes(resolved, request.result);
-                    if (!resolved.isEmpty()) {
-                        formatter.type(true);
-                        formatter.appendText(": ");  //NOI18N
-                        for (Iterator<? extends TypeUsage> it = resolved.iterator(); it.hasNext();) {
-                            formatter.appendText(it.next().getType());
-                            if (it.hasNext()) {
-                                formatter.appendText("|");   //NOI18N
-                            }
-                        }
-                        formatter.type(false);
+            if (!resolvedTypes.isEmpty()) {
+                formatter.type(true);
+                formatter.appendText(": ");  //NOI18N
+                for (Iterator<String> it = resolvedTypes.iterator(); it.hasNext();) {
+                    formatter.appendText(it.next());
+                    if (it.hasNext()) {
+                        formatter.appendText("|");   //NOI18N
                     }
                 }
+                formatter.type(false);
             }
             return formatter.getText();
         }
@@ -401,25 +377,172 @@ public class JsCompletionItem implements CompletionProposal {
 
     public static class Factory {
         
-        public static JsCompletionItem create(JsElement object, CompletionRequest request) {
-            JsCompletionItem result;
-            switch (object.getJSKind()) {
-                case CONSTRUCTOR:
-                case FUNCTION:
-                case METHOD:
-                    result = new JsFunctionCompletionItem(object, request);
-                    break;
-                case PROPERTY:
-                case PROPERTY_GETTER:
-                case PROPERTY_SETTER:
-                case FIELD:
-                case VARIABLE:
-                    result = new JsPropertyCompletionItem(object, request);
-                    break;
-                default:
-                    result = new JsCompletionItem(object, request);
+        public static void create( Map<String, List<JsElement>> items, CompletionRequest request, List<CompletionProposal> result) {
+            // This maps unresolved types to the display name of the resolved type. 
+            // It should save time to not resolve one type more times
+            HashMap<String, Set<String>> resolvedTypes = new HashMap<String, Set<String>>();
+
+            for (Map.Entry<String, List<JsElement>> entry: items.entrySet()) {
+
+                // this helps to eleminate items that will look as the same items in the cc
+                HashMap<String, JsCompletionItem> signatures = new HashMap<String, JsCompletionItem>();
+                for (JsElement element : entry.getValue()) {
+                    switch (element.getJSKind()) {
+                        case CONSTRUCTOR:
+                        case FUNCTION:
+                        case METHOD:
+                            Set<String> returnTypes = new HashSet<String>();
+                            HashMap<String, Set<String>> allParameters = new LinkedHashMap<String, Set<String>>();
+                            if (element instanceof JsFunction) {
+                                // count return types
+                                for (TypeUsage type : ((JsFunction) element).getReturnTypes()) {
+                                    Set<String> resolvedType = resolvedTypes.get(type.getType());
+                                    if (resolvedType == null) {
+                                        resolvedType = new HashSet(1);
+                                        String displayName = type.getDisplayName();
+                                        if (!displayName.isEmpty()) {
+                                            resolvedType.add(type.getDisplayName());
+                                        }
+                                        resolvedTypes.put(type.getType(), resolvedType);
+                                    }
+                                    returnTypes.addAll(resolvedType);
+                                }
+                                // count parameters type
+                                for (JsObject jsObject : ((JsFunction) element).getParameters()) {
+                                    Set<String> paramTypes = new HashSet<String>();
+                                    for (TypeUsage type : jsObject.getAssignmentForOffset(jsObject.getOffset() + 1)) {
+                                        Set<String> resolvedType = resolvedTypes.get(type.getType());
+                                        if (resolvedType == null) {
+                                            resolvedType = new HashSet(1);
+                                            String displayName = type.getDisplayName();
+                                            if (!displayName.isEmpty()) {
+                                                resolvedType.add(displayName);
+                                            }
+                                            resolvedTypes.put(type.getType(), resolvedType);
+                                        }
+                                        paramTypes.addAll(resolvedType);
+                                    }
+                                    allParameters.put(jsObject.getName(), paramTypes);
+                                }
+                            } else if (element instanceof IndexedElement.FunctionIndexedElement) {
+                                // count return types
+                                for (String type : ((IndexedElement.FunctionIndexedElement) element).getReturnTypes()) {
+                                    Set<String> resolvedType = resolvedTypes.get(type);
+                                    if (resolvedType == null) {
+                                        resolvedType = new HashSet(1);
+                                        String displayName = ModelUtils.getDisplayName(type);
+                                        if (!displayName.isEmpty()) {
+                                            resolvedType.add(displayName);
+                                        }
+                                        resolvedTypes.put(type, resolvedType);
+                                    }
+                                    returnTypes.addAll(resolvedType);
+                                }
+                                // count parameters type
+                                LinkedHashMap<String, Collection<String>> parameters = ((IndexedElement.FunctionIndexedElement) element).getParameters();
+                                for (Map.Entry<String, Collection<String>> paramEntry : parameters.entrySet()) {
+                                    Set<String> paramTypes = new HashSet<String>();
+                                    for (String type : paramEntry.getValue()) {
+                                        Set<String> resolvedType = resolvedTypes.get(type);
+                                        if (resolvedType == null) {
+                                            resolvedType = new HashSet(1);
+                                            String displayName = ModelUtils.getDisplayName(type);
+                                            if (!displayName.isEmpty()) {
+                                                resolvedType.add(displayName);
+                                            }
+                                            resolvedTypes.put(type, resolvedType);
+                                        }
+                                        paramTypes.addAll(resolvedType);
+                                    }
+                                    allParameters.put(paramEntry.getKey(), paramTypes);
+                                }
+                            }
+                            // create signature
+                            String signature = createFnSignature(entry.getKey(), allParameters, returnTypes);
+                            if (!signatures.containsKey(signature)) {
+                                JsCompletionItem item = new JsFunctionCompletionItem(element, request, returnTypes, allParameters);
+                                signatures.put(signature, item);
+                            }
+                            break;
+                        case PROPERTY:
+                        case PROPERTY_GETTER:
+                        case PROPERTY_SETTER:
+                        case FIELD:
+                        case VARIABLE:
+                            Set<String> typesToDisplay = new HashSet<String>();
+                            Collection<? extends TypeUsage> assignment = null;
+                            if (element instanceof JsObject) {
+                                JsObject jsObject = (JsObject) element;
+                                assignment = jsObject.getAssignmentForOffset(request.anchor);
+                            } else if (element instanceof IndexedElement) {
+                                IndexedElement iElement = (IndexedElement) element;
+                                assignment = iElement.getAssignments();
+                            }
+                            if (assignment != null && !assignment.isEmpty()) {
+                                HashSet<TypeUsage> toResolve = new HashSet<TypeUsage>();
+                                for (TypeUsage type : assignment) {
+                                    if (type.isResolved()) {
+                                        typesToDisplay.add(type.getDisplayName());
+                                    } else {
+                                        Set<String> resolvedType = resolvedTypes.get(type.getType());
+                                        if (resolvedType == null) {
+                                            toResolve.clear();
+                                            toResolve.add(type);
+                                            resolvedType = new HashSet(1);
+                                            Collection<TypeUsage> resolved = ModelUtils.resolveTypes(toResolve, request.result);
+                                            for (TypeUsage rType : resolved) {
+                                                String displayName = rType.getDisplayName();
+                                                if (!displayName.isEmpty()) {
+                                                    resolvedType.add(displayName);
+                                                }
+                                            }
+                                            resolvedTypes.put(type.getType(), resolvedType);
+                                        }
+                                        typesToDisplay.addAll(resolvedType);
+                                    }
+                                }
+                            }
+                            // signatures
+                            signature = element.getName() + ":" + createTypeSignature(typesToDisplay);
+                            if (!signatures.containsKey(signature)) {
+                                // add the item to the cc only if doesn't exist any similar
+                                JsCompletionItem item = new JsPropertyCompletionItem(element, request, typesToDisplay);
+                                signatures.put(signature, item);
+                            }
+                            break;
+                        default:
+                            signature = element.getName();
+                            if (!signatures.containsKey(signature)) {
+                                JsCompletionItem item = new JsCompletionItem(element, request);
+                                signatures.put(signature, item);
+                            }
+                    }
+                }
+                for (JsCompletionItem item: signatures.values()) {
+                    result.add(item);
+                }
             }
-            return result;
+        }
+        
+        private static String createFnSignature(String name, HashMap<String, Set<String>> params, Set<String> returnTypes) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(name).append('(');
+            for (Map.Entry<String, Set<String>> entry : params.entrySet()) {
+                sb.append(entry.getKey()).append(':');
+                sb.append(createTypeSignature(entry.getValue()));
+                sb.append(',');
+            }
+            sb.append(')');
+            sb.append(createTypeSignature(returnTypes));
+            return sb.toString();
+        }
+        
+        private static String createTypeSignature(Set<String> types) {
+            StringBuilder sb = new StringBuilder();
+            for(String name: types){
+                sb.append(name).append('|');
+            }
+            return sb.toString();
         }
     }
 }

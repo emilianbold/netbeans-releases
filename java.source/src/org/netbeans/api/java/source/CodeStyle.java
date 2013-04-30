@@ -508,6 +508,14 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    /**
+     * @since 0.120
+     */
+    public WrapStyle wrapCaseStatements() {
+        String wrap = preferences.get(wrapCaseStatements, getDefaultAsString(wrapCaseStatements));
+        return WrapStyle.valueOf(wrap);
+    }
+
     public WrapStyle wrapAssert() {
         String wrap = preferences.get(wrapAssert, getDefaultAsString(wrapAssert));
         return WrapStyle.valueOf(wrap);
@@ -546,8 +554,29 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    /**
+     * @since 0.119
+     */    
+    public boolean wrapAfterAssignOps() {
+        return preferences.getBoolean(wrapAfterAssignOps, getDefaultAsBoolean(wrapAfterAssignOps));
+    }
+
     // Blank lines -------------------------------------------------------------
     
+    /**
+     * @since 0.118
+     */
+    public int getMaximumBlankLinesInDeclarations() {
+        return preferences.getInt(blankLinesInDeclarations, getDefaultAsInt(blankLinesInDeclarations));
+    }
+
+    /**
+     * @since 0.118
+     */
+    public int getMaximumBlankLinesInCode() {
+        return preferences.getInt(blankLinesInCode, getDefaultAsInt(blankLinesInCode));
+    }
+
     public int getBlankLinesBeforePackage() {
         return preferences.getInt(blankLinesBeforePackage, getDefaultAsInt(blankLinesBeforePackage));
     }
@@ -882,6 +911,14 @@ public final class CodeStyle {
      */
     public boolean importInnerClasses() {
         return preferences.getBoolean(importInnerClasses, getDefaultAsBoolean(importInnerClasses));
+    }
+
+    /**
+     * Returns whether to create static imports for the static class members.
+     * @since 0.121
+     */
+    public boolean preferStaticImports() {
+        return preferences.getBoolean(preferStaticImports, getDefaultAsBoolean(preferStaticImports));
     }
 
     /**

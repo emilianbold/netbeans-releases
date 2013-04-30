@@ -56,7 +56,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +64,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -86,6 +84,7 @@ import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
+import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
@@ -215,13 +214,12 @@ public class JavaFixAllImports {
         }
     }
 
-    private static void performFixImports(WorkingCopy wc, ImportData data, String[] selections, boolean removeUnusedImports) throws IOException {
+    private static void performFixImports(WorkingCopy wc, ImportData data, CandidateDescription[] selections, boolean removeUnusedImports) throws IOException {
         //do imports:
         Set<Element> toImport = new HashSet<Element>();
 
-        for (String dn : selections) {
-            String fqn = data.displayName2FQN.get(dn);
-            TypeElement el = data.fqn2TE.get(fqn != null ? fqn : dn);
+        for (CandidateDescription cd : selections) {
+            Element el = cd.toImport != null ? cd.toImport.resolve(wc) : null;
 
             if (el != null) {
                 toImport.add(el);
@@ -269,10 +267,10 @@ public class JavaFixAllImports {
     }
 
     private static ImportData computeImports(CompilationInfo info) {
-        ComputeImports.Pair<Map<String, List<TypeElement>>, Map<String, List<TypeElement>>> candidates = new ComputeImports().computeCandidates(info);
+        Pair<Map<String, List<Element>>, Map<String, List<Element>>> candidates = new ComputeImports().computeCandidates(info);
 
-        Map<String, List<TypeElement>> filteredCandidates = candidates.a;
-        Map<String, List<TypeElement>> notFilteredCandidates = candidates.b;
+        Map<String, List<Element>> filteredCandidates = candidates.a;
+        Map<String, List<Element>> notFilteredCandidates = candidates.b;
 
         int size = notFilteredCandidates.size();
         ImportData data = new ImportData(size);
@@ -284,57 +282,52 @@ public class JavaFixAllImports {
         boolean shouldShowImportsPanel = false;
 
         for (String key : notFilteredCandidates.keySet()) {
-            data.names[index] = key;
+            data.simpleNames[index] = key;
 
-            List<TypeElement> unfilteredVars = notFilteredCandidates.get(key);
-            List<TypeElement> filteredVars = filteredCandidates.get(key);
+            List<Element> unfilteredVars = notFilteredCandidates.get(key);
+            List<Element> filteredVars = filteredCandidates.get(key);
 
             shouldShowImportsPanel |= unfilteredVars.size() > 1;
 
             if (!unfilteredVars.isEmpty()) {
-                data.variants[index] = new String[unfilteredVars.size()];
-                data.icons[index] = new Icon[data.variants[index].length];
+                data.variants[index] = new CandidateDescription[unfilteredVars.size()];
 
                 int i = -1;
                 int minImportanceLevel = Integer.MAX_VALUE;
 
-                for (TypeElement e : filteredVars) {
-                    data.variants[index][++i] = e.getQualifiedName().toString();
-                    data.icons[index][i] = ElementIcons.getElementIcon(e.getKind(), e.getModifiers());
-                    int level = Utilities.getImportanceLevel(referencesCount, ElementHandle.create(e));
+                for (Element e : filteredVars) {
+                    String displayName = ComputeImports.displayNameForImport(info, e);
+                    Icon icon = ElementIcons.getElementIcon(e.getKind(), e.getModifiers());
+                    data.variants[index][++i] = new CandidateDescription(displayName, icon, ElementHandle.create(e));
+                    int level = Utilities.getImportanceLevel(info, referencesCount, e);
                     if (level < minImportanceLevel) {
                         data.defaults[index] = data.variants[index][i];
                         minImportanceLevel = level;
                     }
-                    data.fqn2TE.put(e.getQualifiedName().toString(), e);
                 }
                 
                 if (data.defaults[index] != null)
                     minImportanceLevel = Integer.MIN_VALUE;
 
-                for (TypeElement e : unfilteredVars) {
+                for (Element e : unfilteredVars) {
                     if (filteredVars.contains(e))
                         continue;
 
-                    String fqn = e.getQualifiedName().toString();
-                    String dn = NOT_VALID_IMPORT_HTML + fqn;
-
-                    data.variants[index][++i] = dn;
-                    data.icons[index][i] = ElementIcons.getElementIcon(e.getKind(), e.getModifiers());
-                    int level = Utilities.getImportanceLevel(referencesCount, ElementHandle.create(e));
+                    String displayName = NOT_VALID_IMPORT_HTML + ComputeImports.displayNameForImport(info, e);
+                    Icon icon = ElementIcons.getElementIcon(e.getKind(), e.getModifiers());
+                    data.variants[index][++i] = new CandidateDescription(displayName, icon, ElementHandle.create(e));
+                    int level = Utilities.getImportanceLevel(info, referencesCount, e);
                     if (level < minImportanceLevel) {
                         data.defaults[index] = data.variants[index][i];
                         minImportanceLevel = level;
                     }
-                    data.fqn2TE.put(fqn, e);
-                    data.displayName2FQN.put(dn, fqn);
                 }
             } else {
-                data.variants[index] = new String[1];
-                data.variants[index][0] = NbBundle.getMessage(JavaFixAllImports.class, "FixDupImportStmts_CannotResolve"); //NOI18N
+                data.variants[index] = new CandidateDescription[1];
+                data.variants[index][0] = new CandidateDescription(NbBundle.getMessage(JavaFixAllImports.class, "FixDupImportStmts_CannotResolve"), //NOI18N
+                                                                   ImageUtilities.loadImageIcon("org/netbeans/modules/java/editor/resources/error-glyph.gif", false), //NOI18N
+                                                                   null);
                 data.defaults[index] = data.variants[index][0];
-                data.icons[index] = new Icon[1];
-                data.icons[index][0] = ImageUtilities.loadImageIcon("org/netbeans/modules/java/editor/resources/error-glyph.gif", false);//NOI18N
             }
 
             index++;
@@ -346,21 +339,15 @@ public class JavaFixAllImports {
     }
 
     static final class ImportData {
-        public final String[] names;
-        public final String[][] variants;
-        public final Icon[][] icons;
-        public final String[] defaults;
-        public final Map<String, TypeElement> fqn2TE;
-        public final Map<String, String> displayName2FQN;
+        public final String[] simpleNames;
+        public final CandidateDescription[][] variants;
+        public final CandidateDescription[] defaults;
         public       boolean shouldShowImportsPanel;
 
         public ImportData(int size) {
-            names = new String[size];
-            variants = new String[size][];
-            icons = new Icon[size][];
-            defaults = new String[size];
-            fqn2TE = new HashMap<String, TypeElement>();
-            displayName2FQN = new HashMap<String, String>();
+            simpleNames = new String[size];
+            variants = new CandidateDescription[size][];
+            defaults = new CandidateDescription[size];
         }
     }
 
@@ -370,7 +357,7 @@ public class JavaFixAllImports {
         final Preferences prefs = NbPreferences.forModule(JavaFixAllImports.class).node(PREFS_KEY);
         final FixDuplicateImportStmts panel = new FixDuplicateImportStmts();
 
-        panel.initPanel(data.names, data.variants, data.icons, data.defaults, prefs.getBoolean(KEY_REMOVE_UNUSED_IMPORTS, true));
+        panel.initPanel(data, prefs.getBoolean(KEY_REMOVE_UNUSED_IMPORTS, true));
 
         final JButton ok = new JButton("OK");
         final JButton cancel = new JButton("Cancel");
@@ -393,7 +380,7 @@ public class JavaFixAllImports {
         ok.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ok.setEnabled(false);
-                final String[] selections = panel.getSelections();
+                final CandidateDescription[] selections = panel.getSelections();
                 final boolean removeUnusedImports = panel.getRemoveUnusedImports();
                 WORKER.post(new Runnable() {
                     public void run() {
@@ -440,4 +427,14 @@ public class JavaFixAllImports {
         d.dispose();
     }
 
+    static final class CandidateDescription {
+        public final String displayName;
+        public final Icon icon;
+        public final ElementHandle<Element> toImport;
+        public CandidateDescription(String displayName, Icon icon, ElementHandle<Element> toImport) {
+            this.displayName = displayName;
+            this.icon = icon;
+            this.toImport = toImport;
+        }
+    }
 }

@@ -617,7 +617,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                 flash.note = NotificationDisplayer.getDefault().notify(
                     NbBundle.getMessage(NotifyExcPanel.class, "NTF_ExceptionalExceptionTitle"),
                     icon, summary,
-                    flash, NotificationDisplayer.Priority.SILENT);
+                    flash, NotificationDisplayer.Priority.SILENT, NotificationDisplayer.Category.ERROR);
             }
             return flash;
         }

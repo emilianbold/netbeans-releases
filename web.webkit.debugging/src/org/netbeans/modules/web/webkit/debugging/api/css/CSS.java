@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
@@ -177,6 +178,7 @@ public class CSS {
      * @param styleSheetText new text of the stylesheet.
      */
     public void setStyleSheetText(String styleSheetId, String styleSheetText) {
+        styleSheetText = replaceHoverInStyleSheetText(styleSheetText);
         JSONObject params = new JSONObject();
         params.put("styleSheetId", styleSheetId); // NOI18N
         params.put("text", styleSheetText); // NOI18N
@@ -277,12 +279,14 @@ public class CSS {
             if (result != null) {
                 matchedStyles = new MatchedStyles(result);
                 for (Rule rule : matchedStyles.getMatchedRules()) {
+                    returnHoverToSelector(rule);
                     String styleSheetId = rule.getStyle().getId().getStyleSheetId();
                     StyleSheetBody body = getStyleSheet(styleSheetId);
                     rule.setParentStyleSheet(body);
                 }
                 for (InheritedStyleEntry entry : matchedStyles.getInheritedRules()) {
                     for (Rule rule : entry.getMatchedRules()) {
+                        returnHoverToSelector(rule);
                         String styleSheetId = rule.getStyle().getId().getStyleSheetId();
                         StyleSheetBody body = getStyleSheet(styleSheetId);
                         rule.setParentStyleSheet(body);                        
@@ -472,6 +476,58 @@ public class CSS {
      */
     public synchronized void reset() {
         styleSheets.clear();
+        classForHover = null;
+    }
+
+    /** CSS class used to simulate hovering. */
+    private String classForHover;
+
+    /**
+     * Sets the CSS class that should be used to simulate hovering.
+     * 
+     * @param classForHover class to simulate hovering.
+     */
+    public void setClassForHover(String classForHover) {
+        this.classForHover = classForHover;
+    }
+
+    /**
+     * Returns the class used to simulate hovering.
+     * 
+     * @return class to simulate hovering.
+     */
+    private String getClassForHover() {
+        return classForHover;
+    }
+
+    /**
+     * Returns {@code :hover} pseudo-class into the selector (if it was
+     * replaced by a class that simulates hovering).
+     * 
+     * @param rule rule whose selector should be updated.
+     */
+    private void returnHoverToSelector(Rule rule) {
+        String selector = rule.getSelector();
+        String clazz = getClassForHover();
+        if (clazz != null) {
+            selector = Pattern.compile(Pattern.quote("." + clazz)).matcher(selector).replaceAll(":hover"); // NOI18N
+            rule.setSelector(selector);
+        }
+    }
+
+    /**
+     * Replaces {@code :hover} pseudo-classes by a class
+     * that should simulate hovering.
+     * 
+     * @param styleSheetText text of the style-sheet to update.
+     * @return updated text of the style-sheet.
+     */
+    private String replaceHoverInStyleSheetText(String styleSheetText) {
+        String clazz = getClassForHover();
+        if (clazz != null) {
+            styleSheetText = styleSheetText.replaceAll(":hover", "." + clazz); // NOI18N
+        }
+        return styleSheetText;
     }
 
     /**

@@ -992,49 +992,53 @@ public class FileStatusCache {
             remoteStatus = FileInformation.STATUS_LOCKED | remoteStatus;
         }
         
+        int propertyStatus = 0;
         if (SVNStatusKind.NONE.equals(pkind)) {
             // no influence
         } else if (SVNStatusKind.NORMAL.equals(pkind)) {
             // no influence
         } else if (SVNStatusKind.MODIFIED.equals(pkind)) {
-            if (SVNStatusKind.NORMAL.equals(kind)) {
-                return new FileInformation(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | remoteStatus, status);
-            }
+            propertyStatus = FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY_PROPERTY;
         } else if (SVNStatusKind.CONFLICTED.equals(pkind)) {
             return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT | remoteStatus, status);
         } else {
             throw new IllegalArgumentException("Unknown prop status: " + status.getPropStatus()); // NOI18N
         }
 
+        int additionalStatus = remoteStatus | propertyStatus;
         if (status.hasTreeConflict()) {
-            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT_TREE | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT_TREE | additionalStatus, status);
         } else if (SVNStatusKind.NONE.equals(kind)) {
             return FILE_INFORMATION_UNKNOWN;
         } else if (SVNStatusKind.NORMAL.equals(kind)) {
-            return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE | remoteStatus, status);
+            int finalStatus = FileInformation.STATUS_VERSIONED_UPTODATE | remoteStatus;
+            if (propertyStatus != 0) {
+                finalStatus = additionalStatus;
+            }
+            return new FileInformation(finalStatus, status);
         } else if (SVNStatusKind.MODIFIED.equals(kind)) {
-            return new FileInformation(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY_CONTENT | additionalStatus, status);
         } else if (SVNStatusKind.ADDED.equals(kind)) {
-            return new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | additionalStatus, status);
         } else if (SVNStatusKind.DELETED.equals(kind)) {                    
-            return new FileInformation(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | additionalStatus, status);
         } else if (SVNStatusKind.UNVERSIONED.equals(kind)) {            
-            return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | additionalStatus, status);
         } else if (SVNStatusKind.MISSING.equals(kind)) {            
-            return new FileInformation(FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | additionalStatus, status);
         } else if (SVNStatusKind.REPLACED.equals(kind)) {                      
             // this status or better to use this simplyfication?
-            return new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | additionalStatus, status);
         } else if (SVNStatusKind.MERGED.equals(kind)) {            
-            return new FileInformation(FileInformation.STATUS_VERSIONED_MERGE | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_MERGE | additionalStatus, status);
         } else if (SVNStatusKind.CONFLICTED.equals(kind)) {            
-            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT | additionalStatus, status);
         } else if (SVNStatusKind.OBSTRUCTED.equals(kind)) {            
-            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT | additionalStatus, status);
         } else if (SVNStatusKind.IGNORED.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED | remoteStatus, status);
         } else if (SVNStatusKind.INCOMPLETE.equals(kind)) {            
-            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT | additionalStatus, status);
         } else if (SVNStatusKind.EXTERNAL.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE | remoteStatus, status);
         } else {        

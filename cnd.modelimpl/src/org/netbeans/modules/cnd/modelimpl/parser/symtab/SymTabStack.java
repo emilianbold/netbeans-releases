@@ -67,6 +67,7 @@ public final class SymTabStack {
     }
     
     public SymTab push(CharSequence name) {        
+        assert CharSequences.isCompact(name) : "only compact strings allowed";
         SymTab symTab = new SymTab(stack.size(), name);
         stack.add(symTab);
         return symTab;
@@ -94,10 +95,12 @@ public final class SymTabStack {
     }
     
     public SymTabEntry lookupLocal(CharSequence entry) {
+        assert CharSequences.isCompact(entry) : "only compact strings allowed";
         return getLocal().lookup(entry);
     }
     
     public SymTabEntry lookup(CharSequence entry) {
+        assert CharSequences.isCompact(entry) : "only compact strings allowed";
         assert stack.size() > 0;
         SymTabEntry out = null;
         for (int i = stack.size() - 1; i >= 0; i--) {
@@ -116,6 +119,10 @@ public final class SymTabStack {
     public void importToLocal(SymTab symTab) {
         getLocal().importSymTab(symTab);
     }
+    
+    public int getSize() {
+        return stack.size();
+    }
 
     private SymTab getLocal() {
         return stack.get(stack.size() - 1);
@@ -123,6 +130,12 @@ public final class SymTabStack {
 
     @Override
     public String toString() {
-        return "SymTabStack{" + "nestingLevel=" + stack.size() + ", stack=" + stack + '}'; // NOI18N
+        StringBuilder sb = new StringBuilder();
+        sb.append("SymTabStack, nestingLevel=").append(stack.size()); //NOI18N
+        sb.append(", stack="); //NOI18N
+        for (SymTab symTab : stack) {
+            sb.append("\n").append(symTab); //NOI18N
+        }
+        return sb.toString();
     }
 }

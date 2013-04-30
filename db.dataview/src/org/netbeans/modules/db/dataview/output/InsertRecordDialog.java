@@ -61,6 +61,7 @@ import java.awt.event.KeyListener;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -73,6 +74,7 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -98,6 +100,8 @@ import org.openide.windows.WindowManager;
  *
  */
 class InsertRecordDialog extends javax.swing.JDialog {
+    private static final Logger LOG = Logger.getLogger(InsertRecordDialog.class.getName());
+
     private final ResultSetTableModel insertDataModel;
     private final DBTable insertTable;
     private final DataView dataView;
@@ -374,41 +378,70 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         if (insertRecordTableUI.isEditing()) {
             insertRecordTableUI.getCellEditor().stopCellEditing();
         }
+
+        final int rows = insertRecordTableUI.getRowCount();
+        final Object[][] insertedRows = new Object[rows][insertTable.getColumnList().size()];
+
+        try {
+            for (int i = 0; i < rows; i++) {
+                insertedRows[i] = getInsertValues(i);
+            }
+        } catch (DBException ex) {
+            LOG.log(Level.INFO, ex.getLocalizedMessage(), ex);
+            DialogDisplayer.getDefault().notifyLater(
+                    new NotifyDescriptor.Message(ex.getLocalizedMessage()));
+            return;
+        }
+
         // Get out of AWT thread because SQLExecutionHelper does calls to AWT
         // and we need to wait here to show possible exceptions.
-        new Thread("Inserting values") {  //NOI18N
+        new SwingWorker<Integer, Void>() {
 
             @Override
-            public void run() {
-                String insertSQL = null;
+            protected Integer doInBackground() throws Exception {
                 SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
                 SQLExecutionHelper execHelper = dataView.getSQLExecutionHelper();
-                for (int i = 0; i < insertRecordTableUI.getRowCount(); i++) {
-                    boolean wasException = false;
+                for (int i = 0; i < rows; i++) {
+                    boolean wasException;
                     try {
-                        Object[] insertedRow = getInsertValues(i);
-                        insertSQL = stmtBldr.generateInsertStatement(insertTable, insertedRow);
+                        Object[] insertedRow = insertedRows[i];
+                        String insertSQL = stmtBldr.generateInsertStatement(insertTable, insertedRow);
                         RequestProcessor.Task task = execHelper.executeInsertRow(pageContext, insertTable, insertSQL, insertedRow);
                         task.waitFinished();
                         wasException = dataView.hasExceptions();
                     } catch (DBException ex) {
-                        Logger.getLogger(InsertRecordDialog.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        LOG.log(Level.INFO, ex.getLocalizedMessage(), ex);
                         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(ex.getLocalizedMessage()));
                         wasException = true;
                     }
                     if (wasException) {
-                        // remove i already inserted
-                        for (int j = 0; j < i; j++) {
-                            insertRecordTableUI.getModel().removeRow(0);
-                        }
-                        // return without closing
-                        return;
+                        return i;
                     }
                 }
-                // close dialog
-                dispose();
+                return null;
             }
-        }.start();
+
+            @Override
+            protected void done() {
+                Integer brokeOn;
+                try {
+                    brokeOn = get();
+
+                    if (brokeOn == null) {
+                        dispose();
+                    } else {
+                        // remove i already inserted
+                        for (int j = 0; j < brokeOn; j++) {
+                            insertRecordTableUI.getModel().removeRow(0);
+                        }
+                    }
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                } catch (ExecutionException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }.execute();
     }
 
     private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
@@ -607,7 +640,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 }
             }
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(InsertRecordDialog.class.getName()).info("Failed to paste the contents " + ex);
+            LOG.log(Level.INFO, "Failed to paste the contents ", ex);
         }
     }
 

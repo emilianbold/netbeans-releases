@@ -111,21 +111,21 @@ public interface SourceLevelQueryImplementation2 {
     /**
      * Result of finding a source level and profile as well as the ability
      * to listen on changes.
-     * @since 1.45
+     * @since 1.47
      */
     interface Result2 extends Result {
 
         /**
-         * Returns the name of the required profile.
-         * @return a name of the required profile or null if the profile is either unknown
-         * or unsupported by actual source level.
+         * Returns the required profile.
+         * @return the required profile. If the profile is either unknown
+         * or unsupported by actual source level it returns the {@link SourceLevelQuery.Profile#DEFAULT}.
          * <div class="nonnormative">
          * The JDK 8 provides three limited profiles (compact1, compact2, compact3) in addition
          * to the full JDK. Each profile specifies a specific set of Java API packages and
          * contains all of the APIs of the smaller profile, @see http://openjdk.java.net/jeps/161
          * </div>
          */
-        @CheckForNull
-        String getProfile();
+        @NonNull
+        SourceLevelQuery.Profile getProfile();
     }
 }

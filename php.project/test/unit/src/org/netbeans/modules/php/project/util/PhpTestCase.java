@@ -87,7 +87,7 @@ public abstract class PhpTestCase extends NbTestCase {
         }
     }
 
-    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/MobileBrowsers")
+    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
     public static class DummyBrowser implements HtmlBrowser.Factory, EnhancedBrowserFactory {
 
         @Override
@@ -181,6 +181,16 @@ public abstract class PhpTestCase extends NbTestCase {
         @Override
         public String getId() {
             return "some";
+        }
+
+        @Override
+        public boolean hasNetBeansIntegration() {
+            return false;
+        }
+
+        @Override
+        public boolean canCreateHtmlBrowserImpl() {
+            return true;
         }
 
     }

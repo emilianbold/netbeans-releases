@@ -323,7 +323,7 @@ final class JavadocCompletionUtils {
                     && (pos == token.length() || !isInsideIndent(token, pos));
             return result;
         } catch (IndexOutOfBoundsException e) {
-            throw new IndexOutOfBoundsException("pos: " + pos + ", token.length: " + token.length() + ", token text: " + token.text());
+            throw (IndexOutOfBoundsException) new IndexOutOfBoundsException("pos: " + pos + ", token.length: " + token.length() + ", token text: " + token.text()).initCause(e);
         }
     }
     

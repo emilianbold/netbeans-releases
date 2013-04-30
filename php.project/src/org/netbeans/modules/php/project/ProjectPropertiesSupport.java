@@ -59,7 +59,7 @@ import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -177,7 +177,10 @@ public final class ProjectPropertiesSupport {
     @CheckForNull
     public static WebBrowser getWebBrowser(PhpProject project) {
         String browserId = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
-        return WebBrowserSupport.getBrowser(browserId);
+        if (browserId == null) {
+            return null;
+        }
+        return BrowserUISupport.getBrowser(browserId);
     }
 
     public static boolean getBrowserReloadOnSave(PhpProject project) {

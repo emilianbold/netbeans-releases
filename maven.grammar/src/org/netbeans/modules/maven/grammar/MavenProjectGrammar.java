@@ -409,7 +409,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             }
             ArtifactInfoHolder hold = findPluginInfo(previous, null, false);
             if (hold.getGroupId() != null && hold.getArtifactId() != null) {
-                Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult(hold.getGroupId(), hold.getGroupId(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult(hold.getGroupId(), hold.getArtifactId(), RepositoryPreferences.getInstance().getRepositoryInfos());
                 List<NBVersionInfo> verStrings = result.getResults();
                 Collection<GrammarResult> elems = new ArrayList<GrammarResult>();
                 for (NBVersionInfo vers : verStrings) {

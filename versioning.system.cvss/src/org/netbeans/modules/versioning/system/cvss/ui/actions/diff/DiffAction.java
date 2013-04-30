@@ -60,9 +60,10 @@ import org.openide.util.NbBundle;
  */
 public class DiffAction extends AbstractSystemAction {
     
+    private static final String ICON_RESOURCE = "org/netbeans/modules/versioning/system/cvss/resources/icons/diff.png"; //NOI18N
+
     public DiffAction() {
-        setIcon(null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        super(ICON_RESOURCE);
     }
 
     @Override
@@ -96,6 +97,6 @@ public class DiffAction extends AbstractSystemAction {
 
     @Override
     protected String iconResource() {
-        return "org/netbeans/modules/versioning/system/cvss/resources/icons/diff.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 }

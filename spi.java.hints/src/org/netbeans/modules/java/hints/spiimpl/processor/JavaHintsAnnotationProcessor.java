@@ -127,17 +127,23 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
             }
 
             TypeElement clazz = (TypeElement) annotated;
-            LayerBuilder builder = layer(clazz);
+            String classFolder = "org-netbeans-modules-java-hints/code-hints/" + getFQN(clazz).replace('.', '-') + ".class";
 
-            File clazzFolder = builder.folder("org-netbeans-modules-java-hints/code-hints/" + getFQN(clazz).replace('.', '-') + ".class");
-
-            for (AnnotationMirror am : clazz.getAnnotationMirrors()) {
-                dumpAnnotation(builder, clazzFolder, clazz, am, true);
+            {
+                LayerBuilder builder = layer(clazz);
+                File clazzFolder = builder.folder(classFolder);
+                
+                for (AnnotationMirror am : clazz.getAnnotationMirrors()) {
+                    dumpAnnotation(builder, clazzFolder, clazz, am, true);
+                }
+                
+                clazzFolder.write();
             }
 
             for (ExecutableElement ee : ElementFilter.methodsIn(clazz.getEnclosedElements())) {
                 if (!ee.getAnnotationMirrors().isEmpty()) {
-                    File methodFolder = builder.folder(clazzFolder.getPath() + "/" + ee.getSimpleName() + ".method");
+                    LayerBuilder builder = layer(ee);
+                    File methodFolder = builder.folder(classFolder + "/" + ee.getSimpleName() + ".method");
 
                     for (AnnotationMirror am : ee.getAnnotationMirrors()) {
                         dumpAnnotation(builder, methodFolder, ee, am, true);
@@ -149,7 +155,8 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
 
             for (VariableElement var : ElementFilter.fieldsIn(clazz.getEnclosedElements())) {
                 if (!var.getAnnotationMirrors().isEmpty()) {
-                    File fieldFolder = builder.folder(clazzFolder.getPath() + "/" + var.getSimpleName() + ".field");
+                    LayerBuilder builder = layer(var);
+                    File fieldFolder = builder.folder(classFolder + "/" + var.getSimpleName() + ".field");
 
                     for (AnnotationMirror am : var.getAnnotationMirrors()) {
                         dumpAnnotation(builder, fieldFolder, var, am, true);
@@ -162,48 +169,58 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
                     fieldFolder.write();
                 }
             }
-
-            clazzFolder.write();
-            
-            final List<Entry<Element, AnnotationMirror>> candidates = new ArrayList<Entry<Element, AnnotationMirror>>();
             
             new ElementScanner6<Void, Void>() {
                 @Override public Void scan(Element e, Void p) {
                     AnnotationMirror hintMirror = findAnnotation(e.getAnnotationMirrors(), "org.netbeans.spi.java.hints.Hint");
             
                     if (hintMirror != null) {
-                        candidates.add(new SimpleEntry<Element, AnnotationMirror>(e, hintMirror));
+                        String qualifiedName;
+                        switch (e.getKind()) {
+                            case METHOD: case CONSTRUCTOR:
+                                qualifiedName = e.getEnclosingElement().asType().toString() + "." + e.getSimpleName().toString() + e.asType().toString();
+                                break;
+                            case FIELD: case ENUM_CONSTANT:
+                                qualifiedName = e.getEnclosingElement().asType().toString() + "." + e.getSimpleName().toString();
+                                break;
+                            case ANNOTATION_TYPE: case CLASS:
+                            case ENUM: case INTERFACE:
+                            default:
+                                qualifiedName = e.asType().toString();
+                                break;
+                        }
+                        
+                        try {
+                            File keywordsFile = layer(e)
+                                               .file("OptionsDialog/Keywords/".concat(qualifiedName))
+                                               .stringvalue("location", "Editor")
+                                               .bundlevalue("tabTitle", "org.netbeans.modules.options.editor.Bundle", "CTL_Hints_DisplayName");
+
+                            String displayName = getAttributeValue(hintMirror, "displayName", String.class);
+
+                            if (displayName != null)
+                                keywordsFile = keywordsFile.bundlevalue("keywords-1", displayName);
+
+                            String description = getAttributeValue(hintMirror, "description", String.class);
+
+                            if (description != null)
+                                keywordsFile = keywordsFile.bundlevalue("keywords-2", description);
+
+                            int i = 3;
+
+                            for (String sw : getAttributeValue(hintMirror, "suppressWarnings", String[].class)) {
+                                keywordsFile = keywordsFile.stringvalue("keywords-" + i++, sw);
+                            }
+
+                            keywordsFile.write();
+                        } catch (LayerGenerationException ex) {
+                            JavaHintsAnnotationProcessor.<RuntimeException>rethrowAsRuntime(ex);
+                        }
                     }
 
                     return super.scan(e, p);
                 }
             }.scan(annotated, null);
-            File keywordsFile = layer(annotated)
-                               .file("OptionsDialog/Keywords/".concat(annotated.asType().toString()))
-                               .stringvalue("location", "Editor")
-                               .bundlevalue("tabTitle", "org.netbeans.modules.options.editor.Bundle", "CTL_Hints_DisplayName");
-            
-            for (Entry<Element, AnnotationMirror> e : candidates) {
-                AnnotationMirror hintMirror = e.getValue();
-                
-                String displayName = getAttributeValue(hintMirror, "displayName", String.class);
-                
-                if (displayName != null)
-                    keywordsFile = keywordsFile.bundlevalue("keywords-1", displayName);
-                
-                String description = getAttributeValue(hintMirror, "description", String.class);
-                
-                if (description != null)
-                    keywordsFile = keywordsFile.bundlevalue("keywords-2", description);
-                
-                int i = 3;
-                
-                for (String sw : getAttributeValue(hintMirror, "suppressWarnings", String[].class)) {
-                    keywordsFile = keywordsFile.stringvalue("keywords-" + i++, sw);
-                }
-            }
-            
-            keywordsFile.write();
         }
 
         for (String ann : TRIGGERS) {
@@ -608,6 +625,11 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
 
             return null;
         }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private static <T extends Throwable> void rethrowAsRuntime(Throwable t) throws T {
+        throw (T) t;
     }
 
 }

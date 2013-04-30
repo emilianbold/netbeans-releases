@@ -65,6 +65,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
@@ -78,7 +79,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
@@ -223,11 +223,16 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
             processFolder(root, fileObject, foundPackages);
         }
     }
+    
+    public static boolean isUseOSGiDependencies(Project project) {
+        String useOsgiString = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "useOSGiDependencies", null, null);
+        return  useOsgiString != null ? Boolean.parseBoolean(useOsgiString) : false;
+    }
+    
 
     private Tuple calculateLists() {
         //System.out.println("calculate for project=" + project.getProjectDirectory());
-        String useOsgiString = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "useOSGiDependencies", null, null);
-        boolean useOsgi = useOsgiString != null ? Boolean.parseBoolean(useOsgiString) : false;
+        boolean useOsgi = isUseOSGiDependencies(project);
         List<NBMWrapper> nbms = new ArrayList<NBMWrapper>();
         List<OSGIWrapper> osgis = new ArrayList<OSGIWrapper>();
         List<Wrapper> directCPs = new ArrayList<Wrapper>();
@@ -315,7 +320,6 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
                     if (ex.matches(nbm.art) && ex.isImplementationDependency()) {
                         //we got impl dep, none of the packages are private.
                         nonPrivatePackages.addAll(allPackages);
-                        continue;
                     }
                 }
             }
@@ -422,7 +426,7 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
             List<WhiteListQuery.RuleDescription> rds = new ArrayList<WhiteListQuery.RuleDescription>();
             if (element.getKind() == ElementKind.CLASS || element.getKind() == ElementKind.INTERFACE) {
                 String qn = element.getQualifiedName();
-                if (qn != null && qn.lastIndexOf('.') > 0) {
+                if (qn.lastIndexOf('.') > 0) {
                     String pack = qn.substring(0, qn.lastIndexOf("."));
                     synchronized (IMPL_LOCK) {
                         if (privatePackages.contains(pack)) {
@@ -598,14 +602,38 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
                         Xpp3Dom explicitDom = ch.getChild("explicitValue"); //NOI18N
                         if (idDom != null && (typeDom != null || explicitDom != null)) {
                             String id = idDom.getValue();
-                            String type = typeDom.getValue();
-                            String explicit = explicitDom.getValue();
+                            String type = typeDom != null ? typeDom.getValue() : null;
+                            String explicit = explicitDom != null ? explicitDom.getValue() : null;
                             if (id != null && (type != null || explicit != null)) {
+                                try {
+                                    Object evaluated = eval.evaluate(id);
+                                    if (evaluated != null) {
+                                        id = evaluated.toString();
+                                    }
+                                } catch (ExpressionEvaluationException ex) {
+                                }
+                                if (type != null) {
+                                    try {
+                                        Object evaluated = eval.evaluate(type);
+                                        if (evaluated != null) {
+                                            type = evaluated.toString();
+                                        }
+                                    } catch (ExpressionEvaluationException ex) {
+                                    }
+                                }
+                                if (explicit != null) {
+                                    try {
+                                        Object evaluated = eval.evaluate(explicit);
+                                        if (evaluated != null) {
+                                            explicit = evaluated.toString();
+                                        }
+                                    } catch (ExpressionEvaluationException ex) {
+                                    }
+                                }
                                 ExplicitDependency ed = new ExplicitDependency();
                                 ed.id = id;
                                 ed.type = type;
                                 ed.explicit = explicit;
-                                //TODO any value evaluation necessary?
                                 toRet.add(ed);
                             }
                         }

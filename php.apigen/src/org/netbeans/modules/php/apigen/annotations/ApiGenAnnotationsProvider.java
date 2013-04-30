@@ -71,7 +71,7 @@ public class ApiGenAnnotationsProvider extends AnnotationCompletionTagProvider {
     public List<AnnotationCompletionTag> getFunctionAnnotations() {
         return Arrays.<AnnotationCompletionTag>asList(
                 new AccessTag(),
-                new AuthorTag(),
+                AuthorTag.create(),
                 new CategoryTag(),
                 new CopyrightTag(),
                 new DeprecatedTag(),
@@ -101,7 +101,7 @@ public class ApiGenAnnotationsProvider extends AnnotationCompletionTagProvider {
         return Arrays.<AnnotationCompletionTag>asList(
                 new AbstractTag(),
                 new AccessTag(),
-                new AuthorTag(),
+                AuthorTag.create(),
                 new CategoryTag(),
                 new CopyrightTag(),
                 new DeprecatedTag(),
@@ -132,7 +132,7 @@ public class ApiGenAnnotationsProvider extends AnnotationCompletionTagProvider {
         return Arrays.<AnnotationCompletionTag>asList(
                 new AbstractTag(),
                 new AccessTag(),
-                new AuthorTag(),
+                AuthorTag.create(),
                 new CategoryTag(),
                 new CopyrightTag(),
                 new DeprecatedTag(),
@@ -158,7 +158,7 @@ public class ApiGenAnnotationsProvider extends AnnotationCompletionTagProvider {
         return Arrays.<AnnotationCompletionTag>asList(
                 new AbstractTag(),
                 new AccessTag(),
-                new AuthorTag(),
+                AuthorTag.create(),
                 new CategoryTag(),
                 new CopyrightTag(),
                 new DeprecatedTag(),

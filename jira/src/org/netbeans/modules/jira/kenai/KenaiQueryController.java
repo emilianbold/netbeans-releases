@@ -87,16 +87,6 @@ public class KenaiQueryController extends QueryController
     }
 
     @Override
-    protected void logAutoRefreshEvent(boolean autoRefresh) {
-        LogUtils.logAutoRefreshEvent(
-            JiraConnector.getConnectorName(),
-            query.getDisplayName(),
-            true,
-            autoRefresh
-        );
-    }
-
-    @Override
     protected void openIssue(NbJiraIssue issue) {
         if(issue != null) {
             if(!checkIssueProduct(issue)) {

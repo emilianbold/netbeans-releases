@@ -257,8 +257,10 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
         @Override
         public ForStatementImpl create() {
             ForStatementImpl stmt = new ForStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
-            body.setScope(stmt);
-            stmt.body = body.create();
+            if (body != null) {
+                body.setScope(stmt);
+                stmt.body = body.create();
+            }
             if(conditionDeclaration != null) {
                 conditionDeclaration.setScope(stmt);
                 stmt.condition = conditionDeclaration.create();

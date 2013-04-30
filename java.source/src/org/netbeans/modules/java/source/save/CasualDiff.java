@@ -829,9 +829,21 @@ public class CasualDiff {
                 }
             }
         }
-        int[] vartypeBounds = getBounds(oldT.vartype);
-        copyTo(localPointer, vartypeBounds[0]);
-        localPointer = diffTree(oldT.vartype, newT.vartype, vartypeBounds);
+        if (diffContext.syntheticTrees.contains(oldT.vartype)) {
+            if (!diffContext.syntheticTrees.contains(newT.vartype)) {
+                copyTo(localPointer, localPointer = oldT.pos);
+                printer.print(newT.vartype);
+                printer.print(" ");
+            }
+        } else {
+            if (newT.vartype == null) {
+                throw new UnsupportedOperationException();
+            } else {
+                int[] vartypeBounds = getBounds(oldT.vartype);
+                copyTo(localPointer, vartypeBounds[0]);
+                localPointer = diffTree(oldT.vartype, newT.vartype, vartypeBounds);
+            }
+        }
         if (nameChanged(oldT.name, newT.name)) {
             boolean isOldError = oldT.name == Names.instance(context).error;
             if (!isOldError) {
@@ -1268,6 +1280,7 @@ public class CasualDiff {
         int[] partBounds = new int[] { localPointer, endPos(oldT.thenpart) };
         localPointer = diffTree(oldT.thenpart, newT.thenpart, partBounds, oldT.getKind());
         if (oldT.elsepart == null && newT.elsepart != null) {
+            copyTo(localPointer, localPointer = partBounds[1]);
             printer.printElse(newT, newT.thenpart.getKind() == Kind.BLOCK);
         } else if (oldT.elsepart != null && newT.elsepart == null) {
             // remove else part
@@ -2270,6 +2283,8 @@ public class CasualDiff {
               return matchAssignop((JCAssignOp)t1, (JCAssignOp)t2);
           case ANNOTATED_TYPE:
               return matchAnnotatedType((JCAnnotatedType) t1, (JCAnnotatedType) t2);
+          case LAMBDA:
+              return matchLambda((JCLambda)t1, (JCLambda)t2);
           default:
               String msg = ((com.sun.source.tree.Tree)t1).getKind().toString() +
                       " " + t1.getClass().getName();
@@ -3813,6 +3828,10 @@ public class CasualDiff {
         return listsMatch(t1.defs, t2.defs) && treesMatch(t1.expr, t2.expr);
     }
 
+    private boolean matchLambda(JCLambda t1, JCLambda t2) {
+        return listsMatch(t1.params, t2.params) && treesMatch(t1.body, t2.body);
+    }
+    
     private boolean isCommaSeparated(JCVariableDecl oldT) {
         if (getOldPos(oldT) <= 0 || oldT.pos <= 0) {
             return false;

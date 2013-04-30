@@ -897,6 +897,26 @@ public class IndentSupport {
                     case GOTO:
                     case IF:
                     case SIZEOF:
+                    case TYPEID:
+                    case TYPEOF:
+                    case __HAS_TRIVIAL_CONSTRUCTOR:
+                    case __HAS_NOTHROW_ASSIGN:
+                    case __HAS_NOTHROW_COPY:
+                    case __HAS_NOTHROW_CONSTRUCTOR:
+                    case __HAS_TRIVIAL_ASSIGN:
+                    case __HAS_TRIVIAL_COPY:
+                    case __HAS_TRIVIAL_DESTRUCTOR:
+                    case __IS_ABSTRACT:
+                    case __IS_EMPTY:
+                    case __IS_LITERAL_TYPE:
+                    case __IS_POLYMORPHIC:
+                    case __IS_STANDARD_LAYOUT:
+                    case __IS_TRIVIAL:
+                    case __IS_UNION:
+                    case __UNDERLYING_TYPE:
+                    case __IS_CLASS:
+                    case __IS_BASE_OF:
+                    case __IS_POD:                    
                     case SWITCH:
                     case THIS:
                     case THROW:

@@ -199,7 +199,7 @@ public class GoToPropertySourceAction extends NodeAction {
                      */
                     private org.netbeans.modules.css.model.api.Property findProperty(Rule rule, String propertyName) {
                         for (Declaration declaration : rule.getDeclarations().getDeclarations()) {
-                            org.netbeans.modules.css.model.api.Property modelProperty = declaration.getProperty();
+                            org.netbeans.modules.css.model.api.Property modelProperty = declaration.getPropertyDeclaration().getProperty();
                             String modelPropertyName = modelProperty.getContent().toString().trim();
                             if (propertyName.equals(modelPropertyName)) {
                                 return modelProperty;

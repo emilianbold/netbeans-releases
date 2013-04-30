@@ -218,10 +218,16 @@ public class DataView {
         return dataViewUI.get(0).getEditButtons();
     }
 
-    public synchronized void setEditable(boolean editable) {
-        for (DataViewPageContext pageContext : dataPage) {
-            pageContext.getModel().setEditable(editable);
-        }
+    public synchronized void setEditable(final boolean editable) {
+        Mutex.EVENT.writeAccess(new Mutex.Action<Object>() {
+            @Override
+            public Void run() {
+                for (DataViewPageContext pageContext : dataPage) {
+                    pageContext.getModel().setEditable(editable);
+                }
+                return null;
+            }
+        });
     }
 
     // Used by org.netbeans.modules.db.dataview.api.DataViewPageContext#getPageSize
@@ -242,11 +248,17 @@ public class DataView {
         return this.dataPage.get(i);
     }
 
-    DataViewPageContext addPageContext(DataViewDBTable table) {
-        DataViewPageContext pageContext = new DataViewPageContext(initialPageSize);
+    DataViewPageContext addPageContext(final DataViewDBTable table) {
+        final DataViewPageContext pageContext = new DataViewPageContext(initialPageSize);
         this.dataPage.add(pageContext);
-        pageContext.setTableMetaData(table);
-        pageContext.getModel().setColumns(table.getColumns().toArray(new DBColumn[0]));
+        Mutex.EVENT.writeAccess(new Mutex.Action<Object>() {
+            @Override
+            public Void run() {
+                pageContext.setTableMetaData(table);
+                pageContext.getModel().setColumns(table.getColumns().toArray(new DBColumn[0]));
+                return null;
+            }
+        });
         return pageContext;
     }
 
@@ -273,20 +285,30 @@ public class DataView {
     }
 
     public void resetEditable() {
-        for(DataViewPageContext pageContext: dataPage) {
-            pageContext.resetEditableState();
-        }
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                for (DataViewPageContext pageContext : dataPage) {
+                    pageContext.resetEditableState();
+                }
+            }
+        });
     }
 
     public boolean isEditable() {
         if(dataPage.isEmpty()) {
             return false;
         } else {
-            boolean editable = true;
-            for(DataViewPageContext pageContext: dataPage) {
-                editable &= pageContext.getModel().isEditable();
-            }
-            return editable;
+            return Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
+                @Override
+                public Boolean run() {
+                    boolean editable = true;
+                    for (DataViewPageContext pageContext : dataPage) {
+                        editable &= pageContext.getModel().isEditable();
+                    }
+                    return editable;
+                }
+            });
         }
     }
 

@@ -227,4 +227,22 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug213282.cpp", 60, 10, "bug213282.cpp", 29, 5);
     }
     
+    
+    public static class Failed extends HyperlinkBaseTestCase {
+
+        @Override
+        protected Class<?> getTestCaseDataClass() {
+            return InstantiationHyperlinkTestCase.class;
+        }
+
+        public Failed(String testName) {
+            super(testName);
+        }
+
+        public void testBug228146() throws Exception {
+            performTest("bug228146.cpp", 20, 5, "bug228146.cpp", 15, 1); // clsS2pubFun in s2.clsS2pubFun();
+        }
+        
+    }    
+    
 }

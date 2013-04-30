@@ -88,11 +88,10 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
 import org.netbeans.modules.maven.j2ee.EjbChangeDescriptorImpl;
-import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.ear.model.ApplicationMetadataModelImpl;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.spi.debug.AdditionalDebuggedProjects;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -126,7 +125,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
     @Override
     public Profile getJ2eeProfile() {
         //try to apply the hint if it exists.
-        String version = project.getLookup().lookup(AuxiliaryProperties.class).get(MavenJavaEEConstants.HINT_J2EE_VERSION, true);
+        String version = MavenProjectSupport.readJ2eeVersion(project);
         if (version != null) {
             return Profile.fromPropertiesString(version);
         }

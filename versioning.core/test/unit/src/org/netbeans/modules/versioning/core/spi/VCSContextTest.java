@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.versioning.core.spi;
 
-import org.netbeans.modules.versioning.core.spi.VCSContext;
 import java.io.IOException;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
@@ -54,8 +53,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.Project;
 
-import java.io.FileFilter;
 import java.io.File;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
@@ -84,6 +84,15 @@ public class VCSContextTest extends NbTestCase {
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
         System.setProperty("data.root.dir", dataRootDir.getAbsolutePath());
         FileObject fo = FileUtil.toFileObject(getDataDir());
+    }
+    
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new VCSContextTest("testForEmptyNodes"));
+        suite.addTest(new VCSContextTest("testForFileNodes"));
+        suite.addTest(new VCSContextTest("testForProjectNodes"));
+        suite.addTest(new VCSContextTest("testSubstract"));
+        return suite;
     }
 
     public void testForEmptyNodes() {
@@ -137,7 +146,8 @@ public class VCSContextTest extends NbTestCase {
 
     public void testSubstract() throws IOException {
         MockServices.setServices(DummySharabilityImplementations.class);
-        VCSContext ctx = VCSContext.forNodes(new Node[] { new DummyProjectNode(new File(dataRootDir, "workdir/root-with-exclusions")), new DummyProjectNode(new File(dataRootDir, "workdir/root-with-exclusions/folder"))});
+        Node secondNode = new DummyProjectNode(new File(dataRootDir, "workdir/root-with-exclusions/folder"));
+        VCSContext ctx = VCSContext.forNodes(new Node[] { new DummyProjectNode(new File(dataRootDir, "workdir/root-with-exclusions")), secondNode});
         assertTrue(ctx.getRootFiles().size() == 1);
         assertEquals(2, ctx.getFiles().size());
         assertEquals(2, ctx.getExclusions().size());

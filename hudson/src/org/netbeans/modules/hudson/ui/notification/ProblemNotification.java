@@ -59,6 +59,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.hudson.ui.notification.Bundle.*;
+import org.openide.awt.NotificationDisplayer.Category;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -150,6 +151,10 @@ class ProblemNotification {
         return failed ? Priority.HIGH : Priority.NORMAL;
     }
 
+    private Category getCategory() {
+        return failed ? Category.ERROR : Category.WARNING;
+    }
+
     private Icon getIcon() {
         return ImageUtilities.loadImageIcon("org/netbeans/modules/hudson/ui/resources/notification.png", true); // NOI18N
     }
@@ -163,7 +168,8 @@ class ProblemNotification {
                         getTitle(), getIcon(),
                         new ProblemPanel(ProblemNotification.this),
                         new ProblemPanel(ProblemNotification.this),
-                        getPriority());
+                        getPriority(),
+                        getCategory());
             }
         });
     }

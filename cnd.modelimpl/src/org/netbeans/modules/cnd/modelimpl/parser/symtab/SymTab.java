@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser.symtab;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -51,7 +54,11 @@ import java.util.TreeMap;
  */
 public final class SymTab {
     private final Map<CharSequence, SymTabEntry> entries = new TreeMap<CharSequence, SymTabEntry>();
-    private final Map<CharSequence, SymTabEntry> imported = new TreeMap<CharSequence, SymTabEntry>();
+    
+//    private final Map<CharSequence, SymTabEntry> imported = new TreeMap<CharSequence, SymTabEntry>();
+    private final List<SymTab> imported = new ArrayList<SymTab>();  
+    private boolean lookupMark;                                     // to avoid loops during lookup
+    
     private final int nestingLevel;
     private CharSequence name;
 
@@ -66,8 +73,18 @@ public final class SymTab {
     
     SymTabEntry lookup(CharSequence entry) {
         SymTabEntry out = entries.get(entry);
-        if (out == null) {
-            out = imported.get(entry);
+        if (out == null && !lookupMark) {
+            // out = imported.get(entry);
+            lookupMark = true;
+            
+            try {            
+                ListIterator<SymTab> iter = imported.listIterator(imported.size());
+                while (out == null && iter.hasPrevious()) {
+                    out = iter.previous().lookup(entry);
+                }            
+            } finally {
+                lookupMark = false;
+            }
         }
         return out;
     }
@@ -79,7 +96,8 @@ public final class SymTab {
     }
 
     void importSymTab(SymTab symTab) {
-        imported.putAll(symTab.entries);
+//        imported.putAll(symTab.entries);
+        imported.add(symTab);
     }
 
     int getNestingLevel() {
@@ -88,7 +106,7 @@ public final class SymTab {
 
     @Override
     public String toString() {
-        return "SymTab{" + "nestingLevel=" + nestingLevel + "entries=" + entries + "\nimported=" + imported + '}'; // NOI18N
+        return "SymTab{name=" + name + ", nestingLevel=" + nestingLevel + ", entries=" + entries + ", imported=" + imported + '}'; // NOI18N
     }
     
     

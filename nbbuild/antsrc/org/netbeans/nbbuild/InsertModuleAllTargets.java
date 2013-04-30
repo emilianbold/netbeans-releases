@@ -101,20 +101,19 @@ public final class InsertModuleAllTargets extends Task {
                 log("Already seem to have inserted targets into this project; will not do it twice", Project.MSG_VERBOSE);
                 return;
             }
-            @SuppressWarnings("unchecked")
-            Hashtable<String,String> props = prj.getProperties();
+            Hashtable<String,Object> props = prj.getProperties();
 
             if (checkModules) {
                 boolean missingModules = false;
-                String[] clusters = props.get("nb.clusters.list").split(", *");
-                String nb_all = props.get("nb_all");
+                String[] clusters = ((String) props.get("nb.clusters.list")).split(", *");
+                String nb_all = (String) props.get("nb_all");
                 if (nb_all == null)
                     throw new BuildException("Can't file 'nb_all' property, probably not in the NetBeans build system");
                 File nbRoot = new File(nb_all);
                 for( String cluster: clusters) {
                     if (props.get(cluster) == null) 
                         throw new BuildException("Cluster '"+cluster+"' has got empty list of modules. Check configuration of that cluster.",getLocation());
-                    String[] clusterModules = props.get(cluster).split(", *");
+                    String[] clusterModules = ((String) props.get(cluster)).split(", *");
                     for( String module: clusterModules) {
                         File moduleBuild = new File(nbRoot, module + File.separator + "build.xml");
                         if (!moduleBuild.exists() || !moduleBuild.isFile()) {
@@ -124,19 +123,19 @@ public final class InsertModuleAllTargets extends Task {
                     }
                 }
                 if (missingModules) {
-                    String clusterConfig = props.get("cluster.config");
+                    String clusterConfig = (String) props.get("cluster.config");
                     throw new BuildException("Some modules according your cluster config '" + clusterConfig + "' are missing from checkout, see messages above.",getLocation());
                 }
             }
             
             Map<String,String> clustersOfModules = new HashMap<String,String>();
             if (useClusters) {
-                for (Map.Entry<String,String> pair : props.entrySet()) {
+                for (Map.Entry<String,Object> pair : props.entrySet()) {
                     String cluster = pair.getKey();
                     if (!cluster.startsWith("nb.cluster.") || cluster.endsWith(".depends") || cluster.endsWith(".dir")) {
                         continue;
                     }
-                    for (String module : pair.getValue().split(", *")) {
+                    for (String module : ((String) pair.getValue()).split(", *")) {
                         clustersOfModules.put(module, cluster);
                     }
                 }

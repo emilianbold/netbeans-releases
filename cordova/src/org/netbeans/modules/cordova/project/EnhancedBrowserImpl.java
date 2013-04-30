@@ -65,16 +65,6 @@ public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplemen
 
     EnhancedBrowserImpl(Project project, WebBrowser browser) {
         this.project = project;
-     
-        final File f = new File(project.getProjectDirectory().getPath() + "/nbproject/configs"); //NOI18N
-        if (!f.exists()) {
-            try {
-                MobileProjectExtender.createMobileConfigs(project.getProjectDirectory());
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    
         configsProvider = new MobileConfigurationsProvider(project);
     }
 
@@ -99,8 +89,7 @@ public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplemen
 
     @Override
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        final MobileConfigurationImpl activeConfiguration = configsProvider.getActiveConfiguration();
-        return activeConfiguration.getDevice().getProjectConfigurationCustomizer(project, activeConfiguration);
+        return null;
     }
 
     @Override
@@ -114,6 +103,11 @@ public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplemen
 
     @Override
     public ProjectConfigurationProvider getProjectConfigurationProvider() {
+        try {
+            MobileProjectExtender.createMobileConfigs(project.getProjectDirectory());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         return configsProvider;
     }
 

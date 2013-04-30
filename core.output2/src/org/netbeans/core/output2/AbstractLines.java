@@ -77,6 +77,9 @@ import org.netbeans.swing.plaf.LFCustoms;
 abstract class AbstractLines implements Lines, Runnable, ActionListener {
     private static final Logger LOG =
             Logger.getLogger(AbstractLines.class.getName());
+
+    private OutputLimits outputLimits = OutputLimits.getDefault();
+
     /** A collections-like lineStartList that maps file positions to getLine numbers */
     IntList lineStartList;
     IntListSimple lineCharLengthListWithTabs;
@@ -216,7 +219,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     private ChangeListener listener = null;
     public void addChangeListener(ChangeListener cl) {
         this.listener = cl;
-        synchronized(this) {
+        synchronized(readLock()) {
             if (getLineCount() > 0) {
                 //May be a new tab for an old output, hide and reshow, etc.
                 fire();
@@ -422,7 +425,9 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     public int getLineCount() {
-        return lineStartList.size();
+        synchronized (readLock()) {
+            return lineStartList.size();
+        }
     }
 
     public Collection<OutputListener> getListenersForLine(int line) {
@@ -1093,17 +1098,21 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             }
         }
          */
-        int startLinePos = startPos - getLineStart(startLine);
-        for (int i = startLine; i < getLineCount(); i++) {
-            offset += addSegment(s, offset, i, startLinePos, l, important, err, c, b) + 1;
-            startLinePos = 0;
+        synchronized (readLock()) {
+            int startLinePos = startPos - getLineStart(startLine);
+            for (int i = startLine; i < getLineCount(); i++) {
+                offset += addSegment(s, offset, i, startLinePos, l, important, err, c, b) + 1;
+                startLinePos = 0;
+            }
         }
     }
 
     void addLineInfo(int idx, LineInfo info, boolean important) {
-        linesToInfos.put(idx, info);
-        if (!info.getListeners().isEmpty()) {
-            registerLineWithListener(idx, info, important);
+        synchronized (readLock()) {
+            linesToInfos.put(idx, info);
+            if (!info.getListeners().isEmpty()) {
+                registerLineWithListener(idx, info, important);
+            }
         }
     }
 
@@ -1113,6 +1122,49 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         } else {
             return tabLengthSums.get(i) - tabLengthSums.get(i-1) + 1;
         }
+    }
+
+    void checkLimits() {
+        synchronized (readLock()) {
+            if (getLineCount() > outputLimits.getMaxLines()
+                    || getCharCount() > outputLimits.getMaxChars()) {
+                removeOldLines();
+            }
+        }
+    }
+
+    /**
+     * Tell the storage that oldest bytes can be forgotten, and update all data
+     * structures.
+     */
+    private void removeOldLines() {
+        int newFirstLine = Math.min(outputLimits.getRemoveLines(),
+                lineStartList.size() / 2);
+        int firstByteOffset = lineStartList.get(newFirstLine);
+        lineStartList.compact(newFirstLine, firstByteOffset);
+        lineCharLengthListWithTabs.compact(newFirstLine, 0);
+        lineWithListenerToInfo.decrementKeys(newFirstLine);
+        linesToInfos.decrementKeys(newFirstLine);
+
+        int firstCharOffset = toCharIndex(firstByteOffset);
+        int firstTabIndex = tabCharOffsets.findNearest(firstCharOffset);
+        tabCharOffsets.compact(Math.max(0, firstTabIndex), firstCharOffset);
+        if (firstTabIndex > 0) {
+            tabLengthSums.compact(firstTabIndex,
+                    tabLengthSums.get(firstTabIndex - 1));
+        }
+        int firstImportantLine = importantLines.findNearest(newFirstLine);
+        importantLines.compact(Math.max(0, firstImportantLine), newFirstLine);
+        knownLogicalLineCounts = null;
+        getStorage().shiftStart(firstByteOffset);
+        fire();
+    }
+
+    /**
+     * Redefine output limits. Can be called from test cases.
+     */
+    void setOutputLimits(OutputLimits outputLimits) {
+        this.outputLimits = outputLimits;
     }
 
     void addTabAt(int i, int tabLength) {

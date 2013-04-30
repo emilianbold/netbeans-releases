@@ -87,16 +87,18 @@ public abstract class BaseWizardIterator implements WizardDescriptor.BackgroundI
         String j2eeVersion = (String) wiz.getProperty(MavenJavaEEConstants.HINT_J2EE_VERSION);
 
         // Saving server information for project
-        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        props.put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, instanceID, false);
-        props.put(MavenJavaEEConstants.HINT_J2EE_VERSION, j2eeVersion, true);
-        props.put(Constants.HINT_JDK_PLATFORM, null, true);
+        MavenProjectSupport.setJ2eeVersion(project, j2eeVersion);
+        MavenProjectSupport.setServerInstanceID(project, instanceID);
+
+        // Fixing #225551
+        AuxiliaryProperties properties = project.getLookup().lookup(AuxiliaryProperties.class);
+        properties.put(Constants.HINT_JDK_PLATFORM, null, true);
     }
 
     protected void saveServerToPom(Project project) {
         String serverID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
 
-        MavenProjectSupport.storeSettingsToPom(project.getProjectDirectory(), MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverID);
+        MavenProjectSupport.setServerID(project, serverID);
         MavenProjectSupport.createDDIfRequired(project, serverID);
     }
 

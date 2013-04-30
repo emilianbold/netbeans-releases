@@ -76,7 +76,7 @@ public class DocumentFinder
     }
 
 
-    private static DocFinder getFinder(Document doc, Map searchProps, boolean oppositeDir, boolean blocksFinder){
+    private static DocFinder getFinder(Document doc, Map<String, Object>  searchProps, boolean oppositeDir, boolean blocksFinder){
         String text = (String)searchProps.get(EditorFindSupport.FIND_WHAT);
         if (text == null || text.length() == 0) {
             if (blocksFinder) {
@@ -187,7 +187,7 @@ public class DocumentFinder
     }
     
 
-    private static FindReplaceResult findReplaceImpl(String replaceText, Document doc, int startOffset, int endOffset, Map props,
+    private static FindReplaceResult findReplaceImpl(String replaceText, Document doc, int startOffset, int endOffset, Map<String, Object>  props,
                              boolean oppositeDir) throws BadLocationException{
         int ret[] = new int[2];
         if (endOffset == -1){
@@ -274,11 +274,8 @@ public class DocumentFinder
                 if (matcher.find()){
                     try{
                         replaceText = matcher.replaceFirst(convertStringForMatcher(replaceText));
-                    }catch(IndexOutOfBoundsException ioobe){
+                    }catch(IndexOutOfBoundsException | IllegalArgumentException ioobe){
                         notifyRegexpException(ioobe);
-                        return null;
-                    } catch (IllegalArgumentException  iae) {
-                        notifyRegexpException(iae);
                         return null;
                     }   
                 }
@@ -296,7 +293,7 @@ public class DocumentFinder
      *   that nothing was found.
      * @param props find properties
      */
-    public static int[] find(Document doc, int startOffset, int endOffset, Map props,
+    public static int[] find(Document doc, int startOffset, int endOffset, Map<String, Object>  props,
                              boolean oppositeDir) throws BadLocationException{
         FindReplaceResult result = findReplaceImpl(null, doc, startOffset, endOffset, props, oppositeDir);
         if (result == null){
@@ -307,7 +304,7 @@ public class DocumentFinder
     }
 
     public static int[] findBlocks(Document doc, int startOffset, int endOffset, 
-                    Map props, int blocks[]) throws BadLocationException{
+                    Map<String, Object> props, int blocks[]) throws BadLocationException{
         BlocksFinder finder =(BlocksFinder) getFinder(doc, props, false, true);
         if (finder == null){
             return blocks;
@@ -330,7 +327,7 @@ public class DocumentFinder
      *  regexp backreferences.
      *  @return FindReplaceResult, that contains positions of found string and substituted replace expression
      */
-    public static FindReplaceResult findReplaceResult(String replaceString, Document doc, int startOffset, int endOffset, Map props,
+    public static FindReplaceResult findReplaceResult(String replaceString, Document doc, int startOffset, int endOffset, Map<String, Object> props,
                              boolean oppositeDir) throws BadLocationException{
         FindReplaceResult findReplaceImpl = findReplaceImpl(replaceString, doc, startOffset, endOffset, props, oppositeDir);
         return preserveCaseImpl(findReplaceImpl, replaceString, doc, props);
@@ -339,21 +336,21 @@ public class DocumentFinder
     private static void notifyRegexpException(Exception ex) throws MissingResourceException {
         String additionalHint = ""; //NOI18N
         if (ex instanceof IllegalArgumentException) {
-            additionalHint = "\n" + NbBundle.getBundle(DocumentFinder.class).getString("pattern-error-missing-escape-hint"); //NOI18N
+            additionalHint = "\n" + NbBundle.getMessage(DocumentFinder.class, "pattern-error-missing-escape-hint"); //NOI18N
         }
         NotifyDescriptor msg = new NotifyDescriptor.Message(NbBundle.getMessage(DocumentFinder.class, "pattern-error-dialog-content") + "\n" +
                 ex.getLocalizedMessage() + additionalHint, NotifyDescriptor.ERROR_MESSAGE);
         
-        msg.setTitle(NbBundle.getBundle(DocumentFinder.class).getString("pattern-error-dialog-title")); //NOI18N
+        msg.setTitle(NbBundle.getMessage(DocumentFinder.class, "pattern-error-dialog-title")); //NOI18N
         DialogDisplayer.getDefault().notify(msg);
     }
     
-     private static boolean getBoolFromEditorFindSupport(Map searchProps, String editorFindSupportConstant) {
+     private static boolean getBoolFromEditorFindSupport(Map<String, Object> searchProps, String editorFindSupportConstant) {
         Boolean b = (Boolean) searchProps.get(editorFindSupportConstant);
         return (b != null && b.booleanValue());
      }
 
-    private static boolean getMatchCaseFromEditorFindSupport(Map searchProps, String text) {
+    private static boolean getMatchCaseFromEditorFindSupport(Map<String, Object> searchProps, String text) {
         boolean matchCase = getBoolFromEditorFindSupport(searchProps, EditorFindSupport.FIND_MATCH_CASE);
         boolean smartCase = getBoolFromEditorFindSupport(searchProps, EditorFindSupport.FIND_SMART_CASE);
         if (smartCase && !matchCase) {
@@ -367,7 +364,7 @@ public class DocumentFinder
         return matchCase;
     }
     
-    private static FindReplaceResult preserveCaseImpl(FindReplaceResult findReplaceResult, String replaceString, Document doc, Map searchProps) throws BadLocationException {
+    private static FindReplaceResult preserveCaseImpl(FindReplaceResult findReplaceResult, String replaceString, Document doc, Map<String, Object> searchProps) throws BadLocationException {
         if (replaceString == null || findReplaceResult == null || findReplaceResult.getFoundPositions()[0] == -1) {
             return findReplaceResult;
         }
@@ -379,7 +376,7 @@ public class DocumentFinder
             assert(findReplaceResult.getFoundPositions()[0] <= findReplaceResult.getFoundPositions()[1]);
             int length = findReplaceResult.getFoundPositions()[1] - findReplaceResult.getFoundPositions()[0];
             String findStr = doc.getText(findReplaceResult.getFoundPositions()[0], length);
-            String replStr = replaceString.toString();
+            String replStr = replaceString;
             if (findStr.equals(findStr.toUpperCase())) {
                 replStr = replStr.toUpperCase();
             } else if (findStr.equals(findStr.toLowerCase())) {
@@ -401,22 +398,22 @@ public class DocumentFinder
     
 
     private static String convertStringForMatcher(String text) {
-        String res = null;
+        StringBuilder sb = null;
         if (text != null){
             String[] sGroups = text.split("\\\\\\\\", text.length()); //NOI18N
-            res = "";                         //NOI18N
+            sb = new StringBuilder();//NOI18N
             for(int i=0;i<sGroups.length;i++){
                 String tmp = sGroups[i];
                 tmp = tmp.replace("\\" + "r", "\r"); //NOI18N
                 tmp = tmp.replace("\\" + "n", "\n"); //NOI18N
                 tmp = tmp.replace("\\" + "t", "\t"); //NOI18N
-                res += tmp;
+                sb.append(tmp);
                 if (i != sGroups.length - 1){
-                    res += "\\\\";                   //NOI18N
+                    sb.append("\\\\");                   //NOI18N
                 }
             }
         }
-        return res;
+        return sb != null ? sb.toString() : null;
     }
 
     private interface DocFinder{
@@ -431,6 +428,7 @@ public class DocumentFinder
     private static final class FalseBlocksFinder extends AbstractBlocksFinder {
         public static final FalseBlocksFinder INSTANCE = new FalseBlocksFinder();
 
+        @Override
         public int find(int initOffset, CharSequence data) {
             return -1;
         }
@@ -442,10 +440,12 @@ public class DocumentFinder
     private static class FalseFinder extends AbstractFinder implements StringFinder {
         public static final FalseFinder INSTANCE = new FalseFinder();
 
+        @Override
         public int find(int initOffset, CharSequence data) {
             return -1;
         }
 
+        @Override
         public int getFoundLength() {
             return 0;
         }
@@ -456,7 +456,7 @@ public class DocumentFinder
     private static abstract class AbstractBlocksFinder extends AbstractFinder
         implements BlocksFinder {
 
-        private static int[] EMPTY_INT_ARRAY = new int[0];
+        private static final int[] EMPTY_INT_ARRAY = new int[0];
 
         private int[] blocks = EMPTY_INT_ARRAY;
 
@@ -471,6 +471,7 @@ public class DocumentFinder
             closed = false;
         }
 
+        @Override
         public final int[] getBlocks() {
             if (!closed) { // not closed yet
                 closeBlocks();
@@ -479,6 +480,7 @@ public class DocumentFinder
             return blocks;
         }
 
+        @Override
         public final void setBlocks(int[] blocks) {
             this.blocks = blocks;
             blocksInd = 0;
@@ -507,7 +509,7 @@ public class DocumentFinder
             StringBuffer buf = new StringBuffer();
             int ind = 0;
             while (blocks[ind] != -1) {
-                buf.append((ind/2 + 1) + ": [" + blocks[ind] + ", " + blocks[ind + 1] + "]\n"); // NOI18N
+                buf.append(ind/2 + 1).append(": [").append(blocks[ind]).append(", ").append(blocks[ind + 1]).append("]\n"); // NOI18N
                 ind+= 2;
             }
             return buf.toString();
@@ -545,11 +547,13 @@ public class DocumentFinder
         protected boolean found;
 
         /** Was the string found? */
+        @Override
         public final boolean isFound() {
             return found;
         }
 
         /** Reset the finder */
+        @Override
         public void reset() {
             found = false;
         }
@@ -611,6 +615,7 @@ public class DocumentFinder
             stringInd = 0;
         }
 
+        @Override
         public int find(int initOffset, CharSequence data) {
             int offset = 0;
             int limitPos = data.length();
@@ -704,6 +709,7 @@ public class DocumentFinder
             stringInd = 0;
         }
 
+        @Override
         public int find(int initOffset, CharSequence data) {
             int offset = 0;
             int endPos = data.length();
@@ -764,6 +770,7 @@ public class DocumentFinder
             lastCharWordPart = DocUtils.isIdentifierPart(doc, chars[endInd]);
         }
 
+        @Override
         public int getFoundLength() {
             return chars.length;
         }
@@ -776,6 +783,7 @@ public class DocumentFinder
             stringInd = endInd;
         }
 
+        @Override
         protected int scan(char ch, boolean lastChar) {
             if (!matchCase) {
                 ch = Character.toLowerCase(ch);
@@ -838,6 +846,7 @@ public class DocumentFinder
     /** Generic forward finder that simplifies the search process. */
     private static abstract class GenericFwdFinder extends AbstractFinder {
 
+        @Override
         public final int find(int initOffset, CharSequence chars) {
             int offset = initOffset;//0;
             int limitPos = chars.length();
@@ -871,6 +880,7 @@ public class DocumentFinder
     /** Generic backward finder that simplifies the search process. */
     private static abstract class GenericBwdFinder extends AbstractFinder {
 
+        @Override
         public final int find(int initOffset, CharSequence chars) {
             int offset = initOffset-1;
             int limitPos = 0;
@@ -929,6 +939,7 @@ public class DocumentFinder
             firstCharWordPart = DocUtils.isIdentifierPart(doc, chars[0]);
         }
         
+        @Override
         public int getFoundLength() {
             return chars.length;
         }
@@ -941,6 +952,7 @@ public class DocumentFinder
             stringInd = 0;
         }
 
+        @Override
         protected int scan(char ch, boolean lastChar) {
             if (!matchCase) {
                 ch = Character.toLowerCase(ch);
@@ -1020,6 +1032,7 @@ public class DocumentFinder
             endInd = chars.length - 1;
         }
         
+        @Override
         public int getFoundLength() {
             return chars.length;
         }
@@ -1030,6 +1043,7 @@ public class DocumentFinder
             stringInd = endInd;
         }
 
+        @Override
         protected int scan(char ch, boolean lastChar) {
             if (!matchCase) {
                 ch = Character.toLowerCase(ch);
@@ -1071,6 +1085,7 @@ public class DocumentFinder
             chars = (matchCase ? s : s.toLowerCase()).toCharArray();
         }
 
+        @Override
         public int getFoundLength() {
             return chars.length;
         }
@@ -1081,6 +1096,7 @@ public class DocumentFinder
             stringInd = 0;
         }
 
+        @Override
         protected int scan(char ch, boolean lastChar) {
             if (!matchCase) {
                 ch = Character.toLowerCase(ch);
@@ -1122,6 +1138,7 @@ public class DocumentFinder
         public RegExpBwdFinder() {
         }
 
+        @Override
         public Matcher getMatcher(){
             return matcher;
         }
@@ -1131,6 +1148,7 @@ public class DocumentFinder
             this.pattern = pattern;            
         }
         
+        @Override
         public int getFoundLength() {
             return length;
         }
@@ -1157,6 +1175,7 @@ public class DocumentFinder
             return ret;
         }
         
+        @Override
         public int find(int initOffset, CharSequence chars) {
             char ch;
             
@@ -1192,6 +1211,7 @@ public class DocumentFinder
         public RegExpFwdFinder() {
         }
 
+        @Override
         public Matcher getMatcher(){
             return matcher;
         }
@@ -1201,6 +1221,7 @@ public class DocumentFinder
             this.pattern = pattern;
         }
         
+        @Override
         public int getFoundLength() {
             return length;
         }
@@ -1211,6 +1232,7 @@ public class DocumentFinder
             length = 0;
         }
 
+        @Override
         public int find(int initOffset, CharSequence chars) {
             matcher = pattern.matcher(chars);
             if (matcher.find(initOffset)){
@@ -1260,6 +1282,7 @@ public class DocumentFinder
             stringInd = 0;
         }
 
+        @Override
         public int find(int initOffset, CharSequence data) {
             Matcher matcher = pattern.matcher(data);
             int ret = 0;
@@ -1305,8 +1328,8 @@ public class DocumentFinder
     }
 
     public static class FindReplaceResult{
-        private int[] positions;
-        private String replacedString;
+        private final int[] positions;
+        private final String replacedString;
         
         public FindReplaceResult(int[] positions, String replacedString){
             this.positions = positions;

@@ -1373,7 +1373,7 @@ public class SvnUtils {
                         }
                     }
                 }
-                return Utils.isFileContentText(file) ? "text/plain" : "application/octet-stream";
+                return Utils.isFileContentText(file) ? foMime : "application/octet-stream";
             } catch (IOException e) {
                 return foMime;
             }
@@ -1511,6 +1511,10 @@ public class SvnUtils {
      *          </ul>
      */
     public static File[] getActionRoots(Context ctx) {
+        return getActionRoots(ctx, true);
+    }
+
+    public static File[] getActionRoots (Context ctx, boolean showSelector) {
         File[] roots = ctx.getRootFiles();
         List<File> l = new ArrayList<File>();
 
@@ -1533,7 +1537,7 @@ public class SvnUtils {
                     NbBundle.getMessage(SvnUtils.class, "FileSelector.jLabel1.text"),
                     new HelpCtx("org.netbeans.modules.subversion.FileSelector"),
                     SvnModuleConfig.getDefault().getPreferences());
-            if(fs.show(roots)) {
+            if(showSelector && fs.show(roots)) {
                 return new File[ ]{ fs.getSelectedFile()};
             } else {
                 return null;

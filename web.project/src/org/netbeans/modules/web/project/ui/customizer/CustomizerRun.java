@@ -60,7 +60,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -106,7 +106,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             jTextFieldJ2EE_Display.setText(j2eeProfile.getDisplayName());
         }
         jBrowserCombo.setModel(uiProperties.BROWSERS_MODEL);
-        jBrowserCombo.setRenderer(WebBrowserSupport.createBrowserRenderer());
+        jBrowserCombo.setRenderer(BrowserUISupport.createBrowserRenderer());
 
         setDeployOnSaveState();
     }

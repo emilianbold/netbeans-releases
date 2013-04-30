@@ -157,21 +157,22 @@ public class JavaElementFoldManager extends JavaFoldManager {
     static final class JavaElementFoldTask extends ScanningCancellableTask<CompilationInfo> {
         
         //XXX: this will hold JavaElementFoldTask as long as the FileObject exists:
-        private static Map<DataObject, JavaElementFoldTask> file2Task = new WeakHashMap<DataObject, JavaElementFoldTask>();
+        private final static Map<DataObject, JavaElementFoldTask> file2Task = new WeakHashMap<DataObject, JavaElementFoldTask>();
         
         private AtomicLong version = new AtomicLong(0);
         
         static JavaElementFoldTask getTask(FileObject file) {
             try {
                 DataObject od = DataObject.find(file);
-                JavaElementFoldTask task = file2Task.get(od);
+                synchronized (file2Task) {
+                    JavaElementFoldTask task = file2Task.get(od);
 
-                if (task == null) {
-                    file2Task.put(od,
-                            task = new JavaElementFoldTask());
+                    if (task == null) {
+                        file2Task.put(od,
+                                task = new JavaElementFoldTask());
+                    }
+                    return task;
                 }
-
-                return task;
             } catch (DataObjectNotFoundException ex) {
                 Logger.getLogger(JavaElementFoldManager.class.getName()).log(Level.FINE, null, ex);
                 return new JavaElementFoldTask();

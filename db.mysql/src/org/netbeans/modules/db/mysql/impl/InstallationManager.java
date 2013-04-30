@@ -176,6 +176,6 @@ public class InstallationManager {
             public void actionPerformed(ActionEvent e) {
                 SelectInstallationPanel.showSelectInstallationDialog();
             }
-        });
+        }, NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.WARNING);
     }
 }

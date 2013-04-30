@@ -105,7 +105,7 @@ import org.openide.util.NbBundle;
 */
 public class MethodBreakpointImpl extends ClassBasedBreakpoint {
     
-    private MethodBreakpoint breakpoint;
+    private final MethodBreakpoint breakpoint;
     
     
     public MethodBreakpointImpl (MethodBreakpoint breakpoint, JPDADebuggerImpl debugger, Session session) {

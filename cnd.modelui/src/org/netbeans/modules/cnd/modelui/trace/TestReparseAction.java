@@ -49,8 +49,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.Exceptions;
@@ -69,8 +67,6 @@ import org.openide.windows.OutputWriter;
  */
 public class TestReparseAction extends TestProjectActionBase {
 
-    private static boolean running = false;
-    
     @Override
     public String getName() {
         return NbBundle.getMessage(getClass(), "CTL_TestProjectReparse"); //NOI18N
@@ -80,16 +76,11 @@ public class TestReparseAction extends TestProjectActionBase {
     @Override
     protected void performAction(Collection<CsmProject> csmProjects) {
         if (csmProjects != null && !csmProjects.isEmpty()) {
-            testReparse(csmProjects);
+            for (CsmProject p : csmProjects) {
+                testReparse(p);
+            }
         }
-    }
-
-    private void testReparse(Collection<CsmProject> projects) {
-        for (CsmProject p : projects) {
-            testReparse((ProjectBase) p);
-        }
-    }
-    
+    }    
     
     private static class ErrorInfo {
         public final int line;
@@ -102,7 +93,7 @@ public class TestReparseAction extends TestProjectActionBase {
         }
     }
     
-    private void testReparse(ProjectBase project) {
+    private void testReparse(CsmProject project) {
         
         String task = "Parser Errors " + project.getName(); // NOI18N
         
@@ -117,11 +108,11 @@ public class TestReparseAction extends TestProjectActionBase {
         
         for( CsmFile file : project.getSourceFiles() ) {
             handle.progress("Parsing " + file.getName(), handled++); // NOI18N
-            testReparse((FileImpl) file, out);
+            testReparse(file, out);
         }
         for( CsmFile file : project.getHeaderFiles() ) {
             handle.progress("Parsing " + file.getName(), handled++); // NOI18N
-            testReparse((FileImpl) file, out);
+            testReparse(file, out);
         }
         
         handle.finish();
@@ -129,7 +120,7 @@ public class TestReparseAction extends TestProjectActionBase {
         out.close();
     }
     
-    private void testReparse(final FileImpl fileImpl, final OutputWriter out) {
+    private void testReparse(final CsmFile fileImpl, final OutputWriter out) {
         for (CsmInclude include : fileImpl.getIncludes()) {
             if (include.getIncludeFile() == null) {
                 int line = include.getStartPosition().getLine();
@@ -160,8 +151,8 @@ public class TestReparseAction extends TestProjectActionBase {
     
     private static class MyOutputListener implements OutputListener {
         
-        private CsmFile file;
-        private ErrorInfo info;
+        private final CsmFile file;
+        private final ErrorInfo info;
 
         public MyOutputListener(CsmFile file, ErrorInfo info) {
             this.file = file;

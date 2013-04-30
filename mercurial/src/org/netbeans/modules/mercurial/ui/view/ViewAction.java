@@ -98,7 +98,7 @@ public class ViewAction extends ContextAction {
     }
 
     static void performView(File root) {
-        OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
+        OutputLogger logger = OutputLogger.getLogger(root);
         try {
             logger.outputInRed(NbBundle.getMessage(ViewAction.class, "MSG_VIEW_TITLE")); // NOI18N
             logger.outputInRed(NbBundle.getMessage(ViewAction.class, "MSG_VIEW_TITLE_SEP")); // NOI18N

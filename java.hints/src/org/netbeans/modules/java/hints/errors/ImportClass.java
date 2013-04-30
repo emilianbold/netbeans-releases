@@ -47,7 +47,6 @@ package org.netbeans.modules.java.hints.errors;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
@@ -64,7 +63,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -120,6 +118,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
         return new HashSet<String>(Arrays.asList(
                 "compiler.err.cant.resolve",
                 "compiler.err.cant.resolve.location",
+                "compiler.err.cant.resolve.location.args",
                 "compiler.err.doesnt.exist",
                 "compiler.err.not.stmt"));
     }
@@ -137,16 +136,6 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
 
         TreePath path = info.getTreeUtilities().pathFor(errorPosition);
         
-        if (path.getParentPath() != null && path.getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION) {
-            //#86313:
-            //if the error is in the type parameter, import should be proposed:
-            MethodInvocationTree mit = (MethodInvocationTree) path.getParentPath().getLeaf();
-            
-            if (!mit.getTypeArguments().contains(path.getLeaf())) {
-                return Collections.<Fix>emptyList();
-            }
-        }
-        
         Token ident = null;
         
         try {
@@ -163,16 +152,16 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
         
         FileObject file = info.getFileObject();
         String simpleName = ident.text().toString();
-        Pair<List<String>, List<String>> candidates = getCandidateFQNs(info, file, simpleName, data);
+        Pair<List<Element>, List<Element>> candidates = getCandidateFQNs(info, file, simpleName, data);
 
         //workaround for #118714 -- neverending import
         List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
         for (ImportTree it : imports) {
-            String toString = it.getQualifiedIdentifier().toString();
+            Element el = info.getTrees().getElement(new TreePath(new TreePath(new TreePath(info.getCompilationUnit()), it), it.getQualifiedIdentifier()));
 
-            if (candidates != null) {
-                List<String> a = candidates.getA();
-                if (a != null && a.contains(toString)) {
+            if (candidates != null && el != null) {
+                List<Element> a = candidates.getA();
+                if (a != null && a.contains(el)) {
                     return Collections.<Fix>emptyList();
                 }
             }
@@ -190,26 +179,27 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
             imp = imp.getParentPath();
         }
 
-        List<String> filtered = candidates.getA();
-        List<String> unfiltered = candidates.getB();
+        List<Element> filtered = candidates.getA();
+        List<Element> unfiltered = candidates.getB();
         List<Fix> fixes = new ArrayList<Fix>();
         
         if (unfiltered != null && filtered != null) {
             ReferencesCount referencesCount = ReferencesCount.get(info.getClasspathInfo());
         
-            for (String fqn : unfiltered) {
+            for (Element element : unfiltered) {
+                String fqn = ComputeImports.displayNameForImport(info, element);
                 StringBuilder sort = new StringBuilder();
                 
                 sort.append("0001#");
                 
-                boolean prefered = filtered.contains(fqn);
+                boolean prefered = filtered.contains(element);
                 
                 if (prefered)
                     sort.append("A#");
                 else
                     sort.append("Z#");
                 
-                int order = Utilities.getImportanceLevel(referencesCount, ElementHandle.createTypeElementHandle(ElementKind.CLASS, fqn));
+                int order = Utilities.getImportanceLevel(info, referencesCount, element);
                 String orderString = Integer.toHexString(order);
                 
                 sort.append("00000000".substring(0, 8 - orderString.length()));
@@ -217,7 +207,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                 sort.append('#');
                 sort.append(fqn);
                 
-                fixes.add(new FixImport(file, fqn, sort.toString(), prefered, info, imp));
+                fixes.add(new FixImport(file, fqn, ElementHandle.create(element), sort.toString(), prefered, info, imp));
             }
         }
         
@@ -265,14 +255,14 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
         this.compImports = compImports;
     }
     
-    public Pair<List<String>, List<String>> getCandidateFQNs(CompilationInfo info, FileObject file, String simpleName, Data<ImportCandidatesHolder> data) {
+    public Pair<List<Element>, List<Element>> getCandidateFQNs(CompilationInfo info, FileObject file, String simpleName, Data<ImportCandidatesHolder> data) {
         ImportCandidatesHolder holder = data.getData();
         
         if (holder == null) {
             data.setData(holder = new ImportCandidatesHolder());
         }
         
-        Pair<Map<String, List<String>>, Map<String, List<String>>> result = holder.getCandidates();
+        Pair<Map<String, List<Element>>, Map<String, List<Element>>> result = holder.getCandidates();
         
         if (result == null || result.getA() == null || result.getB() == null) {
             //compute imports:
@@ -281,7 +271,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
             
             setComputeImports(imp);
             
-            ComputeImports.Pair<Map<String, List<TypeElement>>, Map<String, List<TypeElement>>> rawCandidates = imp.computeCandidates(info);
+            ComputeImports.Pair<Map<String, List<Element>>, Map<String, List<Element>>> rawCandidates = imp.computeCandidates(info);
             
             setComputeImports(null);
             
@@ -294,8 +284,8 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
             for (String sn : rawCandidates.a.keySet()) {
                 List<String> c = new ArrayList<String>();
                 
-                for (TypeElement te : rawCandidates.a.get(sn)) {
-                    c.add(te.getQualifiedName().toString());
+                for (Element te : rawCandidates.a.get(sn)) {
+                    c.add(Utilities.getElementName(te, true).toString());
                 }
                 
                 candidates.put(sn, c);
@@ -306,32 +296,32 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
             for (String sn : rawCandidates.b.keySet()) {
                 List<String> c = new ArrayList<String>();
                 
-                for (TypeElement te : rawCandidates.b.get(sn)) {
-                    c.add(te.getQualifiedName().toString());
+                for (Element te : rawCandidates.b.get(sn)) {
+                    c.add(Utilities.getElementName(te, true).toString());
                 }
                 
                 notFilteredCandidates.put(sn, c);
             }
             
-            result = new Pair(candidates, notFilteredCandidates);
+            result = new Pair<Map<String, List<Element>>, Map<String, List<Element>>>(rawCandidates.a, rawCandidates.b);
             
             holder.setCandidates(result);
         }
         
-        List<String> candList = result.getA().get(simpleName);
-        List<String> notFilteredCandList = result.getB().get(simpleName);
+        List<Element> candList = result.getA().get(simpleName);
+        List<Element> notFilteredCandList = result.getB().get(simpleName);
         
         return new Pair(candList, notFilteredCandList);
     }
     
     public static class ImportCandidatesHolder {
-        private Pair<Map<String, List<String>>, Map<String, List<String>>> candidates;
+        private Pair<Map<String, List<Element>>, Map<String, List<Element>>> candidates;
         
-        public Pair<Map<String, List<String>>, Map<String, List<String>>> getCandidates() {
+        public Pair<Map<String, List<Element>>, Map<String, List<Element>>> getCandidates() {
             return candidates;
         }
         
-        public void setCandidates(Pair<Map<String, List<String>>, Map<String, List<String>>> candidates) {
+        public void setCandidates(Pair<Map<String, List<Element>>, Map<String, List<Element>>> candidates) {
             this.candidates = candidates;
         }
     }
@@ -340,15 +330,17 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
 
         private final FileObject file;
         private final String fqn;
+        private final ElementHandle<Element> toImport;
         private final String sortText;
         private final boolean isValid;
         private final @NullAllowed TreePathHandle importHandle;
         private final @NullAllowed String suffix;
         private final boolean statik;
         
-        public FixImport(FileObject file, String fqn, String sortText, boolean isValid, CompilationInfo info, @NullAllowed TreePath imp) {
+        public FixImport(FileObject file, String fqn, ElementHandle<Element> toImport, String sortText, boolean isValid, CompilationInfo info, @NullAllowed TreePath imp) {
             this.file = file;
             this.fqn = fqn;
+            this.toImport = toImport;
             this.sortText = sortText;
             this.isValid = isValid;
             if (imp != null) {
@@ -382,6 +374,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                         if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                            return;
 
+                        //XXX:
                         if (importHandle != null) {
                             TreePath imp = importHandle.resolve(copy);
 
@@ -406,7 +399,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                             return;
                         }
                   
-                        Element te = copy.getElements().getTypeElement(fqn);
+                        Element te = toImport.resolve(copy);
                         
                         if (te == null) {
                             Logger.getAnonymousLogger().warning(String.format("Attempt to fix import for FQN: %s, which does not have a TypeElement in currect context", fqn));

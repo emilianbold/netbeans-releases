@@ -55,7 +55,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
-import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.TestKit;
@@ -63,7 +62,7 @@ import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -87,7 +86,7 @@ public class RepositorySelectorTest extends NbTestCase {
         super.setUp();
     }
 
-    public void testRepositorySelectorBuilder() throws MalformedURLException, CoreException, IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void testRepositorySelectorBuilder() throws MalformedURLException, IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         String errorMsg = "tpyo";
         MyRepository repo = new MyRepository();
 

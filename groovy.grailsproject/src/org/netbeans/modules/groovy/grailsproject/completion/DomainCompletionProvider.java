@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -58,17 +59,19 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
-import org.netbeans.modules.groovy.editor.spi.completion.CompletionContext;
-import org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider;
+import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
+import org.netbeans.modules.groovy.editor.spi.completion.CompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Petr Hejl
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.groovy.editor.spi.completion.DynamicCompletionProvider.class)
-public class DomainCompletionProvider extends DynamicCompletionProvider {
+@ServiceProvider(service = CompletionProvider.class)
+public class DomainCompletionProvider implements CompletionProvider {
 
     private static final Logger LOGGER = Logger.getLogger(DomainCompletionProvider.class.getName());
 
@@ -207,49 +210,63 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
     }
 
     @Override
+    public Map<FieldSignature, CompletionItem> getStaticFields(CompletionContext context) {
+        return Collections.emptyMap();
+    }
+
+    @Override
     public Map<MethodSignature, CompletionItem> getMethods(CompletionContext context) {
+        Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
+        if (isInDomain(context)) {
+            result.putAll(getQueryMethods(context));
+            result.putAll(getOrderMethods(context));
+
+            for (Map.Entry<MethodSignature, String> entry : INSTANCE_METHODS.entrySet()) {
+                result.put(entry.getKey(), CompletionItem.forDynamicMethod(context.getAnchor(), entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue(), false));
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Map<MethodSignature, CompletionItem> getStaticMethods(CompletionContext context) {
+        Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
+        
+        if (isInDomain(context)) {
+            for (Map.Entry<MethodSignature, String> entry : STATIC_METHODS.entrySet()) {
+                result.put(entry.getKey(), CompletionItem.forDynamicMethod(context.getAnchor(), entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue(), false));
+            }
+        }
+        return result;
+    }
+    
+    private boolean isInDomain(CompletionContext context) {
         if (context.getSourceFile() == null) {
-            return Collections.emptyMap();
+            return false;
         }
 
         Project project = FileOwnerQuery.getOwner(context.getSourceFile());
-        if (project != null && context.isLeaf() && project.getLookup().lookup(DomainCompletionProvider.class) != null) {
+        if (project != null) {
 
             if (isDomain(context.getSourceFile(), project)) {
-                Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
-                result.putAll(getQueryMethods(context));
-                result.putAll(getOrderMethods(context));
-
-                for (Map.Entry<MethodSignature, String> entry : STATIC_METHODS.entrySet()) {
-                    result.put(entry.getKey(), CompletionItem.forDynamicMethod(
-                            context.getAnchor(), entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue(), context.isNameOnly(), false));
-                }
-
-                // instance methods
-                if (!context.isStaticContext()) {
-                    for (Map.Entry<MethodSignature, String> entry : INSTANCE_METHODS.entrySet()) {
-                        result.put(entry.getKey(), CompletionItem.forDynamicMethod(
-                                context.getAnchor(), entry.getKey().getName(), entry.getKey().getParameters(), entry.getValue(), context.isNameOnly(), false));
-                    }
-                }
-                return result;
+                return true;
             }
         }
-        return Collections.emptyMap();
+        return false;
     }
 
     // package access for tests
     Map<MethodSignature, CompletionItem> getOrderMethods(CompletionContext context) {
         Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
         if (LIST_ORDER_BY_METHOD.startsWith(context.getPrefix()) || context.getPrefix().startsWith(LIST_ORDER_BY_METHOD)) {
-            for (String property : context.getProperties()) {
+            for (String property : ContextHelper.getProperties(context)) {
                 String name = LIST_ORDER_BY_METHOD + capitalise(property);
                 result.put(new MethodSignature(name, NO_PARAMETERS),
                         CompletionItem.forDynamicMethod(context.getAnchor(), name, NO_PARAMETERS,
-                                "java.util.List", context.isNameOnly(), false)); // NOI18N
+                                "java.util.List", false)); // NOI18N
                 result.put(new MethodSignature(name, new String[] {"java.util.Map"}), // NOI18N
                         CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {"java.util.Map"}, // NOI18N
-                                "java.util.List", context.isNameOnly(), false)); // NOI18N
+                                "java.util.List", false)); // NOI18N
             }
         }
         return result;
@@ -257,13 +274,14 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
 
     // package access for tests
     Map<MethodSignature, CompletionItem> getQueryMethods(CompletionContext context) {
-        if (context.getProperties().isEmpty()) {
+        List<String> properties = ContextHelper.getProperties(context);
+        if (properties.isEmpty()) {
             return Collections.emptyMap();
         }
 
         Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
 
-        Matcher matcher = getQueryMethodPattern(context).matcher(context.getPrefix());
+        Matcher matcher = getQueryMethodPattern(properties).matcher(context.getPrefix());
 
         if (matcher.matches()) {
             String prefix = matcher.group(13);
@@ -290,23 +308,23 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
             if (matcher.group(10) != null) {
                 // operator + property
                 if (!noContinuation) {
-                    names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
+                    names.putAll(getSuffixForOperator(name, properties, prefix, paramCount));
                 }
             // property
             } else if (matcher.group(9) != null) {
                 // comparator or (operator + property)
                 names.putAll(getSuffixForComparator(name, context, prefix, matcher.group(9), forbidden, paramCount));
                 if (!noContinuation) {
-                    names.putAll(getSuffixForOperator(name, context, prefix, paramCount));
+                    names.putAll(getSuffixForOperator(name, properties, prefix, paramCount));
                 }
             // operator
             } else if (matcher.group(7) != null) {
                 // property
-                names.putAll(getSuffixForProperty(name, context, prefix, paramCount));
+                names.putAll(getSuffixForProperty(name, properties, prefix, paramCount));
             } else {
                 // only findBy|findByAll|countBy
                 if (!noContinuation) {
-                    names.putAll(getSuffixForProperty(name, context, prefix, paramCount));
+                    names.putAll(getSuffixForProperty(name, properties, prefix, paramCount));
                 }
             }
             // used for multiple operators
@@ -334,7 +352,7 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         // initial prefix (no property in it)
         if (!matcher.matches() || context.getPrefix().equals(matcher.group(1))){
             // FIXME optimize
-            for (String property : context.getProperties()) {
+            for (String property : properties) {
                 String tail = capitalise(property);
 
                 addQueryEntries(result, context, FIND_ALL_BY_METHOD, tail, 1, true);
@@ -345,9 +363,9 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         return result;
     }
 
-    private Map<String, Integer> getSuffixForOperator(String prefix, CompletionContext context, String tail, int paramCount) {
+    private Map<String, Integer> getSuffixForOperator(String prefix, List<String> properties, String tail, int paramCount) {
         Map<String, Integer> result = new HashMap<String, Integer>();
-        for (String property : context.getProperties()) {
+        for (String property : properties) {
             for (String operator : QUERY_OPERATOR) {
                 String suffix = operator + capitalise(property);
                 if (suffix.startsWith(tail)) {
@@ -378,9 +396,9 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         return result;
     }
 
-    private Map<String, Integer> getSuffixForProperty(String prefix, CompletionContext context, String tail, int paramCount) {
+    private Map<String, Integer> getSuffixForProperty(String prefix, List<String> properties, String tail, int paramCount) {
         Map<String, Integer> result = new HashMap<String, Integer>();
-        for (String property : context.getProperties()) {
+        for (String property : properties) {
             String suffix = capitalise(property);
             if (suffix.startsWith(tail)) {
                 result.put(prefix + suffix, paramCount + 1);
@@ -389,13 +407,13 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         return result;
     }
 
-    private Pattern getQueryMethodPattern(CompletionContext context) {
+    private Pattern getQueryMethodPattern(List<String> properties) {
         StringBuilder builder = new StringBuilder("(findBy|findAllBy|countBy)"); // NOI18N
         builder.append("("); // NOI18N
 
         StringBuilder propertyBuilder = new StringBuilder();
         propertyBuilder.append("("); // NOI18N
-        for (String property : context.getProperties()) {
+        for (String property : properties) {
             propertyBuilder.append(Pattern.quote(capitalise(property)));
             propertyBuilder.append('|'); // NOI18N
         }
@@ -462,19 +480,17 @@ public class DomainCompletionProvider extends DynamicCompletionProvider {
         String[] shortParams = new String[params];
         Arrays.fill(shortParams, "java.lang.Object"); // NOI18N
         result.put(new MethodSignature(name, shortParams),
-                CompletionItem.forDynamicMethod(context.getAnchor(), name, shortParams,
-                        returnType, context.isNameOnly(), false));
+                CompletionItem.forDynamicMethod(context.getAnchor(), name, shortParams, returnType, false));
 
         String[] longParams = new String[params + 1];
         Arrays.fill(longParams, "java.lang.Object"); // NOI18N
         longParams[params] = "java.util.Map"; // NOI18N
         result.put(new MethodSignature(name, longParams),
-                CompletionItem.forDynamicMethod(context.getAnchor(), name, longParams,
-                        returnType, context.isNameOnly(), false));
+                CompletionItem.forDynamicMethod(context.getAnchor(), name, longParams, returnType, false));
 
         if (prefixedMethod) {
             result.put(new MethodSignature(name + "_", new String[] {}), // NOI18N
-                    CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {}, returnType, true, true));
+                    CompletionItem.forDynamicMethod(context.getAnchor(), name, new String[] {}, returnType, true));
         }
     }
 

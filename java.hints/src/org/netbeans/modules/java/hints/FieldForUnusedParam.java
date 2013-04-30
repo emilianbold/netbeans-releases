@@ -94,8 +94,8 @@ public class FieldForUnusedParam extends AbstractHint {
     private static final String ERROR = "<error>"; //TODO: there should ideally be an API method for this
     private static final String FINAL_FIELDS = "final-fields";
 
-    public static boolean isFinalFields() {
-        return new FieldForUnusedParam().getPreferences(null).getBoolean(FINAL_FIELDS, true);
+    public static boolean isFinalFields(Preferences p) {
+        return p.getBoolean(FINAL_FIELDS, true);
     }
 
     static void setFinalFields(Preferences p, boolean selected) {
@@ -191,7 +191,7 @@ public class FieldForUnusedParam extends AbstractHint {
             return null;
         }
         
-        List<Fix> fix = Collections.<Fix>singletonList(new FixImpl(info.getJavaSource(), TreePathHandle.create(treePath, info), existing));
+        List<Fix> fix = Collections.<Fix>singletonList(new FixImpl(info.getJavaSource(), TreePathHandle.create(treePath, info), isFinalFields(getPreferences(null)), existing));
         String displayName = NbBundle.getMessage(FieldForUnusedParam.class, "ERR_UnusedParameter");
         ErrorDescription err = ErrorDescriptionFactory.createErrorDescription(Severity.HINT, displayName,fix, info.getFileObject(), offset, offset);
         
@@ -224,11 +224,13 @@ public class FieldForUnusedParam extends AbstractHint {
 
         private final JavaSource js;
         private final TreePathHandle tph;
+        private final boolean finalFields;
                 final boolean existing;
 
-        public FixImpl(JavaSource js, TreePathHandle tph, boolean existing) {
+        public FixImpl(JavaSource js, TreePathHandle tph, boolean finalFields, boolean existing) {
             this.js = js;
             this.tph = tph;
+            this.finalFields = finalFields;
             this.existing = existing;
         }
         
@@ -268,7 +270,7 @@ public class FieldForUnusedParam extends AbstractHint {
                     
                     if (!existing) {
                         Set<Modifier> modifiers = EnumSet.of(Modifier.PRIVATE);
-                        if (isFinalFields()) {
+                        if (finalFields) {
                             modifiers.add(Modifier.FINAL);
                         }
                         VariableTree field = make.Variable(make.Modifiers(modifiers), vt.getName(), vt.getType(), null);

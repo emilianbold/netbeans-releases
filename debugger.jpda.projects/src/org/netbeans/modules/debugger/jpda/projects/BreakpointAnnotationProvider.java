@@ -531,19 +531,8 @@ public class BreakpointAnnotationProvider extends DebuggerManagerAdapter
         if (lines == null || lines.length == 0) {
             return ;
         }
-        String condition;
-        if (b instanceof LineBreakpoint) {
-            condition = ((LineBreakpoint) b).getCondition();
-        } else if (b instanceof FieldBreakpoint) {
-            condition = ((FieldBreakpoint) b).getCondition();
-        } else if (b instanceof MethodBreakpoint) {
-            condition = ((MethodBreakpoint) b).getCondition();
-        } else if (b instanceof ClassLoadUnloadBreakpoint) {
-            condition = null;
-        } else {
-            throw new IllegalStateException(b.toString());
-        }
-        boolean isConditional = (condition != null) && condition.trim().length() > 0;
+        String condition = getCondition(b);
+        boolean isConditional = condition.trim().length() > 0 || b.getHitCountFilteringStyle() != null;
         String annotationType = getAnnotationType(b, isConditional, breakpointsActive);
         DataObject dataObject;
         try {
@@ -586,6 +575,25 @@ public class BreakpointAnnotationProvider extends DebuggerManagerAdapter
         }
         for (Annotation a : annotations) {
             a.detach();
+        }
+    }
+
+    /**
+     * Gets the condition of a breakpoint.
+     * @param b The breakpoint
+     * @return The condition or empty {@link String} if no condition is supported.
+     */
+    static String getCondition(JPDABreakpoint b) {
+        if (b instanceof LineBreakpoint) {
+            return ((LineBreakpoint) b).getCondition();
+        } else if (b instanceof FieldBreakpoint) {
+            return ((FieldBreakpoint) b).getCondition();
+        } else if (b instanceof MethodBreakpoint) {
+            return ((MethodBreakpoint) b).getCondition();
+        } else if (b instanceof ClassLoadUnloadBreakpoint) {
+            return "";
+        } else {
+            throw new IllegalStateException(b.toString());
         }
     }
     

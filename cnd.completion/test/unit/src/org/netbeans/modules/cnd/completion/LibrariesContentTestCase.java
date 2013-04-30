@@ -69,15 +69,21 @@ public class LibrariesContentTestCase extends CompletionBaseTestCase {
         return new File[] {srcDir};
     }
 
-    public void testGlobalFunsWithPrefix() throws Exception {
+    public void testGlobalFunsWithPrefix_1() throws Exception {
         super.performTest("src/main.cc", 6, 5, "f");
+    }
+    
+    public void testGlobalFunsWithPrefix_2() throws Exception {
         super.performTest("src/main.cc", 6, 5, "::f");
-    }
+    }    
 
-    public void testLibraryClassStaticFunctions() throws Exception {
+    public void testLibraryClassStaticFunctions_1() throws Exception {
         super.performTest("src/main.cc", 6, 5, "AAA::f");
-        super.performTest("src/main.cc", 6, 5, "BBB::f");
     }
+    
+    public void testLibraryClassStaticFunctions_2() throws Exception {
+        super.performTest("src/main.cc", 6, 5, "BBB::f");
+    }    
 
     public void testMergeOfLibrariesNamespaces() throws Exception {
         super.performTest("src/main.cc", 6, 5, "common::decl_from");

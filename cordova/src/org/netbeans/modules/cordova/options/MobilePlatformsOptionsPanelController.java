@@ -44,7 +44,9 @@ package org.netbeans.modules.cordova.options;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -59,6 +61,7 @@ public final class MobilePlatformsOptionsPanelController extends OptionsPanelCon
 
     private MobilePlatformsPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final ChangeSupport cs = new ChangeSupport(this);
     private boolean changed;
 
     public void update() {
@@ -77,6 +80,10 @@ public final class MobilePlatformsOptionsPanelController extends OptionsPanelCon
 
     public boolean isValid() {
         return getPanel().valid();
+    }
+    
+    public boolean isCordovaEmpty() {
+        return getPanel().isCordovaEmpty();
     }
 
     public boolean isChanged() {
@@ -98,6 +105,15 @@ public final class MobilePlatformsOptionsPanelController extends OptionsPanelCon
     public void removePropertyChangeListener(PropertyChangeListener l) {
         pcs.removePropertyChangeListener(l);
     }
+    
+    public void addChangeListener(ChangeListener l) {
+        cs.addChangeListener(l);
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        cs.removeChangeListener(l);
+    }
+    
 
     private MobilePlatformsPanel getPanel() {
         if (panel == null) {
@@ -112,5 +128,6 @@ public final class MobilePlatformsOptionsPanelController extends OptionsPanelCon
             pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+        cs.fireChange();
     }
 }

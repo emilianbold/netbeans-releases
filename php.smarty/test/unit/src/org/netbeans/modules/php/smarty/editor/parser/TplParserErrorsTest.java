@@ -44,7 +44,7 @@ package org.netbeans.modules.php.smarty.editor.parser;
 import java.util.Collections;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;

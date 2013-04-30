@@ -104,6 +104,7 @@ import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Mutex;
 import org.openide.util.actions.SystemAction;
@@ -1049,7 +1050,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             if (!revLeft.getChangesetId().equals(revRight.getChangesetId())) {
                 Map<File, FileInformation> statuses = HgCommand.getStatus(repository, new ArrayList<File>(context.getRootFiles()),
                         revisionLeft.getChangesetId(), revisionRight.getChangesetId(), false, isLocalToBase());
-                statuses.keySet().retainAll(HgUtils.flattenFiles(context.getRootFiles().toArray(
+                statuses.keySet().retainAll(Utils.flattenFiles(context.getRootFiles().toArray(
                         new File[context.getRootFiles().size()]), statuses.keySet()));
                 List<Setup> newSetups = new ArrayList<Setup>(statuses.size());
                 for (Map.Entry<File, FileInformation> e : statuses.entrySet()) {

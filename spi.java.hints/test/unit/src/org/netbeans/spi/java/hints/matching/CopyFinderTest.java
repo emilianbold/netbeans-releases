@@ -1183,6 +1183,20 @@ public class CopyFinderTest extends NbTestCase {
                              false);
     }
     
+    public void testFindLambda() throws Exception {
+        performVariablesTest("package test; import java.util.Comparator; public class Test { private void aa() { Comparator<String> c = (l, r) -> l.compareTo(r); } }",
+                             "($args$) -> $expression",
+                             new Pair[] {
+                                 new Pair<String, int[]>("$expression", new int[] {116, 130})
+                             },
+                             new Pair[] {
+                                 new Pair<String, int[]>("$args$", new int[] {107, 108, 110, 111})
+                             },
+                             new Pair[0],
+                             false,
+                             false);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }

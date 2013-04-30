@@ -110,7 +110,7 @@ public class StructureAnalyzer implements StructureScanner {
 
         AnalysisResult ar = result.getStructure();
         List<? extends ASTElement> elements = ar.getElements();
-        List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
+        List<StructureItem> itemList = new ArrayList<>(elements.size());
 
         for (ASTElement e : elements) {
             if (isVisible(e)) {
@@ -130,10 +130,10 @@ public class StructureAnalyzer implements StructureScanner {
             return analysisResult;
         }
 
-        structure = new ArrayList<ASTElement>();
-        fields = new HashMap<ASTClass, Set<FieldNode>>();
-        methods = new ArrayList<ASTMethod>();
-        properties = new HashMap<ASTClass, Set<PropertyNode>>();
+        structure = new ArrayList<>();
+        fields = new HashMap<>();
+        methods = new ArrayList<>();
+        properties = new HashMap<>();
 
         AstPath path = new AstPath();
         path.descend(root);
@@ -142,7 +142,7 @@ public class StructureAnalyzer implements StructureScanner {
         path.ascend();
 
         // Process fields
-        Map<String, FieldNode> names = new HashMap<String, FieldNode>();
+        Map<String, FieldNode> names = new HashMap<>();
 
         for (ASTClass clz : fields.keySet()) {
             Set<FieldNode> assignments = fields.get(clz);
@@ -212,7 +212,7 @@ public class StructureAnalyzer implements StructureScanner {
                     Set<FieldNode> assignments = fields.get(parent);
 
                     if (assignments == null) {
-                        assignments = new HashSet<FieldNode>();
+                        assignments = new HashSet<>();
                         fields.put((ASTClass) parent, assignments);
                     }
 
@@ -233,7 +233,7 @@ public class StructureAnalyzer implements StructureScanner {
                 Set<PropertyNode> declarations = properties.get(parent);
 
                 if (declarations == null) {
-                    declarations = new HashSet<PropertyNode>();
+                    declarations = new HashSet<>();
                     properties.put((ASTClass) parent, declarations);
                 }
 
@@ -262,8 +262,8 @@ public class StructureAnalyzer implements StructureScanner {
         GroovyParserResult rpr = ASTUtils.getParseResult(info);
         AnalysisResult analysisResult = rpr.getStructure();
 
-        Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
-        List<OffsetRange> codefolds = new ArrayList<OffsetRange>();
+        Map<String, List<OffsetRange>> folds = new HashMap<>();
+        List<OffsetRange> codefolds = new ArrayList<>();
         folds.put("codeblocks", codefolds); // NOI18N
 
         final BaseDocument doc = LexUtilities.getDocument(rpr, false);
@@ -272,7 +272,7 @@ public class StructureAnalyzer implements StructureScanner {
         }
 
         final OffsetRange[] importsRange = new OffsetRange[1];
-        final List<OffsetRange> commentsRanges = new ArrayList<OffsetRange>();
+        final List<OffsetRange> commentsRanges = new ArrayList<>();
 
         doc.render(new Runnable() {
             @Override
@@ -436,35 +436,66 @@ public class StructureAnalyzer implements StructureScanner {
 
         @Override
         public String getHtml(HtmlFormatter formatter) {
-            formatter.appendText(node.getName());
-
-            if ((kind == ElementKind.METHOD) || (kind == ElementKind.CONSTRUCTOR)) {
-                // Append parameters
-                ASTMethod jn = (ASTMethod) node;
-
-                Collection<String> parameters = jn.getParameters();
-
-                if ((parameters != null) && (parameters.size() > 0)) {
-                    formatter.appendHtml("(");
-                    formatter.parameters(true);
-
-                    for (Iterator<String> it = parameters.iterator(); it.hasNext();) {
-                        String ve = it.next();
-                        // TODO - if I know types, list the type here instead. For now, just use the parameter name instead
-                        formatter.appendText(ve);
-
-                        if (it.hasNext()) {
-                            formatter.appendHtml(", ");
-                        }
-                    }
-
-                    formatter.parameters(false);
-                    formatter.appendHtml(")");
-                } else {
-                    formatter.appendHtml("()");
-                }
+            if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
+                return getMethodHTML(formatter, (ASTMethod) node);
+            }
+            if (kind == ElementKind.FIELD) {
+                return getFieldHTML(formatter, (ASTField) node);
             }
 
+            formatter.appendText(node.getName());
+            return formatter.getText();
+        }
+        
+        private String getMethodHTML(HtmlFormatter formatter, ASTMethod method) {
+            appendMethodName(formatter, method);
+            appendParameters(formatter, method.getParameters());
+            appendReturnType(formatter, method.getReturnType());
+            
+            return formatter.getText();
+        }
+        
+        private void appendMethodName(HtmlFormatter formatter, ASTMethod method) {
+            formatter.appendHtml(method.getName());
+        }
+        
+        private void appendParameters(HtmlFormatter formatter, Collection<String> params) {
+            if (!params.isEmpty()) {
+                formatter.appendHtml("(");
+                formatter.parameters(true);
+
+                for (Iterator<String> it = params.iterator(); it.hasNext();) {
+                    String ve = it.next();
+                    formatter.appendText(ve);
+
+                    if (it.hasNext()) {
+                        formatter.appendHtml(", ");
+                    }
+                }
+
+                formatter.parameters(false);
+                formatter.appendHtml(")");
+            } else {
+                formatter.appendHtml("()");
+            }
+        }
+        
+        private void appendReturnType(HtmlFormatter formatter, String returnType) {
+            if (returnType != null) {
+                formatter.appendHtml(" : ");
+                formatter.parameters(true);
+                formatter.appendHtml(returnType);
+                formatter.parameters(false);
+            }
+        }
+        
+        private String getFieldHTML(HtmlFormatter formatter, ASTField field) {
+            formatter.appendText(field.getName());
+            formatter.appendText(" : ");
+            formatter.parameters(true);
+            formatter.appendText(field.getType());
+            formatter.parameters(false);
+            
             return formatter.getText();
         }
 
@@ -511,7 +542,7 @@ public class StructureAnalyzer implements StructureScanner {
             List<ASTElement> nested = node.getChildren();
 
             if ((nested != null) && (nested.size() > 0)) {
-                List<GroovyStructureItem> children = new ArrayList<GroovyStructureItem>(nested.size());
+                List<GroovyStructureItem> children = new ArrayList<>(nested.size());
 
                 // FIXME: the same old problem: AstElement != ElementHandle.
 

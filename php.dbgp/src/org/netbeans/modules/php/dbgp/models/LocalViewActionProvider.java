@@ -44,9 +44,7 @@
 package org.netbeans.modules.php.dbgp.models;
 
 import java.awt.Dialog;
-
 import javax.swing.Action;
-
 import org.netbeans.modules.php.dbgp.models.nodes.VariableNode;
 import org.netbeans.modules.php.dbgp.ui.LocalFilterPanel;
 import org.netbeans.spi.viewmodel.Models;
@@ -56,9 +54,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.text.Line;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-
 
 /**
  * @author ads
@@ -68,19 +64,17 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
 
     private static final String FILTERS_LABEL = "CTL_Filters_Label";    // NOI18N
 
-    private static final String GO_TO_SOURCE_LABEL 
+    private static final String GO_TO_SOURCE_LABEL
         = "CTL_Breakpoint_GoToSource_Label";                            // NOI18N
-    
-    private static final String FIXED_WATCH_LABEL 
+
+    private static final String FIXED_WATCH_LABEL
         = "CTL_Create_Fixed_Watch";                                     // NOI18N
-    
+
     private static final String DIALOG_TITLE   = "TTL_LocalFilter";     // NOI18N
-    
-    private static final String DEBUG_FILTERS  = "debug.filters";       // NOI18N
 
     @Override
     public Action[] getActions ( NodeActionsProvider original , Object node )
-            throws UnknownTypeException 
+            throws UnknownTypeException
     {
         Action[] actions;
         try {
@@ -106,8 +100,8 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
     }
 
     @Override
-    public void performDefaultAction( NodeActionsProvider original , Object node) 
-        throws UnknownTypeException 
+    public void performDefaultAction( NodeActionsProvider original , Object node)
+        throws UnknownTypeException
     {
         //makes little sense goto source action to me - disabled (#159550)
         /*if (node instanceof VariableNode) {
@@ -123,12 +117,11 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
             line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
         }
     }
-    
+
     private static void editFilters(){
         LocalFilterPanel panel = new LocalFilterPanel();
         DialogDescriptor descriptor = new DialogDescriptor(panel,
                 NbBundle.getMessage(LocalViewActionProvider.class, DIALOG_TITLE));
-            descriptor.setHelpCtx(new HelpCtx(DEBUG_FILTERS));
             Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setVisible(true);
             dialog.dispose();
@@ -138,23 +131,23 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
             }
             VariablesModelFilter.setFilters( panel.getSelectedTypes() );
     }
-    
+
 
     private static void createFixedWatch(  Object[] nodes ) {
         // TODO Auto-generated method stub
-        
+
     }
 
     private static final Action GO_TO_SOURCE_ACTION = Models.createAction(
             NbBundle.getBundle(LocalViewActionProvider.class).getString(
-                    GO_TO_SOURCE_LABEL), 
+                    GO_TO_SOURCE_LABEL),
             new GoToSourcePerformer(),
             Models.MULTISELECTION_TYPE_EXACTLY_ONE
         );
-    
+
     private static final Action FIXED_WATCH_ACTION = Models.createAction(
             NbBundle.getBundle(LocalViewActionProvider.class).getString(
-                    FIXED_WATCH_LABEL), 
+                    FIXED_WATCH_LABEL),
                     new Models.ActionPerformer () {
                         @Override
                         public boolean isEnabled(Object node) {
@@ -167,10 +160,10 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
                     },
                     Models.MULTISELECTION_TYPE_EXACTLY_ONE
         );
-    
+
     private static final Action EDIT_FILTERS_ACTION = Models.createAction (
             NbBundle.getBundle(LocalViewActionProvider.class).getString(
-                    FILTERS_LABEL), 
+                    FILTERS_LABEL),
                     new Models.ActionPerformer () {
                         @Override
                         public boolean isEnabled(Object node) {
@@ -199,9 +192,9 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
          */
         @Override
         public void perform( Object[] nodes ) {
-            goToSource((VariableNode) nodes [0]);            
+            goToSource((VariableNode) nodes [0]);
         }
-        
+
     }
 
 }

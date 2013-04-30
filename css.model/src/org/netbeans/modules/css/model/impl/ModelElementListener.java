@@ -51,6 +51,8 @@ import org.openide.util.Exceptions;
 public interface ModelElementListener {
 
     public void elementAdded(AtRuleId atRuleId);
+    
+    public void elementAdded(AtRule atRule);
 
     public void elementAdded(GenericAtRule genericAtRule);
 
@@ -113,6 +115,8 @@ public interface ModelElementListener {
     public void elementAdded(Declarations declarations);
 
     public void elementAdded(Declaration declaration);
+    
+    public void elementAdded(PropertyDeclaration declaration);
 
     public void elementAdded(Property property);
 
@@ -127,6 +131,8 @@ public interface ModelElementListener {
     public void elementAdded(Page page);
     
     public void elementRemoved(AtRuleId atRuleId);
+    
+    public void elementRemoved(AtRule atRule);
 
     public void elementRemoved(GenericAtRule genericAtRule);
 
@@ -191,6 +197,8 @@ public interface ModelElementListener {
     public void elementRemoved(Declarations declarations);
 
     public void elementRemoved(Declaration declaration);
+    
+    public void elementRemoved(PropertyDeclaration declaration);
 
     public void elementRemoved(Property property);
 
@@ -363,6 +371,10 @@ public interface ModelElementListener {
         @Override
         public void elementAdded(CharSet charSet) {
         }
+        
+        @Override
+        public void elementAdded(AtRule atRule) {
+        }
 
         @Override
         public void elementAdded(CharSetValue charSetValue) {
@@ -427,9 +439,13 @@ public interface ModelElementListener {
         @Override
         public void elementAdded(Declarations declarations) {
         }
-
+        
         @Override
         public void elementAdded(Declaration declaration) {
+        }
+
+        @Override
+        public void elementAdded(PropertyDeclaration declaration) {
         }
 
         @Override
@@ -522,6 +538,10 @@ public interface ModelElementListener {
 
         @Override
         public void elementRemoved(Declaration declaration) {
+        }
+        
+        @Override
+        public void elementRemoved(PropertyDeclaration declaration) {
         }
 
         @Override
@@ -630,6 +650,10 @@ public interface ModelElementListener {
 
         @Override
         public void elementRemoved(AtRuleId atRuleId) {
+        }
+
+        @Override
+        public void elementRemoved(AtRule atRule) {
         }
 
         @Override

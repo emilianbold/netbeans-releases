@@ -243,6 +243,7 @@ public final class OperationPanel extends javax.swing.JPanel {
         area.setContentType ("text/html"); // NOI18N
         area.setText (msg);
         area.setOpaque (false);
+        area.putClientProperty( JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
         return area;
     }
     

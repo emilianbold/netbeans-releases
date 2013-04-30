@@ -95,8 +95,10 @@ public class SettingsImpl {
         return prefs.getBoolean( PROP_SHOW_FOLDER_NAME, false );
     }
 
-    void setShowFolderName( boolean showFolders ) {
+    boolean setShowFolderName( boolean showFolders ) {
+        boolean change = showFolders != isShowFolderName();
         prefs.putBoolean( PROP_SHOW_FOLDER_NAME, showFolders );
+        return change;
     }
 
     public boolean isShowFullPath() {
@@ -119,8 +121,10 @@ public class SettingsImpl {
         return change;
     }
 
-    void setSortDocumentListByProject( boolean sort ) {
+    boolean setSortDocumentListByProject( boolean sort ) {
+        boolean change = sort != isSortDocumentListByProject();
         prefs.putBoolean( PROP_SORT_DOCUMENT_LIST_BY_PROJECT, sort );
+        return change;
     }
 
     public boolean isSortDocumentListByProject() {

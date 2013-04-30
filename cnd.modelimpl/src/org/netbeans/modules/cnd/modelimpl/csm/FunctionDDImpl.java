@@ -267,6 +267,10 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         
         @Override
         public FunctionDDImpl create() {
+            final FunctionParameterListBuilder parameters = (FunctionParameterListBuilder)getParametersListBuilder();
+            if (parameters == null) {
+                return null;
+            }
             CsmScope scope = AstRenderer.FunctionRenderer.getScope(getScope(), getFile(), isStatic(), true);
 
             FunctionDDImpl<?> functionDDImpl = new FunctionDDImpl(getName(), getRawName(), scope, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);        
@@ -282,8 +286,8 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
             }
             
             functionDDImpl.setReturnType(getType());
-            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(functionDDImpl);
-            functionDDImpl.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(), false);
+            parameters.setScope(functionDDImpl);
+            functionDDImpl.setParameters(parameters.create(), false);
             
             bodyBuilder.setScope(functionDDImpl);
             functionDDImpl.setCompoundStatement(bodyBuilder.create());

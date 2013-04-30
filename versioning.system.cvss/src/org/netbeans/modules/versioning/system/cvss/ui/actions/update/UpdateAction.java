@@ -64,6 +64,12 @@ import java.io.File;
  */
 public class UpdateAction extends AbstractSystemAction {
 
+    private static final String ICON_RESOURCE = "org/netbeans/modules/versioning/system/cvss/resources/icons/update.png"; //NOI18N
+
+    public UpdateAction () {
+        super(ICON_RESOURCE);
+    }
+    
     protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_Update";  // NOI18N
     }
@@ -115,6 +121,6 @@ public class UpdateAction extends AbstractSystemAction {
     
     @Override
     protected String iconResource() {
-        return "org/netbeans/modules/versioning/system/cvss/resources/icons/update.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 }

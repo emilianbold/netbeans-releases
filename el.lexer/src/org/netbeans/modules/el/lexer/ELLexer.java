@@ -114,7 +114,7 @@ public class ELLexer implements Lexer<ELTokenId> {
     private static final int ISA_EQ = 17; // after '='
     private static final int ISA_GT = 18; // after '>'
     private static final int ISA_LT = 19; // after '<'
-    //private static final int ISA_PLUS = 20; // after '+'
+    private static final int ISA_PLUS = 20; // after '+'
     private static final int ISA_MINUS = 21; // after '-'
     //private static final int ISA_STAR = 22; // after '*'
     private static final int ISA_PIPE = 23; // after '|'
@@ -139,6 +139,7 @@ public class ELLexer implements Lexer<ELTokenId> {
     private static final int ISI_BRACKET_ISI_DOULE_EXP_ISA_SIGN = 42;
     //private static final int ISA_PERCENT = 24; // after '%'
     private static final int ISI_BRACKET_ISA_MINUS = 43;
+    private static final int ISI_BRACKET_ISA_PLUS = 44;
     
     
     public ELLexer(LexerRestartInfo<ELTokenId> info) {
@@ -207,7 +208,8 @@ public class ELLexer implements Lexer<ELTokenId> {
                             lexerState = ISA_LT;
                             break;
                         case '+':
-                            return token(ELTokenId.PLUS);
+                            lexerState = ISA_PLUS;
+                            break;
                         case '-':
                             lexerState = ISA_MINUS;
                             break;
@@ -294,7 +296,8 @@ public class ELLexer implements Lexer<ELTokenId> {
                         case '/':
                             return token(ELTokenId.DIV);
                         case '+':
-                            return token(ELTokenId.PLUS);
+                            lexerState = ISI_BRACKET_ISA_PLUS;
+                            break;
                         case '-':
                             lexerState = ISI_BRACKET_ISA_MINUS;
                             break;
@@ -388,6 +391,18 @@ public class ELLexer implements Lexer<ELTokenId> {
                             lexerState = (lexerState == ISI_BRACKET_ISA_MINUS) ? ISI_BRACKET : INIT;
                             input.backup(1);
                             return token(ELTokenId.MINUS);
+                    }
+
+                case ISI_BRACKET_ISA_PLUS:
+                case ISA_PLUS:
+                    switch (actChar) {
+                        case '=':
+                            lexerState = INIT;
+                            return token(ELTokenId.CONCAT);
+                        default:
+                            lexerState = (lexerState == ISI_BRACKET_ISA_PLUS) ? ISI_BRACKET : INIT;
+                            input.backup(1);
+                            return token(ELTokenId.PLUS);
                     }
 
                 case ISI_BRACKET_ISA_GT:
@@ -783,6 +798,9 @@ public class ELLexer implements Lexer<ELTokenId> {
             case ISA_MINUS:
                 lexerState = INIT;
                 return token(ELTokenId.MINUS);
+            case ISA_PLUS:
+                lexerState = INIT;
+                return token(ELTokenId.PLUS);
             case ISA_GT:
                 lexerState = INIT;
                 return token(ELTokenId.GT);
@@ -811,6 +829,9 @@ public class ELLexer implements Lexer<ELTokenId> {
             case ISI_BRACKET_ISA_MINUS:
                 lexerState = ISI_BRACKET;
                 return token(ELTokenId.MINUS);
+            case ISI_BRACKET_ISA_PLUS:
+                lexerState = ISI_BRACKET;
+                return token(ELTokenId.PLUS);
             case ISI_BRACKET_ISA_GT:
                 lexerState = ISI_BRACKET;
                 return token(ELTokenId.GT_EQ);
@@ -844,15 +865,10 @@ public class ELLexer implements Lexer<ELTokenId> {
         read.getChars(0, read.length(), buffer, 0);
         int offset = 0;
 
-        if (len < 1 || len > 10) {
+        if (len > 10)
             return null;
-        } else if (len == 1) {
-            if (buffer[offset] == 'T') {
-                return token(ELTokenId.T_KEYWORD);
-            } else {
-                return null;
-            }
-        }
+        if (len <= 1)
+            return null;
         switch (buffer[offset++]) {
             case 'a':
                 if (len <= 2) return null;
@@ -860,12 +876,6 @@ public class ELLexer implements Lexer<ELTokenId> {
                         && buffer[offset++] == 'n'
                         && buffer[offset++] == 'd')
                         ? token(ELTokenId.AND_KEYWORD) : null;
-            case 'c':
-                if (len <= 2) return null;
-                return (len == 3
-                        && buffer[offset++] == 'a'
-                        && buffer[offset++] == 't')
-                        ? token(ELTokenId.CAT_KEYWORD) : null;
             case 'd':
                 if (len <= 2) return null;
                 return (len == 3

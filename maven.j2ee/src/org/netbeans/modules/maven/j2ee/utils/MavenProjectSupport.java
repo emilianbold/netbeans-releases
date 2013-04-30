@@ -64,10 +64,12 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
+import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
@@ -78,6 +80,8 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
@@ -116,6 +120,10 @@ public class MavenProjectSupport {
         if (instanceID != null && serverID == null) {
             assignServer(project, instanceID, initContextPath);
             
+        // We know both server name and server ID, just do the same as above
+        } else if (instanceID != null && serverID != null) {
+            assignServer(project, instanceID, initContextPath);
+            
         // We don't know anything which means we want to assign <No Server> value to the project
         } else if (instanceID == null && serverID == null) {
             assignServer(project, null, initContextPath);
@@ -131,7 +139,7 @@ public class MavenProjectSupport {
                 problems.addReport(createBrokenLibraryReport(project));
                 BrokenServerLibrarySupport.fixOrShowAlert(project, null);
             }
-            if (RunUtils.hasApplicationCompileOnSaveEnabled(project)) {
+            if (RunUtils.isCompileOnSaveEnabled(project)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(moduleProvider);
             }
         }
@@ -400,7 +408,33 @@ public class MavenProjectSupport {
     public static String readJ2eeVersion(Project project)  {
         return getPreferences(project, true).get(MavenJavaEEConstants.HINT_J2EE_VERSION, null);
     }
+
+    public static boolean isDeployOnSave(Project project)  {
+        String result = getPreferences(project, true).get(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, null);
+        if (result != null) {
+            return Boolean.parseBoolean(result);
+        } else {
+            return true;
+        }
+    }
     
+    public static void setDeployOnSave(Project project, Boolean value) {
+        if (value == null || value == true) {
+            getPreferences(project, true).remove(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE);
+        } else {
+            getPreferences(project, true).putBoolean(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, value);
+        }
+        
+        CopyOnSave copyOnSave = project.getLookup().lookup(CopyOnSave.class);
+        if (copyOnSave != null) {
+            if (isDeployOnSave(project)) {
+                copyOnSave.initialize();
+            } else {
+                copyOnSave.cleanup();
+            }
+        }
+    }
+
     public static void setJ2eeVersion(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, true);
     }
@@ -414,10 +448,16 @@ public class MavenProjectSupport {
     }
     
     private static void setSettings(Project project, String key, String value, boolean shared) {
+        Preferences preferences = getPreferences(project, shared);
         if (value != null) {
-            getPreferences(project, shared).put(key, value);
+            preferences.put(key, value);
         } else {
-            getPreferences(project, shared).remove(key);
+            preferences.remove(key);
+        }
+        try {
+            preferences.flush();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -453,7 +493,8 @@ public class MavenProjectSupport {
     public static String getBrowserID(@NonNull Project project) {
         Parameters.notNull("project", project);
         
-        return getPreferences(project, false).get(MavenJavaEEConstants.SELECTED_BROWSER, null);
+        return getPreferences(project, false).get(MavenJavaEEConstants.SELECTED_BROWSER, 
+                BrowserUISupport.getDefaultBrowserChoice(true).getId());
     }
     
     /**

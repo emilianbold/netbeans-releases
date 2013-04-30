@@ -432,6 +432,49 @@ public class IfTest extends GeneratorTestBase {
         String res = TestUtilities.copyFileToString(testFile);
         assertEquals(golden, res);
     }
+    
+    public void testDuplicateIfContent() throws Exception {
+        String test =
+                "class Test {\n" +
+                "    private static void t(int i) {\n" +
+                "        i^f (i == 0 || i == 1) {\n" +
+                "            System.err.println();\n" +
+                "        }\n" +
+                "    }\n" +
+                "}";
+        String golden =
+                "class Test {\n" +
+                "    private static void t(int i) {\n" +
+                "        if (i == 0) {\n" +
+                "            System.err.println();\n" +
+                "        } else if (i == 1) {\n" +
+                "            System.err.println();\n" +
+                "        }\n" +
+                "    }\n" +
+                "}";        testFile = new File(getWorkDir(), "Test.java");
+        final int indexA = test.indexOf("^");
+        assertTrue(indexA != -1);
+        TestUtilities.copyStringToFile(testFile, test.replace("^", ""));
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+                Tree node = copy.getTreeUtilities().pathFor(indexA).getLeaf();
+                assertEquals(Kind.IF, node.getKind());
+                TreeMaker make = copy.getTreeMaker();
+                IfTree it = (IfTree) node;
+                BinaryTree cond = (BinaryTree) ((ParenthesizedTree) it.getCondition()).getExpression();
+                IfTree newIf = make.If(make.Parenthesized(cond.getLeftOperand()), it.getThenStatement(), make.If(make.Parenthesized(cond.getRightOperand()), it.getThenStatement(), null));
+                copy.rewrite(it, newIf);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        assertEquals(golden, res);
+    }
 
     String getGoldenPckg() {
         return "";

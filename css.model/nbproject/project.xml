@@ -20,7 +20,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.27</specification-version>
+                        <specification-version>1.54</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -199,6 +199,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.css.editor</friend>
+                <friend>org.netbeans.modules.css.prep</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>
                 <friend>org.netbeans.modules.html.editor</friend>

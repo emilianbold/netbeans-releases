@@ -51,6 +51,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -61,12 +62,17 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -83,7 +89,18 @@ public enum JSFVersion {
     JSF_2_1("JSF 2.1"),
     JSF_2_2("JSF 2.2");
 
+    private static final LinkedHashMap<JSFVersion, String> SPECIFIC_CLASS_NAMES = new LinkedHashMap<JSFVersion, String>();
+
+    static {
+        SPECIFIC_CLASS_NAMES.put(JSFVersion.JSF_2_2, JSFUtils.JSF_2_2__API_SPECIFIC_CLASS);
+        SPECIFIC_CLASS_NAMES.put(JSFVersion.JSF_2_1, JSFUtils.JSF_2_1__API_SPECIFIC_CLASS);
+        SPECIFIC_CLASS_NAMES.put(JSFVersion.JSF_2_0, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
+        SPECIFIC_CLASS_NAMES.put(JSFVersion.JSF_1_2, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
+        SPECIFIC_CLASS_NAMES.put(JSFVersion.JSF_1_1, JSFUtils.FACES_EXCEPTION);
+    }
+
     private final String shortName;
+
 
     private JSFVersion(String shortName) {
         this.shortName = shortName;
@@ -109,12 +126,14 @@ public enum JSFVersion {
      */
     @CheckForNull
     public synchronized static JSFVersion forWebModule(@NonNull final WebModule webModule) {
+        Parameters.notNull("webModule", webModule); //NOI18N
         JSFVersion version = projectVersionCache.get(webModule);
         if (version == null) {
             version = get(webModule, true);
-            Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
-            ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
-            ClassPath compileCP = cpp.findClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+            ClassPath compileCP = getCompileClasspath(webModule);
+            if (compileCP == null) {
+                return version;
+            }
             PropertyChangeListener listener = WeakListeners.propertyChange(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -142,19 +161,9 @@ public enum JSFVersion {
     public static synchronized JSFVersion forClasspath(@NonNull Collection<File> classpath) {
         Parameters.notNull("classpath", classpath); //NOI18N
         try {
-            if (Util.containsClass(classpath, JSFUtils.JSF_2_2__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_2_2;
-            } else if (Util.containsClass(classpath, JSFUtils.JSF_2_1__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_2_1;
-            } else if (Util.containsClass(classpath, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_2_0;
-            } else if (Util.containsClass(classpath, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_1_2;
-            } else if (Util.containsClass(classpath, JSFUtils.FACES_EXCEPTION)) {
-                return JSFVersion.JSF_1_1;
-            }
+            return Util.containsClass(classpath, SPECIFIC_CLASS_NAMES);
         } catch (IOException ex) {
-            LOG.log(Level.INFO, "", ex);
+            LOG.log(Level.INFO, null, ex);
         }
         return null;
     }
@@ -171,19 +180,9 @@ public enum JSFVersion {
     public static JSFVersion forClasspath(@NonNull List<URL> classpath) {
         Parameters.notNull("classpath", classpath); //NOI18N
         try {
-            if (Util.containsClass(classpath, JSFUtils.JSF_2_2__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_2_2;
-            } else if (Util.containsClass(classpath, JSFUtils.JSF_2_1__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_2_1;
-            } else if (Util.containsClass(classpath, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_2_0;
-            } else if (Util.containsClass(classpath, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS)) {
-                return JSFVersion.JSF_1_2;
-            } else if (Util.containsClass(classpath, JSFUtils.FACES_EXCEPTION)) {
-                return JSFVersion.JSF_1_1;
-            }
+            return Util.containsClass(classpath, SPECIFIC_CLASS_NAMES);
         } catch (IOException ex) {
-            LOG.log(Level.INFO, "", ex);
+            LOG.log(Level.INFO, null, ex);
         }
         return null;
     }
@@ -223,6 +222,7 @@ public enum JSFVersion {
      * @return {@code true} if the current instance is at least of the given version, {@code false} otherwise
      */
     public boolean isAtLeast(@NonNull JSFVersion version) {
+        Parameters.notNull("version", version); //NOI18N
         int thisMajorVersion = Integer.parseInt(this.name().substring(4, 5));
         int thisMinorVersion = Integer.parseInt(this.name().substring(6, 7));
         int compMajorVersion = Integer.parseInt(version.name().substring(4, 5));
@@ -243,14 +243,60 @@ public enum JSFVersion {
     @CheckForNull
     public static JSFVersion get(@NonNull WebModule webModule, boolean includingPlatformCP) {
         Parameters.notNull("webModule", webModule); //NOI18N
-        if (JSFUtils.isJSF22Plus(webModule, includingPlatformCP)) {
-            return JSFVersion.JSF_2_2;
-        } else if (JSFUtils.isJSF21Plus(webModule, includingPlatformCP)) {
-            return JSFVersion.JSF_2_1;
-        } else if (JSFUtils.isJSF20Plus(webModule, includingPlatformCP)) {
-            return JSFVersion.JSF_2_0;
-        } else if (JSFUtils.isJSF12Plus(webModule, includingPlatformCP)) {
-            return JSFVersion.JSF_1_2;
+        if (webModule.getDocumentBase() == null) {
+            return null;
+        }
+
+        ClassPath compileCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+        if (compileCP == null) {
+            return null;
+        }
+
+        if (includingPlatformCP) {
+            for (Map.Entry<JSFVersion, String> entry : SPECIFIC_CLASS_NAMES.entrySet()) {
+                String className = entry.getValue();
+                if (compileCP.findResource(className.replace('.', '/') + ".class") != null) { //NOI18N
+                    return entry.getKey();
+                }
+            }
+            return null;
+        } else {
+            Project project = FileOwnerQuery.getOwner(JSFUtils.getFileObject(webModule));
+            if (project == null) {
+                return null;
+            }
+            List<File> platformClasspath = Arrays.asList(Util.getJ2eePlatformClasspathEntries(project, Util.getPlatform(project)));
+            List<URL> projectDeps = new ArrayList<URL>();
+            for (ClassPath.Entry entry : compileCP.entries()) {
+                File archiveOrDir = FileUtil.archiveOrDirForURL(entry.getURL());
+                if (archiveOrDir == null || !platformClasspath.contains(archiveOrDir)) {
+                    projectDeps.add(entry.getURL());
+                }
+            }
+            try {
+                return Util.containsClass(projectDeps, SPECIFIC_CLASS_NAMES);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return null;
+    }
+
+    private static ClassPath getCompileClasspath(WebModule webModule) {
+        Project project = FileOwnerQuery.getOwner(JSFUtils.getFileObject(webModule));
+        ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
+        if (webModule.getDocumentBase() != null) {
+            return cpp.findClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+        } else {
+            Sources sources = ProjectUtils.getSources(project);
+            if (sources == null) {
+                return null;
+            }
+
+            SourceGroup[] sourceGroups = sources.getSourceGroups("java"); //NOII18N
+            if (sourceGroups.length > 0) {
+                return cpp.findClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
+            }
         }
         return null;
     }

@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.odcs.git
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/odcs/git/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

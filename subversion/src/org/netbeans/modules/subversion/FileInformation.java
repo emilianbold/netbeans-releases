@@ -97,7 +97,7 @@ public class FileInformation implements Serializable {
     /**
      * The file is modified locally and was not yet modified in repository.
      */ 
-    public static final int STATUS_VERSIONED_MODIFIEDLOCALLY    = 16;
+    public static final int STATUS_VERSIONED_MODIFIEDLOCALLY_CONTENT    = 16;
     
     /**
      * The file was not modified locally but an updated version exists in repository.
@@ -158,6 +158,12 @@ public class FileInformation implements Serializable {
      * The file is locked elsewhere
      */
     public static final int STATUS_LOCKED_REMOTELY = 32768;
+    
+    /**
+     * The file has a modified property list
+     */
+    public static final int STATUS_VERSIONED_MODIFIEDLOCALLY_PROPERTY = STATUS_LOCKED_REMOTELY * 2;
+    public static final int STATUS_VERSIONED_MODIFIEDLOCALLY = STATUS_VERSIONED_MODIFIEDLOCALLY_CONTENT | STATUS_VERSIONED_MODIFIEDLOCALLY_PROPERTY;
     
     public static final int STATUS_ALL = ~0;
 
@@ -278,7 +284,7 @@ public class FileInformation implements Serializable {
         this(status, 0, null, isDirectory);
     }
     
-    FileInformation(int status, int propStatus, boolean isDirectory) {
+    public FileInformation(int status, int propStatus, boolean isDirectory) {
         this(status, propStatus, null, isDirectory);
     }
     

@@ -182,8 +182,7 @@ public class ShorterPaths extends Task {
                 PrintWriter pw = new PrintWriter(testProperties);
 
                 // copy extra unit.test.properties
-                @SuppressWarnings("unchecked")
-                Map<String, String> properties = getProject().getProperties();
+                Map<String,Object> properties = getProject().getProperties();
                 StringBuffer outProp = new StringBuffer();
                 for (String name : properties.keySet()) {
                     if (name.matches("test-(unit|qa-functional)-sys-prop\\..+")) {

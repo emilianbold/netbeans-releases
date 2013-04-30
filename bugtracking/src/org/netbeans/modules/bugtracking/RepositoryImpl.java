@@ -51,11 +51,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.ui.nodes.RepositoryNode;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 
 
 /**
@@ -155,10 +153,6 @@ public final class RepositoryImpl<R, Q, I> {
         return getInfo().getUrl();
     }
     
-    public Lookup getLookup() {
-        return repositoryProvider.getLookup(r);
-    }
-
     /**
      * Returns an issue with the given ID
      *
@@ -320,6 +314,12 @@ public final class RepositoryImpl<R, Q, I> {
         return queryImpl != null ? queryImpl.getQuery() : null;
     }
 
+    public KenaiProject getKenaiProject() {
+        return repositoryProvider instanceof KenaiRepositoryProvider ?
+                    ((KenaiRepositoryProvider<R, Q, I>)repositoryProvider).getKenaiProject(r) :
+                    null;
+    }
+    
     public boolean isMutable() {
         DelegatingConnector dc = BugtrackingManager.getInstance().getConnector(getConnectorId());
         assert dc != null;

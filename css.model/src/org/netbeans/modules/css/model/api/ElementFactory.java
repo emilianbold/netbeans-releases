@@ -80,6 +80,8 @@ public interface ElementFactory {
     public Body createBody();
 
     public BodyItem createBodyItem();
+    
+    public AtRule createAtRule();
 
     public Rule createRule();
 
@@ -95,11 +97,13 @@ public interface ElementFactory {
 
     public Declarations createDeclarations();
 
-    public Declarations createDeclarations(Declaration... declarations);
+    public Declarations createDeclarations(PropertyDeclaration... declarations);
 
     public Declaration createDeclaration();
+    
+    public PropertyDeclaration createPropertyDeclaration();
 
-    public Declaration createDeclaration(Property property, PropertyValue propertyValue, boolean isImportant);
+    public PropertyDeclaration createPropertyDeclaration(Property property, PropertyValue propertyValue, boolean isImportant);
 
     public Property createProperty();
 

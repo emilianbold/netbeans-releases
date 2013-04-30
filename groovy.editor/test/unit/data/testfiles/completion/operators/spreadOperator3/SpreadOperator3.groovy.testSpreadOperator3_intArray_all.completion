@@ -14,6 +14,7 @@ METHOD     byteValue()                     [PUBLIC]   byte
 METHOD     collect()                                  Collection
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
+METHOD     compare(int, int)               [STATIC,   int
 METHOD     compareTo(Character)                       int
 METHOD     compareTo(Integer)              [PUBLIC]   int
 METHOD     compareTo(Number)                          int
@@ -41,7 +42,6 @@ METHOD     findLastIndexOf(int, Closure)              int
 METHOD     findResult(Closure)                        Object
 METHOD     findResult(Object, Closure)                Object
 METHOD     floatValue()                    [PUBLIC]   float
-METHOD     getAndRemoveCacheProperties()   [STATIC]   void
 METHOD     getAt(String)                              Object
 METHOD     getChars(int, int, char[])      [STATIC]   void
 METHOD     getClass()                      [PUBLIC]   Class<?>

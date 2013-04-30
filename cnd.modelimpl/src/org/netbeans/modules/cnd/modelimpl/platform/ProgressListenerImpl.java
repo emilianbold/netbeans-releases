@@ -86,7 +86,7 @@ public class ProgressListenerImpl implements CsmProgressListener {
                                 @Override
                                 public void run() {
                                     LOG.log(Level.INFO, "Enqueue disabling Code Assistance for project {0}", project); //NOI18N
-                                    modelImpl.disableProject((ProjectBase) project);
+                                    modelImpl.disableProjectBase((ProjectBase) project);
                                 }
                             }, "disable " + project.getDisplayName()); // NOI18N
 

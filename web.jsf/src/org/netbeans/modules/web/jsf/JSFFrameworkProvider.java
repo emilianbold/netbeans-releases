@@ -127,8 +127,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static String WELCOME_JSF = "welcomeJSF.jsp";   //NOI18N
     private static String WELCOME_XHTML = "index.xhtml"; //NOI18N
     private static String WELCOME_XHTML_TEMPLATE = "/Templates/JSP_Servlet/JSP.xhtml"; //NOI18N
-    private static String TEMPLATE_XHTML = "template.xhtml"; //NOI18N
-    private static String TEMPLATE_XHTML2 = "template-jsf2.xhtml"; //NOI18N
     private static String CSS_FOLDER = "css"; //NOI18N
     private static String CSS_FOLDER2 = "resources/css"; //NOI18N
     private static String DEFAULT_CSS = "default.css"; //NOI18N
@@ -600,7 +598,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             facesConfigTemplate = JSFCatalog.RES_FACES_CONFIG_1_2;
                         }
                     }
-                    if (!Util.isAtLeastJavaEE6Web(profile) && !jsfVersion.isAtLeast(JSFVersion.JSF_2_0)) {
+                    if (!Util.isAtLeastJavaEE6Web(profile)
+                            && (jsfVersion == null || !jsfVersion.isAtLeast(JSFVersion.JSF_2_0))) {
                         createFacesConfig = true;
                     }
                 }
@@ -703,8 +702,12 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     FileObject target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_XHTML);
                     FileObject template = FileUtil.getConfigRoot().getFileObject(WELCOME_XHTML_TEMPLATE);
                     HashMap<String, Object> params = new HashMap<String, Object>();
-                    if (jsfVersion != null && jsfVersion.isAtLeast(JSFVersion.JSF_2_0)) {
-                        params.put("isJSF20", Boolean.TRUE);    //NOI18N
+                    if (jsfVersion != null) {
+                        if (jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
+                            params.put("isJSF22", Boolean.TRUE);    //NOI18N
+                        } else {
+                            params.put("isJSF20", Boolean.TRUE);    //NOI18N
+                        }
                     }
                     JSFPaletteUtilities.expandJSFTemplate(template, params, target);
                 }

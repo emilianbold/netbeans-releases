@@ -75,6 +75,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.JCheckBox;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -115,6 +116,8 @@ import org.netbeans.modules.java.hints.spiimpl.options.HintsPanelLogic.HintCateg
 import org.netbeans.modules.java.hints.spiimpl.refactoring.Utilities.ClassPathBasedHintWrapper;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.modules.options.editor.spi.OptionsFilter.Acceptor;
+import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.Hint.Kind;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -137,6 +140,8 @@ public final class HintsPanel extends javax.swing.JPanel   {
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private final ClassPathBasedHintWrapper cpBased;
     private final QueryStatus queryStatus;
+    private final boolean showHeavyInspections;
+    
     //AWT only:
     private HintMetadata toSelect = null;
     
@@ -145,9 +150,10 @@ public final class HintsPanel extends javax.swing.JPanel   {
     private boolean confirmed;
     
     @Messages("LBL_Loading=Loading...")
-    HintsPanel(@NullAllowed final OptionsFilter filter) {
+    HintsPanel(@NullAllowed final OptionsFilter filter, @NullAllowed final HintsSettings overlay) {
         this.cpBased = null;
         this.queryStatus = QueryStatus.SHOW_QUERIES;
+        this.showHeavyInspections = false;
         WORKER.post(new Runnable() {
 
             @Override
@@ -158,7 +164,10 @@ public final class HintsPanel extends javax.swing.JPanel   {
                     @Override
                     public void run() {
                         HintsPanel.this.removeAll();
-                        HintsPanel.this.init(filter, true, false, false, true);
+                        HintsPanel.this.init(filter, false, overlay != null, true, false, true, true);
+                        if (overlay != null) {
+                            HintsPanel.this.setOverlayPreferences(overlay);
+                        }
                         buttonsPanel.setVisible(false);
                         searchPanel.setVisible(false);
                         configurationsPanel.setVisible(false);
@@ -174,13 +183,15 @@ public final class HintsPanel extends javax.swing.JPanel   {
     public HintsPanel(Configuration preselected, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
         this.queryStatus = QueryStatus.ONLY_ENABLED;
-        init(null, false, true, true, true);
+        this.showHeavyInspections = true;
+        init(null, true, false, false, true, true, true);
         configCombo.setSelectedItem(preselected);
     }
     public HintsPanel(HintMetadata preselected, @NullAllowed final CustomizerContext<?, ?> cc, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
         this.queryStatus = cc == null ? QueryStatus.NEVER : QueryStatus.SHOW_QUERIES;
-        init(null, false, false, cc == null, false);
+        this.showHeavyInspections = true;
+        init(null, true, false, false, false, cc == null, false);
         select(preselected);
         configurationsPanel.setVisible(false);
         
@@ -200,13 +211,15 @@ public final class HintsPanel extends javax.swing.JPanel   {
     public HintsPanel(Preferences configurations, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
         this.queryStatus = QueryStatus.SHOW_QUERIES;
-        init(null, false, false, false, true);
-        setOverlayPreferences(configurations);
+        this.showHeavyInspections = true;
+        init(null, true, false, false, false, false, true);
+        setOverlayPreferences(HintsSettings.createPreferencesBasedHintsSettings(configurations, false, Severity.VERIFIER));
         configurationsPanel.setVisible(false);
     }
-
-    public void setOverlayPreferences(Preferences configurations) {
-        logic.setOverlayPreferences(configurations);
+    
+    public void setOverlayPreferences(HintsSettings configurations) {
+        if (logic != null)
+            logic.setOverlayPreferences(configurations);
     }
 
     public boolean hasNewHints() {
@@ -223,11 +236,11 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
     }
     
-    private void init(@NullAllowed OptionsFilter filter, boolean inOptionsDialog, boolean useConfigCombo, boolean showOkCancel, boolean showCheckBoxes) {
+    private void init(@NullAllowed OptionsFilter filter, boolean batchOnly, boolean filterSuggestions, boolean ignoreMissingFilter, boolean showSeverityCombo, boolean showOkCancel, boolean showCheckBoxes) {
         initComponents();
         scriptScrollPane.setVisible(false);
         optionsFilter = null;
-        if (!inOptionsDialog && filter==null) {
+        if (!ignoreMissingFilter && filter==null) {
             optionsFilter = new org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter(
                     searchTextField.getDocument(), new Runnable() {
         
@@ -240,11 +253,12 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
         configCombo.setModel(new ConfigurationsComboModel(true));
         configCombo.setRenderer(new ConfigurationRenderer());
-        if (useConfigCombo || inOptionsDialog) {
+//        if (useConfigCombo || inOptionsDialog) {
             configCombo.setSelectedItem(null);
-        }
+//        }
         
         descriptionTextArea.setContentType("text/html"); // NOI18N
+        descriptionTextArea.putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
         
         scriptTextArea.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-javahints"));
         scriptTextArea.setEditable(true);
@@ -295,9 +309,9 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
         toProblemCheckBox.setVisible(false);
         
-        Collection<? extends HintMetadata> hints = inOptionsDialog?filterCustom(RulesManager.getInstance().readHints(null, null, null).keySet()):Utilities.getBatchSupportedHints(cpBased).keySet();
+        Collection<? extends HintMetadata> hints = !batchOnly?filterCustom(RulesManager.getInstance().readHints(null, null, null).keySet(), filterSuggestions):Utilities.getBatchSupportedHints(cpBased).keySet();
 
-        errorTreeModel = constructTM(hints, inOptionsDialog);
+        errorTreeModel = constructTM(hints, !batchOnly && !filterSuggestions);
 
         if (filter != null) {
              ((OptionsFilter) filter).installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
@@ -306,7 +320,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
 
         initialized.set(true);
-        update(inOptionsDialog);
+        update();
         
         if (toSelect != null) {
             select(toSelect, true);
@@ -321,8 +335,8 @@ public final class HintsPanel extends javax.swing.JPanel   {
         editScriptButton.setVisible(editEnabled);
         editingButtons.setVisible(false);
         
-        severityComboBox.setVisible(useConfigCombo || inOptionsDialog);
-        severityLabel.setVisible(useConfigCombo || inOptionsDialog);
+        severityComboBox.setVisible(showSeverityCombo);
+        severityLabel.setVisible(showSeverityCombo);
         okButton.setVisible(showOkCancel);
         cancelButton.setVisible(showOkCancel);
         validate();
@@ -716,7 +730,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             setModel(errorTreeModel);
             logic.errorTreeModel = errorTreeModel;
             HintMetadata newHint = getHintByName(newIfcDO.getPrimaryFile().getNameExt());
-            HintsSettings.setEnabled(logic.getCurrentPrefernces(newHint.id), true);
+            logic.writableSettings.setEnabled(newHint, true);
             select(newHint);
             hasNewHints = true;
         } catch (IOException ex) {
@@ -841,13 +855,15 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
         return null;
     }    
-    synchronized void update(boolean inOptionsDialog) {
+    synchronized void update() {
         if (!initialized.get()) return;
+        HintsSettings overlay = null;
         if ( logic != null ) {
             logic.disconnect();
+            overlay = logic.getOverlayPreferences();
         }
         logic = new HintsPanelLogic();
-        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea, configCombo, editScriptButton, inOptionsDialog);
+        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea, configCombo, editScriptButton, overlay);
     }
     
     void cancel() {
@@ -860,7 +876,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         return logic != null ? logic.isChanged() : false;
     }
     
-    void applyChanges() {
+    public void applyChanges() {
         if (!initialized.get()) return;
         logic.applyChanges();
         logic.disconnect();
@@ -882,6 +898,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             renderer.setForeground(selected ? dr.getTextSelectionColor() : dr.getTextNonSelectionColor());
             renderer.setFont(renderer.getFont().deriveFont(Font.PLAIN));
             renderer.setOpaque(true);
+            renderer.setEnabled(tree.isEnabled());
 
             Object data = ((DefaultMutableTreeNode) value).getUserObject();
             if (data instanceof HintCategory) {
@@ -912,6 +929,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             renderer.setBackground(selected ? dr.getBackgroundSelectionColor() : dr.getBackgroundNonSelectionColor());
             renderer.setForeground(selected ? dr.getTextSelectionColor() : dr.getTextNonSelectionColor());
             renderer.setFont(renderer.getFont().deriveFont(Font.PLAIN));
+            renderer.setEnabled(tree.isEnabled());
 
             Object data = ((DefaultMutableTreeNode) value).getUserObject();
             if (data instanceof HintCategory) {
@@ -1144,6 +1162,11 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
         for (HintMetadata m : metadata) {
             if (m.options.contains(Options.NON_GUI)) continue;
+            if (m.options.contains(Options.HEAVY)) {
+                if (!showHeavyInspections) {
+                    continue;
+                }
+            }
             if (   m.options.contains(Options.QUERY)
                 && !HintCategory.CUSTOM_CATEGORY.equals(m.category)) {
                 if (queryStatus == QueryStatus.NEVER) {
@@ -1152,7 +1175,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                 if (queryStatus == QueryStatus.ONLY_ENABLED && logic != null && !logic.isEnabled(m)) {
                     continue;
                 }
-            }
+            } 
 
             HintCategory cat = cat2CatDesc.get(m.category);
 
@@ -1262,12 +1285,13 @@ public final class HintsPanel extends javax.swing.JPanel   {
         return null;
     }
 
-    private Collection<? extends HintMetadata> filterCustom(Set<HintMetadata> keySet) {
+    private Collection<? extends HintMetadata> filterCustom(Set<HintMetadata> keySet, boolean filterSuggestions) {
         ArrayList<HintMetadata> list = new ArrayList<HintMetadata>();
         for (HintMetadata hint:keySet) {
             if (HintCategory.CUSTOM_CATEGORY.equals(hint.category)) {
                 continue;
             }
+            if (hint.kind == Kind.ACTION && filterSuggestions) continue;
             list.add(hint);
         }
         return list;

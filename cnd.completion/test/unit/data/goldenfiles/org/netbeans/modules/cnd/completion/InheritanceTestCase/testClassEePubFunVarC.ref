@@ -1,2 +1,2 @@
-cPub int
-cPubFun() void
+cPub int	$	    c.cPub
+cPubFun() void	$	    c.cPubFun()

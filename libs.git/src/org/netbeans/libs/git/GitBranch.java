@@ -99,7 +99,7 @@ public final class GitBranch {
      * @return commit id of the HEAD commit in the branch.
      */
     public String getId () {
-        return id.getName();
+        return ObjectId.toString(id);
     }
     
     /**

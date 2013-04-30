@@ -2,10 +2,8 @@ Code completion result for source line:
 |formatter.println("Car:");
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CONSTRUCTO $()                             [PUBLIC]   jquery-api.xml
 CONSTRUCTO Address(street, town, country)  [PUBLIC]   typeInferenceNew.js
 CONSTRUCTO Car(color, maker): Car          [PUBLIC]   typeInferenceNew.js
-CONSTRUCTO jQuery()                        [PUBLIC]   jquery-api.xml
 CLASS      Context                         [PUBLIC]   typeInferenceNew.js
 CLASS      formatter                       [PUBLIC]   typeInferenceNew.js
 VARIABLE   object: Car                     [PUBLIC]   typeInferenceNew.js

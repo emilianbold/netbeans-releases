@@ -79,7 +79,9 @@ import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.DefaultFaceletLibraries;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -113,7 +115,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
         final Collection<Library> declaredLibraries = new ArrayList<Library>();
-        JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(context.parserResult.getSnapshot().getSource());
+        final JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(context.parserResult.getSnapshot().getSource());
         Map<String, Library> libs = Collections.emptyMap();
         if (jsfSupport != null) {
             libs = jsfSupport.getLibraries();
@@ -125,9 +127,13 @@ public class LibraryDeclarationChecker extends HintsProvider {
         //ugly, grr, the whole namespace support needs to be fixed
         final Map<String, Attribute> namespace2Attribute = new HashMap<String, Attribute>();
         Node root = result.root();
+        if (root.children().isEmpty()) {
+            Node faceletsRoot = result.root(DefaultLibraryInfo.FACELETS.getLegacyNamespace());
+            root = !faceletsRoot.children().isEmpty() ? faceletsRoot : result.root(DefaultLibraryInfo.FACELETS.getNamespace());
+        }
         final CharSequence docText = getSourceText(snapshot.getSource());
-        final String jsfNsPrefix = result.getNamespaces().get(DefaultFaceletLibraries.JSF_NS);
-        final String passthroughNsPrefix = result.getNamespaces().get(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS);
+        final String jsfNsPrefix = NamespaceUtils.getForNs(result.getNamespaces(), DefaultLibraryInfo.JSF.getNamespace());
+        final String passthroughNsPrefix = NamespaceUtils.getForNs(result.getNamespaces(), DefaultLibraryInfo.PASSTHROUGH.getNamespace());
         final boolean[] jsfUsage = new boolean[1];
         final List<Named> wrongJsfNsUsages = new ArrayList<Named>();
 
@@ -164,7 +170,6 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     }
                 }
             }
-
         };
 
         ElementUtils.visitChildren(root, prefixCollector, ElementType.OPEN_TAG);
@@ -184,7 +189,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     List<HintFix> fixes = new ArrayList<HintFix>();
                     Set<Library> libs = getLibsByPrefixes(context, getUndeclaredNamespaces(undeclaredNodes));
                     for (Library lib : libs) {
-                        FixLibDeclaration fix = new FixLibDeclaration(context.doc, lib.getDefaultPrefix(), lib);
+                        FixLibDeclaration fix = new FixLibDeclaration(context.doc, lib.getDefaultPrefix(), lib, jsfSupport.isJsf22Plus());
                         fixes.add(fix);
                     }
 
@@ -214,10 +219,11 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         for (String namespace : declaredNamespaces) {
-            Library lib = libs.get(namespace);
+            Library lib = NamespaceUtils.getForNs(libs, namespace);
             if (lib != null) {
                 // http://java.sun.com/jsf/passthrough usage needs to be resolved on base of all declared libraries
-                if (!DefaultFaceletLibraries.JSF_PASSTHROUGH_NS.equals(lib.getNamespace())) {
+                if (!(DefaultLibraryInfo.PASSTHROUGH.getNamespace().equals(lib.getNamespace())
+                        || DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace().equals(lib.getNamespace()))) {
                     declaredLibraries.add(lib);
                 }
             } else {
@@ -236,12 +242,15 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         //2. find for unused declarations
-        final boolean declaredPassthroughOrJsf = declaredNamespaces.contains(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS)
-                || declaredNamespaces.contains(DefaultFaceletLibraries.JSF_NS);
+        final boolean declaredPassthroughOrJsf = NamespaceUtils.containsNsOf(declaredNamespaces, DefaultLibraryInfo.JSF)
+                || NamespaceUtils.containsNsOf(declaredNamespaces, DefaultLibraryInfo.PASSTHROUGH);
         final boolean[] passthroughUsage = new boolean[1];
         final Collection<OffsetRange> ranges = new ArrayList<OffsetRange>();
         for (Library lib : declaredLibraries) {
             Node rootNode = result.root(lib.getNamespace());
+            if (lib.getLegacyNamespace() != null && (rootNode == null || rootNode.children().isEmpty())) {
+                rootNode = result.root(lib.getLegacyNamespace());
+            }
             if (rootNode == null) {
                 continue; //no parse result for this namespace, the namespace is not declared
             }
@@ -275,7 +284,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
             usages[0] += isFunctionLibraryPrefixUsedInEL(context, lib, docText) ? 1 : 0;
 
             // http://java.sun.com/jsf namespace handling
-            usages[0] += DefaultFaceletLibraries.JSF_NS.equals(lib.getNamespace()) && jsfUsage[0] ? 1 : 0;
+            usages[0] += (DefaultLibraryInfo.JSF.getNamespace().equals(lib.getNamespace()) || DefaultLibraryInfo.JSF.getLegacyNamespace().equals(lib.getNamespace())) && jsfUsage[0] ? 1 : 0;
 
             if (usages[0] == 0) {
                 //unused declaration
@@ -284,10 +293,10 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         //2b. find for unused declaration of http://java.sun.com/jsf/passthrough
-        if (declaredNamespaces.contains(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS) && !passthroughUsage[0]) {
+        if (NamespaceUtils.containsNsOf(declaredNamespaces, DefaultLibraryInfo.PASSTHROUGH) && !passthroughUsage[0]) {
             addUnusedLibrary(ranges,
                     namespace2Attribute,
-                    libs.get(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS),
+                    libs.get(DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace()),
                     snapshot,
                     docText);
         }
@@ -331,7 +340,8 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
     private void addUnusedLibrary(Collection<OffsetRange> ranges, Map<String, Attribute> namespace2Attribute,
             Library lib, Snapshot snapshot, CharSequence docText) {
-        Attribute declAttr = namespace2Attribute.get(lib.getNamespace());
+        Attribute declAttr = namespace2Attribute.get(lib.getNamespace()) != null ?
+                namespace2Attribute.get(lib.getNamespace()) : namespace2Attribute.get(lib.getLegacyNamespace());
         if (declAttr != null) {
             int from = declAttr.nameOffset();
             int to = declAttr.valueOffset() + declAttr.value().length();
@@ -404,8 +414,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
     //find all embedded EL token sequences in the source code and check if the
     //prefix is used in any of them
     private static boolean isFunctionLibraryPrefixUsedInEL(RuleContext context, Library lib, CharSequence sourceText) {
-        String libraryPrefix = ((HtmlParserResult)context.parserResult).getNamespaces().get(lib.getNamespace());
-
+        String libraryPrefix = NamespaceUtils.getForNs(((HtmlParserResult)context.parserResult).getNamespaces(), lib.getNamespace());
         TokenHierarchy<CharSequence> th = TokenHierarchy.create(sourceText, Language.find("text/xhtml"));
         TokenSequence<?> ts = th.tokenSequence();
         ts.moveStart();

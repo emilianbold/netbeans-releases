@@ -59,6 +59,7 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
     private static final String J2EE_NS = "http://java.sun.com/xml/ns/j2ee"; //NOI18N
     private static final String JAVAEE_NS = "http://java.sun.com/xml/ns/javaee"; //NOI18N
     private static final String XML_NS = "http://www.w3.org/2001/XMLSchema"; //NOI18N
+    private static final String NEW_JAVAEE_NS = "http://xmlns.jcp.org/xml/ns/javaee"; //NOI18N
     private static final String RESOURCE_PATH = "nbres:/org/netbeans/modules/j2ee/ddloaders/catalog/resources/"; //NO18N 
     
     private List<SchemaInfo> schemas = new ArrayList<SchemaInfo>();
@@ -76,43 +77,59 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
         schemas.add(new SchemaInfo("application-client_1_4.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("application-client_5.xsd", JAVAEE_NS));
         schemas.add(new SchemaInfo("application-client_6.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("application-client_7.xsd", NEW_JAVAEE_NS));
         // application
         schemas.add(new SchemaInfo("application_1_4.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("application_5.xsd", JAVAEE_NS));
         schemas.add(new SchemaInfo("application_6.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("application_7.xsd", NEW_JAVAEE_NS));
         // web services
         schemas.add(new SchemaInfo("j2ee_web_services_1_1.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("javaee_web_services_1_2.xsd", JAVAEE_NS));
         schemas.add(new SchemaInfo("javaee_web_services_1_3.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("javaee_web_services_1_4.xsd", NEW_JAVAEE_NS));
         // web services client
         schemas.add(new SchemaInfo("j2ee_web_services_client_1_1.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("javaee_web_services_client_1_2.xsd", JAVAEE_NS));
         schemas.add(new SchemaInfo("javaee_web_services_client_1_3.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("javaee_web_services_client_1_4.xsd", NEW_JAVAEE_NS));
         // JCA connector 1.5
         schemas.add(new SchemaInfo("connector_1_5.xsd", J2EE_NS));
+        schemas.add(new SchemaInfo("connector_1_7.xsd", NEW_JAVAEE_NS));
         // ejb-jar
         schemas.add(new SchemaInfo("ejb-jar_2_1.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("ejb-jar_3_0.xsd", JAVAEE_NS));
         schemas.add(new SchemaInfo("ejb-jar_3_1.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("ejb-jar_3_2.xsd", NEW_JAVAEE_NS));
         // web-app
         schemas.add(new SchemaInfo("web-app_2_4.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("web-app_2_5.xsd", JAVAEE_NS));
         schemas.add(new SchemaInfo("web-app_3_0.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("web-app_3_1.xsd", NEW_JAVAEE_NS));
+
         schemas.add(new SchemaInfo("web-common_3_0.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("web-common_3_1.xsd", NEW_JAVAEE_NS));
+        
         schemas.add(new SchemaInfo("web-fragment_3_0.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("web-fragment_3_1.xsd", NEW_JAVAEE_NS));
         // jsp
         schemas.add(new SchemaInfo("jsp_2_0.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("jsp_2_1.xsd", JAVAEE_NS));
         schemas.add(new SchemaInfo("jsp_2_2.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("jsp_2_3.xsd", NEW_JAVAEE_NS));
         // j2ee and java ee schemas
         schemas.add(new SchemaInfo("j2ee_1_4.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("javaee_5.xsd", JAVAEE_NS));
         schemas.add(new SchemaInfo("javaee_6.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("javaee_7.xsd", NEW_JAVAEE_NS));
         // web 2.2 and 2.3 dtds
         schemas.add(new SchemaInfo("web-app_2_2.dtd", "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN", true)); //NO18N
         schemas.add(new SchemaInfo("web-app_2_3.dtd", "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN", true)); //NO18N
         // cdi
         schemas.add(new SchemaInfo("beans_1_0.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("beans_1_1.xsd", NEW_JAVAEE_NS));
+        // permissions
+        schemas.add(new SchemaInfo("permissions_7.xsd", NEW_JAVAEE_NS));
        
     }
     

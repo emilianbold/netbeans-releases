@@ -44,7 +44,6 @@
 package org.netbeans.core.multitabs.impl;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -58,7 +57,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.swing.tabcontrol.TabData;
@@ -128,6 +126,17 @@ public class TabTable extends JTable {
             }
         } else if( "Nimbus".equals( lafId ) ) { //NOI18N
             setShowGrid( true );
+            setBorder( BorderFactory.createLineBorder( getGridColor(), 1) );
+        } else if( "Aqua".equals( lafId ) ) { //NOI18N
+            setShowGrid( true );
+            Color background = UIManager.getColor( "TabbedPane.highlight"); //NOI18N
+            Color highglightBackground = UIManager.getColor( "TabbedPane.background" ); //NOI18N
+            if( null != background && null != highglightBackground ) {
+                setBackground( background );
+                setSelectionBackground( highglightBackground );
+                setSelectionForeground( getForeground() );
+                setGridColor( highglightBackground.darker() );
+            }
             setBorder( BorderFactory.createLineBorder( getGridColor(), 1) );
         }
     }

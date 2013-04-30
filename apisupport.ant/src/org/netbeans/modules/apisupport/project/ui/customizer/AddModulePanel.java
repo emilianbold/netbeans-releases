@@ -40,7 +40,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
+ * 
+ * Portions Copyrighted 2013 markiewb@netbeans.org
+*/
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
@@ -103,7 +105,26 @@ public final class AddModulePanel extends JPanel {
     private Timer timer;
     
     public static ModuleDependency[] selectDependencies(final SingleModuleProperties props) {
-        final AddModulePanel addPanel = new AddModulePanel(props);
+        // keep backwards compatibility
+        return selectDependencies(props, null);
+    }
+
+    /**
+     * 
+     * @param props
+     * @param initialFilterText initial filter text or null if not given
+     * @return 
+     */
+    public static ModuleDependency[] selectDependencies(final SingleModuleProperties props, final String initialFilterText) {
+        final AddModulePanel addPanel;
+        if (null != initialFilterText) {
+            // init dialog with filter text
+            addPanel = new AddModulePanel(props, initialFilterText);
+        }
+        else{
+            // keep backwards compatibility
+            addPanel = new AddModulePanel(props);
+        }
         final DialogDescriptor descriptor = new DialogDescriptor(addPanel,
                 getMessage("CTL_AddModuleDependencyTitle"));
         descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel"));
@@ -132,10 +153,14 @@ public final class AddModulePanel extends JPanel {
     }
     
     public AddModulePanel(final SingleModuleProperties props) {
+        this(props, FILTER_DESCRIPTION);
+    }
+
+    private AddModulePanel(final SingleModuleProperties props, String initialString) {
         this.props = props;
         initComponents();
         initAccessibility();
-        filterValue.setText(FILTER_DESCRIPTION);
+        filterValue.setText(initialString);
         fillUpUniverseModules();
         moduleList.setCellRenderer(CustomizerComponentFactory.getDependencyCellRenderer(false));
         moduleList.addListSelectionListener(new ListSelectionListener() {

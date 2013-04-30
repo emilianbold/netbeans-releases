@@ -62,6 +62,11 @@ public class CreateMethodTest extends ErrorHintsTestBase {
     public CreateMethodTest(String name) {
         super(name);
     }
+
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
     
     public void testMoreMethods() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {public void test() {test(1);}}", 103 - 48, "CreateMethodFix:test(int i)void:test.Test");

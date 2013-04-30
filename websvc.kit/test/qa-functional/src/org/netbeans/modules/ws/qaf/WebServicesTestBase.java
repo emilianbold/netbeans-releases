@@ -133,8 +133,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         public String getProjectTypeName() {
             switch (this) {
                 case JAVASE_APPLICATION:
-                    //Java Application
-                    return Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard/emptyJ2SE.xml");
+                    return "Java Application";
                 case WEB:
                     //Web Application
                     return Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", "Templates/Project/Web/emptyWeb.xml");
@@ -597,6 +596,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         String webLabel = "Web Applications";
         Node appsNode = null;
         switch (getProjectType()) {
+            case APPCLIENT:
             case SAMPLE:
             case WEB:
             case MAVEN_WEB:
@@ -615,9 +615,6 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 } else {
                     appsNode = new Node(serverNode, applicationsLabel + "|" + "EJB Modules");
                 }
-                break;
-            case APPCLIENT:
-                appsNode = new Node(serverNode, applicationsLabel + "|" + "App Client Modules");
                 break;
         }
         appsNode.expand();
@@ -729,6 +726,12 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         } else {
             //Ant projects
             oto.waitText("(total time: "); //NOI18N
+            if (actionName.contains("clean") && oto.getText().contains("Unable to delete")) {
+                // repeat clean if file is locked
+                new EventTool().waitNoEvent(2000);
+                performProjectAction(projectName, actionName);
+                return;
+            }
             dumpOutput();
             assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
         }

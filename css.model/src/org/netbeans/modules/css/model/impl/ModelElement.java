@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -51,7 +49,6 @@ import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.model.api.Media;
 import org.netbeans.modules.css.model.api.Rule;
-import org.netbeans.modules.css.model.api.semantic.PModel;
 import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.ElementListener;
 import org.netbeans.modules.css.model.api.Model;
@@ -59,7 +56,6 @@ import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.PlainElement;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.web.common.api.LexerUtils;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -67,7 +63,7 @@ import org.openide.util.Exceptions;
  */
 public abstract class ModelElement implements Element {
 
-    private final List<ClassElement> CLASSELEMENTS = new ArrayList<ClassElement>();
+    private final List<ClassElement> CLASSELEMENTS = new ArrayList<>();
     private Collection<ElementListener> LISTENERS;
     protected final Model model;
     private Node node;
@@ -166,11 +162,6 @@ public abstract class ModelElement implements Element {
     }
 
     @Override
-    public Collection<? extends PModel> getSemanticModels() {
-        return Collections.emptyList();
-    }
-
-    @Override
     public int getStartOffset() {
         return node != null ? node.from() : -1;
     }
@@ -183,7 +174,7 @@ public abstract class ModelElement implements Element {
     @Override
     public synchronized void addElementListener(ElementListener listener) {
         if (LISTENERS == null) {
-            LISTENERS = new ArrayList<ElementListener>();
+            LISTENERS = new ArrayList<>();
             LISTENERS.add(listener);
         }
     }
@@ -279,7 +270,7 @@ public abstract class ModelElement implements Element {
         Class clazz = getModelClass(e);
         ClassElement ce = new ClassElement(clazz, e);
         ClassElement old = CLASSELEMENTS.set(index, ce);
-        if (old.getElement() != null) {
+        if (old != null && old.getElement() != null) {
             //the ClassElement may contain just the placeholder so no element
             fireElementRemoved(old.getElement());
         }
@@ -290,7 +281,7 @@ public abstract class ModelElement implements Element {
 
     @Override
     public Iterator<Element> childrenIterator() {
-        List<Element> elements = new ArrayList<Element>();
+        List<Element> elements = new ArrayList<>();
         for (ClassElement ce : CLASSELEMENTS) {
             elements.add(ce.getElement());
         }

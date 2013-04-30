@@ -135,6 +135,7 @@ public class RunOffEDTTest extends NbTestCase {
         assertTrue(passed.get());
     }
 
+    @RandomlyFails // NB-Core-Build #9702, #9871, #9876, #9895, #9938: Unstable
     public void testCallerBlockedUntilCanceledOperationFinished() throws Exception {
         final R r = new R();
         r.l = new CountDownLatch(1);

@@ -119,11 +119,13 @@ import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.test.Utilities.TestLookup;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.MimeTypes;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.hints.Hint.Kind;
@@ -189,6 +191,7 @@ public class HintTest {
     private final FileObject buildRoot;
     private final FileObject cache;
     private final Preferences testPreferences;
+    private final HintsSettings hintSettings;
     private final List<FileObject> checkCompilable = new ArrayList<FileObject>();
     private String sourceLevel = "1.5";
     private Character caretMarker;
@@ -242,44 +245,23 @@ public class HintTest {
 
         TreeLoader.DISABLE_CONFINEMENT_TEST = true;
         testPreferences = new TempPreferences();
-        HintsSettings.setPreferencesOverride(new Map<String, Preferences>() {
-            @Override public int size() {
-                throw new UnsupportedOperationException("Not supported yet.");
+        hintSettings = new HintsSettings() {
+            @Override public boolean isEnabled(HintMetadata hint) {
+                return true;
             }
-            @Override public boolean isEmpty() {
-                throw new UnsupportedOperationException("Not supported yet.");
+            @Override public void setEnabled(HintMetadata hint, boolean value) {
+                throw new UnsupportedOperationException("Not supported.");
             }
-            @Override public boolean containsKey(Object key) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            @Override public boolean containsValue(Object value) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            @Override public Preferences get(Object key) {
+            @Override public Preferences getHintPreferences(HintMetadata hint) {
                 return testPreferences;
             }
-            @Override public Preferences put(String key, Preferences value) {
-                throw new UnsupportedOperationException("Not supported yet.");
+            @Override public Severity getSeverity(HintMetadata hint) {
+                return hint.severity;
             }
-            @Override public Preferences remove(Object key) {
-                throw new UnsupportedOperationException("Not supported yet.");
+            @Override public void setSeverity(HintMetadata hint, Severity severity) {
+                throw new UnsupportedOperationException("Not supported.");
             }
-            @Override public void putAll(Map<? extends String, ? extends Preferences> m) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            @Override public void clear() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            @Override public Set<String> keySet() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            @Override public Collection<Preferences> values() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            @Override public Set<Entry<String, Preferences>> entrySet() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        });
+        };
 
         workDir = getWorkDir();
         deleteSubFiles(workDir);
@@ -364,7 +346,7 @@ public class HintTest {
     public HintTest input(String fileName, String code) throws Exception {
         return input(fileName, code, true);
     }
-
+    
     /**Create a test file. Any number of files can be created for one test, but the hint
      * will be run only on the first one.
      *
@@ -454,13 +436,27 @@ public class HintTest {
         this.testPreferences.putBoolean(preferencesKey, value);
         return this;
     }
-
+    
     /**Runs the given hint(s) on the first file written by a {@code input} method.
      *
      * @param hint all hints in this class will be run on the file
      * @return a wrapper over the hint output that allows verifying results of the hint
      */
     public HintOutput run(Class<?> hint) throws Exception {
+        return run(hint, null);
+    }
+
+    /**Runs the given hint(s) on the first file written by a {@code input} method.
+     * Runs only hints with the specified {@code hintCode}. Null hintCode includes
+     * all hints from the class
+     *
+     * @param hint all hints in this class will be run on the file
+     * @param hintCode if not {@code null}, only hints with the same id will be run
+     * @return a wrapper over the hint output that allows verifying results of the hint
+     */
+    public HintOutput run(Class<?> hint, String hintCode) throws Exception {
+        IndexingManager.getDefault().refreshIndexAndWait(sourceRoot.toURL(), null);
+        
         for (FileObject file : checkCompilable) {
             ensureCompilable(file);
         }
@@ -484,6 +480,9 @@ public class HintTest {
         final Set<ErrorDescription> requiresJavaFix = Collections.newSetFromMap(new IdentityHashMap<ErrorDescription, Boolean>());
 
         for (final Entry<HintMetadata, Collection<HintDescription>> e : hints.entrySet()) {
+            if (null != hintCode && !e.getKey().id.equals(hintCode)) {
+                continue;
+            }
             if (   e.getKey().options.contains(Options.NO_BATCH)
                 || e.getKey().options.contains(Options.QUERY)
                 || e.getKey().kind == Kind.ACTION) {
@@ -579,7 +578,7 @@ public class HintTest {
     }
 
     private Map<HintDescription, List<ErrorDescription>> computeErrors(CompilationInfo info, Iterable<? extends HintDescription> hints, AtomicBoolean cancel) {
-        return new HintsInvoker(info, caret, cancel).computeHints(info, new TreePath(info.getCompilationUnit()), hints, new LinkedList<MessageImpl>());
+        return new HintsInvoker(hintSettings, caret, cancel).computeHints(info, new TreePath(info.getCompilationUnit()), hints, new LinkedList<MessageImpl>());
     }
 
     FileObject getSourceRoot() {
@@ -851,7 +850,7 @@ public class HintTest {
 
             return this;
         }
-
+        
         /**Find a specific warning.
          *
          * @param warning the warning to find - must be equivalent to {@code toString()}
@@ -1065,7 +1064,7 @@ public class HintTest {
         public AppliedFix assertOutput(String fileName, String code) throws Exception {
             FileObject toCheck = sourceRoot.getFileObject(fileName);
 
-            assertNotNull(toCheck);
+            assertNotNull("Required file: " + fileName + " not found", toCheck);
 
             DataObject toCheckDO = DataObject.find(toCheck);
             EditorCookie ec = toCheckDO.getLookup().lookup(EditorCookie.class);

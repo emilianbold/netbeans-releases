@@ -91,8 +91,6 @@ public class RestServicesNodeFactory implements NodeFactory {
     @Override
     public NodeList createNodes(Project p) {
         assert p != null;
-
-        RestUtils.upgrade(p);
         return new RestNodeList(p);
     }
     
@@ -206,18 +204,17 @@ public class RestServicesNodeFactory implements NodeFactory {
 
         @Override
         public void addNotify() {
-            RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-            if (restSupport != null) {
-                getModel();
-                restSupport.addModelListener(this);
+            RestServicesModel m = getModel();
+            if (m != null) {
+                m.addPropertyChangeListener(this);
             }
         }
 
         @Override
         public void removeNotify() {
-            RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-            if (restSupport != null) {
-                restSupport.removeModelListener(this);
+            RestServicesModel m = getModel();
+            if (m != null) {
+                m.removePropertyChangeListener(this);
             }
         }
 

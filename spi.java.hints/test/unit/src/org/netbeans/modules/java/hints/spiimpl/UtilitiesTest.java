@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.hints.spiimpl;
 
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Scope;
@@ -70,6 +71,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.DiffContext;
 
@@ -342,6 +344,7 @@ public class UtilitiesTest extends TestBase {
         assertPositions(result, positions[0], code, "foo", "foo bar");
     }
 
+    @RandomlyFails
     public void testErrorsForPatterns2() throws Exception {
         prepareTest("test/Test.java", "package test; public class Test{}");
 
@@ -526,6 +529,22 @@ public class UtilitiesTest extends TestBase {
 
         assertEquals(Kind.METHOD, result.getKind());
         assertEquals(methodCode.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " ").trim());
+    }
+    
+    public void testLambdaExpression1() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "($args$) -> $expression", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.LAMBDA_EXPRESSION);
+
+        LambdaExpressionTree let = (LambdaExpressionTree) result;
+        
+        assertEquals(Kind.IDENTIFIER, let.getParameters().get(0).getKind());
+        String golden = "($args$)->$expression";
+        
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString());
     }
     
     public void testToHumanReadableTime() {

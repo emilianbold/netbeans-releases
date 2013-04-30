@@ -41,11 +41,17 @@
  */
 package org.netbeans.modules.css.editor.module.spi;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
+import org.netbeans.modules.css.lib.api.CssTokenIdCategory;
 import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeUtil;
 
 /**
  * A code completion context. An instance of this class is passed to the CssModule.getCompletionProposals() method.
@@ -62,16 +68,18 @@ public class CompletionContext extends EditorFeatureContext {
     private final Node activeNode;
     private final TokenSequence<CssTokenId> tokenSequence;
     private final Node activeTokenNode;
+    private final int tsIndex;
 
     /**
      * @doto use class accessor so clients cannot instantiate this.
      */
     public CompletionContext(Node activeNode, Node activeTokeNode, CssParserResult result, 
-            TokenSequence<CssTokenId> tokenSequence, int activeTokenDiff, 
+            TokenSequence<CssTokenId> tokenSequence, int tsIndex, int activeTokenDiff, 
             QueryType queryType, int caretOffset, int anchorOffset, int embeddedCaretOffset, 
             int embeddedAnchorOffset, String prefix) {
         super(result, caretOffset);
         this.tokenSequence = tokenSequence;
+        this.tsIndex = tsIndex;
         this.activeNode = activeNode;
         this.activeTokenNode = activeTokeNode;
         this.queryType = queryType;
@@ -104,7 +112,62 @@ public class CompletionContext extends EditorFeatureContext {
     public Node getActiveNode() {
         return activeNode;
     }
+    
+    /**
+     * Gets the {@link CssTokenId} of the {@link Token} at the caret offset.
+     * 
+     * @since 1.51
+     * @return the token id or null if no token can be achieved.
+     */
+    public CssTokenId getActiveTokenId() {
+        TokenSequence<CssTokenId> ts = getTokenSequence();
+        restoreTokenSequence();
+        return ts.token() == null ? null : ts.token().id();
+    }
+    
+    /**
+     * If the current token is WS, then this method scans tokens bacwards until it finds
+     * a non white token. Then it finds corresponding parse tree node for the end offset
+     * of the found non white token.
+     * 
+     * @since 1.51
+     * @return the found node or root node, never null
+     */
+    @NonNull
+    public Node getNodeForNonWhiteTokenBackward() {
+        TokenSequence<CssTokenId> ts = getTokenSequence();
+        restoreTokenSequence();
+        try {
+            for(;;) {
+                Token t = ts.token();
+                if(t == null) {
+                    //empty file
+                    return getParseTreeRoot();
+                }
+                if(!CssTokenIdCategory.WHITESPACES.name().toLowerCase().equals(t.id().primaryCategory())) {
+                    return NodeUtil.findNonTokenNodeAtOffset(getParseTreeRoot(), ts.offset() + t.length());
+                } else {
+                    if(!ts.movePrevious()) {
+                        break;
+                    }
+                }
+            }
+            return getParseTreeRoot();
+        } finally {
+            //reposition the token sequence back
+            restoreTokenSequence();
+        }
+    }
 
+    /**
+     * Restores the {@link TokenSequence} obtained by {@link #getTokenSequence()} to the original state.
+     * @since 1.51
+     */
+    public void restoreTokenSequence() {
+        getTokenSequence().moveIndex(tsIndex);
+        getTokenSequence().moveNext();
+    }
+    
     /**
      * @return the top most parse tree node of NodeType.token for the getEmbeddedCaretOffset() position
      */

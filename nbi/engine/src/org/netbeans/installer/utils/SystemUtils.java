@@ -93,15 +93,11 @@ public final class SystemUtils {
         parsed = parsed.replace("\\", separator);
         parsed = parsed.replace("/", separator);
         
-        try {
-            if (parsed.contains(separator + ".." + separator) ||
-                    parsed.contains(separator + "." + separator) ||
-                    parsed.endsWith(separator + "..") ||
-                    parsed.endsWith(separator + ".")) {
-                return new File(parsed).getCanonicalFile();
-            }
-        } catch (IOException e) {
-            ErrorManager.notifyDebug("Could not get the cannonical path", e);
+        if (parsed.contains(separator + ".." + separator) ||
+                parsed.contains(separator + "." + separator) ||
+                parsed.endsWith(separator + "..") ||
+                parsed.endsWith(separator + ".")) {
+            return FileUtils.getNormalizedPathFile(new File(parsed));
         }
         
         return new File(parsed).getAbsoluteFile();

@@ -253,6 +253,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.UPTODATE));
     }
     
+    @RandomlyFails
     public void testLogExtCmd () throws Exception {
         waitForInitialScan();
         FileChangeAdapter fca = new FileChangeAdapter();

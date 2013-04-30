@@ -44,6 +44,8 @@ package org.netbeans.modules.maven.api.output;
 
 import java.awt.Color;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.project.Project;
 import org.openide.windows.OutputListener;
 
 /**
@@ -58,6 +60,7 @@ public final class OutputVisitor {
     private String line;
     private boolean skipLine = false;
     private Color color;
+    private Context context;
     
     /**
      * property for success Action. Holds question text.
@@ -73,6 +76,11 @@ public final class OutputVisitor {
     /** Creates a new instance of OutputVisitor */
     public OutputVisitor() {
     }
+    
+    /** Creates a new instance of OutputVisitor */
+    public OutputVisitor(Context context) {
+        this.context = context;
+    }
 
     /**
      * not to be called by the OutputProcessors.
@@ -86,7 +94,6 @@ public final class OutputVisitor {
         color = null;
     }
     
-
     public OutputListener getOutputListener() {
         return outputListener;
     }
@@ -156,4 +163,14 @@ public final class OutputVisitor {
         this.color = color;
     }
     
+    public @CheckForNull Context getContext() {
+        return context;
+    }
+
+    public static interface Context {
+
+        @CheckForNull Project getCurrentProject();
+        
+    }
+        
 }

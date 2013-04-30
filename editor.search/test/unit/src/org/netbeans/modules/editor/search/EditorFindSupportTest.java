@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.editor.search;
 
-import org.netbeans.modules.editor.search.EditorFindSupport;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JTextArea;
@@ -74,7 +73,7 @@ public class EditorFindSupportTest {
      */
     @Test
     public void testReplaceAllFinishes_165497_a() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "ahoj");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "ahoj");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -90,6 +89,7 @@ public class EditorFindSupportTest {
         final EditorFindSupport instance = EditorFindSupport.getInstance();
         final boolean [] finished = new boolean[1];
         Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
                 instance.replaceAllImpl(props,new JTextArea("0123456789 ahoj svete"));
                 finished[0] = true;
@@ -107,7 +107,7 @@ public class EditorFindSupportTest {
      */
     @Test
     public void testReplaceAllFinishes_165497_b() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "ahoj");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "ahoj");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -123,6 +123,7 @@ public class EditorFindSupportTest {
         final EditorFindSupport instance = EditorFindSupport.getInstance();
         final boolean [] finished = new boolean[1];
         Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
                 instance.replaceAllImpl(props,new JTextArea("0123456789 ahoj svete"));
                 finished[0] = true;
@@ -141,7 +142,7 @@ public class EditorFindSupportTest {
      */
     @Test
     public void testReplaceAllFinishes_165497_c() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "ahoj");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "ahoj");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -157,6 +158,7 @@ public class EditorFindSupportTest {
         final EditorFindSupport instance = EditorFindSupport.getInstance();
         final boolean [] finished = new boolean[1];
         Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
                 instance.replaceAllImpl(props,new JTextArea("0123456789 ahoj svete"));
                 finished[0] = true;
@@ -174,7 +176,7 @@ public class EditorFindSupportTest {
      */
     @Test
     public void testReplaceAllFinishes_165497_d() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "ahoj");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "ahoj");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -190,6 +192,7 @@ public class EditorFindSupportTest {
         final EditorFindSupport instance = EditorFindSupport.getInstance();
         final boolean [] finished = new boolean[1];
         Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
                 instance.replaceAllImpl(props,new JTextArea("0123456789 ahoj svete"));
                 finished[0] = true;
@@ -207,7 +210,7 @@ public class EditorFindSupportTest {
      */
     @Test
     public void testReplaceAllFinishes_165497_e() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "a");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "a");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -223,6 +226,7 @@ public class EditorFindSupportTest {
         final EditorFindSupport instance = EditorFindSupport.getInstance();
         final boolean [] finished = new boolean[1];
         Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
                 JTextArea ta = new JTextArea("aaaa");
                 ta.setCaretPosition(2);
@@ -243,7 +247,7 @@ public class EditorFindSupportTest {
      */
     @Test
     public void testReplaceAllFinishes_165497_f() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "a");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "A");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -259,6 +263,7 @@ public class EditorFindSupportTest {
         final EditorFindSupport instance = EditorFindSupport.getInstance();
         final boolean [] finished = new boolean[1];
         Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
                 JTextArea ta = new JTextArea("aaaa");
                 instance.replaceAllImpl(props, ta);
@@ -277,7 +282,7 @@ public class EditorFindSupportTest {
      */
     @Test
     public void testReplaceAll1() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "ahoj");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "xxx");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -301,7 +306,7 @@ public class EditorFindSupportTest {
      */
     @Test
     public void testReplaceAll2() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "ahoj");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "xxx");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -350,7 +355,7 @@ public class EditorFindSupportTest {
      */
     @Test
     public void testReplaceAll4() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "ahoj");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "xxx");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -402,7 +407,7 @@ public class EditorFindSupportTest {
      */
     @Test
     public void testReplaceAll6() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "ahoj");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "xxx");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -426,7 +431,7 @@ public class EditorFindSupportTest {
      */
     @Test
     public void testReplaceAll7() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "ahoj");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "xxx");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -450,7 +455,7 @@ public class EditorFindSupportTest {
      */
     @Test
     public void testReplaceAll8() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "a");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "b");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -473,7 +478,7 @@ public class EditorFindSupportTest {
      */
     @Test
     public void testReplaceAll9() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "a");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "b");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -497,7 +502,7 @@ public class EditorFindSupportTest {
      */
     @Test
     public void testReplaceAll10() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "a");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "b");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -543,7 +548,7 @@ public class EditorFindSupportTest {
 //    }
     @Test
     public void testReplaceFind() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "a");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "b");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -572,7 +577,7 @@ public class EditorFindSupportTest {
     
     @Test
     public void testReplaceFindFocused() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "a");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "b");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
@@ -602,7 +607,7 @@ public class EditorFindSupportTest {
     
     @Test
     public void testReplaceFindNewLine() throws Exception {
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(EditorFindSupport.FIND_WHAT, "foo");
         props.put(EditorFindSupport.FIND_REPLACE_WITH, "bar");
         props.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);

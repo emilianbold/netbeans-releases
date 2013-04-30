@@ -124,7 +124,7 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
             if (browser.isEmbedded()) {
                 browserSupport = BrowserSupport.getDefaultEmbedded();
             } else {
-                browserSupport = BrowserSupport.create(browser, false);
+                browserSupport = BrowserSupport.create(browser);
             }
         }
         return browserSupport;

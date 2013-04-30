@@ -53,6 +53,7 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.optional.NonProxyHostsHelper;
 
 /**
  *
@@ -76,12 +77,39 @@ public final class WLConnectionSupport {
 
             String portable = System.getProperty(PORTABLE_OBJECT_PROPERTY);
 
+            String originalNonProxyHosts = System.getProperty(NonProxyHostsHelper.HTTP_NON_PROXY_HOSTS);
+            String configuredNonProxyHosts = NonProxyHostsHelper.getNonProxyHosts();
+
+            boolean nonProxyHostsChanged = false;
+            if (!configuredNonProxyHosts.isEmpty()) {
+                String nonProxyHosts;
+                if (originalNonProxyHosts != null) {
+                    nonProxyHosts = NonProxyHostsHelper.compactNonProxyHosts(
+                            originalNonProxyHosts + "," + configuredNonProxyHosts); // NOI18N
+                } else {
+                    nonProxyHosts = configuredNonProxyHosts;
+                }
+                if (!nonProxyHosts.equals(originalNonProxyHosts)) {
+                    nonProxyHostsChanged = true;
+                    System.setProperty(NonProxyHostsHelper.HTTP_NON_PROXY_HOSTS, nonProxyHosts);
+                }
+            }
+
             Thread.currentThread().setContextClassLoader(
                     WLDeploymentFactory.getInstance().getClassLoader(deploymentManager));
             try {
                 return action.call();
             } finally {
                 Thread.currentThread().setContextClassLoader(originalLoader);
+
+                // this is not really safe considering other threads, but it is the best we can do
+                if (nonProxyHostsChanged) {
+                    if (originalNonProxyHosts == null) {
+                        System.clearProperty(NonProxyHostsHelper.HTTP_NON_PROXY_HOSTS);
+                    } else {
+                        System.setProperty(NonProxyHostsHelper.HTTP_NON_PROXY_HOSTS, originalNonProxyHosts);
+                    }
+                }
 
                 // this is not really safe considering other threads, but it is the best we can do
                 if (portable == null) {

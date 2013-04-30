@@ -61,7 +61,12 @@ import org.openide.util.RequestProcessor.Task;
 @ActionID(id = "org.netbeans.modules.git.ui.history.SearchHistoryAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_SearchHistoryAction_Name")
 public class SearchHistoryAction extends MultipleRepositoryAction {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/search_history.png"; //NOI18N
 
+    public SearchHistoryAction () {
+        super(ICON_RESOURCE);
+    }
+    
     @Override
     protected Task performAction (final File repository, final File[] roots, final VCSContext context) {
         openSearch(repository, roots, Utils.getContextDisplayName(context));

@@ -41,22 +41,14 @@
  */
 package org.netbeans.modules.glassfish.common.ui;
 
-import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 
 /**
@@ -108,70 +100,40 @@ public class JavaPlatformsComboBox extends JComboBox {
         public String toString() {
             return platform.getDisplayName();
         }
+
+        /**
+         * Check if this platform is the default platform.
+         * <p/>
+         * @return Value of <code>true</code> if this platform is the default
+         *         platform or <code>false</code> otherwise.
+         */
+        public boolean isDefault() {
+            return platform.equals(JavaPlatform.getDefault());
+        }
+
     }
 
     /**
-     * Empty platform class to represent empty selection on the combo box.
+     * Comparator for <code>Platform</code> instances to be sorted in combo box.
      */
-    private static class EmptyJavaPlatform extends JavaPlatform {
+    public static class PlatformComparator implements Comparator<Platform> {
 
-        /** Empty class path to be always returned. */
-        private static final ClassPath EMPTY_CLASSPATH
-                = ClassPathSupport.createClassPath(new URL[0]);
-
-        /** Empty specification to be always returned. */
-        private static final Specification EMPTY_SPECIFICATION
-                = new Specification("j2se", new SpecificationVersion("0.0"));
-
+        /**
+         * Compares display name values of <code>Platform</code> instances.
+         * @param p1 First <code>Platform</code> instance to be compared.
+         * @param p2 Second <code>Platform</code> instance to be compared.
+         * @return A negative integer, zero, or a positive integer as the first
+         *         argument is less than, equal to, or greater than the second.
+         */
         @Override
-        public String getDisplayName() {
-            return EMPTY_DISPLAY_NAME;
+        public int compare(Platform p1, Platform p2) {
+            String d1 = p1 != null ? p1.toString() : null;
+            String d2 = p2 != null ? p2.toString() : null;
+            return d1 != null
+                ? (d2 != null ? d1.compareTo(d2) : 1)
+                :  (d2 != null ? -1 : 0);
         }
-
-        @Override
-        public Map<String, String> getProperties() {
-            return Collections.EMPTY_MAP;
-        }
-
-        @Override
-        public ClassPath getBootstrapLibraries() {
-            return EMPTY_CLASSPATH;
-        }
-
-        @Override
-        public ClassPath getStandardLibraries() {
-            return EMPTY_CLASSPATH;
-        }
-
-        @Override
-        public String getVendor() {
-            return System.getProperty("java.vm.vendor");
-        }
-
-        @Override
-        public Specification getSpecification() {
-            return EMPTY_SPECIFICATION;
-        }
-
-        @Override
-        public Collection<FileObject> getInstallFolders() {
-            return Collections.EMPTY_LIST;
-        }
-
-        @Override
-        public FileObject findTool(String toolName) {
-            return null;
-        }
-
-        @Override
-        public ClassPath getSourceFolders() {
-            return EMPTY_CLASSPATH;
-        }
-
-        @Override
-        public List<URL> getJavadocFolders() {
-            return Collections.EMPTY_LIST;
-        }
+        
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -187,9 +149,10 @@ public class JavaPlatformsComboBox extends JComboBox {
             JavaPlatformsComboBox.class,
             "JavaPlatformsComboBox.emptyDisplayName");
     
-    /** Empty platform to represent empty selection on the combo box. */
-    public static final Platform EMPTY_PLATFORM
-            = new Platform(new EmptyJavaPlatform());
+    /** Comparator for <code>Platform</code> instances to be sorted
+     *  in combo box. */
+    private static final PlatformComparator platformComparator
+            = new PlatformComparator();
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
@@ -203,20 +166,15 @@ public class JavaPlatformsComboBox extends JComboBox {
      * <p/>
      * @param platformsIn An array of {@see JavaPlatform} objects
      *        to be converted.
-     * @param addEmpty Add an empty platform representing no selection
-     *                 at the beginning of the list.
      * @return An array of {@see Platform} objects containing
      *         <code>platformsIn</code>.
      */
-    private static Platform[] toPlatform(JavaPlatform[] platformsIn,
-            boolean addEmpty) {
+    private static Platform[] toPlatform(JavaPlatform[] platformsIn) {
         int size = platformsIn != null ? platformsIn.length : 0;
-        Platform[] platformsOut = new Platform[addEmpty ? size + 1 : size];
-        if (addEmpty) {
-            platformsOut[0] = EMPTY_PLATFORM;
-        }
+        Platform[] platformsOut = new Platform[size];
         for(int i = 0; i < size; i++)
-            platformsOut[addEmpty ? i + 1 : i] = new Platform(platformsIn[i]);
+            platformsOut[i] = new Platform(platformsIn[i]);
+        Arrays.sort(platformsOut, platformComparator);
         return platformsOut;
     }
 
@@ -276,14 +234,10 @@ public class JavaPlatformsComboBox extends JComboBox {
     /**
      * Creates an instance of <code>JavaPlatformsComboBox</code> that contains
      * all Java SE platforms registered in NetBeans.
-     * <p/>
-     * @param addEmpty Add an empty platform representing no selection
-     *                 at the beginning of the list.
      */
-    public JavaPlatformsComboBox(boolean addEmpty) {
+    public JavaPlatformsComboBox() {
         super(new DefaultComboBoxModel(toPlatform(
-                JavaPlatformManager.getDefault().getInstalledPlatforms(),
-                addEmpty)));
+                JavaPlatformManager.getDefault().getInstalledPlatforms())));
     }
 
     /**
@@ -291,12 +245,9 @@ public class JavaPlatformsComboBox extends JComboBox {
      * supplied list of Java SE platforms.
      * <p/>
      * @param platforms Java SE platforms to be set as data model for combo box.
-     * @param addEmpty Add an empty platform representing no selection
-     *                 at the beginning of the list.
      */
-    public JavaPlatformsComboBox(final JavaPlatform[] platforms
-            , boolean addEmpty) {
-        super(new DefaultComboBoxModel(toPlatform(platforms, addEmpty)));
+    public JavaPlatformsComboBox(final JavaPlatform[] platforms) {
+        super(new DefaultComboBoxModel(toPlatform(platforms)));
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -306,14 +257,10 @@ public class JavaPlatformsComboBox extends JComboBox {
     /**
      * Update content of data model to contain all Java SE platforms currently
      * registered in NetBeans
-     * <p/>
-     * @param addEmpty Add an empty platform representing no selection
-     *                 at the beginning of the list.
      */
-    public void updateModel(boolean addEmpty) {
+    public void updateModel() {
         setModel(new DefaultComboBoxModel(toPlatform(
-                JavaPlatformManager.getDefault().getInstalledPlatforms(),
-                addEmpty)));
+                JavaPlatformManager.getDefault().getInstalledPlatforms())));
     }
 
     /**
@@ -321,24 +268,23 @@ public class JavaPlatformsComboBox extends JComboBox {
      * of Java SE platforms.
      * <p/>
      * @param platforms Java SE platforms to be set as data model for combo box.
-     * @param addEmpty Add an empty platform representing no selection
-     *                 at the beginning of the list.
      */
-    public void updateModel(final JavaPlatform[] platforms, boolean addEmpty) {
-        setModel(new DefaultComboBoxModel(toPlatform(platforms, addEmpty)));
+    public void updateModel(final JavaPlatform[] platforms) {
+        setModel(new DefaultComboBoxModel(toPlatform(platforms)));
     }
 
     /**
      * Set selected item in the combo box display area to the provided Java SE
      * platform.
      * <p/>
-     * @param platform Java SE platform to be set as selected. Empty platform
+     * @param platform Java SE platform to be set as selected. Default platform
      *                 will be used when <code>null</code> value is supplied.
      */
     @Override
     public void setSelectedItem(Object platform) {
-        if (platform == null)
-            platform = EMPTY_PLATFORM.getPlatform();
+        if (platform == null) {
+            platform = JavaPlatform.getDefault();
+        }
         if (platform instanceof JavaPlatform) {
         int i, count = dataModel.getSize();
         for (i = 0; i < count; i++) {

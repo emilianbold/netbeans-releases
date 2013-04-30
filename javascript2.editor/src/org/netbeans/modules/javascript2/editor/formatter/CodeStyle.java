@@ -49,7 +49,7 @@ import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.*;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 
 /**
  *  XXX make sure the getters get the defaults from somewhere

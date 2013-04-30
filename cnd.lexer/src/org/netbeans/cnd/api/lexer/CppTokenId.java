@@ -184,7 +184,22 @@ public enum CppTokenId implements TokenId {
     __FAR("__far", "keyword"), // g++ // NOI18N
     __FINALLY("__finally", "keyword"), // g++ // NOI18N    
     __FORCEINLINE("__forceinline", "keyword"), // g++ // NOI18N    
-    __HAS_TRIVIAL_CONSTRUCTOR("__has_trivial_constructor", "keyword"), // g++ // NOI18N 
+    __HAS_TRIVIAL_CONSTRUCTOR("__has_trivial_constructor", "keyword"), // g++ // NOI18N     
+    __HAS_NOTHROW_ASSIGN("__has_nothrow_assign", "keyword"), // g++ // NOI18N
+    __HAS_NOTHROW_COPY("__has_nothrow_copy", "keyword"), // g++ // NOI18N
+    __HAS_NOTHROW_CONSTRUCTOR("__has_nothrow_constructor", "keyword"), // g++ // NOI18N
+    __HAS_TRIVIAL_ASSIGN("__has_trivial_assign", "keyword"), // g++ // NOI18N
+    __HAS_TRIVIAL_COPY("__has_trivial_copy", "keyword"), // g++ // NOI18N
+    __HAS_TRIVIAL_DESTRUCTOR("__has_trivial_destructor", "keyword"), // g++ // NOI18N
+    __HAS_VIRTUAL_DESTRUCTOR("__has_virtual_destructor", "keyword"), // g++ // NOI18N
+    __IS_ABSTRACT("__is_abstract", "keyword"), // g++ // NOI18N
+    __IS_EMPTY("__is_empty", "keyword"), // g++ // NOI18N
+    __IS_LITERAL_TYPE("__is_literal_type", "keyword"), // g++ // NOI18N
+    __IS_POLYMORPHIC("__is_polymorphic", "keyword"), // g++ // NOI18N
+    __IS_STANDARD_LAYOUT("__is_standard_layout", "keyword"), // g++ // NOI18N
+    __IS_TRIVIAL("__is_trivial", "keyword"), // g++ // NOI18N
+    __IS_UNION("__is_union", "keyword"), // g++ // NOI18N
+    __UNDERLYING_TYPE("__underlying_type", "keyword"), // g++ // NOI18N    
     _IMAGINARY("_Imaginary", "keyword"), // C // NOI18N
     __IMAG__("__imag__", "keyword"), // gcc // NOI18N
     _INT64("_int64", "keyword"), // g++ // NOI18N

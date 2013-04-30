@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -75,6 +75,20 @@ public class ProxySettings {
     public static final String DIRECT = "DIRECT";
     public static final String PAC = "PAC";
     
+    public static final String SYSTEM_PROXY_HTTP_HOST = "systemProxyHttpHost";
+    public static final String SYSTEM_PROXY_HTTP_PORT = "systemProxyHttpPort";
+    public static final String SYSTEM_PROXY_HTTPS_HOST = "systemProxyHttpsHost";
+    public static final String SYSTEM_PROXY_HTTPS_PORT = "systemProxyHttpsPort";
+    public static final String SYSTEM_PROXY_SOCKS_HOST = "systemProxySocksHost";
+    public static final String SYSTEM_PROXY_SOCKS_PORT = "systemProxySocksPort";
+    public static final String SYSTEM_NON_PROXY_HOSTS = "systemProxyNonProxyHosts";
+    public static final String SYSTEM_PAC = "systemPAC";
+    
+    // Only for testing purpose (Test connection in General options panel)
+    public static final String TEST_SYSTEM_PROXY_HTTP_HOST = "testSystemProxyHttpHost";
+    public static final String TEST_SYSTEM_PROXY_HTTP_PORT = "testSystemProxyHttpPort";
+    public static final String HTTP_CONNECTION_TEST_URL = "http://netbeans.org";
+    
     private static String presetNonProxyHosts;
 
     /** No proxy is used to connect. */
@@ -97,6 +111,7 @@ public class ProxySettings {
     private static Preferences getPreferences() {
         return NbPreferences.forModule (ProxySettings.class);
     }
+    
     
     public static String getHttpHost () {
         return normalizeProxyHost (getPreferences ().get (PROXY_HTTP_HOST, ""));
@@ -146,10 +161,53 @@ public class ProxySettings {
     public static int getProxyType () {
         int type = getPreferences ().getInt (PROXY_TYPE, AUTO_DETECT_PROXY);
         if (AUTO_DETECT_PROXY == type) {
-            type = NbProxySelector.usePAC() ? AUTO_DETECT_PAC : AUTO_DETECT_PROXY;
+            type = ProxySettings.getSystemPac() != null ? AUTO_DETECT_PAC : AUTO_DETECT_PROXY;
         }
         return type;
     }
+    
+    
+    public static String getSystemHttpHost() {
+        return getPreferences().get(SYSTEM_PROXY_HTTP_HOST, "");
+    }
+    
+    public static String getSystemHttpPort() {
+        return getPreferences().get(SYSTEM_PROXY_HTTP_PORT, "");
+    }
+    
+    public static String getSystemHttpsHost() {
+        return getPreferences().get(SYSTEM_PROXY_HTTPS_HOST, "");
+    }
+    
+    public static String getSystemHttpsPort() {
+        return getPreferences().get(SYSTEM_PROXY_HTTPS_PORT, "");
+    }
+    
+    public static String getSystemSocksHost() {
+        return getPreferences().get(SYSTEM_PROXY_SOCKS_HOST, "");
+    }
+    
+    public static String getSystemSocksPort() {
+        return getPreferences().get(SYSTEM_PROXY_SOCKS_PORT, "");
+    }
+    
+    public static String getSystemNonProxyHosts() {
+        return getPreferences().get(SYSTEM_NON_PROXY_HOSTS, getModifiedNonProxyHosts(""));
+    }
+    
+    public static String getSystemPac() {
+        return getPreferences().get(SYSTEM_PAC, null);
+    }
+    
+    
+    public static String getTestSystemHttpHost() {
+        return getPreferences().get(TEST_SYSTEM_PROXY_HTTP_HOST, "");
+    }
+    
+    public static String getTestSystemHttpPort() {
+        return getPreferences().get(TEST_SYSTEM_PROXY_HTTP_PORT, "");
+    }
+    
     
     public static boolean useAuthentication () {
         return getPreferences ().getBoolean (USE_PROXY_AUTHENTICATION, false);
@@ -179,153 +237,12 @@ public class ProxySettings {
                 NbBundle.getMessage(ProxySettings.class, "ProxySettings.password.description"));
     }
 
-    static void addPreferenceChangeListener (PreferenceChangeListener l) {
+    public static void addPreferenceChangeListener (PreferenceChangeListener l) {
         getPreferences ().addPreferenceChangeListener (l);
     }
     
-    static void removePreferenceChangeListener (PreferenceChangeListener l) {
+    public static void removePreferenceChangeListener (PreferenceChangeListener l) {
         getPreferences ().removePreferenceChangeListener (l);
-    }
-
-    static class SystemProxySettings extends ProxySettings {
-        
-        public static String getHttpHost () {
-            if (isSystemProxyDetect ()) {
-                return getSystemProxyHost ();
-            } else {
-                return "";
-            }
-        }
-
-        public static String getHttpPort () {
-            if (isSystemProxyDetect ()) {
-                return getSystemProxyPort ();
-            } else {
-                return "";
-            }
-        }
-
-        public static String getHttpsHost () {
-            if (isSystemProxyDetect ()) {
-                return getSystemProxyHost ();
-            } else {
-                return "";
-            }
-        }
-
-        public static String getHttpsPort () {
-            if (isSystemProxyDetect ()) {
-                return getSystemProxyPort ();
-            } else {
-                return "";
-            }
-        }
-
-        public static String getSocksHost () {
-            if (isSystemSocksServerDetect ()) {
-                return getSystemSocksServerHost ();
-            } else {
-                return "";
-            }
-        }
-
-        public static String getSocksPort () {
-            if (isSystemSocksServerDetect ()) {
-                return getSystemSocksServerPort ();
-            } else {
-                return "";
-            }
-        }
-
-        public static String getNonProxyHosts () {
-            return getDefaultUserNonProxyHosts ();
-        }
-
-        // helper methods
-        private static boolean isSystemProxyDetect () {
-            if (NbProxySelector.useSystemProxies ()) {
-                return true;
-            }
-            String s = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
-            return s != null && ! DIRECT.equals (s); // NOI18N
-        }
-
-        private static String getSystemProxyHost () {
-            String systemProxy = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
-            if (systemProxy == null) {
-                return ""; // NOI18N
-            }
-
-            int i = systemProxy.lastIndexOf (":"); // NOI18N
-            if (i <= 0 || i >= systemProxy.length () - 1) {
-                return ""; // NOI18N
-            }
-
-            return normalizeProxyHost (systemProxy.substring (0, i));
-        }
-
-        private static String getSystemProxyPort () {
-            String systemProxy = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
-            if (systemProxy == null) {
-                return ""; // NOI18N
-             }
-
-            int i = systemProxy.lastIndexOf (":"); // NOI18N
-            if (i <= 0 || i >= systemProxy.length () - 1) {
-                return ""; // NOI18N
-            }
-            
-            String p = systemProxy.substring (i + 1);
-            if (p.indexOf ('/') >= 0) {
-                p = p.substring (0, p.indexOf ('/'));
-            }
-
-            return p;
-        }
-
-        private static boolean isSystemSocksServerDetect () {
-            return isSystemProxyDetect () && System.getProperty ("netbeans.system_socks_proxy") != null; // NOI18N
-        }
-        
-        private static String getSystemSocksServerHost () {
-            String systemProxy = System.getProperty ("netbeans.system_socks_proxy"); // NOI18N
-            if (systemProxy == null) {
-                return ""; // NOI18N
-            }
-
-            int i = systemProxy.lastIndexOf (":"); // NOI18N
-            if (i <= 0 || i >= systemProxy.length () - 1) {
-                return ""; // NOI18N
-            }
-
-            return normalizeProxyHost (systemProxy.substring (0, i));
-        }
-
-        private static String getSystemSocksServerPort () {
-            String systemProxy = System.getProperty ("netbeans.system_socks_proxy"); // NOI18N
-            if (systemProxy == null) {
-                return ""; // NOI18N
-             }
-
-            int i = systemProxy.lastIndexOf (":"); // NOI18N
-            if (i <= 0 || i >= systemProxy.length () - 1) {
-                return ""; // NOI18N
-            }
-            
-            String p = systemProxy.substring (i + 1);
-            if (p.indexOf ('/') >= 0) {
-                p = p.substring (0, p.indexOf ('/'));
-            }
-
-            return p;
-        }
-
-    }
-
-    private static String getSystemNonProxyHosts () {
-        String systemProxy = System.getProperty ("netbeans.system_http_non_proxy_hosts"); // NOI18N
-
-        return systemProxy == null ? "" : systemProxy;
     }
     
     private static String getPresetNonProxyHosts () {
@@ -478,6 +395,11 @@ public class ProxySettings {
             }
         }
     }
+    
+    public static void reload() {
+        Reloader reloader = Lookup.getDefault().lookup(Reloader.class);
+        reloader.reload();
+    }
 
     @ServiceProvider(service = NetworkSettings.ProxyCredentialsProvider.class, position = 1000)
     public static class NbProxyCredentialsProvider extends NetworkSettings.ProxyCredentialsProvider {
@@ -524,5 +446,21 @@ public class ProxySettings {
             return getPreferences().getBoolean(USE_PROXY_AUTHENTICATION, false);
         }
 
+    }
+    
+    /** A bridge between <code>o.n.core</code> and <code>core.network</code>.
+     * An implementation of this class brings a facility to reload Network Proxy Settings
+     * from underlying OS.
+     * The module <code>core.network</code> provides a implementation which may be accessible
+     * via <code>Lookup.getDefault()</code>. It's not guaranteed any implementation is found on all distribution. 
+     * 
+     * @since 3.40
+     */
+    public abstract static class Reloader {
+        
+        /** Reloads Network Proxy Settings from underlying system.
+         *
+         */
+        public abstract void reload();
     }
 }

@@ -112,35 +112,35 @@ class DataViewActionHandler {
                     .setStoredPageSize(pageSize);
             dataPage.first();
             dataPage.setTotalRows(-1); // force total row refresh
-            execHelper.executeQuery();
+            execHelper.executeQueryOffEDT();
         }
     }
 
     void firstActionPerformed() {
         if (rejectModifications()) {
             dataPage.first();
-            execHelper.executeQuery();
+            execHelper.executeQueryOffEDT();
         }
     }
 
     void previousActionPerformed() {
         if (rejectModifications()) {
             dataPage.previous();
-            execHelper.executeQuery();
+            execHelper.executeQueryOffEDT();
         }
     }
 
     void nextActionPerformed() {
         if (rejectModifications()) {
             dataPage.next();
-            execHelper.executeQuery();
+            execHelper.executeQueryOffEDT();
         }
     }
 
     void lastActionPerformed() {
         if (rejectModifications()) {
             dataPage.last();
-            execHelper.executeQuery();
+            execHelper.executeQueryOffEDT();
         }
     }
 
@@ -189,7 +189,7 @@ class DataViewActionHandler {
 
     void refreshActionPerformed() {
         dataPage.setTotalRows(-1); // force total row refresh
-        execHelper.executeQuery();
+        execHelper.executeQueryOffEDT();
     }
 
     private static Object showYesAllDialog(Object msg, String title) {

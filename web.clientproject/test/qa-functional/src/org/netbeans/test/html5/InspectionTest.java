@@ -78,6 +78,7 @@ public class InspectionTest extends GeneralHTMLProject {
         InspectionTest.current_project = "simpleProject";
         openProject("simpleProject");
         setRunConfiguration("Embedded WebKit Browser", true, true);
+        setProxy();
         endTest();
     }
 

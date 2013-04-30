@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.j2ee.common.project.ui;
 
+import java.util.Set;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -151,21 +152,23 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
         return platforms[0];
     }
 
-    public static String findWarningType(Profile j2eeProfile) {
+    public static String findWarningType(Profile j2eeProfile, Set acceptableSourceLevels) {
         JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
         SpecificationVersion version = defaultPlatform.getSpecification().getVersion();
         String sourceLevel = version.toString();
 
         // no warning if 1.5 is the default for j2ee15
-        if ("1.5".equals(sourceLevel) && j2eeProfile == Profile.JAVA_EE_5) // NOI18N
+        if (j2eeProfile == Profile.JAVA_EE_5 && isAcceptableSourceLevel("1.5", sourceLevel, acceptableSourceLevels)) // NOI18N
             return null;
 
         // no warning if 1.6 is the default for j2ee16
-        if ("1.6".equals(sourceLevel) && (j2eeProfile == Profile.JAVA_EE_6_FULL || j2eeProfile == Profile.JAVA_EE_6_WEB)) // NOI18N
+        if ((j2eeProfile == Profile.JAVA_EE_6_FULL || j2eeProfile == Profile.JAVA_EE_6_WEB) &&
+                isAcceptableSourceLevel("1.6", sourceLevel, acceptableSourceLevels)) // NOI18N
             return null;
         
         // no warning if 1.7 is the default for j2ee7
-        if ("1.7".equals(sourceLevel) && (j2eeProfile == Profile.JAVA_EE_7_FULL || j2eeProfile == Profile.JAVA_EE_7_WEB)) // NOI18N
+        if ((j2eeProfile == Profile.JAVA_EE_7_FULL || j2eeProfile == Profile.JAVA_EE_7_WEB) &&
+                isAcceptableSourceLevel("1.7", sourceLevel, acceptableSourceLevels)) // NOI18N
             return null;
         
         if (j2eeProfile == Profile.JAVA_EE_5) {
@@ -205,6 +208,18 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
     private static boolean canSetSourceLevel(String sourceLevel) {
         SpecificationVersion spec = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion();
         return spec.compareTo(new SpecificationVersion(sourceLevel)) >= 0;
+    }
+
+    private static boolean isAcceptableSourceLevel(String minSourceLevel, String sourceLevel, Set acceptableSourceLevels) {
+        if (minSourceLevel.equals(sourceLevel)) {
+            return true;
+        }
+        SpecificationVersion minSpec = new SpecificationVersion(minSourceLevel);
+        SpecificationVersion spec = new SpecificationVersion(sourceLevel);
+        if (minSpec.compareTo(spec) > 0) {
+            return false;
+        }
+        return acceptableSourceLevels.contains(sourceLevel);
     }
 
     private static JavaPlatform[] getJavaPlatforms(String level) {

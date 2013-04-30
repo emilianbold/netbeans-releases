@@ -69,7 +69,7 @@ import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.javascript2.editor.formatter.FmtOptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.*;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 
 /**
  *

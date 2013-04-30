@@ -274,7 +274,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         if (isJava17()) {
             pack();
         }
-        setBounds(Utilities.findCenterBounds(getSize()));
+        initBounds();
     }
 
     /** Requests focus for <code>currentMessage</code> component.
@@ -623,6 +623,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         
         if (isDefaultButton) {
             result++;
+        } else if( b.equals(descriptor.getDefaultValue ()) ) {
+            result--;
         }
         return result;
     }
@@ -1544,4 +1546,26 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         }
     }
 
+    private void initBounds() {
+        Window w = findFocusedWindow();
+        if( null != w ) {
+            //#133235 - dialog windows should be centered on the main app window, not the whole screen
+            setLocationRelativeTo( w );
+        } else {
+            //just center the dialog on the screen and let's hope it'll be
+            //the correct one in multi-monitor setup
+            setBounds(Utilities.findCenterBounds(getSize()));
+        }
+    }
+
+    /**
+     * @return Focused and showing Window or null.
+     */
+    private Window findFocusedWindow() {
+        Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
+        while( null != w && !w.isShowing() ) {
+            w = w.getOwner();
+        }
+        return w;
+    }
 }

@@ -652,7 +652,12 @@ implements TokenHierarchyListener, ChangeListener {
             this.listeners = new ListenerList<ChangeListener>();
             Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimePath));
             result = lookup.lookupResult(FontColorSettings.class);
-            result.addLookupListener(this);
+            // Do not listen on font color settings changes in tests
+            // since "random" lookup events translate into highlight change events
+            // that are monitored by tests and so the tests may then fail
+            if (TEST_FALLBACK_COLORING == null) {
+                result.addLookupListener(WeakListeners.create(LookupListener.class, this, result));
+            }
             updateFCS();
         }
         

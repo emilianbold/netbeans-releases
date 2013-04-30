@@ -338,12 +338,14 @@ public class CRUDTest extends RestTestBase {
     protected Set<File> getFiles(String pkg) {
         Set<File> files = new HashSet<File>();
         FileObject fo = getProjectSourceRoot().getFileObject(pkg.replace('.', '/') + "/"); //NOI18N
-        File pkgRoot = FileUtil.toFile(fo);
-        File[] filesAndFolders = pkgRoot.listFiles();
-        if (filesAndFolders != null) {
-            for (int q = 0; q < filesAndFolders.length; q++) {
-                if (!filesAndFolders[q].isDirectory()) {
-                    files.add(filesAndFolders[q]);
+        if (fo != null) {
+            File pkgRoot = FileUtil.toFile(fo);
+            File[] filesAndFolders = pkgRoot.listFiles();
+            if (filesAndFolders != null) {
+                for (int q = 0; q < filesAndFolders.length; q++) {
+                    if (!filesAndFolders[q].isDirectory()) {
+                        files.add(filesAndFolders[q]);
+                    }
                 }
             }
         }

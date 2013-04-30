@@ -159,13 +159,4 @@ public class KenaiQueryController extends QueryController {
         return true;
     }
 
-    protected void logAutoRefreshEvent(boolean autoRefresh) {
-        LogUtils.logAutoRefreshEvent(
-            BugzillaConnector.getConnectorName(),
-            query.getDisplayName(),
-            true,
-            autoRefresh
-        );
-    }
-
 }

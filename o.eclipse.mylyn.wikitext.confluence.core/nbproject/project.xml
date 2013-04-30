@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+   <type>org.netbeans.modules.apisupport.project</type>
+   <configuration>
+       <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+           <code-name-base>org.eclipse.mylyn.wikitext.confluence.core</code-name-base>
+           <module-dependencies/>
+           <public-packages/>
+           <class-path-extension>
+               <runtime-relative-path>org-eclipse-mylyn-wikitext-confluence-core.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.mylyn.wikitext.confluence.core_1.7.1.v20120725-0100.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

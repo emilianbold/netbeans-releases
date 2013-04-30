@@ -312,10 +312,10 @@ public class PofConfigComponentDeleteTest extends NbTestCase {
 
         PofConfig root = model.getPofConfig();
 
-        assertNull(root.getUserTypeList());
-        assertNull(root.getAllowInterfaces());
-        assertNull(root.getAllowSubclasses());
-        assertNull(root.getDefaultSerializer());
+        assertNotNull(root.getUserTypeList());
+        assertNotNull(root.getAllowInterfaces());
+        assertNotNull(root.getAllowSubclasses());
+        assertNotNull(root.getDefaultSerializer());
 
     }
 }

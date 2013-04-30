@@ -75,7 +75,7 @@ id = "org.netbeans.modules.java.navigation.actions.ShowMembersAtCaretAction")
     displayName = "#CTL_ShowMembersAtCaretAction", lazy=false)
 @ActionReference(path = "Menu/GoTo/Inspect", position = 1000)
 @NbBundle.Messages({
-    "CTL_ShowMembersAtCaretAction=Members",
+    "CTL_ShowMembersAtCaretAction=&Members",
     "CTL_ShowMembersAtCaretActionPopUp=Inspect Members"
 })
 public class ShowMembersAtCaretAction extends BaseAction {

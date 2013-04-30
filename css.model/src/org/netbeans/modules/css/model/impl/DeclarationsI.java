@@ -42,24 +42,15 @@
 package org.netbeans.modules.css.model.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.Declarations;
-import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.Expression;
-import org.netbeans.modules.css.model.api.Media;
 import org.netbeans.modules.css.model.api.Model;
-import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.PlainElement;
 import org.netbeans.modules.css.model.api.PropertyValue;
-import org.netbeans.modules.css.model.api.Rule;
-import org.netbeans.modules.css.model.api.semantic.PModel;
-import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.impl.semantic.box.DeclarationsBoxModelProvider;
-import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -68,7 +59,7 @@ import org.openide.util.CharSequences;
  */
 public class DeclarationsI extends ModelElement implements Declarations {
 
-    private List<Declaration> declarations = new ArrayList<Declaration>();
+    private List<Declaration> declarations = new ArrayList<>();
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
         @Override
         public void elementAdded(Declaration declaration) {
@@ -91,24 +82,6 @@ public class DeclarationsI extends ModelElement implements Declarations {
     }
 
     @Override
-    public Collection<? extends PModel> getSemanticModels() {
-        if (isValid()) {
-            Collection<PModel> models = new ArrayList<PModel>();
-
-            DeclarationsBoxModelProvider dbm = new DeclarationsBoxModelProvider(model, this);
-            models.add((PModel) dbm.getBox(BoxType.MARGIN));
-            models.add((PModel) dbm.getBox(BoxType.PADDING));
-            models.add((PModel) dbm.getBox(BoxType.BORDER_COLOR));
-            models.add((PModel) dbm.getBox(BoxType.BORDER_STYLE));
-            models.add((PModel) dbm.getBox(BoxType.BORDER_WIDTH));
-
-            return models;
-        } else {
-            return Collections.emptyList();
-        }
-    }
-
-    @Override
     public List<Declaration> getDeclarations() {
         return declarations;
     }
@@ -122,13 +95,15 @@ public class DeclarationsI extends ModelElement implements Declarations {
     public void addDeclaration(Declaration declaration) {
         if (!getDeclarations().isEmpty()) {
             //there's already a declaration...
+//            PropertyDeclaration last = getDeclarations().get(getDeclarations().size() - 1);
             Declaration last = getDeclarations().get(getDeclarations().size() - 1);
             int lastIndex = getElementIndex(last);
             //check if there's a semicolon after the declaration
             PlainElement pe = getElementAt(lastIndex + 1, PlainElement.class);
             if (pe == null || CharSequences.indexOf(pe.getContent(), ";") == -1) {
                 //find out if there's a semicolon in the element's source
-                PropertyValue propertyValue = last.getPropertyValue();
+                PropertyDeclaration propertyDeclaration = last.getPropertyDeclaration();
+                PropertyValue propertyValue = propertyDeclaration.getPropertyValue();
                 if (propertyValue != null) {
                     Expression expression = propertyValue.getExpression();
                     CharSequence content = expression.getContent();

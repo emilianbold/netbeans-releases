@@ -193,6 +193,7 @@ public final class JFXProjectProperties {
     public static final String JAVAFX_SIGNING_KEYSTORE_PASSWORD = "javafx.signing.keystore.password"; //NOI18N
     public static final String JAVAFX_SIGNING_KEY = "javafx.signing.keyalias"; //NOI18N
     public static final String JAVAFX_SIGNING_KEY_PASSWORD = "javafx.signing.keyalias.password"; //NOI18N
+    public static final String JAVAFX_SIGNING_BLOB = "javafx.signing.blob"; //NOI18N
     
     // Deployment - native packaging
     public static final String JAVAFX_NATIVE_BUNDLING_ENABLED = "javafx.native.bundling.enabled"; //NOI18N
@@ -369,6 +370,7 @@ public final class JFXProjectProperties {
         }
     }
     boolean signingEnabled;
+    boolean signingBlob;
     SigningType signingType;
     String signingKeyStore;
     String signingKeyAlias;
@@ -381,6 +383,12 @@ public final class JFXProjectProperties {
     }
     public void setSigningEnabled(boolean enabled) {
         this.signingEnabled = enabled;
+    }
+    public boolean getBLOBSigningEnabled() {
+        return signingBlob;
+    }
+    public void setBLOBSigningEnabled(boolean enabled) {
+        this.signingBlob = enabled;
     }
     public boolean getPermissionsElevated() {
         return permissionsElevated;
@@ -1201,6 +1209,7 @@ public final class JFXProjectProperties {
         setOrRemove(editableProps, IMPLEMENTATION_VERSION, implVersion);
         // store signing info
         editableProps.setProperty(JAVAFX_SIGNING_ENABLED, signingEnabled ? "true" : "false"); //NOI18N
+        editableProps.setProperty(JAVAFX_SIGNING_BLOB, signingBlob ? "true" : "false"); //NOI18N
         editableProps.setProperty(JAVAFX_SIGNING_TYPE, signingType.getString());
         setOrRemove(editableProps, JAVAFX_SIGNING_KEY, signingKeyAlias);
         setOrRemove(editableProps, JAVAFX_SIGNING_KEYSTORE, signingKeyStore);
@@ -1335,8 +1344,10 @@ public final class JFXProjectProperties {
     
     private void initSigning(PropertyEvaluator eval) {
         String enabled = eval.getProperty(JAVAFX_SIGNING_ENABLED);
+        String blob = eval.getProperty(JAVAFX_SIGNING_BLOB);
         String signedProp = eval.getProperty(JAVAFX_SIGNING_TYPE);
         signingEnabled = isTrue(enabled);
+        signingBlob = isTrue(blob);
         if(signedProp == null) {
             signingType = SigningType.NOSIGN;
         } else {
@@ -1455,6 +1466,9 @@ public final class JFXProjectProperties {
                 continue;
             }
             final File f = PropertyUtils.resolveFile(prjDir, p);
+            if (!f.exists()) {
+                continue;
+            }
             if (f.equals(mainFile)) {
                 continue;
             }

@@ -85,7 +85,6 @@ public abstract class RemoteFileObjectBase {
     private FileLock lock;
     private final Object instanceLock = new Object();
     public static final boolean USE_VCS;
-    public static final boolean DEFER_WRITES = Boolean.getBoolean("cnd.remote.defer.writes"); //NOI18Ns
     static {
         if ("false".equals(System.getProperty("remote.vcs.suport"))) { //NOI18N
             USE_VCS = false;

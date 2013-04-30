@@ -378,7 +378,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
         }
         for (int k = 1; k < unknownSegments.length; k++) {
             loop:
-            for (int i = rootSegments.length - 1; i >= 1; i--) {
+            for (int i = rootSegments.length - 1; i > 1; i--) {
                 StringBuilder buf = new StringBuilder();
                 for (int j = 0; j < i; j++) {
                     buf.append('/'); //NOI18N

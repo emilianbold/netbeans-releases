@@ -66,6 +66,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
+import org.netbeans.modules.web.el.completion.ELStreamCompletionItem;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
@@ -150,7 +151,17 @@ public final class ELTypeUtilities {
      * @return the element or {@code null}.
      */
     public static Element resolveElement(CompilationContext info, final ELElement elem, final Node target) {
-        TypeResolverVisitor typeResolver = new TypeResolverVisitor(info, elem, target);
+        return resolveElement(info, elem, target, Collections.<AstIdentifier, Node>emptyMap());
+    }
+
+    /**
+     * Resolves the element for the given {@code target}.
+     * @param elem
+     * @param target
+     * @return the element or {@code null}.
+     */
+    public static Element resolveElement(CompilationContext info, final ELElement elem, final Node target, Map<AstIdentifier, Node> assignments) {
+        TypeResolverVisitor typeResolver = new TypeResolverVisitor(info, elem, target, assignments);
         elem.getNode().accept(typeResolver);
         return typeResolver.getResult();
     }
@@ -616,13 +627,25 @@ public final class ELTypeUtilities {
     public static boolean isIterableElement(CompilationContext ccontext, Element element) {
         if (element.getKind() == ElementKind.METHOD) {
             TypeMirror returnType = ELTypeUtilities.getReturnType(ccontext, (ExecutableElement) element);
-            TypeElement iterableElement = ccontext.info().getElements().getTypeElement("java.lang.Iterable"); //NOI18N
             if (returnType.getKind() == TypeKind.ARRAY
-                    || ccontext.info().getTypeUtilities().isCastable(returnType, iterableElement.asType())) {
+                    || isSubtypeOf(ccontext, returnType, "java.lang.Iterable")) { //NOI18N
                 return true;
             }
+        } else if (element.getKind() == ElementKind.INTERFACE) {
+            return isSubtypeOf(ccontext, element.asType(), "java.lang.Iterable"); //NOI18N
         }
         return false;
+    }
+
+    /**
+     * Whether the given node represents Map field.
+     * @param ccontext compilation context
+     * @param element element to examine
+     * @return {@code true} if the element extends {@link Map} interface, {@code false} otherwise
+     * @since 1.28
+     */
+    public static boolean isMapElement(CompilationContext ccontext, Element element) {
+        return isSubtypeOf(ccontext, element.asType(), "java.util.Map"); //NOI18N
     }
 
     private static boolean isSubtypeOf(CompilationContext info, TypeMirror tm, CharSequence typeName) {
@@ -645,13 +668,15 @@ public final class ELTypeUtilities {
 
         private final ELElement elem;
         private final Node target;
+        private final Map<AstIdentifier, Node> assignments;
         private Element result;
         private CompilationContext info;
 
-        public TypeResolverVisitor(CompilationContext info, ELElement elem, Node target) {
+        public TypeResolverVisitor(CompilationContext info, ELElement elem, Node target, Map<AstIdentifier, Node> assignments) {
             this.info = info;
             this.elem = elem;
             this.target = target;
+            this.assignments = assignments;
         }
 
         public Element getResult() {
@@ -661,10 +686,19 @@ public final class ELTypeUtilities {
         @Override
         public void visit(Node node) {
             Element enclosing = null;
+
+            // look for possible assignments to the identifier
+            Node evalNode;
+            if (node instanceof AstIdentifier && assignments.containsKey((AstIdentifier) node)) {
+                evalNode = assignments.get((AstIdentifier) node);
+            } else {
+                evalNode = node;
+            }
+
             // traverses AST resolving types for each property starting from
             // an identifier until the target is found
-            if (node instanceof AstIdentifier) {
-                enclosing = getIdentifierType(info, (AstIdentifier) node, elem);
+            if (evalNode instanceof AstIdentifier) {
+                enclosing = getIdentifierType(info, (AstIdentifier) evalNode, elem);
                 if (enclosing != null) {
                     if (node.equals(target)) {
                         result = enclosing;
@@ -687,6 +721,17 @@ public final class ELTypeUtilities {
                                     // it's a managed bean in a scope
                                     propertyType = getTypeFor(info, clazz);
                                 }
+
+                                // maps
+                                if (ELTypeUtilities.isMapElement(info, enclosing)) {
+                                    result = info.info().getElements().getTypeElement("java.lang.Object"); //NOI18N
+                                    return;
+                                }
+
+                                // stream method
+                                if (ELTypeUtilities.isIterableElement(info, enclosing)) {
+                                    propertyType = enclosing = info.info().getElements().getTypeElement("com.sun.el.stream.Stream"); //NOI18N
+                                }
                             }
                             if (propertyType == null) {
                                 return;
@@ -695,13 +740,40 @@ public final class ELTypeUtilities {
                                 result = propertyType;
                             } else if (propertyType.getKind() == ElementKind.METHOD) {
                                 final ExecutableElement method = (ExecutableElement) propertyType;
-                                enclosing = info.info().getTypes().asElement(getReturnType(info, method));
-
+                                TypeMirror returnType = getReturnType(info, method);
+                                if (returnType.getKind() == TypeKind.ARRAY) {
+                                    // for array try to look like Iterable (operators for array return type)
+                                    enclosing = info.info().getElements().getTypeElement("java.lang.Iterable"); //NOI18N
+                                } else {
+                                    enclosing = info.info().getTypes().asElement(returnType);
+                                }
                                 if (enclosing == null) {
                                     return;
                                 }
                             } else {
                                 enclosing = propertyType;
+                            }
+                        }
+                    }
+                }
+            } else if (evalNode instanceof AstListData || evalNode instanceof AstMapData) {
+                Node parent = node.jjtGetParent();
+                for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
+                    Node child = parent.jjtGetChild(i);
+                    if (child instanceof AstDotSuffix) {
+                        if (ELStreamCompletionItem.STREAM_METHOD.equals(child.getImage())) {
+                            if (target.getImage() != null && target.getImage().equals(child.getImage())) {
+                                result = info.info().getElements().getTypeElement("com.sun.el.stream.Stream"); //NOI18N
+                                return;
+                            } else {
+                                enclosing = info.info().getElements().getTypeElement("com.sun.el.stream.Stream"); //NOI18N
+                            }
+                        } else {
+                            if (enclosing != null) {
+                                Element propertyType = getElementForProperty(info, child, enclosing);
+                                if (child.equals(target)) {
+                                    result = propertyType;
+                                }
                             }
                         }
                     }

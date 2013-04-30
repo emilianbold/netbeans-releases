@@ -113,18 +113,18 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init-clusters">
         <property name="main.clusters" value="
                                          cnd(cpp), dlight(cpp),
-                                         apisupport(javase), profiler(javase), java(javase), harness(javase),                                                                              
+                                         apisupport(javase), profiler(javase), java(javase),                                                                              
 					 groovy(groovy),
                                          php(php), 
                                          enterprise(javaee), 
                                          webcommon(webcommon),
                                          mobility(javame),
                                          ergonomics(ergonomics),
-                                         ide(baseide), nb-etc(baseide), platform(baseide)
+                                         ide(baseide), nb-etc(baseide), harness(baseide), platform(baseide)
                                          "/>
         
-        <property name="jdk-bundle.clusters" value="apisupport(javase), profiler(javase), java(javase), harness(javase),
-                                                   ide(baseide), nb-etc(baseide), platform(baseide)
+        <property name="jdk-bundle.clusters" value="apisupport(javase), profiler(javase), java(javase),
+                                                   ide(baseide), nb-etc(baseide), harness(baseide), platform(baseide)
                                          "/>
 
         <property name="fx.clusters" value="javafx(javafx), javafx-mac(javafx)"/>

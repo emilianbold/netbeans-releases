@@ -66,6 +66,9 @@ import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.clientproject.Utils;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -180,9 +183,22 @@ public class NewAppClientProjectWizardIterator implements WizardDescriptor.Progr
         if (dirF != null && dirF.exists()) {
             ProjectChooser.setProjectsFolder(dirF);
         }
-        
+
+        // Usages statistics
+        Object[] parameters = new Object[2];
+        parameters[0] = ""; //NOI18N
+        try {
+            if (createData.getServerInstanceID() != null) {
+                parameters[0] = Deployment.getDefault().getServerInstance(createData.getServerInstanceID()).getServerDisplayName();
+            }
+        } catch (InstanceRemovedException ire) {
+            // ignore
+        }
+        parameters[1] = createData.getJavaEEProfile();
+        Utils.logUsage(NewAppClientProjectWizardIterator.class, "USG_PROJECT_CREATE_APPCLIENT", parameters); //NOI18N
+
         handle.progress(NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "LBL_NewAppClientProjectWizardIterator_WizardProgress_PreparingToOpen"), 3);
-        
+
         return resultSet;
     }
     

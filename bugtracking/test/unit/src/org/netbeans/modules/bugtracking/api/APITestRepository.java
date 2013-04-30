@@ -96,11 +96,6 @@ public class APITestRepository extends TestRepository {
     }
 
     @Override
-    public Lookup getLookup() {
-        return Lookup.EMPTY;
-    }
-
-    @Override
     public Image getIcon() {
         return ICON;
     }

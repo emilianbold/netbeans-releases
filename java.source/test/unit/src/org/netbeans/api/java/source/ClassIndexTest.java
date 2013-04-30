@@ -60,6 +60,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.ClassIndex.Symbols;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -551,6 +553,37 @@ public class ClassIndexTest extends NbTestCase {
         assertTrue(testListener.getAdded().isEmpty());
     }
 
+    public void testFindSymbols() throws Exception {
+        final FileObject wd = FileUtil.toFileObject(getWorkDir());
+        final FileObject root = FileUtil.createFolder(wd,"src");    //NOI18N
+        sourcePath = ClassPathSupport.createClassPath(root);
+        compilePath = ClassPathSupport.createClassPath(new URL[0]);
+        bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+        final FileObject t1 = createJavaFile(
+                root,
+                "test",                                          //NOI18N
+                "Test",                                          //NOI18N
+                "package test;\n"+                               //NOI18N
+                "public class Test { private void foo() { } }"); //NOI18N
+        final FileObject t2 = createJavaFile(
+                root,
+                "test",                                          //NOI18N
+                "foo",                                           //NOI18N
+                "package test;\n"+                               //NOI18N
+                "public class foo {\n"+                          //NOI18N
+                "}");                                            //NOI18N
+        IndexingManager.getDefault().refreshIndexAndWait(root.toURL(), null);
+        final ClassIndex ci = ClasspathInfo.create(bootPath, compilePath, sourcePath).getClassIndex();
+        assertNotNull(ci);
+        Iterable<Symbols> result = ci.getDeclaredSymbols("foo", NameKind.SIMPLE_NAME,
+            EnumSet.<ClassIndex.SearchScope>of(ClassIndex.SearchScope.SOURCE));
+        Set<String> actualResult = new HashSet<String>();
+        for (Symbols s : result) {
+            actualResult.add(s.getEnclosingType().getQualifiedName() + ":" + s.getSymbols().toString());
+        }
+        assertEquals(new HashSet<String>(Arrays.asList("test.foo:[foo]", "test.Test:[foo]")), actualResult);
+    }
+    
     private FileObject createJavaFile (
             final FileObject root,
             final String pkg,

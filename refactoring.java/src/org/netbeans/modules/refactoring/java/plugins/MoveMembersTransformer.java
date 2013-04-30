@@ -568,7 +568,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     // Add parameter and change local accessors
                     TreePath sourceClass = JavaRefactoringUtils.findEnclosingClass(workingCopy, resolvedPath, true, true, true, true, true);
                     TypeMirror sourceType = workingCopy.getTrees().getTypeMirror(sourceClass);
-                    final String parameterName = getParameterName(sourceType, methodTree, workingCopy.getTrees().getScope(bodyPath), workingCopy);
+                    final String parameterName = getParameterName(sourceType, workingCopy.getTrees().getScope(bodyPath), workingCopy);
                     TreeScanner<Boolean, TypeMirror> idScan = new TreeScanner<Boolean, TypeMirror>() {
 
                         @Override
@@ -977,12 +977,12 @@ public class MoveMembersTransformer extends RefactoringVisitor {
         return (T) workingCopy.getTreeUtilities().translate(body, original2Translated);
     }
 
-    private static String getParameterName(TypeMirror type, MethodTree method, Scope scope, CompilationController info) {
+    private static String getParameterName(TypeMirror type, Scope scope, CompilationController info) {
         String name = JavaPluginUtils.getName(type);
         if (name == null) {
             name = JavaPluginUtils.DEFAULT_NAME;
         }
 
-        return JavaPluginUtils.makeNameUnique(info, scope, name, method);
+        return JavaPluginUtils.makeNameUnique(info, scope, name);
     }
 }

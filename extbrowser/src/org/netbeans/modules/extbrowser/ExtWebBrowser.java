@@ -505,6 +505,16 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     public String getId() {
         return null;
     }
+
+    @Override
+    public boolean hasNetBeansIntegration() {
+        return false;
+    }
+
+    @Override
+    public boolean canCreateHtmlBrowserImpl() {
+        return false;
+    }
     
     /** Default format that can format tags related to execution. 
      * Currently this is only the URL.

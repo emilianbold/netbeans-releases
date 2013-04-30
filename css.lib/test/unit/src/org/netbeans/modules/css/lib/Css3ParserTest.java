@@ -80,15 +80,15 @@ public class Css3ParserTest extends CssTestBase {
             }
         }
     }
-    
+
     //checks if there's an existing rule in Css3Parser for each declared NodeType
     public void testNoUnusedNodeTypes() {
-        Set<String> ruleNames = new HashSet<String>(Arrays.asList(Css3Parser.ruleNames));
-        Set<String> specialRuleNames = new HashSet<String>(Arrays.asList(
+        Set<String> ruleNames = new HashSet<>(Arrays.asList(Css3Parser.ruleNames));
+        Set<String> specialRuleNames = new HashSet<>(Arrays.asList(
                 new String[]{"root", "error", "recovery", "token"}));
         for (NodeType nodeType : NodeType.values()) {
             String nodeTypeName = nodeType.name();
-            assertTrue(String.format("Unused NodeType.%s", nodeTypeName), 
+            assertTrue(String.format("Unused NodeType.%s", nodeTypeName),
                     ruleNames.contains(nodeTypeName) || specialRuleNames.contains(nodeTypeName));
         }
     }
@@ -101,11 +101,10 @@ public class Css3ParserTest extends CssTestBase {
 //        TestUtil.dumpResult(res);
 
         assertNotNull(NodeUtil.query(res.getParseTree(),
-                "styleSheet/body/bodyItem|1/rule/declarations/declaration/property/color"));
+                "styleSheet/body/bodyItem|1/rule/declarations/declaration/propertyDeclaration/property/color"));
     }
 
-    //the error recovery is broken due to the syntactic predicate change to the declaration rule
-    public void testErrorRecoveryInsideDeclaration_fails() throws ParseException, BadLocationException {
+    public void testErrorRecoveryInsideDeclaration() throws ParseException, BadLocationException {
         //recovery inside declaration rule, resyncing to next semicolon or right curly brace
         String code = "a {\n"
                 + " s  red; \n"
@@ -121,7 +120,7 @@ public class Css3ParserTest extends CssTestBase {
 
         //the background: red; declaration is properly parsed even if the previous declaration is broken
         assertNotNull(NodeUtil.query(res.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|1/property/background"));
+                TestUtil.bodysetPath + "rule/declarations/declaration|1/propertyDeclaration/property/background"));
 
     }
 
@@ -140,9 +139,9 @@ public class Css3ParserTest extends CssTestBase {
 
         //the garbage char @ is skipped by Parser.syncToIdent()
         assertNotNull(NodeUtil.query(res.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|0/property/color"));
+                TestUtil.bodysetPath + "rule/declarations/declaration|0/propertyDeclaration/property/color"));
         assertNotNull(NodeUtil.query(res.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|1/property/background"));
+                TestUtil.bodysetPath + "rule/declarations/declaration|1/propertyDeclaration/property/background"));
 
     }
 
@@ -156,7 +155,7 @@ public class Css3ParserTest extends CssTestBase {
         assertResult(res, 0);
 
         assertNotNull(NodeUtil.query(res.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|0/property/color"));
+                TestUtil.bodysetPath + "rule/declarations/declaration/propertyDeclaration/property/color"));
 
     }
 
@@ -172,9 +171,9 @@ public class Css3ParserTest extends CssTestBase {
         assertResult(res, 0);
 
         assertNotNull(NodeUtil.query(res.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|0/property/color"));
+                TestUtil.bodysetPath + "rule/declarations/declaration|0/propertyDeclaration/property/color"));
         assertNotNull(NodeUtil.query(res.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|1/property/background"));
+                TestUtil.bodysetPath + "rule/declarations/declaration|1/propertyDeclaration/property/background"));
 
     }
 
@@ -253,8 +252,8 @@ public class Css3ParserTest extends CssTestBase {
     }
 
     public void testNodeImages() throws ParseException, BadLocationException {
-        String selectors = "#id .class body ";
-        String code = selectors + "{ color: red}";
+        String selectors = "#id .class body";
+        String code = selectors + " { color: red}";
         CssParserResult res = TestUtil.parse(code);
 //        dumpResult(res);
 
@@ -264,16 +263,16 @@ public class Css3ParserTest extends CssTestBase {
         Node selectorsGroup = NodeUtil.query(res.getParseTree(), TestUtil.bodysetPath + selectorsGroupPath);
         assertNotNull(selectorsGroup);
 
-        assertTrue(CharSequenceUtilities.equals(selectors, selectorsGroup.image()));
+        assertEquals(selectors, selectorsGroup.image().toString());
 
         //test root node image
-        assertTrue(CharSequenceUtilities.equals(code, res.getParseTree().image()));
+        assertEquals(code, res.getParseTree().image().toString());
 
         //test token node image
         Node id = NodeUtil.query(selectorsGroup, "selector/simpleSelectorSequence/elementSubsequent/cssId/#id");
         assertNotNull(id);
         assertTrue(id instanceof TokenNode);
-        assertTrue(CharSequenceUtilities.equals("#id", id.image()));
+        assertEquals("#id", id.image().toString());
 
     }
 
@@ -447,17 +446,17 @@ public class Css3ParserTest extends CssTestBase {
         TestUtil.dumpResult(result);
 
         assertNotNull(NodeUtil.query(result.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|0/property/filter"));
+                TestUtil.bodysetPath + "rule/declarations/declaration|0/propertyDeclaration/property/filter"));
 
         Node function = NodeUtil.query(result.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|0/propertyValue/expression/term/function");
+                TestUtil.bodysetPath + "rule/declarations/declaration|0/propertyDeclaration/propertyValue/expression/term/function");
         assertNotNull(function);
 
         Node functionName = NodeUtil.query(function, "functionName");
         assertNotNull(functionName);
         assertEquals("progid:DXImageTransform.Microsoft.gradient", functionName.image().toString());
 
-        Node attr = NodeUtil.query(function, "fnAttribute|0");
+        Node attr = NodeUtil.query(function, "fnAttributes/fnAttribute|0");
         assertNotNull(attr);
 
         Node attrName = NodeUtil.query(attr, "fnAttributeName");
@@ -554,9 +553,9 @@ public class Css3ParserTest extends CssTestBase {
 
         Node error = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
-                + "rule/selectorsGroup/selector/simpleSelectorSequence/error");
+                + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/slAttribute/error");
         assertNotNull(error);
-        assertEquals(17, error.from());
+        assertEquals(15, error.from());
         assertEquals(17, error.to());
 
         //premature end of file
@@ -623,10 +622,8 @@ public class Css3ParserTest extends CssTestBase {
 //        TestUtil.dumpResult(result);
         Node error = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
-                + "rule/declarations/declaration/propertyValue/expression/term/function/error");
+                + "rule/declarations/declaration/propertyDeclaration/propertyValue/expression/term/function/error");
         assertNotNull(error);
-
-        assertResult(result, 1);
 
     }
 
@@ -708,7 +705,7 @@ public class Css3ParserTest extends CssTestBase {
 
         //declaration
         Node declaration = NodeUtil.query(page,
-                "declaration");
+                "propertyDeclaration");
         assertNotNull(declaration);
         assertEquals("color: green", declaration.image().toString());
 
@@ -723,7 +720,7 @@ public class Css3ParserTest extends CssTestBase {
         assertEquals("@top-left", margin_sym.image().toString());
 
         //declaration in the margin body
-        Node declarationInMargin = NodeUtil.query(margin, "declarations/declaration");
+        Node declarationInMargin = NodeUtil.query(margin, "declarations/declaration/propertyDeclaration");
         assertNotNull(declarationInMargin);
 
         //next margin
@@ -736,7 +733,7 @@ public class Css3ParserTest extends CssTestBase {
         assertNotNull(margin_sym2);
         assertEquals("@top-right", margin_sym2.image().toString());
 
-        assertNotNull(NodeUtil.query(margin2, "declarations/declaration"));
+        assertNotNull(NodeUtil.query(margin2, "declarations/declaration/propertyDeclaration"));
 
 
 
@@ -761,7 +758,7 @@ public class Css3ParserTest extends CssTestBase {
 
         //declaration
         Node declaration = NodeUtil.query(page,
-                "declaration");
+                "propertyDeclaration");
         assertNotNull(declaration);
         assertEquals("color: green", declaration.image().toString());
 
@@ -783,7 +780,7 @@ public class Css3ParserTest extends CssTestBase {
         assertNotNull(ident);
         assertEquals("cool", ident.image().toString());
 
-        Node declaration = NodeUtil.query(counterStyle, "declarations/declaration");
+        Node declaration = NodeUtil.query(counterStyle, "declarations/declaration/propertyDeclaration");
         assertNotNull(declaration);
         assertEquals("glyph: '|'", declaration.image().toString());
 
@@ -809,7 +806,7 @@ public class Css3ParserTest extends CssTestBase {
                 + "at_rule/fontFace");
         assertNotNull(counterStyle);
 
-        Node declaration = NodeUtil.query(counterStyle, "declarations/declaration|0");
+        Node declaration = NodeUtil.query(counterStyle, "declarations/declaration|0/propertyDeclaration");
         assertNotNull(declaration);
         assertEquals("font-family: Gentium", declaration.image().toString());
 
@@ -851,38 +848,38 @@ public class Css3ParserTest extends CssTestBase {
 
     }
 
-    public void testParserRecovery_Issue203579_class_fails() throws BadLocationException, ParseException {
-        String code = ".{} ";
-        CssParserResult result = TestUtil.parse(code);
-
-        NodeUtil.dumpTree(result.getParseTree());
-
-        Node node = NodeUtil.query(result.getParseTree(),
-                "styleSheet/body/bodyItem/"
-                + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssClass");
-        assertNotNull(node);
-        assertTrue(NodeUtil.containsError(node));
-
-    }
-
-    public void testParserRecovery_Issue203579_id_fails() throws BadLocationException, ParseException {
-        String code = "#{} ";
-        CssParserResult result = TestUtil.parse(code);
-
-        NodeUtil.dumpTree(result.getParseTree());
-
-        //fails due to the scss_interpolation_expression rule being applied to the #{} input as it conforms
-        //the semantic predicate looking for "#{"
-        //Can possibly be fixed by extending the predicate by #{$ as AFAIK the SASS variable is always
-        //present in the interpolation expression
-
-        Node node = NodeUtil.query(result.getParseTree(),
-                "styleSheet/body/bodyItem/"
-                + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssClass");
-        assertNotNull(node);
-        assertTrue(NodeUtil.containsError(node));
-
-    }
+//    public void testParserRecovery_Issue203579_class_fails() throws BadLocationException, ParseException {
+//        String code = ".{} ";
+//        CssParserResult result = TestUtil.parse(code);
+//
+////        NodeUtil.dumpTree(result.getParseTree());
+//
+//        Node node = NodeUtil.query(result.getParseTree(),
+//                "styleSheet/body/bodyItem/"
+//                + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssClass");
+//        assertNotNull(node);
+//        assertTrue(NodeUtil.containsError(node));
+//
+//    }
+//
+//    public void testParserRecovery_Issue203579_id_fails() throws BadLocationException, ParseException {
+//        String code = "#{} ";
+//        CssParserResult result = TestUtil.parse(code);
+//
+////        NodeUtil.dumpTree(result.getParseTree());
+//
+//        //fails due to the scss_interpolation_expression rule being applied to the #{} input as it conforms
+//        //the semantic predicate looking for "#{"
+//        //Can possibly be fixed by extending the predicate by #{$ as AFAIK the SASS variable is always
+//        //present in the interpolation expression
+//
+//        Node node = NodeUtil.query(result.getParseTree(),
+//                "styleSheet/body/bodyItem/"
+//                + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssClass");
+//        assertNotNull(node);
+//        assertTrue(NodeUtil.containsError(node));
+//
+//    }
 
     public void testMSExpression() throws BadLocationException, ParseException {
         String code =
@@ -924,7 +921,7 @@ public class Css3ParserTest extends CssTestBase {
 //                + "rule/declarations/declaration/propertyValue/error");
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/"
-                + "rule/declarations/declaration/propertyValue/expression/error");
+                + "rule/declarations/declaration/propertyDeclaration/propertyValue/expression/term/error");
         assertNotNull(node);
         assertEquals(15, node.from());
         assertEquals(16, node.to());
@@ -937,7 +934,7 @@ public class Css3ParserTest extends CssTestBase {
 
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/"
-                + "rule/selectorsGroup/selector/simpleSelectorSequence/error");
+                + "rule/selectorsGroup/selector/error");
         assertNotNull(node);
         assertEquals(6, node.from());
         assertEquals(6, node.to());
@@ -948,12 +945,14 @@ public class Css3ParserTest extends CssTestBase {
         CssParserResult result = TestUtil.parse("h1[|");
 //        TestUtil.dumpResult(result);
 
-//        Node node = NodeUtil.query(result.getParseTree(),
-//                "styleSheet/body/bodyset/"
-//                + "rule/selectorsGroup/selector/simpleSelectorSequence/error");
-//        assertNotNull(node);
-//        assertEquals(1, node.from());
-//        assertEquals(6, node.to());
+        assertResult(result, 1); //premature EOF
+
+        Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/body/bodyItem/"
+                + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/slAttribute/error");
+        assertNotNull(node);
+        assertEquals(4, node.from());
+        assertEquals(4, node.to());
 
     }
 
@@ -979,7 +978,7 @@ public class Css3ParserTest extends CssTestBase {
     public void testDuplicatedErrors() throws BadLocationException, ParseException {
         CssParserResult result = TestUtil.parse(
                 "head{\n"
-                + "    background-image: uri();"
+                + "    background-image: uri(;"
                 + "}");
 
         TestUtil.dumpResult(result);
@@ -1049,7 +1048,7 @@ public class Css3ParserTest extends CssTestBase {
         //in the preceding erroneous declaration
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/"
-                + "rule/declarations/declaration|2");
+                + "rule/declarations/declaration|2/propertyDeclaration");
         assertNotNull(node);
 
         //check if the #header rule is properly parsed
@@ -1125,8 +1124,8 @@ public class Css3ParserTest extends CssTestBase {
 
         Node declarations = NodeUtil.query(wkf, "webkitKeyframesBlock/declarations");
         assertNotNull(declarations);
-        assertNotNull(NodeUtil.query(declarations, "declaration/property"));
-        assertNotNull(NodeUtil.query(declarations, "declaration/propertyValue"));
+        assertNotNull(NodeUtil.query(declarations, "declaration/propertyDeclaration/property"));
+        assertNotNull(NodeUtil.query(declarations, "declaration/propertyDeclaration/propertyValue"));
 
         //block2
         block = NodeUtil.query(wkf, "webkitKeyframesBlock|1");
@@ -1136,8 +1135,8 @@ public class Css3ParserTest extends CssTestBase {
 
         declarations = NodeUtil.query(wkf, "webkitKeyframesBlock/declarations");
         assertNotNull(declarations);
-        assertNotNull(NodeUtil.query(declarations, "declaration/property"));
-        assertNotNull(NodeUtil.query(declarations, "declaration/propertyValue"));
+        assertNotNull(NodeUtil.query(declarations, "declaration/propertyDeclaration/property"));
+        assertNotNull(NodeUtil.query(declarations, "declaration/propertyDeclaration/propertyValue"));
 
 
     }
@@ -1192,7 +1191,7 @@ public class Css3ParserTest extends CssTestBase {
         assertEquals(0, result.getDiagnostics().size());
 
         Node term = NodeUtil.query(result.getParseTree(),
-                "styleSheet/body/bodyItem/rule/declarations/declaration/propertyValue/expression/term");
+                "styleSheet/body/bodyItem/rule/declarations/declaration/propertyDeclaration/propertyValue/expression/term");
         assertNotNull(term);
 
         Node uri = NodeUtil.getChildTokenNode(term, CssTokenId.URI);
@@ -1241,7 +1240,7 @@ public class Css3ParserTest extends CssTestBase {
 
     //http://netbeans.org/bugzilla/show_bug.cgi?id=227880
     public void testFunctionArgumentWithMultipleTermsSeparatedByWS() throws ParseException, BadLocationException {
-        assertParses(".test { background: -moz-linear-gradient(center top);\n }", true);
+        assertParses(".test { background: -moz-linear-gradient(center top);\n }");
         assertParses(".test { background: -moz-linear-gradient(center, top);\n }");
         assertParses(".test { background: -moz-linear-gradient(center top, #f3f3f3, #dddddd);\n }");
     }
@@ -1253,6 +1252,45 @@ public class Css3ParserTest extends CssTestBase {
                 + "background: -webkit-linear-gradient(top,  #b02000 0%,#dc4a00 100%);\n"
                 + "background: -o-linear-gradient(top,  #b02000 0%,#dc4a00 100%);\n"
                 + "background: -ms-linear-gradient(top,  #b02000 0%,#dc4a00 100%);\n"
-                + "background: linear-gradient(to bottom,  #b02000 0%,#dc4a00 100%); }", true);
+                + "background: linear-gradient(to bottom,  #b02000 0%,#dc4a00 100%); }");
     }
+
+    public void testJustOneDeclarationNotTerminatedBySemi() throws ParseException, BadLocationException {
+        assertParses(".rcol {\n"
+                + "width:249px\n"
+                + "}\n"
+                + ".clz {\n"
+                + "color:red;\n"
+                + "}");
+    }
+    
+    public void testDeclarationsWithJustOneProperty() throws ParseException, BadLocationException {
+        assertParses("a { color: red }");
+    }
+    
+    public void testDeclarations() throws ParseException, BadLocationException {
+        assertParses("a { color: red; font-weight: bold; margin: thick}");
+    }
+    
+    public void testPropertyValueSeparatedByCommas() throws ParseException, BadLocationException {
+        assertParses("div { font-family: fantasy,monospace; }");
+    }
+    
+    public void testPageContext() throws ParseException, BadLocationException {
+        assertParses("@page:left { margin-left: 2cm }");
+    }
+    
+    public void testParseJustSemiInDeclarations() throws ParseException, BadLocationException {
+        assertParses(".clz { ; }");
+        assertParses(".clz { ; ; }");
+        assertParses(".clz { ;;; ; }");
+        assertParses(".clz { ;;; ; color: red }");
+        assertParses(".clz { ;;; ; color: red; ; }");
+        assertParses(".clz { color: red; ;; }");
+    }
+    
+    public void testMaskFn() throws ParseException, BadLocationException {
+        assertParses(".clz { filter: mask(); }");
+    }
+    
 }

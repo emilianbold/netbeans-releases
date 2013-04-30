@@ -47,19 +47,18 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
-import org.netbeans.modules.team.ui.treelist.LeafNode;
-import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -102,7 +101,7 @@ public class QueryListNode<S extends TeamServer, P> extends SectionNode {
         }
 
         @Override
-        protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
             synchronized (LOCK) {
                 if (null == panel) {
                     panel = new JPanel(new GridBagLayout());
@@ -133,7 +132,7 @@ public class QueryListNode<S extends TeamServer, P> extends SectionNode {
         }
 
         @Override
-        protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
             synchronized (LOCK) {
                 if (null == panel) {
                     panel = new JPanel(new GridBagLayout());

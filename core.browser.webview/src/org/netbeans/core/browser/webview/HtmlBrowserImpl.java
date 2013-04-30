@@ -320,21 +320,6 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
     }
 
     @Override
-    public boolean hasEnhancedMode() {
-        if (getEnhancedBrowser() != null) {
-            return getEnhancedBrowser().hasEnhancedMode();
-        }
-        return false;
-    }
-
-    @Override
-    public void setEnhancedMode(boolean mode) {
-        if (getEnhancedBrowser() != null) {
-            getEnhancedBrowser().setEnhancedMode(mode);
-        }
-    }
-
-    @Override
     public void disablePageInspector() {
         disablePageInspector = true;
         if (getEnhancedBrowser() != null) {

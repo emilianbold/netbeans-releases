@@ -49,7 +49,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -64,7 +63,6 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.WebUtils;
@@ -144,13 +142,14 @@ public class DocumentViewModel implements ChangeListener {
     }
 
     /**
-     * Gets a map of stylesheets -> list of rules
-     *
-     * Do not call in EDT as is involves slow I/O operations!
+     * Gets a map of stylesheets -> list of rules.
+     * 
+     * <b>The method must be called in parsing thread!</b>
      */
-    public synchronized Map<FileObject, List<RuleHandle>> getFilesToRulesMap() {
+    public Map<FileObject, List<RuleHandle>> getFilesToRulesMap() {
         assert !EventQueue.isDispatchThread();
-
+//        assert ParserManager.isParsingThread(); //TODO uncomment once resolved: https://netbeans.org/bugzilla/show_bug.cgi?id=228251
+        
         initialize();
 
         if (needsRefresh) {
@@ -162,7 +161,7 @@ public class DocumentViewModel implements ChangeListener {
     }
 
     private void update() {
-        relatedStylesheets = new HashMap<FileObject, List<RuleHandle>>();
+        relatedStylesheets = new HashMap<>();
 
         DependenciesGraph dependencies = index.getDependencies(file);
         Collection<FileObject> allRelatedFiles = dependencies.getAllReferedFiles();
@@ -179,7 +178,7 @@ public class DocumentViewModel implements ChangeListener {
                                 final CssParserResult result = (CssParserResult) ri.getParserResult();
                                 final Model model = Model.getModel(result);
 
-                                final List<RuleHandle> rules = new ArrayList<RuleHandle>();
+                                final List<RuleHandle> rules = new ArrayList<>();
                                 final ModelVisitor visitor = new ModelVisitor.Adapter() {
                                     @Override
                                     public void visitRule(Rule rule) {

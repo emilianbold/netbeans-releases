@@ -1,14 +1,14 @@
-a A
-argc int
-argv char**
-pExtra void*
-pointer int*
-value int
-A
-B
-C
-In_Macro
-globInt int
-checkZero() void
-globFoo() void
-main(int argc, char** argv) int
+a A	$	    }a
+argc int	$	    }argc
+argv char**	$	    }argv
+pExtra void*	$	    }pExtra
+pointer int*	$	    }pointer
+value int	$	    }value
+A	$	    }A
+B	$	    }B
+C	$	    }C
+In_Macro	$	    }In_Macro
+globInt int	$	    }globInt
+checkZero() void	$	    }checkZero()
+globFoo() void	$	    }globFoo()
+main(int argc, char** argv) int	$	    }main()

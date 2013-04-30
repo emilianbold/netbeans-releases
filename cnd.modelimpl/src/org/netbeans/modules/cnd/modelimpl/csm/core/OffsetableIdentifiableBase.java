@@ -117,7 +117,7 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
             // detect and merge ~ in destructor name
             if (!nameParts.isEmpty() && "~".contentEquals(getLastNamePart())) { //NOI18N
                 nameParts.remove(nameParts.size() - 1);
-                part = "~" + part; //NOI18N
+                part = CharSequences.create("~" + part); //NOI18N
             }
             nameParts.add(new NamePart(part));
         }

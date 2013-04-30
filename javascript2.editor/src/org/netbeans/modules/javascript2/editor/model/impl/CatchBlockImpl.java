@@ -61,9 +61,9 @@ public class CatchBlockImpl extends DeclarationScopeImpl implements JsFunction {
     final private List<JsObject> parameters;
     
     public CatchBlockImpl(DeclarationScope inFunction, Identifier exception, OffsetRange range) {
-        super(inFunction, (JsObject)inFunction, new IdentifierImpl(getBlockName((JsObject)inFunction), OffsetRange.NONE), range); //NOI18N
+        super(inFunction, (JsObject)inFunction, new IdentifierImpl(getBlockName((JsObject)inFunction), OffsetRange.NONE), range, null); //NOI18N
         this.parameters = new ArrayList<JsObject>();
-        ParameterObject param = new ParameterObject(this, exception);
+        ParameterObject param = new ParameterObject(this, exception, null);
         this.parameters.add(param);
         ((JsObjectImpl)inFunction).addProperty(this.getName(), this);
         param.addOccurrence(exception.getOffsetRange());
@@ -90,6 +90,10 @@ public class CatchBlockImpl extends DeclarationScopeImpl implements JsFunction {
             }
         }
         return null;
+    }
+
+    @Override
+    public void addReturnType(TypeUsage type) {
     }
 
     @Override

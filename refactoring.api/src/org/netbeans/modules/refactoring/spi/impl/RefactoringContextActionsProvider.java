@@ -45,12 +45,15 @@ package org.netbeans.modules.refactoring.spi.impl;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
@@ -59,6 +62,8 @@ import org.openide.awt.AcceleratorBinding;
 import org.openide.awt.Actions;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ContextAwareAction;
@@ -117,31 +122,7 @@ public final class RefactoringContextActionsProvider
         }
 
         List <JComponent> result = new ArrayList<JComponent>(fileObjectList.size() + 1);
-        for (FileObject fo : fileObjectList) {
-            try {
-                DataObject dobj = DataObject.find(fo);
-                InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
-                if (ic != null) {
-                    Object instance = ic.instanceCreate();
-
-                    if (instance instanceof Action) { // #201397
-                        AcceleratorBinding.setAccelerator((Action) instance, fo);
-                    }
-
-                    if(instance instanceof ContextAwareAction) {
-                        instance = ((ContextAwareAction)instance).createContextAwareInstance(context);
-                    }
-                    
-                    resolveInstance(instance, result);
-                }
-            } catch (DataObjectNotFoundException ex) {
-                LOG.log(Level.WARNING, fo.toString(), ex);
-            } catch (IOException ex) {
-                LOG.log(Level.WARNING, fo.toString(), ex);
-            } catch (ClassNotFoundException ex) {
-                LOG.log(Level.WARNING, fo.toString(), ex);
-            }
-        }
+        result.addAll(retrieveMenuItems(fileObjectList, context));
 
         if (!result.isEmpty()) {
             // add separator at beginning of the context menu
@@ -171,5 +152,42 @@ public final class RefactoringContextActionsProvider
         }
      }
 
-
+    private List<JComponent> retrieveMenuItems(List<FileObject> files, Lookup context) {
+        List<JComponent> result = new LinkedList<JComponent>();
+        
+        for (FileObject fo : files) {
+            try {
+                if(fo.isFolder()) {
+                    DataFolder dobj = DataFolder.findFolder(fo);
+                    List<FileObject> children = Arrays.asList(fo.getChildren());
+                    children = FileUtil.getOrder(children, false);
+                    JMenu subMenu = new JMenu(dobj.getName());
+                    for (JComponent jComponent : retrieveMenuItems(children, context)) {
+                        subMenu.add(jComponent);
+                    }
+                    result.add(subMenu);
+                } else {
+                    DataObject dobj = DataObject.find(fo);
+                    InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
+                    if (ic != null) {
+                        Object instance = ic.instanceCreate();
+                        if (instance instanceof Action) { // #201397
+                            AcceleratorBinding.setAccelerator((Action) instance, fo);
+                        }
+                        if(instance instanceof ContextAwareAction) {
+                            instance = ((ContextAwareAction)instance).createContextAwareInstance(context);
+                        }
+                        resolveInstance(instance, result);
+                    }
+                }
+            } catch (DataObjectNotFoundException ex) {
+                LOG.log(Level.WARNING, fo.toString(), ex);
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, fo.toString(), ex);
+            } catch (ClassNotFoundException ex) {
+                LOG.log(Level.WARNING, fo.toString(), ex);
+            }
+        }
+        return result;
+    }
 }

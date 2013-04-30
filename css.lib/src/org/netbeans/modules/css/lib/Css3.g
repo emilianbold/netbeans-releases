@@ -137,6 +137,12 @@ package org.netbeans.modules.css.lib;
         return tokenImage.equalsIgnoreCase(input.LT(1).getText());
     }
 
+    private static enum DeclarationType {
+        COMMAND, BLOCK;
+    }
+    
+    private DeclarationType declarationType;
+
 /**
      * Use the current stacked followset to work out the valid tokens that
      * can follow on from the current point in the parse, then recover by
@@ -355,55 +361,50 @@ charSetValue
 
 imports
 	:
-	( importItem ws? )+
+	( importItem ws? SEMI ws? )+
 	;
 	
 importItem
     :   
-        IMPORT_SYM ws? resourceIdentifier ws? mediaQueryList SEMI
+        IMPORT_SYM ws? resourceIdentifier ((ws? mediaQueryList)=>ws? mediaQueryList)?
         |
         //multiple imports in one directive
-        {isScssSource()}? IMPORT_SYM ws? resourceIdentifier ws? (COMMA ws? resourceIdentifier)* mediaQueryList SEMI
+        {isScssSource()}? IMPORT_SYM ws? resourceIdentifier (ws? COMMA ws? resourceIdentifier)* ((ws? mediaQueryList)=>ws? mediaQueryList)?
     ;
 media
     : MEDIA_SYM ws? 
-        
+    (
+//        ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> sass_mq_interpolation_expression
+//        | mediaQueryList
+         mediaQueryList
+    ) ws?
+    LBRACE ws?
         (
-            ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> sass_mq_interpolation_expression ws? 
-            |
-            (mediaQueryList)=>mediaQueryList
-        )
-        
-        LBRACE ws?
-            ( 
-                //allow just semicolon closed declaration
-                (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | sass_declaration_interpolation_expression COLON )=>declaration SEMI ws?
-                | {isScssSource()}? sass_extend ws?
-                | {isScssSource()}? sass_debug ws?
-                | {isScssSource()}? sass_control ws?
-                | {isScssSource()}? sass_content ws?
-                
-                | rule  ws?
-                | page  ws?
-                | fontFace  ws?
-                | vendorAtRule  ws?
-                
-                //Just a partial hotfix for nested MQ
-                //complete grammar is defined in: http://www.w3.org/TR/css3-conditional/#processing
-                | media ws?
-//                | {isScssSource()}? media ws?
-                
-            )*
-         RBRACE
+            (
+            //allow just semicolon closed declaration
+            (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | sass_declaration_interpolation_expression COLON )=>propertyDeclaration ws? SEMI
+            | {isScssSource()}? sass_extend ws? SEMI
+            | {isScssSource()}? sass_debug ws? SEMI
+            | {isScssSource()}? sass_control ws? SEMI
+            | {isScssSource()}? sass_content ws? SEMI            
+            | rule
+            | page
+            | fontFace
+            | vendorAtRule
+            //Just a partial hotfix for nested MQ: complete grammar is defined in: http://www.w3.org/TR/css3-conditional/#processing
+            | media
+            ) ws?
+        )*
+     RBRACE
     ;
 
 mediaQueryList
- : ( mediaQuery ( COMMA ws? mediaQuery )* )?
+ : mediaQuery ( (ws? COMMA ws? mediaQuery)=> ws? COMMA ws? mediaQuery )*
  ;
  
 mediaQuery
- : (mediaQueryOperator ws? )?  mediaType ws? ( AND ws? mediaExpression )*
- | mediaExpression ( AND ws? mediaExpression )*
+ : (mediaQueryOperator ws? )?  mediaType ( ws? AND ws? mediaExpression )*
+ | mediaExpression ( ws? AND ws? mediaExpression )*
  ;
  
 mediaQueryOperator
@@ -411,15 +412,15 @@ mediaQueryOperator
  	;
  
 mediaType
- : IDENT | GEN
+ : IDENT | GEN | {isCssPreprocessorSource()}? sass_interpolation_expression_var
  ;
  
 mediaExpression
-    : LPAREN ws? mediaFeature ws? ( COLON ws? expression ws?)? RPAREN ws?
+    : LPAREN ws? mediaFeature (ws? COLON ws? expression)? ws? RPAREN
     ;
  
 mediaFeature
- : IDENT | GEN | {isCssPreprocessorSource()}? cp_variable
+ : IDENT | GEN | {isCssPreprocessorSource()}? ( cp_variable | sass_interpolation_expression_var )
  ;
  
  body	:	
@@ -428,14 +429,13 @@ mediaFeature
  
 bodyItem
     : 
-        //following combination of semantic and syntactic predicated doesn't work
-//        | {isCssPreprocessorSource()}? (cp_mixin_call)=>cp_mixin_call
-        (cp_mixin_call)=>cp_mixin_call
+        (cp_mixin_call ws? SEMI)=>cp_mixin_call ws? SEMI
     	| rule
         | at_rule
-        | {isCssPreprocessorSource()}? cp_variable_declaration
-        | {isCssPreprocessorSource()}? importItem //not exactly acc. to the spec, since just CP stuff can preceede, but is IMO satisfactory
-        | {isScssSource()}? sass_debug
+        | {isCssPreprocessorSource()}? cp_variable_declaration ws? SEMI
+        //not exactly acc. to the spec, since just CP stuff can preceede, but is IMO satisfactory
+        | {isCssPreprocessorSource()}? importItem ws? SEMI
+        | {isScssSource()}? sass_debug  ws? SEMI
         | {isScssSource()}? sass_control
         | {isScssSource()}? sass_function_declaration
     ; catch[ RecognitionException rce] {
@@ -493,7 +493,7 @@ webkitKeyframesBlock
 	webkitKeyframeSelectors ws?
 //	LBRACE  ws? syncToDeclarationsRule
 	LBRACE  ws? syncToFollow
-		declarations
+		declarations?
 	RBRACE 
 	;	
 	
@@ -508,26 +508,26 @@ page
             //the grammar in the http://www.w3.org/TR/css3-page/ says the declaration/margins should be delimited by the semicolon,
             //but there's no such char in the examples => making it arbitrary
             //the original rule:
-            (declaration|margin ws?)? (SEMI ws? (declaration|margin ws?)?)*
+            ((propertyDeclaration|margin) ws?)? (SEMI ws? ((propertyDeclaration|margin) ws?)?)*
         RBRACE
     ;
     
 counterStyle
     : COUNTER_STYLE_SYM ws? IDENT ws?
         LBRACE ws? syncToDeclarationsRule
-		declarations
+		declarations?
         RBRACE
     ;
     
 fontFace
     : FONT_FACE_SYM ws?
         LBRACE ws? syncToDeclarationsRule
-		declarations
+		declarations?
         RBRACE
     ;
 
 margin	
-	: margin_sym ws? LBRACE ws? syncToDeclarationsRule declarations RBRACE
+	: margin_sym ws? LBRACE ws? syncToDeclarationsRule declarations? RBRACE
        ;
        
 margin_sym 
@@ -558,14 +558,7 @@ operator
     : SOLIDUS
     | COMMA
     ;
-    
-combinator
-    : PLUS ws?
-    | GREATER ws?
-    | TILDE ws?//use this rule preferably
-    | 
-    ;
-    
+        
 unaryOperator
     : MINUS
     | PLUS
@@ -591,9 +584,9 @@ rule
     ( 
         (cp_mixin_declaration)=>cp_mixin_declaration  //ws: (cp_mixin_declaration)=>cp_mixin_declaration
         | selectorsGroup
-    )
+    ) ws?
     LBRACE ws? syncToFollow //was: syncToDeclarationsRule
-        declarations        
+        declarations?
     RBRACE
     ;
     catch[ RecognitionException rce] {
@@ -601,77 +594,75 @@ rule
         consumeUntil(input, BitSet.of(RBRACE));
         input.consume(); //consume the RBRACE as well   
     }
-
-//cp_mixin
-//    :
-//    cp_mixin_declaration LBRACE ws? syncToFollow 
-//    (at_rule ws? | declarations)
-//    RBRACE
-//    ;
     
 declarations
     :
-            (
-                (cp_variable_declaration)=>cp_variable_declaration ws?
-                |
-                //the DECLARATION rule needs to be before the RULE rule as the 
-                //syn.predicate for the RULE rule also accepts the declaration,
-                //(is less specific).
-//		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_declaration_interpolation_expression COLON )=>declaration SEMI ws?
-		(declaration SEMI)=>declaration SEMI ws?
-                |
-                //for the error recovery - if the previous synt. predicate fails (an error in the declaration)
-                //we be still able to recover INSIDE the declaration
-		(~(LBRACE|SEMI|RBRACE|COLON)* COLON ~(SEMI|LBRACE|RBRACE)* SEMI)=>declaration SEMI ws?
-		|
-		(sass_nested_properties)=>sass_nested_properties ws?
-		|
-//                cp_mixin ws?
-//                | 
-                (rule)=>rule ws?
-                |
-                {isCssPreprocessorSource()}? at_rule ws?
-                |
-                {isScssSource()}? sass_extend ws?
-                |
-                {isScssSource()}? sass_debug ws?
-                |
-                {isScssSource()}? sass_control ws?
-                |
-                {isCssPreprocessorSource()}? media ws?
-                |
-                {isCssPreprocessorSource()}? cp_mixin_call ws?
-                |
-                {isScssSource()}? sass_content ws?
-                |
-                {isScssSource()}? sass_function_return ws? //not nice
-                |
-                {isScssSource()}? importItem ws?
-                |
-                (~SEMI* SEMI)=>syncTo_SEMI //doesn't work :-(
-            )*
-            declaration?
+//    declaration
+    ( 
+//        (
+//        {declarationType == DeclarationType.BLOCK}? ((ws? SEMI)=>ws? SEMI)? ws? declaration?
+//        | {declarationType == DeclarationType.COMMAND}? ws? SEMI ws? declaration?
+//        )
+         ( declaration ((ws? SEMI)=>ws? SEMI)? ws? )
+         |
+         ( SEMI ws? )
+    )+
     ;
+//    (
+//        (declaration ws? SEMI)=>declaration ws? SEMI ws?
+//        | (declaration_block)=>declaration_block ws?
+//    )*
+//    (declaration ws?)?
+//    ;
+
+//block items separated by semicolons
+declaration
+    :
+    (cp_variable_declaration)=>cp_variable_declaration { declarationType = DeclarationType.COMMAND; }
+    | (sass_nested_properties)=>sass_nested_properties { declarationType = DeclarationType.BLOCK; }
+    | (propertyDeclaration)=>propertyDeclaration { declarationType = DeclarationType.COMMAND; }
+    //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
+    | (~(LBRACE|SEMI|RBRACE|COLON)* COLON)=>propertyDeclaration { declarationType = DeclarationType.COMMAND; }
+    | (rule)=>rule { declarationType = DeclarationType.BLOCK; }
+    | {isCssPreprocessorSource()}? at_rule { declarationType = DeclarationType.BLOCK; }
+    | {isScssSource()}? sass_control { declarationType = DeclarationType.COMMAND; }
+    | {isScssSource()}? sass_extend { declarationType = DeclarationType.COMMAND; }
+    | {isScssSource()}? sass_debug { declarationType = DeclarationType.COMMAND; }
+    | {isCssPreprocessorSource()}? cp_mixin_call { declarationType = DeclarationType.COMMAND; }
+    | {isScssSource()}? sass_content { declarationType = DeclarationType.BLOCK; }
+    | {isScssSource()}? sass_function_return { declarationType = DeclarationType.COMMAND; }
+    | {isScssSource()}? importItem { declarationType = DeclarationType.COMMAND; }
+    ;
+    catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(SEMI));
+    }
     
 selectorsGroup
     :	
         // looking for #{, lookeahead exited by { (rule beginning)
-        ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> sass_selector_interpolation_expression ws? 
+        ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> sass_selector_interpolation_expression
 	|
         selector (COMMA ws? selector)*
     ;
         
 selector
-    : simpleSelectorSequence (combinator simpleSelectorSequence)*
+    : simpleSelectorSequence ( ((ws? combinator ws?)|ws) simpleSelectorSequence)*
     ;
  
+combinator
+    : 
+    PLUS | GREATER | TILDE
+    ;
 
 simpleSelectorSequence
 	:   
         //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
-	( typeSelector ((esPred)=>elementSubsequent ws?)* )
+	//( typeSelector ((ws? esPred)=>ws? elementSubsequent)* )
+	( typeSelector ((ws? esPred)=>ws? elementSubsequent)* )
 	| 
-	( ((esPred)=>elementSubsequent ws?)+ )
+	elementSubsequent ((ws? esPred)=>ws? elementSubsequent)*
+	//( ((esPred)=>elementSubsequent)+ )
 	;
 	catch[ RecognitionException rce] {
             reportError(rce);
@@ -685,7 +676,7 @@ esPred
        
 typeSelector 
 	options { k = 2; }
- 	:  (((IDENT | STAR)? PIPE)=>namespacePrefix)? ( elementName ws? )
+ 	:  (((IDENT | STAR)? PIPE)=>namespacePrefix)? elementName
  	;
 
 namespacePrefix
@@ -779,10 +770,10 @@ pseudo
              )
     ;
 
-declaration
+propertyDeclaration
     : 
-    STAR? property COLON ws? propertyValue ws? (prio ws?)?
-    | {isCssPreprocessorSource()}? STAR? property COLON ws? cp_propertyValue ws? //cp_expression may contain the IMPORT_SYM
+    STAR? property COLON ws? propertyValue (ws? prio)?
+    | {isCssPreprocessorSource()}? STAR? property COLON ws? cp_propertyValue //cp_expression may contain the IMPORT_SYM
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -848,7 +839,8 @@ prio
     ;
     
 expression
-    : term ( ( ws | (ws? operator ws?) | /* nothing */) term)*
+    : term ( (( ws | (ws? operator ws?) | /* nothing */) term)=> ( ws | (ws? operator ws?) | /* nothing */) term)*
+//    : term ( ( ws | (ws? operator ws?) | /* nothing */) term)*
     ;
     
 term
@@ -873,6 +865,7 @@ term
         | URI
         | hexColor
         | {isCssPreprocessorSource()}? cp_variable
+        | {isCssPreprocessorSource()}? sass_interpolation_expression_var
     )
     ;
 
@@ -880,11 +873,13 @@ function
 	: 	functionName ws?
 		LPAREN ws?
 		(
-                    (expression)=>expression ws?
-                    | (cp_args_list)=>cp_args_list
-                    | (cp_expression_list)=>cp_expression_list ws?
-                    | (fnAttributeName ws? OPEQ)=>fnAttribute (COMMA ws? fnAttribute )*
-                    | {isCssPreprocessorSource()}? //empty
+//                    (fnAttributeName ws? OPEQ)=>fnAttribute (COMMA ws? fnAttribute )*
+//                    | expression ws?
+//                    | (cp_expression_list)=>cp_expression_list ws?
+//                    | (cp_args_list)=>cp_args_list
+//                    | fnAttributes
+                    fnAttributes
+                    | //empty
 		)
 		RPAREN
 	;
@@ -901,18 +896,28 @@ functionName
         (IDENT COLON)? IDENT (DOT IDENT)*
 //	IDENT
     	;
-    	
+
+fnAttributes
+    :
+    fnAttribute (ws? COMMA ws? fnAttribute)* ws?
+    ;
+
 fnAttribute
-	: fnAttributeName ws? OPEQ ws? fnAttributeValue ws?
+	: 
+        (fnAttributeName ws? (OPEQ|COLON) )=>fnAttributeName ws? (OPEQ|COLON) ws? fnAttributeValue
+        | {isCssPreprocessorSource()}? cp_expression
+        | expression
 	;
     
 fnAttributeName
-	: IDENT (DOT IDENT)*
+	: 
+            IDENT (DOT IDENT)*
+            | {isCssPreprocessorSource()}? cp_variable
 	;
 	
 fnAttributeValue
 	: 
-            expression
+            term ( (( ws | (ws? SOLIDUS ws?) | /* nothing */) term)=> ( ws | (ws? SOLIDUS ws?) | /* nothing */) term)* //== expression w/o COMMAs
             | {isCssPreprocessorSource()}? cp_math_expression
 	;
     
@@ -929,9 +934,9 @@ ws
 //ENTRY POINT FROM CSS GRAMMAR
 cp_variable_declaration
     : 
-        {isLessSource()}? cp_variable ws? COLON ws? cp_expression_list ws? SEMI    
+        {isLessSource()}? cp_variable ws? COLON ws? cp_expression_list
         | 
-        {isScssSource()}? cp_variable ws? COLON ws? cp_expression_list ws? (SASS_DEFAULT ws?)? SEMI    
+        {isScssSource()}? cp_variable ws? COLON ws? cp_expression_list (ws? SASS_DEFAULT)?
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR    
@@ -946,7 +951,7 @@ cp_variable
 cp_expression_list
     :
     cp_expression
-    (ws? COMMA ws? cp_expression)*
+    ((ws? COMMA ws? cp_expression)=>ws? COMMA ws? cp_expression)*
     ;
 
 //expression:
@@ -986,6 +991,7 @@ cp_expression_atom
     :    
         (NOT ws?)? 
         (
+//            cp_math_expression
             (cp_math_expression)=>cp_math_expression
             | LPAREN ws? cp_expression_list ws? RPAREN
         )
@@ -1021,7 +1027,6 @@ cp_math_expression_atom
     :    
     term
     | IMPORTANT_SYM //cp property value may contain any gargabe - TODO - possibly add other garbage tokens
-    | ( unaryOperator ws? )? sass_interpolation_expression_var //SASS interpolation expression also in expressions e.g. variable declaration value
     | ( unaryOperator ws? )? LPAREN ws? cp_math_expression ws? RPAREN 
     ;
 
@@ -1033,9 +1038,9 @@ cp_math_expression_atom
 //ENTRY POINT FROM CSS GRAMMAR
 cp_mixin_declaration
     :
-    {isLessSource()}? DOT cp_mixin_name ws? LPAREN ws? cp_args_list? RPAREN ws? (less_mixin_guarded ws?)?
+    {isLessSource()}? DOT cp_mixin_name ws? LPAREN ws? cp_args_list? RPAREN (ws? less_mixin_guarded)?
     |
-    {isScssSource()}? SASS_MIXIN ws cp_mixin_name ws? (LPAREN ws? cp_args_list? RPAREN ws?)?
+    {isScssSource()}? SASS_MIXIN ws cp_mixin_name (ws? LPAREN ws? cp_args_list? RPAREN)?
     ;
 
 //allow: .mixin; .mixin(); .mixin(@param, #77aa00); 
@@ -1047,7 +1052,7 @@ cp_mixin_call
         |
         {isScssSource()}? SASS_INCLUDE ws cp_mixin_name
     )
-    (ws? LPAREN ws? cp_mixin_call_args? RPAREN)? ws? SEMI
+    (ws? LPAREN ws? cp_mixin_call_args? RPAREN)?
     ;
         
 cp_mixin_name
@@ -1185,23 +1190,23 @@ sass_declaration_interpolation_expression
 //
 //    ;
     
-sass_mq_interpolation_expression
-    :
-        ( 
-            (sass_interpolation_expression_var)=>sass_interpolation_expression_var
-            |
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
-        )
-        ( 
-            ws?
-            (
-                (sass_interpolation_expression_var)=>sass_interpolation_expression_var
-                |
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
-            )
-        )*
-
-    ;
+//sass_mq_interpolation_expression
+//    :
+//        ( 
+//            (sass_interpolation_expression_var)=>sass_interpolation_expression_var
+//            |
+//            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
+//        )
+//        ( 
+//            ws?
+//            (
+//                (sass_interpolation_expression_var)=>sass_interpolation_expression_var
+//                |
+//                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
+//            )
+//        )*
+//
+//    ;
     
 sass_interpolation_expression_var
     :
@@ -1228,12 +1233,12 @@ sass_interpolation_expression_var
 //}
 sass_nested_properties
     :
-    property COLON ws? (propertyValue ws?)? LBRACE ws? syncToFollow declarations RBRACE
+    property COLON ws? (propertyValue ws?)? LBRACE ws? syncToFollow declarations? RBRACE
     ;
 
 sass_extend
     :
-    SASS_EXTEND ws simpleSelectorSequence (SASS_OPTIONAL ws?)? SEMI
+    SASS_EXTEND ws simpleSelectorSequence (ws? SASS_OPTIONAL)?
     ;
     
 sass_extend_only_selector
@@ -1243,7 +1248,7 @@ sass_extend_only_selector
 
 sass_debug
     :
-    ( SASS_DEBUG | SASS_WARN ) ws cp_expression SEMI
+    ( SASS_DEBUG | SASS_WARN ) ws cp_expression
     ;
     
 sass_control
@@ -1285,7 +1290,7 @@ sass_while
 
 sass_control_block
     :
-    LBRACE ws? declarations RBRACE //likely not enough!
+    LBRACE ws? declarations? RBRACE //likely not enough!
     ;
     
 sass_function_declaration
@@ -1294,7 +1299,7 @@ sass_function_declaration
     //but so far haven't found any such example so I put the declarations rule inside
     //and added the sass_function_return into the declarations rule itself (not fully correct) 
     //as the return should be allowed only from the sass function declaration
-    SASS_FUNCTION ws sass_function_name ws? LPAREN cp_args_list? RPAREN ws? LBRACE ws? declarations RBRACE
+    SASS_FUNCTION ws sass_function_name ws? LPAREN cp_args_list? RPAREN ws? LBRACE ws? declarations? RBRACE
     ;
     
 sass_function_name
@@ -1304,12 +1309,12 @@ sass_function_name
 
 sass_function_return
     :
-    SASS_RETURN ws cp_expression SEMI
+    SASS_RETURN ws cp_expression
     ;
     
 sass_content
     :
-    SASS_CONTENT ws? SEMI
+    SASS_CONTENT
     ;
 
 //*** END OF LESS SYNTAX ***

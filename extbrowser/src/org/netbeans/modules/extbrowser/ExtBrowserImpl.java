@@ -89,7 +89,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     private BrowserTabDescriptor browserTabDescriptor = null;
     
     private boolean enhancedMode;
-    
+
     private boolean disablePageInspector = false;
     private boolean liveHTMLEnabled = false;
     
@@ -106,22 +106,14 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         pcs = new PropertyChangeSupport (this);
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.browser.api.EnhancedBrowser#hasEnhancedMode()
-     */
-    @Override
     public boolean hasEnhancedMode() {
         return enhancedMode;
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.browser.api.EnhancedBrowser#setEnhancedMode(boolean)
-     */
-    @Override
-    public void setEnhancedMode( boolean mode ) {
+
+    void setEnhancedMode( boolean mode ) {
         enhancedMode = mode;
     }
-    
+
     @Override
     public void disablePageInspector() {
         this.disablePageInspector = true;

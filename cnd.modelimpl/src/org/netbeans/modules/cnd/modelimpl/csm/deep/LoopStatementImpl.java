@@ -164,8 +164,10 @@ public final class LoopStatementImpl extends StatementBase implements CsmLoopSta
         @Override
         public LoopStatementImpl create() {
             LoopStatementImpl stmt = new LoopStatementImpl(postCheck, getScope(), getFile(), getStartOffset(), getEndOffset());
-            body.setScope(stmt);
-            stmt.body = body.create();
+            if (body != null) {
+                body.setScope(stmt);
+                stmt.body = body.create();
+            }
             if(conditionDeclaration != null) {
                 conditionDeclaration.setScope(stmt);
                 stmt.condition = conditionDeclaration.create();

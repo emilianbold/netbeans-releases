@@ -69,7 +69,7 @@ public class NestedFoldManagerTest extends TestCase {
         super(testName);
     }
     
-    public void test() {
+    public void test() throws BadLocationException {
         test(true);
         test(false);
     }
@@ -77,11 +77,12 @@ public class NestedFoldManagerTest extends TestCase {
     /**
      * Test the creation of several folds.
      */
-    public void test(boolean outerFirst) {
+    public void test(boolean outerFirst) throws BadLocationException {
         FoldHierarchyTestEnv env = new FoldHierarchyTestEnv(new NestedFoldManagerFactory(outerFirst));
+        AbstractDocument doc = env.getDocument();
+        doc.insertString(0, "1234567890", null);
 
         FoldHierarchy hierarchy = env.getHierarchy();
-        AbstractDocument doc = env.getDocument();
         doc.readLock();
         try {
             hierarchy.lock();

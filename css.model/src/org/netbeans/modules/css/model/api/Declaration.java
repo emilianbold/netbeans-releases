@@ -41,30 +41,14 @@
  */
 package org.netbeans.modules.css.model.api;
 
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-
 /**
  *
  * @author marekfukala
  */
 public interface Declaration extends Element {
     
-    public Property getProperty();
-    
-    public void setProperty(Property property);
-    
-    public PropertyValue getPropertyValue();
-    
-    public void setPropertyValue(PropertyValue propertyValue);
-    
-    public Prio getPrio();
-    
-    public void setPrio(Prio prio);
-    
-     /**
-     * Returns an instance of {@link ResolvedProperty} which is an object
-     * encapsulation result of the css property value parsing.
-     */
-    public ResolvedProperty getResolvedProperty();
+   public PropertyDeclaration getPropertyDeclaration();
+   
+   public void setPropertyDeclaration(PropertyDeclaration propertyDeclaration);
     
 }

@@ -798,32 +798,70 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
     }
     private final Comparator<LayoutNode> nodePositionComparator = new Comparator<LayoutNode>() {
 
+        @Override
         public int compare(LayoutNode n1, LayoutNode n2) {
-            return n1.pos - n2.pos;
+            int res = n1.pos - n2.pos;
+            if (res == 0) {
+                res = n1.toString().compareTo(n1.toString());
+                if (res == 0) {
+                    res = System.identityHashCode(n1) - System.identityHashCode(n2);
+                }
+            }
+            return res;
         }
     };
     private final Comparator<LayoutNode> nodeProcessingDownComparator = new Comparator<LayoutNode>() {
 
+        @Override
         public int compare(LayoutNode n1, LayoutNode n2) {
+            if (n1.vertex == null && n2.vertex == null) {
+                int res = n1.toString().compareTo(n1.toString());
+                if (res == 0) {
+                    res = System.identityHashCode(n1) - System.identityHashCode(n2);
+                }
+                return res;
+            }
             if (n1.vertex == null) {
                 return -1;
             }
             if (n2.vertex == null) {
                 return 1;
             }
-            return n1.preds.size() - n2.preds.size();
+            int res = n1.preds.size() - n2.preds.size();
+            if (res == 0) {
+                res = n1.toString().compareTo(n1.toString());
+                if (res == 0) {
+                    res = System.identityHashCode(n1) - System.identityHashCode(n2);
+                }
+            }
+            return res;
         }
     };
     private final Comparator<LayoutNode> nodeProcessingUpComparator = new Comparator<LayoutNode>() {
 
+        @Override
         public int compare(LayoutNode n1, LayoutNode n2) {
+            if (n1.vertex == null && n2.vertex == null) {
+                int res = n1.toString().compareTo(n1.toString());
+                if (res == 0) {
+                    res = System.identityHashCode(n1) - System.identityHashCode(n2);
+                }
+                return res;
+            }
             if (n1.vertex == null) {
                 return -1;
             }
             if (n2.vertex == null) {
                 return 1;
             }
-            return n1.succs.size() - n2.succs.size();
+            int res = n1.succs.size() - n2.succs.size();
+            if (res == 0) {
+                res = n1.toString().compareTo(n1.toString());
+                if (res == 0) {
+                    res = System.identityHashCode(n1) - System.identityHashCode(n2);
+                }
+            }
+            return res;
         }
     };
 

@@ -79,4 +79,16 @@ public interface EnhancedBrowserFactory {
      * is used instead.)
      */
     String getId();
+
+    /**
+     * Is this factory producing browsers with tight NetBeans integration.
+     * @return
+     */
+    boolean hasNetBeansIntegration();
+
+    /**
+     * Can this factory produce a browser for current OS? This is an API alternative
+     * to using "hidden" attribute in registrations via module layer.
+     */
+    boolean canCreateHtmlBrowserImpl();
 }

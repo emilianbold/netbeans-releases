@@ -42,10 +42,9 @@
 package org.netbeans.modules.css.model.impl;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.model.api.ModelTestBase;
 import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.ModelTestBase;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.parsing.spi.ParseException;
 
@@ -66,13 +65,9 @@ public class DeclarationITest extends ModelTestBase {
         Declaration d = styleSheet.getBody().getRules().get(0).getDeclarations().getDeclarations().get(0);
         assertNotNull(d);
         
-        ResolvedProperty rp = d.getResolvedProperty();
-        assertNotNull(rp);
+        PropertyDeclaration pd = d.getPropertyDeclaration();
+        assertNotNull(pd);
         
-        assertTrue(rp.isResolved());
-        Node ptree = rp.getParseTree();
-        
-        assertNotNull(ptree);
     }
     
     

@@ -53,7 +53,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.editor.search.EditorFindSupport;
-import org.netbeans.modules.editor.search.SearchNbEditorKit;
 import org.netbeans.spi.editor.AbstractEditorAction;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
@@ -62,7 +61,7 @@ import org.openide.util.actions.Presenter;
 
 //    @EditorActionRegistration(name = BaseKit.toggleHighlightSearchAction,
 @EditorActionRegistration(name = BaseKit.toggleHighlightSearchAction, iconResource = "org/netbeans/modules/editor/search/resources/toggle_highlight.png") // NOI18N
-public class ToggleHighlightSearchAction extends AbstractEditorAction implements Presenter.Toolbar {
+public class ToggleHighlightSearchAction extends AbstractEditorAction {
     static final long serialVersionUID = 4603809175771743200L;
 
 
@@ -74,6 +73,7 @@ public class ToggleHighlightSearchAction extends AbstractEditorAction implements
         b.setAction(this);
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         if (target != null) {
             Boolean cur = (Boolean) EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH);
@@ -86,6 +86,7 @@ public class ToggleHighlightSearchAction extends AbstractEditorAction implements
         }
     }
 
+    @Override
     public Component getToolbarPresenter() {
         JToggleButton b = new MyGaGaButton();
         b.setModel(new HighlightButtonModel());
@@ -102,6 +103,7 @@ public class ToggleHighlightSearchAction extends AbstractEditorAction implements
             propertyChange(null);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt == null || evt.getPropertyName() == null || evt.getPropertyName().equals(EditorFindSupport.FIND_HIGHLIGHT_SEARCH)) {
                 Boolean value = (Boolean) EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH);
@@ -129,6 +131,7 @@ public class ToggleHighlightSearchAction extends AbstractEditorAction implements
             stateChanged(null);
         }
 
+        @Override
         public void stateChanged(ChangeEvent evt) {
             boolean selected = isSelected();
             super.setContentAreaFilled(selected);

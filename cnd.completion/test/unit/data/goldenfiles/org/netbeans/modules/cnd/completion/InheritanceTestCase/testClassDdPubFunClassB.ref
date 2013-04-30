@@ -1,4 +1,4 @@
-bProt int
-bPub int
-bProtFun() void
-bPubFun() void
+bProt int	$	    ClassB::bProt
+bPub int	$	    ClassB::bPub
+bProtFun() void	$	    ClassB::bProtFun()
+bPubFun() void	$	    ClassB::bPubFun()

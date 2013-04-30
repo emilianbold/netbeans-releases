@@ -56,6 +56,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyVetoException;
+import javax.swing.JButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.openide.cookies.SaveCookie;
 
@@ -287,12 +290,31 @@ public class TransformPerformer {
             }
             transformPanel = new TransformPanel(xmlDO, xmlStylesheetName, xslDO);
             
+            final JButton[] options = new JButton[] {
+                new JButton(NbBundle.getMessage(TransformPerformer.class, "LBL_GoTransform")),
+                new JButton(NbBundle.getMessage(TransformPerformer.class, "LBL_Cancel")), 
+            };
+            
             dialogDescriptor = new DialogDescriptor(transformPanel,
                     NbBundle.getMessage(TransformPerformer.class, "NAME_transform_panel_title"), true,
-                    DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
+                    options,
+                    options[0],
                     DialogDescriptor.BOTTOM_ALIGN,
-                    new HelpCtx(TransformAction.class), null);
-            dialogDescriptor.setClosingOptions(new Object[] { DialogDescriptor.CANCEL_OPTION });
+                    new HelpCtx(TransformAction.class), 
+                    null);
+
+            class L implements ChangeListener {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    options[0].setEnabled(transformPanel.isValid());
+                }
+
+            }
+            L l = new L();
+            transformPanel.setChangeListener(l);
+            options[0].setEnabled(transformPanel.isValid());
+            
+            dialogDescriptor.setClosingOptions(options);
             dialogDescriptor.setButtonListener(this);
             
             dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);

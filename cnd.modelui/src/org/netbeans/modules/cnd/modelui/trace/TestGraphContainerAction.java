@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.modelui.trace;
 
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.trace.CodeModelDiagnostic;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -77,20 +77,18 @@ public class TestGraphContainerAction extends TestProjectActionBase {
 
     private void testGraphContainer(Collection<CsmProject> projects) {
         for (CsmProject p : projects) {
-            testFileContainer((ProjectBase) p);
+            testFileContainer(p);
         }
     }
     
     
-    private void testFileContainer(ProjectBase project) {
+    private void testFileContainer(CsmProject project) {
         InputOutput io = IOProvider.getDefault().getIO("graph container for " + project.getName(), false); // NOI18N
         io.select();
         final OutputWriter out = io.getOut();
-        ProjectBase.dumpProjectGrapthContainer(project, out);
+        CodeModelDiagnostic.dumpProjectGrapthContainer(project, out);
         for(CsmProject lib : project.getLibraries()){
-            if (lib instanceof ProjectBase) {
-                ProjectBase.dumpProjectGrapthContainer((ProjectBase)lib, out);
-            }
+            CodeModelDiagnostic.dumpProjectGrapthContainer(lib, out);
         }
         out.close();
     }

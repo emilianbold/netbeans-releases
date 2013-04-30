@@ -1,5 +1,5 @@
 Name: Java Server Faces
-Version: 2.2.0-m08
+Version: 2.2.0 (b14 + GLASSFISH-20292 fix)
 License: CDDL-1.0
 OSR: Sun
 Description: Java Server Faces

@@ -96,6 +96,7 @@ public class LogFileIsKeptAtSizeOf1000Test extends NbTestCase {
     protected void setUp() throws Exception {
         UIHandler.flushImmediatelly();
         System.setProperty("netbeans.user", getWorkDirPath());
+        InstallerTest.assureInstallFileLocatorUserDir(getWorkDirPath());
         clearWorkDir();
         
         installer = Installer.findObject(Installer.class, true);

@@ -81,7 +81,7 @@ position = 200)
         displayName = "#CTL_CssStylesAction", // NOI18N
 preferredID = CssStylesTC.ID)
 @NbBundle.Messages({
-    "CTL_CssStylesAction=CSS Styles", // NOI18N
+    "CTL_CssStylesAction=CSS &Styles", // NOI18N
     "CTL_CssStylesTC.title={0}CSS Styles", // NOI18N
     "HINT_CssStylesTC=This window shows matched style rules of an element and allows to edit them.", // NOI18N
     "CssStylesTC.no.content=No Content"

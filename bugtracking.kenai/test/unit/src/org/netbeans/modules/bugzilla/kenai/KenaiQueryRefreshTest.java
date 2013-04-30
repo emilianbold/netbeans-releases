@@ -53,7 +53,7 @@ import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.LogHandler;
 import org.netbeans.modules.bugzilla.TestConstants;
@@ -118,7 +118,7 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
     public void testKenaiQueryNoAutoRefresh() throws Throwable {
         final String summary = "summary" + System.currentTimeMillis();
         BugzillaConfig.getInstance().setQueryRefreshInterval(0); // would mean refresh imediately
-        BugzillaConfig.getInstance().setQueryAutoRefresh(QUERY_NAME, false);
+//        BugzillaConfig.getInstance().setQueryAutoRefresh(QUERY_NAME, false);
 
         LogHandler schedulingHandler = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH);
 
@@ -133,49 +133,8 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
 
     }
 
-    public void testKenaiQueryAutoRefresh() throws Throwable {
-        final String summary = "summary" + System.currentTimeMillis();
-        BugzillaConfig.getInstance().setQueryRefreshInterval(1); // 1 minute
-        BugzillaConfig.getInstance().setQueryAutoRefresh(QUERY_NAME, true);
-
-        LogHandler refreshHandler = new LogHandler("refresh finish -", LogHandler.Compare.STARTS_WITH, 12000);
-        LogHandler schedulingHandler = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH, 12000);
-
-        // create issue
-        KenaiRepository repo = getKenaiRepository();
-        String id = TestUtil.createIssue(repo, summary);
-        assertNotNull(id);
-
-        // create query
-        LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
-        String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
-        final BugzillaQuery q = new KenaiQuery(QUERY_NAME, repo, p, TEST_PROJECT, true, false);
-        h.waitUntilDone();
-        QueryTestUtil.selectTestProject(q);
-        refreshHandler.reset();
-
-        // kenai queries are auto refreshed no matter if they are open or not, so
-        // we don't have to do anything with the query - just wait until it gets refreshed.
-
-        schedulingHandler.waitUntilDone();
-        refreshHandler.waitUntilDone();
-
-        assertTrue(schedulingHandler.isDone());
-        assertTrue(refreshHandler.isDone());
-        Collection<BugzillaIssue> issues = q.getIssues(IssueCache.ISSUE_STATUS_ALL);
-        assertEquals(1, issues.size());
-    }
-
     private BugzillaRepository getRepository() {
         return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
     }
 
-    private KenaiRepository getKenaiRepository() throws IOException {
-        KenaiProject kp = KenaiUtil.getKenaiProject("https://testjava.net", "nb-jnet-test");
-        // even if the actually used repository is different, it should have no effect on the result
-        return new KenaiRepository(kp, REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD.toCharArray(), "product=" + TEST_PROJECT, TEST_PROJECT);
-    }
-
-
-    
 }

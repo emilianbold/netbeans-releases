@@ -217,9 +217,8 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     }
     
     private static List<TableRow> createModel() {
-        boolean noSelectedBrowser = true;
         List<TableRow> model = new ArrayList<TableRow>();
-        for (WebBrowser browser : WebBrowsers.getInstance().getAll(false, true, false, true)) {
+        for (WebBrowser browser : WebBrowsers.getInstance().getAll(false, false, false, true)) {
             if (browser.isEmbedded()) {
                 continue;
             }
@@ -229,25 +228,15 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         return model;
     }
     
-    public static List<WebBrowserDesc> getBrowsers() {
+    public static List<WebBrowser> getBrowsers() {
         List<TableRow> model = createModel();
-        List<WebBrowserDesc> res = new ArrayList<WebBrowserDesc>();
+        List<WebBrowser> res = new ArrayList<WebBrowser>();
         for (TableRow row : model) {
             if (row.isSelected()) {
-                res.add(new WebBrowserDesc(row.getBrowser(), row.hasNbIntegration()));
+                res.add(row.getBrowser());
             }
         }
         return res;
-    }
-    
-    public static class WebBrowserDesc {
-        public WebBrowser browser;
-        public boolean nbIntegration;
-
-        public WebBrowserDesc(WebBrowser browser, boolean nbIntegration) {
-            this.browser = browser;
-            this.nbIntegration = nbIntegration;
-        }
     }
     
     /**

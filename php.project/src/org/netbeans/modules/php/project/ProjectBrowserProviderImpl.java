@@ -51,7 +51,7 @@ import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 
@@ -74,17 +74,16 @@ public final class ProjectBrowserProviderImpl implements ProjectBrowserProvider,
 
     @Override
     public Collection<WebBrowser> getBrowsers() {
-        return WebBrowsers.getInstance().getAll(false, true, true, true);
+        return WebBrowsers.getInstance().getAll(false, true, true);
     }
 
     @Override
     public WebBrowser getActiveBrowser() {
         String browserId = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
-        WebBrowser browser = WebBrowserSupport.getBrowser(browserId);
-        if (browser == null) {
-            return null;
+        if (browserId == null) {
+            return BrowserUISupport.getDefaultBrowserChoice(true);
         }
-        return browser;
+        return BrowserUISupport.getBrowser(browserId);
     }
 
     @Override

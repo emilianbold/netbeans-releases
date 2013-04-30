@@ -194,6 +194,8 @@ public class InstancePropertiesTest extends ServerRegistryTestBase {
     }
 
     public void testPasswordInKeyring() throws Exception {
+        assertNotNull(InstanceProperties.getInstanceProperties("fooservice"));
+
         // the instance from test layer
         assertEquals("Adminpasswd", new String(Keyring.read("j2eeserver:fooservice")));
 

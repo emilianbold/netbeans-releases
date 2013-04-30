@@ -43,11 +43,15 @@ package org.netbeans.modules.glassfish.common.ui;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.utils.JavaUtils;
 import org.openide.DialogDisplayer;
@@ -68,7 +72,7 @@ import org.openide.util.NbBundle;
 public class JavaSEPlatformPanel extends JPanel {
 
     ////////////////////////////////////////////////////////////////////////////
-    // Inner classes methods                                                         //
+    // Inner classes                                                          //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -80,12 +84,19 @@ public class JavaSEPlatformPanel extends JPanel {
         public void actionPerformed(ActionEvent e) {
             PlatformsCustomizer.showCustomizer(javaPlatform());
             javaPlatforms = JavaUtils.findSupportedPlatforms(instance);
-            ((JavaPlatformsComboBox)javaComboBox)
-                    .updateModel(javaPlatforms, false);
+            ((JavaPlatformsComboBox)javaComboBox).updateModel(javaPlatforms);
             setDescriptorButtons(descriptor, javaPlatforms);
         }
         
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Local logger. */
+    private static final Logger LOGGER
+            = GlassFishLogger.get(JavaSEPlatformPanel.class);
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
@@ -109,7 +120,7 @@ public class JavaSEPlatformPanel extends JPanel {
         }
     }
 
-            /**
+    /**
      * Display GlassFish Java SE selector to allow switch Java SE used
      * to run GlassFish.
      * <p/>
@@ -147,8 +158,14 @@ public class JavaSEPlatformPanel extends JPanel {
             }
         }
         if (selectedJavaHome != null && panel.updateProperties()) {
-            instance.setJavaHome(
-                    FileUtil.toFile(selectedJavaHome).getAbsolutePath());
+            instance.setJavaHome(panel.isJavaPlatformDefault() ? null
+                    : FileUtil.toFile(selectedJavaHome).getAbsolutePath());
+            try {
+                GlassfishInstance.writeInstanceToFile(instance);
+            } catch(IOException ex) {
+                LOGGER.log(Level.INFO,
+                        "Could not store GlassFish server attributes", ex);
+            }
         }
         return selectedJavaHome;
     }
@@ -193,6 +210,7 @@ public class JavaSEPlatformPanel extends JPanel {
      *                   for supported platforms.
      * @param message    Warning text.
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     public JavaSEPlatformPanel(NotifyDescriptor descriptor,
             GlassfishInstance instance, String message) {
         this.descriptor = descriptor;
@@ -239,6 +257,19 @@ public class JavaSEPlatformPanel extends JPanel {
         return platform != null ? platform.getPlatform() : null;
     }
 
+    /**
+     * Check if selected Java SE platform from java combo box
+     * is the default platform.
+     * <p/>
+     * @return Value of <code>true</code> if this platform is the default
+     *         platform or <code>false</code> otherwise.
+     */
+    boolean isJavaPlatformDefault() {
+        JavaPlatformsComboBox.Platform platform =
+                (JavaPlatformsComboBox.Platform)javaComboBox.getSelectedItem();
+        return platform != null ? platform.isDefault() : false;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Generated GUI code                                                     //
     ////////////////////////////////////////////////////////////////////////////
@@ -253,7 +284,7 @@ public class JavaSEPlatformPanel extends JPanel {
     private void initComponents() {
 
         messageLabel = new javax.swing.JLabel();
-        javaComboBox = new JavaPlatformsComboBox(javaPlatforms, false);
+        javaComboBox = new JavaPlatformsComboBox(javaPlatforms);
         javaLabel = new javax.swing.JLabel();
         propertiesLabel = new javax.swing.JLabel();
         propertiesCheckBox = new javax.swing.JCheckBox();

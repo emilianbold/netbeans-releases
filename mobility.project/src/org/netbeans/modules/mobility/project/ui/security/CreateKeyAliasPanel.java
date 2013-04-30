@@ -119,6 +119,8 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
         jPanel2 = new javax.swing.JPanel();
         lError = new javax.swing.JLabel();
 
+        setMinimumSize(new java.awt.Dimension(300, 348));
+        setPreferredSize(new java.awt.Dimension(300, 348));
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(tAlias);
@@ -311,7 +313,7 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
     
     protected void setDialogDescriptor(final DialogDescriptor desc) {
         this.dd = desc;
-        dd.setHelpCtx(new HelpCtx(AddKeystorePanel.class));
+        dd.setHelpCtx(new HelpCtx("me.signing_createkeypair"));
         checkErrors();
     }
     

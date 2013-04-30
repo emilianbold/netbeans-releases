@@ -42,19 +42,11 @@
 package org.netbeans.modules.css.model.api;
 
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.Collection;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.diff.Difference;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
@@ -82,7 +74,7 @@ public class ModelTest extends ModelTestBase {
         Expression expression = factory.createExpression("20px");
         PropertyValue pv = factory.createPropertyValue(expression);
         Property property = factory.createProperty("margin");
-        Declaration declaration = factory.createDeclaration(property, pv, false);
+        PropertyDeclaration declaration = factory.createPropertyDeclaration(property, pv, false);
         Declarations declarations = factory.createDeclarations(declaration);
         Selector selector = factory.createSelector("h1");
         SelectorsGroup sgroup = factory.createSelectorsGroup(selector);
@@ -106,7 +98,7 @@ public class ModelTest extends ModelTestBase {
         String code = "/* comment */\n"
                 + " div { \n"
                 + "     color: red; /* my color */\n"
-                + "     color: green /* c2 */;\n"
+                + "     color: green; /* c2 */\n"
                 + " } \n"
                 + "a { padding: 2px }\n";
 
@@ -121,11 +113,20 @@ public class ModelTest extends ModelTestBase {
         Declaration declaration = rule.getDeclarations().getDeclarations().get(1);
         assertNotNull(declaration);
 
-        Declaration newd = factory.createDeclaration(
+        PropertyDeclaration propertyDeclaration = declaration.getPropertyDeclaration();
+        assertNotNull(propertyDeclaration);
+        
+        //add new property declaration at the end of the rule 
+        PropertyDeclaration newpd = factory.createPropertyDeclaration(
                 factory.createProperty("margin"), 
                 factory.createPropertyValue(factory.createExpression("20px")), false);
+        
+        Declaration newd = factory.createDeclaration();
+        newd.setPropertyDeclaration(newpd);
         rule.getDeclarations().addDeclaration(newd);
 
+        System.out.println(model.getModelSource().toString());
+        
         Difference[] diffs = model.getModelSourceDiff();
         assertEquals(1, diffs.length);
 
@@ -163,9 +164,14 @@ public class ModelTest extends ModelTestBase {
         assertEquals(2, declarations.size());
 
         Declaration declaration = declarations.iterator().next();
-        assertEquals("color", declaration.getProperty().getContent());
+        assertNotNull(declaration);
+        
+        PropertyDeclaration propertyDeclaration = declaration.getPropertyDeclaration();
+        assertNotNull(propertyDeclaration);
+        
+        assertEquals("color", propertyDeclaration.getProperty().getContent());
 
-        PropertyValue pv = declaration.getPropertyValue();
+        PropertyValue pv = propertyDeclaration.getPropertyValue();
         assertNotNull(pv);
         
         Expression expression = pv.getExpression();
@@ -195,7 +201,7 @@ public class ModelTest extends ModelTestBase {
             @Override
             public void run(StyleSheet styleSheet) {
                 styleSheet.getBody().getRules().get(0).getDeclarations()
-                        .getDeclarations().get(0).getProperty().setContent("background-color");
+                        .getDeclarations().get(0).getPropertyDeclaration().getProperty().setContent("background-color");
             }
         });
         

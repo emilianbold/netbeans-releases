@@ -51,6 +51,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
 import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
@@ -77,6 +78,7 @@ public class Bugzilla {
     private BugzillaIssueProvider bip;
     private BugzillaQueryProvider bqp;
     private BugzillaRepositoryProvider brp;
+    private IssueNode.ChangesProvider<BugzillaIssue> bcp;
 
     private Bugzilla() {
 
@@ -163,6 +165,18 @@ public class Bugzilla {
         return brp; 
     }
 
+    public IssueNode.ChangesProvider<BugzillaIssue> getChangesProvider() {
+        if(bcp == null) {
+            bcp = new IssueNode.ChangesProvider<BugzillaIssue>() {
+                @Override
+                public String getRecentChanges(BugzillaIssue i) {
+                    return i.getRecentChanges();
+                }
+            };
+        }
+        return bcp;
+    }
+    
     public UndoRedoSupport getUndoRedoSupport(BugzillaIssue issue) {
         return getBugtrackingFactory().getUndoRedoSupport(BugzillaUtil.getRepository(issue.getRepository()), issue);
     }

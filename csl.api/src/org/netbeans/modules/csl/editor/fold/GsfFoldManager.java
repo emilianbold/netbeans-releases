@@ -128,7 +128,7 @@ import static org.netbeans.modules.csl.editor.fold.Bundle.*;
  */
 public class GsfFoldManager implements FoldManager {
 
-    private static final Logger LOG = Logger.getLogger(GsfFoldManager.class.getName());
+    static final Logger LOG = Logger.getLogger(GsfFoldManager.class.getName());
     
     private static final FoldTemplate TEMPLATE_CODEBLOCK = new org.netbeans.api.editor.fold.FoldTemplate(1, 1, "{...}"); // NOI18N
    
@@ -181,7 +181,7 @@ public class GsfFoldManager implements FoldManager {
     
     private FoldOperation operation;
     private FileObject    file;
-    private JavaElementFoldTask task;
+    private volatile JavaElementFoldTask task;
     
     private volatile Preferences prefs;
     
@@ -191,7 +191,12 @@ public class GsfFoldManager implements FoldManager {
 
     public void init(FoldOperation operation) {
         this.operation = operation;
-        
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Created FM: {0}\n\t\t, doc: {1}\n\t\t, comp: {2}", new Object[] {
+               this, operation.getHierarchy().getComponent().getDocument(),
+               Integer.toHexString(System.identityHashCode(operation.getHierarchy().getComponent()))
+            });
+        }
         String mimeType = DocumentUtilities.getMimeType(operation.getHierarchy().getComponent());
         if (prefs == null) {
             prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
@@ -202,9 +207,16 @@ public class GsfFoldManager implements FoldManager {
     public synchronized void initFolds(FoldHierarchyTransaction transaction) {
         Document doc = operation.getHierarchy().getComponent().getDocument();
         file = DataLoadersBridge.getDefault().getFileObject(doc);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Initializing, document {0}\n\t\t, file {1}\n\t\t, component {2}\n\t\t, FM {3}", new Object[] { 
+                doc, file, Integer.toHexString(System.identityHashCode(operation.getHierarchy().getComponent())), this });
+        }
         
         if (file != null) {
             task = JavaElementFoldTask.getTask(file);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "registering FM to task: {0}, {1}", new Object[] { this, task });
+            }
             task.setGsfFoldManager(GsfFoldManager.this, file);
         }
     }
@@ -220,7 +232,7 @@ public class GsfFoldManager implements FoldManager {
     @Override
     public void changedUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
     }
-
+    
     @Override
     public void removeEmptyNotify(Fold emptyFold) {
         removeDamagedNotify(emptyFold);
@@ -240,6 +252,9 @@ public class GsfFoldManager implements FoldManager {
     }
 
     public synchronized void release() {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Releasing FM {0}, task {1}", new Object[] { this, task });
+        }
         if (task != null) {
             task.setGsfFoldManager(this, null);
         }
@@ -251,7 +266,7 @@ public class GsfFoldManager implements FoldManager {
     }
     
     static final class JavaElementFoldTask extends IndexingAwareParserResultTask<ParserResult> {
-
+        
         private final AtomicBoolean cancelled = new AtomicBoolean(false);
         
         private FoldInfo initComment;
@@ -263,22 +278,29 @@ public class GsfFoldManager implements FoldManager {
         }
 
         //XXX: this will hold JavaElementFoldTask as long as the FileObject exists:
-        private static Map<FileObject, JavaElementFoldTask> file2Task = new WeakHashMap<FileObject, JavaElementFoldTask>();
-
+        private final static Map<FileObject, JavaElementFoldTask> file2Task = new WeakHashMap<FileObject, JavaElementFoldTask>();
+        
         static JavaElementFoldTask getTask(FileObject file) {
-            JavaElementFoldTask task = file2Task.get(file);
+            synchronized (file2Task) {
+                JavaElementFoldTask task = file2Task.get(file);
 
-            if (task == null) {
-                file2Task.put(file, task = new JavaElementFoldTask());
+                if (task == null) {
+                    file2Task.put(file, task = new JavaElementFoldTask());
+                }
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.log(Level.FINER, "Task for file {0} -> {1}", new Object[] { file, task });
+                }
+                return task;
             }
-
-            return task;
         }
         
         private Collection<Reference<GsfFoldManager>> managers = new ArrayList<Reference<GsfFoldManager>>(2);
         
         synchronized void setGsfFoldManager(GsfFoldManager manager, FileObject file) {
             if (file == null) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Got null file, unregistering {0}, task {1}", new Object[] { manager, this });
+                }
                 for (Iterator<Reference<GsfFoldManager>> it = managers.iterator(); it.hasNext(); ) {
                     Reference<GsfFoldManager> ref = it.next();
                     GsfFoldManager fm = ref.get();
@@ -288,6 +310,9 @@ public class GsfFoldManager implements FoldManager {
                     }
                 }
             } else {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Registering manager {0} for file {1}, task {2} ", new Object[] { manager, file, this} );
+                }
                 managers.add(new WeakReference<GsfFoldManager>(manager));
                 GsfFoldScheduler.reschedule();
             }
@@ -320,10 +345,13 @@ public class GsfFoldManager implements FoldManager {
         
         public void run(final ParserResult info, SchedulerEvent event) {
             cancelled.set(false);
-            
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.log(Level.FINER, "GSF fold task {0} called for: {1}", new Object[] { this, info.getSnapshot().getSource()});
+            }
             final Object mgrs = findLiveManagers();
             
             if (mgrs == null) {
+                LOG.log(Level.FINE, "No live FoldManagers found for {0}", this);
                 return;
             }
             
@@ -333,32 +361,34 @@ public class GsfFoldManager implements FoldManager {
             // It should be solved per lenguages, but then there has to be remembered
             // lates folds and transformed to the new possition.
             if (hasErrors(info)) {
+                LOG.log(Level.FINE, "File has errors, not updating: {0}", this);
                 return;
             }
 
             final Collection<FoldInfo> folds = new HashSet<FoldInfo>();
             final Document doc = info.getSnapshot().getSource().getDocument(false);
             if (doc == null) {
+                LOG.log(Level.FINE, "Could not open document: {0}", this);
                 return;
             }
             boolean success = gsfFoldScan(doc, info, folds);
             if (!success || cancelled.get()) {
+                LOG.log(Level.FINER, "Fold scan cancelled or unsuccessful: {0}, {1}", new Object[] {
+                    success, cancelled.get()
+                });
                 return;
             }
             
+            // pending: refactor!!
             if (mgrs instanceof GsfFoldManager) {
-                SwingUtilities.invokeLater(((GsfFoldManager)mgrs).createCommit(
-                        folds, 
-                        initComment, imports, doc, info.getSnapshot().getSource()));
+                ((GsfFoldManager)mgrs).new CommitFolds(folds, 
+                        initComment, imports, doc, info.getSnapshot().getSource(), cancelled).run();
             } else {
-                SwingUtilities.invokeLater(new Runnable() {
-                    Collection<GsfFoldManager> jefms = (Collection<GsfFoldManager>)mgrs;
-                    public void run() {
-                        for (GsfFoldManager jefm : jefms) {
-                            jefm.createCommit(folds, initComment, imports, 
-                                    doc, info.getSnapshot().getSource()).run();
-                        }
-                }});
+                Collection<GsfFoldManager> jefms = (Collection<GsfFoldManager>)mgrs;
+                for (GsfFoldManager jefm : jefms) {
+                    jefm.new CommitFolds(folds, 
+                        initComment, imports, doc, info.getSnapshot().getSource(), cancelled).run();
+                }
             }
             
             long endTime = System.currentTimeMillis();
@@ -522,6 +552,7 @@ public class GsfFoldManager implements FoldManager {
             String mime = info.getSnapshot().getMimeType();
             
             if (!FoldUtilities.isFoldingEnabled(mime)) {
+                LOG.log(Level.FINER, "Folding is not enabled for MIME: {0}", mime);
                 return;
             }
             Map<String,List<OffsetRange>> folds = scanner.folds(info);
@@ -589,10 +620,6 @@ public class GsfFoldManager implements FoldManager {
 
     }
     
-    private Runnable createCommit(Collection<FoldInfo> folds, FoldInfo initComment, FoldInfo imports, Document d, Source s) {
-        return new CommitFolds(folds, initComment, imports, d, s);
-    }
-    
     private class CommitFolds implements Runnable {
         private final Document scannedDocument;
         private Source  scanSource;
@@ -602,13 +629,16 @@ public class GsfFoldManager implements FoldManager {
         private long startTime;
         private FoldInfo    initComment;
         private FoldInfo    imports;
+        private final AtomicBoolean cancel;
         
-        public CommitFolds(Collection<FoldInfo> infos, FoldInfo initComment, FoldInfo imports, Document scannedDocument, Source s) {
+        public CommitFolds(Collection<FoldInfo> infos, FoldInfo initComment, FoldInfo imports, Document scannedDocument, Source s,
+                AtomicBoolean cancel) {
             this.infos = infos;
             this.initComment = initComment;
             this.imports = imports;
             this.scannedDocument = scannedDocument;
             this.scanSource = s;
+            this.cancel = cancel;
         }
         
         /**
@@ -631,33 +661,32 @@ public class GsfFoldManager implements FoldManager {
                 
                 return;
             }
-            
+            if (cancel.get() || task == null) {
+                return;
+            }
             operation.getHierarchy().lock();
-            if (task == null) {
-                return;
-            }
-            if (operation.getHierarchy().getComponent().getDocument() != this.scannedDocument) {
-                Throwable t = (Throwable)scannedDocument.getProperty("Issue-222763-debug");
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
-                if (t != null) {
-                    pw.print("Scanned document: ");
-                    t.printStackTrace(pw);
-                }
-                t = (Throwable)operation.getHierarchy().getComponent().getDocument().getProperty("Issue-222763-debug");
-                if (t != null) {
-                    pw.print("Manager document: ");
-                    t.printStackTrace(pw);
-                }
-                // hopefully will be removed before release, see issue #223800
-                pw.flush();
-                LOG.warning("Fold manager works with different document than scanner. FmDoc: " + operation.getHierarchy().getComponent().getDocument() +
-                        ", ScanDoc: " + scannedDocument + ", source: " + scanSource);
-                LOG.warning("Creation stacks: " + sw.toString());
-                // prevent folding, bad offsets, see issue #223800
-                return;
-            }
             try {
+                if (operation.getHierarchy().getComponent().getDocument() != this.scannedDocument) {
+                    Throwable t = (Throwable)scannedDocument.getProperty("Issue-222763-debug");
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    if (t != null) {
+                        pw.print("Scanned document: ");
+                        t.printStackTrace(pw);
+                    }
+                    t = (Throwable)operation.getHierarchy().getComponent().getDocument().getProperty("Issue-222763-debug");
+                    if (t != null) {
+                        pw.print("Manager document: ");
+                        t.printStackTrace(pw);
+                    }
+                    // hopefully will be removed before release, see issue #223800
+                    pw.flush();
+                    LOG.warning("Fold manager works with different document than scanner. FmDoc: " + operation.getHierarchy().getComponent().getDocument() +
+                            ", ScanDoc: " + scannedDocument + ", source: " + scanSource);
+                    LOG.warning("Creation stacks: " + sw.toString());
+                    // prevent folding, bad offsets, see issue #223800
+                    return;
+                }
                 try {
                     mergeSpecialFoldState(imports, importsFold);
                     mergeSpecialFoldState(initComment, initialCommentFold);

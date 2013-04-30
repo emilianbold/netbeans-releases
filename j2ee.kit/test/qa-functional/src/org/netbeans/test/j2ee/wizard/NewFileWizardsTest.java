@@ -363,8 +363,8 @@ public class NewFileWizardsTest extends J2eeTestCase {
         if (!remoteJavaProjectDir.exists()) {
             // create java project needed for remote beans
             J2SEProjectGenerator.createProject(remoteJavaProjectDir, REMOTE_JAVA_PROJECT_NAME + version, null, null, null, true);
-            J2eeProjectSupport.openProject(remoteJavaProjectDir);
         }
+        J2eeProjectSupport.openProject(remoteJavaProjectDir);
         String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.resources.Bundle", "Templates/J2EE");
         NewFileWizardOperator nfwo = WizardUtils.createNewFile(p, category, type);
         NewJavaFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(

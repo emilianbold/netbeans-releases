@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
@@ -81,8 +80,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.QueryScope;
-import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.completion.impl.xref.SymTabCache.CacheEntry;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -106,7 +103,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     private boolean caseSensitive = false;
     private boolean naturalSort = false;
     private boolean sort = false;
-    private static int NOT_INITIALIZED = -1;
+    private static final int NOT_INITIALIZED = -1;
     private int contextOffset = NOT_INITIALIZED;
     private QueryScope queryScope = QueryScope.GLOBAL_QUERY;
     private boolean inIncludeDirective = false;
@@ -448,11 +445,9 @@ public class CompletionResolverImpl implements CompletionResolver {
                 for (int phase = match ? 0 : 1; phase < 2; phase++) {
                     boolean inspectOuterAndParentClasses = (phase == 1);
                     if (needClassMethods(context, offset)) {
-                        if (clazz != null) {
-                            resImpl.classMethods = contResolver.getMethods(clazz, contextDeclaration, strPrefix, staticContext, match, inspectOuterAndParentClasses, inspectOuterAndParentClasses, false);
-                            if (isEnough(strPrefix, match, resImpl.classMethods)) {
-                                return true;
-                            }
+                        resImpl.classMethods = contResolver.getMethods(clazz, contextDeclaration, strPrefix, staticContext, match, inspectOuterAndParentClasses, inspectOuterAndParentClasses, false);
+                        if (isEnough(strPrefix, match, resImpl.classMethods)) {
+                            return true;
                         }
                     }
                     if (needClassFields(context, offset)) {
@@ -596,12 +591,12 @@ public class CompletionResolverImpl implements CompletionResolver {
             }
         }
         if (needGlobalNamespaces(context, offset)) {
-            resImpl.globProjectNSs = getGlobalNamespaces(context, prj, strPrefix, match, offset);
-            if (isEnough(strPrefix, match, resImpl.globProjectNSs)) {
-                return true;
-            }
             resImpl.projectNsAliases = getProjectNamespaceAliases(context, prj, strPrefix, match, offset);
             if (isEnough(strPrefix, match, resImpl.projectNsAliases)) {
+                return true;
+            }
+            resImpl.globProjectNSs = getGlobalNamespaces(context, prj, strPrefix, match, offset);
+            if (isEnough(strPrefix, match, resImpl.globProjectNSs)) {
                 return true;
             }
         }

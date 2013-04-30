@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.persistence.jpqleditor;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +66,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -115,9 +117,13 @@ public class Utils {
         int sources_count = 0;
         for(URL url:projectURLs) {
             if("file".equals(url.getProtocol())) {
-                if((new java.io.File(url.getFile())).exists()) {
-                    sources_count++;
-                    break;
+                try {
+                    if(new java.io.File(url.toURI().getPath()).exists()) {
+                        sources_count++;
+                        break;
+                    }
+                } catch (URISyntaxException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }

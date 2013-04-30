@@ -584,7 +584,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "platform/core/org-openide-filesystems.jar",
             "platform/lib/org-openide-util.jar",
             "platform/lib/org-openide-util-lookup.jar",
-            "ide/modules/org-netbeans-modules-glassfish-common.jar"
+            "enterprise/modules/org-netbeans-modules-glassfish-common.jar"
         };
         for(String c : cp) {
             File f = new File(nbLocation, c);

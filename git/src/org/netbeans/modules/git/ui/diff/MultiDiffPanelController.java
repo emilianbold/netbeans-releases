@@ -111,6 +111,7 @@ import org.netbeans.modules.git.ui.commit.IncludeInCommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffNode.DiffHistoryNode;
 import org.netbeans.modules.git.ui.diff.DiffNode.DiffLocalNode;
+import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.ui.repository.RevisionPicker;
@@ -746,6 +747,12 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                         Mnemonics.setLocalizedText(item, item.getText());
                     }
                 }
+                SystemActionBridge ia = SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
+                        NbBundle.getMessage(IgnoreAction.class, "LBL_IgnoreAction_PopupName"), lkp);
+                if (ia.isEnabled()) {
+                    item = menu.add(ia);
+                    org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+                }
                 item = menu.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"), lkp)); //NOI18N
                 Mnemonics.setLocalizedText(item, item.getText());
                 item = menu.add(new AbstractAction(NbBundle.getMessage(ExportUncommittedChangesAction.class, "LBL_ExportUncommittedChangesAction_PopupName")) { //NOI18N
@@ -1085,7 +1092,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 client = git.getClient(repository);
                 Map<File, GitStatus> statuses = client.getStatus(context.getRootFiles().toArray(new File[context.getRootFiles().size()]),
                         revisionLeft.getRevision(), GitUtils.NULL_PROGRESS_MONITOR);
-                final Map<File, Setup> localSetups = new HashMap<File, Setup>();
+                statuses.keySet().retainAll(Utils.flattenFiles(context.getRootFiles().toArray(
+                        new File[context.getRootFiles().size()]), statuses.keySet()));
+                final Map<File, Setup> localSetups = new HashMap<File, Setup>(statuses.size());
                 for (Map.Entry<File, GitStatus> e : statuses.entrySet()) {
                     File f = e.getKey();
                     GitStatus status = e.getValue();

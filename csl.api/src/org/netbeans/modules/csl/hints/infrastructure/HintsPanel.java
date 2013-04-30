@@ -50,6 +50,7 @@ import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
+import javax.swing.JEditorPane;
 import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -74,6 +75,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         initComponents();
         
         descriptionTextArea.setContentType("text/html"); // NOI18N
+        descriptionTextArea.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES,Boolean.TRUE);
 
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setOpaque(false);
@@ -203,6 +205,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         descriptionPanel.setLayout(new java.awt.GridBagLayout());
 
         descriptionTextArea.setEditable(false);
+        descriptionTextArea.setPreferredSize(new java.awt.Dimension(100, 50));
         jScrollPane2.setViewportView(descriptionTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

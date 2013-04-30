@@ -45,13 +45,13 @@
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
-import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
@@ -113,15 +113,10 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
      * @throws java.lang.Exception
      */
     protected void performNullTargetTest(String source, int lineIndex, int colIndex) throws Exception {
-        File testSourceFile = getDataFile(source);
-        BaseDocument doc = getBaseDocument(testSourceFile);
-        int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
-        TokenItem<TokenId> jumpToken = getJumpToken(doc, offset);
-        assertNotNull("Hyperlink not found token in file " + testSourceFile + " on position (" + lineIndex + ", " + colIndex + ")", // NOI18N
-                        jumpToken);
-        CsmOffsetable targetObject = findTargetObject(doc, offset, jumpToken);
-        assertNull("Hyperlink target is unexpectedly found for " + jumpToken.text().toString() + //NOI18N
-                " in file " + testSourceFile + " on position (" + lineIndex + ", " + colIndex + ")", targetObject);//NOI18N
+        final AtomicReference<TokenItem<TokenId>> ref = new AtomicReference<TokenItem<TokenId>>(null);
+        CsmOffsetable targetObject = findTargetObject(source, lineIndex, colIndex, ref);
+        assertNull("Hyperlink target is unexpectedly found for " + ref.get().text().toString() + //NOI18N
+                " in file " + source + " on position (" + lineIndex + ", " + colIndex + ")", targetObject);//NOI18N
     }
     
     /**
@@ -134,15 +129,10 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
      */
     protected void performTest(String source, int lineIndex, int colIndex, String destGoldenFile, int destGoldenLine, int destGoldenColumn) throws Exception {
         String goldenFileAbsPath = getDataFile(destGoldenFile).getAbsolutePath();
-        File testSourceFile = getDataFile(source);
-        BaseDocument doc = getBaseDocument(testSourceFile);
-        int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
-        TokenItem<TokenId> jumpToken = getJumpToken(doc, offset);
-        assertNotNull("Hyperlink not found token in file " + testSourceFile + " on position (" + lineIndex + ", " + colIndex + ")", // NOI18N
-                        jumpToken);
-        CsmOffsetable targetObject = findTargetObject(doc, offset, jumpToken);
-        assertNotNull("Hyperlink target is not found for " + jumpToken.text().toString() + //NOI18N
-                " in file " + testSourceFile + " on position (" + lineIndex + ", " + colIndex + ")", targetObject);//NOI18N
+        final AtomicReference<TokenItem<TokenId>> ref = new AtomicReference<TokenItem<TokenId>>(null);
+        CsmOffsetable targetObject = findTargetObject(source, lineIndex, colIndex, ref);
+        assertNotNull("Hyperlink target is not found for " + ref.get().text().toString() + //NOI18N
+                " in file " + source + " on position (" + lineIndex + ", " + colIndex + ")", targetObject);//NOI18N
         String destResultFileAbsPath = targetObject.getContainingFile().getAbsolutePath().toString();
         Position resultPos = targetObject.getStartPosition();
         int resultOffset = resultPos.getOffset();
@@ -170,7 +160,14 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         return "[" + file + ":" + "Line-" + line +"; Col-" + column + "]";
     }
     
-    private CsmOffsetable findTargetObject(BaseDocument doc, int offset, TokenItem<TokenId> jumpToken) {
+    protected CsmOffsetable findTargetObject(String source, int lineIndex, int colIndex, AtomicReference<TokenItem<TokenId>> reference) throws Exception {
+        File testSourceFile = getDataFile(source);
+        BaseDocument doc = getBaseDocument(testSourceFile);
+        int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
+        TokenItem<TokenId> jumpToken = getJumpToken(doc, offset);
+        reference.set(jumpToken);
+        assertNotNull("Hyperlink not found token in file " + testSourceFile + " on position (" + lineIndex + ", " + colIndex + ")", // NOI18N
+                jumpToken);        
         CsmOffsetable csmItem = null;
         // emulate hyperlinks order
         // first ask includes handler

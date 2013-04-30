@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.maven.j2ee.ejb;
 
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -66,22 +65,13 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 )
 public class EjbRecoPrivTemplates implements RecommendedTemplates, PrivilegedTemplates {
 
+    private J2eeProjectCapabilities capabilities;
     private Project project;
     
     
     public EjbRecoPrivTemplates(Project project) {
         this.project = project;
     }
-    
-    private static final String[] EJB_RECOMMENDED_TYPES_4 = new String[] {
-            "ejb-deployment-descriptor",// NOI18N
-            "ejb-types",            // NOI18N
-            "ejb-types_2_1",        // NOI18N
-            "j2ee-14-types",        // NOI18N
-            "ejb-types-server",     // NOI18N
-//#134462   "web-services",         // NOI18N
-            "j2ee-types",           // NOI18N
-    };
     
     private static final String[] EJB_RECOMMENDED_TYPES_5 = new String[] {
         "ejb-deployment-descriptor",// NOI18N
@@ -104,16 +94,6 @@ public class EjbRecoPrivTemplates implements RecommendedTemplates, PrivilegedTem
         "j2ee-types"                // NOI18N
     };
 
-    
-    private static final String[] EJB_PRIVILEGED_NAMES_4 = new String[] {
-        "Templates/J2EE/Session",       // NOI18N
-        "Templates/J2EE/Entity",        // NOI18N
-        "Templates/J2EE/RelatedCMP",    // NOI18N
-        "Templates/J2EE/Message",       // NOI18N
-        "Templates/Classes/Class.java", // NOI18N
-        "Templates/Classes/Package",    // NOI18N
-    };
-    
     private static final String[] EJB_PRIVILEGED_NAMES_5 = new String[] {
         "Templates/J2EE/Session",               // NOI18N
         "Templates/J2EE/Message",               // NOI18N
@@ -130,31 +110,37 @@ public class EjbRecoPrivTemplates implements RecommendedTemplates, PrivilegedTem
     
     @Override
     public String[] getRecommendedTypes() {
-        EjbJar jar = EjbJar.getEjbJar(project.getProjectDirectory());
-        if (jar != null) {
-            Profile p = jar.getJ2eeProfile();
-            if (Profile.JAVA_EE_5.equals(p)) {
-                return EJB_RECOMMENDED_TYPES_5;
-            }
-            if (Profile.JAVA_EE_6_FULL.equals(p)) {
-                return EJB_RECOMMENDED_TYPES_6;
-            }
+        initCapabilities();
+        if (capabilities.isEjb32Supported()) {
+            return EJB_RECOMMENDED_TYPES_6;
         }
-        return EJB_RECOMMENDED_TYPES_4;
+        if (capabilities.isEjb31Supported()) {
+            return EJB_RECOMMENDED_TYPES_6;
+        }
+        if (capabilities.isEjb30Supported()) {
+            return EJB_RECOMMENDED_TYPES_5;
+        }
+        return EJB_RECOMMENDED_TYPES_5;
     }
     
     @Override
     public String[] getPrivilegedTemplates() {
-        EjbJar jar = EjbJar.getEjbJar(project.getProjectDirectory());
-        if (jar != null) {
-            Profile p = jar.getJ2eeProfile();
-            if (Profile.JAVA_EE_5.equals(p)) {
-                return EJB_PRIVILEGED_NAMES_5;
-            }
-            if (Profile.JAVA_EE_6_FULL.equals(p)) {
-                return EJB_PRIVILEGED_NAMES_6;
-            }
+        initCapabilities();
+        if (capabilities.isEjb32Supported()) {
+            return EJB_PRIVILEGED_NAMES_6;
         }
-        return EJB_PRIVILEGED_NAMES_4;
+        if (capabilities.isEjb31Supported()) {
+            return EJB_PRIVILEGED_NAMES_6;
+        }
+        if (capabilities.isEjb30Supported()) {
+            return EJB_PRIVILEGED_NAMES_5;
+        }
+        return EJB_PRIVILEGED_NAMES_5;
+    }
+    
+    private void initCapabilities() {
+        if (capabilities == null) {
+            capabilities = J2eeProjectCapabilities.forProject(project);
+        }
     }
 }

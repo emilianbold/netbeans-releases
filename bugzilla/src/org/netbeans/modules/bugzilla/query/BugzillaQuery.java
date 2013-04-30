@@ -56,7 +56,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.LogUtils;
@@ -104,12 +104,6 @@ public class BugzillaQuery {
         
         if(initControler) {
             controller = createControler(repository, this, urlParameters);
-        }
-        if(repository instanceof KenaiRepository) {
-            boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(getDisplayName());
-            if(autoRefresh) {
-                getRepository().scheduleForRefresh(this);
-            }
         }
     }
 
@@ -287,7 +281,7 @@ public class BugzillaQuery {
         return info;
     }
 
-    public int getIssueStatus(String id) {
+    public IssueCache.Status getIssueStatus(String id) {
         return repository.getIssueCache().getStatus(id);
     }
 
@@ -320,10 +314,10 @@ public class BugzillaQuery {
     }
     
     public Collection<BugzillaIssue> getIssues() {
-        return getIssues(~0);
+        return getIssues(IssueCache.ISSUE_STATUS_ALL);
     }
     
-    public Collection<BugzillaIssue> getIssues(int includeStatus) {
+    public Collection<BugzillaIssue> getIssues(EnumSet<IssueCache.Status> includeStatus) {
         if (issues == null) {
             return Collections.emptyList();
         }
@@ -332,11 +326,11 @@ public class BugzillaQuery {
             ids.addAll(issues);
         }
 
-        IssueCache<BugzillaIssue, TaskData> cache = repository.getIssueCache();
+        IssueCache<BugzillaIssue> cache = repository.getIssueCache();
         List<BugzillaIssue> ret = new ArrayList<BugzillaIssue>();
         for (String id : ids) {
-            int status = getIssueStatus(id);
-            if((status & includeStatus) != 0) {
+            IssueCache.Status status = getIssueStatus(id);
+            if(includeStatus.contains(status)) {
                 ret.add(cache.getIssue(id));
             }
         }
@@ -367,8 +361,12 @@ public class BugzillaQuery {
             getController().addProgressUnit(BugzillaIssue.getDisplayName(taskData));
             BugzillaIssue issue;
             try {
-                IssueCache<BugzillaIssue, TaskData> cache = repository.getIssueCache();
-                issue = (BugzillaIssue) cache.setIssueData(id, taskData);
+                IssueCache<BugzillaIssue> cache = repository.getIssueCache();
+                issue = cache.getIssue(id);
+                if(issue != null) {
+                    issue.setTaskData(taskData);
+                }
+                issue = (BugzillaIssue) cache.setIssueData(id, issue != null ? issue : new BugzillaIssue(taskData, repository));
             } catch (IOException ex) {
                 Bugzilla.LOG.log(Level.SEVERE, null, ex);
                 return;

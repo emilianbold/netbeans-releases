@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.model.api.AtRule;
 import org.netbeans.modules.css.model.api.Body;
 import org.netbeans.modules.css.model.api.BodyItem;
 import org.netbeans.modules.css.model.api.Declaration;
@@ -234,7 +235,7 @@ public class Utilities {
                 Declarations declarations = rule.getDeclarations();
                 if (declarations != null) {
                     for (Declaration declaration : declarations.getDeclarations()) {
-                        org.netbeans.modules.css.model.api.Property modelProperty = declaration.getProperty();
+                        org.netbeans.modules.css.model.api.Property modelProperty = declaration.getPropertyDeclaration().getProperty();
                         String modelPropertyName = modelProperty.getContent().toString().trim();
                         if (properties.contains(modelPropertyName)) {
                             value += 2;
@@ -281,6 +282,9 @@ public class Utilities {
                 if (index > 0) {
                     BodyItem previousBodyItem = bodyItems.get(index-1);
                     Element element = previousBodyItem.getElement();
+                    if (element instanceof AtRule) {
+                        element = ((AtRule)element).getElement();
+                    }
                     if (element instanceof Media) {
                         Media media = (Media)element;
                         if (isMetaSourceInfo(media)) {
@@ -328,15 +332,14 @@ public class Utilities {
                 String value = propertyValue(rule, "font-family"); // NOI18N
                 if (value != null) {
                     StringBuilder sb = new StringBuilder();
-                    boolean escape = false;
+                    boolean slash = false;
                     for (int i=0; i<value.length(); i++) {
                         char c = value.charAt(i);
-                        if (escape) {
-                            escape = false;
-                            sb.append(c);
-                        } else if (c == '\\') {
-                            escape = true;
-                        } else {
+                        if (slash && (c != ':' && c != '/' && c != '.')) {
+                            sb.append('\\');
+                        }
+                        slash = !slash && (c == '\\');
+                        if (!slash) {
                             sb.append(c);
                         }
                     }
@@ -361,6 +364,7 @@ public class Utilities {
         }
         if (originalFileName != null && originalLineNumber != -1) {
             File file = new File(originalFileName);
+            file = FileUtil.normalizeFile(file);
             final FileObject fob = FileUtil.toFileObject(file);
             if (fob != null) {
                 final int lineNo = originalLineNumber - 1;
@@ -389,10 +393,10 @@ public class Utilities {
         Declarations declarations = rule.getDeclarations();
         if (declarations != null) {
             for (Declaration declaration : declarations.getDeclarations()) {
-                org.netbeans.modules.css.model.api.Property modelProperty = declaration.getProperty();
+                org.netbeans.modules.css.model.api.Property modelProperty = declaration.getPropertyDeclaration().getProperty();
                 String modelPropertyName = modelProperty.getContent().toString().trim();
                 if (propertyName.equals(modelPropertyName)) {
-                    PropertyValue value = declaration.getPropertyValue();
+                    PropertyValue value = declaration.getPropertyDeclaration().getPropertyValue();
                     propertyValue = value.getExpression().getContent().toString();
                 }
             }

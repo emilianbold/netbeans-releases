@@ -72,6 +72,8 @@ import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsf.JsfConstants;
 import org.netbeans.modules.web.jsf.dialogs.BrowseFolders;
 import org.netbeans.modules.web.jsf.wizards.TemplateClientPanel.TemplateEntry;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -94,7 +96,6 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
     
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
 
-    private final static String NAME_SPACE = "http://java.sun.com/jsf/facelets";    //NOI18N
     private final static String TAG_NAME = "ui:insert";    //NOI18N
     private final static String VALUE_NAME = "name";    //NOI18N
 
@@ -196,17 +197,26 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
     }//GEN-LAST:event_jtfTemplateKeyReleased
 
     @Messages({
-        "TemplateClientPanelVisual.lbl.resource.library.contract=Resource library contract",
-        "TemplateClientPanelVisual.lbl.document.root=Document root"
+        "TemplateClientPanelVisual.lbl.resource.library.contract=Resource Library Contract",
+        "TemplateClientPanelVisual.lbl.web.pages=Web Pages"
     })
     private void jbBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbBrowseActionPerformed
+        String projectDirPath = Templates.getProject(wizardDescriptor).getProjectDirectory().getPath();
+        final boolean projectNamedContracts = projectDirPath.contains(JsfConstants.CONTRACTS_FOLDER);
         BrowseFolders bf = new BrowseFolders(getFaceletTemplateRoots(), new BrowseFolders.Naming() {
             @Override
             public String getName(String path, String folderName) {
-                if (path.contains(JsfConstants.CONTRACTS_FOLDER)) {
-                    return folderName + " :" + Bundle.TemplateClientPanelVisual_lbl_resource_library_contract(); //NOI18N
+                boolean isContract;
+                if (projectNamedContracts) {
+                    String[] split = path.split(JsfConstants.CONTRACTS_FOLDER);
+                    isContract = split.length > 2;
                 } else {
-                    return folderName + " :" + Bundle.TemplateClientPanelVisual_lbl_document_root(); //NOI18N
+                    isContract = path.contains(JsfConstants.CONTRACTS_FOLDER);
+                }
+                if (isContract) {
+                    return Bundle.TemplateClientPanelVisual_lbl_resource_library_contract() + " : " + folderName; //NOI18N
+                } else {
+                    return Bundle.TemplateClientPanelVisual_lbl_web_pages();
                 }
             }
         });
@@ -302,7 +312,7 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
         if (!fullPath.contains(JsfConstants.CONTRACTS_FOLDER)) {
             return fullPath;
         }
-        int rootIndex = fullPath.indexOf(JsfConstants.CONTRACTS_FOLDER) + JsfConstants.CONTRACTS_FOLDER.length() + 1;
+        int rootIndex = fullPath.lastIndexOf(JsfConstants.CONTRACTS_FOLDER) + JsfConstants.CONTRACTS_FOLDER.length() + 1;
         int nextSlashOffset = fullPath.indexOf("/", rootIndex); //NOI18N
         // root folder selected
         if (nextSlashOffset != -1) {
@@ -375,8 +385,14 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
                     Result result = resultIterator.getParserResult(0);
                     if (result.getSnapshot().getMimeType().equals("text/html")) {
                         HtmlParserResult htmlResult = (HtmlParserResult)result;
-                        if (htmlResult.getNamespaces().containsKey(NAME_SPACE)) {
-                            List<OpenTag> foundNodes = findValue(htmlResult.root(NAME_SPACE).children(OpenTag.class), TAG_NAME, new ArrayList<OpenTag>());
+                        String ns = null;
+                        if (htmlResult.getNamespaces().containsKey(DefaultLibraryInfo.FACELETS.getNamespace())) {
+                            ns = DefaultLibraryInfo.FACELETS.getNamespace();
+                        } else if (htmlResult.getNamespaces().containsKey(DefaultLibraryInfo.FACELETS.getLegacyNamespace())) {
+                            ns = DefaultLibraryInfo.FACELETS.getLegacyNamespace();
+                        }
+                        if (ns != null) {
+                            List<OpenTag> foundNodes = findValue(htmlResult.root(ns).children(OpenTag.class), TAG_NAME, new ArrayList<OpenTag>());
 
                             for (OpenTag node : foundNodes) {
                                 Attribute attr = node.getAttribute(VALUE_NAME);

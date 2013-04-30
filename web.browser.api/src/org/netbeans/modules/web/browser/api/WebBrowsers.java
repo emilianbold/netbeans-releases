@@ -81,7 +81,7 @@ public final class WebBrowsers {
     
     private static final WebBrowsers INST = new WebBrowsers();
     private static final String BROWSERS_FOLDER = "Services/Browsers"; // NOI18N
-    private static final String MOBILE_BROWSERS_FOLDER = "Services/MobileBrowsers"; // NOI18N
+    private static final String BROWSERS2_FOLDER = "Services/Browsers2"; // NOI18N
     
     //private WebBrowserFactories fact;
     private PropertyChangeSupport sup = new PropertyChangeSupport(this);
@@ -159,11 +159,11 @@ public final class WebBrowsers {
             if (!desc.isDefault()) {
                 continue;
             }
-            return new WebBrowser(desc, false);
+            return new WebBrowser(desc);
         }
         // if none of the browsers is marked as default one then simply use first one:
         if (someFactory != null) {
-            return new WebBrowser(someFactory, false);
+            return new WebBrowser(someFactory);
         }
         assert false : "there are no browsers registered on your classpath. can you fix that"; // NOI18N
         return null;
@@ -178,7 +178,7 @@ public final class WebBrowsers {
             if (desc.getBrowserFamily() != BrowserFamilyId.JAVAFX_WEBVIEW) {
                 continue;
             }
-            return new WebBrowser(desc, true);
+            return new WebBrowser(desc);
         }
         return null;
     }
@@ -187,10 +187,9 @@ public final class WebBrowsers {
      * Returns all browsers registered in the IDE.
      */
     public List<WebBrowser> getAll(boolean includeSystemDefaultBrowser,
-            boolean includeBrowsersWithNBIntegration,
             boolean includeIDEGlobalBrowserOption,
             boolean sortBrowsers) {
-        return getAll(includeSystemDefaultBrowser, includeBrowsersWithNBIntegration,
+        return getAll(includeSystemDefaultBrowser, 
                 includeIDEGlobalBrowserOption, false, sortBrowsers);
     }
 
@@ -198,48 +197,47 @@ public final class WebBrowsers {
      * Returns all browsers registered in the IDE.
      */
     public List<WebBrowser> getAll(boolean includeSystemDefaultBrowser,
-            boolean includeBrowsersWithNBIntegration,
             boolean includeIDEGlobalBrowserOption,
             boolean includePhoneGap,
             boolean sortBrowsers) {
         if (sortBrowsers) {
-            return getSortedBrowsers(includeSystemDefaultBrowser, includeBrowsersWithNBIntegration, 
+            return getSortedBrowsers(includeSystemDefaultBrowser, 
                     includeIDEGlobalBrowserOption, includePhoneGap);
         } else {
-            return getUnsortedBrowsers(includeSystemDefaultBrowser, includeBrowsersWithNBIntegration, 
+            return getUnsortedBrowsers(includeSystemDefaultBrowser, 
                     includeIDEGlobalBrowserOption, includePhoneGap);
         }
     }
 
     private List<WebBrowser> getSortedBrowsers(boolean includeSystemDefaultBrowser, 
-            boolean includeBrowsersWithNBIntegration,
             boolean includeIDEGlobalBrowserOption,
             boolean includePhoneGap) {
         List<BrowserWrapper> browsers = new ArrayList<BrowserWrapper>();
         int chrome = 200;
         int chromium = 300;
-        int others = 400;
+        int others = 1000;
+        int android = 1400;
+        int ios = 1500;
+        int phonegap = 1600;
         for (WebBrowserFactoryDescriptor desc : getFactories(includeSystemDefaultBrowser)) {
             if (desc.getBrowserFamily().equals(BrowserFamilyId.PHONEGAP) && !includePhoneGap) {
                 continue;
             }
-            WebBrowser browser = new WebBrowser(desc, false);
+            WebBrowser browser = new WebBrowser(desc);
             if (browser.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW) {
                 browsers.add(new BrowserWrapper(browser, 100));
             } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getId().endsWith("ChromeBrowser")) { // NOI18N
                 BrowserWrapper wrapper = new BrowserWrapper(browser, chrome++);
                 browsers.add(wrapper);
-                if (includeBrowsersWithNBIntegration) {
-                    WebBrowser browser2 = new WebBrowser(desc, true);
-                    browsers.add(new BrowserWrapper(browser2, chrome++));
-                }
             } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM || browser.getId().endsWith("ChromiumBrowser")) { // NOI18N
                 BrowserWrapper wrapper = new BrowserWrapper(browser, chromium++);
                 browsers.add(wrapper);
-                if (includeBrowsersWithNBIntegration) {
-                    WebBrowser browser2 = new WebBrowser(desc, true);
-                    browsers.add(new BrowserWrapper(browser2, chromium++));
-                }
+            } else if (browser.getBrowserFamily() == BrowserFamilyId.ANDROID) { // NOI18N
+                browsers.add(new BrowserWrapper(browser, android++));
+            } else if (browser.getBrowserFamily() == BrowserFamilyId.IOS) { // NOI18N
+                browsers.add(new BrowserWrapper(browser, ios++));
+            } else if (browser.getBrowserFamily() == BrowserFamilyId.PHONEGAP) { // NOI18N
+                browsers.add(new BrowserWrapper(browser, phonegap++));
             } else {
                 browsers.add(new BrowserWrapper(browser, others++));
             }
@@ -267,11 +265,10 @@ public final class WebBrowsers {
     private WebBrowser createIDEGlobalDelegate() {
         WebBrowser ideBrowser = getPreferred();
         return new WebBrowser(new WebBrowserFactoryDescriptor(
-                ideBrowser.getFactoryDesc(), DEFAULT, Bundle.WebBrowsers_idebrowser()), false);
+                ideBrowser.getFactoryDesc(), DEFAULT, Bundle.WebBrowsers_idebrowser()));
     }
 
     private List<WebBrowser> getUnsortedBrowsers(boolean includeSystemDefaultBrowser, 
-            boolean includeBrowsersWithNBIntegration,
             boolean includeIDEGlobalBrowserOption,
             boolean includeMobileBrowsers) {
         List<WebBrowser> browsers = new ArrayList<WebBrowser>();
@@ -282,15 +279,8 @@ public final class WebBrowsers {
             if (desc.getBrowserFamily().isMobile() && !includeMobileBrowsers) {
                 continue;
             }
-            WebBrowser browser = new WebBrowser(desc, false);
+            WebBrowser browser = new WebBrowser(desc);
             browsers.add(browser);
-            if (includeBrowsersWithNBIntegration && (
-                    browser.getBrowserFamily() == BrowserFamilyId.CHROME ||
-                    browser.getId().endsWith("ChromeBrowser") ||
-                    browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM ||
-                    browser.getId().endsWith("ChromiumBrowser"))) { // NOI18N
-                browsers.add(new WebBrowser(desc, true));
-            }
         }
         return browsers;
     }
@@ -366,12 +356,15 @@ public final class WebBrowsers {
                     isDefault,
                     fact));
         }
-        Lookup l = Lookups.forPath(MOBILE_BROWSERS_FOLDER);
+        Lookup l = Lookups.forPath(BROWSERS2_FOLDER);
         for (HtmlBrowser.Factory f : l.lookupAll(HtmlBrowser.Factory.class)) {
             if (!(f instanceof EnhancedBrowserFactory)) {
                 continue;
             }
             EnhancedBrowserFactory fact = (EnhancedBrowserFactory)f;
+            if (!fact.canCreateHtmlBrowserImpl()) {
+                continue;
+            }
             String browserId = fact.getId();
             if (browserId == null) {
                 // fallback:

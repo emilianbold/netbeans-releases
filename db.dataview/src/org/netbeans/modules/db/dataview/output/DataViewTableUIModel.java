@@ -47,6 +47,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.table.ResultSetTableModel;
 
@@ -68,6 +69,7 @@ public class DataViewTableUIModel extends ResultSetTableModel {
 
     @Override
     public void setValueAt(Object value, int row, int col) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         Object oldval = getValueAt(row, col);
         if (noUpdateRequired(oldval, value)) {
             return;
@@ -77,6 +79,7 @@ public class DataViewTableUIModel extends ResultSetTableModel {
     }
 
     public Object getOriginalValueAt(int row, int col) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         if(hasUpdates(row, col)) {
             return oldData.get(row).get(col);
         } else {
@@ -86,23 +89,27 @@ public class DataViewTableUIModel extends ResultSetTableModel {
 
     @Override
     public void setData(List<Object[]> data) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         super.setData(data);
         oldData.clear();
     }
 
     @Override
     public void removeRow(int row) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         super.removeRow(row);
         oldData.remove(row);
     }
 
     @Override
     public void clear() {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         super.clear();
         oldData.clear();
     }
 
     private void addUpdates(int row, int col, Object value) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         Map<Integer, Object> rowMap = oldData.get(row);
         if (rowMap == null) {
             rowMap = new LinkedHashMap<Integer, Object>();
@@ -115,6 +122,7 @@ public class DataViewTableUIModel extends ResultSetTableModel {
     }
 
     public void removeAllUpdates(boolean discardNewValue) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         for(Integer rowIndex: new HashSet<Integer>(oldData.keySet())) {
             Map<Integer,Object> oldRow = oldData.remove(rowIndex);
             if (discardNewValue) {
@@ -127,6 +135,7 @@ public class DataViewTableUIModel extends ResultSetTableModel {
     }
 
     public void removeUpdateForSelectedRow(int row, boolean discardNewValue) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         if (oldData.containsKey(row)) {
             Map<Integer, Object> oldRow = oldData.remove(row);
             if (discardNewValue) {
@@ -139,6 +148,7 @@ public class DataViewTableUIModel extends ResultSetTableModel {
     }
 
     public void removeUpdate(int row, int col, boolean discardNewValue) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         if (oldData.containsKey(row)) {
             Map<Integer, Object> oldRow = oldData.get(row);
             if (oldRow.containsKey(col)) {
@@ -155,10 +165,12 @@ public class DataViewTableUIModel extends ResultSetTableModel {
     }
 
     public Set<Integer> getUpdateKeys() {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         return oldData.keySet();
     }
 
     public Map<Integer, Object> getChangedData(int row) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         Set<Integer> changedColumns = oldData.get(row).keySet();
         Map<Integer,Object> result = new HashMap<Integer, Object>();
         for(Integer column: changedColumns) {
@@ -168,10 +180,12 @@ public class DataViewTableUIModel extends ResultSetTableModel {
     }
 
     boolean hasUpdates() {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         return oldData.size() > 0;
     }
 
     boolean hasUpdates(int row, int col) {
+        assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         Map<Integer, Object> rowMap = oldData.get(new Integer(row));
         return rowMap != null && rowMap.containsKey(new Integer(col));
     }

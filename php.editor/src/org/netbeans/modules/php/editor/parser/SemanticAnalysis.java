@@ -60,6 +60,7 @@ import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
@@ -75,6 +76,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
@@ -220,6 +222,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private Set<TypeConstantElement> deprecatedConstants;
 
+        private Set<FunctionElement> deprecatedFunctions;
+
         // last visited type declaration
         private TypeDeclaration typeDeclaration;
 
@@ -249,6 +253,16 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 deprecatedMethods = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getMethods(NameKind.empty()));
             }
             return deprecatedMethods;
+        }
+
+        private Set<FunctionElement> getDeprecatedFunctions() {
+            if (isCancelled()) {
+                return Collections.EMPTY_SET;
+            }
+            if (deprecatedFunctions == null) {
+                deprecatedFunctions = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getFunctions(NameKind.empty()));
+            }
+            return deprecatedFunctions;
         }
 
         private Set<FieldElement> getDeprecatedFields() {
@@ -370,6 +384,31 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), typeName.getStartOffset(), variableScope);
                 for (TypeElement typeElement : getDeprecatedTypes()) {
                     if (typeElement.getFullyQualifiedName().equals(fullyQualifiedName)) {
+                        isDeprecated = true;
+                        break;
+                    }
+                }
+            }
+            return isDeprecated;
+        }
+
+        @Override
+        public void visit(FunctionDeclaration node) {
+            if (isCancelled()) {
+                return;
+            }
+            Identifier functionName = node.getFunctionName();
+            if (isDeprecatedFunctionDeclaration(functionName)) {
+                addOffsetRange(functionName, DEPRECATED_SET);
+            }
+            super.visit(node);
+        }
+
+        private boolean isDeprecatedFunctionDeclaration(Identifier functionName) {
+            boolean isDeprecated = false;
+            if (!isCancelled()) {
+                for (FunctionElement functionElement : getDeprecatedFunctions()) {
+                    if (functionElement.getName().equals(functionName.getName())) {
                         isDeprecated = true;
                         break;
                     }

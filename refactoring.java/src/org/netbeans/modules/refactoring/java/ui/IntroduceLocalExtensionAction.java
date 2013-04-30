@@ -57,9 +57,9 @@ import org.openide.util.NbBundle;
 @ActionRegistration(displayName = "#LBL_IntroduceLocalExtensionAction", lazy = false)
 @ActionReferences({
     @ActionReference(path = "Shortcuts", name = "OS-X"),
-    @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "IntroduceLocalExtensionAction", position = 1750)
+    @ActionReference(path = "Editors/text/x-java/RefactoringActions/Introduce" , name = "IntroduceLocalExtensionAction", position = 1750)
 })
-@NbBundle.Messages("LBL_IntroduceLocalExtensionAction=Introduce &Local Extension...")
+@NbBundle.Messages("LBL_IntroduceLocalExtensionAction=&Local Extension...")
 public class IntroduceLocalExtensionAction extends JavaRefactoringGlobalAction {
 
     public IntroduceLocalExtensionAction() {

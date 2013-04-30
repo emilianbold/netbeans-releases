@@ -148,6 +148,8 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         checkBoxUnrestrictedAcc.setSelected(jfxProps.getSigningEnabled());
         labelSigning.setEnabled(jfxProps.getSigningEnabled());
         labelSigningMessage.setEnabled(jfxProps.getSigningEnabled());
+        checkBoxBLOB.setEnabled(jfxProps.getSigningEnabled());
+        checkBoxBLOB.setSelected(jfxProps.getBLOBSigningEnabled());
         buttonSigning.setEnabled(jfxProps.getSigningEnabled());
         refreshSigningLabel();
         refreshIconsLabel();
@@ -221,9 +223,9 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         buttonIcons = new javax.swing.JButton();
         checkBoxBundle = new javax.swing.JCheckBox();
         comboBoxBundle = new javax.swing.JComboBox();
-        checkBoxUnrestrictedAcc = new javax.swing.JCheckBox();
         labelSigning = new javax.swing.JLabel();
         labelSigningMessage = new javax.swing.JLabel();
+        warningSigning = new javax.swing.JLabel();
         buttonSigning = new javax.swing.JButton();
         checkBoxDisableProxy = new javax.swing.JCheckBox();
         labelProperties = new javax.swing.JLabel();
@@ -243,6 +245,10 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         buttonDownloadMode = new javax.swing.JButton();
         labelRT = new javax.swing.JLabel();
         comboBoxRT = new org.netbeans.modules.javafx2.project.ui.RuntimeComboBox();
+        panelSigning = new javax.swing.JPanel();
+        checkBoxUnrestrictedAcc = new javax.swing.JCheckBox();
+        checkBoxBLOB = new javax.swing.JCheckBox();
+        keepInfoMessageHeight = new javax.swing.Box.Filler(new java.awt.Dimension(0, 32), new java.awt.Dimension(0, 32), new java.awt.Dimension(32767, 32));
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 32767));
 
         setLayout(new java.awt.GridBagLayout());
@@ -359,24 +365,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         comboBoxBundle.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.comboBoxBundle.text")); // NOI18N
         comboBoxBundle.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.comboBoxBundle.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(checkBoxUnrestrictedAcc, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.checkBoxUnrestrictedAcc.text")); // NOI18N
-        checkBoxUnrestrictedAcc.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                checkBoxUnrestrictedAccActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
-        panelBottom.add(checkBoxUnrestrictedAcc, gridBagConstraints);
-        checkBoxUnrestrictedAcc.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.checkBoxUnrestrictedAcc.text")); // NOI18N
-        checkBoxUnrestrictedAcc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.checkBoxUnrestrictedAcc.text")); // NOI18N
-
         labelSigning.setLabelFor(labelSigningMessage);
         org.openide.awt.Mnemonics.setLocalizedText(labelSigning, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelSigning.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -396,6 +384,19 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
         panelBottom.add(labelSigningMessage, gridBagConstraints);
+
+        warningSigning.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/javafx2/project/ui/resources/info.png"))); // NOI18N
+        warningSigning.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.warningSigning.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipady = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 36, 0, 0);
+        panelBottom.add(warningSigning, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonSigning, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.buttonSigning.text")); // NOI18N
         buttonSigning.addActionListener(new java.awt.event.ActionListener() {
@@ -607,6 +608,49 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         comboBoxRT.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.comboBoxRT.text")); // NOI18N
         comboBoxRT.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.comboBoxRT.text")); // NOI18N
 
+        panelSigning.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(checkBoxUnrestrictedAcc, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.checkBoxUnrestrictedAcc.text")); // NOI18N
+        checkBoxUnrestrictedAcc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkBoxUnrestrictedAccActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        panelSigning.add(checkBoxUnrestrictedAcc, gridBagConstraints);
+        checkBoxUnrestrictedAcc.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.checkBoxUnrestrictedAcc.text")); // NOI18N
+        checkBoxUnrestrictedAcc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.checkBoxUnrestrictedAcc.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(checkBoxBLOB, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.checkBoxBLOB.text")); // NOI18N
+        checkBoxBLOB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkBoxBLOBActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
+        panelSigning.add(checkBoxBLOB, gridBagConstraints);
+        checkBoxBLOB.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.checkBoxBLOB.text")); // NOI18N
+        checkBoxBLOB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.checkBoxBLOB.text")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
+        panelBottom.add(panelSigning, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        panelBottom.add(keepInfoMessageHeight, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -671,6 +715,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         boolean sel = checkBoxUnrestrictedAcc.isSelected();
         labelSigning.setEnabled(sel);
         labelSigningMessage.setEnabled(sel);
+        checkBoxBLOB.setEnabled(sel);
         buttonSigning.setEnabled(sel);
         jfxProps.setSigningEnabled(sel);
         jfxProps.setPermissionsElevated(sel);
@@ -683,12 +728,16 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
     private void buttonSigningActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSigningActionPerformed
         JFXSigningPanel panel = new JFXSigningPanel(jfxProps);
         DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JFXSigningPanel.class, "TITLE_JFXSigningPanel"), true, null); // NOI18N
+        panel.registerListeners();
+        panel.setDialogDescriptor(dialogDesc);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
         dialog.setVisible(true);
         if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
             panel.store();
             refreshSigningLabel();
         }
+        panel.unregisterListeners();
+        dialog.dispose();
     }//GEN-LAST:event_buttonSigningActionPerformed
 
     private void checkBoxBundleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxBundleActionPerformed
@@ -723,6 +772,11 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         panel.unregisterDocumentListeners();
     }//GEN-LAST:event_buttonIconsActionPerformed
 
+    private void checkBoxBLOBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxBLOBActionPerformed
+        boolean sel = checkBoxBLOB.isSelected();
+        jfxProps.setBLOBSigningEnabled(sel);
+    }//GEN-LAST:event_checkBoxBLOBActionPerformed
+
     private void refreshCustomJSLabel() {
         int jsDefs = 0;
         for (Map.Entry<String,String> entry : jfxProps.getJSCallbacks().entrySet()) {
@@ -740,11 +794,14 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
     private void refreshSigningLabel() {
         if(!jfxProps.getSigningEnabled() || jfxProps.getSigningType() == JFXProjectProperties.SigningType.NOSIGN) {
             labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_SigningUnsigned")); // NOI18N
+            //warningSigning.setVisible(true);
         } else {
             if(jfxProps.getSigningType() == JFXProjectProperties.SigningType.KEY) {
                 labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_SigningKey", jfxProps.getSigningKeyAlias())); // NOI18N
+                //warningSigning.setVisible(false);
             } else {
                 labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_SigningGenerated")); // NOI18N
+                //warningSigning.setVisible(true);
             }
         }
     }
@@ -773,6 +830,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
     private javax.swing.JButton buttonDownloadMode;
     private javax.swing.JButton buttonIcons;
     private javax.swing.JButton buttonSigning;
+    private javax.swing.JCheckBox checkBoxBLOB;
     private javax.swing.JCheckBox checkBoxBundle;
     private javax.swing.JCheckBox checkBoxDeskShortcut;
     private javax.swing.JCheckBox checkBoxDisableProxy;
@@ -784,6 +842,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
     private javax.swing.JComboBox comboBoxBundle;
     private org.netbeans.modules.javafx2.project.ui.RuntimeComboBox comboBoxRT;
     private javax.swing.Box.Filler filler2;
+    private javax.swing.Box.Filler keepInfoMessageHeight;
     private javax.swing.JLabel labelCommon;
     private javax.swing.JLabel labelCustomJS;
     private javax.swing.JLabel labelCustomJSMessage;
@@ -799,9 +858,11 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
     private javax.swing.JLabel labelSigning;
     private javax.swing.JLabel labelSigningMessage;
     private javax.swing.JPanel panelBottom;
+    private javax.swing.JPanel panelSigning;
     private javax.swing.JPanel panelTopLabel;
     private javax.swing.JPanel panelWS1;
     private javax.swing.JPanel panelWS2;
+    private javax.swing.JLabel warningSigning;
     // End of variables declaration//GEN-END:variables
 
     @Override

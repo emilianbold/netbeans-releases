@@ -46,16 +46,22 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.css.visual.actions.OpenLocationAction;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -165,16 +171,27 @@ public class StyleSheetNode extends AbstractNode {
         }
 
         private void refreshKeys() {
-            Collection<RuleHandle> keys = new ArrayList<RuleHandle>();
-            List<RuleHandle> ruleHandles = model.getFilesToRulesMap().get(stylesheet);
-            if(ruleHandles != null) {
-                for(RuleHandle handle : ruleHandles) {
-                    if(includeKey(handle)) {
-                        keys.add(handle);
+            final AtomicReference<Collection<RuleHandle>> result = new AtomicReference<>();
+            try {
+                ParserManager.parse("text/css", new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        Collection<RuleHandle> keys = new ArrayList<>();
+                        List<RuleHandle> ruleHandles = model.getFilesToRulesMap().get(stylesheet);
+                        if(ruleHandles != null) {
+                            for(RuleHandle handle : ruleHandles) {
+                                if(includeKey(handle)) {
+                                    keys.add(handle);
+                                }
+                            }
+                        }
+                        result.set(keys);
                     }
-                }
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            setKeys(keys);
+            setKeys(result.get());
         }
         
         /**

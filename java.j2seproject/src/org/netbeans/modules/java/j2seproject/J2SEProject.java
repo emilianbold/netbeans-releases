@@ -406,6 +406,7 @@ public final class J2SEProject implements Project {
             WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
             BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, lvp.getBreakableProperties(), lvp.getPlatformProperties()),
             BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, new PlatformChangedHook(), JavaPlatform.getDefault().getSpecification().getName(), J2SEProjectProperties.JAVA_PLATFORM, J2SEProjectProperties.JAVAC_SOURCE, J2SEProjectProperties.JAVAC_TARGET),
+            BrokenReferencesSupport.createProfileProblemProvider(helper, refHelper, eval, J2SEProjectProperties.JAVAC_PROFILE, ProjectProperties.RUN_CLASSPATH, ProjectProperties.ENDORSED_CLASSPATH),
             UILookupMergerSupport.createProjectProblemsProviderMerger()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup

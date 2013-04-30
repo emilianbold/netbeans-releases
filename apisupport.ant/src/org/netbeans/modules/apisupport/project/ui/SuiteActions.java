@@ -72,6 +72,7 @@ import static org.netbeans.modules.apisupport.project.ui.Bundle.*;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
+import org.netbeans.modules.apisupport.project.ui.wizard.DefaultSuiteProjectOperations;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.ActionProgress;
@@ -366,7 +367,7 @@ public final class SuiteActions implements ActionProvider, ExecProject {
             return;
         }
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
-            DefaultProjectOperations.performDefaultDeleteOperation(project);
+            DefaultSuiteProjectOperations.performDefaultDeleteOperation(project);
         } else if (ActionProvider.COMMAND_RENAME.equals(command)) {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {

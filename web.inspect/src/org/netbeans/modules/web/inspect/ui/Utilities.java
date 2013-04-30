@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.inspect.ui;
 
+import java.awt.EventQueue;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -48,16 +49,24 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.Page;
+import org.netbeans.modules.web.common.api.DependentFileQuery;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Utility methods.
  *
  * @author Jan Stola
  */
-class Utilities {
+public class Utilities {
     /** MIME types of files with a content that can be styled. */
     private static final Collection<String> STYLED_MIME_TYPES = new HashSet(
             Arrays.asList(new String[]{"text/html", "text/xhtml", "text/x-jsp", "text/x-php5"})); // NOI18N
@@ -121,6 +130,74 @@ class Utilities {
             }
         }
         return fob;
+    }
+
+    /**
+     * Opens/focuses the inspected file in the editor.
+     *
+     * @param pageModel inspected page.
+     */
+    public static void focusInspectedFile(PageModel pageModel) {
+        String documentURL = pageModel.getDocumentURL();
+        if (documentURL != null) {
+            // PENDING remove cast to WebKitPageModel
+            Project project = ((WebKitPageModel)pageModel).getProject();
+            if (project != null) {
+                try {
+                    URL url = new URL(documentURL);
+                    final FileObject fob = ServerURLMapping.fromServer(project, url);
+                    if (fob != null) {
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                FileObject selectedFile = selectedEditorFile();
+                                // Do not touch editor when it is switched to a related file
+                                if ((selectedFile == null)
+                                        || !isStyledMimeType(selectedFile.getMIMEType())
+                                        || !DependentFileQuery.isDependent(fob, selectedFile)) {
+                                    try {
+                                        DataObject dob = DataObject.find(fob);
+                                        EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
+                                        if (editor != null) {
+                                            editor.open();
+                                        }
+                                    } catch (DataObjectNotFoundException ex) {
+                                    }
+                                }
+                            }
+                        });
+                    }
+                } catch (MalformedURLException ex) {
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the file selected in the editor.
+     * 
+     * @return file selected in the editor.
+     */
+    private static FileObject selectedEditorFile() {
+        WindowManager manager = WindowManager.getDefault();
+        TopComponent.Registry registry = manager.getRegistry();
+        TopComponent active = registry.getActivated();
+        if ((active == null) || !manager.isOpenedEditorTopComponent(active)) {
+            active = null;
+            for (Mode mode : manager.getModes()) {
+                if (manager.isEditorMode(mode)) {
+                    active = mode.getSelectedTopComponent();
+                    if (active != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        FileObject selectedFile = null;
+        if (active != null) {
+            selectedFile = active.getLookup().lookup(FileObject.class);
+        }
+        return selectedFile;
     }
 
 }

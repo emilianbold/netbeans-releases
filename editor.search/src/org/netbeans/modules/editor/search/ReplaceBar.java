@@ -62,7 +62,7 @@ public final class ReplaceBar extends JPanel implements PropertyChangeListener {
     private static ReplaceBar replacebarInstance = null;
     private static final Logger LOG = Logger.getLogger(ReplaceBar.class.getName());
     private SearchBar searchBar;
-    private final JComboBox replaceComboBox;
+    private final JComboBox<String> replaceComboBox;
     private final JTextComponent replaceTextField;
     private final JButton replaceButton;
     private final JButton replaceAllButton;
@@ -70,7 +70,7 @@ public final class ReplaceBar extends JPanel implements PropertyChangeListener {
     private final JCheckBox preserveCaseCheckBox;
     private final JCheckBox backwardsCheckBox;
     private final FocusTraversalPolicy searchBarFocusTraversalPolicy;
-    private final List<Component> focusList = new ArrayList<Component>();
+    private final List<Component> focusList = new ArrayList<>();
     private boolean popupMenuWasCanceled = false;
 
     public static ReplaceBar getInstance(SearchBar searchBar) {
@@ -93,7 +93,7 @@ public final class ReplaceBar extends JPanel implements PropertyChangeListener {
 
         // padding at the end of the toolbar
         add(Box.createHorizontalStrut(8)); //spacer in the beginnning of the toolbar
-        SearchComboBox scb = new SearchComboBox();
+        SearchComboBox<String> scb = new SearchComboBox<>();
         replaceComboBox = scb;
         replaceComboBox.addPopupMenuListener(new ReplacePopupMenuListener());
         replaceTextField = scb.getEditorPane();
@@ -261,12 +261,12 @@ public final class ReplaceBar extends JPanel implements PropertyChangeListener {
         EditorFindSupport.getInstance().addToReplaceHistory(new EditorFindSupport.RP(incrementalSearchText, preserveCaseCheckBox.isSelected()));
         // Add the text to the top of the list
         for (int i = replaceComboBox.getItemCount() - 1; i >= 0; i--) {
-            String item = (String) replaceComboBox.getItemAt(i);
+            String item = replaceComboBox.getItemAt(i);
             if (item.equals(incrementalSearchText)) {
                 replaceComboBox.removeItemAt(i);
             }
         }
-        ((MutableComboBoxModel) replaceComboBox.getModel()).insertElementAt(incrementalSearchText, 0);
+        ((MutableComboBoxModel<String>) replaceComboBox.getModel()).insertElementAt(incrementalSearchText, 0);
         replaceComboBox.setSelectedIndex(0);
     }
 
@@ -325,7 +325,7 @@ public final class ReplaceBar extends JPanel implements PropertyChangeListener {
             SearchComboBoxEditor.changeToOneLineEditorPane((JEditorPane) replaceTextField);
             addEnterKeystrokeReplaceTo(replaceTextField);
             String lastReplace = replaceTextField.getText();
-            MutableComboBoxModel comboBoxModelIncSearch = ((MutableComboBoxModel) replaceComboBox.getModel());
+            MutableComboBoxModel<String> comboBoxModelIncSearch = ((MutableComboBoxModel<String>) replaceComboBox.getModel());
             for (int i = comboBoxModelIncSearch.getSize() - 1; i >= 0; i--) {
                 comboBoxModelIncSearch.removeElementAt(i);
             }
@@ -352,7 +352,7 @@ public final class ReplaceBar extends JPanel implements PropertyChangeListener {
         this.updateReplaceComboBoxHistory(replaceTextField.getText());
 
         EditorFindSupport findSupport = EditorFindSupport.getInstance();
-        Map<String, Object> findProps = new HashMap<String, Object>();
+        Map<String, Object> findProps = new HashMap<>();
         findProps.putAll(searchBar.getSearchProperties());
         findProps.put(EditorFindSupport.FIND_REPLACE_WITH, replaceTextField.getText());
         findProps.put(EditorFindSupport.FIND_BACKWARD_SEARCH, backwardsCheckBox.isSelected());

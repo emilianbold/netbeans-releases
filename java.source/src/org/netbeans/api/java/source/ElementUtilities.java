@@ -270,7 +270,7 @@ public final class ElementUtilities {
                                 members.add(member);
                         }
                     }
-                    if (te.getKind().isClass()) {
+                    if (te.getKind().isClass() || te.getKind().isInterface() && Source.instance(ctx).allowDefaultMethods()) {
                         VarSymbol thisPseudoMember = new VarSymbol(Flags.FINAL | Flags.HASINIT, Names.instance(ctx)._this, (ClassType)te.asType(), (ClassSymbol)te);
                         if (acceptor == null || acceptor.accept(thisPseudoMember, type))
                             members.add(thisPseudoMember);
@@ -289,14 +289,13 @@ public final class ElementUtilities {
                 case LONG:
                 case SHORT:
                 case VOID:
-                    Symtab syms = Symtab.instance(ctx);
-                    Type t = syms.classType;
+                    Type t = Symtab.instance(ctx).classType;
                     com.sun.tools.javac.util.List<Type> typeargs = Source.instance(ctx).allowGenerics() ?
                         com.sun.tools.javac.util.List.of((Type)type) :
                         com.sun.tools.javac.util.List.<Type>nil();
                     t = new ClassType(t.getEnclosingType(), typeargs, t.tsym);
                     Element classPseudoMember = new VarSymbol(Flags.STATIC | Flags.PUBLIC | Flags.FINAL, Names.instance(ctx)._class, t, ((Type)type).tsym);
-                    if (acceptor == null || acceptor.accept(classPseudoMember, syms.objectType))
+                    if (acceptor == null || acceptor.accept(classPseudoMember, type))
                         members.add(classPseudoMember);
                     break;
                 case ARRAY:
@@ -304,14 +303,13 @@ public final class ElementUtilities {
                         if (acceptor == null || acceptor.accept(member, type))
                             members.add(member);
                     }
-                    syms = Symtab.instance(ctx);
-                    t = syms.classType;
+                    t = Symtab.instance(ctx).classType;
                     typeargs = Source.instance(ctx).allowGenerics() ?
                         com.sun.tools.javac.util.List.of((Type)type) :
                         com.sun.tools.javac.util.List.<Type>nil();
                     t = new ClassType(t.getEnclosingType(), typeargs, t.tsym);
                     classPseudoMember = new VarSymbol(Flags.STATIC | Flags.PUBLIC | Flags.FINAL, Names.instance(ctx)._class, t, ((Type)type).tsym);
-                    if (acceptor == null || acceptor.accept(classPseudoMember, syms.objectType))
+                    if (acceptor == null || acceptor.accept(classPseudoMember, type))
                         members.add(classPseudoMember);
                     break;
             }
@@ -454,7 +452,7 @@ public final class ElementUtilities {
                         if (types.isSubsignature((ExecutableType)hiderType, (ExecutableType)memberType))
                             return true;
                     } else {
-                        return true;
+                        return false;
                     }
                 }
             }

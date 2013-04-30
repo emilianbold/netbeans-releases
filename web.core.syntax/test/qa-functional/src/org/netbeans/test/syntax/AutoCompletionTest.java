@@ -113,7 +113,7 @@ public class AutoCompletionTest extends CompletionTest {
             caret.setDot(step.getOffset() + 1);
             EditorOperator eo = new EditorOperator(testFileObj.getNameExt());
             eo.insert(step.getPrefix());
-
+            waitScanFinished();
             caret.setDot(step.getCursorPos());
             eo.save();
             waitTypingFinished(doc);

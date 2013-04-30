@@ -117,7 +117,12 @@ public @interface Hint {
         QUERY,
         /**The hint cannot be run inside the Inspect&Refactor dialog.
          */
-        NO_BATCH;
+        NO_BATCH,
+        /**
+         * The hint requires heavyweight processing so it should be run explicitly only by Inspect, Refactor (or similar) 
+         * features
+         */
+        HEAVY;
     }
 
 }

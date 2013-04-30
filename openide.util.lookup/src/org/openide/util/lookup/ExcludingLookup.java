@@ -63,6 +63,9 @@ final class ExcludingLookup extends org.openide.util.Lookup {
     /** classes to exclude (Class[]) or just one class (Class) */
     private final Object classes;
     
+    /** results */
+    private WeakResult<?> results;
+    
     /**
      * Creates new Result object with supplied instances parameter.
      * @param instances to be used to return from the lookup
@@ -96,8 +99,39 @@ final class ExcludingLookup extends org.openide.util.Lookup {
             // empty result
             return Lookup.EMPTY.lookup(template);
         }
+        
+        R<T> ret = null;
+        for (;;) { // at most twice
+            synchronized (this) {
+                WeakResult<?> r = results;
+                WeakResult<?> prev = null;
+                while (r != null) {
+                    R<?> res = r.result.get();
+                    if (res == null) {
+                        if (prev != null) {
+                            prev.next = r.next;
+                        } else {
+                            results = r.next;
+                        }
+                    } else {
+                        if (template.equals(res.from)) {
+                            @SuppressWarnings("unchecked")
+                            Result<T> old = (Result<T>) res;
+                            return old;
+                        }
+                    }
+                    prev = r;
+                    r = r.next;
+                }
+                if (ret != null) {
+                    ret.weak.next = results;
+                    results = ret.weak;
+                    return ret;
+                }                
+            }
+            ret = new R<T>(template, delegate.lookup(template));
+        }
 
-        return new R<T>(template.getType(), delegate.lookup(template));
     }
 
     public <T> T lookup(Class<T> clazz) {
@@ -281,9 +315,9 @@ BIG:
         private Result<T> result;
         private WeakResult<T> weak;
         private Object listeners;
-        private Class<?> from;
+        private Template from;
 
-        R(Class<?> from, Result<T> delegate) {
+        R(Template from, Result<T> delegate) {
             this.from = from;
             this.result = delegate;
             this.weak = new WeakResult<T>(this, delegate);
@@ -331,12 +365,12 @@ BIG:
         }
 
         private <S> Collection<S> openCol(Collection<S> c, int type) {
-            return filter(classes(), from, c, type, new ArrayList<S>(c.size()));
+            return filter(classes(), from.getType(), c, type, new ArrayList<S>(c.size()));
         }
 
         @Override
         public Set<Class<? extends T>> allClasses() {
-            return filter(classes(), from, result.allClasses(), 1, new HashSet<Class<? extends T>>());
+            return filter(classes(), from.getType(), result.allClasses(), 1, new HashSet<Class<? extends T>>());
         }
 
         @Override
@@ -377,8 +411,10 @@ BIG:
     } // end of R
     
     private final class WeakResult<T> extends WaitableResult<T> implements LookupListener {
-        private Lookup.Result source;
-        private Reference<R<T>> result;
+        private final Lookup.Result source;
+        private final Reference<R<T>> result;
+        /** @GuardedBy(ExcludingLookup.this) */
+        private WeakResult<?> next;
         
         public WeakResult(R<T> r, Lookup.Result<T> s) {
             this.result = new WeakReference<R<T>>(r);

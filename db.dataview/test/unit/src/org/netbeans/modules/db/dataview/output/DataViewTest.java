@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.db.dataview.output;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -56,6 +57,7 @@ import org.netbeans.modules.db.dataview.util.DBTestUtil;
 import org.netbeans.modules.db.dataview.util.DbUtil;
 import org.netbeans.modules.db.dataview.util.TestCaseContext;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -78,7 +80,7 @@ public class DataViewTest extends NbTestCase {
 
     @Override
     public boolean runInEQ () {
-        return true;
+        return false;
     }
 
     @Override
@@ -171,9 +173,14 @@ public class DataViewTest extends NbTestCase {
         String sqlStr =context.getSqlSelect();
         int pageSize = 4;
         DataView instance = DataView.create(dbconn, sqlStr, pageSize);
-        DataViewPageContext result = instance.getPageContext(0);
+        final DataViewPageContext result = instance.getPageContext(0);
         assertEquals(1, result.getTotalRows());
-        assertTrue(result.hasDataRows());
+        assertTrue(Mutex.EVENT.writeAccess(new Mutex.Action<Boolean>() {
+            @Override
+            public Boolean run() {
+                return result.hasRows();
+            }
+        }));
     }
 
     public void testGetDatabaseConnection() {

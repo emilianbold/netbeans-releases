@@ -45,11 +45,11 @@ import java.awt.Dimension;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 
-public class SearchComboBox extends JComboBox {
+public class SearchComboBox<E> extends JComboBox<E> {
 
     private static final int DEFAULT_INCREMANTAL_SEARCH_COMBO_WIDTH = 200;
     private static final int MAX_INCREMANTAL_SEARCH_COMBO_WIDTH = 350;
-    private SearchComboBoxEditor searchComboBoxEditor = new SearchComboBoxEditor();
+    private final SearchComboBoxEditor searchComboBoxEditor = new SearchComboBoxEditor();
 
     public SearchComboBox() {
         setEditable(true);

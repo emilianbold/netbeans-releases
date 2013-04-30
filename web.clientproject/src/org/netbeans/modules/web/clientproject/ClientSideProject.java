@@ -70,10 +70,9 @@ import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
+import org.netbeans.modules.web.clientproject.problems.CssPreprocessorsProblemsSupport;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
@@ -84,6 +83,9 @@ import org.netbeans.modules.web.clientproject.ui.action.ProjectOperations;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.common.api.CssPreprocessor;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -138,12 +140,37 @@ public class ClientSideProject implements Project {
     private RemoteFiles remoteFiles;
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
     private WebBrowser projectWebBrowser;
+    private ClientSideProjectBrowserProvider projectBrowserProvider;
+
+    // css preprocessors
+    final CssPreprocessorsListener cssPreprocessorsListener = new CssPreprocessorsListener() {
+        @Override
+        public void preprocessorsChanged() {
+            // noop?
+        }
+        @Override
+        public void optionsChanged(CssPreprocessor cssPreprocessor) {
+            recompileSources(cssPreprocessor);
+        }
+        @Override
+        public void customizerChanged(Project project, CssPreprocessor cssPreprocessor) {
+            if (project.equals(ClientSideProject.this)) {
+                recompileSources(cssPreprocessor);
+            }
+        }
+        @Override
+        public void processingErrorOccured(Project project, CssPreprocessor cssPreprocessor, String error) {
+            // noop
+        }
+    };
+
 
     public ClientSideProject(AntProjectHelper helper) {
         this.projectHelper = helper;
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
         eval = createEvaluator();
         referenceHelper = new ReferenceHelper(helper, configuration, eval);
+        projectBrowserProvider = new ClientSideProjectBrowserProvider(this);
         lookup = createLookup(configuration);
         ClientProjectEnhancedBrowserImplementation ebi = getEnhancedBrowserImpl();
         if (ebi != null) {
@@ -171,6 +198,7 @@ public class ClientSideProject implements Project {
                     if (ebi != null) {
                         lookup.setConfigurationProvider(ebi.getProjectConfigurationProvider());
                     }
+                    projectBrowserProvider.activeBrowserHasChanged();
                 }
             }
         });
@@ -196,7 +224,12 @@ public class ClientSideProject implements Project {
     public synchronized WebBrowser getProjectWebBrowser() {
         if (projectWebBrowser == null) {
             String id = getSelectedBrowser();
-            projectWebBrowser = WebBrowserSupport.getBrowser(id);
+            if (id != null) {
+                projectWebBrowser = BrowserUISupport.getBrowser(id);
+            }
+            if (projectWebBrowser == null) {
+                projectWebBrowser = BrowserUISupport.getDefaultBrowserChoice(false);
+            }
         }
         return projectWebBrowser;
     }
@@ -360,13 +393,24 @@ public class ClientSideProject implements Project {
                new ClientSideProjectSources(this, projectHelper, eval),
                new ClientSideModuleImpl(this),
                ProjectPropertiesProblemProvider.createForProject(this),
+               CssPreprocessors.getDefault().createProjectProblemsProvider(new CssPreprocessorsProblemsSupport(this)),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
                     ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
-               new ClientSideProjectBrowserProvider(this),
+               projectBrowserProvider,
        });
        return new DynamicProjectLookup(this,
                LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup"));
+    }
+
+    void recompileSources(CssPreprocessor cssPreprocessor) {
+        assert cssPreprocessor != null;
+        FileObject siteRootFolder = getSiteRootFolder();
+        if (siteRootFolder == null) {
+            return;
+        }
+        // force recompiling
+        CssPreprocessors.getDefault().process(cssPreprocessor, this, siteRootFolder);
     }
 
     private static class DynamicProjectLookup extends ProxyLookup {
@@ -495,6 +539,7 @@ public class ClientSideProject implements Project {
             if (wb != null) {
                 browserId = wb.getId();
             }
+            CssPreprocessors.getDefault().addCssPreprocessorsListener(project.cssPreprocessorsListener);
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
                     new Object[] { browserId,
                     project.getTestsFolder() != null && project.getTestsFolder().getChildren().length > 0 ? "YES" : "NO"}); // NOI18N
@@ -505,6 +550,7 @@ public class ClientSideProject implements Project {
             project.getEvaluator().removePropertyChangeListener(this);
             removeSiteRootListener();
             GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
+            CssPreprocessors.getDefault().removeCssPreprocessorsListener(project.cssPreprocessorsListener);
         }
 
         private synchronized void addSiteRootListener() {
@@ -560,10 +606,12 @@ public class ClientSideProject implements Project {
 
         @Override
         public void fileFolderCreated(FileEvent fe) {
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
@@ -572,6 +620,7 @@ public class ClientSideProject implements Project {
             if (r != null) {
                 r.fileChanged(fe.getFile());
             }
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
@@ -580,24 +629,37 @@ public class ClientSideProject implements Project {
             if (r != null) {
                 r.fileDeleted(fe.getFile());
             }
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             // XXX: notify BrowserReload about filename change
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
+        private void checkPreprocessors(FileObject file) {
+            CssPreprocessors.getDefault().process(p, file);
+        }
     }
 
     private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
 
         @Override
         public FileObject getWebRoot(FileObject file) {
-            return getSiteRootFolder();
+            FileObject siteRoot = getSiteRootFolder();
+            if (siteRoot == null) {
+                return null;
+            }
+            if (siteRoot.equals(file)
+                    || FileUtil.isParentOf(siteRoot, file)) {
+                return siteRoot;
+            }
+            return null;
         }
     }
 

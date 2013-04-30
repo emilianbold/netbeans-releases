@@ -52,7 +52,11 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
@@ -105,6 +109,16 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         if (wizardDescriptor == null) {
             return true;
         }
+        
+        Sources sources=ProjectUtils.getSources(project);
+        SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if(groups == null || groups.length == 0) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(EntityWizardDescriptor.class,"ERR_JavaSourceGroup")); //NOI18N
+            return false;
+        }
+        
+        
         if (SourceLevelChecker.isSourceLevel14orLower(project)) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NeedProperSourceLevel")); // NOI18N

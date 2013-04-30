@@ -44,6 +44,7 @@
 
 package org.netbeans.spi.java.project.support.ui;
 
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -232,6 +233,7 @@ public class BrokenReferencesSupport {
      * @see ProjectProblemsProvider
      * @since 1.48
      */
+    @NonNull
     public static ProjectProblemsProvider createReferenceProblemsProvider(
             @NonNull final AntProjectHelper projectHelper,
             @NonNull final ReferenceHelper referenceHelper,
@@ -268,6 +270,7 @@ public class BrokenReferencesSupport {
      * @see ProjectProblemsProvider
      * @since 1.48
      */
+    @NonNull
     public static ProjectProblemsProvider createPlatformVersionProblemProvider(
             @NonNull final AntProjectHelper projectHelper,
             @NonNull final PropertyEvaluator evaluator,
@@ -286,6 +289,46 @@ public class BrokenReferencesSupport {
                 platformType,
                 platformProperty,
                 versionProperties);
+    }
+
+    /**
+     * Creates a {@link ProjectProblemsProvider} creating wrong JDK 8 Profile
+     * problems.
+     * @param projectHelper AntProjectHelper associated with the project
+     * @param referenceHelper ReferenceHelper associated with the project
+     * @param evaluator the {@link PropertyEvaluator} used to resolve broken references
+     * @param profileProperty  the property holding the actual project profile
+     * @param classPathProperties an array of property names which values hold the
+     * classpaths to be checked.
+     * @return {@link ProjectProblemsProvider} to be placed into project lookup.
+     *
+     * @see ProjectProblemsProvider
+     * @since 1.53
+     */
+    @NonNull
+    public static ProjectProblemsProvider createProfileProblemProvider(
+            @NonNull final AntProjectHelper projectHelper,
+            @NonNull final ReferenceHelper referenceHelper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final String profileProperty,
+            @NonNull final String... classPathProperties) {
+        Parameters.notNull("projectHelper", projectHelper); //NOI18N
+        Parameters.notNull("referenceHelper", referenceHelper); //NOI18N
+        Parameters.notNull("evaluator", evaluator);     //NOI18N
+        Parameters.notNull("profileProperty", profileProperty); //NOI18N
+        Parameters.notNull("classPathProperties", classPathProperties); //NOI18N
+        final String[] safeClassPathProperties = Arrays.copyOf(
+                classPathProperties,
+                classPathProperties.length);
+        for (String safeClassPathProperty : safeClassPathProperties) {
+            Parameters.notNull("classPathProperties[]", safeClassPathProperty); //NOI18N
+        }
+        return ProjectProblemsProviders.createProfileProblemProvider(
+                projectHelper,
+                referenceHelper,
+                evaluator,
+                profileProperty,
+                safeClassPathProperties);
     }
         
     /**

@@ -47,9 +47,10 @@ import java.util.Collection;
  *
  * @author Petr Pisl
  */
-public interface JsFunction  extends JsObject{
+public interface JsFunction extends JsObject, DeclarationScope {
     public Collection<? extends JsObject> getParameters();
     public JsObject getParameter(String name);
+    public void addReturnType(TypeUsage type);
     /**
      * 
      * @return collection of possible types that can be returned by the function.

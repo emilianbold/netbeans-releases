@@ -34,7 +34,7 @@ for x in `find . -name \*.jar.pack` ; do
     if [ -f "$jar" ] ; then
         continue
     fi
-    $jdk_home/bin/unpack200 $x $jar
+    "$jdk_home/bin/unpack200" $x $jar
     chmod `stat -f %Lp $x` $jar && touch -r $x $jar
     chown "$ownership" "$jar"
     rm $x

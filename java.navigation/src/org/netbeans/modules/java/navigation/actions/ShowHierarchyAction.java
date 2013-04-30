@@ -60,7 +60,7 @@ id = "org.netbeans.modules.java.navigation.actions.ShowHierarchyAction")
 @ActionRegistration(
     displayName = "#CTL_ShowHierarchyAction", lazy=false)
 @ActionReference(path = "Menu/GoTo/Inspect", position = 2200)
-@Messages("CTL_ShowHierarchyAction=File Hierarchy")
+@Messages("CTL_ShowHierarchyAction=File H&ierarchy")
 public final class ShowHierarchyAction extends AbstractAction {
 
     public ShowHierarchyAction() {

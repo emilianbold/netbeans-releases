@@ -45,6 +45,8 @@
 package org.netbeans.core;
 
 import java.awt.EventQueue;
+import java.awt.SecondaryLoop;
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -77,7 +79,7 @@ public final class NbLifecycleManager extends LifecycleManager {
     
     /** @GuardedBy("NbLifecycleManager.class") */
     private static CountDownLatch onExit;
-    private volatile JDialog dialog;
+    private volatile SecondaryLoop sndLoop;
     private volatile boolean isExitOnEventQueue;
     
     @Override
@@ -130,10 +132,10 @@ public final class NbLifecycleManager extends LifecycleManager {
                 @Override
                 public void countDown() {
                     super.countDown();
-                    JDialog d = dialog;
+                    SecondaryLoop d = sndLoop;
                     LOG.log(Level.FINE, "countDown for {0}, hiding {1}", new Object[] { this, d });
                     if (d != null) {
-                        d.setVisible(false);
+                        d.exit();
                     }
                 }
             };
@@ -158,17 +160,14 @@ public final class NbLifecycleManager extends LifecycleManager {
                     LOG.log(Level.FINE, null, ex);
                 }
             }
-            JDialog d = new JDialog((JFrame)null, true);
-            d.setUndecorated(true);
-            d.setLocation(544300, 544300);
-            d.setSize(0, 0);
+            SecondaryLoop sl = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
             try {
-                dialog = d;
-                LOG.log(Level.FINE, "Showing dialog: {0}", d);
-                d.setVisible(true);
+                sl.enter();
+                sndLoop = sl;
+                LOG.log(Level.FINE, "Showing dialog: {0}", sl);
             } finally {
-                LOG.log(Level.FINE, "Disposing dialog: {0}", dialog);
-                dialog = null;
+                LOG.log(Level.FINE, "Disposing dialog: {0}", sndLoop);
+                sndLoop = null;
                 isExitOnEventQueue = prev;
             }
         }

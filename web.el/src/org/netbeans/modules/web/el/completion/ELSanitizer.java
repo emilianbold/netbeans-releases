@@ -149,7 +149,7 @@ public final class ELSanitizer {
                 if (expression.endsWith(bracket.first.fixedText())) {
                     return expression + bracket.second.fixedText();
                 } else if (expression.endsWith(bracket.second.fixedText())) {
-                    // for opened classname call - e.g. #{T(java.)}
+                    // for opened classname call - e.g. #{(java.)}
                     if (expression.endsWith(ELTokenId.DOT.fixedText() + ELTokenId.RPAREN.fixedText())) {
                         return expression.substring(0, expression.length() - 1) + ADDED_SUFFIX + ELTokenId.RPAREN.fixedText();
                     }
@@ -159,9 +159,9 @@ public final class ELSanitizer {
             // sanitizes cases where the expressions ends with dot and spaces,
             // e.g. #{foo.  }
             if (ELTokenId.DOT == elToken) {
-                if (expression.startsWith(ELTokenId.T_KEYWORD.fixedText() + ELTokenId.LPAREN.fixedText())
+                if (expression.startsWith(ELTokenId.LPAREN.fixedText())
                         && !expression.contains(ELTokenId.RPAREN.fixedText())) {
-                    // for opened classname call - e.g. #{T(java.}
+                    // for opened classname call - e.g. #{(java.}
                     return expression + ADDED_SUFFIX + ELTokenId.RPAREN.fixedText() + spaces ;
                 } else {
                     return expression + ADDED_SUFFIX + spaces ;
@@ -186,12 +186,6 @@ public final class ELSanitizer {
         // for COLON - e.g. #{foo:foo
         if (expression.contains(ELTokenId.COLON.fixedText())) {
             return expression + ELTokenId.LPAREN.fixedText() + ELTokenId.RPAREN.fixedText() + spaces;
-        }
-
-        // for opened classname call - e.g. #{T(j}
-        if (expression.startsWith(ELTokenId.T_KEYWORD.fixedText() + ELTokenId.LPAREN.fixedText())
-                && !expression.contains(ELTokenId.RPAREN.fixedText())) {
-            return expression + ELTokenId.RPAREN.fixedText() + spaces;
         }
 
         return expression + spaces;

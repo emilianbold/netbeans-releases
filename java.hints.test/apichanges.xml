@@ -106,7 +106,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-
+        <change id="HintTest-singleHint">
+            <api name="JavaHintsTest"/>
+            <summary>Allowed to check a single hint</summary>
+            <version major="1" minor="9"/>
+            <date day="3" month="4" year="2013"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                New method <code>run(Class, String)</code> was added so that hint with a specific ID can be run, if the
+                class contains multiple hint implementations.
+            </description>
+            <class name="HintTest" package="org.netbeans.modules.java.hints.test.api"/>
+            <issue number="227962"/>
+        </change>
         <change id="HintTest-ensureJavaFixes">
              <api name="JavaHintsTest"/>
              <summary>Added assertFixes method to HintWarning</summary>

@@ -164,7 +164,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     public State getState() {
         //Create new snapshot instance in the tree
         changeActiveSnapshotIfNeeded();
-        return new StateImpl(active.parent);
+        return new StateImpl(active.getParent());
     }
     
     protected void changeActiveSnapshotIfNeeded () {
@@ -172,7 +172,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
         // not everything is clear yet, how clean of states is working in this case
         // some memory could remain and it's not good.
         // TODO: Needs additional investigation
-        if (true || !active.isEmtpy()) {
+        if (true || !active.isEmpty()) {
             active = makeSnapshot(active);
         }
     }
@@ -203,7 +203,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
         }
 
         boolean isEmptyActiveMacroMap() {
-            return snap == null || snap.isEmtpy();
+            return snap == null || snap.isEmpty();
         }
         ////////////////////////////////////////////////////////////////////////
         // persistence support
@@ -219,8 +219,8 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
         ////////////////////////////////////////////////////////////////////////
         private APTMacroMapSnapshot getFirstSnapshot(APTMacroMapSnapshot snap) {
             if (snap != null) {
-                while (snap.parent != null) {
-                    snap = snap.parent;
+                while (snap.getParent() != null) {
+                    snap = snap.getParent();
                 }
             }
             return snap;
@@ -232,7 +232,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
 
     @Override
     public String toString() {
-        Map<CharSequence, APTMacro> tmpMap = APTMacroMapSnapshot.addAllMacros(active, null);
+        Map<CharSequence, APTMacro> tmpMap = active.getAll();
         return APTUtils.macros2String(tmpMap);
     }
     

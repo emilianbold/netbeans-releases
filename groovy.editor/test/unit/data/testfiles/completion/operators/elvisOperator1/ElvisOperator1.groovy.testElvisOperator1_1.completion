@@ -20,4 +20,4 @@ METHOD     execute(String[], File)                    Process
 METHOD     expand()                                   String
 METHOD     expand(int)                                String
 METHOD     expandLine(int)                            String
-FIELD      empty                                      boolean
+FIELD      empty                           [PUBLIC]   boolean

@@ -79,15 +79,6 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
     private Lookup context;
 
     @Override
-    public boolean hasEnhancedMode() {
-        return false;
-    }
-
-    @Override
-    public void setEnhancedMode(boolean mode) {
-    }
-
-    @Override
     public void disablePageInspector() {
     }
 
@@ -203,7 +194,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
                             Exceptions.printStackTrace(ex);
                         }
                         try {
-                            build.startDebugging(device, project, context);
+                            build.startDebugging(device, project, context, false);
                         } catch (IllegalStateException ex) {
                             LOGGER.log(Level.INFO, ex.getMessage(), ex);
                             SwingUtilities.invokeLater(new Runnable() {

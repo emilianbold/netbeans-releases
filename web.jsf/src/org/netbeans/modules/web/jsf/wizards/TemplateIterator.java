@@ -55,14 +55,14 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.JSFUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -80,18 +80,20 @@ import org.openide.util.NbBundle;
  */
 public class TemplateIterator implements TemplateWizard.Iterator {
 
+    private static final long serialVersionUID = 458897855L;
+
     private int index;
     private transient WizardDescriptor.Panel[] panels;
 
     private TemplatePanel templatePanel;
-    private transient SourceGroup[] sourceGroups;
     private static final String CSS_FOLDER = "css"; //NOI18N
     private static final String CSS_FOLDER2 = "resources/css"; //NOI18N
     private static final String CSS_EXT = "css"; //NOI18N
     private static final String XHTML_EXT = "xhtml";    //NOI18N
     private static final String ENCODING = "UTF-8"; //NOI18N
-    private static String TEMPLATE_XHTML = "template.xhtml"; //NOI18N
-    private static String TEMPLATE_XHTML2 = "template-jsf2.xhtml"; //NOI18N
+    private static String TEMPLATE_XHTML = "template.template"; //NOI18N
+    private static String TEMPLATE_XHTML2 = "template-jsf2.template"; //NOI18N
+    private static String TEMPLATE_XHTML22 = "template-jsf22.template"; //NOI18N
     private static String FL_RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/facelets/resources/templates/"; //NOI18N
 
     /** Creates a new instance of TemplateIterator */
@@ -110,9 +112,11 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                 JSFConfigUtilities.extendJsfFramework(dir, false);
             }
 
-            boolean isJSF20 = JSFUtils.isJSF20Plus(wm, true);
+            JSFVersion version = JSFVersion.forWebModule(wm);
             String templateFile = TEMPLATE_XHTML;
-            if (isJSF20) {
+            if (version != null && version.isAtLeast(JSFVersion.JSF_2_2)) {
+                templateFile = TEMPLATE_XHTML22;
+            } else if (version != null && version.isAtLeast(JSFVersion.JSF_2_2)) {
                 templateFile = TEMPLATE_XHTML2;
             }
             String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(FL_RESOURCE_FOLDER + templateFile), ENCODING);
@@ -126,6 +130,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         return result;
     }
 
+    @Override
     public Set instantiate(TemplateWizard wiz) throws IOException {
         final org.openide.filesystems.FileObject dir = Templates.getTargetFolder( wiz );
         final String targetName =  Templates.getTargetName(wiz);
@@ -137,17 +142,16 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                 if (!JSFConfigUtilities.hasJsfFramework(docBase)) {
                     JSFConfigUtilities.extendJsfFramework(dir, false);
                 }
-                final boolean isJSF20 = JSFUtils.isJSF20Plus(wm, true);
-
+                final JSFVersion jsfVersion = JSFVersion.forWebModule(wm);
                 df.getPrimaryFile().getFileSystem().runAtomicAction(new FileSystem.AtomicAction(){
+                    @Override
                     public void run() throws IOException {
                         InputStream is;
-                        FileObject target = df.getPrimaryFile().createData(targetName, XHTML_EXT);
+                        FileObject target = df.getPrimaryFile().createData(targetName, XHTML_EXT); //NOI18N
 
-                        String folderName = isJSF20 ? CSS_FOLDER2 : CSS_FOLDER;
+                        String folderName = jsfVersion.isAtLeast(JSFVersion.JSF_2_0) ? CSS_FOLDER2 : CSS_FOLDER;
                         FileObject cssFolder = docBase.getFileObject(folderName);
                         if (cssFolder == null)
-//                            cssFolder = docBase.createFolder(folderName);
                             cssFolder = FileUtil.createFolder(docBase, folderName);
                         // name of the layout file
                         String layoutName = templatePanel.getLayoutFileName();
@@ -168,13 +172,15 @@ public class TemplateIterator implements TemplateWizard.Iterator {
 
                         is = templatePanel.getTemplate();
                         String content = JSFFrameworkProvider.readResource(is, ENCODING);
-                        if (!isJSF20) {
+                        if (!jsfVersion.isAtLeast(JSFVersion.JSF_2_0)) {
                             content = content.replaceAll("h:head", "head").replaceAll("h:body", "body"); //NOI18N
                         }
+                        String namespaceLocation = jsfVersion.isAtLeast(JSFVersion.JSF_2_2) ? NamespaceUtils.JCP_ORG_LOCATION : NamespaceUtils.SUN_COM_LOCATION;
 
                         HashMap args = new HashMap();
                         args.put("LAYOUT_CSS_PATH", layoutPath);    //NOI18N
                         args.put("DEFAULT_CSS_PATH", defaultPath);  //NOI18N
+                        args.put("NS_LOCATION", namespaceLocation); //NOI18N
                         MapFormat formater = new MapFormat(args);
                         formater.setLeftBrace("__");    //NOI18N
                         formater.setRightBrace("__");   //NOI18N
@@ -194,6 +200,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         return Collections.EMPTY_SET;
     }
 
+    @Override
     public void initialize(TemplateWizard wiz) {
         //this.wiz = wiz;
         index = 0;
@@ -226,40 +233,49 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         }
     }
 
+    @Override
     public void uninitialize(TemplateWizard wiz) {
         panels = null;
     }
 
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
 
+    @Override
     public String name() {
         return NbBundle.getMessage(TemplateIterator.class, "TITLE_x_of_y",
                 new Integer(index + 1), new Integer(panels.length));
     }
 
+    @Override
     public void previousPanel() {
         if (! hasPrevious()) throw new NoSuchElementException();
         index--;
     }
 
+    @Override
     public void nextPanel() {
         if (! hasNext()) throw new NoSuchElementException();
         index++;
     }
 
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
 
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
 

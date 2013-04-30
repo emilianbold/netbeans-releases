@@ -41,21 +41,22 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.util.LinkedList;
 import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceFactory;
 
 /**
  *
  * @author Alexander Simon
  */
 public class CppParserActionTracer extends CppParserActionImpl implements CppParserActionEx {
-    private final LinkedList<String> stack = new LinkedList<String>();
+    private final TraceFactory.TraceWriter traceWriter;
     
     public CppParserActionTracer(CsmParserProvider.CsmParserParameters params, CXXParserActionEx wrapper) {
         super(params, wrapper);
+        traceWriter = TraceFactory.getTraceWriter(this);
     }
 
     @Override
@@ -1063,7 +1064,7 @@ public class CppParserActionTracer extends CppParserActionImpl implements CppPar
     }
 
     @Override
-    public void function_definition_after_declarator(Token token) {
+    public void function_definition_after_declarator(Token token){
         printIn("function_definition_after_declarator", token); //NOI18N
         super.function_definition_after_declarator(token);
     }
@@ -1294,6 +1295,12 @@ public class CppParserActionTracer extends CppParserActionImpl implements CppPar
     public void end_member_declarator(Token token) {
         super.end_member_declarator(token);
         printOut("member_declarator", token); //NOI18N
+    }
+    
+    @Override 
+    public void member_bitfield_declarator(Token token) {
+        super.end_member_declarator(token);
+        printOut("member_bitfield_declarator", token); //NOI18N
     }
 
     @Override
@@ -1701,7 +1708,7 @@ public class CppParserActionTracer extends CppParserActionImpl implements CppPar
     @Override
     public void skip_balanced_curlies(Token token) {
         super.skip_balanced_curlies(token);
-    }
+    }    
 
     @Override
     public void pushFile(CsmFile file) {
@@ -1713,88 +1720,15 @@ public class CppParserActionTracer extends CppParserActionImpl implements CppPar
         return super.popFile();
     }
     
-    private int level = 0;
     private void printIn(String message, Token ... token) {
-        stack.addLast(message);
-        StringBuilder buf = new StringBuilder();
-        for(int i = 0; i < level; i++) {
-            buf.append(' ').append(' '); //NOI18N
-        }
-        buf.append('>'); //NOI18N
-        buf.append(message);
-        if (getBacktrackingLevel() != 0) {
-            buf.append(" GUESSING LEVEL = "); //NOI18N
-            buf.append(Integer.toString(getBacktrackingLevel()));
-        }
-        if (token.length > 0) {
-            buf.append(' '); //NOI18N
-            buf.append(getCurrentFile().getAbsolutePath());
-            buf.append('['); //NOI18N
-            buf.append(Integer.toString(token[0].getLine()));
-            buf.append(','); //NOI18N
-            buf.append(Integer.toString(token[0].getColumn()));
-            buf.append(']'); //NOI18N
-            for(int j = 0; j < token.length; j++) {
-                buf.append(' '); //NOI18N
-                buf.append(token[j].toString());
-            }
-        }
-        System.out.println(buf.toString());
-        level++;
+        traceWriter.printIn(message, token);
     }
 
     private void printOut(String message, Token ... token) {
-        String top = stack.removeLast();
-        if (!message.equals(top)) {
-            System.out.println("UNBALANCED exit. Actual "+message+" Expected "+top);//NOI18N
-        }
-        level--;
-        StringBuilder buf = new StringBuilder();
-        for(int i = 0; i < level; i++) {
-            buf.append(' ').append(' '); //NOI18N
-        }
-        buf.append('<'); //NOI18N
-        buf.append(message);
-        if (getBacktrackingLevel() != 0) {
-            buf.append(" GUESSING LEVEL = "); //NOI18N
-            buf.append(Integer.toString(getBacktrackingLevel()));
-        }
-        if (token.length > 0) {
-            buf.append(' '); //NOI18N
-            buf.append(getCurrentFile().getAbsolutePath());
-            buf.append('['); //NOI18N
-            buf.append(Integer.toString(token[0].getLine()));
-            buf.append(','); //NOI18N
-            buf.append(Integer.toString(token[0].getColumn()));
-            buf.append(']'); //NOI18N
-            buf.append(' '); //NOI18N
-            buf.append(token[0].toString());
-        }
-        System.out.println(buf.toString());
+        traceWriter.printOut(message, token);
     }
 
     private void print(String message, Token ... token) {
-        StringBuilder buf = new StringBuilder();
-        for(int i = 0; i < level; i++) {
-            buf.append(' ').append(' '); //NOI18N
-        }
-        buf.append(' '); //NOI18N
-        buf.append(message);
-        if (getBacktrackingLevel() != 0) {
-            buf.append(" GUESSING LEVEL = "); //NOI18N
-            buf.append(Integer.toString(getBacktrackingLevel()));
-        }
-        if (token.length > 0) {
-            buf.append(' '); //NOI18N
-            buf.append(getCurrentFile().getAbsolutePath());
-            buf.append('['); //NOI18N
-            buf.append(Integer.toString(token[0].getLine()));
-            buf.append(','); //NOI18N
-            buf.append(Integer.toString(token[0].getColumn()));
-            buf.append(']'); //NOI18N
-            buf.append(' '); //NOI18N
-            buf.append(token[0].toString());
-        }
-        System.out.println(buf.toString());
+        traceWriter.print(message, token);
     }
 }

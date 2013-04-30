@@ -86,6 +86,11 @@ public final class JmsDestinationImpl extends PersistentObject implements JmsDes
     }
 
     @Override
+    public String getInterfaceName() {
+        return holder.interfaceName;
+    }
+
+    @Override
     public String getDestinationName() {
         return holder.destinationName;
     }
@@ -117,7 +122,8 @@ public final class JmsDestinationImpl extends PersistentObject implements JmsDes
 
     protected static SimpleImpl parseAnnotation(AnnotationModelHelper helper, AnnotationMirror annotationMirror) {
         AnnotationParser parser = AnnotationParser.create(helper);
-        parser.expectString("className", null); //NOI18N
+        parser.expectString("className", parser.defaultValue("")); //NOI18N
+        parser.expectString("interfaceName", null); //NOI18N
         parser.expectString("description", parser.defaultValue("")); //NOI18N
         parser.expectString("destinationName", parser.defaultValue("")); //NOI18N
         parser.expectString("name", null); //NOI18N
@@ -130,11 +136,12 @@ public final class JmsDestinationImpl extends PersistentObject implements JmsDes
         String description = result.get("description", String.class);
         String destinationName = result.get("destinationName", String.class);
         String className = result.get("className", String.class);
+        String interfaceName = result.get("interfaceName", String.class);
         String name = result.get("name", String.class);
         String resourceAdapterName = result.get("resourceAdapterName", String.class);
         String[] properties = result.get("properties", String[].class);
         Location location = LocationHelper.getClassLocation(helper, className);
-        return new SimpleImpl(description, name, className, destinationName, resourceAdapterName, properties, location);
+        return new SimpleImpl(description, name, className, interfaceName, destinationName, resourceAdapterName, properties, location);
     }
 
     private static Map<String, ? extends AnnotationMirror> getAllAnnotationTypes(AnnotationModelHelper helper, TypeElement type) {
@@ -150,16 +157,18 @@ public final class JmsDestinationImpl extends PersistentObject implements JmsDes
         private final String description;
         private final String name;
         private final String className;
+        private final String interfaceName;
         private final String destinationName;
         private final String resourceAdapterName;
         private final String[] properties;
         private final Location location;
 
-        public SimpleImpl(String description, String name, String className, String destinationName,
-                String resourceAdapterName, String[] properties, Location location) {
+        public SimpleImpl(String description, String name, String className, String interfaceName,
+                String destinationName, String resourceAdapterName, String[] properties, Location location) {
             this.description = description;
             this.name = name;
             this.className = className;
+            this.interfaceName = interfaceName;
             this.destinationName = destinationName;
             this.resourceAdapterName = resourceAdapterName;
             this.properties = properties;
@@ -179,6 +188,11 @@ public final class JmsDestinationImpl extends PersistentObject implements JmsDes
         @Override
         public String getClassName() {
             return className;
+        }
+
+        @Override
+        public String getInterfaceName() {
+            return interfaceName;
         }
 
         @Override

@@ -74,10 +74,12 @@ public class RestConstants {
     public static final String CONTEXT_ANNOTATION = "Context";     //NOI18N
 
     public static final String STATELESS_ANNOTATION = "Stateless"; //NOI18N
-    
+
     public static final String REST_API_PACKAGE = "javax.ws.rs.";       //NOI18N
 
-     public static final String JavaEE5_EJB_PACKAGE = "javax.ejb.";       //NOI18N
+    public static final String PROVIDER_ANNOTATION = "javax.ws.rs.ext.Provider"; //NOI18N
+
+    public static final String JavaEE5_EJB_PACKAGE = "javax.ejb.";       //NOI18N
     
     public static final String REST_API_CORE_PACKAGE = REST_API_PACKAGE + "core.";      //NOI18N
     

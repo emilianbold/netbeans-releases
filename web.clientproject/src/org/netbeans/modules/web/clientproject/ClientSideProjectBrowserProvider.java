@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import static org.netbeans.modules.web.browser.spi.ProjectBrowserProvider.PROP_BROWSER_ACTIVE;
@@ -67,30 +67,20 @@ public class ClientSideProjectBrowserProvider implements ProjectBrowserProvider 
 
     public ClientSideProjectBrowserProvider(ClientSideProject project) {
         this.project = project;
-        project.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(ClientSideProjectConstants.PROJECT_SELECTED_BROWSER)) {
-                    pcs.firePropertyChange(PROP_BROWSER_ACTIVE, null, null);
-                }
-            }
-        });
+    }
+
+    void activeBrowserHasChanged() {
+        pcs.firePropertyChange(PROP_BROWSER_ACTIVE, null, null);
     }
 
     @Override
     public Collection<WebBrowser> getBrowsers() {
-        return WebBrowsers.getInstance().getAll(false, true, false, true, true);
+        return WebBrowsers.getInstance().getAll(false, false, true, true);
     }
 
     @Override
     public WebBrowser getActiveBrowser() {
-        String selectedBrowser = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SELECTED_BROWSER);
-        WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
-        if (browser == null) {
-            return null;
-        } else {
-            return browser;
-        }
+        return project.getProjectWebBrowser();
     }
 
     @Override

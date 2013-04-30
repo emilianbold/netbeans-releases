@@ -999,13 +999,13 @@ public abstract class CsmPaintComponent extends JPanel {
                 drawString(g, simpleTypeName, prm.getTypeColor(), null, strike);
                 if (parmName != null && parmName.length() > 0) {
                     drawString(g, " ", strike); // NOI18N
-                    drawString(g, prm.getName(), PARAMETER_NAME_COLOR, null, strike);
+                    drawString(g, parmName, PARAMETER_NAME_COLOR, null, strike);
                 }
             } else {
                 drawString(g, simpleTypeName.substring(0, indexOfSqr), prm.getTypeColor(), null, strike);
                 if (parmName != null && parmName.length() > 0) {
                     drawString(g, " ", strike); // NOI18N
-                    drawString(g, prm.getName(), PARAMETER_NAME_COLOR, null, strike);
+                    drawString(g, parmName, PARAMETER_NAME_COLOR, null, strike);
                 }
                 drawString(g, simpleTypeName.substring(indexOfSqr), prm.getTypeColor(), null, strike);
             }
@@ -1066,10 +1066,26 @@ public abstract class CsmPaintComponent extends JPanel {
             //constructor exceptions
             buf.append(toStringExceptions(getExceptionList()));
             return buf.toString();
-        }    
+        }
         
         protected String toStringParameter(ParamStr prm) {
-            return prm.getText();
+            StringBuilder builder = new StringBuilder();
+            String parmName = prm.getName();
+            String simpleTypeName = prm.getSimpleTypeName();
+            int indexOfSqr = simpleTypeName.indexOf('['); // NOI18N
+            if(indexOfSqr == -1) {
+                builder.append(simpleTypeName);
+                if (parmName != null && parmName.length() > 0) {
+                    builder.append(" ").append(parmName); // NOI18N
+                }
+            } else {
+                builder.append(simpleTypeName.substring(0, indexOfSqr));
+                if (parmName != null && parmName.length() > 0) {
+                    builder.append(" ").append(parmName); // NOI18N
+                }
+                builder.append(simpleTypeName.substring(indexOfSqr));
+            }
+            return builder.toString();
         }
         
         protected String toStringParameterList(List prmList) {

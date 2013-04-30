@@ -146,6 +146,15 @@ made subject to such option by the copyright holder.
         
     </folder>
 
+    <folder name="QuickSearch">
+        <folder name="Projects">
+            <attr name="command" stringvalue="p"/>
+            <attr name="position" intvalue="100"/>
+            <file name="org-netbeans-modules-project-ui-quicksearch-SearchForProjectsQuickSearch.instance">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.quicksearch.Bundle#QuickSearch/Projects/org-netbeans-modules-project-ui-quicksearch-SearchForProjectsQuickSearch.instance"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Templates">
         <folder name="Project">
             <!-- Project type providers should register their templates here -->

@@ -53,14 +53,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
 import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
+import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
+import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.util.Lookup;
@@ -111,6 +115,9 @@ public class WebKitPageModel extends PageModel {
      * the document node to the corresponding {@code RemoteObject}.
      */
     private final Map<Integer,RemoteObject> contentDocumentMap = new HashMap<Integer,RemoteObject>();
+    /** Cache of {@code RemoteObject}s. Maps node ID to the corresponding {@code RemoteObject}. */
+    private final Map<Integer,RemoteObject> remoteObjectMap = Collections.synchronizedMap(
+            new HashMap<Integer,RemoteObject>());
     /** Maps a node ID to pseudoclasses forced for the node. */
     private final Map<Integer,EnumSet<CSS.PseudoClass>> pseudoClassMap = Collections.synchronizedMap(
             new HashMap<Integer,EnumSet<CSS.PseudoClass>>());
@@ -133,6 +140,7 @@ public class WebKitPageModel extends PageModel {
         // Register DOM domain listener
         domListener = createDOMListener();
         DOM dom = webKit.getDOM();
+        dom.setClassForHover(CSSUtils.HOVER_CLASS);
         dom.addListener(domListener);
         
         // Register CSS domain listener
@@ -307,6 +315,7 @@ public class WebKitPageModel extends PageModel {
                     synchronized(WebKitPageModel.this) {
                         nodes.clear();
                         contentDocumentMap.clear();
+                        remoteObjectMap.clear();
                         pseudoClassMap.clear();
                         selectedNodes = Collections.EMPTY_LIST;
                         highlightedNodes = Collections.EMPTY_LIST;
@@ -618,6 +627,7 @@ public class WebKitPageModel extends PageModel {
     List<DOMNode> matchingNodes(String selector) {
         List<DOMNode> domNodes = Collections.EMPTY_LIST;
         if (selector != null) {
+            selector = selector.replaceAll(":hover", "." + CSSUtils.HOVER_CLASS); // NOI18N
             DOM dom = webKit.getDOM();
             Node documentElement = dom.getDocument();
             if (documentElement != null) {
@@ -642,6 +652,7 @@ public class WebKitPageModel extends PageModel {
                 return;
             }
             this.selectionMode = selectionMode;
+            webKit.getCSS().setClassForHover(selectionMode ? CSSUtils.HOVER_CLASS : null);
         }
         firePropertyChange(PROP_SELECTION_MODE, !selectionMode, selectionMode);
         // Reset highlighted nodes
@@ -694,6 +705,25 @@ public class WebKitPageModel extends PageModel {
         for (RemoteObject contentDocument : documents) {
             webKit.getRuntime().callFunctionOn(contentDocument, script);
         }
+    }
+
+    /**
+     * Returns the {@code RemoteObject} that corresponds to the specified node.
+     * 
+     * @param webKitNode node whose {@code RemoteObject} should be returned.
+     * @return {@code RemoteObject} that corresponds to the specified node
+     * or {@code null} when the retrieval of such {@code RemoteObject} failed.
+     */
+    RemoteObject getRemoteObject(Node webKitNode) {
+        int id = webKitNode.getNodeId();
+        RemoteObject remote = remoteObjectMap.get(id);
+        if (remote == null) {
+            remote = webKit.getDOM().resolveNode(webKitNode, null);
+            if (remote != null) {
+                remoteObjectMap.put(id, remote);
+            }
+        }
+        return remote;
     }
 
     /**
@@ -793,35 +823,43 @@ public class WebKitPageModel extends PageModel {
         return external;
     }
 
+    /** Request processor for {@code WebPaneSynchronizer}. */
+    private static final RequestProcessor WPRP = new RequestProcessor(WebPaneSynchronizer.class);
+    
     class WebPaneSynchronizer implements PropertyChangeListener {
         private final Object LOCK_HIGHLIGHT = new Object();
         private final Object LOCK_SELECTION = new Object();
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            String propName = evt.getPropertyName();
-            if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
-                if (shouldSynchronizeHighlight()) {
-                    updateHighlight();
+        public void propertyChange(final PropertyChangeEvent evt) {
+            WPRP.post(new Runnable() {
+                @Override
+                public void run() {
+                    String propName = evt.getPropertyName();
+                    if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
+                        if (shouldSynchronizeHighlight()) {
+                            updateHighlight();
+                        }
+                    } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
+                        if (shouldSynchronizeSelection()) {
+                            updateSelection();
+                        }
+                    } else if (propName.equals(PageModel.PROP_SELECTED_RULE)) {
+                        if (shouldSynchronizeSelection()) {
+                            updateSelectedRule(getNodesMatchingSelectedRule());
+                        }
+                    } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
+                        updateSelectionMode();
+                        updateSynchronization();
+                    } else if (propName.equals(PageModel.PROP_SYNCHRONIZE_SELECTION)) {
+                        updateSelectionMode();
+                        updateSynchronization();
+                    } else if (propName.equals(PageModel.PROP_DOCUMENT)) {
+                        initializePage();
+                        updateSelectionMode();
+                    }
                 }
-            } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
-                if (shouldSynchronizeSelection()) {
-                    updateSelection();
-                }
-            } else if (propName.equals(PageModel.PROP_SELECTED_RULE)) {
-                if (shouldSynchronizeSelection()) {
-                    updateSelectedRule(getNodesMatchingSelectedRule());
-                }
-            } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
-                updateSelectionMode();
-                updateSynchronization();
-            } else if (propName.equals(PageModel.PROP_SYNCHRONIZE_SELECTION)) {
-                updateSelectionMode();
-                updateSynchronization();
-            } else if (propName.equals(PageModel.PROP_DOCUMENT)) {
-                initializePage();
-                updateSelectionMode();
-            }
+            });
         }
 
         private boolean shouldSynchronizeSelection() {
@@ -861,7 +899,7 @@ public class WebKitPageModel extends PageModel {
                 for (org.openide.nodes.Node node : nodes) {
                     Node webKitNode = node.getLookup().lookup(Node.class);
                     webKitNode = convertNode(webKitNode);
-                    RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
+                    RemoteObject remote = getRemoteObject(webKitNode);
                     if (remote != null) {
                         webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextHighlight(this);}"); // NOI18N
                     }
@@ -893,9 +931,9 @@ public class WebKitPageModel extends PageModel {
                         continue;
                     }
                     webKitNode = convertNode(webKitNode);
-                    RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
+                    RemoteObject remote = getRemoteObject(webKitNode);
                     if (remote != null) {
-                        webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNext" + type + "Selection(this);}"); // NOI18N
+                        webKit.getRuntime().callProcedureOn(remote, "function() {NetBeans.addElementToNext" + type + "Selection(this);}"); // NOI18N
                     }
                 }
 
@@ -911,10 +949,32 @@ public class WebKitPageModel extends PageModel {
         private synchronized void updateSelectionMode() {
             boolean selectionMode = isSelectionMode();
             
-            // PENDING notify Chrome extension that the selection mode has changed
-
             // Activate/deactivate (observation of mouse events over) canvas
             invokeInAllDocuments("NetBeans.setSelectionMode("+selectionMode+")"); // NOI18N
+
+            performHoverRelatedStyleSheetUpdate();
+        }
+
+        /**
+         * Performs the replacement of {@code :hover} pseudo-class
+         * by the class used to simulate hovering (and vice versa).
+         */
+        private void performHoverRelatedStyleSheetUpdate() {
+            CSS css = webKit.getCSS();
+            for (StyleSheetHeader header : css.getAllStyleSheets()) {
+                String styleSheetId = header.getStyleSheetId();
+                StyleSheetBody body = css.getStyleSheet(styleSheetId);
+                String styleSheetText = body.getText();
+                if (styleSheetText != null) { // Issue 229137
+                    if (selectionMode) {
+                        // Replacement of :hover is done in setStyleSheetText()
+                        css.setStyleSheetText(styleSheetId, styleSheetText);
+                    } else {
+                        styleSheetText = Pattern.compile(Pattern.quote("." + CSSUtils.HOVER_CLASS)).matcher(styleSheetText).replaceAll(":hover"); // NOI18N
+                        css.setStyleSheetText(styleSheetId, styleSheetText);
+                    }
+                }
+            }
         }
 
     }

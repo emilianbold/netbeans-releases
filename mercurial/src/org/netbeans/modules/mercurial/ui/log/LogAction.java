@@ -73,6 +73,12 @@ import org.openide.util.NbBundle;
  */
 public class LogAction extends SearchHistoryAction {
 
+    private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/search_history.png"; //NOI18N
+
+    public LogAction () {
+        super(ICON_RESOURCE);
+    }
+    
     @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Log";                                      //NOI18N

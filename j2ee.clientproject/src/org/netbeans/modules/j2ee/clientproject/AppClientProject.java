@@ -648,11 +648,11 @@ public final class AppClientProject implements Project, FileChangeListener {
                     if (servInstID != null) {
                         serverName = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
                     }
-                }
-                catch (InstanceRemovedException ier) {
+                } catch (InstanceRemovedException ier) {
                     // ignore
                 }
-                Utils.logUsage(AppClientProject.class, "USG_PROJECT_OPEN_APPCLIENT", new Object[] { serverName }); // NOI18N
+                Profile profile = AppClientProject.this.getAPICar().getJ2eeProfile();
+                Utils.logUsage(AppClientProject.class, "USG_PROJECT_OPEN_APPCLIENT", new Object[] { serverName, profile }); // NOI18N
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }

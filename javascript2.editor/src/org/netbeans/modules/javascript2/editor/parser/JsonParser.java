@@ -42,8 +42,9 @@ import jdk.nashorn.internal.ir.Node;
 import jdk.nashorn.internal.runtime.Source;
 import jdk.nashorn.internal.runtime.options.Options;
 import java.util.Collections;
+import jdk.nashorn.internal.ir.IdentNode;
 import jdk.nashorn.internal.runtime.ParserException;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -92,6 +93,7 @@ public class JsonParser extends SanitizingParser {
             node = new FunctionNode(source, 0, text.length(), compiler, null, null, "runScript"); // NOI18N
             node.setKind(FunctionNode.Kind.SCRIPT);
             node.setStatements(Collections.<Node>singletonList(objectNode));
+            node.setIdent(new IdentNode(source, objectNode.getToken(), 0, node.getName()));
         }
         return node;
     }

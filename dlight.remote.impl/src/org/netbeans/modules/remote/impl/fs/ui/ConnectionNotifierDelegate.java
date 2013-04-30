@@ -188,6 +188,7 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
 
                 String title, details;
                 ImageIcon icon;
+                NotificationDisplayer.Category category;
 
                 String text = null;
                 if (error == null) {
@@ -202,15 +203,17 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
                     title = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.TITLE", envString);
                     icon = ImageUtilities.loadImageIcon("org/netbeans/modules/remote/impl/fs/ui/exclamation.gif", false); // NOI18N
                     details = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.DETAILS", envString);
+                    category = NotificationDisplayer.Category.INFO;
                 } else {
                     title = NbBundle.getMessage(getClass(), "ConnectionNotifier.error.TITLE", envString);
                     icon = ImageUtilities.loadImageIcon("org/netbeans/modules/remote/impl/fs/ui/error.png", false); // NOI18N
                     String errMsg = (error.getMessage() == null) ? "" : error.getMessage();
                     details = NbBundle.getMessage(getClass(), "ConnectionNotifier.error.DETAILS", errMsg, envString);
+                    category = NotificationDisplayer.Category.ERROR;
                 }
                 JComponent baloonComponent = createDetails(text, details, onClickAction);
                 JComponent popupComponent = createDetails(text, details, onClickAction);
-                Notification n = NotificationDisplayer.getDefault().notify(title, icon, baloonComponent,  popupComponent, NotificationDisplayer.Priority.HIGH);
+                Notification n = NotificationDisplayer.getDefault().notify(title, icon, baloonComponent,  popupComponent, NotificationDisplayer.Priority.HIGH, category);
                 synchronized (lock) {
                     notification = n;
                 }

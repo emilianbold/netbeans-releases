@@ -79,6 +79,7 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.types.ResourceCollection;
 import org.apache.tools.ant.types.resources.ZipResource;
 import org.xml.sax.Attributes;
@@ -111,7 +112,7 @@ public class LayerIndex extends Task {
     }
 
     private String resourceId;
-    private List<ZipResource> resources;
+    private List<Resource> resources;
     /** If this parameter is provided, then this tasks creates a resource
      * composed from all the layerfiles and makes it accessible under this refId
      * @param id the refId to associate the collection with
@@ -371,7 +372,7 @@ public class LayerIndex extends Task {
         }
     }
 
-    private static final class ZipArray extends ArrayList<ZipResource>
+    private static final class ZipArray extends ArrayList<Resource>
     implements ResourceCollection {
         public boolean isFilesystemOnly() {
             return false;

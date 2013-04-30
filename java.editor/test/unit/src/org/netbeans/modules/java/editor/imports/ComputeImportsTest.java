@@ -55,7 +55,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.swing.text.Document;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -80,7 +84,7 @@ import org.openide.loaders.DataObject;
  */
 public class ComputeImportsTest extends NbTestCase {
     
-    private static final Set<String> JDK16_MASKS = new HashSet<String>(Arrays.asList(new String[] {
+    private static final Set<String> IGNORE_CLASSES = new HashSet<String>(Arrays.asList(new String[] {
         "com.sun.xml.bind.v2.schemagen.xmlschema.List",
         "com.sun.xml.txw2.Document",
         "com.sun.xml.internal.txw2.Document",
@@ -96,9 +100,9 @@ public class ComputeImportsTest extends NbTestCase {
         "com.sun.xml.internal.ws.api.server.Adapter.Toolkit",
         "sunw.io.Serializable",
         "sun.rmi.transport.Target",
+        "com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.Element",
+        "com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections"
     }));
-    
-    private static final Set<String> NO_MASKS = new HashSet<String>();
     
     private FileObject testSource;
     private JavaSource js;
@@ -132,83 +136,95 @@ public class ComputeImportsTest extends NbTestCase {
     }
     
     public void testSimple() throws Exception {
-        doTest("TestSimple", JDK16_MASKS, JDK16_MASKS);
+        doTest("TestSimple");
     }
     
     public void testFilterDeclaration() throws Exception {
-        doTest("TestFilterDeclaration", JDK16_MASKS, NO_MASKS);
+        doTest("TestFilterDeclaration");
     }
     
     public void testFilterTypedInitializator() throws Exception {
-        doTest("TestFilterTypedInitializator", JDK16_MASKS, NO_MASKS);
+        doTest("TestFilterTypedInitializator");
     }
     
     public void testFilterWithMethods() throws Exception {
-        doTest("TestFilterWithMethods", JDK16_MASKS, JDK16_MASKS);
+        doTest("TestFilterWithMethods");
     }
     
     public void testGetCookie() throws Exception {
-        doTest("TestGetCookie", JDK16_MASKS, JDK16_MASKS);
+        doTest("TestGetCookie");
     }
     
     public void testNew() throws Exception {
-        doTest("TestNew", NO_MASKS, NO_MASKS);
+        doTest("TestNew");
     }
     
     public void testException() throws Exception {
-        doTest("TestException", JDK16_MASKS, JDK16_MASKS);
+        doTest("TestException");
     }
     
     public void testEmptyCatch() throws Exception {
-        doTest("TestEmptyCatch", NO_MASKS, NO_MASKS);
+        doTest("TestEmptyCatch");
     }
     
     public void testUnfinishedMethod() throws Exception {
-        doTest("TestUnfinishedMethod", NO_MASKS, NO_MASKS);
+        doTest("TestUnfinishedMethod");
     }
     
     public void testUnsupportedOperation1() throws Exception {
-        doTest("TestUnsupportedOperation1", JDK16_MASKS, NO_MASKS);
+        doTest("TestUnsupportedOperation1");
     }
     
     public void testPackageDoesNotExist() throws Exception {
-        doTest("TestPackageDoesNotExist", NO_MASKS, NO_MASKS);
+        doTest("TestPackageDoesNotExist");
     }
 
     public void testUnfinishedMethod2() throws Exception {
-        doTest("TestUnfinishedMethod2", NO_MASKS, NO_MASKS);
+        doTest("TestUnfinishedMethod2");
     }
     
     public void testAnnotation() throws Exception {
-        doTest("TestAnnotation", JDK16_MASKS, JDK16_MASKS);
+        doTest("TestAnnotation");
     }
     
     public void testAnnotation2() throws Exception {
-        doTest("TestAnnotation2", JDK16_MASKS, JDK16_MASKS);
+        doTest("TestAnnotation2");
     }
     
     public void test90743() throws Exception {
-        doTest("Test90743", NO_MASKS, NO_MASKS);
+        doTest("Test90743");
     }
     
     public void test97420() throws Exception {
-        doTest("Test97420", NO_MASKS, NO_MASKS);
+        doTest("Test97420");
     }
     
     public void test102613() throws Exception {
-        doTest("Test102613", NO_MASKS, NO_MASKS);
+        doTest("Test102613");
     }
     
     public void testFilterByKind() throws Exception {
-        doTest("TestFilterByKind", JDK16_MASKS, JDK16_MASKS);
+        doTest("TestFilterByKind");
     }
 
     public void test202604() throws Exception {
-        doTest("Test202604", JDK16_MASKS, JDK16_MASKS);
+        doTest("Test202604");
     }
 
     public void testBrokenLambdaParameter() throws Exception {
-        doTest("TestBrokenLambdaParameter", JDK16_MASKS, JDK16_MASKS);
+        doTest("TestBrokenLambdaParameter");
+    }
+    
+    public void testStaticImports1() throws Exception {
+        doTest("StaticImports1");
+    }
+    
+    public void testStaticImportsArrays1() throws Exception {
+        doTest("StaticImportsArrays1");
+    }
+    
+    public void testStaticImportsArrays2() throws Exception {
+        doTest("StaticImportsArrays2");
     }
     
     private void prepareTest(String capitalizedName) throws Exception {
@@ -260,7 +276,7 @@ public class ComputeImportsTest extends NbTestCase {
         assertNotNull(info);
     }
     
-    private void dump(PrintStream out, Map<String, List<TypeElement>> set, Set<String> masks) {
+    private void dump(PrintStream out, Map<String, List<Element>> set, Set<String> masks) {
         List<String> keys = new LinkedList<String>(set.keySet());
         
         Collections.sort(keys);
@@ -268,18 +284,45 @@ public class ComputeImportsTest extends NbTestCase {
         for (String key : keys) {
             List<String> fqns = new ArrayList<String>();
             
-            for (TypeElement t : set.get(key)) {
-                String fqn = t.getQualifiedName().toString();
+            for (Element t : set.get(key)) {
+                String fqn;
+                
+                if (t.getKind().isClass() || t.getKind().isInterface()) {
+                    fqn = ((TypeElement) t).getQualifiedName().toString();
+                } else {
+                    StringBuilder fqnSB = new StringBuilder();
+                    
+                    fqnSB.append(((TypeElement) t.getEnclosingElement()).getQualifiedName());
+                    fqnSB.append('.');
+                    fqnSB.append(t.getSimpleName());
+                    
+                    if (t.getKind() == ElementKind.METHOD) {
+                        fqnSB.append('(');
+                        boolean first = true;
+                        for (VariableElement var : ((ExecutableElement) t).getParameters()) {
+                            if (!first) {
+                                fqnSB.append(", ");
+                            }
+                            fqnSB.append(info.getTypes().erasure(var.asType()).toString());
+                            first = false;
+                        }
+                        fqnSB.append(')');
+                    }
+                    
+                    fqn = fqnSB.toString();
+                }
                 
                 if (!masks.contains(fqn))
                     fqns.add(fqn);
             }
             
+            Collections.sort(fqns);
+            
             out.println(key + ":" + fqns.toString());
         }
     }
     
-    private void doTest(String name, Set<String> unfilteredMasks, Set<String> filteredMasks) throws Exception {
+    private void doTest(String name) throws Exception {
         prepareTest(name);
         
         DataObject testDO = DataObject.find(testSource);
@@ -289,26 +332,10 @@ public class ComputeImportsTest extends NbTestCase {
         
         Document doc = ec.openDocument();
         
-        Pair<Map<String, List<TypeElement>>, Map<String, List<TypeElement>>> candidates = new ComputeImports().computeCandidates(info);
+        Pair<Map<String, List<Element>>, Map<String, List<Element>>> candidates = new ComputeImports().computeCandidates(info);
         
-        for (List<TypeElement> cand : candidates.b.values()) {
-            Collections.sort(cand, new Comparator<TypeElement>() {
-                public int compare(TypeElement t1, TypeElement t2) {
-                    return t1.getQualifiedName().toString().compareTo(t2.getQualifiedName().toString());
-                }
-            });
-        }
-        
-        for (List<TypeElement> cand : candidates.a.values()) {
-            Collections.sort(cand, new Comparator<TypeElement>() {
-                public int compare(TypeElement t1, TypeElement t2) {
-                    return t1.getQualifiedName().toString().compareTo(t2.getQualifiedName().toString());
-                }
-            });
-        }
-        
-        dump(getLog(getName() + "-unfiltered.ref"), candidates.b, unfilteredMasks);
-        dump(getLog(getName() + "-filtered.ref"), candidates.a, filteredMasks);
+        dump(getLog(getName() + "-unfiltered.ref"), candidates.b, IGNORE_CLASSES);
+        dump(getLog(getName() + "-filtered.ref"), candidates.a, IGNORE_CLASSES);
         
         compareReferenceFiles(getName() + "-unfiltered.ref", getName() + "-unfiltered.pass", getName() + "-unfiltered.diff");
         compareReferenceFiles(getName() + "-filtered.ref", getName() + "-filtered.pass", getName() + "-filtered.diff");

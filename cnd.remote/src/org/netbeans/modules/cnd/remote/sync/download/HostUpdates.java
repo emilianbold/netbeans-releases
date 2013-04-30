@@ -170,7 +170,7 @@ public class HostUpdates {
                         ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/sync/download/remote-updates.png", false), // NOI18N
                         NbBundle.getMessage(getClass(), "RemoteUpdatesNotifier.DETAILS", envString),
                         onClickAction,
-                        NotificationDisplayer.Priority.NORMAL);
+                        NotificationDisplayer.Priority.NORMAL, NotificationDisplayer.Category.INFO);
             }
         } catch (RuntimeException e) {
             // FIXUP: for some reasons exceptions aren't printed
@@ -305,11 +305,13 @@ public class HostUpdates {
         String iconString = "org/netbeans/modules/cnd/remote/sync/download/check.png"; //NOI18N
         String title = NbBundle.getMessage(getClass(), "RemoteUpdatesOK.TITLE", envString, infos.size());
         String detailsText = NbBundle.getMessage(getClass(), "RemoteUpdatesOK.DETAILS", envString, infos.size());
+        NotificationDisplayer.Category category = NotificationDisplayer.Category.INFO;
         for (FileDownloadInfo info : infos) {
             if (info.getState() != FileDownloadInfo.State.DONE) {
                 iconString = "org/netbeans/modules/cnd/remote/sync/download/error.png"; //NOI18N
                 title = NbBundle.getMessage(getClass(), "RemoteUpdatesERR.TITLE", envString, infos.size());
                 detailsText = NbBundle.getMessage(getClass(), "RemoteUpdatesERR.DETAILS", envString, infos.size());
+                category = NotificationDisplayer.Category.ERROR;
                 break;
             }
         }
@@ -318,7 +320,8 @@ public class HostUpdates {
                 ImageUtilities.loadImageIcon(iconString, false), // NOI18N
                 detailsText,
                 onClickAction,
-                NotificationDisplayer.Priority.LOW));
+                NotificationDisplayer.Priority.LOW,
+                category));
         RP.post(new Runnable() {
             @Override
             public void run() {

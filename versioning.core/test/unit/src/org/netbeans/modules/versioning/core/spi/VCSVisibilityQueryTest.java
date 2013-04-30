@@ -75,6 +75,7 @@ public class VCSVisibilityQueryTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         MockLookup.setLayersAndInstances();
         File userdir = new File(getWorkDir() + "userdir");
@@ -103,19 +104,25 @@ public class VCSVisibilityQueryTest extends NbTestCase {
 
     public void testFireForAll() throws IOException {
         final boolean [] received = new boolean[] {false};
-        VisibilityQuery.getDefault().addChangeListener(new ChangeListener() {
+        ChangeListener list;
+        VisibilityQuery.getDefault().addChangeListener(list = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent ce) {
                 received[0] = true;
             }
         });
-        TestVCS.getInstance().getVisibilityQuery().fireVisibilityChanged();
-        assertTrue(received[0]);
+        try {
+            TestVCS.getInstance().getVisibilityQuery().fireVisibilityChanged();
+            assertTrue(received[0]);
+        } finally {
+            VisibilityQuery.getDefault().removeChangeListener(list);
+        }
     }
     
     public void testFireForFiles() throws IOException {
         final List<String> received = new ArrayList<String>();
-        VisibilityQuery.getDefault().addChangeListener(new ChangeListener() {
+        ChangeListener list;
+        VisibilityQuery.getDefault().addChangeListener(list = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent ce) {
                 Assert.assertTrue(ce instanceof VisibilityQueryChangeEvent);
@@ -126,16 +133,20 @@ public class VCSVisibilityQueryTest extends NbTestCase {
             }
         });
                 
-        File f1 = createVersionedFile("f1", true);
-        File f2 = createVersionedFile("f2", true);
-        
-        TestVCS.getInstance().getVisibilityQuery().fireVisibilityChanged(
-                new VCSFileProxy[] {
-                    VCSFileProxy.createFileProxy(f1), 
-                    VCSFileProxy.createFileProxy(f2)});
-        
-        assertTrue(received.contains(f1.getName()));
-        assertTrue(received.contains(f2.getName()));
+        try {
+            File f1 = createVersionedFile("f1", true);
+            File f2 = createVersionedFile("f2", true);
+
+            TestVCS.getInstance().getVisibilityQuery().fireVisibilityChanged(
+                    new VCSFileProxy[] {
+                        VCSFileProxy.createFileProxy(f1), 
+                        VCSFileProxy.createFileProxy(f2)});
+
+            assertTrue(received.contains(f1.getName()));
+            assertTrue(received.contains(f2.getName()));
+        } finally {
+            VisibilityQuery.getDefault().removeChangeListener(list);
+        }
     }
 
     private File createVersionedFile(String name, boolean visible) throws IOException {

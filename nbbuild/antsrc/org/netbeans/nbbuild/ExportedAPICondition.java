@@ -60,13 +60,12 @@ import org.apache.tools.ant.taskdefs.condition.Condition;
 public class ExportedAPICondition extends ProjectComponent implements Condition {
 
     public boolean eval() throws BuildException {
-        @SuppressWarnings("unchecked")
-        Hashtable<String,String> props = getProject().getProperties();
+        Hashtable<String,Object> props = getProject().getProperties();
         if (props.get("public.packages").equals("-")) {
             log("No exported packages", Project.MSG_VERBOSE);
             return false;
         }
-        String friends = props.get("friends");
+        String friends = (String) props.get("friends");
         if (friends == null) {
             log("Public API", Project.MSG_VERBOSE);
             return true;

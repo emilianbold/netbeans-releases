@@ -399,11 +399,13 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(int c) {
         doWrite(new String(new char[]{(char)c}), 0, 1);
+        lines.checkLimits();
     }
     
     @Override
     public synchronized void write(char data[], int off, int len) {
         doWrite(new CharArrayWrapper(data), off, len);
+        lines.checkLimits();
     }
     
     /** write buffer size in chars */
@@ -488,10 +490,16 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(char data[]) {
         doWrite(new CharArrayWrapper(data), 0, data.length);
+        lines.checkLimits();
     }
 
     @Override
     public synchronized void println() {
+        printLineEnd();
+        lines.checkLimits();
+    }
+
+    private void printLineEnd() {
         doWrite("\n", 0, 1);
     }
 
@@ -504,11 +512,13 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(String s, int off, int len) {
         doWrite(s, off, len);
+        lines.checkLimits();
     }
 
     @Override
     public synchronized void write(String s) {
         doWrite(s, 0, s.length());
+        lines.checkLimits();
     }
 
     public synchronized void println(String s, OutputListener l) {
@@ -530,9 +540,10 @@ class OutWriter extends PrintWriter {
         int lastPos = lines.getCharCount();
         doWrite(s, 0, s.length());
         if (addLS) {
-            println();
+            printLineEnd();
         }
         lines.updateLinesInfo(s, lastLine, lastPos, l, important, err, c, b);
+        lines.checkLimits();
     }
     private Color ansiColor;
     private Color ansiBackground;
@@ -640,7 +651,7 @@ class OutWriter extends PrintWriter {
         if (text < len) { // final segment
             print(s.subSequence(text, len), null, important, ansiColor, ansiBackground, err, addLS);
         } else if (addLS) { // line ended w/ control seq
-            println();
+            printLineEnd();
         }
         return true;
     }
@@ -651,6 +662,7 @@ class OutWriter extends PrintWriter {
         if (info != null) {
             lines.addLineInfo(line, info, important);
         }
+        lines.checkLimits();
     }
 
     /**

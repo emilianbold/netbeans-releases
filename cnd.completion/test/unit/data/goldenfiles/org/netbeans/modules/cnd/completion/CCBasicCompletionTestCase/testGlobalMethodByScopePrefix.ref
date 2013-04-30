@@ -1,2 +1,2 @@
-globInt int
-globFoo() void
+globInt int	$	           int i = ::globInt
+globFoo() void	$	           int i = ::globFoo()

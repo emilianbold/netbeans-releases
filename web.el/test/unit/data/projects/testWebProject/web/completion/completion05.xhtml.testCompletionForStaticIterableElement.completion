@@ -1,47 +1,5 @@
 Code completion result for source line:
 #{["one", 2].|}
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     all()                                      null
-METHOD     any()                                      null
-METHOD     average()                                  null
-METHOD     concat()                                   null
-METHOD     contains()                                 null
-METHOD     count()                                    null
-METHOD     defaultEmpty()                             null
-METHOD     distinct()                                 null
-METHOD     elementAt()                                null
-METHOD     elementAtOrDefault()                       null
-METHOD     except()                                   null
-METHOD     first()                                    null
-METHOD     firstOrDefault()                           null
-METHOD     groupBy()                                  null
-METHOD     groupJoin()                                null
-METHOD     intersect()                                null
-METHOD     join()                                     null
-METHOD     last()                                     null
-METHOD     lastOrDefault()                            null
-METHOD     max()                                      null
-METHOD     min()                                      null
-METHOD     orderBy()                                  null
-METHOD     orderByDescending()                        null
-METHOD     range()                                    null
-METHOD     repeat()                                   null
-METHOD     reverse()                                  null
-METHOD     select()                                   null
-METHOD     selectMany()                               null
-METHOD     sequenceEqual()                            null
-METHOD     single()                                   null
-METHOD     singleOrDefault()                          null
-METHOD     skip()                                     null
-METHOD     skipWhile()                                null
-METHOD     sum()                                      null
-METHOD     take()                                     null
-METHOD     takeWhile()                                null
-METHOD     thenBy()                                   null
-METHOD     thenByDescending()                         null
-METHOD     toArray()                                  null
-METHOD     toList()                                   null
-METHOD     toLookup()                                 null
-METHOD     toMap()                                    null
-METHOD     union()                                    null
-METHOD     where()                                    null
+------------------------------------
+METHOD     stream()                        [PUBLIC]   Stream

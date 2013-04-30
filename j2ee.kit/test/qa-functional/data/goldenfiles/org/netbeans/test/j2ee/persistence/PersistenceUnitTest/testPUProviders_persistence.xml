@@ -18,18 +18,18 @@
   </persistence-unit>
   <persistence-unit name="pu2" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>oracle.toplink.essentials.PersistenceProvider</provider>
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties>
-      <property name="toplink.ddl-generation" value="create-tables"/>
+      <property name="eclipselink.ddl-generation" value="create-tables"/>
     </properties>
   </persistence-unit>
   <persistence-unit name="pu3" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>org.hibernate.ejb.HibernatePersistence</provider>
+    <provider>oracle.toplink.essentials.PersistenceProvider</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties>
-      <property name="hibernate.hbm2ddl.auto" value="update"/>
+      <property name="toplink.ddl-generation" value="create-tables"/>
     </properties>
   </persistence-unit>
   <persistence-unit name="pu4" transaction-type="JTA">
@@ -42,23 +42,23 @@
   </persistence-unit>
   <persistence-unit name="pu5" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>kodo.persistence.PersistenceProviderImpl</provider>
+    <provider>org.hibernate.ejb.HibernatePersistence</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
-    <properties/>
+    <properties>
+      <property name="hibernate.hbm2ddl.auto" value="update"/>
+    </properties>
   </persistence-unit>
   <persistence-unit name="pu6" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>org.datanucleus.store.appengine.jpa.DatastorePersistenceProvider</provider>
+    <provider>kodo.persistence.PersistenceProviderImpl</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties/>
   </persistence-unit>
   <persistence-unit name="pu7" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+    <provider>org.datanucleus.store.appengine.jpa.DatastorePersistenceProvider</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
-    <properties>
-      <property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(ForeignKeys=true)"/>
-    </properties>
+    <properties/>
   </persistence-unit>
   <persistence-unit name="pu8" transaction-type="JTA">
     <description>description of persistence unit</description>
@@ -70,18 +70,18 @@
   </persistence-unit>
   <persistence-unit name="pu9" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider</provider>
+    <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties>
-      <property name="toplink.ddl-generation" value="create-tables"/>
+      <property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(ForeignKeys=true)"/>
     </properties>
   </persistence-unit>
   <persistence-unit name="pu10" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <provider>oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties>
-      <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
+      <property name="toplink.ddl-generation" value="create-tables"/>
     </properties>
   </persistence-unit>
   <persistence-unit name="pu11" transaction-type="JTA">
@@ -94,57 +94,73 @@
   </persistence-unit>
   <persistence-unit name="pu12" transaction-type="JTA">
     <description>description of persistence unit</description>
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <jta-data-source>jdbc/__default</jta-data-source>
+    <properties>
+      <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
+    </properties>
+  </persistence-unit>
+  <persistence-unit name="pu13" transaction-type="JTA">
+    <description>description of persistence unit</description>
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <jta-data-source>jdbc/__default</jta-data-source>
+    <properties>
+      <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
+    </properties>
+  </persistence-unit>
+  <persistence-unit name="pu14" transaction-type="JTA">
+    <description>description of persistence unit</description>
     <provider>oracle.toplink.essentials.PersistenceProvider</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties>
       <property name="toplink.ddl-generation" value="drop-and-create-tables"/>
     </properties>
   </persistence-unit>
-  <persistence-unit name="pu13" transaction-type="JTA">
-    <description>description of persistence unit</description>
-    <provider>org.hibernate.ejb.HibernatePersistence</provider>
-    <jta-data-source>jdbc/__default</jta-data-source>
-    <properties>
-      <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
-    </properties>
-  </persistence-unit>
-  <persistence-unit name="pu14" transaction-type="JTA">
-    <description>description of persistence unit</description>
-    <provider>org.hibernate.ejb.HibernatePersistence</provider>
-    <jta-data-source>jdbc/__default</jta-data-source>
-    <properties>
-      <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
-    </properties>
-  </persistence-unit>
   <persistence-unit name="pu15" transaction-type="JTA">
+    <description>description of persistence unit</description>
+    <provider>org.hibernate.ejb.HibernatePersistence</provider>
+    <jta-data-source>jdbc/__default</jta-data-source>
+    <properties>
+      <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+    </properties>
+  </persistence-unit>
+  <persistence-unit name="pu16" transaction-type="JTA">
+    <description>description of persistence unit</description>
+    <provider>org.hibernate.ejb.HibernatePersistence</provider>
+    <jta-data-source>jdbc/__default</jta-data-source>
+    <properties>
+      <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+    </properties>
+  </persistence-unit>
+  <persistence-unit name="pu17" transaction-type="JTA">
     <description>description of persistence unit</description>
     <provider>kodo.persistence.PersistenceProviderImpl</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties/>
   </persistence-unit>
-  <persistence-unit name="pu16" transaction-type="JTA">
+  <persistence-unit name="pu18" transaction-type="JTA">
     <description>description of persistence unit</description>
     <provider>org.datanucleus.store.appengine.jpa.DatastorePersistenceProvider</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties/>
   </persistence-unit>
-  <persistence-unit name="pu17" transaction-type="JTA">
-    <description>description of persistence unit</description>
-    <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
-    <jta-data-source>jdbc/__default</jta-data-source>
-    <properties>
-      <property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(SchemaAction=&apos;add,deleteTableContents&apos;,ForeignKeys=true)"/>
-    </properties>
-  </persistence-unit>
-  <persistence-unit name="pu18" transaction-type="JTA">
-    <description>description of persistence unit</description>
-    <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
-    <jta-data-source>jdbc/__default</jta-data-source>
-    <properties>
-      <property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(SchemaAction=&apos;add,deleteTableContents&apos;,ForeignKeys=true)"/>
-    </properties>
-  </persistence-unit>
   <persistence-unit name="pu19" transaction-type="JTA">
+    <description>description of persistence unit</description>
+    <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+    <jta-data-source>jdbc/__default</jta-data-source>
+    <properties>
+      <property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(SchemaAction=&apos;add,deleteTableContents&apos;,ForeignKeys=true)"/>
+    </properties>
+  </persistence-unit>
+  <persistence-unit name="pu20" transaction-type="JTA">
+    <description>description of persistence unit</description>
+    <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+    <jta-data-source>jdbc/__default</jta-data-source>
+    <properties>
+      <property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(SchemaAction=&apos;add,deleteTableContents&apos;,ForeignKeys=true)"/>
+    </properties>
+  </persistence-unit>
+  <persistence-unit name="pu21" transaction-type="JTA">
     <description>description of persistence unit</description>
     <provider>oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
@@ -152,59 +168,64 @@
       <property name="toplink.ddl-generation" value="drop-and-create-tables"/>
     </properties>
   </persistence-unit>
-  <persistence-unit name="pu20" transaction-type="JTA">
-    <description>description of persistence unit</description>
-    <jta-data-source>jdbc/__default</jta-data-source>
-    <properties/>
-  </persistence-unit>
-  <persistence-unit name="pu21" transaction-type="JTA">
-    <description>description of persistence unit</description>
-    <jta-data-source>jdbc/__default</jta-data-source>
-    <properties/>
-  </persistence-unit>
   <persistence-unit name="pu22" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>oracle.toplink.essentials.PersistenceProvider</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties/>
   </persistence-unit>
   <persistence-unit name="pu23" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>org.hibernate.ejb.HibernatePersistence</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties/>
   </persistence-unit>
   <persistence-unit name="pu24" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>org.hibernate.ejb.HibernatePersistence</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties/>
   </persistence-unit>
   <persistence-unit name="pu25" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>kodo.persistence.PersistenceProviderImpl</provider>
+    <provider>oracle.toplink.essentials.PersistenceProvider</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties/>
   </persistence-unit>
   <persistence-unit name="pu26" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>org.datanucleus.store.appengine.jpa.DatastorePersistenceProvider</provider>
+    <provider>org.hibernate.ejb.HibernatePersistence</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties/>
   </persistence-unit>
   <persistence-unit name="pu27" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+    <provider>org.hibernate.ejb.HibernatePersistence</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties/>
   </persistence-unit>
   <persistence-unit name="pu28" transaction-type="JTA">
     <description>description of persistence unit</description>
-    <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+    <provider>kodo.persistence.PersistenceProviderImpl</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
     <properties/>
   </persistence-unit>
   <persistence-unit name="pu29" transaction-type="JTA">
+    <description>description of persistence unit</description>
+    <provider>org.datanucleus.store.appengine.jpa.DatastorePersistenceProvider</provider>
+    <jta-data-source>jdbc/__default</jta-data-source>
+    <properties/>
+  </persistence-unit>
+  <persistence-unit name="pu30" transaction-type="JTA">
+    <description>description of persistence unit</description>
+    <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+    <jta-data-source>jdbc/__default</jta-data-source>
+    <properties/>
+  </persistence-unit>
+  <persistence-unit name="pu31" transaction-type="JTA">
+    <description>description of persistence unit</description>
+    <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+    <jta-data-source>jdbc/__default</jta-data-source>
+    <properties/>
+  </persistence-unit>
+  <persistence-unit name="pu32" transaction-type="JTA">
     <description>description of persistence unit</description>
     <provider>oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider</provider>
     <jta-data-source>jdbc/__default</jta-data-source>

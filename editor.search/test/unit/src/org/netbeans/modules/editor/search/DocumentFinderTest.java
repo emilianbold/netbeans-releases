@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.editor.search;
 
-import org.netbeans.modules.editor.search.DocumentFinder;
-import org.netbeans.modules.editor.search.EditorFindSupport;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import java.util.HashMap;
@@ -64,7 +62,7 @@ public class DocumentFinderTest {
 
     private static class SearchBuilder {
 
-        final Map<String, Object> props = new HashMap<String, Object>();
+        final Map<String, Object> props = new HashMap<>();
 
         public SearchBuilder() {
             getDefaultValues();

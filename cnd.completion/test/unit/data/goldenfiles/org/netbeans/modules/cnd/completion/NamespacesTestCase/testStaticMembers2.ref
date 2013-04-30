@@ -1,19 +1,19 @@
-GtkZZZZZ
-str
-si int
-sfoo() void
-sfoo2() void
-i1 int
-q str
-aliases() void
-f1() void
-foo() int
-innerNS3Func() void
-main(int argc, char** argv) int
-usingS1() void
-usingS1S2() void
-usingS2() void
-Gtk
-S1
-S2
-S3
+GtkZZZZZ	$	    GtkZZZZZ
+str	$	    str
+si int	$	    si
+sfoo() void	$	    sfoo()
+sfoo2() void	$	    sfoo2()
+i1 int	$	    i1
+q str	$	    q
+aliases() void	$	    aliases()
+f1() void	$	    f1()
+foo() int	$	    foo()
+innerNS3Func() void	$	    innerNS3Func()
+main(int argc, char** argv) int	$	    main(int argc, char** argv)
+usingS1() void	$	    usingS1()
+usingS1S2() void	$	    usingS1S2()
+usingS2() void	$	    usingS2()
+Gtk	$	    Gtk
+S1	$	    S1
+S2	$	    S2
+S3	$	    S3

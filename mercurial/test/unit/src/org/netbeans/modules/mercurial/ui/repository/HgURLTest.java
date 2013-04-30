@@ -89,6 +89,9 @@ public class HgURLTest {
 
         verifyAddAuthenticationMethod("svn+ssh://svn.somewhere.com/svn/project_name/trunk", "username", "password",
                                       "svn+ssh://username:password@svn.somewhere.com/svn/project_name/trunk");
+
+        verifyAddAuthenticationMethod("http://server/path", "ovrabec%40netbeans.org", null,
+                                      "http://ovrabec%40netbeans.org@server/path");
     }
 
     @Test

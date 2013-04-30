@@ -43,11 +43,13 @@
 package org.netbeans.modules.maven.customizer;
 
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,9 +68,11 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
@@ -87,6 +91,7 @@ import org.netbeans.modules.maven.ActionProviderImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.TestChecker;
 import org.netbeans.modules.maven.TextValueCompleter;
+import org.netbeans.modules.maven.actions.RunCustomMavenAction;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
@@ -106,7 +111,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -122,7 +129,7 @@ public class ActionMappings extends javax.swing.JPanel implements HelpCtx.Provid
     private static final RequestProcessor RP = new RequestProcessor(ActionMappings.class);
     private NbMavenProjectImpl project;
     private ModelHandle2 handle;
-    private HashMap<String, String> titles = new HashMap<String, String>();
+    private final HashMap<String, String> titles = new HashMap<String, String>();
     
     private final GoalsListener goalsListener;
     private final TextValueCompleter goalcompleter;
@@ -196,6 +203,7 @@ public class ActionMappings extends javax.swing.JPanel implements HelpCtx.Provid
         handle = hand;
         txtPackagings.setVisible(false);
         lblPackagings.setVisible(false);
+        jButton1.setVisible(false);
         titles.put(ActionProvider.COMMAND_BUILD, NbBundle.getMessage(ActionMappings.class, "COM_Build_project"));
         titles.put(ActionProvider.COMMAND_CLEAN, NbBundle.getMessage(ActionMappings.class, "COM_Clean_project"));
         titles.put(ActionProvider.COMMAND_COMPILE_SINGLE, NbBundle.getMessage(ActionMappings.class, "COM_Compile_file"));
@@ -341,6 +349,7 @@ public class ActionMappings extends javax.swing.JPanel implements HelpCtx.Provid
         epProperties = new javax.swing.JEditorPane();
         lblPackagings = new javax.swing.JLabel();
         txtPackagings = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
 
         lblConfiguration.setLabelFor(comConfiguration);
         org.openide.awt.Mnemonics.setLocalizedText(lblConfiguration, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.lblConfiguration.text")); // NOI18N
@@ -403,6 +412,13 @@ public class ActionMappings extends javax.swing.JPanel implements HelpCtx.Provid
 
         txtPackagings.setText(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.txtPackagings.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.jButton1.text")); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -419,35 +435,28 @@ public class ActionMappings extends javax.swing.JPanel implements HelpCtx.Provid
                     .addComponent(lblProperties))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(cbRecursively)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(cbBuildWithDeps)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(jScrollPane2))
-                        .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                        .addComponent(cbRecursively)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cbBuildWithDeps)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jScrollPane1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnRemove)
-                            .addComponent(btnAdd))
-                        .addGap(6, 6, 6))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtGoals)
-                            .addComponent(txtProfiles)
-                            .addComponent(comConfiguration, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(txtPackagings))
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane5)
-                        .addContainerGap())))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(btnRemove, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnAdd, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(txtGoals)
+                    .addComponent(txtProfiles)
+                    .addComponent(comConfiguration, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtPackagings)
+                    .addComponent(jScrollPane5))
+                .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnAdd, btnRemove});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnAdd, btnRemove, jButton1});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -460,7 +469,9 @@ public class ActionMappings extends javax.swing.JPanel implements HelpCtx.Provid
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btnAdd)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnRemove))
+                        .addComponent(btnRemove)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton1))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblMappings))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -531,6 +542,16 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             if (mapp.getActionName().startsWith(CUSTOM_ACTION_PREFIX)) { 
                 ((DefaultListModel)lstMappings.getModel()).removeElement(wr);
             }
+            //remove toolbar if associated. //TODO remove somehow in apply()
+            if (wr.getToolbarIconPath() != null) {
+                try {
+                    //delete
+                    RunCustomMavenAction.deleteDeclaration(wr.getActionName());
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }     
+            
             // try removing from model, if exists..
             Iterator<NetbeansActionMapping> it = getActionMappings().getActions().iterator();
             while (it.hasNext()) {
@@ -598,13 +619,80 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             cbBuildWithDeps.addActionListener(depsListener);
             btnAddProps.setEnabled(true);
             updateColor(wr);
+            if (handle == null) { //only global settings
+                updateToolbarButton(wr);
+            }
+            
         }
     }//GEN-LAST:event_lstMappingsValueChanged
 
     private void btnAddPropsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPropsActionPerformed
         showAddPropertyPopupMenu(btnAddProps, epProperties, txtGoals, project);
     }//GEN-LAST:event_btnAddPropsActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        Object obj = lstMappings.getSelectedValue(); 
+        if (obj != null) {
+            MappingWrapper wr = (MappingWrapper)obj;
+            if (wr.getToolbarIconPath() != null) {
+                wr.setToolbarPath(null);
+                updateToolbarButton(wr);
+            } else {
+                //add
+                JPanel pnl = new JPanel();
+                pnl.setLayout(new FlowLayout(FlowLayout.LEADING));
+                pnl.add(new JLabel(LBL_SetIcon()));
+                List<String> allIcons = RunCustomMavenAction.createAllActionIcons();
+                for (int i = 0; i < lstMappings.getModel().getSize(); i++) {
+                    MappingWrapper wr0 = (MappingWrapper) lstMappings.getModel().getElementAt(i);
+                    if (wr0.getToolbarIconPath() != null) {
+                        allIcons.remove(wr0.getToolbarIconPath());
+                    }
+                }
+
+                DefaultComboBoxModel<String> cbModel = new DefaultComboBoxModel<String>(allIcons.toArray(new String[0]));
+                boolean hasAvailable;
+                if (cbModel.getSize() != 0) {
+                    hasAvailable = true;
+                    JComboBox<String> cb = new JComboBox<String>();
+                    cb.setModel(cbModel);
+                    pnl.add(cb);
+                    cb.setRenderer(new DefaultListCellRenderer() {
+
+                        @Override
+                        public Component getListCellRendererComponent(JList arg0, Object arg1, int arg2, boolean arg3, boolean arg4) {
+                            Component sup = super.getListCellRendererComponent(arg0, arg1, arg2, arg3, arg4);
+                            if (sup instanceof JLabel && arg1 != null) {
+                                JLabel lbl = (JLabel) sup;
+                                lbl.setIcon(ImageUtilities.loadImageIcon((String) arg1, false));
+                                lbl.setText("");
+                            }
+                            return sup;
+                        }
+                    });
+                } else {
+                    hasAvailable = false;
+                    pnl.add(new JLabel(LBL_No_More_Icons()));
+                }
+                DialogDescriptor dd = new DialogDescriptor(pnl, TIT_SetIcon());
+                if (!hasAvailable) {
+                    dd.setOptions(new Object[] {BTN_Close()});
+                    dd.setClosingOptions(dd.getOptions());
+                }
+                Object ret = DialogDisplayer.getDefault().notify(dd);
+                if (ret == DialogDescriptor.OK_OPTION) {
+                    wr.setToolbarPath((String) cbModel.getSelectedItem());
+                    updateToolbarButton(wr);
+                }
+            }
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
     
+    @Messages({"LBL_SetIcon=Set Icon:",
+               "LBL_No_More_Icons=<No more slots available>",
+               "BTN_Close=Close",
+               "TIT_SetIcon=Set Toolbar Action Icon"
+    })
     private void loadMappings() {
         DefaultListModel model = new DefaultListModel();
 
@@ -711,6 +799,11 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         updateColor(null);
         cbRecursively.setEnabled(false);
         btnAddProps.setEnabled(false);
+        if (handle == null) { //only global settings
+            jButton1.setEnabled(false);
+            jButton1.setIcon(null);
+            jButton1.setText(BTN_ShowToolbar());
+        }
     }
     
     private void updateColor(MappingWrapper wr) {
@@ -752,6 +845,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     private javax.swing.JCheckBox cbRecursively;
     private javax.swing.JComboBox comConfiguration;
     private javax.swing.JEditorPane epProperties;
+    private javax.swing.JButton jButton1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane5;
@@ -809,6 +903,47 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         }
         return actionmappings;
     }
+    @Messages({
+        "BTN_ShowToolbar=Show in Toolbar",
+        "BTN_HideToolbar=Hide from Toolbar"
+    })
+    private void updateToolbarButton(MappingWrapper wr) {
+        //TODO exclude run/debug and any default mappings.
+        jButton1.setEnabled(true);
+        if (wr.getToolbarIconPath() != null) {
+            //TODO set title?? show icon?
+            jButton1.setIcon(ImageUtilities.loadImageIcon(wr.getToolbarIconPath(), false));
+            jButton1.setText(BTN_HideToolbar());
+        } else {
+            jButton1.setIcon(null);
+            jButton1.setText(BTN_ShowToolbar());
+        }
+    }
+
+    public void applyToolbarChanges() {
+        for (int i = 0; i < lstMappings.getModel().getSize(); i++) {
+            MappingWrapper wr = (MappingWrapper) lstMappings.getModel().getElementAt(i);
+            if (wr.hasToolbarPathChanged()) {
+                if (wr.getOrigToolbarIconPath() != null) {
+                    try {
+                        //delete
+                        RunCustomMavenAction.deleteDeclaration(wr.getActionName());
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                if (wr.getToolbarIconPath() != null) {
+                    try {
+                        RunCustomMavenAction.createActionDeclaration(wr.getActionName(), wr.getActionName(), wr.getToolbarIconPath());
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+                
+                
+    }
     
     private static class Renderer extends DefaultListCellRenderer {
         
@@ -834,16 +969,22 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     
     private class MappingWrapper {
         private NetbeansActionMapping mapping;
-        private String action;
+        private final String action;
         private boolean userDefined = false;
+        private final String origToolbarIconPath;
+        private String toolbarIconPath;
         
         MappingWrapper(String action) {
             this.action = action;
+            origToolbarIconPath = RunCustomMavenAction.actionDeclarationIconPath(action);
+            toolbarIconPath = origToolbarIconPath;
         }
         
         MappingWrapper(NetbeansActionMapping mapp) {
             action = mapp.getActionName();
             mapping = mapp;
+            origToolbarIconPath = RunCustomMavenAction.actionDeclarationIconPath(action);
+            toolbarIconPath = origToolbarIconPath;
         }
         
         public void setMapping(NetbeansActionMapping mapp) {
@@ -879,6 +1020,24 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         public void setUserDefined(boolean userDefined) {
             this.userDefined = userDefined;
         }
+        
+        public void setToolbarPath(String path) {
+            toolbarIconPath = path;
+        }
+        
+        public boolean hasToolbarPathChanged() {
+            return (toolbarIconPath == null && origToolbarIconPath != null) || (toolbarIconPath != null && !toolbarIconPath.equals(origToolbarIconPath));
+        }
+
+        public String getOrigToolbarIconPath() {
+            return origToolbarIconPath;
+        }
+
+        public String getToolbarIconPath() {
+            return toolbarIconPath;
+        }
+        
+        
     }
     
     private abstract class TextFieldListener implements DocumentListener {
@@ -1021,7 +1180,9 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
 
     private class DepsListener implements ActionListener {
         private boolean shown = false;
-        @Override public void actionPerformed(ActionEvent e) {
+        @Override
+        @Messages("HINT_Build_WithDependencies=<html><h2>Please note:</h2>Build with Dependencies delegates to the action of the same name and performs it before the current action is performed.<p> The Build with Dependencies action relies on Maven's --project-list and --also-make switches to perform its duties.")
+        public void actionPerformed(ActionEvent e) {
             MappingWrapper map = (MappingWrapper)lstMappings.getSelectedValue();
             if (map != null) {
                 if (!map.isUserDefined()) {
@@ -1037,7 +1198,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
                 }
                 if (cbBuildWithDeps.isSelected()) {
                     if (!shown && DontShowAgainSettings.getDefault().showWarningAboutBuildWithDependencies()) {
-                        WarnPanel panel = new WarnPanel(NbBundle.getMessage(ActionMappings.class, "HINT_Build_WithDependencies"));
+                        WarnPanel panel = new WarnPanel(HINT_Build_WithDependencies());
                         NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.PLAIN_MESSAGE);
                         DialogDisplayer.getDefault().notify(dd);
                         if (panel.disabledWarning()) {
@@ -1076,7 +1237,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
 
     static class SkipTestsAction extends AbstractAction {
-        private JTextComponent area;
+        private final JTextComponent area;
         SkipTestsAction(JTextComponent area) {
             putValue(Action.NAME, NbBundle.getMessage(ActionMappings.class, "ActionMappings.skipTests"));
             this.area = area;
@@ -1090,7 +1251,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
     
     static class DebugMavenAction extends AbstractAction {
-        private JTextComponent area;
+        private final JTextComponent area;
         
         DebugMavenAction(JTextComponent area) {
             putValue(Action.NAME, NbBundle.getMessage(ActionMappings.class, "ActionMappings.debugMaven"));
@@ -1105,9 +1266,9 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
 
     static class PluginPropertyAction extends AbstractAction {
-        private JTextComponent area;
-        private JTextField goals;
-        private NbMavenProjectImpl project;
+        private final JTextComponent area;
+        private final JTextField goals;
+        private final NbMavenProjectImpl project;
 
         PluginPropertyAction(JTextComponent area, JTextField goals, NbMavenProjectImpl prj) {
             putValue(Action.NAME, NbBundle.getMessage(ActionMappings.class, "TXT_PLUGIN_EXPRESSION"));
@@ -1147,7 +1308,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
 
 
     static class EnvVarAction extends AbstractAction {
-        private JTextComponent area;
+        private final JTextComponent area;
 
         EnvVarAction(JTextComponent area) {
             putValue(Action.NAME, NbBundle.getMessage(ActionMappings.class, "ActionMappings.envVar"));
@@ -1202,7 +1363,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
     
     static class JdkAction extends AbstractAction {
-        private JTextComponent area;
+        private final JTextComponent area;
         private final String value;
 
         JdkAction(JTextComponent area, String displayName, FileObject value) {
@@ -1242,7 +1403,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
     
     static class UseGlobalVarAction extends AbstractAction {
-        private JTextComponent area;
+        private final JTextComponent area;
         private final String key;
 
         UseGlobalVarAction(JTextComponent area, String key) {
@@ -1264,7 +1425,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
     
     static class FileVariableAction extends AbstractAction {
-        private JTextComponent area;
+        private final JTextComponent area;
         private final String key;
 
         FileVariableAction(JTextComponent area, String key) {

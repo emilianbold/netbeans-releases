@@ -50,6 +50,19 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="NotificationCategory">
+        <api name="awt"/>
+        <summary>Add notification category to the NotificationDisplayer API</summary>
+        <version major="7" minor="58"/>
+        <date day="27" month="3" year="2013"/>
+        <author login="jpeska"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Clients can specify notification category. There are 3 default categories (Info, Warning, Error) but clients can also create a custom category using layer.xml
+        </description>
+        <class package="org.openide.awt" name="NotificationDisplayer"/>
+        <issue number="227690"/>
+    </change>
     <change id="Actions.checkbox.default">
         <api name="awt"/>
         <summary>The value in Preferences for Actions.checkbox can have a default</summary>

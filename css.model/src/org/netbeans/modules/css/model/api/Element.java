@@ -45,7 +45,6 @@ package org.netbeans.modules.css.model.api;
 
 import java.util.Collection;
 import java.util.Iterator;
-import org.netbeans.modules.css.model.api.semantic.PModel;
 
 /**
  *
@@ -95,20 +94,6 @@ public interface Element {
      * May return -1 if the element has been added to the model.
      */
     public int getEndOffset();
-    
-    /**
-     * Return a collection of {@link SemanticModel} based on the <b>current model
-     * state</b>. Once the model is changed (by adding/removing/updating elements
-     * the semantic model becomes obsolete and cannot be used anymore.
-     * 
-     * <b>Implementation notices:</b>
-     * There are several ways how the behavior can look like:
-     * 1) <b>CURRENT</b> the semantic model (SEM) becomes obsolete once the underlying model (UM) has changed.
-     * 2) #1 + the SEM throws some exception on access.
-     * 3) SEM can update itself based on the underlying data change
-     * 
-     */
-    public Collection<? extends PModel> getSemanticModels();
     
     /**
      * Notice: No semantic checks beyond parsing are done with respect to the returned value.
