@@ -72,6 +72,8 @@ import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 public class DwarfMacroInfoSection extends ElfSection {
     private final HashMap<Long, DwarfMacinfoTable> macinfoTables = new HashMap<Long, DwarfMacinfoTable>();
     private final boolean isMacro;
+    private int offstSize = 4;
+    
     
     public DwarfMacroInfoSection(DwarfReader reader, int sectionIdx, boolean isMacro) {
         super(reader, sectionIdx);
@@ -97,19 +99,40 @@ public class DwarfMacroInfoSection extends ElfSection {
         long currPos = reader.getFilePointer();
         
         reader.seek(header.getSectionOffset() + offset);
+        offstSize = 4;
         if (isMacro) {
             int dwarfVersion = reader.readShort();
-            byte bitness = reader.readByte(); // 2 - 23, 3 - 64
-            int labelSectionAdress = reader.readInt();
+            byte bitness = reader.readByte(); // 2 - 32, 3 - 64
+            if ((bitness & 1)==1) {
+                offstSize = 8;
+            }
+            if ((bitness & 2)==2) {
+                long labelSectionAdress;
+                if (offstSize == 4) {
+                    labelSectionAdress = reader.readInt();
+                } else {
+                    labelSectionAdress = reader.readLong();
+                }
+            }
+            if ((bitness & 4)==4) {
+                int count = reader.readByte() & 0xFF;
+                for(int i = 0; i < count; i++) {
+                    byte opcode = reader.readByte();
+                    long arg = reader.readUnsignedLEB128();
+                    reader.seek(reader.getFilePointer() + arg);
+                }
+                
+            }
         }
         MACINFO type = MACINFO.get(reader.readByte());
         if (baseOnly && type != null) {
             if (type.equals(MACINFO.DW_MACINFO_start_file)) {
+                long pos = reader.getFilePointer();
                 long lineNum = reader.readUnsignedLEB128();
                 if (lineNum == 0) {
                     long fileIdx = reader.readUnsignedLEB128();
                 } else {
-                    reader.seek(header.getSectionOffset() + offset);
+                    reader.seek(pos);
                 }
                 type = MACINFO.get(reader.readByte());
             }
@@ -171,7 +194,12 @@ public class DwarfMacroInfoSection extends ElfSection {
                 {
                     DwarfMacinfoEntry entry = new DwarfMacinfoEntry(type);
                     entry.lineNum = reader.readUnsignedLEB128();
-                    int adress = reader.readInt();
+                    long adress;
+                    if (offstSize == 4) {
+                        adress = reader.readInt();
+                    } else {
+                        adress = reader.readLong();
+                    }
                     entry.definition = ((StringTableSection)reader.getSection(SECTIONS.DEBUG_STR)).getString(adress);
                     entry.fileIdx = fileIdx;
                     table.addEntry(entry);
@@ -179,7 +207,12 @@ public class DwarfMacroInfoSection extends ElfSection {
                 }
                 case DW_MACRO_transparent_include:
                 {
-                    int index = reader.readInt();
+                    long index;
+                    if (offstSize == 4) {
+                        index = reader.readInt();
+                    } else {
+                        index = reader.readLong();
+                    }
                     long savePosition = reader.getFilePointer();
                     indirect.push(savePosition);
                     reader.seek(header.getSectionOffset() + offset + index + 3);
@@ -247,10 +280,20 @@ public class DwarfMacroInfoSection extends ElfSection {
                 case DW_MACRO_define_indirect:
                 case DW_MACRO_undef_indirect:
                     lineNum = reader.readUnsignedLEB128();
-                    int adress = reader.readInt();
+                    long adress;
+                    if (offstSize == 4) {
+                        adress = reader.readInt();
+                    } else {
+                        adress = reader.readLong();
+                    }
                     break;
                 case DW_MACRO_transparent_include:
-                    int index = reader.readInt();
+                    long index;
+                    if (offstSize == 4) {
+                        index = reader.readInt();
+                    } else {
+                        index = reader.readLong();
+                    }
                     long savePosition = reader.getFilePointer();
                     indirect.push(savePosition);
                     reader.seek(header.getSectionOffset() + offset + index + 3);
