@@ -71,7 +71,7 @@ public final class SVGPaletteItemDataNode extends DataNode {
     }
    
     public String getName() {
-        return getData().getName();
+        return getData() != null ? getData().getName() : null;
     }
     
     public String getShortDescription() {
