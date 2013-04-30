@@ -105,7 +105,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     private static final byte FLAGS_REFERENCE = 1 << 1;
     private static final byte FLAGS_CONST = 1 << 2;
     private static final byte FLAGS_TYPE_WITH_CLASSIFIER = 1 << 3;
-    protected static final int LAST_USED_FLAG_INDEX = 4;
+    private static final byte FLAGS_RVALREFERENCE = 1 << 4;
+    protected static final int LAST_USED_FLAG_INDEX = 5;
     private static final CharSequence NON_INITIALIZED_CLASSIFIER_TEXT = CharSequences.empty();
 
     private final byte pointerDepth;
@@ -122,11 +123,15 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     private CsmUID<CsmClassifier> classifierUID;
 
     // package-local - for facory only
-    TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file, int startOffset, int endOffset) {
+    TypeImpl(CsmClassifier classifier, int pointerDepth, int reference, int arrayDepth, AST ast, CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         this.initClassifier(classifier);
         this.pointerDepth = (byte) pointerDepth;
-        setFlags(FLAGS_REFERENCE, reference);
+        // nothing, & or && as reference specifier
+        // too slow my typing is too slow
+        assert reference >= 0 && reference <=2 : "unexpected " + reference;
+        setFlags(FLAGS_REFERENCE, reference > 0);
+        setFlags(FLAGS_RVALREFERENCE, reference == 2);
         this.arrayDepth = (byte) arrayDepth;
         boolean _const = isTypeDefAST(ast) ? initIsConst(ast.getFirstChild()) : initIsConst(ast);
         setFlags(FLAGS_CONST, _const);
@@ -151,11 +156,15 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }
     
     // package-local - for facory only
-    TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, boolean _const, CsmFile file, int startOffset, int endOffset) {
+    TypeImpl(CsmClassifier classifier, int pointerDepth, int reference, int arrayDepth, boolean _const, CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         this.initClassifier(classifier);
         this.pointerDepth = (byte) pointerDepth;
-        setFlags(FLAGS_REFERENCE, reference);
+        // nothing, & or && as reference specifier
+        // too slow my typing is too slow
+        assert reference >= 0 && reference <= 2 : "unexpected " + reference;
+        setFlags(FLAGS_REFERENCE, reference > 0);
+        setFlags(FLAGS_RVALREFERENCE, reference == 2);
         this.arrayDepth = (byte) arrayDepth;
         setFlags(FLAGS_CONST, _const);
         setFlags(FLAGS_TYPE_WITH_CLASSIFIER, true);
@@ -164,22 +173,30 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }    
 
     // package-local - for facory only
-    TypeImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
+    TypeImpl(CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         this.classifierText = NON_INITIALIZED_CLASSIFIER_TEXT;
         this.pointerDepth = (byte) pointerDepth;
-        setFlags(FLAGS_REFERENCE, reference);
+        // nothing, & or && as reference specifier
+        // too slow my typing is too slow
+        assert reference >= 0 && reference <= 2 : "unexpected " + reference;
+        setFlags(FLAGS_REFERENCE, reference > 0);
+        setFlags(FLAGS_RVALREFERENCE, reference == 2);
         this.arrayDepth = (byte) arrayDepth;
         setFlags(FLAGS_CONST, _const);
         trimInstantiationParams();
     }
 
     // package-local - for factory only
-    TypeImpl(TypeImpl type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
+    TypeImpl(TypeImpl type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
         super(type.getContainingFile(), type.getStartOffset(), type.getEndOffset());
 
         this.pointerDepth = (byte) pointerDepth;
-        setFlags(FLAGS_REFERENCE, reference);
+        // nothing, & or && as reference specifier
+        // too slow my typing is too slow
+        assert reference >= 0 && reference <= 2 : "unexpected " + reference;
+        setFlags(FLAGS_REFERENCE, reference > 0);
+        setFlags(FLAGS_RVALREFERENCE, reference == 2);
         this.arrayDepth = (byte) arrayDepth;
         setFlags(FLAGS_CONST, _const);
         setFlags(FLAGS_TYPE_OF_TYPEDEF, type.isTypeOfTypedef());
@@ -299,6 +316,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         return hasFlags(FLAGS_REFERENCE);
     }
 
+    @Override
+    public boolean isRValueReference() {
+        return hasFlags(FLAGS_RVALREFERENCE);
+    }
+    
     @Override
     public boolean isPointer() {
         return pointerDepth > 0;
@@ -460,7 +482,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             for( int i = 0; i < decorator.getPointerDepth(); i++ ) {
                 sb.append('*');
             }
-            if( decorator.isReference() ) {
+            if (decorator.isRValueReference()) {
+                sb.append("&&"); // NOI18N
+            } else if( decorator.isReference() ) {
                 sb.append('&');
             }
             if(canonical) {
@@ -766,7 +790,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                             if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN
                                     || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                                     || namePart.getType() == CPPTokenTypes.LITERAL_struct) {
-                                CsmType type = AstRenderer.renderType(namePart, getContainingFile(), true);
+                                CsmType type = AstRenderer.renderType(namePart, getContainingFile(), true, null, false); // last two params just dummy ones
                                 addInstantiationParam(new TypeBasedSpecializationParameterImpl(type));
                             }
                             if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
