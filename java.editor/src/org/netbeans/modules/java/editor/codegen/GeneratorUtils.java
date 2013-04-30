@@ -88,6 +88,7 @@ import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.CodeStyleUtils;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities;
@@ -275,14 +276,14 @@ public class GeneratorUtils {
         }
     }
     
-    public static boolean hasGetter(CompilationInfo info, TypeElement typeElement, VariableElement field, Map<String, List<ExecutableElement>> methods) {
+    public static boolean hasGetter(CompilationInfo info, TypeElement typeElement, VariableElement field, Map<String, List<ExecutableElement>> methods, CodeStyle cs) {
         CharSequence name = field.getSimpleName();
         assert name.length() > 0;
         TypeMirror type = field.asType();
-        StringBuilder sb = getCapitalizedName(name);
-        sb.insert(0, type.getKind() == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
+        boolean isStatic = field.getModifiers().contains(Modifier.STATIC);
+        String getterName = CodeStyleUtils.computeGetterName(name, type.getKind() == TypeKind.BOOLEAN, isStatic, cs);
         Types types = info.getTypes();
-        List<ExecutableElement> candidates = methods.get(sb.toString());
+        List<ExecutableElement> candidates = methods.get(getterName);
         if (candidates != null) {
             for (ExecutableElement candidate : candidates) {
                 if ((!candidate.getModifiers().contains(Modifier.ABSTRACT) || candidate.getEnclosingElement() == typeElement)
@@ -294,14 +295,14 @@ public class GeneratorUtils {
         return false;
     }
     
-    public static boolean hasSetter(CompilationInfo info, TypeElement typeElement, VariableElement field, Map<String, List<ExecutableElement>> methods) {
+    public static boolean hasSetter(CompilationInfo info, TypeElement typeElement, VariableElement field, Map<String, List<ExecutableElement>> methods, CodeStyle cs) {
         CharSequence name = field.getSimpleName();
         assert name.length() > 0;
         TypeMirror type = field.asType();
-        StringBuilder sb = getCapitalizedName(name);
-        sb.insert(0, "set"); //NOI18N
+        boolean isStatic = field.getModifiers().contains(Modifier.STATIC);
+        String setterName = CodeStyleUtils.computeSetterName(name, isStatic, cs);
         Types types = info.getTypes();
-        List<ExecutableElement> candidates = methods.get(sb.toString());
+        List<ExecutableElement> candidates = methods.get(setterName);
         if (candidates != null) {
             for (ExecutableElement candidate : candidates) {
                 if ((!candidate.getModifiers().contains(Modifier.ABSTRACT) || candidate.getEnclosingElement() == typeElement)
@@ -595,21 +596,6 @@ public class GeneratorUtils {
             e = e.getEnclosingElement();
         }
         return ((PackageElement) e.getEnclosingElement()).getQualifiedName().toString();
-    }
-    
-    public static StringBuilder getCapitalizedName(CharSequence cs) {
-        StringBuilder sb = new StringBuilder(cs);
-        while(sb.length() > 1 && sb.charAt(0) == '_') //NOI18N
-            sb.deleteCharAt(0);
-        
-        //Beans naming convention, #165241
-        if (sb.length() > 1 && Character.isUpperCase(sb.charAt(1))) {
-            return sb;
-        }
-
-        if (sb.length() > 0)
-            sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
-        return sb;
     }
 
     public static void guardedCommit(JTextComponent component, ModificationResult mr) throws IOException {

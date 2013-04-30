@@ -868,7 +868,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             };
                         }
                     };
-                    Iterator<String> names = Utilities.varNamesSuggestions(type, suggestedName, null, cInfo.getTypes(), cInfo.getElements(), loc, isConst).iterator();
+                    Iterator<String> names = Utilities.varNamesSuggestions(type, suggestedName, null, cInfo.getTypes(), cInfo.getElements(), loc, isConst, null, null, null).iterator();
                     if (names.hasNext())
                         return names.next();
                 }

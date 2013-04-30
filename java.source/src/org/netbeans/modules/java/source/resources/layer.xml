@@ -224,6 +224,11 @@ made subject to such option by the copyright holder.
                           <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.ui.FmtImports.getController"/>
                           <attr name="position" intvalue="800"/>
                       </file>
+                      <file name="Naming.instance">
+                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.ui.FmtNaming.getController"/>
+                          <attr name="position" intvalue="900"/>
+                      </file>
                       <file name="CodeGeneration.instance">
                           <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                           <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.ui.FmtCodeGeneration.getController"/>

@@ -247,6 +247,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private ElementHandle element;
         private boolean hasTask;
+        private CodeStyle codeStyle;
         
         private JavaCompletionQuery(int queryType, int caretOffset, boolean hasTask) {
             this.queryType = queryType;
@@ -270,6 +271,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
+            this.codeStyle = CodeStyle.getDefault(component.getDocument());
             if (queryType == TOOLTIP_QUERY_TYPE) {
                 this.toolTip = new MethodParamsTipPaintComponent(component);
             }
@@ -2617,6 +2619,27 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
             boolean isConst = parent.getKind() == Tree.Kind.VARIABLE && ((VariableTree)parent).getModifiers().getFlags().containsAll(EnumSet.of(FINAL, STATIC));
+            boolean preferLong = false;
+            String csPrefix = null;
+            String csSuffix = null;
+            if(codeStyle != null) {
+                preferLong = codeStyle.preferLongerNames();
+                if(env.getScope().getEnclosingMethod() == null) {
+                    if(exPath.getParentPath().getParentPath().getLeaf().getKind() == Tree.Kind.METHOD) {
+                        csPrefix = codeStyle.getParameterNamePrefix();
+                        csSuffix = codeStyle.getParameterNameSuffix();
+                    } else if(((VariableTree)parent).getModifiers().getFlags().contains(STATIC)) {
+                        csPrefix = codeStyle.getStaticFieldNamePrefix();
+                        csSuffix = codeStyle.getStaticFieldNameSuffix();
+                    } else {
+                        csPrefix = codeStyle.getFieldNamePrefix();
+                        csSuffix = codeStyle.getFieldNameSuffix();
+                    }
+                } else {
+                    csPrefix = codeStyle.getLocalVarNamePrefix();
+                    csSuffix = codeStyle.getLocalVarNameSuffix();
+                }
+            }
             if (et.getKind() == Tree.Kind.ANNOTATED_TYPE) {
                 et = ((AnnotatedTypeTree)et).getUnderlyingType();
                 exPath = new TreePath(exPath, et);
@@ -2633,7 +2656,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 !illegalForwardRefs.contains(e);
                     }
                 };
-                for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst))
+                for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst, csPrefix, csSuffix, preferLong))
                     results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
                 return;
             }
@@ -2665,7 +2688,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             !illegalForwardRefs.contains(e);
                                 }
                             };
-                            for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst))
+                            for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(),
+                                    controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst,
+                                    csPrefix, csSuffix, preferLong))
                                 results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
                         }
                         VariableElement ve = getFieldOrVar(env, e.getSimpleName().toString());
@@ -2693,7 +2718,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             !illegalForwardRefs.contains(e);
                                 }
                             };
-                            for (String name : Utilities.varNamesSuggestions(controller.getTypes().getDeclaredType(te), null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst))
+                            for (String name : Utilities.varNamesSuggestions(controller.getTypes().getDeclaredType(te), null, prefix, controller.getTypes(),
+                                    controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst,
+                                    csPrefix, csSuffix, preferLong))
                                 results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
                         }
                         break;
@@ -2797,7 +2824,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     !illegalForwardRefs.contains(e);
                         }
                     };
-                    for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst))
+                    for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst, csPrefix, csSuffix, preferLong))
                         results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
                     break;
                 case ENUM_CONSTANT:
@@ -4194,14 +4221,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                 for (VariableElement variableElement : ElementFilter.fieldsIn(members)) {
                     Name name = variableElement.getSimpleName();
                     if (!name.contentEquals(ERROR)) {
-                        String nameBase = GeneratorUtils.getCapitalizedName(name).toString();
-                        String setterName = "set" + nameBase; //NOI18N
-                        String getterName = (variableElement.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + nameBase; //NOI18N
-                        if ((prefix == null || startsWith(env, getterName)) && !GeneratorUtils.hasGetter(controller, te, variableElement, methods)) {
-                            results.add(JavaCompletionItem.createGetterSetterMethodItem(env.getController(), variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, false));
+                        boolean isStatic = variableElement.getModifiers().contains(Modifier.STATIC);
+                        String setterName = CodeStyleUtils.computeSetterName(name, isStatic, codeStyle);
+                        String getterName = CodeStyleUtils.computeGetterName(name, variableElement.asType().getKind() == TypeKind.BOOLEAN, isStatic, codeStyle);
+                        if ((prefix == null || startsWith(env, getterName)) && !GeneratorUtils.hasGetter(controller, te, variableElement, methods, codeStyle)) {
+                            results.add(JavaCompletionItem.createGetterSetterMethodItem(env.getController(), variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, getterName, false));
                         }
-                        if ((prefix == null || startsWith(env, setterName)) && !(variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, te, variableElement, methods))) {
-                            results.add(JavaCompletionItem.createGetterSetterMethodItem(env.getController(), variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, true));
+                        if ((prefix == null || startsWith(env, setterName)) && !(variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, te, variableElement, methods, codeStyle))) {
+                            results.add(JavaCompletionItem.createGetterSetterMethodItem(env.getController(), variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, setterName, true));
                         }
                     }
                 }
