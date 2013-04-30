@@ -1154,6 +1154,10 @@ public final class TreeUtilities {
             return null;
         }
 
+        @Override
+        public Void visitLambdaExpression(LambdaExpressionTree node, Set<TypeMirror> p) {
+            return null;
+        }
     }
     
     private static class UnrelatedTypeMirrorSet extends AbstractSet<TypeMirror> {
