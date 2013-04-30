@@ -68,9 +68,6 @@ import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 
 import org.netbeans.modules.form.editors.EnumEditor;
-import org.netbeans.modules.form.project.ClassPathUtils;
-import org.netbeans.modules.java.source.queries.api.Function;
-import org.netbeans.modules.java.source.queries.api.Queries;
 import org.netbeans.modules.java.source.queries.api.QueryException;
 import org.openide.nodes.Node.Property;
 import org.openide.util.Lookup;
