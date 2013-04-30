@@ -964,7 +964,14 @@ public class WebKitPageModel extends PageModel {
             for (StyleSheetHeader header : css.getAllStyleSheets()) {
                 String styleSheetId = header.getStyleSheetId();
                 StyleSheetBody body = css.getStyleSheet(styleSheetId);
-                String styleSheetText = body.getText();
+                String styleSheetText;
+                if (body == null) {
+                    // 229164: getStyleSheet() failed for some reason,
+                    // try getStyleSheetText() instead
+                    styleSheetText = css.getStyleSheetText(styleSheetId);
+                } else {
+                    styleSheetText = body.getText();
+                }
                 if (styleSheetText != null) { // Issue 229137
                     if (selectionMode) {
                         // Replacement of :hover is done in setStyleSheetText()
