@@ -42,6 +42,9 @@
 package org.netbeans.modules.editor.fold.ui;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -51,6 +54,7 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
+import org.openide.util.Exceptions;
 
 /**
  * Factory for editor code folding actions.
@@ -174,7 +178,7 @@ final class ActionFactory {
                                 hierarchy.collapse(fold);
                             }
                         }catch(BadLocationException ble){
-                            ble.printStackTrace();
+                            Exceptions.printStackTrace(ble);
                         }
                     }finally {
                         hierarchy.unlock();
@@ -208,7 +212,80 @@ final class ActionFactory {
                                 hierarchy.expand(fold);
                             }
                         } catch (BadLocationException ble) {
-                            ble.printStackTrace();
+                            Exceptions.printStackTrace(ble);
+                        }
+                    } finally {
+                        hierarchy.unlock();
+                    }
+                }
+            });
+        }
+    }
+    
+    
+    @EditorActionRegistration(name = "expand-fold-tree",
+            menuText = "#expand-fold-tree_menu_text"
+    )
+    public static class ExpandFoldsTree extends LocalBaseAction {
+        @Override
+        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+            Document doc = target.getDocument();
+            doc.render(new Runnable() {
+                @Override
+                public void run() {
+                    FoldHierarchy hierarchy = FoldHierarchy.get(target);
+                    int dot = target.getCaret().getDot();
+                    hierarchy.lock();
+                    try {
+                        try {
+                            int rowStart = javax.swing.text.Utilities.getRowStart(target, dot);
+                            int rowEnd = javax.swing.text.Utilities.getRowEnd(target, dot);
+                            Fold fold = getLineFold(hierarchy, dot, rowStart, rowEnd);
+                            if (fold == null) {
+                                return;
+                            }
+                            List allFolds = new ArrayList<Fold>(FoldUtilities.findRecursive(fold));
+                            Collections.reverse(allFolds);
+                            allFolds.add(0, fold);
+                            hierarchy.expand(allFolds);
+                        } catch (BadLocationException ble) {
+                            Exceptions.printStackTrace(ble);
+                        }
+                    } finally {
+                        hierarchy.unlock();
+                    }
+                }
+            });
+        }
+    }
+            
+    @EditorActionRegistration(name = "collapse-fold-tree",
+            menuText = "#collapse-fold-tree_menu_text"
+    )
+    public static class CollapseFoldsTree extends LocalBaseAction {
+        @Override
+        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+            Document doc = target.getDocument();
+            doc.render(new Runnable() {
+                @Override
+                public void run() {
+                    FoldHierarchy hierarchy = FoldHierarchy.get(target);
+                    int dot = target.getCaret().getDot();
+                    hierarchy.lock();
+                    try {
+                        try {
+                            int rowStart = javax.swing.text.Utilities.getRowStart(target, dot);
+                            int rowEnd = javax.swing.text.Utilities.getRowEnd(target, dot);
+                            Fold fold = getLineFold(hierarchy, dot, rowStart, rowEnd);
+                            if (fold == null) {
+                                return;
+                            }
+                            List allFolds = new ArrayList<Fold>(FoldUtilities.findRecursive(fold));
+                            Collections.reverse(allFolds);
+                            allFolds.add(0, fold);
+                            hierarchy.collapse(allFolds);
+                        } catch (BadLocationException ble) {
+                            Exceptions.printStackTrace(ble);
                         }
                     } finally {
                         hierarchy.unlock();
@@ -247,7 +324,7 @@ final class ActionFactory {
     }
 
 
-    private static abstract class LocalBaseAction extends BaseAction {
+    static abstract class LocalBaseAction extends BaseAction {
         public LocalBaseAction() {
             super();
         }
