@@ -323,6 +323,10 @@ public class CordovaPerformer implements BuildPerformer {
 
     @Override
     public void startDebugging(Device device, Project p, Lookup context, boolean navigateToUrl) {
+        if (transport != null || webKitDebugging != null) {
+            //stop old session
+            stopDebugging();
+        }
         transport = device.getDebugTransport();
         final String url = getUrl(p, context);
         transport.setBaseUrl(url);
