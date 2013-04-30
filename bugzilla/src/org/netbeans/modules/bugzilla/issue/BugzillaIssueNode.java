@@ -172,12 +172,12 @@ public class BugzillaIssueNode extends IssueNode<BugzillaIssue> {
         }
         @Override
         public String getValue() {
-            return getBugzillaIssue().getFieldValue(IssueField.SEVERITY);
+            return getBugzillaIssue().getRepositoryFieldValue(IssueField.SEVERITY);
         }
         @Override
         public Object getValue(String attributeName) {
             if("sortkey".equals(attributeName)) {                               // NOI18N
-                return getSeveritySortKey(getBugzillaIssue().getFieldValue(IssueField.SEVERITY));
+                return getSeveritySortKey(getBugzillaIssue().getRepositoryFieldValue(IssueField.SEVERITY));
             } else {
                 return super.getValue(attributeName);
             }
@@ -193,12 +193,12 @@ public class BugzillaIssueNode extends IssueNode<BugzillaIssue> {
         }
         @Override
         public String getValue() {
-            return getBugzillaIssue().getFieldValue(IssueField.ISSUE_TYPE);
+            return getBugzillaIssue().getRepositoryFieldValue(IssueField.ISSUE_TYPE);
         }
         @Override
         public Object getValue(String attributeName) {
             if("sortkey".equals(attributeName)) {                               // NOI18N
-                return getIssueTypeSortKey(getBugzillaIssue().getFieldValue(IssueField.ISSUE_TYPE));
+                return getIssueTypeSortKey(getBugzillaIssue().getRepositoryFieldValue(IssueField.ISSUE_TYPE));
             } else {
                 return super.getValue(attributeName);
             }
@@ -214,12 +214,12 @@ public class BugzillaIssueNode extends IssueNode<BugzillaIssue> {
         }
         @Override
         public String getValue() {
-            return getBugzillaIssue().getFieldValue(IssueField.PRIORITY);
+            return getBugzillaIssue().getRepositoryFieldValue(IssueField.PRIORITY);
         }
         @Override
         public Object getValue(String attributeName) {
             if("sortkey".equals(attributeName)) {                               // NOI18N
-                return getPrioritySortKey(getBugzillaIssue().getFieldValue(IssueField.PRIORITY));
+                return getPrioritySortKey(getBugzillaIssue().getRepositoryFieldValue(IssueField.PRIORITY));
             } else {
                 return super.getValue(attributeName);
             }
@@ -235,12 +235,12 @@ public class BugzillaIssueNode extends IssueNode<BugzillaIssue> {
         }
         @Override
         public String getValue() {
-            return getBugzillaIssue().getFieldValue(IssueField.RESOLUTION);
+            return getBugzillaIssue().getRepositoryFieldValue(IssueField.RESOLUTION);
         }
         @Override
         public Object getValue(String attributeName) {
             if("sortkey".equals(attributeName)) {                               // NOI18N
-                return getResolutionSortKey(getBugzillaIssue().getFieldValue(IssueField.RESOLUTION));
+                return getResolutionSortKey(getBugzillaIssue().getRepositoryFieldValue(IssueField.RESOLUTION));
             } else {
                 return super.getValue(attributeName);
             }
@@ -256,14 +256,14 @@ public class BugzillaIssueNode extends IssueNode<BugzillaIssue> {
         }
         @Override
         public String getValue() {
-            return getBugzillaIssue().getFieldValue(IssueField.MODIFICATION);
+            return getBugzillaIssue().getRepositoryFieldValue(IssueField.MODIFICATION);
         }
         @Override
         public int compareTo(IssueNode<BugzillaIssue>.IssueProperty<String> p) {
             if(p == null) return 1;
             // XXX sort as date
-            String s1 = getBugzillaIssue().getFieldValue(IssueField.MODIFICATION);
-            String s2 = p.getIssueData().getFieldValue(IssueField.MODIFICATION);
+            String s1 = getBugzillaIssue().getRepositoryFieldValue(IssueField.MODIFICATION);
+            String s2 = p.getIssueData().getRepositoryFieldValue(IssueField.MODIFICATION);
             return s1.compareTo(s2);
         }
     }
@@ -279,13 +279,13 @@ public class BugzillaIssueNode extends IssueNode<BugzillaIssue> {
         }
         @Override
         public String getValue() {
-            return getBugzillaIssue().getFieldValue(field);
+            return getBugzillaIssue().getRepositoryFieldValue(field);
         }
         @Override
         public int compareTo(IssueNode<BugzillaIssue>.IssueProperty<String> p) {
             if(p == null) return 1;
-            String s1 = getBugzillaIssue().getFieldValue(field);
-            String s2 = p.getIssueData().getFieldValue(field);
+            String s1 = getBugzillaIssue().getRepositoryFieldValue(field);
+            String s2 = p.getIssueData().getRepositoryFieldValue(field);
             return s1.compareTo(s2);
         }
     }

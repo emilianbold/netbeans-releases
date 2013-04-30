@@ -39,73 +39,63 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.mylyn.util;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
-import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeQueriesJob;
-import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
+import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.ITaskDataWorkingCopy;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.data.TaskDataModel;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public class SynchronizeQueriesCommand extends BugtrackingCommand {
-    private final SynchronizeQueriesJob job;
-    private String stringValue;
-    private final TaskRepository taskRepository;
-    private final Set<RepositoryQuery> queries;
-    private final CancelableProgressMonitor monitor;
+public final class NetBeansTaskDataModel extends TaskDataModel {
 
-    SynchronizeQueriesCommand (SynchronizeQueriesJob job, TaskRepository taskRepository, Set<RepositoryQuery> queries) {
-        this.taskRepository = taskRepository;
-        this.queries = queries;
-        this.job = job;
-        this.monitor = new CancelableProgressMonitor();
-    }
-
-    @Override
-    public void execute () throws CoreException, IOException, MalformedURLException {
-        Logger log = Logger.getLogger(this.getClass().getName());
-        if(log.isLoggable(Level.FINE)) {
-            List<String> queryNames = new ArrayList<String>(queries.size());
-            for (IRepositoryQuery q : queries) {
-                queryNames.add(q.getSummary());
-            }
-            log.log(
-                Level.FINE, 
-                "executing SynchronizeQueriesCommand for queries {0}:{1}", //NOI18N
-                new Object[] { taskRepository.getUrl(), queryNames });
-        }
-        
-        job.run(monitor);
-    }
-
-    @Override
-    public void cancel () {
-        monitor.setCanceled(true);
-    }
+    private final ITaskDataWorkingCopy workingCopy;
     
-    @Override
-    public String toString () {
-        if(stringValue == null) {
-            StringBuilder sb = new StringBuilder()
-            .append("Synchronizing tasks ") //NOI18N
-            .append(queries)
-            .append(",repository=") //NOI18N
-            .append(taskRepository.getUrl())
-            .append("]"); //NOI18N
-            stringValue = sb.toString();
+    NetBeansTaskDataModel (TaskRepository taskRepository, ITask task, ITaskDataWorkingCopy workingCopy) {
+        super(taskRepository, task, workingCopy);
+        this.workingCopy = workingCopy;
+    }
+
+    public boolean hasIncomingChanges (TaskAttribute taskAttribute, boolean includeConflicts) {
+        boolean incoming = hasIncomingChanges(taskAttribute);
+        if (includeConflicts && !incoming && hasOutgoingChanges(taskAttribute)) {
+            TaskData lastReadData = workingCopy.getLastReadData();
+            if (lastReadData == null) {
+                    return true;
+            }
+
+            TaskAttribute oldAttribute = lastReadData.getRoot().getMappedAttribute(taskAttribute.getPath());
+            if (oldAttribute == null) {
+                    return true;
+            }
+            
+            TaskData repositoryData = workingCopy.getRepositoryData();
+            if (repositoryData == null) {
+                    return true;
+            }
+
+            taskAttribute = repositoryData.getRoot().getMappedAttribute(taskAttribute.getPath());
+            if (taskAttribute == null) {
+                    return true;
+            }
+
+            return !repositoryData.getAttributeMapper().equals(taskAttribute, oldAttribute);
         }
-        return stringValue;
+        return incoming;
+    }
+
+    public TaskData getLastReadTaskData () {
+        return workingCopy.getLastReadData();
+    }
+
+    public TaskData getRepositoryTaskData () {
+        return workingCopy.getRepositoryData();
     }
     
 }

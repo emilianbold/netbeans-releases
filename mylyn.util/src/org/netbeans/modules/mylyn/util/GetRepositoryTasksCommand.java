@@ -43,6 +43,9 @@ package org.netbeans.modules.mylyn.util;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
@@ -51,28 +54,28 @@ import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public class GetRepositoryTaskCommand extends BugtrackingCommand {
+public class GetRepositoryTasksCommand extends BugtrackingCommand {
 
     private String stringValue;
     private final TaskRepository taskRepository;
-    private final String taskId;
+    private final Set<String> taskIds;
     private final CancelableProgressMonitor monitor;
     private final TaskDataManager taskDataManager;
     private final AbstractRepositoryConnector connector;
-    private ITask task;
-    private boolean taskAdded;
+    private List<ITask> tasks = new ArrayList<ITask>();
 
-    GetRepositoryTaskCommand (AbstractRepositoryConnector connector,
-            TaskRepository taskRepository, String taskId,
+    GetRepositoryTasksCommand (AbstractRepositoryConnector connector,
+            TaskRepository taskRepository, Set<String> taskIds,
             TaskDataManager taskDataManager) {
         this.connector = connector;
         this.taskRepository = taskRepository;
-        this.taskId = taskId;
+        this.taskIds = taskIds;
         this.taskDataManager = taskDataManager;
         this.monitor = new CancelableProgressMonitor();
     }
@@ -83,17 +86,24 @@ public class GetRepositoryTaskCommand extends BugtrackingCommand {
         if (log.isLoggable(Level.FINE)) {
             log.log(
                     Level.FINE,
-                    "executing GetRepositoryTaskCommand for task id {0}:{1}", //NOI18N
-                    new Object[] { taskRepository.getUrl(), taskId });
+                    "executing GetRepositoryTasksCommand for task ids {0}:{1}", //NOI18N
+                    new Object[] { taskRepository.getUrl(), taskIds });
         }
-        task = MylynSupport.getInstance().getOrCreateTask(taskRepository, taskId, true);
-        TaskData taskData = connector.getTaskData(taskRepository, taskId, monitor);
-        if (monitor.isCanceled()) {
-            return;
-        }
-        if (taskData != null) {
-            taskDataManager.putUpdatedTaskData(task, taskData, true);
-            taskAdded = true;
+        if (connector.getTaskDataHandler().canGetMultiTaskData(taskRepository)) {
+            connector.getTaskDataHandler().getMultiTaskData(taskRepository, taskIds,
+                    new Collector(), monitor);
+        } else {
+            for (String taskId : taskIds) {
+                TaskData taskData = connector.getTaskData(taskRepository, taskId, monitor);
+                if (monitor.isCanceled()) {
+                    return;
+                }
+                if (taskData != null) {
+                    ITask task = MylynSupport.getInstance().getOrCreateTask(taskRepository, taskId, true);
+                    taskDataManager.putUpdatedTaskData(task, taskData, true);
+                    tasks.add(task);
+                }
+            }
         }
     }
 
@@ -106,8 +116,8 @@ public class GetRepositoryTaskCommand extends BugtrackingCommand {
     public String toString () {
         if (stringValue == null) {
             StringBuilder sb = new StringBuilder()
-                    .append("Getting task ") //NOI18N
-                    .append(taskId)
+                    .append("Getting tasks ") //NOI18N
+                    .append(taskIds)
                     .append(",repository=") //NOI18N
                     .append(taskRepository.getUrl())
                     .append("]"); //NOI18N
@@ -116,7 +126,22 @@ public class GetRepositoryTaskCommand extends BugtrackingCommand {
         return stringValue;
     }
 
-    public ITask getTask () {
-        return taskAdded ? task : null;
+    public List<ITask> getTasks () {
+        return tasks;
+    }
+
+    private class Collector extends TaskDataCollector {
+
+        @Override
+        public void accept (TaskData taskData) {
+            try {
+                ITask task = MylynSupport.getInstance().getOrCreateTask(taskRepository, taskData.getTaskId(), true);
+                taskDataManager.putUpdatedTaskData(task, taskData, true);
+                tasks.add(task);
+            } catch (CoreException ex) {
+                Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, ex);
+            }
+        }
+        
     }
 }

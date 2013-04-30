@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.mylyn.util;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -206,13 +206,13 @@ public class MylynFactory {
         return new SynchronizeTasksCommand(job, taskRepository, tasks);
     }
 
-    public SynchronizeQueriesCommand createSynchronizeQueriesCommand (TaskRepository taskRepository, Set<IRepositoryQuery> queries) {
-        Set<RepositoryQuery> repositoryQueries = new HashSet<RepositoryQuery>(queries.size());
-        for (IRepositoryQuery q : queries) {
-            assert q instanceof RepositoryQuery;
-            if (q instanceof RepositoryQuery) {
-                repositoryQueries.add((RepositoryQuery) q);
-            }
+    public SynchronizeQueryCommand createSynchronizeQueriesCommand (TaskRepository taskRepository, IRepositoryQuery iquery) {
+        assert iquery instanceof RepositoryQuery;
+        RepositoryQuery repositoryQuery;
+        if (iquery instanceof RepositoryQuery) {
+            repositoryQuery = (RepositoryQuery) iquery;
+        } else {
+            return null;
         }
         AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
         SynchronizeQueriesJob job = new SynchronizeQueriesJob(taskList,
@@ -220,14 +220,15 @@ public class MylynFactory {
                 repositoryModel,
                 repositoryConnector,
                 taskRepository,
-                repositoryQueries);
-        return new SynchronizeQueriesCommand(job, taskRepository, repositoryQueries);
+                Collections.<RepositoryQuery>singleton(repositoryQuery));
+        return new SynchronizeQueryCommand(job, repositoryModel, repositoryConnector,
+                taskRepository, taskList, taskDataManager, repositoryQuery);
     }
 
-    public GetRepositoryTaskCommand createGetRepositoryTaskCommand (TaskRepository taskRepository, String taskId) throws CoreException {
+    public GetRepositoryTasksCommand createGetRepositoryTasksCommand (TaskRepository taskRepository, Set<String> taskIds) throws CoreException {
         AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
-        GetRepositoryTaskCommand cmd = new GetRepositoryTaskCommand(repositoryConnector,
-                taskRepository, taskId, taskDataManager);
+        GetRepositoryTasksCommand cmd = new GetRepositoryTasksCommand(repositoryConnector,
+                taskRepository, taskIds, taskDataManager);
         return cmd;
     }
 

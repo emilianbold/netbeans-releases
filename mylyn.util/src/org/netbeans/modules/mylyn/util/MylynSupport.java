@@ -73,9 +73,9 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.ITaskAttributeDiff;
+import org.eclipse.mylyn.tasks.core.data.ITaskDataWorkingCopy;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.eclipse.mylyn.tasks.core.data.TaskDataModel;
 import org.openide.modules.Places;
 
 /**
@@ -207,25 +207,27 @@ public class MylynSupport {
     }
 
     // TODO auto-saving
-    // TODO save upon module shutdown
-    public synchronized void save () throws CoreException {
-        if (taskListInitialized) {
-            taskListWriter.writeTaskList(taskList, taskListStorageFile);
-        }
+    public void save () throws CoreException {
+        persist();
     }
 
     /**
      * Returns task data model for the editor page.
      *
      * @param task task to get data for
-     * @return task data model the editor page should access - read and edit.
-     * @throws CoreException no data for the task found
+     * @return task data model the editor page should access - read and edit - 
+     * or null when no data for the task found
      */
-    public TaskDataModel getTaskDataModel (ITask task) throws CoreException {
+    public NetBeansTaskDataModel getTaskDataModel (ITask task)  {
         assert taskListInitialized;
         TaskRepository taskRepository = getTaskRepositoryFor(task);
-        TaskDataModel model = new TaskDataModel(taskRepository, task, taskDataManager.getWorkingCopy(task));
-        return model;
+        try {
+            ITaskDataWorkingCopy workingCopy = taskDataManager.getWorkingCopy(task);
+            return new NetBeansTaskDataModel(taskRepository, task, workingCopy);
+        } catch (CoreException ex) {
+            LOG.log(Level.FINE, null, ex);
+            return null;
+        }
     }
 
     /**
@@ -301,9 +303,16 @@ public class MylynSupport {
         return null;
     }
 
-    public void deleteTask (TaskRepository taskRepository, ITask task) throws CoreException {
-        ensureTaskListLoaded();
+    public void deleteTask (ITask task) throws CoreException {
+        assert taskListInitialized;
         taskList.deleteTask(task);
+    }
+
+    public void deleteQuery (IRepositoryQuery query) {
+        assert taskListInitialized;
+        if (query instanceof RepositoryQuery) {
+            taskList.deleteQuery((RepositoryQuery) query);
+        }
     }
     
     public MylynFactory getMylynFactory () throws CoreException {
@@ -312,6 +321,10 @@ public class MylynSupport {
             factory = new MylynFactory(taskList, taskDataManager, taskRepositoryManager, repositoryModel);
         }
         return factory;
+    }
+
+    public void markTaskSeen (ITask task, boolean seen) {
+        taskDataManager.setTaskRead(task, seen);
     }
 
     ITask getOrCreateTask (TaskRepository taskRepository, String taskId, boolean addToTaskList) throws CoreException {
@@ -348,6 +361,18 @@ public class MylynSupport {
                     LOG.log(Level.INFO, null, ex);
                     throw new CoreException(new Status(ex.getStatus().getSeverity(), ex.getStatus().getPlugin(), "Cannot deserialize tasklist"));
                 }
+            }
+        }
+    }
+
+    synchronized void persist() throws CoreException {
+        if (taskListInitialized) {
+            try {
+                taskListStorageFile.getParentFile().mkdirs();
+                taskListWriter.writeTaskList(taskList, taskListStorageFile);
+            } catch (CoreException ex) {
+                LOG.log(Level.INFO, null, ex);
+                throw new CoreException(new Status(ex.getStatus().getSeverity(), ex.getStatus().getPlugin(), "Cannot persist tasklist"));
             }
         }
     }

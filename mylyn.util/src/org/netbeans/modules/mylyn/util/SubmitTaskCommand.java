@@ -54,6 +54,7 @@ import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
 import org.eclipse.mylyn.internal.tasks.core.sync.SubmitTaskJob;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.ITask;
+import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -66,6 +67,7 @@ public class SubmitTaskCommand extends BugtrackingCommand {
 
     private final MylynSubmitTaskJob job;
     private final CancelableProgressMonitor monitor;
+    private RepositoryResponse rr;
 
     SubmitTaskCommand (MylynSubmitTaskJob job) {
         this.job = job;
@@ -84,6 +86,15 @@ public class SubmitTaskCommand extends BugtrackingCommand {
         }
         
         job.run(monitor);
+        IStatus status = job.getStatus();
+        rr = job.getResponse();
+        if (status != null && status.getSeverity() == IStatus.ERROR) {
+            if (status.getException() instanceof CoreException) {
+                throw (CoreException) status.getException();
+            } else {
+                throw new CoreException(status);
+            }
+        }
     }
 
     @Override
@@ -103,6 +114,10 @@ public class SubmitTaskCommand extends BugtrackingCommand {
      */
     public ITask getSubmittedTask () {
         return job.getTask();
+    }
+
+    public RepositoryResponse getRepositoryResponse () {
+        return rr;
     }
     
     static class MylynSubmitTaskJob extends SubmitTaskJob {

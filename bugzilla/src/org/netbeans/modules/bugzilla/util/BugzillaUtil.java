@@ -42,24 +42,25 @@
 
 package org.netbeans.modules.bugzilla.util;
 
+import java.util.Collections;
 import org.netbeans.modules.bugtracking.util.ListValuePicker;
-import java.util.List;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.tasks.core.ITask;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.mylyn.util.GetTaskDataCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
+import org.netbeans.modules.mylyn.util.GetRepositoryTasksCommand;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -93,32 +94,26 @@ public class BugzillaUtil {
     }
 
     /**
-     * Returns TaskData for the given issue id or null if an error occured
+     * Returns Task for the given issue id or null if an error occurred
      * @param repository
      * @param id
      * @return
      */
-    public static TaskData getTaskData(final BugzillaRepository repository, final String id) {
-        return getTaskData(repository, id, true);
-    }
-
-    /**
-     * Returns TaskData for the given issue id or null if an error occured
-     * @param repository
-     * @param id
-     * @return
-     */
-    public static TaskData getTaskData(final BugzillaRepository repository, final String id, boolean handleExceptions) {
-        GetTaskDataCommand cmd = 
-            new GetTaskDataCommand(
-                Bugzilla.getInstance().getRepositoryConnector(), 
-                repository.getTaskRepository(), 
-                id);
-        repository.getExecutor().execute(cmd, handleExceptions);
-        if(cmd.hasFailed() && Bugzilla.LOG.isLoggable(Level.FINE)) {
-            Bugzilla.LOG.log(Level.FINE, cmd.getErrorMessage());
+    public static ITask getTask (final BugzillaRepository repository, final String id, boolean handleExceptions) {
+        try {
+            GetRepositoryTasksCommand cmd = MylynSupport.getInstance().getMylynFactory()
+                    .createGetRepositoryTasksCommand(repository.getTaskRepository(), Collections.<String>singleton(id));
+            repository.getExecutor().execute(cmd, handleExceptions);
+            if(cmd.hasFailed() && Bugzilla.LOG.isLoggable(Level.FINE)) {
+                Bugzilla.LOG.log(Level.FINE, cmd.getErrorMessage());
+            }
+            if (!cmd.getTasks().isEmpty()) {
+                return cmd.getTasks().iterator().next();
+            }
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.INFO, null, ex);
         }
-        return cmd.getTaskData();
+        return null;
     }
 
     public static String getKeywords(String message, String keywordsString, BugzillaRepository repository) {

@@ -87,12 +87,12 @@ import static org.netbeans.modules.bugzilla.TestConstants.REPO_PASSWD;
 import static org.netbeans.modules.bugzilla.TestConstants.REPO_URL;
 import static org.netbeans.modules.bugzilla.TestConstants.REPO_USER;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.mylyn.util.GetRepositoryTaskCommand;
+import org.netbeans.modules.mylyn.util.GetRepositoryTasksCommand;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.SimpleQueryCommand;
 import org.netbeans.modules.mylyn.util.SubmitCommand;
 import org.netbeans.modules.mylyn.util.SubmitTaskCommand;
-import org.netbeans.modules.mylyn.util.SynchronizeQueriesCommand;
+import org.netbeans.modules.mylyn.util.SynchronizeQueryCommand;
 import org.netbeans.modules.mylyn.util.SynchronizeTasksCommand;
 import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
@@ -127,15 +127,13 @@ public class MylynStorageTest extends NbTestCase {
         MockLookup.setLayersAndInstances();
         BugtrackingUtil.getBugtrackingConnectors(); // ensure conector
         
-        br = TestUtil.getRepository("testbugzilla", REPO_URL, REPO_USER, REPO_PASSWD);
-        btr = br.getTaskRepository();
-        brc = Bugzilla.getInstance().getRepositoryConnector();
         // reset
         Method m = MylynSupport.class.getDeclaredMethod("reset", new Class[0]);
         m.setAccessible(true);
         m.invoke(MylynSupport.class);
-        // register repository
-        MylynSupport.getInstance().addTaskRepository(brc, btr);
+        br = TestUtil.getRepository("testbugzilla", REPO_URL, REPO_USER, REPO_PASSWD);
+        btr = br.getTaskRepository();
+        brc = Bugzilla.getInstance().getRepositoryConnector();
     }
 
     @Override
@@ -518,7 +516,7 @@ public class MylynStorageTest extends NbTestCase {
         page.close();
         
         assertTrue(supp.getTasks(btr).contains(page.task));
-        supp.deleteTask(btr, page.task);
+        supp.deleteTask(page.task);
         assertFalse(supp.getTasks(btr).contains(page.task));
     }
     
@@ -581,7 +579,7 @@ public class MylynStorageTest extends NbTestCase {
         
         DummyQueryController controller = new DummyQueryController(query);
         // synchronize
-        SynchronizeQueriesCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, Collections.<IRepositoryQuery>singleton(query));
+        SynchronizeQueryCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, query);
         br.getExecutor().execute(cmd);
         
         // all pages should be opened
@@ -638,7 +636,7 @@ public class MylynStorageTest extends NbTestCase {
             assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.getSynchronizationState());
             assertEquals(ITask.SynchronizationState.SYNCHRONIZED, wrapper.task.getSynchronizationState());
         }
-        SynchronizeQueriesCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, Collections.<IRepositoryQuery>singleton(q));
+        SynchronizeQueryCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, q);
         br.getExecutor().execute(cmd);
           
         // all tasks have incoming changes
@@ -683,7 +681,7 @@ public class MylynStorageTest extends NbTestCase {
         DummyQueryController controller = new DummyQueryController(query);
         query.setUrl(query.getUrl() + "&bug_status=NEW" + "&bug_status=REOPENED"); //NOI18N
         // synchronize
-        SynchronizeQueriesCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, Collections.<IRepositoryQuery>singleton(query));
+        SynchronizeQueryCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, query);
         br.getExecutor().execute(cmd);
         
         tasks = controller.tasks;
@@ -718,7 +716,7 @@ public class MylynStorageTest extends NbTestCase {
         assertTrue(task.isCompleted());
         
         // refresh query
-        SynchronizeQueriesCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, Collections.<IRepositoryQuery>singleton(q));
+        SynchronizeQueryCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, q);
         br.getExecutor().execute(cmd);
         
         // task should be removed from the list
@@ -759,7 +757,7 @@ public class MylynStorageTest extends NbTestCase {
         br.getExecutor().execute(submitCmd);
         
         // refresh query
-        SynchronizeQueriesCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, Collections.<IRepositoryQuery>singleton(q));
+        SynchronizeQueryCommand cmd = supp.getMylynFactory().createSynchronizeQueriesCommand(btr, q);
         br.getExecutor().execute(cmd);
         
         // task should be removed from the list
@@ -973,12 +971,14 @@ public class MylynStorageTest extends NbTestCase {
                     public void run () {
                         if (waitingToOpen) {
                             try {
-                                GetRepositoryTaskCommand cmd = supp.getMylynFactory().createGetRepositoryTaskCommand(
-                                        btr, task == null ? taskId : task.getTaskId());
+                                GetRepositoryTasksCommand cmd = supp.getMylynFactory().createGetRepositoryTasksCommand(
+                                        btr, Collections.<String>singleton(task == null ? taskId : task.getTaskId()));
                                 br.getExecutor().execute(cmd);
-                                task = cmd.getTask();
-                                if (task != null) {
-                                    finishOpen();
+                                if (!cmd.getTasks().isEmpty()) {
+                                    task = cmd.getTasks().iterator().next();
+                                    if (task != null) {
+                                        finishOpen();
+                                    }
                                 }
                             } catch (CoreException ex) {
                                 log(ex.toString());
