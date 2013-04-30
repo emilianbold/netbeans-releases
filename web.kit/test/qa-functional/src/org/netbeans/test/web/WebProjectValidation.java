@@ -583,28 +583,13 @@ public class WebProjectValidation extends J2eeTestCase {
     }
 
     public void testHTMLNavigator() throws Exception {
-        String fileName = "navigatorHTML.html";
-        open(fileName);
-        EditorOperator eop = new EditorOperator(fileName);
-        int caretPosition = verifyNavigator(eop);
-        assertEquals("NAVIGATION TARGET", 184, caretPosition);
-        Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
-        new Node(rootNode, "Web Pages|HTML.html").performPopupAction("Open");
-        eop = new EditorOperator("HTML.html");
-        eop.setCaretPosition("</body>", true);
-        while (eop.getLineNumber() != 16) {
-            eop.insert("\n");
-        }
+        Node webPages = new WebPagesNode(PROJECT_NAME);
+        new Node(webPages, "HTML.html").performPopupAction("Open");
         verifyNavigator(new EditorOperator("HTML.html"));
         EditorOperator.closeDiscardAll();
     }
 
     public void testJSPNavigator() throws Exception {
-        String fileName = "navigatorJSP.jsp";
-        open(fileName);
-        EditorOperator eop = new EditorOperator(fileName);
-        int caretPosition = verifyNavigator(eop);
-        assertEquals("NAVIGATION TARGET", 340, caretPosition);
         Node webPages = new WebPagesNode(PROJECT_NAME);
         // create new .jsp
         new ActionNoBlock(null, "New|JSP").perform(webPages);
@@ -629,19 +614,13 @@ public class WebProjectValidation extends J2eeTestCase {
         }
     }
 
-    private void open(String fileName) throws Exception {
-        DataObject dataObj = DataObject.find(FileUtil.toFileObject(new File(getDataDir(), fileName)));
-        EditorCookie ed = dataObj.getCookie(EditorCookie.class);
-        ed.open();
-    }
-
-    private int verifyNavigator(EditorOperator eOperator) throws Exception {
-        eOperator.insert("<table border=\"1\">\n <tr> \n<td></td> \n  <td></td>\n</tr> \n"
-                + "<tr>\n<td></td>\n<td></td>\n</tr>\n</table>\n", 16, 1);
+    private void verifyNavigator(EditorOperator eOperator) throws Exception {
+        eOperator.replace("</body>", "<table border=\"1\">\n <tr> \n<td></td> \n  <td></td>\n</tr> \n"
+                + "<tr>\n<td></td>\n<td></td>\n</tr>\n</table>\n</body>");
         eOperator.save();
         //refresh navigator
-        Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
-        new Node(rootNode, "Web Pages|index").performPopupAction("Open");
+        Node webPages = new WebPagesNode(PROJECT_NAME);
+        new Node(webPages, "index").performPopupAction("Open");
         new EditorOperator("index").closeDiscard();
         //wait for editor update
         new EventTool().waitNoEvent(300);
@@ -686,9 +665,8 @@ public class WebProjectValidation extends J2eeTestCase {
         treeOperator.clickOnPath(path, 2);
         // wait for editor update
         new EventTool().waitNoEvent(300);
-        int finalCaretPossition = eOperator.txtEditorPane().getCaretPosition();
-        assertFalse("move in document", finalCaretPossition == startCaretPos);
-        return finalCaretPossition;
+        assertFalse("No caret move in document.", eOperator.txtEditorPane().getCaretPosition() == startCaretPos);
+        assertTrue("Caret not moved to opening table tag.", eOperator.getText(eOperator.getLineNumber()).contains("table border="));
     }
 
     public void testRunHTML() {
