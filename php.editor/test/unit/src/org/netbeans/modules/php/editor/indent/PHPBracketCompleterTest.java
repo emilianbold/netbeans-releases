@@ -112,14 +112,14 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
 
     @Override
     public void insertBreak(String original, String expected) throws Exception {
-        super.insertBreak(wrapAsPhp(original), wrapAsPhp(expected));
+        insertBreak(original, expected, new HashMap<String, Object>(FmtOptions.getDefaults()));
     }
 
     public void insertBreak(String original, String expected, Map<String, Object> options) throws Exception {
         JEditorPane ta = getPane(original);
         Document doc = ta.getDocument();
         setOptionsForDocument(doc, options);
-        insertBreak(original, expected);
+        super.insertBreak(wrapAsPhp(original), wrapAsPhp(expected));
     }
 
     private void setOptionsForDocument(Document doc, Map<String, Object> options) throws Exception {
@@ -1325,6 +1325,18 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
     public void testStringConcatination_23() throws Exception {
         String original = "$checks[] = new G_Check(\"PHP version\", \"a\"^);";
         String expected = "$checks[] = new G_Check(\"PHP version\", \"a\"\n        ^);";
+        insertBreak(original, expected);
+    }
+
+    public void testIssue228860_01() throws Exception {
+        String original = "echo <<<EOT\n<div>^</div>\nEOT;\n";
+        String expected = "echo <<<EOT\n<div>\n    ^</div>\nEOT;\n";
+        insertBreak(original, expected);
+    }
+
+    public void testIssue228860_02() throws Exception {
+        String original = "echo <<<EOT\n<div></div>\nEOT;\n\n$foo = \"ba^r\";";
+        String expected = "echo <<<EOT\n<div></div>\nEOT;\n\n$foo = \"ba\"\n        . \"^r\";";
         insertBreak(original, expected);
     }
 
