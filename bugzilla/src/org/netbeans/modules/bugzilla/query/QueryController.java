@@ -53,7 +53,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -75,7 +74,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
@@ -83,7 +81,6 @@ import org.netbeans.modules.bugtracking.util.*;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
-import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
@@ -772,11 +769,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             public void run() {
                 Collection<BugzillaIssue> issues = query.getIssues();
                 for (BugzillaIssue issue : issues) {
-                    try {
-                        ((BugzillaIssue) issue).setSeen(true);
-                    } catch (IOException ex) {
-                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
-                    }
+                    ((BugzillaIssue) issue).setUpToDate(true);
                 }
             }
         });
@@ -1096,7 +1089,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         }
 
         @Override
-        public void notifyData(final BugzillaIssue issue) {
+        public void notifyDataAdded (final BugzillaIssue issue) {
             issueTable.addNode(issue.getNode());
             if(!query.contains(issue.getID())) {
                 // XXX this is quite ugly - the query notifies an archoived issue
@@ -1112,6 +1105,11 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                     }
                 });
             }
+        }
+
+        @Override
+        public void notifyDataRemoved (final BugzillaIssue issue) {
+            // issue table cannot remove data
         }
 
         @Override

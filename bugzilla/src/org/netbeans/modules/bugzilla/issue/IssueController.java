@@ -85,7 +85,6 @@ public class IssueController extends BugtrackingController {
         BugzillaIssue issue = issuePanel.getIssue();
         if (issue != null) {
             issuePanel.opened();
-            issue.opened();
         }
     }
 
@@ -93,7 +92,6 @@ public class IssueController extends BugtrackingController {
     public void closed() {
         BugzillaIssue issue = issuePanel.getIssue();
         if (issue != null) {
-            issue.closed();
             issuePanel.closed();
         }
     }
@@ -114,6 +112,10 @@ public class IssueController extends BugtrackingController {
 
     void refreshViewData(boolean force) {
         issuePanel.reloadFormInAWT(force);
+    }
+
+    void modelStateChanged (boolean modelDirty, boolean modelHasLocalChanges) {
+        issuePanel.modelStateChanged(modelDirty, modelHasLocalChanges);
     }
 
 }

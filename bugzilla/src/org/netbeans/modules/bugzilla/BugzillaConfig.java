@@ -55,9 +55,12 @@ import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.util.FileUtils;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.modules.Places;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
@@ -127,6 +130,14 @@ public class BugzillaConfig {
 
     public void removeQuery(BugzillaRepository repository, BugzillaQuery query) {
         getPreferences().remove(getQueryKey(repository.getID(), query.getDisplayName()));
+        try {
+            IRepositoryQuery iquery = MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), query.getDisplayName());
+            if (iquery != null) {
+                MylynSupport.getInstance().deleteQuery(iquery);
+            }
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+        }
     }
 
     public BugzillaQuery getQuery(BugzillaRepository repository, String queryName) {
@@ -134,12 +145,18 @@ public class BugzillaConfig {
         if(value == null) {
             return null;
         }
+        IRepositoryQuery query = null;
+        try {
+            query = MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), queryName);
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+        }
         String[] values = value.split(DELIMITER);
         assert values.length >= 2;
         String urlParams = values[0];
 //      skip  long lastRefresh = Long.parseLong(values[1]); // skip
         boolean urlDef = values.length > 2 ? Boolean.parseBoolean(values[2]) : false;
-        return new BugzillaQuery(queryName, repository, urlParams, true, urlDef, true);
+        return new BugzillaQuery(queryName, query, repository, urlParams, true, urlDef, true);
     }
 
     public String getUrlParams(BugzillaRepository repository, String queryName) {

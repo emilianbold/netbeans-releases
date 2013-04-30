@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,56 +37,68 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.mylyn.util;
 
-package org.netbeans.modules.bugzilla;
-
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import org.netbeans.modules.bugtracking.cache.IssueCache.Status;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
-import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugzilla.query.QueryNotifyListener;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeTasksJob;
+import org.eclipse.mylyn.tasks.core.ITask;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
 
 /**
  *
- * @author tomas
+ * @author Ondrej Vrabec
  */
-public class TestQueryNotifyListener implements QueryNotifyListener {
-    public boolean started = false;
-    public boolean finished = false;
-    public List<BugzillaIssue> issues = new ArrayList<BugzillaIssue>();
-    private BugzillaQuery q;
-    public TestQueryNotifyListener(BugzillaQuery q) {
-        this.q = q;
-        q.addNotifyListener(this);
+public class SynchronizeTasksCommand extends BugtrackingCommand {
+    private final SynchronizeTasksJob job;
+    private String stringValue;
+    private final TaskRepository taskRepository;
+    private final Set<ITask> tasks;
+    private final CancelableProgressMonitor monitor;
+
+    SynchronizeTasksCommand (SynchronizeTasksJob job, TaskRepository taskRepository, Set<ITask> tasks) {
+        this.taskRepository = taskRepository;
+        this.tasks = tasks;
+        this.job = job;
+        this.monitor = new CancelableProgressMonitor();
     }
-    public void started() {
-        started = true;
-    }
-    public void notifyDataAdded (BugzillaIssue issue) {
-        issues.add(issue);
-    }
-    public void notifyDataRemoved (BugzillaIssue issue) {
-        issues.remove(issue);
-    }
-    public void finished() {
-        finished = true;
-    }
-    public void reset() {
-        started = false;
-        finished = false;
-        issues = new ArrayList<BugzillaIssue>();
-    }
-    public List<BugzillaIssue> getIssues(EnumSet<Status> includeStatus) {
-        List<BugzillaIssue> ret = new ArrayList<BugzillaIssue>();
-        for (BugzillaIssue issue : issues) {
-            if (q == null || includeStatus.contains(q.getIssueStatus(issue.getID()))) {
-                ret.add(issue);
-            }
+
+    @Override
+    public void execute () throws CoreException, IOException, MalformedURLException {
+        Logger log = Logger.getLogger(this.getClass().getName());
+        if(log.isLoggable(Level.FINE)) {
+            log.log(
+                Level.FINE, 
+                "executing SynchronizeTasksCommand for tasks {0}:{1}", //NOI18N
+                new Object[] { taskRepository.getUrl(), tasks });
         }
-        return ret;
+        
+        job.run(monitor);
     }
+
+    @Override
+    public void cancel () {
+        monitor.setCanceled(true);
+    }
+    
+    @Override
+    public String toString () {
+        if(stringValue == null) {
+            StringBuilder sb = new StringBuilder()
+            .append("Synchronizing tasks ") //NOI18N
+            .append(tasks)
+            .append(",repository=") //NOI18N
+            .append(taskRepository.getUrl())
+            .append("]"); //NOI18N
+            stringValue = sb.toString();
+        }
+        return stringValue;
+    }
+    
 }
