@@ -41,7 +41,6 @@ package org.netbeans.test.web;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -86,9 +85,6 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.MockServices;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 /**
  * Test web project Java EE 7. It is a base class for other sub classes.
