@@ -1003,7 +1003,11 @@ public final class SVGFileModel {
         } else {
             endOff = elem.getEndOffset() - 1;
         }
-
+        
+        if (attributes == null) {
+            // bug #211185
+            return;
+        }
         assert attributes.length % 2 == 0;
         BaseDocument doc = getDoc();
 
