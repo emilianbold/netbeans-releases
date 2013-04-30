@@ -190,9 +190,9 @@ public class NodeTest extends JellyTestCase {
 
     /** Test performMenuAction */
     public void testPerformMenuAction() {
-        // Window|Properties
+        // Window|IDE Tools|Properties
         String propertiesPath = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
-                + "|"
+                + "|IDE Tools|"
                 + Bundle.getStringTrimmed("org.openide.actions.Bundle", "Properties");
         sampleClass1Node.performMenuAction(propertiesPath);
         JavaNodeUtils.closeProperties("SampleClass1.java"); // NOI18N
