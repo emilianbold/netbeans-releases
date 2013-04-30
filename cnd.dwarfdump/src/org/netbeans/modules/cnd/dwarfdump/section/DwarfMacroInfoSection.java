@@ -215,7 +215,7 @@ public class DwarfMacroInfoSection extends ElfSection {
                     }
                     long savePosition = reader.getFilePointer();
                     if (indirect.contains(savePosition)) {
-                        System.err.println("infinite indirection in macro section of "+reader.getFileName());
+                        System.err.println("infinite indirection in macro section of "+reader.getFileName()); // NOI18N
                     } else {
                         indirect.push(savePosition);
                         reader.seek(header.getSectionOffset() + offset + index + headerSize);
