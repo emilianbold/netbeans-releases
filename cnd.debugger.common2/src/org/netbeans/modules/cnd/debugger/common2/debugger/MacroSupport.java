@@ -95,6 +95,8 @@ public class MacroSupport {
             }
         } catch(NumberFormatException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (IndexOutOfBoundsException ex) {
+            return doc.getLength();
         }
         return -1;
     }
