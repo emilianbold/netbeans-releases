@@ -627,16 +627,25 @@ public final class ELTypeUtilities {
     public static boolean isIterableElement(CompilationContext ccontext, Element element) {
         if (element.getKind() == ElementKind.METHOD) {
             TypeMirror returnType = ELTypeUtilities.getReturnType(ccontext, (ExecutableElement) element);
-            TypeElement iterableElement = ccontext.info().getElements().getTypeElement("java.lang.Iterable"); //NOI18N
             if (returnType.getKind() == TypeKind.ARRAY
-                    || ccontext.info().getTypeUtilities().isCastable(returnType, iterableElement.asType())) {
+                    || isSubtypeOf(ccontext, returnType, "java.lang.Iterable")) { //NOI18N
                 return true;
             }
         } else if (element.getKind() == ElementKind.INTERFACE) {
-            TypeElement iterableElement = ccontext.info().getElements().getTypeElement("java.lang.Iterable"); //NOI18N
-            return ccontext.info().getTypeUtilities().isCastable(element.asType(), iterableElement.asType());
+            return isSubtypeOf(ccontext, element.asType(), "java.lang.Iterable"); //NOI18N
         }
         return false;
+    }
+
+    /**
+     * Whether the given node represents Map field.
+     * @param ccontext compilation context
+     * @param element element to examine
+     * @return {@code true} if the element extends {@link Map} interface, {@code false} otherwise
+     * @since 1.28
+     */
+    public static boolean isMapElement(CompilationContext ccontext, Element element) {
+        return isSubtypeOf(ccontext, element.asType(), "java.util.Map"); //NOI18N
     }
 
     private static boolean isSubtypeOf(CompilationContext info, TypeMirror tm, CharSequence typeName) {
@@ -711,6 +720,12 @@ public final class ELTypeUtilities {
                                     }
                                     // it's a managed bean in a scope
                                     propertyType = getTypeFor(info, clazz);
+                                }
+
+                                // maps
+                                if (ELTypeUtilities.isMapElement(info, enclosing)) {
+                                    result = info.info().getElements().getTypeElement("java.lang.Object"); //NOI18N
+                                    return;
                                 }
 
                                 // stream method

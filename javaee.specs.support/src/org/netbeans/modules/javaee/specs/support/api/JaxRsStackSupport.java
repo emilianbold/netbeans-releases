@@ -42,7 +42,9 @@
  */
 package org.netbeans.modules.javaee.specs.support.api;
 
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -65,22 +67,30 @@ public final class JaxRsStackSupport {
         this.impl = impl;
     }
     
-    
-    @NonNull
-    public static JaxRsStackSupport getInstance(@NonNull J2eePlatform platform){
+
+    @CheckForNull
+    private static JaxRsStackSupport getInstance(@NonNull J2eePlatform platform){
         Parameters.notNull("platform", platform);
         JaxRsStackSupportImplementation support = platform.getLookup().lookup(
                 JaxRsStackSupportImplementation.class);
         if ( support == null ){
-            return getDefault();
+            return null;
         }
         return new JaxRsStackSupport( support );
     }
-    
-    public static JaxRsStackSupport getInstance( @NonNull Project project){
+
+
+    /**
+     * Returns JaxRsStackSupport based on project's application server. It is
+     * possible that server does not have any JaxRsStackSupport implementation
+     * in which case this method returns null and API client can fallback on default
+     * JaxRsStackSupport provided by method {@link #getDefault()}
+     */
+    @CheckForNull
+    public static JaxRsStackSupport getInstance(@NonNull Project project) {
         J2eeModuleProvider moduleProvider = project.getLookup().lookup(
                 J2eeModuleProvider.class);
-        if ( moduleProvider != null ){
+        if (moduleProvider != null) {
             try {
                 String id = moduleProvider.getServerInstanceID();
                 if ( id == null ){
@@ -88,18 +98,20 @@ public final class JaxRsStackSupport {
                 }
                 J2eePlatform j2eePlatform = Deployment.getDefault().
                     getServerInstance(id).getJ2eePlatform();
-                return JaxRsStackSupport.getInstance(j2eePlatform);
+                JaxRsStackSupportImplementation support = j2eePlatform.getLookup().lookup(
+                        JaxRsStackSupportImplementation.class);
+                if ( support != null ){
+                    return new JaxRsStackSupport( support );
+                }
             } catch (InstanceRemovedException ex) {
-                return null;
+                // ignore
             }
         }
-        else{
-            return null;
-        }
+        return null;
     }
     
     public static JaxRsStackSupport getDefault(){
-        return new JaxRsStackSupport( new IdeJaxRsSupportImpl());
+        return new JaxRsStackSupport(new IdeJaxRsSupportImpl());
     }
     
     /**

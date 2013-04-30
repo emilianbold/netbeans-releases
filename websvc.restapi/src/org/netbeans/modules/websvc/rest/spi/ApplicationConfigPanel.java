@@ -73,22 +73,22 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
         if (!annotationConfigAvailable) {
             jRadioButton1.setVisible(false);
         }
-        if ( WebRestSupport.JERSEY_CONFIG_SERVER.equals( jerseyConfig )){
+        if ( RestSupport.JERSEY_CONFIG_SERVER.equals( jerseyConfig )){
             jComboBox1.setSelectedIndex(0 );
         }
-        else if (WebRestSupport.JERSEY_CONFIG_IDE.equals( jerseyConfig )){
+        else if (RestSupport.JERSEY_CONFIG_IDE.equals( jerseyConfig )){
             jComboBox1.setSelectedIndex(1 );
         }
         if (!isJerseyLib) {
             jCheckBox1.setSelected(false);
         }
-        if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
+        if (RestSupport.CONFIG_TYPE_IDE.equals(configType)) {
             if (annotationConfigAvailable) jRadioButton1.setSelected(true);
             else jRadioButton3.setSelected(true);
             if (!isJerseyLib) {
                 jCheckBox1.setSelected(false);
             }
-        } else if (WebRestSupport.CONFIG_TYPE_USER.equals(configType)) {
+        } else if (RestSupport.CONFIG_TYPE_USER.equals(configType)) {
             jRadioButton2.setSelected(true);
             jTextField1.setEnabled(false);
         } else {
@@ -183,9 +183,9 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
     }
 
     public String getConfigType() {
-        if (jRadioButton1.isSelected()) return WebRestSupport.CONFIG_TYPE_IDE;
-        else if (jRadioButton2.isSelected()) return WebRestSupport.CONFIG_TYPE_USER;
-        else return WebRestSupport.CONFIG_TYPE_DD;
+        if (jRadioButton1.isSelected()) return RestSupport.CONFIG_TYPE_IDE;
+        else if (jRadioButton2.isSelected()) return RestSupport.CONFIG_TYPE_USER;
+        else return RestSupport.CONFIG_TYPE_DD;
     }
 
     public boolean isJerseyLibSelected() {

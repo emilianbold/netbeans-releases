@@ -20,7 +20,6 @@ METHOD     noneMatch(LambdaExpression pre  [PUBLIC]   boolean
 METHOD     peek(LambdaExpression comsumer  [PUBLIC]   Stream
 METHOD     reduce(Object base,LambdaExpre  [PUBLIC]   Object
 METHOD     sorted()                        [PUBLIC]   Stream
-METHOD     stream()                        [PUBLIC]   Stream
 METHOD     substream(long startIndex)      [PUBLIC]   Stream
 METHOD     sum()                           [PUBLIC]   Object
 METHOD     toArray()                       [PUBLIC]   Object[]

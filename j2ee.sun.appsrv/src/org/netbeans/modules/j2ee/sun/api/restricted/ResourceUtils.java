@@ -100,6 +100,8 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JMSBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JavaMailSessionBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.PersistenceManagerBean;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.DatabaseUtils;
+import static org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants.__ConnPoolSuffixJMS;
+import static org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants.__JndiName;
 import org.xml.sax.SAXException;
 
 /*
@@ -711,10 +713,10 @@ public class ResourceUtils implements WizardConstants{
                 connresource.setDescription(jmsData.getString(__Description));
                 connresource.setEnabled(jmsData.getString(__Enabled));
                 connresource.setJndiName(jmsData.getString(__JndiName));
-                connresource.setPoolName(jmsData.getString(__JndiName));
+                connresource.setPoolName(jmsData.getString(__JndiName) + __ConnPoolSuffixJMS);
 
                 ConnectorConnectionPool connpoolresource = res.newConnectorConnectionPool();
-                connpoolresource.setName(jmsData.getString(__JndiName));
+                connpoolresource.setName(jmsData.getString(__JndiName) + __ConnPoolSuffixJMS);
                 connpoolresource.setConnectionDefinitionName(jmsData.getString(__ResType));
                 connpoolresource.setResourceAdapterName(__JmsResAdapter);
 

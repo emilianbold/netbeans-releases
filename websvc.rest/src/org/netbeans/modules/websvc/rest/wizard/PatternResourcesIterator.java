@@ -60,7 +60,7 @@ import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.rest.codegen.GenericResourceGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.Pattern;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -101,20 +101,17 @@ public class PatternResourcesIterator implements WizardDescriptor.ProgressInstan
             pHandle.progress(NbBundle.getMessage(PatternResourcesIterator.class,
                     "MSG_EnableRestSupport"));                  // NOI18N     
             
-            if( restSupport instanceof WebRestSupport) {
-                Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
-                if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
-                    ((WebRestSupport)restSupport).enableRestSupport( WebRestSupport.RestConfig.DD);
-                }
-                else {
-                    restAppPackage = (String) wizard
-                            .getProperty(WizardProperties.APPLICATION_PACKAGE);
-                    restAppClass = (String) wizard
-                            .getProperty(WizardProperties.APPLICATION_CLASS);
-                    if (restAppPackage != null && restAppClass != null) {
-                        ((WebRestSupport) restSupport)
-                                .enableRestSupport(WebRestSupport.RestConfig.IDE);
-                    }
+            Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
+            if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
+                restSupport.enableRestSupport( RestSupport.RestConfig.DD);
+            }
+            else {
+                restAppPackage = (String) wizard
+                        .getProperty(WizardProperties.APPLICATION_PACKAGE);
+                restAppClass = (String) wizard
+                        .getProperty(WizardProperties.APPLICATION_CLASS);
+                if (restAppPackage != null && restAppClass != null) {
+                    restSupport.enableRestSupport(RestSupport.RestConfig.IDE);
                 }
             }
             if ( restSupport!= null ){
