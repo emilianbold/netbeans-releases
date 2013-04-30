@@ -48,7 +48,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
  * 
  * HtmlLexer extension - allows to inject custom expression languages into html content.
  * 
- * To be registered in global lookup.
+ * To be registered in mime lookup.
  *
  * @author marekfukala
  */
