@@ -37,7 +37,7 @@ Integer getId ()
 <%-- completion for String object inside scriptlets --%>
 <%--CC
 <% "Hello World !".| %>
-int hashCode ()
+int hashCode ();
 <% "Hello World !".hashCode(); %>
 --%>
 
