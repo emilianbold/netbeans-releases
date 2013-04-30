@@ -51,10 +51,6 @@ import java.lang.reflect.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.FactoryConfigurationError;
-import javax.xml.parsers.ParserConfigurationException;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -81,6 +77,7 @@ import org.openide.util.Lookup;
 import org.openide.util.TopologicalSortException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
+import org.xml.sax.InputSource;
 
 /**
  * XML persistence manager - responsible for saving/loading forms to/from XML.
@@ -250,25 +247,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
         ErrorManager.getDefault().annotate(t,target);
     }
 
-    private DocumentBuilder getDocumentBuilder() throws PersistenceException {
-        // We don't use XMLUtil.parse() because there is a bug
-        // in the default JDK 6 DOM parser, see issue 181955
-        DocumentBuilderFactory factory;
-        try {
-            // We prefer Xerces parser because of issue 181955
-            ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
-            factory = DocumentBuilderFactory.newInstance("org.apache.xerces.jaxp.DocumentBuilderFactoryImpl", classLoader); // NOI18N
-        } catch (FactoryConfigurationError fce) {
-            factory = DocumentBuilderFactory.newInstance();
-        }
-        try {
-            return factory.newDocumentBuilder();
-        } catch (ParserConfigurationException pcex) {
-            PersistenceException pe = new PersistenceException(pcex, FormUtils.getBundleString("MSG_ERR_XMLParser")); // NOI18N
-            throw pe;
-        }
-    }
-    
     /** This method is used to check if the persistence manager can read the
      * given form (if it understands the form file format).
      * @return true if this persistence manager can load the form
@@ -281,8 +259,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         FileObject formFile = formObject.getFormEntry().getFile();
         org.w3c.dom.Element mainElement;
         try {
-            DocumentBuilder builder = getDocumentBuilder();
-            Document document = builder.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
+            Document document = XMLUtil.parse(
+                new InputSource(formFile.getURL().toExternalForm()),
+                false, false, null, null);
             mainElement = document.getDocumentElement();
         }
         catch (IOException ex) {
@@ -340,8 +319,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
         org.w3c.dom.Element mainElement;
         try { // parse document, get the main element
-            DocumentBuilder builder = getDocumentBuilder();
-            Document document = builder.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
+            Document document = XMLUtil.parse(
+                new InputSource(formFile.getURL().toExternalForm()),
+                false, false, null, null);
             mainElement = document.getDocumentElement();
         }
         catch (IOException ex) {
