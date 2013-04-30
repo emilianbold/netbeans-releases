@@ -97,7 +97,7 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
 
     @Override
     public boolean accept() {
-        if (getElementHandle() != null) {
+        if (delegate == null && getElementHandle() != null) {
             try {
                 JavaCompletionProvider.JavaCompletionQuery.javadocBreak.set(true);
                 ParserManager.parse(Collections.singletonList(source), new UserTask() {
