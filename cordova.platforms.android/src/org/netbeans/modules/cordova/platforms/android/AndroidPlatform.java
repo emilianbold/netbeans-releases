@@ -142,7 +142,7 @@ public class AndroidPlatform implements MobilePlatform {
     @Override
     public Collection<SDK> getSDKs() throws IOException {
         //assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getAndroidCommand(), true, 5000, "list", "targets");//NOI18N
+        String avdString = ProcessUtils.callProcess(getAndroidCommand(), true, 30000, "list", "target");//NOI18N
         return Target.parse(avdString);
     }
     
