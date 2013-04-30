@@ -69,7 +69,6 @@ public class HtmlPlugins {
     
     private HtmlPlugins() {
         Lookup lookup = MimeLookup.getLookup("text/html");
-//        Lookup lookup = Lookup.getDefault();
         lookupResult = lookup.lookupResult(HtmlLexerPlugin.class);
         lookupResult.addLookupListener(new LookupListener() {
 
