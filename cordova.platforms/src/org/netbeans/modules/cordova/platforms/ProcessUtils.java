@@ -59,7 +59,7 @@ public class ProcessUtils {
     
     private static RequestProcessor KILLER = new RequestProcessor(ProcessUtils.class);
 
-    public static String callProcess(String executable, boolean wait, int timeout, String... parameters) throws IOException {
+    public static String callProcess(final String executable, boolean wait, int timeout, String... parameters) throws IOException {
         ProcessBuilder pb = ProcessBuilder.getLocal();
         pb.setExecutable(executable);
         pb.setArguments(Arrays.asList(parameters));
@@ -72,6 +72,7 @@ public class ProcessUtils {
                         call.exitValue();
                     } catch (IllegalThreadStateException e) {
                         call.destroy();
+                        LOGGER.severe("process " + executable + " killed.");
                     }
                 }
             }, timeout);
@@ -91,7 +92,9 @@ public class ProcessUtils {
             inputStreamReader.read(ch);
             error.append(ch);
         }
-        LOGGER.warning(error.toString());
+        if (!error.toString().trim().isEmpty()) {
+            LOGGER.warning(error.toString());
+        }
         inputStreamReader = new InputStreamReader(call.getInputStream());
         StringBuilder avdString = new StringBuilder();
         while (inputStreamReader.ready()) {
@@ -99,6 +102,9 @@ public class ProcessUtils {
             avdString.append(ch);
         }
         inputStreamReader.close();
+        if (avdString.toString().isEmpty()) {
+            LOGGER.severe("No output when executing " + executable);
+        }
         return avdString.toString();
     }
     
