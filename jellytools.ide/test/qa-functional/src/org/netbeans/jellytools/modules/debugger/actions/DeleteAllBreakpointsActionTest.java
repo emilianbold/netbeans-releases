@@ -68,7 +68,7 @@ public class DeleteAllBreakpointsActionTest extends JellyTestCase {
     /** Test performMenu() method. */
     public void testPerformPopup() {
         BreakpointsWindowOperator window = BreakpointsWindowOperator.invoke();
-        new EventTool().waitEvent(1000);
+        new EventTool().waitNoEvent(1000);
         assertFalse("Delete All not disabled.", new DeleteAllBreakpointsAction().isEnabled(window));
         window.close();
     }
