@@ -1328,6 +1328,18 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         insertBreak(original, expected);
     }
 
+    public void testIssue228860_01() throws Exception {
+        String original = "echo <<<EOT\n<div>^</div>\nEOT;\n";
+        String expected = "echo <<<EOT\n<div>\n    ^</div>\nEOT;\n";
+        insertBreak(original, expected);
+    }
+
+    public void testIssue228860_02() throws Exception {
+        String original = "echo <<<EOT\n<div></div>\nEOT;\n\n$foo = \"ba^r\";";
+        String expected = "echo <<<EOT\n<div></div>\nEOT;\n\n$foo = \"ba\"\n        . \"^r\";";
+        insertBreak(original, expected);
+    }
+
     public void testIssue227105() throws Exception {
         String original = "switch(true)\n" +
                 "{\n" +
