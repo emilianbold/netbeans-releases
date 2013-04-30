@@ -1703,6 +1703,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 int idx = toAddText.indexOf(')');
                 if (idx > 0) {
                     if (!params.isEmpty() || text.length() == length) {
+                        sb.append(text);
                         if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen()) {
                             sb.append(' '); //NOI18N
                         }
@@ -1735,7 +1736,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (sb.length() == 0) {
                 return super.substituteText(c, offset, length, text, toAdd);
             }
-            super.substituteText(c, offset, length, text, null);
+            super.substituteText(c, offset, length, null, null);
             if (autoImportEnclosingType) {
                 final AtomicBoolean cancel = new AtomicBoolean();
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {
@@ -3460,7 +3461,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
-            final BaseDocument doc = (BaseDocument)c.getDocument();
             StringBuilder sb = new StringBuilder();
             boolean asTemplate = false;
             for (Iterator<MemberDesc> membersIt = members.iterator(); membersIt.hasNext();) {
