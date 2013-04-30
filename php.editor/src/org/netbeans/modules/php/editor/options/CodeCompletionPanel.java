@@ -206,8 +206,8 @@ public class CodeCompletionPanel extends JPanel {
         boolean codeCompletionStringAutoConcatination = preferences.getBoolean(
                 PHP_AUTO_STRING_CONCATINATION,
                 PHP_AUTO_STRING_CONCATINATION_DEFAULT);
-        autoStringConcatinationCheckBox.setSelected(codeCompletionStringAutoConcatination);
-        autoStringConcatinationCheckBox.addItemListener(defaultCheckBoxListener);
+        autoStringConcatenationCheckBox.setSelected(codeCompletionStringAutoConcatination);
+        autoStringConcatenationCheckBox.addItemListener(defaultCheckBoxListener);
     }
 
     private void initCodeCompletionForMethods() {
@@ -276,7 +276,7 @@ public class CodeCompletionPanel extends JPanel {
         preferences.putBoolean(PHP_CODE_COMPLETION_NON_STATIC_METHODS, codeCompletionNonStaticMethodsCheckBox.isSelected());
         preferences.putBoolean(PHP_CODE_COMPLETION_SMART_PARAMETERS_PRE_FILLING, codeCompletionSmartParametersPreFillingCheckBox.isSelected());
         preferences.putBoolean(PHP_AUTO_COMPLETION_SMART_QUOTES, autoCompletionSmartQuotesCheckBox.isSelected());
-        preferences.putBoolean(PHP_AUTO_STRING_CONCATINATION, autoStringConcatinationCheckBox.isSelected());
+        preferences.putBoolean(PHP_AUTO_STRING_CONCATINATION, autoStringConcatenationCheckBox.isSelected());
 
         VariablesScope variablesScope = null;
         if (allVariablesRadioButton.isSelected()) {
@@ -339,7 +339,7 @@ public class CodeCompletionPanel extends JPanel {
         codeCompletionSmartParametersPreFillingCheckBox = new JCheckBox();
         autoCompletionSmartQuotesLabel = new JLabel();
         autoCompletionSmartQuotesCheckBox = new JCheckBox();
-        autoStringConcatinationCheckBox = new JCheckBox();
+        autoStringConcatenationCheckBox = new JCheckBox();
 
         enableAutocompletionLabel.setLabelFor(autoCompletionFullRadioButton);
         Mnemonics.setLocalizedText(enableAutocompletionLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.enableAutocompletionLabel.text")); // NOI18N
@@ -402,7 +402,7 @@ public class CodeCompletionPanel extends JPanel {
 
         Mnemonics.setLocalizedText(autoCompletionSmartQuotesCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionSmartQuotesCheckBox.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(autoStringConcatinationCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoStringConcatinationCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(autoStringConcatenationCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoStringConcatenationCheckBox.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -431,7 +431,7 @@ public class CodeCompletionPanel extends JPanel {
                                     .addComponent(autoCompletionNamespacesCheckBox)))
                             .addComponent(autoCompletionSmartQuotesLabel)
                             .addComponent(autoCompletionSmartQuotesCheckBox)
-                            .addComponent(autoStringConcatinationCheckBox)))
+                            .addComponent(autoStringConcatenationCheckBox)))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
@@ -495,7 +495,7 @@ public class CodeCompletionPanel extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(autoCompletionSmartQuotesCheckBox)
                 .addPreferredGap(ComponentPlacement.UNRELATED)
-                .addComponent(autoStringConcatinationCheckBox)
+                .addComponent(autoStringConcatenationCheckBox)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -549,7 +549,7 @@ public class CodeCompletionPanel extends JPanel {
     private JLabel autoCompletionSmartQuotesLabel;
     private JCheckBox autoCompletionTypesCheckBox;
     private JCheckBox autoCompletionVariablesCheckBox;
-    private JCheckBox autoStringConcatinationCheckBox;
+    private JCheckBox autoStringConcatenationCheckBox;
     private JCheckBox codeCompletionNonStaticMethodsCheckBox;
     private JCheckBox codeCompletionSmartParametersPreFillingCheckBox;
     private JCheckBox codeCompletionStaticMethodsCheckBox;
