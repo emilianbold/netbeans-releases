@@ -592,7 +592,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         private boolean checkIsAllowed() {
             for (ElementHandle<? extends Element> handle : handles) {
-                if (handle != null && whiteList.check(handle, WhiteListQuery.Operation.USAGE).isAllowed())
+                if (handle != null && !whiteList.check(handle, WhiteListQuery.Operation.USAGE).isAllowed())
                     return false;                
             }
             return true;
