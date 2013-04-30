@@ -48,6 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -76,10 +78,12 @@ import org.openide.util.Exceptions;
 public class RecoveryTestCaseBase extends ProjectBasedTestCase {
 
     private static String goldenModel;
+    private static String goldenAST;
     private final boolean isGolden;
     private boolean isNew = false;
     private final Diff annotation;
     private final Grammar grammar;
+    private static final boolean EVALUATE_CLANG = false;
 
     public RecoveryTestCaseBase(String testName, Grammar gramma, Diff diff, Golden golden) {
         super(testName, true);
@@ -159,15 +163,32 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
                 target = file;
             }
         }
+        ProcessUtils.ExitStatus execute = null;
+        if (EVALUATE_CLANG) {
+            final File dataFile = getDataFile(source);
+            ProcessBuilder builder = new ProcessBuilder("/export/home/as204739/parfait-tools-1.0.1/bin/clang", "-cc1", "-ast-dump", dataFile.getAbsolutePath());
+            execute = ProcessUtils.execute(builder);
+            //System.err.println(execute.output);
+        }
+
         assertNotNull(target);
         StringWriter w = new StringWriter();
         printTree(target, w, 0);
         if (isGolden) {
             goldenModel = w.toString();
             System.err.println("Inited golden content");
+            if (EVALUATE_CLANG) {
+                goldenAST = execute.output;
+            }
         } else {
             String diff = annotation.file() + "[" + annotation.line() + ":" + annotation.column() + "," + annotation.length() + "]" + annotation.insert();
-            assertModel(target, "Recovery " + (isNew ? "new" : "old") + " " + source + " " + diff, goldenModel, w.toString());
+            if (EVALUATE_CLANG) {
+                if (!isNew) {
+                    assertModel(target, "Recovery clang " + source + " " + diff, goldenAST, execute.output);
+                }
+            } else {
+                assertModel(target, "Recovery " + (isNew ? "new" : "old") + " " + source + " " + diff, goldenModel, w.toString());
+            }
         }
     }
 

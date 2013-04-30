@@ -1693,6 +1693,12 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/issue226282.js",new IndentPrefs(4, 4));
     }
 
+    public void testIssue228919() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceBeforeElseLeftBrace, false);
+        reformatFileContents("testfiles/formatter/issue228919.js", options);
+    }
+
     // test from original formatter
 
     public void testSemi01() throws Exception {

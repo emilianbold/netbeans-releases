@@ -185,4 +185,10 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    <folder name="Maven">
+        <file name="actionTemplate.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.maven.actions.RunCustomMavenAction.create"/>
+        </file>
+    </folder>
+    
 </filesystem>

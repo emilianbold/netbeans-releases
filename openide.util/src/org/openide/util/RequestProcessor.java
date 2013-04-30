@@ -1614,16 +1614,14 @@ outer:  do {
                 priority = Thread.MAX_PRIORITY;
             }
 
-            this.priority = priority;
 
             // update queue position accordingly
             synchronized (processorLock) {
-                if (item == null) {
-                    return;
-                }
-
-                if (getQueue().remove(item)) {
+                if (item != null && getQueue().remove(item)) {
+                    this.priority = priority;
                     prioritizedEnqueue(item);
+                } else {
+                    this.priority = priority;
                 }
             }
         }

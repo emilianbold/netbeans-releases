@@ -40,26 +40,26 @@ public class MethodNotCoupled extends TestCase {
                     throw new CoupledException();
                     
                 default:
+                    // +1 = 8
                     throw new org.w3c.dom.DOMException(0, null);
             }
-        // +1 = 8
+        // +1 = 9
         } catch (AssertionFailedError e) {
             
         }
         
-        // +1 = 9, for nextElement().select = TestFailure reference
+        // +1 = 10, for nextElement().select = TestFailure reference
         run().errors().nextElement().exceptionMessage();
         
-        // +2 = 11, for array type and the new array expr.
+        // +2 = 13, for array type and the new array expr.
         TestListener[] arr = new BaseTestRunner[1];
         
-        // +1 = 12 for this unneeded typecast
+        // +1 = 14 for this unneeded typecast
         Object o = ((ActiveTestSuite)suite);
         
-        // +1 = 13 for instanceof
+        // +1 = 15 for instanceof
         assert o instanceof RepeatedTest;
         
-        TestDecorator deco;
         
         // exactly the limit, but add something which is by default ignored:
         Assert.assertEquals(null, null);

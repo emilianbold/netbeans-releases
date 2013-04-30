@@ -51,6 +51,7 @@ import org.openide.util.Lookup;
  * 
  * @author David Strupl
  */
+@RandomlyFails // the tests fail randomly from time to time
 public class CustomMenuBarTest extends NbTestCase {
 
     public static Test suite() {

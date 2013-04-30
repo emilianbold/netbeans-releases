@@ -51,11 +51,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.*;
 import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 import static org.netbeans.modules.team.ui.Bundle.*;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.util.NbBundle.Messages;
 
 public final class Dashboard {

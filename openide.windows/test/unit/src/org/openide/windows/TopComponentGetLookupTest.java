@@ -47,12 +47,14 @@ package org.openide.windows;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.DefaultKeyboardFocusManager;
+import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -84,6 +86,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
@@ -901,7 +904,14 @@ public class TopComponentGetLookupTest extends NbTestCase {
     }
     private final static Def defaultFocusManager = new Def();
     static {
-        Utilities.actionsGlobalContext();
-        assertEquals("actionsGlobalContext calls once into our focus manager", 1, defaultFocusManager.cnt);
+        try {
+            Utilities.actionsGlobalContext();
+            EventQueue.invokeAndWait(new Runnable() {
+                @Override public void run() {}
+            });
+            assertEquals("actionsGlobalContext calls once into our focus manager", 1, defaultFocusManager.cnt);
+        } catch (InterruptedException | InvocationTargetException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 }

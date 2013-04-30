@@ -59,7 +59,7 @@ import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -123,8 +123,8 @@ abstract class BaseRestConfigurationFix implements Fix {
         return null;
     }
     
-    protected WebRestSupport getSupport(){
-        return project.getLookup().lookup(WebRestSupport.class);
+    protected RestSupport getSupport(){
+        return project.getLookup().lookup(RestSupport.class);
     }
     
     protected Project getProject(){

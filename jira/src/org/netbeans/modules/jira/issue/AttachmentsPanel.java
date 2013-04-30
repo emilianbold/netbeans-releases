@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.jira.issue;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -72,11 +71,10 @@ import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
-import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.bugtracking.util.PatchUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.jira.Jira;
 import org.openide.DialogDescriptor;
@@ -398,7 +396,7 @@ public class AttachmentsPanel extends JPanel {
                             Jira.LOG.log(Level.INFO, null, ioex);
                         }
                         if (isPatch && shouldApplyPatch(attachment.getFilename())) {
-                            File context = BugtrackingUtil.selectPatchContext();
+                            File context = PatchUtils.selectPatchContext();
                             if (context != null) {
                                 PatchUtils.applyPatch(file, context);
                             }

@@ -91,7 +91,7 @@ made subject to such option by the copyright holder.
         -->
         <!-- location of glassfish instalation -->
         
-        <property name="glassfish_location" location="/home/marfous/Programs/AppServers/glassfish-4.0-b81-custom"/>
+        <property name="glassfish_location" location="/home/marfous/Programs/AppServers/glassfish-4.0-b84-custom"/>
         <fail message="Set glassfish_location">
             <condition>
                 <not>
@@ -168,6 +168,7 @@ made subject to such option by the copyright holder.
                 <include name="web-partialresponse_2_2.xsd"/>
                 <include name="xml.xsd"/>
                 <include name="beans_1_0.xsd"/>
+                <include name="beans_1_1.xsd"/>
             </fileset>
         </copy>
         <delete file="servlet3.1-jsp2.3-api.jar"/>

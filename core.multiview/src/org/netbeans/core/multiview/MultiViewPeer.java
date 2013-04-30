@@ -71,6 +71,7 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -130,6 +131,7 @@ public final class MultiViewPeer implements PropertyChangeListener {
     private final PreferenceChangeListener editorSettingsListener = new PreferenceChangeListenerImpl();
     private final PropertyChangeListener propListener;
     private DelegateUndoRedo delegateUndoRedo;
+    private int splitOrientation = -1;
     
     MultiViewPeer(TopComponent pr, ActionRequestObserverFactory fact) {
         selListener = new SelectionListener();
@@ -152,7 +154,9 @@ public final class MultiViewPeer implements PropertyChangeListener {
         List<MultiViewDescription> arr = new ArrayList<MultiViewDescription>();
         final Lookup lkp = MimeLookup.getLookup(mimeType);
         for (ContextAwareDescription d : lkp.lookupAll(ContextAwareDescription.class)) {
-            d = d.createContextAwareDescription(context.getLookup());
+            d = d.createContextAwareDescription(context.getLookup(), false);
+            arr.add(d);
+            d = d.createContextAwareDescription(context.getLookup(), true);
             arr.add(d);
         }
         if (arr.isEmpty()) {
@@ -187,14 +191,21 @@ public final class MultiViewPeer implements PropertyChangeListener {
         closeHandler = handler;
     }
     
-    void setDeserializedMultiViewDescriptions(MultiViewDescription[] descriptions, 
-                                                      MultiViewDescription defaultDesc, Map<MultiViewDescription, MultiViewElement> existingElements) {
+    void setDeserializedMultiViewDescriptions(int splitOrientation, MultiViewDescription[] descriptions,
+       MultiViewDescription defaultDesc, MultiViewDescription defaultDescSplit, Map<MultiViewDescription, MultiViewElement> existingElements) {
         if (model != null) {
             model.removeElementSelectionListener(selListener);
         }
+	// if Design view was active before closing, set default to Source view
+	defaultDesc = defaultDesc.getDisplayName().startsWith("&Design") ? descriptions[0] : defaultDesc; //NOI18N
+	defaultDescSplit = defaultDescSplit.getDisplayName().startsWith("&Design") ? descriptions[1] : defaultDescSplit; //NOI18N
         model = new MultiViewModel(descriptions, defaultDesc, factory, existingElements);
         model.addElementSelectionListener(selListener);
-        tabs.setModel(model);
+	tabs.setModel(model);
+	this.splitOrientation = splitOrientation;
+	if(splitOrientation != -1) {
+	    tabs.peerSplitComponent(splitOrientation, this, defaultDesc, defaultDescSplit);
+	}
     }
     
     /**
@@ -257,6 +268,47 @@ public final class MultiViewPeer implements PropertyChangeListener {
                 }
             });
         }
+	if(peer instanceof MultiViewTopComponent || peer instanceof MultiViewCloneableTopComponent) {
+            delegatingMap.put("splitWindowHorizantally", new javax.swing.AbstractAction() { // NOI18N
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+		    TopComponent split;
+		    if(peer instanceof MultiViewTopComponent || peer instanceof MultiViewCloneableTopComponent) {
+			split = ((MultiViewTopComponent) peer).splitComponent(JSplitPane.HORIZONTAL_SPLIT);
+		    } else {
+			split = ((MultiViewCloneableTopComponent) peer).splitComponent(JSplitPane.HORIZONTAL_SPLIT);
+		    }
+		    split.open();
+		    split.requestActive();
+                }
+            });
+            delegatingMap.put("splitWindowVertically", new javax.swing.AbstractAction() { // NOI18N
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+		    TopComponent split;
+		    if(peer instanceof MultiViewTopComponent || peer instanceof MultiViewCloneableTopComponent) {
+			split = ((MultiViewTopComponent) peer).splitComponent(JSplitPane.VERTICAL_SPLIT);
+		    } else {
+			split = ((MultiViewCloneableTopComponent) peer).splitComponent(JSplitPane.VERTICAL_SPLIT);
+		    }
+		    split.open();
+		    split.requestActive();
+                }
+            });
+            delegatingMap.put("clearSplit", new javax.swing.AbstractAction() { // NOI18N
+		@Override
+                public void actionPerformed(ActionEvent evt) {
+		    TopComponent original;
+		    if(peer instanceof MultiViewTopComponent || peer instanceof MultiViewCloneableTopComponent) {
+			original = ((MultiViewTopComponent) peer).clearSplit();
+		    } else {
+			original = ((MultiViewCloneableTopComponent) peer).clearSplit();
+		    }
+		    original.open();
+		    original.requestActive();
+                }
+            });
+        }
         delegatingMap.put("closeWindow", new javax.swing.AbstractAction() { // NOI18N
            public void actionPerformed(ActionEvent evt) {
                peer.close();
@@ -283,7 +335,7 @@ public final class MultiViewPeer implements PropertyChangeListener {
         JComponent jc = el.getToolbarRepresentation();
         assert jc != null : "MultiViewElement " + el.getClass() + " returns null as toolbar component."; //NOI18N
         jc.setOpaque(false);
-        tabs.setInnerToolBar(jc);
+        tabs.setInnerToolBar(jc, ((ContextAwareDescription)model.getActiveDescription()).isSplitDescription());
         tabs.setToolbarBarVisible(isToolbarVisible());
         if (editorSettingsPreferences != null) {
             editorSettingsPreferences.addPreferenceChangeListener(editorSettingsListener);
@@ -315,6 +367,22 @@ public final class MultiViewPeer implements PropertyChangeListener {
         showCurrentElement(true);
         tabs.setToolbarBarVisible(isToolbarVisible());
     }
+
+    void peerSplitComponent(int orientation) {
+	splitOrientation = orientation;
+	tabs.peerSplitComponent(orientation, this, null, null);
+    }
+
+    void peerClearSplit() {
+	tabs.peerClearSplit();
+	showCurrentElement();
+	model.fireActivateCurrent();
+	splitOrientation = -1;
+    }
+
+    int getSplitOrientation() {
+	return splitOrientation;
+    }
     
     boolean requestFocusInWindow() {
         // somehow this may be called when model is null
@@ -335,6 +403,17 @@ public final class MultiViewPeer implements PropertyChangeListener {
      * hides the old element when switching elements.
      */
     void hideElement(MultiViewDescription desc) {
+	if (desc != null && splitOrientation != -1) {
+	    MultiViewDescription topDesc = tabs.getTopComponentDescription();
+	    MultiViewDescription bottomDesc = tabs.getBottomComponentDescription();
+	    if (tabs.isHiddenTriggeredByMultiViewButton()
+		    && (!topDesc.getDisplayName().equals(desc.getDisplayName())
+		    || !bottomDesc.getDisplayName().equals(desc.getDisplayName()))) {
+		MultiViewElement el = model.getElementForDescription(desc);
+		el.componentHidden();
+	    }
+	    return;
+	}
         if (desc != null) {
             MultiViewElement el = model.getElementForDescription(desc);
             el.componentHidden();
@@ -354,11 +433,15 @@ public final class MultiViewPeer implements PropertyChangeListener {
         MultiViewElement el = model.getActiveElement();
         MultiViewDescription desc = model.getActiveDescription();
 
-        // TODO display name is not a good unique id..
-        // also consider a usecase where multiple elements point to a single visual component.
-        //. eg. property sheet uses same component and only changes model.
-        // in this case we probably should not remove and add the component from awt hierarchy
-        tabs.switchToCard(el, desc.getDisplayName());
+	// TODO display name is not a good unique id..
+	// also consider a usecase where multiple elements point to a single visual component.
+	//. eg. property sheet uses same component and only changes model.
+	// in this case we probably should not remove and add the component from awt hierarchy
+	boolean isSplitDescription = false;
+	if(desc instanceof ContextAwareDescription) {
+	    isSplitDescription = ((ContextAwareDescription)desc).isSplitDescription();
+	}
+        tabs.switchToCard(el, desc.getDisplayName(), isSplitDescription);
         Image icon = desc.getIcon();
         if( null == icon ) {
             //#204072
@@ -389,7 +472,7 @@ public final class MultiViewPeer implements PropertyChangeListener {
             assignLookup(el);
             
             if (peer.isVisible()) {
-                tabs.setInnerToolBar(el.getToolbarRepresentation());
+                tabs.setInnerToolBar(el.getToolbarRepresentation(), isSplitDescription);
                 tabs.setToolbarBarVisible(isToolbarVisible());
             }
             
@@ -508,8 +591,11 @@ public final class MultiViewPeer implements PropertyChangeListener {
             fromMime = false;
         }
         MultiViewDescription[] descs = model.getDescriptions();
-        MultiViewDescription curr = model.getActiveDescription();
+	MultiViewDescription curr = tabs.getTopComponentDescription();
+	MultiViewDescription currSplit = tabs.getBottomComponentDescription();
         int currIndex = 0;
+        int currIndexSplit = 0;
+
         for (int i = 0; i < descs.length; i++) {
             if (!fromMime) {
                 out.writeObject(descs[i]);
@@ -526,8 +612,13 @@ public final class MultiViewPeer implements PropertyChangeListener {
             if (descs[i] == curr) {
                 currIndex = i;
             }
+	    if (descs[i] == currSplit) {
+                currIndexSplit = i;
+            }
         }
         out.writeObject(new Integer(currIndex));
+        out.writeObject(new Integer(currIndexSplit));
+	out.writeObject(new Integer(splitOrientation));
         
     }
 
@@ -539,9 +630,12 @@ public final class MultiViewPeer implements PropertyChangeListener {
         ArrayList<MultiViewDescription> descList = new ArrayList<MultiViewDescription>();
         HashMap<MultiViewDescription, MultiViewElement> map = new HashMap<MultiViewDescription, MultiViewElement>();
         int current = 0;
+        int currentSplit = 0;
+        int splitOrient = -1;
         CloseOperationHandler close = null;
         try {
             int counting = 0;
+	    int intCounting = 0;
             MultiViewDescription lastDescription = null;
             while (true) {
                 Object obj = in.readObject();
@@ -576,8 +670,16 @@ public final class MultiViewPeer implements PropertyChangeListener {
                 }
                 else if (obj instanceof Integer)  {
                     Integer integ = (Integer)obj;
-                    current = integ.intValue();
-                    break;
+		    if(intCounting == 0) {
+			intCounting++;
+			current = integ.intValue();
+		    } else if (intCounting == 1) {
+			intCounting++;
+			currentSplit = integ.intValue();
+		    } else if (intCounting == 2) {
+			splitOrient = integ.intValue();
+			break;
+		    }
                 } 
                 if (obj instanceof CloseOperationHandler) {
                     close = (CloseOperationHandler)obj;
@@ -597,10 +699,11 @@ public final class MultiViewPeer implements PropertyChangeListener {
                 descs = descList.toArray(descs);
                 //the integer with current element was not read yet, fallback to zero.
                 MultiViewDescription currDesc = descs[0];
+                MultiViewDescription currDescSplit = descs[1];
 
                 //when error, ignore any deserialized elements..
                 map.clear();
-                setDeserializedMultiViewDescriptions(descs, currDesc, map);
+                setDeserializedMultiViewDescriptions(1, descs, currDesc, currDescSplit, map);
             }
             
             throw exc;
@@ -616,7 +719,8 @@ public final class MultiViewPeer implements PropertyChangeListener {
         MultiViewDescription[] descs = new MultiViewDescription[descList.size()];
         descs = descList.toArray(descs);
         MultiViewDescription currDesc = descs[current];
-        setDeserializedMultiViewDescriptions(descs, currDesc, map);
+        MultiViewDescription currDescSplit = descs[currentSplit];
+        setDeserializedMultiViewDescriptions(splitOrient, descs, currDesc, currDescSplit, map);
     }    
 
     private Action[] getDefaultTCActions() {

@@ -188,7 +188,23 @@ class APTGnuCpp11Filter extends APTBaseLanguageFilter {
         filter("__is_class", APTTokenTypes.LITERAL___is_class); // NOI18N
         filter("__is_pod", APTTokenTypes.LITERAL___is_pod); // NOI18N
         filter("__is_base_of", APTTokenTypes.LITERAL___is_base_of); // NOI18N
-        filter("__has_trivial_constructor", APTTokenTypes.LITERAL___has_trivial_constructor); // NOI18N
+        filter("__has_trivial_constructor", APTTokenTypes.LITERAL___has_trivial_constructor); // NOI18N        
+        filter("__has_nothrow_assign", APTTokenTypes.LITERAL___has_nothrow_assign); // NOI18N
+        filter("__has_nothrow_copy", APTTokenTypes.LITERAL___has_nothrow_copy); // NOI18N
+        filter("__has_nothrow_constructor", APTTokenTypes.LITERAL___has_nothrow_constructor); // NOI18N
+        filter("__has_trivial_assign", APTTokenTypes.LITERAL___has_trivial_assign); // NOI18N
+        filter("__has_trivial_copy", APTTokenTypes.LITERAL___has_trivial_copy); // NOI18N
+        filter("__has_trivial_destructor", APTTokenTypes.LITERAL___has_trivial_destructor); // NOI18N
+        filter("__has_virtual_destructor", APTTokenTypes.LITERAL___has_virtual_destructor); // NOI18N
+        filter("__is_abstract", APTTokenTypes.LITERAL___is_abstract); // NOI18N
+        filter("__is_empty", APTTokenTypes.LITERAL___is_empty); // NOI18N
+        filter("__is_literal_type", APTTokenTypes.LITERAL___is_literal_type); // NOI18N
+        filter("__is_polymorphic", APTTokenTypes.LITERAL___is_polymorphic); // NOI18N
+        filter("__is_standard_layout", APTTokenTypes.LITERAL___is_standard_layout); // NOI18N
+        filter("__is_trivial", APTTokenTypes.LITERAL___is_trivial); // NOI18N
+        filter("__is_union", APTTokenTypes.LITERAL___is_union); // NOI18N
+        filter("__underlying_type", APTTokenTypes.LITERAL___underlying_type); // NOI18N                
+        filter("__builtin_va_list", APTTokenTypes.LITERAL___builtin_va_list); // NOI18N        
         
         // C++11
         filter("final", APTTokenTypes.LITERAL_final); // NOI18N

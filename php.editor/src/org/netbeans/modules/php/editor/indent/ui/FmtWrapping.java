@@ -68,6 +68,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         initComponents();
 
         scrollPane.getViewport().setBackground(java.awt.SystemColor.controlLtHighlight);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
 
         extendsImplementsKeywordCombo.putClientProperty(OPTION_ID, WRAP_EXTENDS_IMPLEMENTS_KEYWORD);
         extendsImplementsKeywordCombo.addFocusListener(this);
@@ -173,7 +174,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         setOpaque(false);
         setLayout(new java.awt.BorderLayout());
 
-        scrollPane.setBackground(java.awt.SystemColor.controlLtHighlight);
         scrollPane.setMinimumSize(new java.awt.Dimension(300, 200));
         scrollPane.setPreferredSize(new java.awt.Dimension(350, 600));
 
@@ -288,7 +288,6 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                 return cbStatements;//end getComponentBefore
 
             }});
-            panel1.setOpaque(false);
 
             extendsImplemetsKeywordLabel.setLabelFor(extendsImplementsKeywordCombo);
             org.openide.awt.Mnemonics.setLocalizedText(extendsImplemetsKeywordLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_extendsImplementsKeyword")); // NOI18N
@@ -384,7 +383,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(panel1Layout.createSequentialGroup()
                             .addComponent(extendsImplemetsKeywordLabel)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 71, Short.MAX_VALUE)
                             .addComponent(extendsImplementsKeywordCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
                             .addComponent(extendsImplementsListLabel)
@@ -437,18 +436,15 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                         .addGroup(panel1Layout.createSequentialGroup()
                             .addComponent(assignOpsLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(assignOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(panel1Layout.createSequentialGroup()
-                            .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(cbOpenCloseBlockBrace)
-                                .addComponent(wrapAfterAssignOpsCheckBox))
-                            .addGap(0, 86, Short.MAX_VALUE)))
+                            .addComponent(assignOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addContainerGap())
                 .addGroup(panel1Layout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(wrapAfterBinOpsCheckBox)
-                        .addComponent(cbStatements))
+                        .addComponent(cbStatements)
+                        .addComponent(wrapAfterAssignOpsCheckBox)
+                        .addComponent(cbOpenCloseBlockBrace))
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
             panel1Layout.setVerticalGroup(
@@ -518,7 +514,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                     .addComponent(cbOpenCloseBlockBrace)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(cbStatements)
-                    .addContainerGap(46, Short.MAX_VALUE))
+                    .addContainerGap(26, Short.MAX_VALUE))
             );
 
             extendsImplemetsKeywordLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplemetsKeywordLabel.AccessibleContext.accessibleName")); // NOI18N

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.el.completion;
 
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.modules.web.el.ELTestBaseForTestProject;
 
 /**
@@ -93,28 +95,54 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/completion10.xhtml", "#{a = 5; bean.^}", false);
     }
 
+    public void testCompletionInsideStream() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion11.xhtml", "#{[1,2,3].stream().^average()}", false);
+    }
+
+    public void testSimpleAssignement() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion12.xhtml", "#{v.^}", false);
+    }
+
+    public void testAssignementOnTheSameLine() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion13.xhtml", "#{v = {\"one\":1, \"two\":2, \"three\":3}; v.^}", false);
+    }
+
+    public void testAssignementsCompletionChain() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion14.xhtml", "#{v.stream().average().^}", false);
+    }
+
+    public void testAssignementsOfBean() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion15.xhtml", "#{c.^}", false);
+    }
+
     public void testJavaCompletion01() throws Exception {
-        checkCompletion("projects/testWebProject/web/completion/java/java_completion01.xhtml", "#{^}", false);
+        List<String> toCheck = Arrays.asList("AssertionError", "Boolean", "Double", "Enum", "StringBuilder", "instanceof", "true", "bundle");
+        checkCompletion("projects/testWebProject/web/completion/java/java_completion01.xhtml", "#{^}", false, toCheck);
     }
 
     public void testJavaCompletion02() throws Exception {
-        checkCompletion("projects/testWebProject/web/completion/java/java_completion02.xhtml", "#{T(^)}", false);
+        List<String> toCheck = Arrays.asList("getBoolean", "parseBoolean", "toString", "valueOf", "FALSE", "TRUE", "TYPE");
+        checkCompletion("projects/testWebProject/web/completion/java/java_completion02.xhtml", "#{(Boolean.^}", false, toCheck);
     }
 
     public void testJavaCompletion03() throws Exception {
-        checkCompletion("projects/testWebProject/web/completion/java/java_completion03.xhtml", "#{T(Boolean).^}", false);
+        List<String> toCheck = Arrays.asList("getBoolean", "parseBoolean", "toString", "valueOf", "FALSE", "TRUE", "TYPE");
+        checkCompletion("projects/testWebProject/web/completion/java/java_completion03.xhtml", "#{(Boolean.^)}", false, toCheck);
     }
 
     public void testJavaCompletion04() throws Exception {
-        checkCompletion("projects/testWebProject/web/completion/java/java_completion04.xhtml", "#{T(java.lang.Boolean).^}", false);
+        List<String> toCheck = Arrays.asList("getBoolean", "parseBoolean", "toString", "valueOf", "FALSE", "TRUE", "TYPE");
+        checkCompletion("projects/testWebProject/web/completion/java/java_completion04.xhtml", "#{(java.lang.Boolean).^}", false, toCheck);
     }
 
     public void testJavaCompletion05() throws Exception {
-        checkCompletion("projects/testWebProject/web/completion/java/java_completion05.xhtml", "#{java.math.^}", false);
+        List<String> toCheck = Arrays.asList("BigDecimal", "BigInteger", "BitSieve", "MathContext", "MutableBigInteger", "SignedMutableBigInteger");
+        checkCompletion("projects/testWebProject/web/completion/java/java_completion05.xhtml", "#{java.math.^}", false, toCheck);
     }
 
     public void testJavaCompletion06() throws Exception {
-        checkCompletion("projects/testWebProject/web/completion/java/java_completion06.xhtml", "#{T(Bo^)}", false);
+        List<String> toCheck = Arrays.  asList("Boolean");
+        checkCompletion("projects/testWebProject/web/completion/java/java_completion06.xhtml", "#{Bo^}", false, toCheck);
     }
 
 }

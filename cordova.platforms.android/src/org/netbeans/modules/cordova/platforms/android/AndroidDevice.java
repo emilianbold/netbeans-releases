@@ -51,6 +51,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.Device;
+import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.cordova.platforms.ProcessUtils;
@@ -162,6 +163,11 @@ public class AndroidDevice implements Device {
     @Override
     public MobilePlatform getPlatform() {
         return PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
+    }
+    
+    @Override
+    public MobileDebugTransport getDebugTransport() {
+        return new AndroidDebugTransport();
     }
 
     @Override

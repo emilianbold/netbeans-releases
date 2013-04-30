@@ -54,6 +54,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
+import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
@@ -88,6 +90,9 @@ public final class BugtrackingManager implements LookupListener {
     private Map<String, List<RecentIssue>> recentIssues;
     private KenaiAccessor[] kenaiAccessors;
 
+    private IDEServices ideServices;
+    private ProjectServices projectServices;
+    
     public synchronized static BugtrackingManager getInstance() {
         if(instance == null) {
             instance = new BugtrackingManager();
@@ -208,4 +213,19 @@ public final class BugtrackingManager implements LookupListener {
         }
         return null;
     }
+
+    public synchronized IDEServices getIDEServices() {
+        if(ideServices == null) {
+            ideServices = Lookup.getDefault().lookup(IDEServices.class);
+        }
+        return ideServices;
+    }
+    
+    public synchronized ProjectServices getProjectServices() {
+        if(projectServices == null) {
+            projectServices = Lookup.getDefault().lookup(ProjectServices.class);
+        }
+        return projectServices;
+    }
+    
 }

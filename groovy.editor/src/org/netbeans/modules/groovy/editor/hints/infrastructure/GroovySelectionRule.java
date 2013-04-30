@@ -45,10 +45,13 @@ package org.netbeans.modules.groovy.editor.hints.infrastructure;
 import java.util.List;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.Rule.SelectionRule;
+import org.netbeans.modules.csl.api.RuleContext;
 
 /**
  * Represents a rule to be run on text selection
  */
 public abstract class GroovySelectionRule implements SelectionRule {
-    public abstract void run(GroovyRuleContext context, List<Hint> result);
+    
+    public abstract void run(RuleContext context, List<Hint> result);
+    
 }

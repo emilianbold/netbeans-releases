@@ -220,7 +220,7 @@ public class JsfCompletionItem {
         private org.netbeans.modules.web.jsfapi.api.Attribute attr;
 
         public JsfTagAttribute(String value, int offset, Library library, org.netbeans.modules.web.jsfapi.api.Tag tag, org.netbeans.modules.web.jsfapi.api.Attribute attr) {
-            super(value, offset, attr.isRequired(), null);
+            super(value, offset, attr.isRequired(), "");
             this.library = library;
             this.tag = tag;
             this.attr = attr;

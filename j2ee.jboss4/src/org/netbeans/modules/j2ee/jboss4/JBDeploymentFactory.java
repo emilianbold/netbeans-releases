@@ -330,11 +330,24 @@ public class JBDeploymentFactory implements DeploymentFactory {
 
                 String jbURI = uri;
                 try {
-                    jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
+                    int index1 = uri.indexOf('#'); // NOI18N
+                    int index2 = uri.indexOf('&'); // NOI18N
+                    int index = Math.min(index1, index2);
+                    jbURI = uri.substring(0, index); // NOI18N
                 } catch (Exception e) {
                     LOGGER.log(Level.INFO, null, e);
                 }
 
+                // see #228619
+                // The default host where the DM is connecting is based on
+                // serverHost parameter if it is null it uses InetAddress.getLocalHost()
+                // which is however based on hostname. If hostname is not mapped
+                // to localhost (the interface where the JB is running) we get
+                // an excpetion
+                if (jbURI.endsWith("as7")) { // NOI18N
+                    jbURI = jbURI + "&serverHost=" // NOI18N
+                            + (ip != null ? ip.getProperty(JBPluginProperties.PROPERTY_HOST) : "localhost"); // NOI18N
+                }
                 JBDeploymentManager dm = new JBDeploymentManager(df, uri, jbURI, uname, passwd);
                 if (ip != null) {
                     managerCache.put(ip, dm);

@@ -7,6 +7,7 @@ package beans;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -38,6 +39,14 @@ public class Bean {
 
     public String getMyString() {
         return "string";
+    }
+
+    public Map<String, String> getMyMap() {
+        return Collections.<String, String>emptyMap();
+    }
+
+    public Cypris getMyCypris() {
+        return new Cypris();
     }
 
 }

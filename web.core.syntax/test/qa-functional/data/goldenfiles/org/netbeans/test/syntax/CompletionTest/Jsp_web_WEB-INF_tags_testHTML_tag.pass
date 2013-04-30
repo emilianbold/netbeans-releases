@@ -6,11 +6,11 @@
 <h5 >
 <h6 >
 <handler >
+<head >
 <header >
 <hgroup >
 <hkern >
 <hr >
-<head >
 <html >
 End cursor position = 98
 [<a |, href, <a href="", 167]
@@ -98,25 +98,13 @@ End cursor position = 177
 ltr
 rtl
 End cursor position = 255
-[&q|, &quot;, &quot;, 313]
-픮 &qfr;
-⨌ &qint;
-핢 &qopf;
-⁗ &qprime;
-퓆 &qscr;
-ℍ &quaternions;
-⨖ &quatint;
-? &quest;
-≟ &questeq;
-" &quot;
-End cursor position = 320
-[<b|, body, <body, 380]
+[<b|, body, <body, 310]
 <b >
+<base >
 <bdo >
 <blockquote >
+<body >
 <br >
 <button >
 <bvar >
-<base >
-<body >
-End cursor position = 386
+End cursor position = 316

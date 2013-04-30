@@ -41,16 +41,21 @@
  */
 package org.netbeans.modules.web.el.spi;
 
+import java.util.List;
+import org.openide.filesystems.FileObject;
+
 /**
  * @author marekfukala
  */
 public final class ResourceBundle {
     
-    private String baseName, var;
+    private final String baseName, var;
+    private final List<FileObject> files;
     
-    public ResourceBundle(String baseName, String var) {
+    public ResourceBundle(String baseName, String var, List<FileObject> files) {
         this.baseName = baseName;
         this.var = var;
+        this.files = files;
     }
     
     /**
@@ -66,5 +71,12 @@ public final class ResourceBundle {
     public String getVar() {
         return var;
     }
-    
+
+    /**
+     * @return files for all available locales
+     */
+    public List<FileObject> getFiles() {
+        return files;
+    }
+
 }

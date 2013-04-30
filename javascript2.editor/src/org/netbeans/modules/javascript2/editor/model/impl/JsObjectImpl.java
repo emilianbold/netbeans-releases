@@ -63,8 +63,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     protected JsElement.Kind kind;
     private boolean deprecated;
     
-    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
-        super((parent != null ? parent.getFileObject() : null), name.getName(), ModelUtils.PROTOTYPE.equals(name.getName()),  offsetRange, EnumSet.of(Modifier.PUBLIC));
+    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, String sourceLabel) {
+        super((parent != null ? parent.getFileObject() : null), name.getName(),
+                ModelUtils.PROTOTYPE.equals(name.getName()),  offsetRange, EnumSet.of(Modifier.PUBLIC), sourceLabel);
         this.declarationName = name;
         this.parent = parent;
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
@@ -73,20 +74,27 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared, Set<Modifier> modifiers) {
-        super((parent != null ? parent.getFileObject() : null), name.getName(), isDeclared,  offsetRange, modifiers);
+        super((parent != null ? parent.getFileObject() : null), name.getName(),
+                isDeclared,  offsetRange, modifiers, null);
         this.declarationName = name;
         this.parent = parent;
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
         this.deprecated = false;
     }
-    
+
+    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
+        this(parent, name, offsetRange, null);
+    }
+
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared) {
         this(parent, name, offsetRange, isDeclared, EnumSet.of(Modifier.PUBLIC));
     }
   
-    protected JsObjectImpl(JsObject parent, String name, boolean isDeclared, OffsetRange offsetRange, Set<Modifier> modifiers) {
-        super((parent != null ? parent.getFileObject() : null), name, isDeclared, offsetRange, modifiers);
+    protected JsObjectImpl(JsObject parent, String name, boolean isDeclared,
+            OffsetRange offsetRange, Set<Modifier> modifiers, String sourceLabel) {
+        super((parent != null ? parent.getFileObject() : null), name, isDeclared,
+                offsetRange, modifiers, sourceLabel);
         this.declarationName = null;
         this.parent = parent;
         this.hasName = false;
@@ -329,18 +337,22 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     if(assignment.isResolved()) {
                         result.add(assignment);
                     } else {
-                        DeclarationScope scope = ModelUtils.getDeclarationScope(jsObject);
-                        JsObject object = ModelUtils.getJsObjectByName(scope, assignment.getType());
-                        if (object == null) {
-                            JsObject gloal = ModelUtils.getGlobalObject(jsObject);
-                            object = ModelUtils.findJsObjectByName(gloal, assignment.getType());
-                        }
-                        if(object != null) {
-                            Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, found != null ? found.getKey() : -1, visited);
-                            if(resolvedFromObject.isEmpty()) {
-                                result.add(new TypeUsageImpl(object.getFullyQualifiedName(), assignment.getOffset(), true));
-                            } else {
-                                result.addAll(resolvedFromObject);
+                        if (assignment.getType().startsWith("@")) {
+                            result.addAll(ModelUtils.resolveTypeFromSemiType(jsObject, assignment));
+                        } else {
+                            DeclarationScope scope = ModelUtils.getDeclarationScope(jsObject);
+                            JsObject object = ModelUtils.getJsObjectByName(scope, assignment.getType());
+                            if (object == null) {
+                                JsObject gloal = ModelUtils.getGlobalObject(jsObject);
+                                object = ModelUtils.findJsObjectByName(gloal, assignment.getType());
+                            }
+                            if(object != null) {
+                                Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, found != null ? found.getKey() : -1, visited);
+                                if(resolvedFromObject.isEmpty()) {
+                                    result.add(new TypeUsageImpl(object.getFullyQualifiedName(), assignment.getOffset(), true));
+                                } else {
+                                    result.addAll(resolvedFromObject);
+                                }
                             }
                         }
                     }

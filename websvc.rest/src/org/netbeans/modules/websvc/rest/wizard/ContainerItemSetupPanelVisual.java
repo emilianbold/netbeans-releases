@@ -47,10 +47,8 @@ package org.netbeans.modules.websvc.rest.wizard;
 import java.awt.event.KeyAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 import javax.lang.model.element.TypeElement;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -142,6 +140,24 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel
         });
 
         medaTypeComboBox.setModel(new DefaultComboBoxModel(GenericResourceBean.getSupportedMimeTypes()));
+        ((JTextComponent) packageComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(
+                new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                fireChange();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                fireChange();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                fireChange();
+            }
+        });
     }
 
         private void compareClassNames() {
@@ -819,6 +835,11 @@ private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRS
         return (SourceGroup) locationComboBox.getSelectedItem();
     }
     
+    @Override
+    public String getPackageName() {
+        return ((JTextComponent) packageComboBox.getEditor().getEditorComponent()).getText();
+    }
+
     public double getRenderedHeight(){
         return selectClassButton1.getLocation().getY()+
                 selectClassButton1.getSize().getHeight()+getGap();

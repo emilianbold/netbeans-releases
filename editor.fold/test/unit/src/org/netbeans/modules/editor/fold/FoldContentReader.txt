@@ -25,3 +25,7 @@ H/**
  *                             
  * Empty line left out
  */
+
+I/** One liner without dot*/
+
+J/** One liner with dot. bleh */

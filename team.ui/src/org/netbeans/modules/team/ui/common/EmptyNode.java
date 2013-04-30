@@ -48,8 +48,9 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.modules.team.ui.treelist.LeafNode;
-import org.netbeans.modules.team.ui.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.ProgressLabel;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 
 /**
  * Empty Node. E.g. No Projects Open, No Projects Bookmarked
@@ -75,7 +76,7 @@ public class EmptyNode extends LeafNode {
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
         if (null == panel) {
             panel = new JPanel(new BorderLayout());
             panel.setBorder(new EmptyBorder(0, 0, 0, 0));

@@ -42,19 +42,14 @@
  */
 package org.netbeans.modules.websvc.rest.wizard;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.wizard.HttpMethodsPanel.HttpMethods;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**

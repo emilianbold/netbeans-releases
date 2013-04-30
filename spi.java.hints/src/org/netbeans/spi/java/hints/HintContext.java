@@ -66,6 +66,7 @@ import org.netbeans.spi.java.hints.Hint.Kind;
 public class HintContext {
 
     private final CompilationInfo info;
+    private final HintsSettings settings;
     private final Preferences preferences;
     private final Severity severity;
     private final HintMetadata metadata;
@@ -79,10 +80,11 @@ public class HintContext {
     private final AtomicBoolean cancel;
     private final int caret;
 
-    private HintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems, boolean bulkMode, AtomicBoolean cancel, int caret) {
+    private HintContext(CompilationInfo info, HintsSettings settings, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems, boolean bulkMode, AtomicBoolean cancel, int caret) {
         this.info = info;
-        this.preferences = metadata != null ? HintsSettings.getPreferences(metadata.id, HintsSettings.getCurrentProfileId()) : null;
-        this.severity = preferences != null ? HintsSettings.getSeverity(metadata, preferences) : Severity.ERROR;
+        this.settings = settings;
+        this.preferences = metadata != null ? settings.getHintPreferences(metadata) : null;
+        this.severity = preferences != null ? settings.getSeverity(metadata) : Severity.ERROR;
         this.metadata = metadata;
         this.path = path;
 
@@ -178,14 +180,17 @@ public class HintContext {
     
     static {
         SPIAccessor.setINSTANCE(new SPIAccessor() {
-            @Override public HintContext createHintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems, boolean bulkMode, AtomicBoolean cancel, int caret) {
-                return new HintContext(info, metadata, path, variables, multiVariables, variableNames, constraints, problems, bulkMode, cancel, caret);
+            @Override public HintContext createHintContext(CompilationInfo info, HintsSettings settings, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems, boolean bulkMode, AtomicBoolean cancel, int caret) {
+                return new HintContext(info, settings, metadata, path, variables, multiVariables, variableNames, constraints, problems, bulkMode, cancel, caret);
             }
-            @Override public HintContext createHintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames) {
-                return new HintContext(info, metadata, path, variables, multiVariables, variableNames, Collections.<String, TypeMirror>emptyMap(), new LinkedList<MessageImpl>(), false, new AtomicBoolean(), -1);
+            @Override public HintContext createHintContext(CompilationInfo info, HintsSettings settings, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames) {
+                return new HintContext(info, settings, metadata, path, variables, multiVariables, variableNames, Collections.<String, TypeMirror>emptyMap(), new LinkedList<MessageImpl>(), false, new AtomicBoolean(), -1);
             }
             @Override public HintMetadata getHintMetadata(HintContext ctx) {
                 return ctx.getHintMetadata();
+            }
+            @Override public HintsSettings getHintSettings(HintContext ctx) {
+                return ctx.settings;
             }
         });
     }

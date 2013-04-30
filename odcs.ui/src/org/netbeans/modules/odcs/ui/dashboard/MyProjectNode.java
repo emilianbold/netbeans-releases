@@ -60,8 +60,8 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
-import org.netbeans.modules.team.ui.treelist.LeafNode;
-import org.netbeans.modules.team.ui.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.awt.Notification;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -162,13 +162,13 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
         synchronized( LOCK ) {
             if( null == component ) {
                 component = new JPanel( new GridBagLayout() );
                 component.setOpaque(false);
                 lbl = new TreeLabel(project.getDisplayName());
-                component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,16,0,3), 0,0) );
+                component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,3), 0,0) );
                 leftPar = new TreeLabel("("); // NOI18N
                 delim = new TreeLabel("|"); //NOI18N
                 rightPar = new TreeLabel(")"); // NOI18N
@@ -435,5 +435,10 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     @Override
     public String toString () {
         return project.getDisplayName();
+    }
+
+    @Override
+    protected Type getType() {
+        return Type.CLOSED;
     }
 }

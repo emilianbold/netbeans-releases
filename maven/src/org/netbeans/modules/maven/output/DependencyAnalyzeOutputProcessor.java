@@ -96,7 +96,7 @@ public class DependencyAnalyzeOutputProcessor implements OutputProcessor {
                 visitor.setLine(line + " (Click to add to pom.xml)"); //NOI18N - part of maven output
                 OutputVisitor.Context context = visitor.getContext();
                 Project prj = project;
-                if (context != null) {
+                if (context != null && context.getCurrentProject() != null) {
                     prj = context.getCurrentProject();
                 }
                 visitor.setOutputListener(new Listener(prj, gr, ar, type, ver, sc), false);

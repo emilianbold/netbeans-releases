@@ -16,7 +16,7 @@ import javax.jms.MessageListener;
  */
 @MessageDriven(activationConfig =  {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "TestMessageDestination")
+        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "TestMessageDestination2")
     })
 public class TestMDBQueueBean2 implements MessageListener {
     

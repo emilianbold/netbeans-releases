@@ -74,7 +74,6 @@ public class BugzillaConfig {
     private static final String QUERY_REFRESH_INT   = "bugzilla.query_refresh";         // NOI18N
     private static final String ISSUE_REFRESH_INT   = "bugzilla.issue_refresh";         // NOI18N
     private static final String DELIMITER           = "<=>";                            // NOI18N
-    private static final String CHECK_UPDATES       = "jira.check_updates";         // NOI18N
     private static final String ATTACH_LOG          = "bugzilla.attach_log";            // NOI18N;
     private static final String TASKLISTISSUES_STORAGE_FILE = "tasklistissues.data"; //NOI18N
     private static final Level LOG_LEVEL = BugzillaUtil.isAssertEnabled() ? Level.SEVERE : Level.INFO;
@@ -104,20 +103,12 @@ public class BugzillaConfig {
         getPreferences().putInt(ISSUE_REFRESH_INT, i);
     }
 
-    public void setCheckUpdates(boolean bl) {
-        getPreferences().putBoolean(CHECK_UPDATES, bl);
-    }
-
     public int getQueryRefreshInterval() {
         return getPreferences().getInt(QUERY_REFRESH_INT, DEFAULT_QUERY_REFRESH);
     }
 
     public int getIssueRefreshInterval() {
         return getPreferences().getInt(ISSUE_REFRESH_INT, DEFAULT_ISSUE_REFRESH);
-    }
-
-    public boolean getCheckUpdates() {
-        return getPreferences().getBoolean(CHECK_UPDATES, true);
     }
 
     public boolean getAttachLogFile() {

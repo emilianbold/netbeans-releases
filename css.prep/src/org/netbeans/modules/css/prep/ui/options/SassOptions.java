@@ -91,8 +91,9 @@ public class SassOptions implements CssPreprocessorImplementation.Options {
 
     @Override
     public void update() {
-        getComponent().setSassPath(CssPrepOptions.getInstance().getSassPath());
-        getComponent().setSassOutputOnError(CssPrepOptions.getInstance().getSassOutputOnError());
+        getComponent().setSassPath(getOptions().getSassPath());
+        getComponent().setSassOutputOnError(getOptions().getSassOutputOnError());
+        getComponent().setSassDebug(getOptions().getSassDebug());
     }
 
     @Override
@@ -121,11 +122,25 @@ public class SassOptions implements CssPreprocessorImplementation.Options {
     @Override
     public void save() throws IOException {
         Warnings.resetSassWarning();
-        String originalPath = CssPrepOptions.getInstance().getSassPath();
+        boolean fire = false;
+        // path
+        String originalPath = getOptions().getSassPath();
         String path = getComponent().getSassPath();
-        CssPrepOptions.getInstance().setSassPath(path);
-        CssPrepOptions.getInstance().setSassOutpuOnError(getComponent().getSassOutputOnError());
-        if (!originalPath.equals(path)) {
+        getOptions().setSassPath(path);
+        if (!path.equals(originalPath)) {
+            fire = true;
+        }
+        // output on error
+        getOptions().setSassOutpuOnError(getComponent().getSassOutputOnError());
+        // debug
+        boolean originalDebug = getOptions().getSassDebug();
+        boolean debug = getComponent().getSassDebug();
+        getOptions().setSassDebug(debug);
+        if (debug != originalDebug) {
+            fire = true;
+        }
+        // changes
+        if (fire) {
             sassCssPreprocessor.fireOptionsChanged();
         }
     }
@@ -134,6 +149,10 @@ public class SassOptions implements CssPreprocessorImplementation.Options {
         return new CssPrepOptionsValidator()
                 .validateSassPath(getComponent().getSassPath())
                 .getResult();
+    }
+
+    private CssPrepOptions getOptions() {
+        return CssPrepOptions.getInstance();
     }
 
 }

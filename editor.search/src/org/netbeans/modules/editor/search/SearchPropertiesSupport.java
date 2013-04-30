@@ -61,7 +61,7 @@ public final class SearchPropertiesSupport {
     private SearchPropertiesSupport() {
     }
 
-    private static SearchPropertiesSupport getInstance() {
+    private synchronized static SearchPropertiesSupport getInstance() {
         if (instance == null) {
             instance = new SearchPropertiesSupport();
         }
@@ -72,14 +72,14 @@ public final class SearchPropertiesSupport {
         return prefs;
     }
 
-    public static SearchProperties getSearchProperties() {
+    public synchronized static SearchProperties getSearchProperties() {
         if (searchProps == null) {
             searchProps = createDefaultSearchProperties();
         }
         return searchProps;
     }
 
-    public static SearchProperties getReplaceProperties() {
+    public synchronized static SearchProperties getReplaceProperties() {
         if (replaceProps == null) {
             replaceProps = createDefaultReplaceProperties();
         }

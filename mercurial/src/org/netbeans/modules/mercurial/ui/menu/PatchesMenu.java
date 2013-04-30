@@ -47,7 +47,6 @@ package org.netbeans.modules.mercurial.ui.menu;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
 import org.netbeans.modules.diff.PatchAction;
 import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.openide.util.NbBundle;
@@ -105,7 +104,7 @@ public final class PatchesMenu extends DynamicMenu implements Presenter.Popup {
             Actions.connect(item, action, false);
             menu.add(item);
 
-            menu.add(new JSeparator());
+            menu.addSeparator();
             
             item = new JMenuItem();
             action = SystemAction.get(PatchAction.class);
@@ -127,7 +126,7 @@ public final class PatchesMenu extends DynamicMenu implements Presenter.Popup {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(ExportBundleAction.class), NbBundle.getMessage(ExportBundleAction.class, "CTL_PopupMenuItem_ExportBundle"), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             
-            menu.add(new JSeparator());
+            menu.addSeparator();
             
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(PatchAction.class), NbBundle.getMessage(PatchesMenu.class, "CTL_PopupMenuItem_PatchAction"), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());

@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -73,7 +74,7 @@ public class RemoteJarServiceProvider {
         }
     }
 
-    public static NativeProcess getJavaProcess(String java, Class<?> clazz, ExecutionEnvironment env, String[] arguments) throws IOException{
+    public static ProcessUtils.ExitStatus getJavaProcess(String java, Class<?> clazz, ExecutionEnvironment env, String[] arguments) throws IOException{
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
         npb.setCharset(Charset.forName("UTF-8")); // NOI18N
         npb.setExecutable(java); //NOI18N
@@ -83,6 +84,6 @@ public class RemoteJarServiceProvider {
         args.add(clazz.getName());
         args.addAll(Arrays.asList(arguments));
         npb.setArguments(args.toArray(new String[args.size()]));
-        return npb.call();
+        return ProcessUtils.execute(npb);
     }
 }
