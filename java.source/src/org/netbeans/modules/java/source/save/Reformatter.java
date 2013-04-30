@@ -3126,7 +3126,8 @@ public class Reformatter implements ReformatTask {
                         break;
                     case BLOCK_COMMENT:
                         if (tokens.index() > 1 && after != 1) {
-                            maxCount++;
+                            if (maxCount < Integer.MAX_VALUE)
+                                maxCount++;
                             count++;
                         }
                         if (lastToken != null) {
@@ -3159,7 +3160,8 @@ public class Reformatter implements ReformatTask {
                         break;
                     case JAVADOC_COMMENT:
                         if (tokens.index() > 1 && after != 1) {
-                            maxCount++;
+                            if (maxCount < Integer.MAX_VALUE)
+                                maxCount++;
                             count++;
                         }
                         if (lastToken != null) {
@@ -3203,7 +3205,8 @@ public class Reformatter implements ReformatTask {
                             int offset = tokens.offset() - lastToken.length();
                             String text = lastToken.text().toString();
                             if (tokens.index() > 1 && after != 1 && text.indexOf('\n') >= 0) {
-                                maxCount++;
+                                if (maxCount < Integer.MAX_VALUE)
+                                    maxCount++;
                                 count++;
                             }
                             int idx = 0;
@@ -3235,7 +3238,8 @@ public class Reformatter implements ReformatTask {
                         break;
                     default:
                         if (tokens.index() > 1 && after != 1) {
-                            maxCount++;
+                            if (maxCount < Integer.MAX_VALUE)
+                                maxCount++;
                             count++;
                         }
                         if (lastToken != null) {
