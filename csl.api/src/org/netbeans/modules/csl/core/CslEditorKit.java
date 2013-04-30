@@ -173,6 +173,7 @@ public final class CslEditorKit extends NbEditorKit {
         if (!mimeType.equals("text/x-php5")) {
             actions.add(new ToggleBlockCommentAction());
         }
+        actions.add(new GenerateFoldPopupAction());
         actions.add(new InstantRenameAction());
         actions.add(CslActions.createGoToDeclarationAction());
         actions.add(new GenericGenerateGoToPopupAction());

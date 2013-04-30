@@ -112,6 +112,8 @@ final class FoldView extends EditorView {
     
     private AttributeSet    foldingColors;
     
+    private AttributeSet    selectedColors;
+    
     private int options;
 
     public FoldView(JTextComponent textComponent, Fold fold, FontColorSettings colorSettings, int options) {
@@ -123,6 +125,7 @@ final class FoldView extends EditorView {
         this.textComponent = textComponent;
         this.fold = fold;
         this.foldingColors = colorSettings.getFontColors(FontColorNames.CODE_FOLDING_COLORING);
+        this.selectedColors = colorSettings.getFontColors(FontColorNames.SELECTION_COLORING);
         this.options = options;
     }
 
@@ -367,7 +370,17 @@ final class FoldView extends EditorView {
         if (foldingColors == null) {
             return textComponent.getBackground();
         }
-        Object bgColorObj = foldingColors.getAttribute(StyleConstants.Background);
+        int start = textComponent.getSelectionStart();
+        int end = textComponent.getSelectionEnd();
+        boolean partSelected = false;
+        if (start != end) {
+            int foldStart = fold.getStartOffset();
+            int foldEnd = fold.getEndOffset();
+            partSelected = start < foldEnd && end > foldStart;
+        }
+        Object bgColorObj = partSelected ?
+                selectedColors.getAttribute(StyleConstants.Background) :
+                foldingColors.getAttribute(StyleConstants.Background);
         if (bgColorObj instanceof Color) {
             return (Color)bgColorObj;
         } else {

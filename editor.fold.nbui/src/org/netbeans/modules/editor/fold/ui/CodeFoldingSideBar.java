@@ -807,7 +807,7 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
     }
     
     protected void performAction(Mark mark) {
-        performAction(mark, false);
+        performAction(mark, false, false);
     }
     
     private void performActionAt(Mark mark, int mouseY) throws BadLocationException {
@@ -878,7 +878,7 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
         }        
     }
     
-    private void performAction(final Mark mark, final boolean shiftFold) {
+    private void performAction(final Mark mark, final boolean shiftFold, final boolean recursive) {
         Document doc = component.getDocument();
         doc.render(new Runnable() {
             @Override
@@ -899,7 +899,18 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
                             int rowEnd = javax.swing.text.Utilities.getRowEnd(component, pViewStartOffset);
                             Fold clickedFold = getLastLineFold(foldHierarchy, rowStart, rowEnd, shiftFold);//FoldUtilities.findNearestFold(foldHierarchy, viewStartOffset);
                             if (clickedFold != null && clickedFold.getStartOffset() < pViewEndOffset) {
-                                foldHierarchy.toggle(clickedFold);
+                                if (recursive) {
+                                    List<Fold> folds = new ArrayList<Fold>(FoldUtilities.findRecursive(clickedFold));
+                                    Collections.reverse(folds);
+                                    folds.add(clickedFold);
+                                    if (clickedFold.isCollapsed()) {
+                                        foldHierarchy.expand(folds);
+                                    } else {
+                                        foldHierarchy.collapse(folds);
+                                    }
+                                } else {
+                                    foldHierarchy.toggle(clickedFold);
+                                }
                             }
                         } catch (BadLocationException ble) {
                             LOG.log(Level.WARNING, null, ble);
@@ -1375,7 +1386,7 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
             Mark mark = getClickedMark(e);
             if (mark!=null){
                 e.consume();
-                performAction(mark, (e.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) > 0);
+                performAction(mark, (e.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) > 0, (e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) > 0);
             }
         }
 

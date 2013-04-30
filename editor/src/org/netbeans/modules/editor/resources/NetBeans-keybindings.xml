@@ -80,6 +80,8 @@ made subject to such option by the copyright holder.
     <bind actionName="caret-up" key="UP"/>
     <bind actionName="collapse-all-folds" key="DS-MINUS"/>
     <bind actionName="collapse-fold" key="D-MINUS"/>
+    <bind actionName="collapse-fold-tree" key="DO-MINUS"/>
+    <bind actionName="collapse-fold-tree" key="D-DIVIDE"/>
     <bind actionName="collapse-all-folds" key="DS-SUBTRACT"/>
     <bind actionName="collapse-fold" key="D-SUBTRACT"/>
     <bind actionName="completion-show" key="D-SPACE"/>
@@ -98,6 +100,9 @@ made subject to such option by the copyright holder.
     <bind actionName="expand-all-folds" key="DS-ADD"/>
     <bind actionName="expand-all-folds" key="DS-EQUALS"/>
     <bind actionName="expand-all-folds" key="DS-PLUS"/>
+    <bind actionName="expand-fold-tree" key="D-MULTIPLY"/>
+    <bind actionName="expand-fold-tree" key="DO-EQUALS"/>
+    <bind actionName="expand-fold-tree" key="DO-PLUS"/>
     <bind actionName="expand-fold" key="D-ADD"/>
     <bind actionName="expand-fold" key="D-EQUALS"/>
     <bind actionName="expand-fold" key="D-PLUS"/>
