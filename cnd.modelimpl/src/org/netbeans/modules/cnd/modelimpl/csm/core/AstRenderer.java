@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.AstRendererException;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
@@ -1192,10 +1193,6 @@ public class AstRenderer {
         return ClassForwardDeclarationImpl.create(ast, file, scope, container, !isRenderingLocalContext());
     }
 
-    protected ForwardClass createForwardClassIfNeeded(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
-        return ClassForwardDeclarationImpl.createForwardClassIfNeeded(ast, file, scope, container, !isRenderingLocalContext());
-    }
-
     protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
         return TypedefImpl.create(ast, file, container, type, name, !isRenderingLocalContext());
     }
@@ -1355,11 +1352,25 @@ public class AstRenderer {
         return new CharSequence[0];
     }
 
-    public static TypeImpl renderType(AST tokType, CsmFile file) {
-        return renderType(tokType, file, false);
+    public static TypeImpl renderType(AST tokType, CsmFile file, CsmScope scope, boolean global) {
+        return renderType(tokType, file, false, scope, global);
     }
     
-    public static TypeImpl renderType(AST tokType, CsmFile file, boolean inSpecializationParams) {
+    public static TypeImpl renderType(AST tokType, CsmFile file, boolean inSpecializationParams, CsmScope scope, boolean global) {
+        return renderType(tokType, file, null, inSpecializationParams, scope, global);
+    }    
+    
+    /**
+     * Creates type from AST
+     * @param tokType - ast for type
+     * @param file - containing file
+     * @param fileContent - content of the file
+     * @param inSpecializationParams - if it is a type inside spec params
+     * @param scope - scope of type usage/declaration
+     * @param global - if we are in global context
+     * @return type
+     */
+    public static TypeImpl renderType(AST tokType, CsmFile file, FileContent fileContent,  boolean inSpecializationParams, CsmScope scope, boolean global) {
         AST typeAST = tokType;
         tokType = getFirstSiblingSkipQualifiers(tokType);
 
@@ -1379,9 +1390,32 @@ public class AstRenderer {
                     tokType.getType() == CPPTokenTypes.LITERAL_union) {
                 AST next = tokType.getNextSibling();
                 if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                    AST tokenTypeStart = tokType;
+                    
                     tokType = next;
                     next = tokType.getNextSibling();
+                    
                     AST ptrOperator = (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
+                    
+                    if (scope != null) {
+                        // Find first namespace scope to add elaborated forwards in it
+                        NamespaceImpl targetScope = findClosestNamespace(scope);                        
+                        MutableDeclarationsContainer currentNamespaceDefinition = null; 
+                        
+                        if (targetScope != null) {
+                            if (targetScope.isGlobal()) {
+                                currentNamespaceDefinition = null;
+                                targetScope = null;
+                            } else {
+                                currentNamespaceDefinition = (MutableDeclarationsContainer) getLast(targetScope.getDefinitions());
+                            }
+                        }
+                        
+                        FakeAST fakeParent = new FakeAST();
+                        fakeParent.addChild(tokenTypeStart);
+                        ClassForwardDeclarationImpl.create(fakeParent, file, targetScope, currentNamespaceDefinition, global);
+                    }
+                    
                     return TypeFactory.createType(typeAST, file, ptrOperator, 0);
                 }
             }
@@ -1567,10 +1601,15 @@ public class AstRenderer {
                 return false;
             }
             if (keyword.getType() != CPPTokenTypes.LITERAL_enum && tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID && !isRenderingLocalContext()) {
-                if(namespaceContainer == null && container2 == null && !functionParameter) {
+//                if(namespaceContainer == null && container2 == null && !functionParameter) {
                     createForwardClass = !isRenderingLocalContext();
+//                }
                 }
+/*
+            if (keyword.getType() != CPPTokenTypes.LITERAL_enum && tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                createForwardClass = true;
             }
+ */            
             isThisReference = true;
         }
         if (tokType != null && isConstQualifier(tokType.getType())) {
@@ -1680,7 +1719,13 @@ public class AstRenderer {
                     processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false, cfdi);
                 }
                 if (createForwardClass) {
-                    createForwardClassIfNeeded(ast, container2, file, scope);
+                    NamespaceImpl targetScope = findClosestNamespace(scope);             
+                    
+                    // Sometimes namespaceContainer and container2 (NamespaceImpl and NamespaceDefinitionImpl for example) are both null, 
+                    // so let's just get last definition from namespace
+                    CsmNamespaceDefinition currentNamespaceDefinition = targetScope != null ? getLast(targetScope.getDefinitions()) : null; 
+                    
+                    ClassForwardDeclarationImpl.create(ast, file, targetScope, (MutableDeclarationsContainer) currentNamespaceDefinition, !isRenderingLocalContext());
                 }
                 return true;
             }
@@ -1879,7 +1924,7 @@ public class AstRenderer {
             }
         }
         AstRendererEx renderer = new AstRendererEx(fileContent);
-        renderer.renderVariable(ast, null, null, null, true);
+        renderer.renderVariable(ast, null, null, scope1, true);
         return result;
     }
 
@@ -2237,6 +2282,26 @@ public class AstRenderer {
 //        
 //    }
     
+    private static NamespaceImpl findClosestNamespace(CsmScope scope) {
+        while (scope != null && !(scope instanceof NamespaceImpl)) {
+            if (scope instanceof CsmScopeElement) {
+                scope = ((CsmScopeElement) scope).getScope();
+            } else {
+                scope = null;
+            }
+        }
+        return (scope instanceof NamespaceImpl) ? (NamespaceImpl) scope : null;
+    }    
+    
+    private static <T> T getLast(Collection<T> collection) {
+        T value = null;
+        Iterator<T> iter = collection.iterator();
+        while (iter.hasNext()) {
+            value = iter.next();
+        }
+        return value;
+    }
+    
     private static boolean isBeingParsed(CsmFile file) {
         if (true) return false;
         if (file instanceof FileImpl) {
@@ -2325,7 +2390,7 @@ public class AstRenderer {
                     if(token.getFirstChild() != null && token.getFirstChild().getType() == CPPTokenTypes.LITERAL_auto) {
                         token = getTypeToken(token.getNextSibling());
                     }
-                    ret = AstRenderer.renderType(token, file);
+                    ret = AstRenderer.renderType(token, file, null, false); // last two params just dummy ones
                 }
                 if( ret == null ) {
                     ret = TypeFactory.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, file); // NOI18N

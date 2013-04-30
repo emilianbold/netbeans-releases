@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
@@ -172,6 +173,10 @@ public class TypeFactory {
     }
     
     public static TypeImpl createType(AST ast, CsmClassifier classifier, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
+        return createType(ast, classifier, file, null, ptrOperator, arrayDepth, parent, scope, inFunctionParameters, inTypedef);
+    }
+
+    public static TypeImpl createType(AST ast, CsmClassifier classifier, CsmFile file, FileContent content, AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
         int refence = 0;
         int pointerDepth = 0;
         while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
@@ -315,7 +320,7 @@ public class TypeFactory {
                                             || namePart.getType() == CPPTokenTypes.LITERAL_struct
                                             || namePart.getType() == CPPTokenTypes.LITERAL_class
                                             || namePart.getType() == CPPTokenTypes.LITERAL_union) {
-                                        CsmType t = AstRenderer.renderType(namePart, file, true);
+                                        CsmType t = AstRenderer.renderType(namePart, file, true, scope, true);
                                         type.addInstantiationParam(new TypeBasedSpecializationParameterImpl(t));
                                     }
                                     if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
