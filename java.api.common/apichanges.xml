@@ -105,6 +105,25 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="platform-filter">
+            <api name="java-api-common"/>
+            <summary>Added PlatformFilter interface.</summary>
+            <version major="1" minor="49"/>
+            <date day="30" month="4" year="2013"/>
+            <author login="psomol"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added interface <code>PlatformFilter</code> to enable filtering out
+                    Java Platforms from UI lists. The primary usecase is to enable
+                    projects that are extensions of SE project to hook into project
+                    UI provided by SE project. More specifically, FX projects need
+                    to hide non-FX platforms in Project Properties panels belonging to SE.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.ui" name="PlatformFilter"/>
+            <issue number="212238"/>
+        </change>
         <change id="api-package-modification">
             <api name="java-api-common"/>
             <summary>New API <code>PackageModificationImplementation</code></summary>

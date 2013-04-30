@@ -82,7 +82,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * Support class for {@link JavaPlatform} manipulation in project customizer.
- * @author Tomas Zezula, Tomas Mysik
+ * @author Tomas Zezula, Tomas Mysik, Petr Somol
  */
 public final class PlatformUiSupport {
 
@@ -101,6 +101,19 @@ public final class PlatformUiSupport {
      */
     public static ComboBoxModel createPlatformComboBoxModel(String activePlatform) {
         return new PlatformComboBoxModel(activePlatform);
+    }
+
+
+    /**
+     * Create a {@link ComboBoxModel} of Java platforms.
+     * The model listens on the {@link JavaPlatformManager} and update its
+     * state according to the changes.
+     * @param activePlatform the active project's platform, can be <code>null</code>.
+     * @param filter project specific filter to filter-out platforms that are not usable in given context
+     * @return {@link ComboBoxModel}.
+     */
+    public static ComboBoxModel createPlatformComboBoxModel(String activePlatform, Collection<? extends PlatformFilter> filters) {
+        return new PlatformComboBoxModel(activePlatform, filters);
     }
 
 
@@ -614,11 +627,17 @@ public final class PlatformUiSupport {
         private String initialPlatform;
         private PlatformKey selectedPlatform;
         private boolean inUpdate;
+        private Collection<? extends PlatformFilter> filters;
 
         public PlatformComboBoxModel(String initialPlatform) {
+            this(initialPlatform, null);
+        }
+
+        public PlatformComboBoxModel(String initialPlatform, Collection<? extends PlatformFilter> filters) {
             this.pm = JavaPlatformManager.getDefault();
             this.pm.addPropertyChangeListener(WeakListeners.propertyChange(this, this.pm));
             this.initialPlatform = initialPlatform;
+            this.filters = filters;
         }
 
         public int getSize() {
@@ -670,7 +689,16 @@ public final class PlatformUiSupport {
                 Set<PlatformKey> orderedNames = new TreeSet<PlatformKey>();
                 boolean activeFound = false;
                 for (JavaPlatform platform : platforms) {
-                    if (platform.getInstallFolders().size() > 0) {
+                    boolean accepted = true;
+                    if(filters != null) {
+                        for(PlatformFilter filter : filters) {
+                            if(!filter.accept(platform)) {
+                                accepted = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (accepted && platform.getInstallFolders().size() > 0) {
                         PlatformKey pk = new PlatformKey(platform);
                         orderedNames.add(pk);
                         if (!activeFound && initialPlatform != null) {
@@ -686,15 +714,21 @@ public final class PlatformUiSupport {
                     }
                 }
                 if (!activeFound) {
-                    if (initialPlatform == null) {
-                        if (selectedPlatform == null || !orderedNames.contains(selectedPlatform)) {
-                            selectedPlatform = new PlatformKey(JavaPlatformManager.getDefault().getDefaultPlatform());
-                        }
+                    if(orderedNames.isEmpty()) {
+                        LOGGER.warning("PlatformComboBoxModel: All platforms filtered out. Adding default platform although it is not accepted by all PlatformFilters."); // NOI18N
+                        selectedPlatform = new PlatformKey(JavaPlatformManager.getDefault().getDefaultPlatform());
+                        orderedNames.add(selectedPlatform);
                     } else {
-                        PlatformKey pk = new PlatformKey(initialPlatform);
-                        orderedNames.add(pk);
-                        if (selectedPlatform == null) {
-                            selectedPlatform = pk;
+                        if (initialPlatform == null) {
+                            if (selectedPlatform == null || !orderedNames.contains(selectedPlatform)) {
+                                selectedPlatform = new PlatformKey(JavaPlatformManager.getDefault().getDefaultPlatform());
+                            }
+                        } else {
+                            PlatformKey pk = new PlatformKey(initialPlatform);
+                            orderedNames.add(pk);
+                            if (selectedPlatform == null) {
+                                selectedPlatform = pk;
+                            }
                         }
                     }
                 }

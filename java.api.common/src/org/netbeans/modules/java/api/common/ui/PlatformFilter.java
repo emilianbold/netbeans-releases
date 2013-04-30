@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.project.api;
+package org.netbeans.modules.java.api.common.ui;
 
-import java.util.Arrays;
-import javax.swing.ComboBoxModel;
-import javax.swing.ListCellRenderer;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.api.common.ui.PlatformFilter;
-import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
-import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
-import org.netbeans.modules.javafx2.project.J2SEProjectType;
-import org.netbeans.modules.javafx2.project.JFXProjectUtils;
-import org.netbeans.modules.javafx2.project.ui.PlatformsComboBoxModel;
 
 /**
+ * Platform filter is to be used in platform lists (e.g., in combo boxes).
+ * Projects should be able to register implementation in lookup, to restrict
+ * lists of platforms to only platforms fulfilling project's needs. This mechanism
+ * is useful in projects that extend the SE Project and need to hook into the
+ * underlying SE UI infrastructure.
  * 
- * @author Anton Chechel
  * @author Petr Somol
  */
-public final class JavaFXProjectUtils {
-
-    public static final String PROP_JAVA_PLATFORM_NAME = "java.platform.name"; // NOI18N
-    public static final String PROJECT_CONFIGURATION_NAMESPACE = J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE;
-
-    private JavaFXProjectUtils() {
-    }
+public interface PlatformFilter {
     
-    public static boolean isJavaFxEnabled(Project prj) {
-        return JFXProjectUtils.isFXProject(prj);
-    }
-
-    public static ComboBoxModel createPlatformComboBoxModel() {
-        return new PlatformsComboBoxModel(PlatformUiSupport.createPlatformComboBoxModel("default_platform",  // NOI18N
-                Arrays.<PlatformFilter>asList(new PlatformFilter() {
-                    @Override
-                    public boolean accept(JavaPlatform platform) {
-                        return JavaFXPlatformUtils.isJavaFXEnabled(platform);
-                    }                    
-                })));
-    }
-
-    public static ListCellRenderer createPlatformListCellRenderer() {
-        return PlatformUiSupport.createPlatformListCellRenderer();
-    }
-
-    public static JavaPlatform getPlatform(Object platformKey) {
-        return PlatformUiSupport.getPlatform(platformKey);
-    }
+    /**
+     * Returns true if platform fulfills whatever condition is implemented
+     * @since 1.49
+     */
+    boolean accept(JavaPlatform platform);
+    
 }
