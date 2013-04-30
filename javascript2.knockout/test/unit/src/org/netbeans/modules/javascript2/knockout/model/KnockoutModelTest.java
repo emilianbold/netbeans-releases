@@ -155,6 +155,10 @@ public class KnockoutModelTest extends ModelTestBase {
         checkModel("testfiles/model/extend2.js");
     }
 
+    public void testBindings1() throws Exception {
+        checkModel("testfiles/model/bindings1.js");
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
