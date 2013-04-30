@@ -90,7 +90,7 @@ public abstract class AbstractHint implements TreeRule {
         if (prefs != null) return prefs;
         
         //TODO: better fallback?
-        return HintsSettings.getGlobalSettings().getHintPreferences(HintMetadata.Builder.create(profile).build());
+        return HintsSettings.getGlobalSettings().getHintPreferences(HintMetadata.Builder.create(getId()).build());
     }
         
     /** Gets the UI description for this rule. It is fine to return null
