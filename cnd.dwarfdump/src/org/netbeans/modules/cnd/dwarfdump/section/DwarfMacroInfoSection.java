@@ -73,7 +73,7 @@ public class DwarfMacroInfoSection extends ElfSection {
     private final HashMap<Long, DwarfMacinfoTable> macinfoTables = new HashMap<Long, DwarfMacinfoTable>();
     private final boolean isMacro;
     private int offstSize = 4;
-    
+    private long headerSize = 0;
     
     public DwarfMacroInfoSection(DwarfReader reader, int sectionIdx, boolean isMacro) {
         super(reader, sectionIdx);
@@ -106,6 +106,7 @@ public class DwarfMacroInfoSection extends ElfSection {
             if ((bitness & 1)==1) {
                 offstSize = 8;
             }
+            headerSize = reader.getFilePointer() - (header.getSectionOffset() + offset);
             if ((bitness & 2)==2) {
                 long labelSectionAdress;
                 if (offstSize == 4) {
@@ -121,7 +122,6 @@ public class DwarfMacroInfoSection extends ElfSection {
                     long arg = reader.readUnsignedLEB128();
                     reader.seek(reader.getFilePointer() + arg);
                 }
-                
             }
         }
         MACINFO type = MACINFO.get(reader.readByte());
@@ -214,8 +214,12 @@ public class DwarfMacroInfoSection extends ElfSection {
                         index = reader.readLong();
                     }
                     long savePosition = reader.getFilePointer();
-                    indirect.push(savePosition);
-                    reader.seek(header.getSectionOffset() + offset + index + 3);
+                    if (indirect.contains(savePosition)) {
+                        System.err.println("infinite indirection in macro section of "+reader.getFileName());
+                    } else {
+                        indirect.push(savePosition);
+                        reader.seek(header.getSectionOffset() + offset + index + headerSize);
+                    }
                     break;
                 }
             }
@@ -296,7 +300,7 @@ public class DwarfMacroInfoSection extends ElfSection {
                     }
                     long savePosition = reader.getFilePointer();
                     indirect.push(savePosition);
-                    reader.seek(header.getSectionOffset() + offset + index + 3);
+                    reader.seek(header.getSectionOffset() + offset + index + headerSize);
                     break;
             }
         }
