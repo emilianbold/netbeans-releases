@@ -56,6 +56,8 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
@@ -100,7 +102,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                         try {
                             process();
                         } catch (SocketException e) {
-                            Exceptions.printStackTrace(e);
+                            Logger.getLogger(IOSDebugTransport.class.getName()).log(Level.FINE, "Debugging Connection Closed", e);
                             return;
                         } catch (Exception exception) {
                             Exceptions.printStackTrace(exception);

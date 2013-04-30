@@ -74,12 +74,12 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 public final class NestedType extends TypeImpl {
     private final CsmType parentType;
 
-    private NestedType(CsmType parent, CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
+    private NestedType(CsmType parent, CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
         super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
         this.parentType = parent;
     }
 
-    public static NestedType create(CsmType parent, CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
+    public static NestedType create(CsmType parent, CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
         return new NestedType(parent, file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
     }
     
@@ -93,7 +93,7 @@ public final class NestedType extends TypeImpl {
     }
 
     // package-local - for facory only
-    NestedType(NestedType type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
+    NestedType(NestedType type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
         super(type, pointerDepth, reference, arrayDepth, _const);
         this.parentType = type.parentType;
     }

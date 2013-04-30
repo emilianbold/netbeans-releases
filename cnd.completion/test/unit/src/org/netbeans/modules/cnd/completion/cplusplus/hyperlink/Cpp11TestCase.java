@@ -56,6 +56,13 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         super.setUp();
     }
 
+    public void test229025() throws Exception {
+        // #229025 - Editor cannot find static member of rvalue reference specialized template        
+        performTest("bug229025.cpp", 8, 20, "bug229025.cpp", 3, 36);
+        performTest("bug229025.cpp", 9, 20, "bug229025.cpp", 4, 40);
+        performTest("bug229025.cpp", 10, 20, "bug229025.cpp", 5, 41);
+    }
+    
     public void testAuto() throws Exception {
         performTest("auto.cpp", 14, 14, "auto.cpp", 2, 5);
     }

@@ -755,8 +755,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 method);
     }
 
-    public final void stepTo(String function) {
-        notImplemented("stepTo");	// NOI18N
+    public final void stepTo(String function) {     //FIXUP null function case!
+        if (function != null) {
+            send("-break-insert -t " + function);    //NOI18N
+            go();
+        }
     }
 
     public final void go() {

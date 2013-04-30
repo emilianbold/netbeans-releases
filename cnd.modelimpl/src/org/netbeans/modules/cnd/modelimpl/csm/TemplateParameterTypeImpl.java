@@ -72,7 +72,7 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
         this.parameter = UIDCsmConverter.objectToUID(parameter);
     }
 
-    TemplateParameterTypeImpl(TemplateParameterTypeImpl type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
+    TemplateParameterTypeImpl(TemplateParameterTypeImpl type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
         this.type = TypeFactory.createType(type.type, pointerDepth, reference, arrayDepth, _const);
         this.parameter = type.parameter;
     }
@@ -165,6 +165,11 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
     @Override
     public boolean isReference() {
         return type.isReference();
+    }
+
+    @Override
+    public boolean isRValueReference() {
+        return type.isRValueReference();
     }
 
     @Override

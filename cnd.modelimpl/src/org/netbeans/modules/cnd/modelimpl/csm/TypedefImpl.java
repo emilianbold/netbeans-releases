@@ -363,7 +363,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
                     type = TypeFactory.createFunPtrType(
                             getFile(),
                             returnType.getPointerDepth() - 1, 
-                            returnType.isReference(), 
+                            TypeFactory.getReferenceValue(returnType), 
                             returnType.getArrayDepth(), 
                             returnType.isConst(),
                             returnType.getStartOffset(), 

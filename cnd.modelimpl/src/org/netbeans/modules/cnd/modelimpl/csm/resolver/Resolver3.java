@@ -476,7 +476,7 @@ public final class Resolver3 implements Resolver {
     private void gatherMaps(Iterator<? extends CsmObject> it, boolean inLocalContext, int offset) {
         while(it.hasNext()) {
             CsmObject o = it.next();
-            assert o instanceof CsmOffsetable;
+            assert o == null || o instanceof CsmOffsetable : "non CsmOffsetable" + o;
             try {
                 int start = ((CsmOffsetable) o).getStartOffset();
                 int end = ((CsmOffsetable) o).getEndOffset();

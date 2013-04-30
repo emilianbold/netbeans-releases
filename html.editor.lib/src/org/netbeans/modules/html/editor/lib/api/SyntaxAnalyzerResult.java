@@ -725,7 +725,7 @@ public class SyntaxAnalyzerResult {
             }
 
             String prefix = named.namespacePrefix().toString();
-            if (prefixes.contains(prefix.toString())) {
+            if (prefixes != null && prefixes.contains(prefix)) {
                 //the prefix is mapped to the html namespace
                 return false;
             }
