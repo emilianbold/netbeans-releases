@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
 import org.openide.WizardDescriptor;
@@ -116,7 +117,7 @@ public final class ApplicationXmlWizardIterator implements WizardDescriptor.Inst
             try {
                 // FIXME mix of two API constants
                 FileObject dd =
-                        EarProjectGenerator.setupDD(projectEar.getJ2eePlatformVersion(), projectEar.getMetaInf(), panel.getProject(), true);
+                        EarProjectGenerator.setupDD(Profile.fromPropertiesString(projectEar.getJ2eePlatformVersion()), projectEar.getMetaInf(), panel.getProject(), true);
                 return Collections.singleton(dd);
             } catch (IOException ioe) {
                 Logger.getLogger("global").log(Level.INFO, null, ioe);
