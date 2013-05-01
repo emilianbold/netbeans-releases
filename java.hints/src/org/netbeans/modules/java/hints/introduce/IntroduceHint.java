@@ -468,8 +468,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     //the variable name would incorrectly clash with itself:
                     guessedName = Utilities.guessName(info, resolved, resolved.getParentPath(), cs.getFieldNamePrefix(), cs.getFieldNameSuffix());
                 } else if (!variableRewrite) {
-                    guessedName = Utilities.makeNameUnique(info, info.getTrees().getScope(constantTarget),
-                            guessedName, cs.getFieldNamePrefix(), cs.getFieldNameSuffix());
+                    TreePath pathToClass = resolved;
+
+                    while (pathToClass != null && !TreeUtilities.CLASS_TREE_KINDS.contains(pathToClass.getLeaf().getKind())) {
+                        pathToClass = pathToClass.getParentPath();
+                    }
+                    
+                    if (pathToClass != null) { //XXX: should actually produce two different names: one when replacing duplicates, one when not replacing them
+                        guessedName = Utilities.makeNameUnique(info, info.getTrees().getScope(pathToClass),
+                                guessedName, cs.getFieldNamePrefix(), cs.getFieldNameSuffix());
+                    }
                 }
 
                 field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, statik, allowFinalInCurrentMethod);

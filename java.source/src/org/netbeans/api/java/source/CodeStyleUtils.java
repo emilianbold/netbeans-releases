@@ -114,7 +114,7 @@ public final class CodeStyleUtils {
         int start = 0;
         int end = name.length();
         boolean decapitalize = false;
-        if (prefix != null && CharSequenceUtilities.startsWith(name, prefix)) {
+        if (prefix != null && prefix.length() > 0 && CharSequenceUtilities.startsWith(name, prefix)) {
             start = prefix.length();
             if (Character.isAlphabetic(prefix.charAt(prefix.length() - 1))) {
                 decapitalize = true;

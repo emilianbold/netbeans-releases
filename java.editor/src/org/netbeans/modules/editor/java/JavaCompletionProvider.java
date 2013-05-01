@@ -129,6 +129,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         assert source != null;
         assert (queryType & COMPLETION_QUERY_TYPE) != 0;
         final JavaCompletionQuery query = new JavaCompletionQuery(queryType, offset, false);
+        query.codeStyle = CodeStyle.getDefault(source.getFileObject());
         ParserManager.parse(Collections.singletonList(source), query.getTask());
         if (offset != substitutionOffset) {
             for (JavaCompletionItem jci : query.results) {
@@ -2622,7 +2623,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             boolean preferLong = false;
             String csPrefix = null;
             String csSuffix = null;
-            if(codeStyle != null) {
+            if(codeStyle != null && false) {
                 preferLong = codeStyle.preferLongerNames();
                 if(env.getScope().getEnclosingMethod() == null) {
                     if(exPath.getParentPath().getParentPath().getLeaf().getKind() == Tree.Kind.METHOD) {
