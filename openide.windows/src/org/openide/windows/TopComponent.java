@@ -1614,7 +1614,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
          * e.g. multiview sub-tab is selected.
          */
         public SubComponent( String displayName, String description, ActionListener activator, boolean active ) {
-            this(displayName, description, activator, active, null, false);
+            this(displayName, description, activator, active, Lookup.EMPTY, false);
         }
 
 	/**

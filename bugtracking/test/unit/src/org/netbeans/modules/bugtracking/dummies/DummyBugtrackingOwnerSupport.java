@@ -119,17 +119,7 @@ public class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
     }
 
     @Override
-    protected RepositoryImpl getRepository(DataObject dataObj) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public RepositoryImpl getRepository(FileObject fileObject, boolean askIfUnknown) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    @Override
-    public RepositoryImpl getRepository(File file, String issueId, boolean askIfUnknown) {
+    public RepositoryImpl getRepository(File file, boolean askIfUnknown) {
         if (file == null) {
             throw new IllegalArgumentException("file is <null>");
         }
@@ -146,7 +136,7 @@ public class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
     }
 
     @Override
-    protected RepositoryImpl getRepositoryForContext(File context, String issueId, boolean askIfUnknown) {
+    protected RepositoryImpl getRepositoryForContext(File context, boolean askIfUnknown) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

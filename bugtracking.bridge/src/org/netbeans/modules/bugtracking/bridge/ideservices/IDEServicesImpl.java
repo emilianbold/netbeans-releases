@@ -69,6 +69,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
@@ -116,23 +117,13 @@ public class IDEServicesImpl implements IDEServices {
     }
 
     @Override
-    public boolean providesFindFile() {
-        return true;
-    }
-    
-    @Override
-    public FileObject findFile(String resourcePath) {
-        return GlobalPathRegistry.getDefault().findResource(resourcePath);
-    }    
-    
-    @Override
     public boolean providesJumpTo() {
         return true;
     }
 
     @Override
-    public void jumpTo(String label, String resource) {
-        TypeDescriptor td = TypeBrowser.browse(label, resource, null);
+    public void jumpTo(String resourcePath, String title) {
+        TypeDescriptor td = TypeBrowser.browse(title, resourcePath, null);
         if(td != null) {
             td.open();
         }
@@ -162,7 +153,7 @@ public class IDEServicesImpl implements IDEServices {
                                 return updateElement.getDescription();
                             }
                             @Override
-                            public boolean openInstallWizard() {
+                            public boolean installOrUpdate() {
                                 OperationContainer<InstallSupport> oc = isInstalled ? 
                                         OperationContainer.createForUpdate() : 
                                         OperationContainer.createForInstall();
@@ -228,12 +219,18 @@ public class IDEServicesImpl implements IDEServices {
     }
 
     @Override
-    public boolean providesSearchHistory(File file) {
-        return SearchHistorySupport.getInstance(file) != null;
+    public boolean providesOpenHistory() {
+        return true;
     }
 
     @Override
-    public boolean searchHistory(File file , int line) {
+    public boolean openHistory(String resourcePath, int line) {
+        FileObject fo = findFile(resourcePath);
+        File file = fo != null ? FileUtil.toFile(fo) : null;
+        if(file == null) {
+            LOG.log(Level.INFO, "No file available for path {0}", resourcePath);
+            return false;
+        }
         try {
             SearchHistorySupport support = SearchHistorySupport.getInstance(file);
             if(support != null) {
@@ -244,4 +241,9 @@ public class IDEServicesImpl implements IDEServices {
         }
         return false;
     }
+    
+    private  FileObject findFile(String resourcePath) {
+        return GlobalPathRegistry.getDefault().findResource(resourcePath);
+    }    
+
 }

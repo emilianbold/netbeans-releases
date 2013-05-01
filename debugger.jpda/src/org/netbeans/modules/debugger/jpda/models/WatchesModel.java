@@ -49,6 +49,7 @@ import com.sun.jdi.Value;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.InvalidObjectException;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import javax.security.auth.RefreshFailedException;
@@ -700,6 +701,16 @@ public class WatchesModel implements TreeModel {
 
         public String getToStringValue() throws InvalidExpressionException {
             return ""; // NOI18N
+        }
+
+        @Override
+        public void setFromMirrorObject(Object obj) throws InvalidObjectException {
+            throw new InvalidObjectException("EmptyWatch");
+        }
+
+        @Override
+        public Object createMirrorObject() {
+            return null;
         }
     }
     

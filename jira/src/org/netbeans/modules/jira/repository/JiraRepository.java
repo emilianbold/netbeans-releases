@@ -82,7 +82,6 @@ import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.JiraExecutor;
 import org.netbeans.modules.jira.commands.NamedFiltersCommand;
-import org.netbeans.modules.jira.issue.JiraTaskListProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.query.QueryController;
@@ -157,7 +156,6 @@ public class JiraRepository {
         String url = info.getUrl();
 
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-        JiraTaskListProvider.getInstance().notifyRepositoryCreated(this);
     }
     
     public RepositoryInfo getInfo() {
@@ -277,7 +275,6 @@ public class JiraRepository {
             }
         }
         resetRepository(true);
-        JiraTaskListProvider.getInstance().notifyRepositoryRemoved(this);
     }
 
     public void removeQuery(JiraQuery query) {
