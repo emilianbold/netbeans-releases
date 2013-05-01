@@ -65,7 +65,6 @@ public final class ProjectServerWizardPanel implements WizardDescriptor.Panel, W
     public static final String JAVA_PLATFORM = "setJavaPlatform"; // NOI18N
     public static final String SOURCE_LEVEL = "setSourceLevel"; // NOI18N
     public static final String WIZARD_SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
-    public static final String WIZARD_SERVER_LIBRARY = "serverLibrary"; // NOI18N
     public static final String MAIN_CLASS = "mainClass"; // NOI18N
     public static final String WAR_NAME = "warName"; // NOI18N
     public static final String JAR_NAME = "jarName"; // NOI18N
