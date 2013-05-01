@@ -627,7 +627,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
         
         final long timeStamp = jar2Delete[0].lastModified().getTime();
         
-        jar2Delete[0].delete();
+        IndexingManager.getDefault().runProtected(new Callable<Void>() {
+            @Override public Void call() throws Exception {
+                jar2Delete[0].delete();
+                return null;
+            }
+        });
         
         ParserManager.parseWhenScanFinished(Collections.<Source>emptyList(), new UserTask() {
             @Override
