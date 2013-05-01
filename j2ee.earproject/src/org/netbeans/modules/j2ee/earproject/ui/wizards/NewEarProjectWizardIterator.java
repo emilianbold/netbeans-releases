@@ -161,20 +161,19 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         String librariesDefinition =
                 SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES));
         SharableLibrariesUtils.setLastProjectSharable(librariesDefinition != null);
-        String serverLibraryName = (String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY);
         return testableInstantiate(dirF,name,j2eeLevel, serverInstanceID, warName,
                 ejbJarName, carName, mainClass, platformName, sourceLevel, handle, 
-                librariesDefinition, serverLibraryName, cdi);
+                librariesDefinition, cdi);
     }
     
     /** <strong>Package private for unit test only</strong>. */
     static Set<FileObject> testableInstantiate(File dirF, String name, Profile j2eeProfile,
             String serverInstanceID, String warName, String ejbJarName, String carName,
             String mainClass, String platformName, String sourceLevel, ProgressHandle handle,
-            String librariesDefinition, String serverLibraryName, Boolean cdi) throws IOException {
+            String librariesDefinition, Boolean cdi) throws IOException {
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
         AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeProfile,
-                serverInstanceID, sourceLevel, librariesDefinition, serverLibraryName);
+                serverInstanceID, sourceLevel, librariesDefinition);
         if (handle != null)
             handle.progress(2);
         FileObject dir = FileUtil.toFileObject(dirF);
@@ -217,7 +216,6 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setJavaPlatformName(platformName);
             createData.setSourceLevel(sourceLevel);
             createData.setLibrariesDefinition(librariesDefinition);
-            createData.setServerLibraryName(serverLibraryName);
             createData.setCDIEnabled(cdi);
 
             if (handle != null) {
@@ -247,7 +245,6 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.CAR));
             createData.setServerInstanceID(serverInstanceID);
             createData.setLibrariesDefinition(librariesDefinition);
-            createData.setServerLibraryName(serverLibraryName);
             createData.setCDIEnabled(cdi);
 
             if (handle != null)
@@ -274,7 +271,6 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setJavaEEProfile(EarProjectGenerator.getAcceptableProfile(j2eeProfile, serverInstanceID, J2eeModule.Type.EJB));
             createData.setServerInstanceID(serverInstanceID);
             createData.setLibrariesDefinition(librariesDefinition);
-            createData.setServerLibraryName(serverLibraryName);
             createData.setCDIEnabled(cdi);
 
             if (handle != null)

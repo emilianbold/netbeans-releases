@@ -797,7 +797,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
     private void librariesBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_librariesBrowseActionPerformed
         if (!isSharable) {
-            boolean result = makeSharable(uiProperties, new String[1]);
+            boolean result = makeSharable(uiProperties);
             if (result) {
                 isSharable = true;
                 sharedLibrariesLabel.setEnabled(true);
@@ -823,7 +823,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         }
     }//GEN-LAST:event_librariesBrowseActionPerformed
     
-    static boolean makeSharable(final EjbJarProjectProperties uiProperties, final String returnServerLibrary[]) {
+    static boolean makeSharable(final EjbJarProjectProperties uiProperties) {
         List<String> libs = new ArrayList<String>();
         List<String> jars = new ArrayList<String>();
         collectLibs(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(), libs, jars);
@@ -831,39 +831,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs, jars);
         collectLibs(uiProperties.ENDORSED_CLASSPATH_MODEL, libs, jars);
         libs.add("CopyLibs"); // NOI18N
-        boolean res = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
-        /* Disabled because of 190387 - make removal and cleanup in 7.1
-        if (res) {
-            if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_ServerLibrary"),
-                    NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_ServerLibrary_Title"),
-                    NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION) {
-                ProjectManager.mutex().writeAccess(new Runnable() {
-                    public void run()  {
-                        File loc = PropertyUtils.resolveFile(FileUtil.toFile(uiProperties.getProject().getProjectDirectory()), uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
-                        String serverID = uiProperties.getProject().evaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
-                        try {
-                            Library serverLibrary = SharabilityUtility.findOrCreateLibrary(loc, serverID);
-                            assert returnServerLibrary.length == 1;
-                            returnServerLibrary[0] = serverLibrary.getName();
-                            AntProjectHelper helper = uiProperties.getProject().getAntProjectHelper();
-                            EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            EditableProperties epPriv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                            J2EEProjectProperties.setSharableServerProperties(ep, epPriv, serverLibrary.getName());
-                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, epPriv);
-                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                            ProjectManager.getDefault().saveProject(uiProperties.getProject());
-                            ClassPathUiSupport.addLibraries(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(),
-                                    null, new Library[]{serverLibrary}, new HashSet<Library>(), null);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                            return;
-                        }
-                    }
-                });
-            }
-        } */
-        return res;
+        return SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
     }
 
     private static void collectLibs(DefaultListModel model, List<String> libs, List<String> jarReferences) {

@@ -747,8 +747,6 @@ public final class WebProject implements Project {
                 EditableProperties projectProps = helper.getProperties(
                         AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-                if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
-                        WebProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                     Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
                     String classpath = J2EEProjectProperties.toClasspathString(
                             Util.getJ2eePlatformClasspathEntries(WebProject.this, null), roots);
@@ -764,7 +762,6 @@ public final class WebProject implements Project {
                     } catch (IOException e) {
                         Exceptions.printStackTrace(e);
                     }
-                }
                 return null;
             }
         });
