@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.completion.interference;
+package org.netbeans.modules.groovy.editor.completion.inference;
 
 import java.util.Collection;
 import java.util.HashMap;

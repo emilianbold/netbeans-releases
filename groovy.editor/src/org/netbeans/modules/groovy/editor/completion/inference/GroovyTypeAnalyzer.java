@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.completion.interference;
+package org.netbeans.modules.groovy.editor.completion.inference;
 
 import java.util.Collections;
 import java.util.Set;
