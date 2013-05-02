@@ -110,6 +110,20 @@ is the proper place.
     <changes>
         <change>
             <api name="apisupport_spi"/>
+            <summary>Modified branding for internationalization</summary>
+            <version major="1" minor="63"/>
+            <date day="1" month="5" year="2013"/>
+            <author login="mkozeny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <code>BrandingModel</code> and <code>BrandingSupport</code> now contains branding methods
+                internationalization.
+            </description>
+            <class package="org.netbeans.modules.apisupport.project.spi" name="BrandingModel"/>
+            <class package="org.netbeans.modules.apisupport.project.spi" name="BrandingSupport"/>
+        </change>
+        <change>
+            <api name="apisupport_spi"/>
             <summary>Added explicitLayer method</summary>
             <version major="1" minor="62"/>
             <date day="26" month="3" year="2013"/>

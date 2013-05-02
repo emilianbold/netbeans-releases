@@ -45,6 +45,7 @@ package org.netbeans.modules.apisupport.project.suite;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.spi.BrandingSupport;
@@ -58,9 +59,10 @@ class SuiteBrandingSupport extends BrandingSupport {
     private final SuiteProject project;
     private NbPlatform platform;
 
-    SuiteBrandingSupport(SuiteProject project, String brandingPath) throws IOException {
+    SuiteBrandingSupport(SuiteProject project, String brandingPath, Locale locale) throws IOException {
         super(project, brandingPath);
         this.project = project;
+        this.locale = locale;
     }
 
     private NbPlatform getActivePlatform() {

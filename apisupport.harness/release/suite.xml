@@ -146,6 +146,9 @@ made subject to such option by the copyright holder.
                 <isset property="branding.token"/>
             </and>
         </condition>
+        <condition property="branding.locales.impl" value="${branding.locales}" else="">
+            <isset property="branding.locales"/>
+        </condition>
     </target>
 
     <target name="-release.dir">
@@ -495,9 +498,9 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
 
     <target name="branding" depends="-init" if="run.branding">
         <mkdir dir="${cluster}"/>
-        <branding cluster="${cluster}" overrides="${branding.dir}" token="${branding.token}"/>
+        <branding cluster="${cluster}" overrides="${branding.dir}" token="${branding.token}"  locales="${branding.locales.impl}"/>
     </target>
-
+    
     <target name="run" depends="build,-jdk-init" description="Runs this suite in place.">
         <ant antfile="${harness.dir}/run.xml" target="run">
             <reference refid="cluster.path.id"/>
