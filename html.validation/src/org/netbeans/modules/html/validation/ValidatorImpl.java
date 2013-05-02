@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.html.validation;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.*;
 import java.util.Iterator;
@@ -60,6 +63,7 @@ import org.netbeans.modules.html.editor.lib.api.validation.Validator;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.SAXException;
 
@@ -97,7 +101,25 @@ public class ValidatorImpl implements Validator {
             }
 
             String encoding = file != null ? FileEncodingQuery.getEncoding(file).name() : "UTF-8"; //NOI18N
-
+            
+//            StringBuilder content  = new StringBuilder();
+//            try {
+//                Reader sourceReader = context.getSourceReader();
+//                char[] b = new char[1024];
+//                int read;
+//                while((read = sourceReader.read(b)) > 0) {
+//                    content.append(new String(b, 0, read));
+//                }
+//                sourceReader.reset();
+//            } catch (IOException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//            System.out.println("----------------------------------------");
+//            System.out.println(content.toString());
+//            System.out.println("----------------------------------------");
+//            
+//            validatorTransaction.validateCode(new StringReader(content.toString()), 
+            
             validatorTransaction.validateCode(context.getSourceReader(), 
                     sourceFileURL != null ? sourceFileURL.toExternalForm() : null, 
                     filteredNamespaces, 
