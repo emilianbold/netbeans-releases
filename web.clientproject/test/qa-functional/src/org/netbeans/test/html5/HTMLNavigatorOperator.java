@@ -50,8 +50,9 @@ import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.modules.html.navigator.Description;
-import org.netbeans.modules.html.navigator.HtmlElementNode;
+//TODO: fixme
+//import org.netbeans.modules.html.navigator.Description;
+//import org.netbeans.modules.html.navigator.HtmlElementNode;
 import org.openide.explorer.view.Visualizer;
 
 /**
@@ -97,9 +98,10 @@ public class HTMLNavigatorOperator extends TopComponentOperator {
             org.openide.nodes.Node node = Visualizer.findNode(model.getChild(o, i));
             child = (TreeNode) model.getChild(o, i);
             sb.append(getTreePathForNode(child).toString());
-            if (node instanceof HtmlElementNode) {
-                sb.append(printHTMLNode((HtmlElementNode) node)).append("\n");
-            }
+//TODO: fixme
+//            if (node instanceof HtmlElementNode) {
+//                sb.append(printHTMLNode((HtmlElementNode) node)).append("\n");
+//            }
 
             if (!model.isLeaf(child)) {
                 sb.append(traverse(model, child));
@@ -108,31 +110,31 @@ public class HTMLNavigatorOperator extends TopComponentOperator {
         return sb.toString();
     }
 
-    private String printHTMLNode(HtmlElementNode element) {
-
-        Description dom = element.getDOMDescription();
-        Description source = element.getSourceDescription();
-        StringBuilder sb = new StringBuilder();
-        sb.append(element.getDisplayName());
-        Description d = source != null ? source : dom;
-
-        String idVal = d.getAttributeValue("id");
-        if (idVal != null) {
-            sb.append("#").append(idVal);
-        }
-        String classVal = d.getAttributeValue("class");
-        if (classVal != null) {
-            sb.append(".").append(classVal);
-        }
-
-        if (source == null) {
-            sb.append(";DOM");
-        } else if (dom == null) {
-            sb.append(";SOURCE");
-        }
-
-        return sb.toString().trim();
-    }
+//    private String printHTMLNode(HtmlElementNode element) {
+//
+//        Description dom = element.getDOMDescription();
+//        Description source = element.getSourceDescription();
+//        StringBuilder sb = new StringBuilder();
+//        sb.append(element.getDisplayName());
+//        Description d = source != null ? source : dom;
+//
+//        String idVal = d.getAttributeValue("id");
+//        if (idVal != null) {
+//            sb.append("#").append(idVal);
+//        }
+//        String classVal = d.getAttributeValue("class");
+//        if (classVal != null) {
+//            sb.append(".").append(classVal);
+//        }
+//
+//        if (source == null) {
+//            sb.append(";DOM");
+//        } else if (dom == null) {
+//            sb.append(";SOURCE");
+//        }
+//
+//        return sb.toString().trim();
+//    }
 
     /**
      * Clicks on element in Navigator window.
@@ -158,9 +160,10 @@ public class HTMLNavigatorOperator extends TopComponentOperator {
         sb.append(tp.toString().replaceFirst("\\[root, ", "["));// ignore root in path
         org.openide.nodes.Node node = Visualizer.findNode(treeDOM().getLastSelectedPathComponent());
 
-        if (node instanceof HtmlElementNode) {
-            sb.append(printHTMLNode((HtmlElementNode) node));
-        }
+//TODO: fixme
+//        if (node instanceof HtmlElementNode) {
+//            sb.append(printHTMLNode((HtmlElementNode) node));
+//        }
         
         return sb.toString();
     }
