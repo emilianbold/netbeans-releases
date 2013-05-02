@@ -94,9 +94,9 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
         MACROS.add(LatteElement.Factory.createMacro("foreach", "$array as $item", "foreach $${array} as $${item}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("while", "true", "while ${true}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("include", "'file.latte'", "include '${file.latte}'")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("include", "#block", "include #{block}'")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("extends", "'file.latte'", "extends '${file.latte}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("layout", "'file.latte'", "layout '${file.latte}")); //NOI18N
+        MACROS.add(LatteElement.Factory.createMacro("include", "#block", "include #{block}")); //NOI18N
+        MACROS.add(LatteElement.Factory.createMacro("extends", "'file.latte'", "extends '${file.latte}'")); //NOI18N
+        MACROS.add(LatteElement.Factory.createMacro("layout", "'file.latte'", "layout '${file.latte}'")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("control", "name", "control ${name}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("cache", "$key", "cache $${key}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("snippet", "$name", "snippet ${name}")); //NOI18N
