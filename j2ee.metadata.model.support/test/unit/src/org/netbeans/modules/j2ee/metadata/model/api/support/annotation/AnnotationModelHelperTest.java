@@ -59,6 +59,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
@@ -142,7 +143,10 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
         contextLeft[0] = false;
         helper.runJavaSourceTask(empty, false);
         assertFalse(contextLeft[0]);
-        helper.runJavaSourceTaskWhenScanFinished(empty);
+        Future<Void> future = helper.runJavaSourceTaskWhenScanFinished(empty);
+        if (!future.isDone()) {
+            SourceUtils.waitScanFinished();
+        }
         assertTrue(contextLeft[0]);
         WeakReference<JavaContextListener> listenerRef = new WeakReference<JavaContextListener>(listener);
         listener = null;
