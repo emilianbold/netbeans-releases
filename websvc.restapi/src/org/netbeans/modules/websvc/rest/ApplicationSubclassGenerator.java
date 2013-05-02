@@ -172,10 +172,16 @@ public class ApplicationSubclassGenerator {
                     Collection<String> classes = new TreeSet<String>();
                     RestServices services = metadata.getRoot();
                     for (RestServiceDescription description : services.getRestServiceDescription()) {
-                        classes.add(description.getClassName());
+                        // ignore REST services for which we do not have sources (#216168, #229168):
+                        if (description.getFile() != null) {
+                            classes.add(description.getClassName());
+                        }
                     }
                     for (RestProviderDescription provider : services.getProviders()) {
-                        classes.add(provider.getClassName());
+                        // ignore REST providers for which we do not have sources (#216168, #229168):
+                        if (provider.getFile() != null) {
+                            classes.add(provider.getClassName());
+                        }
                     }
                     return classes;
                 }
@@ -384,20 +390,10 @@ public class ApplicationSubclassGenerator {
         builder.append('}');
     }
 
-    private boolean handleResource(CompilationController controller, String className, StringBuilder builder) throws IllegalArgumentException {
-        // Fix for BZ#216168
-        TypeElement typeElement = controller.getElements().getTypeElement(className);
-        if (typeElement != null) {
-            FileObject file = SourceUtils.getFile(ElementHandle.
-                    create(typeElement), controller.getClasspathInfo());
-            if (file == null) {
-                return false;
-            }
-        }
+    private void handleResource(CompilationController controller, String className, StringBuilder builder) throws IllegalArgumentException {
         builder.append("resources.add(");       // NOI18N
         builder.append( className );
         builder.append(".class);");             // NOI18N
-        return true;
     }
 
     private String getJacksonProviderSnippet(){

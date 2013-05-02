@@ -43,6 +43,7 @@
 package org.netbeans.modules.websvc.rest.nodes;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -85,7 +86,7 @@ class RestServiceChildFactory extends ChildFactory {
             RestServicesModel model = getModel();
             assert model != null : "null model"; // NOI18N
             if (model != null) {
-                model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>()
+                model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>()
                 {
 
                     @Override
@@ -95,8 +96,12 @@ class RestServiceChildFactory extends ChildFactory {
                         RestServiceDescription[] restServiceDescription = 
                             metadata.getRoot().getRestServiceDescription();
                         Arrays.sort(restServiceDescription, COMPARATOR);
-
-                        keys.addAll( Arrays.asList( restServiceDescription ));
+                        for (RestServiceDescription r : restServiceDescription) {
+                            // ignore REST services for which we do not have sources (#216168, #229168):
+                            if (r.getFile() != null) {
+                                keys.add(r);
+                            }
+                        }
                         return null;
                     }
                 });

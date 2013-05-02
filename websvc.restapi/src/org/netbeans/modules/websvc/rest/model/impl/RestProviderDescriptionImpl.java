@@ -43,10 +43,12 @@ package org.netbeans.modules.websvc.rest.model.impl;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.websvc.rest.model.api.RestProviderDescription;
 import org.netbeans.modules.websvc.rest.model.impl.RestServicesImpl.Status;
+import org.openide.filesystems.FileObject;
 
 public class RestProviderDescriptionImpl extends PersistentObject implements RestProviderDescription {
 
@@ -62,6 +64,11 @@ public class RestProviderDescriptionImpl extends PersistentObject implements Res
         return className;
     }
 
+    @Override
+    public FileObject getFile(){
+        return SourceUtils.getFile(getTypeElementHandle(), getHelper().getClasspathInfo());
+    }
+    
     public Status refresh(TypeElement typeElement) {
         if (typeElement.getKind() == ElementKind.INTERFACE) {
             return Status.REMOVED;
