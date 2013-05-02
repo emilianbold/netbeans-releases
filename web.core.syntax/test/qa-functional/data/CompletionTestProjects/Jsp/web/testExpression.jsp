@@ -60,11 +60,6 @@ timeInMillis
 #{calendar.timeInMillis
 --%>
 
-<%--CC
-#{calendar.
-toString
-#{calendar.toString
---%>
 
 </body>
 </html>

@@ -59,6 +59,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -170,7 +171,14 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
                         TreePath bodyPath = new TreePath(methodPath, methodTree.getBody());
                         scope = info.getTrees().getScope(bodyPath);
                         
-                        final String parameterName = JavaPluginUtils.makeNameUnique(info, scope, name);
+                        CodeStyle cs;
+                        Document doc = info.getDocument();
+                        if(doc != null) {
+                            cs = CodeStyle.getDefault(doc);
+                        } else {
+                            cs = CodeStyle.getDefault(info.getFileObject());
+                        }
+                        final String parameterName = JavaPluginUtils.makeNameUnique(info, scope, name, cs.getParameterNamePrefix(), cs.getParameterNameSuffix());
                         
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override

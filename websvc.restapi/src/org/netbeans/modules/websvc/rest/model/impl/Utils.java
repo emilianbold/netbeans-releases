@@ -63,6 +63,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -213,14 +214,6 @@ public class Utils {
                 Exceptions.printStackTrace(ex);
             }
         }
-    }
-    
-    public static ClasspathInfo getClassPathInfo(RestSupport restSupport) {
-        FileObject root = restSupport.findSourceRoot();
-        if (root != null) {
-            return ClasspathInfo.create(root);
-        }
-        return null;
     }
     
     static boolean isRest(TypeElement type, AnnotationModelHelper helper) {

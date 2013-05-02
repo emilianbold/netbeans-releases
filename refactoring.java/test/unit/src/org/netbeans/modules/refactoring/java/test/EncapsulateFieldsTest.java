@@ -49,14 +49,17 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.CodeStyleUtils;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.java.source.save.DiffContext;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
-import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring;
 import org.openide.filesystems.FileObject;
 
@@ -511,7 +514,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
             public void run(CompilationController info) throws Exception {
                 info.toPhase(JavaSource.Phase.RESOLVED);
                 CompilationUnitTree cut = info.getCompilationUnit();
-
+                CodeStyle cs = DiffContext.getCodeStyle(info);
                 final ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
                 final TreePath classPath = info.getTrees().getPath(cut, classTree);
                 TypeElement classEl = (TypeElement) info.getTrees().getElement(classPath);
@@ -520,8 +523,9 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 LinkedList<EncapsulateFieldsRefactoring.EncapsulateFieldInfo> fields = new LinkedList<EncapsulateFieldsRefactoring.EncapsulateFieldInfo>();
                 for (int p : position) {
                     VariableElement field = fieldsIn.get(p);
-                    String getName = EncapsulateFieldRefactoringPlugin.computeGetterName(field);
-                    String setName = EncapsulateFieldRefactoringPlugin.computeSetterName(field);
+                    boolean staticMod = field.getModifiers().contains(Modifier.STATIC);
+                    String getName = CodeStyleUtils.computeGetterName(field.getSimpleName(), field.asType().getKind() == TypeKind.BOOLEAN, staticMod, cs);
+                    String setName = CodeStyleUtils.computeSetterName(field.getSimpleName(), staticMod, cs);
                     EncapsulateFieldsRefactoring.EncapsulateFieldInfo encInfo = new EncapsulateFieldsRefactoring.EncapsulateFieldInfo(TreePathHandle.create(field, info), getName, setName);
                     fields.add(encInfo);
                 }

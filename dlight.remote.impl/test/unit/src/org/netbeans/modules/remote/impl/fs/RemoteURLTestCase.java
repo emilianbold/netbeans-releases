@@ -131,7 +131,6 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
             assertTrue("FileObject should be readable: " + fo.getPath(), fo.canRead());
             final String referenceText = "a quick brown fox...";
             writeFile(fo, referenceText);
-            WritingQueue.getInstance(execEnv).waitFinished(null);
             String readContent = ProcessUtils.execute(execEnv, "cat", tempFile).output;
             assertEquals("File content differ", referenceText.toString(), readContent.toString());
             doTestUrlConnectionRead(fo, readContent, true);
@@ -184,7 +183,6 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
                     wr.close();
                 }
             }
-            WritingQueue.getInstance(execEnv).waitFinished(null);
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "cat", tempFile);
             assertEquals("cat failed: " + res.error, 0, res.exitCode);
             assertEquals(referenceText, res.output);

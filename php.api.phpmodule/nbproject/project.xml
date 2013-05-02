@@ -152,6 +152,7 @@
                 <friend>org.netbeans.modules.php.api.framework</friend>
                 <friend>org.netbeans.modules.php.api.testing</friend>
                 <friend>org.netbeans.modules.php.apigen</friend>
+                <friend>org.netbeans.modules.php.atoum</friend>
                 <friend>org.netbeans.modules.php.code.analysis</friend>
                 <friend>org.netbeans.modules.php.composer</friend>
                 <friend>org.netbeans.modules.php.dbgp</friend>
@@ -159,6 +160,7 @@
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.fuel</friend>
                 <friend>org.netbeans.modules.php.nette</friend>
+                <friend>org.netbeans.modules.php.nette2</friend>
                 <friend>org.netbeans.modules.php.phpdoc</friend>
                 <friend>org.netbeans.modules.php.phpunit</friend>
                 <friend>org.netbeans.modules.php.project</friend>

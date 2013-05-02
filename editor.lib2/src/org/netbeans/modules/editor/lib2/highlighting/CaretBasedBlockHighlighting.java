@@ -44,11 +44,14 @@
 
 package org.netbeans.modules.editor.lib2.highlighting;
 
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.AbstractDocument;
@@ -59,6 +62,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
@@ -318,6 +322,12 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
     }
         
     /*private*/ void setAttrs(Lookup.Result<FontColorSettings> result) {
+        if (Boolean.TRUE.equals(component.getClientProperty("AsTextField"))) {
+            attribs = AttributesUtilities.createImmutable(
+                    StyleConstants.Background, (Color) UIManager.get("TextField.selectionBackground"),
+                    StyleConstants.Foreground, (Color) UIManager.get("TextField.selectionForeground"));
+            return;
+        }
         FontColorSettings fcs = result.allInstances().iterator().next();
         attribs = fcs.getFontColors(coloringName);
         if (attribs == null) {

@@ -58,8 +58,9 @@ public class DeclarationScopeImpl extends JsObjectImpl implements DeclarationSco
     final private DeclarationScope inScope;
     final private List<DeclarationScope> declaredScopes;
     
-    public DeclarationScopeImpl(DeclarationScope inScope, JsObject inObject, Identifier name, OffsetRange offsetRange) {
-        super(inObject, name, offsetRange);
+    public DeclarationScopeImpl(DeclarationScope inScope, JsObject inObject,
+            Identifier name, OffsetRange offsetRange, String sourceLabel) {
+        super(inObject, name, offsetRange, sourceLabel);
         this.inScope = inScope;
         this.declaredScopes = new ArrayList<DeclarationScope>();
     }

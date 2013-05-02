@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.bugtracking.ide.spi;
 
+import java.io.File;
+import java.io.IOException;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -50,15 +52,133 @@ import org.openide.filesystems.FileObject;
  */
 public interface IDEServices {
     
+    /**
+     * Determines whether the functionality to open a document for a resource (file)
+     * is available. <br>
+     * 
+     * @return <code>true</code> if available, otherwise <code>false</code>
+     */
     public boolean providesOpenDocument();
-    public void openDocument(String path, int offset);
     
-    public boolean providesSearchResource();
-    public FileObject searchResource(String path);
-        
+    /**
+     * Opens the document representing the given resource. 
+     * <b>Note</b> that the given path doesn't necessarily have to be a fully qualified path, but 
+     * might be in a shorter form as given by e.g. an stacktrace - org/netbeans/modules/bugzilla/Bugzilla.java
+
+     * @param resourcePath
+     * @param offset 
+     */
+    public void openDocument(String resourcePath, int offset);
+    
+    /**
+     * Determines whether the functionality to jump to a resource is available. 
+     * 
+     * @return <code>true</code> if available, otherwise <code>false</code>
+     */
     public boolean providesJumpTo();
-    public void jumpTo(String label, String resource);
     
+    /**
+     * 
+     * Opens a search/find resource UI prefilled with the given resource. 
+     * <br>
+     * <b>Note</b> that the given resource doesn't necessarily have to be a be a fully qualified path, but 
+     * might be just an arbitrary string potentially identifying e.g. a java type.
+     * 
+     * @param resource
+     * @param title 
+     */
+    public void jumpTo(String resource, String title);
+
+    /**
+     * Determines whether the functionality to download a plugin is available 
+     * 
+     * @return <code>true</code> if available, otherwise <code>false</code>
+     */
+    public boolean providesPluginUpdate();
     
+    /**
+     * Returns a Plugin with the given code name base in case there is none installed, 
+     * or that the currently installed version is lesser than the installed.
+     * 
+     * @param cnb - the plugins code name base
+     * @param pluginName the plugins name - e.g. Bugzilla or Jira
+     * @return plugin or null if not available
+     */
+    public Plugin getPluginUpdates(String cnb, String pluginName);
+
+    /**
+     * Determines whether patch relevant functionality is available.
+     * 
+     * @return <code>true</code> if available, otherwise <code>false</code>
+     */
+    public boolean providesPatchUtils();
+
+    /**
+     * Applies the given patch file.
+     * 
+     * @param patchFile the patch files
+     * @param context the context on which the patch should be applied
+     * @throws PatchException
+     * @throws IOException - the patch is invalid or cannot be applied
+     */
+    public void applyPatch(File patchFile, File context) throws IOException;
+
+    /**
+     * Determines whether the given file is in a recognized patch format.
+     * 
+     * @param file
+     * @return true in case the file is a patch, otherwise false
+     * @throws IOException in case something is wrong with the file
+     */
+    public boolean isPatch(File file) throws IOException;
+
+    /**
+     * Open a chooser providing a way to select a file somehow related to the IDE 
+     * e.g. an expandable list of projects relevant to the what is currently 
+     * opened in the IDE, so that the context for a patch action might be determined.
+     * 
+     * @return 
+     */
+    // XXX move to impl
+    public File selectFileContext();
+
+    /**
+     * Determines whether the functionality to open the History for a resource (file)
+     * is available.
+     * 
+     * @return <code>true</code> if available, otherwise <code>false</code>
+     */
+    public boolean providesOpenHistory();
     
+    /**
+     * Meant to open a VCS history view where:
+     * - it is possible to traverse the given resource history entries 
+     * - a diff view is provided, showing the selected revision compared against 
+     * it's parent and positioned on the given line.
+     *
+     * @param resource resourcePath representing a versioned file (not a folder). 
+     * <b>Note</b> that the given path doesn't necessarily have to be the full path, but 
+     * might be a shorter form as given by e.g. an stacktrace - org/netbeans/modules/bugzilla/Bugzilla.java
+     * @param lineNumber requested line number to lock on
+     * @return true if parameters are valid, the file is versioned and the history view was opened, 
+     * otherwise false.
+     */
+    public boolean openHistory(String resourcePath, int line);
+    
+    /**
+     * Provides access to a downloadable plugin - e.g. from the NetBeans UC
+     */
+    public interface Plugin {
+        /**
+         * Returns the plugins description
+         * @return the plugins description
+         */
+        String getDescription();
+        
+        /**
+         * Install or Update the plugin. 
+         * @return <code>true</code> in case it was possible to install the plugin, otherwise <code>false</code> 
+         */
+        boolean installOrUpdate();
+    }
 }

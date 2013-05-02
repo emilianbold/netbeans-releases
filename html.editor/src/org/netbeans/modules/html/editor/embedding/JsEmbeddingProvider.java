@@ -69,22 +69,28 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
     private static final String JS_MIMETYPE = "text/javascript"; //NOI18N
     private static final String NETBEANS_IMPORT_FILE = "__netbeans_import__"; // NOI18N
     private boolean cancelled = true;
-
     private final Language JS_LANGUAGE;
 
     public JsEmbeddingProvider() {
         JS_LANGUAGE = Language.find(JS_MIMETYPE); //NOI18N
     }
-            
+
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
+        if(snapshot.getMimePath().size() > 1) {
+            //do not create any js embeddings in already embedded html code
+            //another js embedding provider for such cases exists in 
+            //javascript2.editor module.
+            return Collections.emptyList();
+        }
+        
         cancelled = false; //resume
         List<Embedding> embeddings = new ArrayList<>();
         TokenSequence<HTMLTokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence(HTMLTokenId.language());
         JsAnalyzerState state = new JsAnalyzerState();
         process(snapshot, tokenSequence, state, embeddings);
-        return embeddings.isEmpty() 
-                ? Collections.<Embedding>emptyList() 
+        return embeddings.isEmpty()
+                ? Collections.<Embedding>emptyList()
                 : Collections.singletonList(Embedding.create(embeddings));
     }
 
@@ -100,21 +106,26 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
 
     private void process(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
         ts.moveStart();
-        
+
         while (ts.moveNext()) {
-            if(cancelled) {
+            if (cancelled) {
                 embeddings.clear();
-                return ;
+                return;
             }
             
+            //plugins
+            if(JsEPPluginQuery.getDefault().processToken(snapshot, ts, embeddings)) {
+                //the plugin already processed the token so we should? not? process it anymore ... that's a question
+                continue;
+            }
+
             Token<HTMLTokenId> token = ts.token();
-            
             switch (token.id()) {
                 case SCRIPT:
-                    handleScript(snapshot, ts, token, state, embeddings);
+                    handleScript(snapshot, ts, state, embeddings);
                     break;
                 case TAG_OPEN:
-                    handleOpenTag(snapshot, ts, token, state, embeddings);
+                    handleOpenTag(snapshot, ts, embeddings);
                     break;
                 case TEXT:
                     if (state.in_javascript) {
@@ -123,7 +134,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
                     break;
                 case VALUE_JAVASCRIPT:
                 case VALUE:
-                    handleValue(snapshot, ts, token, state, embeddings);
+                    handleValue(snapshot, ts, embeddings);
                     break;
                 case TAG_CLOSE:
                     if (LexerUtils.equals("script", token.text(), true, true)) {
@@ -131,7 +142,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
                     }
                     break;
                 case EL_OPEN_DELIMITER:
-                    handleELOpenDelimiter(snapshot, ts, token, state, embeddings);
+                    handleELOpenDelimiter(snapshot, ts, embeddings);
                     break;
                 default:
                     state.in_javascript = false;
@@ -139,20 +150,20 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
             }
         }
     }
-    
+
     //VALUE_JAVASCRIPT token always has text/javascript embedding
     //VALUE token MAY have text/javascript embedding (provided by HtmlLexerPlugin) or by dynamic embedding creation
-    private void handleValue(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
-        if(ts.embedded(JS_LANGUAGE) != null) {
+    private void handleValue(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
+        if (ts.embedded(JS_LANGUAGE) != null) {
             //has javascript embedding
             embeddings.add(snapshot.create("(function(){\n", JS_MIMETYPE)); //NOI18N
-            int diff = Utils.isAttributeValueQuoted(token.text()) ? 1 : 0;
+            int diff = Utils.isAttributeValueQuoted(ts.token().text()) ? 1 : 0;
             embeddings.add(snapshot.create(ts.offset() + diff, ts.token().length() - diff * 2, JS_MIMETYPE));
             embeddings.add(snapshot.create("\n});\n", JS_MIMETYPE)); //NOI18N
         }
     }
-    
-    private void handleELOpenDelimiter(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
+
+    private void handleELOpenDelimiter(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
         //1.check if the next token represents javascript content
         String mimetype = (String) ts.token().getProperty("contentMimeType"); //NOT IN AN API, TBD
         if (mimetype != null && "text/javascript".equals(mimetype)) {
@@ -173,13 +184,13 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
         }
     }
 
-    private void handleScript(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
-        String scriptType = (String) token.getProperty(HTMLTokenId.SCRIPT_TYPE_TOKEN_PROPERTY);
+    private void handleScript(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
+        String scriptType = (String) ts.token().getProperty(HTMLTokenId.SCRIPT_TYPE_TOKEN_PROPERTY);
         if (scriptType == null || "text/javascript".equals(scriptType)) {
             state.in_javascript = true;
             // Emit the block verbatim
             int sourceStart = ts.offset();
-            String text = token.text().toString();
+            String text = ts.token().text().toString();
             List<EmbeddingPosition> jsEmbeddings = extractJsEmbeddings(text, sourceStart);
             for (EmbeddingPosition embedding : jsEmbeddings) {
                 embeddings.add(snapshot.create(embedding.getOffset(), embedding.getLength(), JS_MIMETYPE));
@@ -187,11 +198,11 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
         }
     }
 
-    private void handleOpenTag(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, Token<HTMLTokenId> token, JsAnalyzerState state, List<Embedding> embeddings) {
+    private void handleOpenTag(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
         // TODO - if we see a <script src="someurl"> block that also
         // has a nonempty body, warn - the body will be ignored!!
         // (This should be a quickfix)
-        if (LexerUtils.equals("script", token.text(), false, false)) {
+        if (LexerUtils.equals("script", ts.token().text(), false, false)) {
             // Look for "<script src=" and if found, locate any includes.
             // Quit when I find TAG_CLOSE or run out of tokens
             // (for files with errors)
@@ -300,6 +311,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
     }
 
     private static final class JsAnalyzerState {
+
         boolean in_javascript = false;
     }
 

@@ -45,6 +45,12 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 
 import static org.junit.Assert.*;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings.GlobalSettingsProvider;
+import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -65,6 +71,21 @@ public class TestUtils {
         assertEquals(id, t.id());
         assertEquals(pt, t.partType());
         assertEquals(text, t.text().toString());
+    }
+    
+    @ServiceProvider(service=MimeDataProvider.class)
+    public static class HintGlobalPreferencesMimeProviderImpl implements MimeDataProvider {
+
+        private final Lookup L = Lookups.fixed(new GlobalSettingsProvider());
+        
+        @Override
+        public Lookup getLookup(MimePath mimePath) {
+            if ("text/x-java".equals(mimePath.getPath())) {
+                return L;
+            }
+            return Lookup.EMPTY;
+        }
+        
     }
 
 }

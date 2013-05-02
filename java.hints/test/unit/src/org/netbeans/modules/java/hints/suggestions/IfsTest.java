@@ -504,6 +504,36 @@ public class IfsTest {
                               "}\n");
     }
     
+    @Test
+    public void testNegInstanceof228864() throws Exception {
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(Object o) {\n" +
+                       "        i|f (o instanceof String) {\n" +
+                       "            System.err.println(\"1\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"2\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(Ifs.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(Object o) {\n" +
+                              "        if (!(o instanceof String)) {\n" +
+                              "            System.err.println(\"2\");\n" +
+                              "        } else {\n" +
+                              "            System.err.println(\"1\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
 //    @Test
     public void testJoinIfs1() throws Exception {
         HintTest.create()

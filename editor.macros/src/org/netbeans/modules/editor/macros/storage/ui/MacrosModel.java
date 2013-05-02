@@ -280,14 +280,16 @@ public final class MacrosModel {
 
         // shortcuts is in Ctrl+A form
         public void setShortcut(String shortcut) {
+            KeyStroke[] strokes = KeyStrokeUtils.getKeyStrokes(shortcut);
+            if (strokes == null) {
+                LOG.warning("Could not decode keystrokes from: " + shortcut);
+                return;
+            }
             List<? extends MultiKeyBinding> list = Collections.singletonList(
-                new MultiKeyBinding(KeyStrokeUtils.getKeyStrokes(shortcut), 
+                new MultiKeyBinding(strokes, 
                     MacroDialogSupport.RunMacroAction.runMacroAction)); //NOI18N
             
             List<? extends MultiKeyBinding> current = getShortcuts();
-            if (current == list) {
-                return;
-            }
             // ignores changes iff just order of shortcuts has been changed;
             // this is consistent with key binding storage.
             if (current != null && list != null &&
@@ -312,7 +314,11 @@ public final class MacrosModel {
             
             for (String shortcut : shortcuts) {
                 KeyStroke[] keys = Utilities.stringToKeys(shortcut);
-                list.add(new MultiKeyBinding(Utilities.stringToKeys(shortcut), MacroDialogSupport.RunMacroAction.runMacroAction)); //NOI18N
+                if (keys == null) {
+                    LOG.warning("Could not decode keystrokes from: " + shortcut);
+                } else {
+                    list.add(new MultiKeyBinding(keys, MacroDialogSupport.RunMacroAction.runMacroAction)); //NOI18N
+                }
             }
             
             if (Utilities.compareObjects(new HashSet<MultiKeyBinding>(getShortcuts()), new HashSet<MultiKeyBinding>(list))) {

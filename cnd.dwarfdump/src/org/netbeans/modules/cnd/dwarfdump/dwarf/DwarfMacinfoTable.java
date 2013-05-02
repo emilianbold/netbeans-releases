@@ -117,7 +117,7 @@ public class DwarfMacinfoTable {
     
     public List<Integer> getCommandLineIncludedFiles() throws IOException{
         if (!commandIncludedFilesRead) {
-            commandIncludedFilesTable = section.getCommandIncudedFiles(this, fileSourceTableOffset);
+            commandIncludedFilesTable = section.getCommandIncudedFiles(this, baseSourceTableOffset, baseSourceTableOffset);
             commandIncludedFilesRead = true;
         }
         return commandIncludedFilesTable;

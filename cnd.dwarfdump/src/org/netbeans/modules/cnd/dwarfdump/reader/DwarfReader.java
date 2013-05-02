@@ -117,6 +117,8 @@ public class DwarfReader extends ElfReader {
                 //TODO: check on all architectures!
                 //return read(new byte[8]);
                 return readLong();
+            case DW_FORM_sec_offset:
+                return readInt();
             case DW_FORM_string:
                 return readString();
             case DW_FORM_block:
@@ -187,11 +189,11 @@ public class DwarfReader extends ElfReader {
         }
         
         if (sectionName.equals(SECTIONS.DEBUG_MACINFO)) {
-            return new DwarfMacroInfoSection(this, sectionIdx);
+            return new DwarfMacroInfoSection(this, sectionIdx, false);
         }
 
         if (sectionName.equals(SECTIONS.DEBUG_MACRO)) {
-            return new DwarfMacroInfoSection(this, sectionIdx);
+            return new DwarfMacroInfoSection(this, sectionIdx, true);
         }
         
         if (sectionName.equals(SECTIONS.DEBUG_PUBNAMES)) {

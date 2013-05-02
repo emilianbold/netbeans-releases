@@ -82,6 +82,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyleUtils;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -530,7 +531,7 @@ public final class Utilities {
         return refs;
     }
     
-    public static List<String> varNamesSuggestions(TypeMirror type, String suggestedName, String prefix, Types types, Elements elements, Iterable<? extends Element> locals, boolean isConst) {
+    public static List<String> varNamesSuggestions(TypeMirror type, String suggestedName, String prefix, Types types, Elements elements, Iterable<? extends Element> locals, boolean isConst, String namePrefix, String nameSuffix, Boolean preferLong) {
         List<String> result = new ArrayList<String>();
         if (type == null && suggestedName == null)
             return result;
@@ -566,14 +567,15 @@ public final class Utilities {
             }
             int cnt = 1;
             String baseName = name;
+            name = CodeStyleUtils.addPrefixSuffix(name, namePrefix, nameSuffix);
             while (isClashing(name, type, locals)) {
                 if (isPrimitive) {
-                    char c = name.charAt(0);
-                    name = Character.toString(++c);
-                    if (c == 'z') //NOI18N
+                    char c = name.charAt(namePrefix != null?namePrefix.length():0);
+                    name = CodeStyleUtils.addPrefixSuffix(Character.toString(++c), namePrefix, nameSuffix);
+                    if (c == 'z' || c == 'Z') //NOI18N
                         isPrimitive = false;
                 } else {
-                    name = baseName + cnt++;
+                    name = CodeStyleUtils.addPrefixSuffix(baseName + cnt++, namePrefix, nameSuffix);
                 }
             }
             result.add(name);

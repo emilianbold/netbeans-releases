@@ -964,15 +964,24 @@ public class WebKitPageModel extends PageModel {
             for (StyleSheetHeader header : css.getAllStyleSheets()) {
                 String styleSheetId = header.getStyleSheetId();
                 StyleSheetBody body = css.getStyleSheet(styleSheetId);
-                String styleSheetText = body.getText();
-                if (selectionMode) {
-                    // Replacement of :hover is done in setStyleSheetText()
-                    css.setStyleSheetText(styleSheetId, styleSheetText);
+                String styleSheetText;
+                if (body == null) {
+                    // 229164: getStyleSheet() failed for some reason,
+                    // try getStyleSheetText() instead
+                    styleSheetText = css.getStyleSheetText(styleSheetId);
                 } else {
-                    styleSheetText = Pattern.compile(Pattern.quote("." + CSSUtils.HOVER_CLASS)).matcher(styleSheetText).replaceAll(":hover"); // NOI18N
-                    css.setStyleSheetText(styleSheetId, styleSheetText);
+                    styleSheetText = body.getText();
                 }
-            }            
+                if (styleSheetText != null) { // Issue 229137
+                    if (selectionMode) {
+                        // Replacement of :hover is done in setStyleSheetText()
+                        css.setStyleSheetText(styleSheetId, styleSheetText);
+                    } else {
+                        styleSheetText = Pattern.compile(Pattern.quote("." + CSSUtils.HOVER_CLASS)).matcher(styleSheetText).replaceAll(":hover"); // NOI18N
+                        css.setStyleSheetText(styleSheetId, styleSheetText);
+                    }
+                }
+            }
         }
 
     }

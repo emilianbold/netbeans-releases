@@ -85,7 +85,7 @@ public interface TreeModelFilter extends Model {
     ) throws UnknownTypeException;
     
     /**
-     * Returns number of filterred children for given node.
+     * Returns number of filtered children for given node.
      * 
      * @param   original the original tree model
      * @param   node the parent node

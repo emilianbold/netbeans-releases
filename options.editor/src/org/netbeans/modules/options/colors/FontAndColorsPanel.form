@@ -58,6 +58,9 @@
           <StringArray count="0"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;&#xa;"/>
+      </AuxValues>
     </Component>
     <Container class="javax.swing.JTabbedPane" name="tpCustomizers">
 

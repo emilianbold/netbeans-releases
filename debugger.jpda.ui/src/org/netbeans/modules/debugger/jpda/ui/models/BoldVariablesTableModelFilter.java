@@ -47,6 +47,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import java.awt.Color;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
@@ -54,6 +55,8 @@ import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.TableHTMLModel;
+import org.netbeans.spi.viewmodel.TableHTMLModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 
@@ -65,7 +68,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  */
 @DebuggerServiceRegistrations({
     @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
-                                 types=TableModelFilter.class,
+                                 types={ TableModelFilter.class, TableHTMLModelFilter.class },
                                  position=100),
     @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
                                  types=TableModelFilter.class,
@@ -77,7 +80,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
                                  types=TableModelFilter.class,
                                  position=100)
 })
-public class BoldVariablesTableModelFilter implements TableModelFilter,
+public class BoldVariablesTableModelFilter implements TableModelFilter, TableHTMLModelFilter,
 Constants {
     
     private Map variableToValueType = new WeakHashMap ();
@@ -98,13 +101,56 @@ Constants {
             return bold (row, (String) result, variableToValueType);
         if ( LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
              WATCH_VALUE_COLUMN_ID.equals (columnID)
-        )
-            return bold (row, (String) result, variableToValueValue);
+        ) {
+            return result;
+            /*
+            if (result instanceof String) {
+                return bold (row, (String) result, variableToValueValue);
+            } else if (result instanceof Variable) {
+                String displayValue = VariablesDisplayValueCache.getDefault().getDisplayValue((Variable) result);
+                String update = bold (row, displayValue, variableToValueValue);
+                VariablesDisplayValueCache.getDefault().updateDisplayValue((Variable) result, update);
+                return result;
+            }
+            */
+        }
         if ( LOCALS_TO_STRING_COLUMN_ID.equals (columnID) ||
              WATCH_TO_STRING_COLUMN_ID.equals (columnID)
         )
             return bold (row, (String) result, variableToValueToString);
         return result;
+    }
+    
+    @Override
+    public boolean hasHTMLValueAt(TableHTMLModel original, Object row, String columnID) throws UnknownTypeException {
+        if (LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
+            WATCH_VALUE_COLUMN_ID.equals (columnID)) {
+            
+            if (row instanceof Variable) {
+                return true;
+            }
+        }
+        return original.hasHTMLValueAt(row, columnID);
+    }
+
+    @Override
+    public String getHTMLValueAt(TableHTMLModel original, Object row, String columnID) throws UnknownTypeException {
+        if (LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
+            WATCH_VALUE_COLUMN_ID.equals (columnID)) {
+            
+            if (row instanceof Variable) {
+                Variable var = (Variable) row;
+                Object mirror = VariablesTableModel.getMirrorFor(var);
+                if (mirror == null) {
+                    String value = var.getValue();
+                    return bold (row, value, variableToValueValue);
+                } else {
+                    // No HTML value, there's a special property editor that manages the value.
+                    return null;
+                }
+            }
+        }
+        return original.getHTMLValueAt(row, columnID);
     }
     
     public boolean isReadOnly (

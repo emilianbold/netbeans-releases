@@ -155,6 +155,10 @@ public class Utilities {
     }
 
     public static String guessName(CompilationInfo info, TreePath tp, TreePath scope) {
+        return guessName(info, tp, scope, null, null);
+    }
+
+    public static String guessName(CompilationInfo info, TreePath tp, TreePath scope, String prefix, String suffix) {
         String name = getName(tp.getLeaf());
         
         if (name == null) {
@@ -163,16 +167,23 @@ public class Utilities {
         
         Scope s = info.getTrees().getScope(scope);
         
-        return makeNameUnique(info, s, name);
+        return makeNameUnique(info, s, name, prefix, suffix);
     }
-
-    public static String makeNameUnique(CompilationInfo info, Scope s, String name) {
-        int counter = 0;
-        boolean cont = true;
-        String proposedName = name;
+    
+    public static String makeNameUnique(CompilationInfo info, Scope s, String name, String prefix, String suffix) {
+        if(prefix != null && prefix.length() > 0) {
+            if(Character.isAlphabetic(prefix.charAt(prefix.length()-1))) {
+                StringBuilder nameSb = new StringBuilder(name);
+                nameSb.setCharAt(0, Character.toUpperCase(nameSb.charAt(0)));
+                name = nameSb.toString();
+            }
+        }
         
-        while (cont) {
-            proposedName = name + (counter != 0 ? String.valueOf(counter) : "");
+        boolean cont;
+        String proposedName;
+        int counter = 0;
+        do {
+            proposedName = safeString(prefix) + name + (counter != 0 ? String.valueOf(counter) : "") + safeString(suffix);
             
             cont = false;
             
@@ -183,9 +194,17 @@ public class Utilities {
                     break;
                 }
             }
-        }
+        } while(cont);
         
         return proposedName;
+    }
+    
+    private static String safeString(String str) {
+        return str == null ? "" : str;
+    }
+
+    public static String makeNameUnique(CompilationInfo info, Scope s, String name) {
+        return makeNameUnique(info, s, name, null, null);
     }
 
     private static String guessLiteralName(String str) {

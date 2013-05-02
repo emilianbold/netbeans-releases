@@ -57,8 +57,8 @@ public class OwnerUtils {
     }
 
     // XXX don't need this, rely on repositoryquery, issueid isn't evaluated anyway
-    public static Repository getRepository(File file, String issueID, boolean askIfUnknown) {
-        RepositoryImpl impl = BugtrackingOwnerSupport.getInstance().getRepository(file, issueID, askIfUnknown);
+    public static Repository getRepository(File file, boolean askIfUnknown) {
+        RepositoryImpl impl = BugtrackingOwnerSupport.getInstance().getRepository(file, askIfUnknown);
         return impl != null ? impl.getRepository() : null;
     }
 

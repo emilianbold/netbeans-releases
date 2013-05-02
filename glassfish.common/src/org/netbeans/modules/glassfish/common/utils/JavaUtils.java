@@ -42,17 +42,23 @@
 package org.netbeans.modules.glassfish.common.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.tools.ide.data.GlassFishJavaSEConfig;
 import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
 import org.glassfish.tools.ide.server.config.JavaSEPlatform;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
@@ -65,8 +71,39 @@ import org.openide.util.Parameters;
 public class JavaUtils {
     
     ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Local logger. */
+    private static final Logger LOGGER
+            = GlassFishLogger.get(JavaUtils.class);
+
+    /** Platform display name prefix (including trailing space). */
+    private static final String
+            GF_PLATFORM_DISPLAY_NAME_PREFIX = "JDK ";
+
+    /** Platform display name suffix (including leading space). */
+    private static final String
+            GF_PLATFORM_DISPLAY_NAME_SUFFIX = " (GlassFish)";
+
+    /** Java SE specification name. */
+    public static final String
+            JAVA_SE_SPECIFICATION_NAME = "j2se";
+
+    ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Get installed Java SE platforms.
+     * <p/>
+     * @return Installed Java SE platforms.
+     */
+    public static JavaPlatform[] getInstalledJavaSEPlatforms() {
+        return JavaPlatformManager.getDefault()
+                .getPlatforms(null, new Specification(
+                JAVA_SE_SPECIFICATION_NAME, null));
+    }
 
     /**
      * Check if provided Java SE platform is supported by GlassFish server
@@ -122,9 +159,9 @@ public class JavaUtils {
             @NonNull final File javaHome) {
         // Avoid NPEs and troll developer a bit.
         Parameters.notNull("javaHome", javaHome);
-        // Scan all install folders of all onstalled platformsList for Java SE home.
-        JavaPlatform[] platforms
-                = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        // Scan all install folders of all onstalled platformsList
+        // for Java SE home.
+        JavaPlatform[] platforms = getInstalledJavaSEPlatforms();
         JavaPlatform javaPlatform = null;
         for (JavaPlatform platform : platforms) {
             for (FileObject fo : platform.getInstallFolders()) {
@@ -155,7 +192,8 @@ public class JavaUtils {
         // Avoid NPEs and troll developer a bit.
         Parameters.notNull("javaPlatforms", javaPlatforms);
         Parameters.notNull("javaHome", javaHome);
-        // Scan all install folders of all onstalled platformsList for Java SE home.
+        // Scan all install folders of all onstalled platformsList
+        // for Java SE home.
         JavaPlatform javaPlatform = null;
         for (JavaPlatform platform : javaPlatforms) {
             for (FileObject fo : platform.getInstallFolders()) {
@@ -186,24 +224,30 @@ public class JavaUtils {
         Parameters.notNull("instance", instance);
         // Search for supported Java SE platforms.
         List<JavaPlatform> platformsList = new LinkedList<JavaPlatform>();
-        JavaPlatform[] allPlatforms
-                = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        JavaPlatform[] allPlatforms = getInstalledJavaSEPlatforms();
         GlassFishJavaSEConfig javaSEConfig
                 = ConfigBuilderProvider.getBuilder(instance)
                 .getJavaSEConfig(instance.getVersion());
         Set<JavaSEPlatform> supportedPlatforms = javaSEConfig.getPlatforms();
+        // Finish quickly for empty set.
+        if (supportedPlatforms == null || supportedPlatforms.isEmpty()) {
+            return new JavaPlatform[0];
+        }
+        // Processs non-empty set.
         for (JavaPlatform platform : allPlatforms) {
             for (FileObject fo : platform.getInstallFolders()) {
                 if (supportedPlatforms.contains(JavaSEPlatform.toValue(
-                    platform.getSpecification().getVersion().toString()))) {
+                        platform.getSpecification()
+                        .getVersion().toString()))) {
                     platformsList.add(platform);
                 }
             }
         }
         JavaPlatform[] platforms = new JavaPlatform[platformsList.size()];
         int i = 0;
-        for (JavaPlatform platform : platformsList)
+        for (JavaPlatform platform : platformsList) {
             platforms[i++] = platform;
+        }
         return platforms;
     }
 
@@ -226,6 +270,66 @@ public class JavaUtils {
             }
         }
         return javaHome;
+    }
+
+    /**
+     * Get default Java SE platform home.
+     * <p/>
+     * @return Default Java SE platform home.
+     */
+    public static String getDefaultJavaHome() {
+        return getJavaHome(
+                JavaPlatformManager.getDefault().getDefaultPlatform());
+    }
+
+    /**
+     * Verify Java platform and register it when needed.
+     * <p/>
+     * @param javaHome Installation folder of Java platform.
+     * @return Value of <code>true</code> when Java platform is valid JDK
+     *         installation folder or <code>false</code> otherwise.
+     */
+    public static boolean checkAndRegisterJavaPlatform(final String javaHome) {
+        // Value of null is not installation folder of Java platform.
+        if (javaHome == null) {
+            return false;
+        }
+        File javaHomeFile = new File(javaHome);
+        // Java home must be readable directory.
+        if (javaHomeFile.isDirectory() && javaHomeFile.canRead()) {
+            // Check for already registered platforms.
+            if (findInstalledPlatform(javaHomeFile) != null) {
+                return true;
+            }
+            // Otherwise check for Java version and register when valid.
+            File javaVm = new File(org.glassfish.tools.ide.utils
+                    .JavaUtils.javaVmExecutableFullPath(javaHome));
+            if (javaVm.canExecute()) {
+                org.glassfish.tools.ide.utils.JavaUtils.JavaVersion javaVersion
+                        = org.glassfish.tools.ide.utils
+                        .JavaUtils.javaVmVersion(javaVm);
+                if (javaVersion != null) {
+                    String platformversion = javaVersion.toPlatform().toString();
+                    StringBuilder sb = new StringBuilder(
+                            GF_PLATFORM_DISPLAY_NAME_PREFIX.length()
+                            + GF_PLATFORM_DISPLAY_NAME_SUFFIX.length()
+                            + platformversion.length());
+                    sb.append(GF_PLATFORM_DISPLAY_NAME_PREFIX);
+                    sb.append(platformversion);
+                    sb.append(GF_PLATFORM_DISPLAY_NAME_SUFFIX);
+                    try {                        
+                        J2SEPlatformCreator.createJ2SEPlatform(
+                                FileUtil.toFileObject(javaHomeFile),
+                                sb.toString());
+                        return true;
+                    } catch (IOException ioe) {
+                        LOGGER.log(Level.INFO,
+                                "Unable to register Java platform {0}", javaHome);
+                    }
+                }
+            }
+        }
+        return false;
     }
 
 }

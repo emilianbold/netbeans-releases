@@ -67,7 +67,6 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
-import org.netbeans.modules.bugtracking.spi.VCSAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -280,8 +279,8 @@ class StackTraceSupport {
 
     static class StackTracePosition {
         private final StackTraceElement[] stackTraceElements;
-        private int start;
-        private int end;
+        private final int start;
+        private final int end;
         StackTracePosition(StackTraceElement[] stackTraceElements, int start, int end) {
             this.stackTraceElements = stackTraceElements;
             this.start = start;
@@ -307,39 +306,27 @@ class StackTraceSupport {
 
     static boolean isAvailable() {
         IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
-        return ideServices != null && ideServices.providesOpenDocument() && ideServices.providesSearchResource();
+        return ideServices != null && ideServices.providesOpenDocument();
     }
     
-    private static void openSearchHistory(String path, final int line) {
-        final FileObject fo = search(path);
-        if ( fo != null ) {
-            final File file = FileUtil.toFile(fo);
-            if(file == null) {
-                // XXX any chance to disable the action if it's not a real io.File - e.g. a jdk class?
-                return;
-            }
-            Collection<? extends VCSAccessor> supports = Lookup.getDefault().lookupAll(VCSAccessor.class);
-            if(supports == null) {
-                return;
-            }
-            for (final VCSAccessor s : supports) {
-                // XXX this is messy - we implicitly expect that unrelevant VCS modules
-                // will skip the action
-                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
-                    public void run() {
-                        s.searchHistory(file, line);
-                    }
-                });
-            }
+    @NbBundle.Messages({"CTL_ShowHistoryTitle=Show History",
+                        "# {0} - path to be opened",  "MSG_NoHistory=History View not available for file with path\n {0}."})
+    private static void openSearchHistory(final String path, final int line) {
+        if(path == null) {
+            return;
         }
-    }
-
-    private static FileObject search(String path) {
-        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
-        if(ideServices != null) {
-            return ideServices.searchResource(path);
+        final IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        if(ideServices == null || !ideServices.providesOpenHistory()) {
+            return;
         }
-        return null;
+        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                if(!ideServices.openHistory(path, line)) {
+                    BugtrackingUtil.notifyError(Bundle.CTL_ShowHistoryTitle(), Bundle.MSG_NoHistory(path));
+                }
+            }
+        });
     }
 
     public static void register(final JTextPane textPane) {
@@ -501,6 +488,7 @@ class StackTraceSupport {
             }
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             openStackTrace(stackFrame, showHistory);
         }

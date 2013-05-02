@@ -73,9 +73,9 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.bugtracking</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
                 <friend>org.netbeans.modules.odcs.ui</friend>
-                <friend>org.netbeans.modules.tasks.ui</friend>
                 <friend>org.netbeans.modules.team.ui</friend>
                 <package>org.netbeans.modules.team.ui.util.treelist</package>
             </friend-packages>

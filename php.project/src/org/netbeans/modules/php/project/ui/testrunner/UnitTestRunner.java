@@ -42,19 +42,20 @@
 
 package org.netbeans.modules.php.project.ui.testrunner;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,7 +72,7 @@ public final class UnitTestRunner {
     private final TestRunInfo info;
     private final ControllableRerunHandler rerunHandler;
     private final PhpCoverageProvider coverageProvider;
-    private final PhpTestingProvider testingProvider;
+    private final List<PhpTestingProvider> testingProviders;
 
 
     public UnitTestRunner(PhpProject project, TestRunInfo info, ControllableRerunHandler rerunHandler) {
@@ -84,9 +85,7 @@ public final class UnitTestRunner {
         this.rerunHandler = rerunHandler;
         coverageProvider = project.getLookup().lookup(PhpCoverageProvider.class);
         assert coverageProvider != null;
-        // XXX use all test providers
-        testingProvider = project.getFirstTestingProvider();
-        assert testingProvider != null;
+        testingProviders = project.getTestingProviders();
 
         testSession = new TestSession(getOutputTitle(project, info), project, map(info.getSessionType()), new PhpTestRunnerNodeFactory(new CallStackCallback(project)));
         testSession.setRerunHandler(rerunHandler);
@@ -99,10 +98,8 @@ public final class UnitTestRunner {
         try {
             rerunHandler.disable();
             MANAGER.testStarted(testSession);
-            TestSessionImpl session = runInternal();
-            if (session != null) {
-                handleCodeCoverage(session.getCoverage(), session.isCoverageSet());
-            }
+            TestSessions sessions = runInternal();
+            handleCodeCoverage(sessions);
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
         } finally {
@@ -111,46 +108,69 @@ public final class UnitTestRunner {
         }
     }
 
-    private TestSessionImpl runInternal() {
-        TestSessionImpl testSessionImpl = new TestSessionImpl(MANAGER, testSession);
-        try {
-            testingProvider.runTests(project.getPhpModule(), info, testSessionImpl);
-        } catch (TestRunException exc) {
-            LOGGER.log(Level.INFO, null, exc);
-            MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_PerhapsError"), true);
-            return null;
+    @NbBundle.Messages("UnitTestRunner.error.running=Perhaps error occurred, verify in Output window.")
+    private TestSessions runInternal() {
+        TestSessions testSessions = new TestSessions();
+        boolean error = false;
+        for (PhpTestingProvider testingProvider : testingProviders) {
+            TestSessionImpl testSessionImpl = new TestSessionImpl(MANAGER, testSession, testingProvider);
+            testSessions.addTestSession(testSessionImpl);
+            try {
+                LOGGER.log(Level.FINE, "Running {0} tests...", testingProvider.getIdentifier());
+                testingProvider.runTests(project.getPhpModule(), info, testSessionImpl);
+                LOGGER.fine("Test run finished");
+            } catch (TestRunException exc) {
+                LOGGER.log(Level.INFO, null, exc);
+                error = true;
+            }
         }
-        return testSessionImpl;
+        if (error) {
+            MANAGER.displayOutput(testSession, Bundle.UnitTestRunner_error_running(), true);
+        }
+        return testSessions;
     }
 
-    @NbBundle.Messages("UnitTestRunner.error.noProviders=No PHP testing provider found, install one via Plugins (e.g. PHPUnit).")
     private boolean checkTestingProviders() {
-        if (!project.getTestingProviders().isEmpty()) {
+        if (!testingProviders.isEmpty()) {
             return true;
         }
-        DialogDisplayer.getDefault().notifyLater(
-                new NotifyDescriptor.Message(Bundle.UnitTestRunner_error_noProviders(), NotifyDescriptor.INFORMATION_MESSAGE));
+        Utils.informNoTestingProviders();
         return false;
     }
 
-    private void handleCodeCoverage(Coverage coverage, boolean coverageSet) {
+    private void handleCodeCoverage(TestSessions sessions) {
         if (!coverageProvider.isEnabled()) {
+            // no code coverage at all
             return;
         }
-        if (!testingProvider.isCoverageSupported(project.getPhpModule())) {
-            return;
-        }
-        if (!coverageSet) {
-            throw new IllegalStateException("Code coverage was not set (forgot to call TestSession.setCoverage(Coverage)?)");
-        }
-        if (coverage == null) {
-            // some error
-            return;
-        }
-        if (info.allTests()) {
-            coverageProvider.setCoverage(coverage);
-        } else {
-            coverageProvider.updateCoverage(coverage);
+        // first coverage with data wins
+        PhpModule phpModule = project.getPhpModule();
+        for (TestSessionImpl session : sessions.getTestSessions()) {
+            PhpTestingProvider testingProvider = session.getTestingProvider();
+            if (!testingProvider.isCoverageSupported(phpModule)) {
+                // no coverage supported
+                continue;
+            }
+            if (!session.isCoverageSet()) {
+                throw new IllegalStateException("Code coverage was not set for " + testingProvider.getIdentifier()
+                        + " (forgot to call TestSession.setCoverage(Coverage)?)");
+            }
+            Coverage coverage = session.getCoverage();
+            if (coverage == null) {
+                // some error, try next provider
+                LOGGER.log(Level.INFO, "Code coverage set to null for provider {0}", testingProvider.getIdentifier());
+                continue;
+            }
+            if (coverage.getFiles().isEmpty()) {
+                // no code coverage data
+                LOGGER.log(Level.INFO, "Ignoring code coverage for provider {0}, it contains no data", testingProvider.getIdentifier());
+                continue;
+            }
+            if (info.allTests()) {
+                coverageProvider.setCoverage(coverage);
+            } else {
+                coverageProvider.updateCoverage(coverage);
+            }
         }
     }
 

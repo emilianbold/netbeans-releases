@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerSettings;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerSettingsBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.Pathmap;
@@ -156,7 +157,7 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
     @Override
     protected int getProgLoadedDirty() {
         // on attach we should set breakpoints and watches later, see IZ 197786
-        if (debugger.getNDI().getPid() != -1) {
+        if ( (debugger.getNDI().getAction() & NativeDebuggerManager.ATTACH) != 0) {
             return 0xffffffff & ~DIRTY_BREAKPOINTS & ~DIRTY_WATCHES;
         } else if (debugger.getNDI().getCorefile() != null) {
             return super.getProgLoadedDirty();

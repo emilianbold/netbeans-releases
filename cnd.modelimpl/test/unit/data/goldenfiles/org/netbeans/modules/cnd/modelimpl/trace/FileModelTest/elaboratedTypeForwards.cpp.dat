@@ -1,0 +1,79 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE elaboratedTypeForwards.cpp
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+NAMESPACE DEFINITOIN XXX [1:1/0-23:2/266] SCOPE: elaboratedTypeForwards.cpp
+    STRUCT AAA<class T> (XXX::AAA ) [3:5/21-10:6/123] lcurly=54 SCOPE: XXX 
+        BASE CLASSES:
+        MEMBERS:
+            FIELD PUBLIC param [6:9/73-6:18/82]  TYPE: *XXX::AAA::T TEXT=T*  [6:9/73-6:12/76]  INIT: null  SCOPE: AAA 
+            FUNCTION foo [8:9/92-8:33/116] MethodImpl SCOPE: AAA 
+                DEFINITION: null
+                SIGNATURE foo(BBB*)
+                UNIQUE NAME F:XXX::AAA::foo(BBB*)
+                PARAMETERS:
+                    a [8:17/100-8:31/114]  TYPE: *XXX::BBB TEXT=BBB*  [8:24/107-8:29/112]  INIT: null  SCOPE: foo 
+                RETURNS int TEXT=int  [8:9/92-8:12/95]
+    CLASS_FORWARD_DECLARATION BBB [8:17/100-8:27/110]
+    VARIABLE a [12:5/134-12:12/141]  TYPE: *XXX::BBB TEXT=BBB*  [12:5/134-12:10/139]  INIT: null  SCOPE: XXX 
+    TYPEDEF AAACCC  [14:5/151-14:36/182] TYPE: XXX::AAA TEXT=AAA<CCC>  [14:13/159-14:28/174] SCOPE: XXX 
+    CLASS_FORWARD_DECLARATION CCC [14:17/163-14:27/173]
+    VARIABLE c [16:5/192-16:12/199]  TYPE: *XXX::CCC TEXT=CCC*  [16:5/192-16:10/197]  INIT: null  SCOPE: XXX 
+    STRUCT BBB (XXX::BBB ) [19:5/214-22:6/263] lcurly=225 SCOPE: XXX 
+        BASE CLASSES:
+        MEMBERS:
+            FIELD PUBLIC a [20:9/235-20:15/241]  TYPE: int TEXT=int  [20:9/235-20:12/238]  INIT: null  SCOPE: BBB 
+            FIELD PUBLIC c [21:9/250-21:15/256]  TYPE: int TEXT=int  [21:9/250-21:12/253]  INIT: null  SCOPE: BBB 
+FUNCTION DEFINITION main  [26:1/273-28:2/305] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE main()
+    UNIQUE NAME f:main()
+    DECLARATION: main  [26:1/273-28:2/305]
+    PARAMETERS:
+    RETURNS int TEXT=int  [26:1/273-26:4/276]
+    STATEMENT COMPOUND  [26:16/288-28:2/305] SCOPE: main 
+        STATEMENT RETURN  [27:5/294-27:14/303] SCOPE: Stmt  [26:16/288-28:2/305] text: 'return 0;'
+
+========== Dumping model of PROJECT DummyProject
+FUNCTION DEFINITION main  [26:1/273-28:2/305] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE main()
+    UNIQUE NAME f:main()
+    DECLARATION: main  [26:1/273-28:2/305]
+    PARAMETERS:
+    RETURNS int TEXT=int  [26:1/273-26:4/276]
+    STATEMENT COMPOUND  [26:16/288-28:2/305] SCOPE: main 
+        STATEMENT RETURN  [27:5/294-27:14/303] SCOPE: Stmt  [26:16/288-28:2/305] text: 'return 0;'
+NAMESPACE DEFINITIONS for XXX (XXX) 
+    elaboratedTypeForwards.cpp  [1:1/0-23:2/266]
+NAMESPACE XXX (XXX) 
+    STRUCT AAA<class T> (XXX::AAA ) [3:5/21-10:6/123] lcurly=54 SCOPE: XXX 
+        BASE CLASSES:
+        MEMBERS:
+            FIELD PUBLIC param [6:9/73-6:18/82]  TYPE: *XXX::AAA::T TEXT=T*  [6:9/73-6:12/76]  INIT: null  SCOPE: AAA 
+            FUNCTION foo [8:9/92-8:33/116] MethodImpl SCOPE: AAA 
+                DEFINITION: null
+                SIGNATURE foo(BBB*)
+                UNIQUE NAME F:XXX::AAA::foo(BBB*)
+                PARAMETERS:
+                    a [8:17/100-8:31/114]  TYPE: *XXX::BBB TEXT=BBB*  [8:24/107-8:29/112]  INIT: null  SCOPE: foo 
+                RETURNS int TEXT=int  [8:9/92-8:12/95]
+    VARIABLE a [12:5/134-12:12/141]  TYPE: *XXX::BBB TEXT=BBB*  [12:5/134-12:10/139]  INIT: null  SCOPE: XXX 
+    TYPEDEF AAACCC  [14:5/151-14:36/182] TYPE: XXX::AAA TEXT=AAA<CCC>  [14:13/159-14:28/174] SCOPE: XXX 
+    STRUCT CCC (XXX::CCC ) [14:17/163-14:27/173] lcurly=172 SCOPE: XXX 
+        BASE CLASSES:
+        MEMBERS:
+    VARIABLE c [16:5/192-16:12/199]  TYPE: *XXX::CCC TEXT=CCC*  [16:5/192-16:10/197]  INIT: null  SCOPE: XXX 
+    STRUCT BBB (XXX::BBB ) [19:5/214-22:6/263] lcurly=225 SCOPE: XXX 
+        BASE CLASSES:
+        MEMBERS:
+            FIELD PUBLIC a [20:9/235-20:15/241]  TYPE: int TEXT=int  [20:9/235-20:12/238]  INIT: null  SCOPE: BBB 
+            FIELD PUBLIC c [21:9/250-21:15/256]  TYPE: int TEXT=int  [21:9/250-21:12/253]  INIT: null  SCOPE: BBB 
+

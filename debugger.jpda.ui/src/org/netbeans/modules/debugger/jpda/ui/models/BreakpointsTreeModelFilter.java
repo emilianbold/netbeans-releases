@@ -84,6 +84,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
      * @param   original the original tree model
      * @return  filtered root of hierarchy
      */
+    @Override
     public Object getRoot (TreeModel original) {
         return original.getRoot ();
     }
@@ -98,10 +99,11 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
      * @throws  ComputingException if the children resolving process 
      *          is time consuming, and will be performed off-line 
      * @throws  UnknownTypeException if this TreeModelFilter implementation is not
-     *          able to resolve dchildren for given node type
+     *          able to resolve children for given node type
      *
      * @return  children for given parent on given indexes
      */
+    @Override
     public Object[] getChildren (
         TreeModel   original, 
         Object      parent, 
@@ -109,7 +111,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
         int         to
     ) throws UnknownTypeException {
         if (to - from <= 0) {
-            logger.fine("getChildren("+from+", "+to+"): RETURNING an empty array.");
+            logger.log(Level.FINE, "getChildren({0}, {1}): RETURNING an empty array.", new Object[]{from, to});
             return new Object[0];
         }
         Object[] ch = original.getChildren (parent, from, to);
@@ -150,7 +152,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
     }
     
     /**
-     * Returns number of filterred children for given node.
+     * Returns number of filtered children for given node.
      * 
      * @param   original the original tree model
      * @param   node the parent node
@@ -163,6 +165,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
      *
      * @return  true if node is leaf
      */
+    @Override
     public int getChildrenCount (
         TreeModel original,
         Object node
@@ -175,9 +178,10 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
      * 
      * @param   original the original tree model
      * @throws  UnknownTypeException if this TreeModel implementation is not
-     *          able to resolve dchildren for given node type
+     *          able to resolve children for given node type
      * @return  true if node is leaf
      */
+    @Override
     public boolean isLeaf (
         TreeModel original, 
         Object node
@@ -190,6 +194,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
      * 
      * @param l the listener to add
      */
+    @Override
     public void addModelListener (ModelListener l) {
     }
 
@@ -198,6 +203,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
      *
      * @param l the listener to remove
      */
+    @Override
     public void removeModelListener (ModelListener l) {
     }
 }

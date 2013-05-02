@@ -58,7 +58,7 @@ package org.netbeans.api.debugger.jpda;
  * @see ObjectVariable
  * @author   Jan Jancura
  */
-public interface Field extends Variable {
+public interface Field extends MutableVariable {
 
     /**
      * Declared name of field.
@@ -100,6 +100,7 @@ public interface Field extends Variable {
      * @return sets value of this field represented as text
      * @throws InvalidExpressionException if the expression is not correct
      */
+    @Override
     public abstract void setValue (String value) 
     throws InvalidExpressionException;
 }

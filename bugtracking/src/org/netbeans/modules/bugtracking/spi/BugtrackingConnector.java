@@ -83,14 +83,6 @@ public abstract class BugtrackingConnector {
         return null;
     }
 
-    /**
-     * @deprecated issue won't be added to the tasklist anymore. 
-     * @return 
-     */
-    public TaskListIssueProvider getTasklistProvider() {
-        return null;
-    }
-    
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE, ElementType.METHOD})
     public @interface Registration {    

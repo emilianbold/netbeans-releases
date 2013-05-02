@@ -585,9 +585,12 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                             isPointer(paramsType.get(i))) {
                                         match += 1;
                                     }
-                                    if (tbsp.isReference() &&
-                                            isReference(paramsType.get(i))) {
+                                    int checkReference = checkReference(paramsType.get(i));
+                                    if (tbsp.isReference() && (checkReference > 0)) {
                                         match += 1;
+                                        if ((checkReference == 2) == tbsp.isRValueReference()) {
+                                            match +=1;
+                                        }
                                     }
                                 }
                             } else if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(specParam)) {
@@ -660,11 +663,14 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return false;
     }
 
-    private static boolean isReference(CsmType type) {
+    private static int checkReference(CsmType type) {
         int iteration = MAX_DEPTH;
         while (type != null && iteration != 0) {
             if (type.isReference()) {
-                return true;
+                if (type.isRValueReference()) {
+                    return 2;
+                }
+                return 1;
             }
             CsmClassifier cls = type.getClassifier();
             if (CsmKindUtilities.isTypedef(cls)) {
@@ -675,7 +681,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             }
             iteration--;
         }
-        return false;
+        return 0;
     }
 
     private static CsmClassifier getClassifier(CsmType type) {

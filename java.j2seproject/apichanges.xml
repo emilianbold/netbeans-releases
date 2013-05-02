@@ -106,7 +106,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-
+        <change id="J2SEProjectPlatform">
+            <api name="jseprojects"/>
+            <summary>Added API to allow J2SE Project extension to get and set active project platform</summary>
+            <version major="1" minor="63"/>
+            <date day="2" month="5" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                Added a new friend API to allow J2SE Project extension to obtain and set active project platform.
+            </description>
+            <class package="org.netbeans.modules.java.j2seproject.api" name="J2SEProjectPlatform"/>
+            <issue number="229085"/>
+        </change>
         <change id="J2SECategoryExtensionProvider">
             <api name="jseprojects"/>
             <summary></summary>
@@ -122,7 +134,6 @@ is the proper place.
             <class package="org.netbeans.modules.java.j2seproject.api" name="J2SECategoryExtensionProvider"/>
             <issue number="218422"/>
         </change>
-
         <change id="GeneratedFilesInterceptor">
             <api name="jseprojects"/>
             <summary></summary>

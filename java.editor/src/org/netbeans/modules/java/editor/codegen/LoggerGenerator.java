@@ -72,6 +72,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import org.netbeans.api.java.source.CodeStyle;
 
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -160,7 +161,8 @@ public class LoggerGenerator implements CodeGenerator {
                             org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                         } else {
                             ClassTree cls = (ClassTree) path.getLeaf();
-                            List<String> names = Utilities.varNamesSuggestions(null, "LOG", null, copy.getTypes(), copy.getElements(), e.getEnclosedElements(), true);
+                            CodeStyle cs = CodeStyle.getDefault(component.getDocument());
+                            List<String> names = Utilities.varNamesSuggestions(null, "LOG", null, copy.getTypes(), copy.getElements(), e.getEnclosedElements(), true, cs.getStaticFieldNamePrefix(), cs.getStaticFieldNameSuffix(), cs.preferLongerNames());
                             VariableTree var = createLoggerField(copy.getTreeMaker(), cls, names.size() > 0 ? names.get(0) : "LOG"); //NOI18N
                             copy.rewrite(cls, GeneratorUtils.insertClassMembers(copy, cls, Collections.singletonList(var), caretOffset));
                         }

@@ -98,6 +98,44 @@ public class HtmlLexerPluginTest extends NbTestCase {
                "X|EL_CONTENT", "}}|EL_CLOSE_DELIMITER", "</|TAG_OPEN_SYMBOL", "div|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
     }
     
+    public void testELInClassAttrValue() {
+        HtmlLexerTest.checkTokens("<div class=\"{{expr}}\">",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "class|ARGUMENT", "=|OPERATOR", 
+                "\"|VALUE_CSS", "{{|EL_OPEN_DELIMITER", "expr|EL_CONTENT", "}}|EL_CLOSE_DELIMITER", "\"|VALUE_CSS", ">|TAG_CLOSE_SYMBOL");
+        
+        HtmlLexerTest.checkTokens("<div class=\"pre{{expr}}post\">",
+                 "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "class|ARGUMENT", 
+                 "=|OPERATOR", "\"pre|VALUE_CSS", "{{|EL_OPEN_DELIMITER", "expr|EL_CONTENT", 
+                 "}}|EL_CLOSE_DELIMITER", "post\"|VALUE_CSS", ">|TAG_CLOSE_SYMBOL");
+        
+        HtmlLexerTest.checkTokens("<div class=\"pre{{expr}}post{{next}}\">",
+                 "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "class|ARGUMENT", 
+                 "=|OPERATOR", "\"pre|VALUE_CSS", "{{|EL_OPEN_DELIMITER", "expr|EL_CONTENT", 
+                 "}}|EL_CLOSE_DELIMITER", "post|VALUE_CSS", "{{|EL_OPEN_DELIMITER", 
+                 "next|EL_CONTENT", "}}|EL_CLOSE_DELIMITER", "\"|VALUE_CSS", ">|TAG_CLOSE_SYMBOL");
+    }
+    
+    public void testELInAttrValue() {
+        //check in non-class attribute which is special
+        HtmlLexerTest.checkTokens("<div xxx=\"pre{{expr}}post{{next}}\">",
+                 "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "xxx|ARGUMENT", 
+                 "=|OPERATOR", "\"pre|VALUE", "{{|EL_OPEN_DELIMITER", "expr|EL_CONTENT", 
+                 "}}|EL_CLOSE_DELIMITER", "post|VALUE", "{{|EL_OPEN_DELIMITER", 
+                 "next|EL_CONTENT", "}}|EL_CLOSE_DELIMITER", "\"|VALUE", ">|TAG_CLOSE_SYMBOL");
+        
+    }
+    
+    public void testELInJSAttrValue() {
+        //check in non-class attribute which is special
+        HtmlLexerTest.checkTokens("<div onclick=\"pre{{expr}}post{{next}}\">",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "onclick|ARGUMENT", 
+                "=|OPERATOR", "\"pre|VALUE_JAVASCRIPT", "{{|EL_OPEN_DELIMITER", 
+                "expr|EL_CONTENT", "}}|EL_CLOSE_DELIMITER", "post|VALUE_JAVASCRIPT", 
+                "{{|EL_OPEN_DELIMITER", "next|EL_CONTENT", "}}|EL_CLOSE_DELIMITER", 
+                "\"|VALUE_JAVASCRIPT", ">|TAG_CLOSE_SYMBOL");
+        
+    }
+    
     public void testInjectCustomEmbeddingIntoAttribute() {
         TokenHierarchy th = TokenHierarchy.create("<div ng-click=\"alert()\">click me!</div>", HTMLTokenId.language());
         TokenSequence ts = th.tokenSequence();
@@ -140,8 +178,8 @@ public class HtmlLexerPluginTest extends NbTestCase {
 //        
     }
 
-    @ServiceProvider(service = HtmlLexerPlugin.class)
-    public static class TestPlugin implements HtmlLexerPlugin {
+    @MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
+    public static class TestPlugin extends HtmlLexerPlugin {
 
         @Override
         public String getOpenDelimiter() {

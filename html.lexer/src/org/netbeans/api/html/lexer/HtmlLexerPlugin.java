@@ -42,36 +42,38 @@
 package org.netbeans.api.html.lexer;
 
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * <b>NOT FOR PUBLIC USE!!!</b> Prototype - not final version!!! An API review will run, this is a public API.
  * 
  * HtmlLexer extension - allows to inject custom expression languages into html content.
  * 
- * To be registered in global lookup.
+ * To be registered in mime lookup.
  *
  * @author marekfukala
  */
-public interface HtmlLexerPlugin {
+public abstract class HtmlLexerPlugin {
     
     /**
      * "{{"
      */
-    @NonNull
-    public String getOpenDelimiter();
+    public String getOpenDelimiter() {
+        return null;
+    }
 
     /**
      * "}}"
      */
-    @NonNull
-    public String getCloseDelimiter();
+    public String getCloseDelimiter() {
+        return null;
+    }
     
     /**
      * "text/javascript"
      */
-    @NonNull
-    public String getContentMimeType();
+    public String getContentMimeType() {
+        return null;
+    }
     
     /**
      * Can be used to create a language embedding on an attribute value token. 
@@ -84,6 +86,8 @@ public interface HtmlLexerPlugin {
      * @return mimetype of the lexer language or null if no embedding should be created.
      */
     @CheckForNull
-    public String createAttributeEmbedding(String elementName, String attributeName);
+    public String createAttributeEmbedding(String elementName, String attributeName) {
+        return null;
+    }
 
 }

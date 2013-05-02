@@ -56,6 +56,7 @@ import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -92,6 +93,7 @@ public class IntroduceHintTest extends NbTestCase {
     }
 
     private static Preferences codeStylePrefs;//XXX: does not allow parallel test execution
+    private String sourceLevel;
     
     @Override
     protected void setUp() throws Exception {
@@ -666,7 +668,7 @@ public class IntroduceHintTest extends NbTestCase {
                 .<Modifier>of(Modifier.PRIVATE), false, true),
                        5, 2);
     }
-
+    
     public void testFix21() throws Exception {
         performFixTest("package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = |test()|;} public List<? extends CharSequence> test() {return null;}}",
                        "package test; import java.util.List; public class Test { private List<? extends CharSequence> name; public void test1() {name = test(); List<? extends CharSequence> l = name;} public List<? extends CharSequence> test() {return null;}}",
@@ -1813,6 +1815,23 @@ public class IntroduceHintTest extends NbTestCase {
                 .of(Modifier.PRIVATE), true),
                        1, 0);
     }
+    
+    public void testIntroduceMethod228913() throws Exception {
+        sourceLevel = "1.8";
+        performFixTest("package test;\n" +
+                       "import java.io.StringReader;\n" +
+                       "class Test {\n" +
+                       "  void test() {\n" +
+                       "    try (StringReader y=null) {\n" +
+                       "      |if (y !=null) test();|\n" +
+                       "    }\n" +
+                       "  }\n" +
+                       "}",
+                       "package test; import java.io.StringReader; class Test { void test() { try (StringReader y=null) { name(y); } } private void name(" + /*XXX*/"final StringReader y) { if (y !=null) test(); } }",
+                       new DialogDisplayerImpl3("name", EnumSet
+                .of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
 
     public void testIntroduceMethod203002() throws Exception {
         performFixTest("package test;\n" +
@@ -2300,6 +2319,9 @@ public class IntroduceHintTest extends NbTestCase {
 
         SourceUtilsTestUtil
                 .prepareTest(sourceRoot, buildRoot, cache);
+        
+        if (sourceLevel != null)
+            SourceUtilsTestUtil.setSourceLevel(data, sourceLevel);
 
         DataObject od = DataObject
                 .find(data);

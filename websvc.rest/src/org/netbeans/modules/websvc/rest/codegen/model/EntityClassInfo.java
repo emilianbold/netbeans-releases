@@ -75,6 +75,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -248,30 +249,27 @@ public class EntityClassInfo {
     }
 
     protected void extractPKFields(Project project) {
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if (restSupport != null) {
-            FileObject root = restSupport.findSourceRoot();
-            if (root != null) {
-                try {
-                    final ClasspathInfo cpInfo = ClasspathInfo.create(root);
-                    JavaSource pkSource = JavaSource.create(cpInfo);
-                    if (pkSource == null) {
-                        throw new IllegalArgumentException("No JavaSource object for " + idFieldInfo.getType());
-                    }
-                    pkSource.runUserActionTask(new AbstractTask<CompilationController>() {
-                        @Override
-                        public void run(CompilationController controller) throws IOException {
-                            controller.toPhase(Phase.RESOLVED);
-                            TypeElement classElement = controller.getElements().getTypeElement(idFieldInfo.getType());
-                            extractPKFields(classElement, controller);
-                        }
-                    }, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+        FileObject root = MiscUtilities.findSourceRoot(project);
+        if (root != null) {
+            try {
+                final ClasspathInfo cpInfo = ClasspathInfo.create(root);
+                JavaSource pkSource = JavaSource.create(cpInfo);
+                if (pkSource == null) {
+                    throw new IllegalArgumentException("No JavaSource object for " + idFieldInfo.getType());
                 }
-            } else {
-                throw new IllegalArgumentException("No source root for " + project.getProjectDirectory().getName());
+                pkSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                    @Override
+                    public void run(CompilationController controller) throws IOException {
+                        controller.toPhase(Phase.RESOLVED);
+                        TypeElement classElement = controller.getElements().getTypeElement(idFieldInfo.getType());
+                        extractPKFields(classElement, controller);
+                    }
+                }, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
+        } else {
+            throw new IllegalArgumentException("No source root for " + project.getProjectDirectory().getName());
         }
     }
 

@@ -47,31 +47,22 @@ package org.netbeans.modules.bugtracking.bridge.nodes;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.api.Util;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.RepositoryComparator;
-import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
- * Root node representing Bugtracking in the Servises window
+ * Root node representing Bugtracking in the Services window
  *
  * @author Tomas Stupka
  */
@@ -170,53 +161,4 @@ public class BugtrackingRootNode extends AbstractNode {
         }
     }
 
-    public static void selectNode(final String... path) {
-        Mutex.EVENT.readAccess(new Runnable() {
-            @Override
-            public void run() {
-                TopComponent tab = WindowManager.getDefault().findTopComponent("services"); // NOI18N
-                if (tab == null) {
-                    // XXX have no way to open it, other than by calling ServicesTabAction
-                    LOG.fine("No ServicesTab found"); // NOI18N
-                    return;
-                }
-                tab.open();
-                tab.requestActive();
-                if (!(tab instanceof ExplorerManager.Provider)) {
-                    LOG.fine("ServicesTab not an ExplorerManager.Provider"); // NOI18N
-                    return;
-                }
-                final ExplorerManager mgr = ((ExplorerManager.Provider) tab).getExplorerManager();
-                final Node root = mgr.getRootContext();
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Node repository = NodeOp.findChild(root, BUGTRACKING_NODE_NAME);
-                        if (repository == null) {
-                            LOG.fine("ServicesTab does not contain node " + BUGTRACKING_NODE_NAME); // NOI18N
-                            return;
-                        }
-                        Node _selected;
-                        try {
-                            _selected = NodeOp.findPath(repository, path);
-                        } catch (NodeNotFoundException x) {
-                            LOG.log(Level.FINE, "Could not find subnode", x); // NOI18N
-                            _selected = x.getClosestNode();
-                        }
-                        final Node selected = _selected;
-                        Mutex.EVENT.readAccess(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    mgr.setSelectedNodes(new Node[] {selected});
-                                } catch (PropertyVetoException x) {
-                                    LOG.log(Level.FINE, "Could not select path", x); // NOI18N
-                                }
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    }    
 }

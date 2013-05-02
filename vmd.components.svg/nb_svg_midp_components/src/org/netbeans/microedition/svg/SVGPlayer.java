@@ -227,7 +227,7 @@ public class SVGPlayer extends Canvas implements CommandListener { // need to us
      * or null if there was no user SVGEvenetListener set.
      */
     public SVGEventListener getSafeSVGEventListener() {
-        return userSvgEventListener;
+        return safeSvgEventListener;
     }    
     
     

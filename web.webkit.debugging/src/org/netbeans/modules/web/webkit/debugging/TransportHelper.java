@@ -219,7 +219,7 @@ public class TransportHelper {
         public boolean waitForResponse() {
             assert semaphore != null;
             try {
-                return semaphore.tryAcquire(5, TimeUnit.SECONDS);
+                return semaphore.tryAcquire(10, TimeUnit.SECONDS);
             } catch (InterruptedException ex) {
                 Logger.getLogger(TransportHelper.class.getName()).log(Level.INFO, null, ex);
                 return false;

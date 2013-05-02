@@ -59,6 +59,7 @@ import javax.security.auth.Refreshable;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
+import org.netbeans.api.debugger.jpda.MutableVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
@@ -77,7 +78,7 @@ import org.openide.util.Exceptions;
 /**
  * @author   Jan Jancura
  */
-public class FieldVariable extends AbstractVariable implements
+public class FieldVariable extends AbstractVariable implements MutableVariable,
 org.netbeans.api.debugger.jpda.Field, Refreshable {
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N

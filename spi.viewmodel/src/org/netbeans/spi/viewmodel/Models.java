@@ -48,6 +48,7 @@ import java.awt.Component;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyEditor;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -266,7 +267,7 @@ public final class Models {
         // ; or the models directly
         boolean hasLists = false;
         int modelsSize = models.size();
-        if (11 <= modelsSize && modelsSize <= 15) {
+        if (11 <= modelsSize && modelsSize <= 18) {
             Iterator it = models.iterator ();
             boolean failure = false;
             while (it.hasNext ()) {
@@ -306,6 +307,18 @@ public final class Models {
                             ml.tableRendererModels = (List<TableRendererModel>) models.get(13);
                             if (modelsSize > 14) {
                                 ml.tableRendererModelFilters = (List<TableRendererModelFilter>) models.get(14);
+                                //if (modelsSize > 15) {
+                                //    ml.tableHtmlModels = (List<TableHTMLModel>) models.get(15);
+                                    if (modelsSize > 15) {
+                                        ml.tableHtmlModelFilters = (List<TableHTMLModelFilter>) models.get(15);
+                                        if (modelsSize > 16) {
+                                            ml.tablePropertyEditorsModels = (List<TablePropertyEditorsModel>) models.get(16);
+                                            if (modelsSize > 17) {
+                                                ml.tablePropertyEditorsModelFilters = (List<TablePropertyEditorsModelFilter>) models.get(17);
+                                            }
+                                        }
+                                    }
+                                //}
                             }
                         }
                     }
@@ -400,7 +413,7 @@ public final class Models {
                 new DefaultAsynchronousModel(),//new DelegatingAsynchronousModel (ml.asynchModels),
                 ml.asynchModelFilters
             ),
-            null,
+            null, null,
             propertiesHelpID
         );
         } else {
@@ -424,7 +437,8 @@ public final class Models {
             ml.columnModels,
             createCompoundTableModel (
                 new DelegatingTableModel (ml.tableModels),
-                ml.tableModelFilters
+                ml.tableModelFilters,
+                ml.tableHtmlModelFilters
             ),
             createCompoundAsynchronousModel (
                 new DefaultAsynchronousModel(),//new DelegatingAsynchronousModel (ml.asynchModels),
@@ -433,6 +447,14 @@ public final class Models {
             createCompoundTableRendererModel (
                 new DelegatingTableRendererModel(ml.tableRendererModels),
                 ml.tableRendererModelFilters
+            ),
+            /*createCompoundTableHTMLModel (
+                new DelegatingTableHTMLModel(ml.tableHtmlModels),
+                ml.tableHtmlModelFilters
+            ),*/
+            createCompoundTablePropertyEditorModel (
+                new DelegatingTablePropertyEditorsModel(ml.tablePropertyEditorsModels),
+                ml.tablePropertyEditorsModelFilters
             ),
             propertiesHelpID
         );
@@ -557,16 +579,24 @@ public final class Models {
      *
      * @returns compound table model
      */
-    private static TableModel createCompoundTableModel (
-        TableModel originalTableModel,
-        List tableModelFilters
+    private static TableHTMLModel createCompoundTableModel (
+        TableHTMLModel originalTableModel,
+        List tableModelFilters,
+        List tableHtmlModelFilters
     ) {
-        TableModel tm = originalTableModel;
+        TableHTMLModel tm = originalTableModel;
         int i, k = tableModelFilters.size ();
         for (i = 0; i < k; i++) {
             tm = new CompoundTableModel (
                 tm,
                 (TableModelFilter) tableModelFilters.get (i)
+            );
+        }
+        k = tableHtmlModelFilters.size ();
+        for (i = 0; i < k; i++) {
+            tm = new CompoundTableModel (
+                tm,
+                (TableHTMLModelFilter) tableHtmlModelFilters.get (i)
             );
         }
         return tm;
@@ -591,6 +621,21 @@ public final class Models {
             tm = new CompoundTableRendererModel (
                 tm,
                 (TableRendererModelFilter) tableModelFilters.get (i)
+            );
+        }
+        return tm;
+    }
+    
+    private static TablePropertyEditorsModel createCompoundTablePropertyEditorModel (
+        TablePropertyEditorsModel originalTableModel,
+        List tableModelFilters
+    ) {
+        TablePropertyEditorsModel tm = originalTableModel;
+        int i, k = tableModelFilters.size ();
+        for (i = 0; i < k; i++) {
+            tm = new CompoundTablePropertyEditorsModel (
+                tm,
+                (TablePropertyEditorsModelFilter) tableModelFilters.get (i)
             );
         }
         return tm;
@@ -1031,7 +1076,8 @@ public final class Models {
         } else if (event instanceof ModelEvent.TableValueChanged) {
             newEvent = new ModelEvent.TableValueChanged(newSource,
                     ((ModelEvent.TableValueChanged) event).getNode(),
-                    ((ModelEvent.TableValueChanged) event).getColumnID());
+                    ((ModelEvent.TableValueChanged) event).getColumnID(),
+                    ((ModelEvent.TableValueChanged) event).getChange());
         } else if (event instanceof ModelEvent.TreeChanged) {
             newEvent = new ModelEvent.TreeChanged(newSource);
         } else {
@@ -1357,11 +1403,12 @@ public final class Models {
      * 
      * @author   Jan Jancura
      */
-    private final static class CompoundTableModel implements TableModel, ModelListener {
+    private final static class CompoundTableModel implements TableHTMLModel, ModelListener {
 
 
-        private TableModel model;
+        private TableHTMLModel model;
         private TableModelFilter filter;
+        private TableHTMLModelFilter htmlFilter;
 
         private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
 
@@ -1370,9 +1417,14 @@ public final class Models {
          * Creates {@link org.netbeans.spi.viewmodel.TableModel} for given TableModel and
          * {@link org.netbeans.spi.viewmodel.TableModelFilter}.
          */
-        CompoundTableModel (TableModel model, TableModelFilter filter) {
+        CompoundTableModel (TableHTMLModel model, TableModelFilter filter) {
             this.model = model;
             this.filter = filter;
+        }
+    
+        CompoundTableModel (TableHTMLModel model, TableHTMLModelFilter htmlFilter) {
+            this.model = model;
+            this.htmlFilter = htmlFilter;
         }
     
         /**
@@ -1391,7 +1443,29 @@ public final class Models {
         @Override
         public Object getValueAt (Object node, String columnID) throws 
         UnknownTypeException {
-            return filter.getValueAt (model, node, columnID);
+            if (filter != null) {
+                return filter.getValueAt (model, node, columnID);
+            } else {
+                return model.getValueAt(node, columnID);
+            }
+        }
+
+        @Override
+        public boolean hasHTMLValueAt(Object node, String columnID) throws UnknownTypeException {
+            if (htmlFilter != null) {
+                return htmlFilter.hasHTMLValueAt(model, node, columnID);
+            } else {
+                return model.hasHTMLValueAt(node, columnID);
+            }
+        }
+
+        @Override
+        public String getHTMLValueAt(Object node, String columnID) throws UnknownTypeException {
+            if (htmlFilter != null) {
+                return htmlFilter.getHTMLValueAt(model, node, columnID);
+            } else {
+                return model.getHTMLValueAt(node, columnID);
+            }
         }
 
         /**
@@ -1410,7 +1484,11 @@ public final class Models {
         @Override
         public boolean isReadOnly (Object node, String columnID) throws 
         UnknownTypeException {
-            return filter.isReadOnly (model, node, columnID);
+            if (filter != null) {
+                return filter.isReadOnly (model, node, columnID);
+            } else {
+                return model.isReadOnly(node, columnID);
+            }
         }
 
         /**
@@ -1428,7 +1506,11 @@ public final class Models {
         @Override
         public void setValueAt (Object node, String columnID, Object value) 
         throws UnknownTypeException {
-            filter.setValueAt (model, node, columnID, value);
+            if (filter != null) {
+                filter.setValueAt (model, node, columnID, value);
+            } else {
+                model.setValueAt(node, columnID, value);
+            }
         }
 
         /** 
@@ -1440,7 +1522,9 @@ public final class Models {
         public void addModelListener (ModelListener l) {
             synchronized (modelListeners) {
                 if (modelListeners.isEmpty()) {
-                    filter.addModelListener (this);
+                    if (filter != null) {
+                        filter.addModelListener (this);
+                    }
                     model.addModelListener (this);
                 }
                 modelListeners.add(l);
@@ -1457,7 +1541,9 @@ public final class Models {
             synchronized (modelListeners) {
                 modelListeners.remove(l);
                 if (modelListeners.isEmpty()) {
-                    filter.removeModelListener (this);
+                    if (filter != null) {
+                        filter.removeModelListener (this);
+                    }
                     model.removeModelListener (this);
                 }
             }
@@ -1490,15 +1576,16 @@ public final class Models {
         }
         
         public String toString (String n) {
+            Model theFilter = (filter != null) ? filter : htmlFilter;
             if (model instanceof CompoundTableModel) {
-                return n + filter + "\n" +
+                return n + theFilter + "\n" +
                     ((CompoundTableModel) model).toString (n + "  ");
             }
             if (model instanceof DelegatingTableModel) {
-                return n + filter + "\n" +
+                return n + theFilter + "\n" +
                     ((DelegatingTableModel) model).toString (n + "  ");
             }
-            return n + filter + "\n" + 
+            return n + theFilter + "\n" + 
                    n + "  " + model;
         }
     }
@@ -1899,6 +1986,40 @@ public final class Models {
         }
     }
     
+    private final static class CompoundTablePropertyEditorsModel implements TablePropertyEditorsModel {
+        
+        private TablePropertyEditorsModel model;
+        private TablePropertyEditorsModelFilter filter;
+        
+        CompoundTablePropertyEditorsModel(TablePropertyEditorsModel model, TablePropertyEditorsModelFilter filter) {
+            this.model = model;
+            this.filter = filter;
+        }
+
+        @Override
+        public PropertyEditor getPropertyEditor(Object node, String columnID) throws UnknownTypeException {
+            return filter.getPropertyEditor(model, node, columnID);
+        }
+        
+        @Override
+        public String toString () {
+            return super.toString () + "\n" + toString ("    ");
+        }
+
+        public String toString (String n) {
+            if (model instanceof CompoundTablePropertyEditorsModel) {
+                return n + filter + "\n" +
+                    ((CompoundTablePropertyEditorsModel) model).toString (n + "  ");
+            }
+            if (model instanceof DelegatingTablePropertyEditorsModel) {
+                return n + filter + "\n" +
+                    ((DelegatingTablePropertyEditorsModel) model).toString (n + "  ");
+            }
+            return n + filter + "\n" +
+                   n + "  " + model;
+        }
+    }
+    
     /**
      * Creates {@link org.netbeans.spi.viewmodel.NodeActionsProvider} 
      * for given NodeActionsProvider and
@@ -2078,7 +2199,7 @@ public final class Models {
      *
      * @author   Jan Jancura
      */
-    private final static class DelegatingTableModel implements TableModel {
+    private final static class DelegatingTableModel implements TableModel, TableHTMLModel {
 
         private TableModel[] models;
         private HashMap<String, TableModel> classNameToModel = new HashMap<String, TableModel>();
@@ -2286,6 +2407,94 @@ public final class Models {
             sb.append (models [i]);
             return new String (sb);
         }
+        
+        // HTML extension:
+
+        private boolean defaultHasHTMLValueAt() {
+            return false;
+        }
+        
+        @Override
+        public boolean hasHTMLValueAt(Object node, String columnID) throws UnknownTypeException {
+            UnknownTypeException uex = null;
+            TableModel model = classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) {
+                if (model instanceof TableHTMLModel) {
+                    try {
+                        return ((TableHTMLModel) model).hasHTMLValueAt(node, columnID);
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                } else {
+                    return defaultHasHTMLValueAt();
+                }
+            }
+            int i, k = models.length;
+            boolean isHTML = false;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof TableHTMLModel) {
+                    try {
+                        boolean has = ((TableHTMLModel) models [i]).hasHTMLValueAt(node, columnID);
+                        classNameToModel.put (node.getClass ().getName (), models [i]);
+                        return has;
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                    isHTML = true;
+                }
+            }
+            if (!isHTML) {
+                return defaultHasHTMLValueAt();
+            }
+            if (uex != null) {
+                throw uex;
+            } else {
+                throw new UnknownTypeException (node);
+            }
+        }
+
+        @Override
+        public String getHTMLValueAt(Object node, String columnID) throws UnknownTypeException {
+            UnknownTypeException uex = null;
+            TableModel model = classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) {
+                if (model instanceof TableHTMLModel) {
+                    try {
+                        return ((TableHTMLModel) model).getHTMLValueAt(node, columnID);
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                } else {
+                    return null;
+                }
+            }
+            int i, k = models.length;
+            boolean isHTML = false;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof TableHTMLModel) {
+                    try {
+                        String htmlValue = ((TableHTMLModel) models [i]).getHTMLValueAt(node, columnID);
+                        classNameToModel.put (node.getClass ().getName (), models [i]);
+                        return htmlValue;
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                    isHTML = true;
+                }
+            }
+            if (!isHTML) {
+                return null;
+            }
+            if (uex != null) {
+                throw uex;
+            } else {
+                throw new UnknownTypeException (node);
+            }
+        }
     }
 
     /**
@@ -2483,6 +2692,79 @@ public final class Models {
             return new String (sb);
         }
 
+    }
+    
+    private final static class DelegatingTablePropertyEditorsModel implements TablePropertyEditorsModel {
+        
+        private TablePropertyEditorsModel[] models;
+        private HashMap<String, TablePropertyEditorsModel> classNameToModel = new HashMap<String, TablePropertyEditorsModel>();
+        
+        DelegatingTablePropertyEditorsModel(List<TablePropertyEditorsModel> models) {
+            this(convert(models));
+        }
+        
+        private static TablePropertyEditorsModel[] convert(List<TablePropertyEditorsModel> l) {
+            TablePropertyEditorsModel[] models = new TablePropertyEditorsModel[l.size()];
+            return l.toArray(models);
+        }
+        
+        DelegatingTablePropertyEditorsModel(TablePropertyEditorsModel[] models) {
+            this.models = models;
+        }
+
+        @Override
+        public PropertyEditor getPropertyEditor(Object node, String columnID) throws UnknownTypeException {
+            UnknownTypeException utex = null;
+            TablePropertyEditorsModel model = classNameToModel.get(
+                    node.getClass().getName()
+            );
+            if (model != null) {
+                try {
+                    return model.getPropertyEditor(node, columnID);
+                } catch (UnknownTypeException e) {
+                    utex = e;
+                }
+            }
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                try {
+                    PropertyEditor pe = models [i].getPropertyEditor(node, columnID);
+                    classNameToModel.put (node.getClass ().getName (), models [i]);
+                    return pe;
+                } catch (UnknownTypeException e) {
+                    utex = e;
+                }
+            }
+            if (k == 0) {
+                return null;
+            }
+            if (utex != null) {
+                throw utex;
+            } else {
+                throw new UnknownTypeException (node);
+            }
+        }
+
+        @Override
+        public String toString () {
+            return super.toString () + "\n" + toString ("    ");
+        }
+
+        public String toString (String n) {
+            int i, k = models.length - 1;
+            if (k == -1) {
+                return "";
+            }
+            StringBuffer sb = new StringBuffer ();
+            for (i = 0; i < k; i++) {
+                sb.append (n);
+                sb.append (models [i]);
+                sb.append ('\n');
+            }
+            sb.append (n);
+            sb.append (models [i]);
+            return new String (sb);
+        }
     }
 
     /**
@@ -3955,9 +4237,10 @@ public final class Models {
                                                        CheckNodeModel,
                                                        DnDNodeModel,
                                                        NodeActionsProvider,
-                                                       TableModel,
+                                                       TableHTMLModel,
                                                        TreeExpansionModel,
-                                                       TableRendererModel {
+                                                       TableRendererModel,
+                                                       TablePropertyEditorsModel {
 
         private ReorderableTreeModel treeModel;
         private ExtendedNodeModel nodeModel;
@@ -3965,8 +4248,9 @@ public final class Models {
         private DnDNodeModel    dndNodeModel;
         private NodeActionsProvider nodeActionsProvider;
         private ColumnModel[]   columnModels;
-        private TableModel      tableModel;
+        private TableHTMLModel  tableModel;
         private TableRendererModel tableRendererModel;
+        private TablePropertyEditorsModel tablePropertyEditorsModel;
         private TreeExpansionModel treeExpansionModel;
         private AsynchronousModel asynchModel;
 
@@ -3997,9 +4281,10 @@ public final class Models {
             ExtendedNodeModel nodeModel, 
             NodeActionsProvider nodeActionsProvider,
             List<ColumnModel> columnModels,
-            TableModel tableModel,
+            TableHTMLModel tableModel,
             AsynchronousModel asynchModel,
             TableRendererModel tableRendererModel,
+            TablePropertyEditorsModel tablePropertyEditorsModel,
             String propertiesHelpID
         ) {
             if (treeModel == null || nodeModel == null || tableModel == null ||
@@ -4024,6 +4309,7 @@ public final class Models {
             }
             this.tableModel = tableModel;
             this.tableRendererModel = tableRendererModel;
+            this.tablePropertyEditorsModel = tablePropertyEditorsModel;
             this.nodeActionsProvider = nodeActionsProvider;
             this.columnModels = columnModels.toArray (
                 new ColumnModel [columnModels.size ()]
@@ -4582,6 +4868,31 @@ public final class Models {
                 return null;
             }
         }
+        
+        // TableHTMLModel
+
+        @Override
+        public boolean hasHTMLValueAt(Object node, String columnID) throws UnknownTypeException {
+            return tableModel.hasHTMLValueAt(node, columnID);
+        }
+
+        @Override
+        public String getHTMLValueAt(Object node, String columnID) throws UnknownTypeException {
+            return tableModel.getHTMLValueAt(node, columnID);
+        }
+        
+        // TablePropertyEditorsModel
+
+        @Override
+        public PropertyEditor getPropertyEditor(Object node, String columnID) throws UnknownTypeException {
+            if (tablePropertyEditorsModel != null) {
+                return tablePropertyEditorsModel.getPropertyEditor(node, columnID);
+            } else {
+                return null;
+            }
+        }
+        
+        
 
     }
 
@@ -4602,6 +4913,10 @@ public final class Models {
         public List<AsynchronousModelFilter>   asynchModelFilters = Collections.emptyList();
         public List<TableRendererModel>        tableRendererModels = Collections.emptyList();
         public List<TableRendererModelFilter>  tableRendererModelFilters = Collections.emptyList();
+        public List<TableHTMLModel>            tableHtmlModels = Collections.emptyList();
+        public List<TableHTMLModelFilter>      tableHtmlModelFilters = Collections.emptyList();
+        public List<TablePropertyEditorsModel> tablePropertyEditorsModels = Collections.emptyList();
+        public List<TablePropertyEditorsModelFilter> tablePropertyEditorsModelFilters = Collections.emptyList();
 
         public void addOtherModels(List<? extends Model> otherModels) {
             Iterator it = otherModels.iterator ();
@@ -4666,6 +4981,30 @@ public final class Models {
                         tableRendererModelFilters.add((TableRendererModelFilter) model);
                     } else {
                         tableRendererModelFilters.add(0, (TableRendererModelFilter) model);
+                    }
+                }
+                if (model instanceof TableHTMLModel && !tableHtmlModels.contains((TableHTMLModel) model)) {
+                    tableHtmlModels = new ArrayList<TableHTMLModel>(tableHtmlModels);
+                    tableHtmlModels.add((TableHTMLModel) model);
+                }
+                if (model instanceof TableHTMLModelFilter && !tableHtmlModelFilters.contains((TableHTMLModelFilter) model)) {
+                    tableHtmlModelFilters = new ArrayList<TableHTMLModelFilter>(tableHtmlModelFilters);
+                    if (first) {
+                        tableHtmlModelFilters.add((TableHTMLModelFilter) model);
+                    } else {
+                        tableHtmlModelFilters.add(0, (TableHTMLModelFilter) model);
+                    }
+                }
+                if (model instanceof TablePropertyEditorsModel && !tablePropertyEditorsModels.contains((TablePropertyEditorsModel) model)) {
+                    tablePropertyEditorsModels = new ArrayList<TablePropertyEditorsModel>(tablePropertyEditorsModels);
+                    tablePropertyEditorsModels.add((TablePropertyEditorsModel) model);
+                }
+                if (model instanceof TablePropertyEditorsModelFilter && !tablePropertyEditorsModelFilters.contains((TablePropertyEditorsModelFilter) model)) {
+                    tablePropertyEditorsModelFilters = new ArrayList<TablePropertyEditorsModelFilter>(tablePropertyEditorsModelFilters);
+                    if (first) {
+                        tablePropertyEditorsModelFilters.add((TablePropertyEditorsModelFilter) model);
+                    } else {
+                        tablePropertyEditorsModelFilters.add(0, (TablePropertyEditorsModelFilter) model);
                     }
                 }
                 if (model instanceof NodeActionsProvider && !nodeActionsProviders.contains((NodeActionsProvider) model)) {

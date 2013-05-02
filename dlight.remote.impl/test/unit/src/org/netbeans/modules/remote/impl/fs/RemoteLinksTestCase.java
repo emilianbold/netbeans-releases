@@ -134,7 +134,6 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             assertTrue("FileObject should be writable: " + dataFileFO.getPath(), dataFileFO.canWrite());
             String content = "another brown fox...";
             writeFile(dataFileFO, content);
-            WritingQueue.getInstance(execEnv).waitFinished(null);
             CharSequence readContent = readFile(dataFileFO);
             assertEquals("File content differ", content.toString(), readContent.toString());
 
@@ -218,7 +217,6 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             assertTrue("FileObject should be writable: " + linkFO.getPath(), linkFO.canWrite());
             String content = "a quick brown fox...";
             writeFile(linkFO, content);
-            WritingQueue.getInstance(execEnv).waitFinished(null);
             CharSequence readContent = readFile(realFO);
             assertEquals("File content differ", content.toString(), readContent.toString());
             

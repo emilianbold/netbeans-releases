@@ -76,12 +76,14 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 
 import java.beans.PropertyChangeListener;
+import java.io.InvalidObjectException;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
@@ -90,6 +92,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ArrayReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalArgumentExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -102,6 +105,7 @@ import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapp
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -465,6 +469,67 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
     }
     
     @Override
+    public Object createMirrorObject() {
+        Value v = getJDIValue();
+        if (v == null) {
+            return null;
+        }
+        return VariableMirrorTranslator.createMirrorObject(v);
+    }
+
+    /* To @Override MutableVariable */
+    public void setFromMirrorObject(Object obj) throws InvalidObjectException {
+        Value v;
+        if (obj == null) {
+            v = null;
+        } else {
+            try {
+                v = VariableMirrorTranslator.createValueFromMirror(obj,
+                                                                   this instanceof ObjectVariable,
+                                                                   getDebugger());
+            } catch (IllegalArgumentExceptionWrapper ex) {
+                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
+                ioex.initCause(ex);
+                throw ioex;
+            } catch (InternalExceptionWrapper ex) {
+                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
+                ioex.initCause(ex);
+                throw ioex;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
+                ioex.initCause(ex);
+                throw ioex;
+            } catch (ObjectCollectedExceptionWrapper ex) {
+                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
+                ioex.initCause(ex);
+                throw ioex;
+            } catch (InvalidTypeException ex) {
+                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
+                ioex.initCause(ex);
+                throw ioex;
+            } catch (ClassNotLoadedException ex) {
+                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
+                ioex.initCause(ex);
+                throw ioex;
+            } catch (ClassNotPreparedExceptionWrapper ex) {
+                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
+                ioex.initCause(ex);
+                throw ioex;
+            }
+            if (v == null) {
+                throw new InvalidObjectException("No target value from "+obj);
+            }
+        }
+        try {
+            setValue(v);
+        } catch (InvalidExpressionException iex) {
+            InvalidObjectException ioex = new InvalidObjectException(iex.getLocalizedMessage());
+            ioex.initCause(iex);
+            throw ioex;
+        }
+    }
+    
+    @Override
     public final void addPropertyChangeListener(PropertyChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -548,6 +613,6 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         return sb.toString();
     }
      */
-    
+
 }
 

@@ -590,14 +590,6 @@ public final class PhpProject implements Project {
         return testingProviders.getTestingProviders();
     }
 
-    @CheckForNull
-    public PhpTestingProvider getFirstTestingProvider() {
-        for (PhpTestingProvider testingProvider : getTestingProviders()) {
-            return testingProvider;
-        }
-        return null;
-    }
-
     public String getName() {
         if (name == null) {
             ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {

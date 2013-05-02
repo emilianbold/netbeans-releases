@@ -639,7 +639,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         Set<NamespaceElement> namespaces = request.index.getNamespaces(
                 NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
         for (NamespaceElement namespace : namespaces) {
-            completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
+            completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, QualifiedNameKind.FULLYQUALIFIED));
         }
         final NameKind nameQuery = NameKind.caseInsensitivePrefix(request.prefix);
         for (TraitElement trait : request.index.getTraits(nameQuery)) {

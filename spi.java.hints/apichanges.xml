@@ -46,6 +46,21 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         <apidef name="JavaHintsSPI">Java Hints SPI</apidef>
     </apidefs>
     <changes>
+        <change id="ProjectHintsJava">
+            <api name="JavaHintsSPI"/>
+            <summary>Defining system filesystem folder for per-project Java hints customizers</summary>
+            <version major="1" minor="16"/>
+            <date day="24" month="4" year="2013"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Defining <code>Project/hints/java-based</code> folder, where provider for
+                    hints customizers for Java-based projects should be stored.
+                </p>    
+            </description>
+<!--            <issue number="227959"/>-->
+        </change>
         <change id="IntegerOption">
             <api name="JavaHintsSPI"/>
             <summary>Added support for integer options. Hints can be declared to appear only in inspect &amp; transform</summary>

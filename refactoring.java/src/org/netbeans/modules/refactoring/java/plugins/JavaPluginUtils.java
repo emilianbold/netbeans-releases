@@ -53,8 +53,12 @@ import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.*;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.*;
@@ -296,18 +300,66 @@ public final class JavaPluginUtils {
         return source;
     }
     
+    public static boolean hasGetter(CompilationInfo info, TypeElement typeElement, VariableElement field, Map<String, List<ExecutableElement>> methods, CodeStyle cs) {
+        CharSequence name = field.getSimpleName();
+        assert name.length() > 0;
+        TypeMirror type = field.asType();
+        boolean isStatic = field.getModifiers().contains(Modifier.STATIC);
+        String getterName = CodeStyleUtils.computeGetterName(name, type.getKind() == TypeKind.BOOLEAN, isStatic, cs);
+        Types types = info.getTypes();
+        List<ExecutableElement> candidates = methods.get(getterName);
+        if (candidates != null) {
+            for (ExecutableElement candidate : candidates) {
+                if ((!candidate.getModifiers().contains(Modifier.ABSTRACT) || candidate.getEnclosingElement() == typeElement)
+                        && candidate.getParameters().isEmpty()
+                        && types.isSameType(candidate.getReturnType(), type))
+                    return true;
+            }
+        }
+        return false;
+    }
+    
+    public static boolean hasSetter(CompilationInfo info, TypeElement typeElement, VariableElement field, Map<String, List<ExecutableElement>> methods, CodeStyle cs) {
+        CharSequence name = field.getSimpleName();
+        assert name.length() > 0;
+        TypeMirror type = field.asType();
+        boolean isStatic = field.getModifiers().contains(Modifier.STATIC);
+        String setterName = CodeStyleUtils.computeSetterName(name, isStatic, cs);
+        Types types = info.getTypes();
+        List<ExecutableElement> candidates = methods.get(setterName);
+        if (candidates != null) {
+            for (ExecutableElement candidate : candidates) {
+                if ((!candidate.getModifiers().contains(Modifier.ABSTRACT) || candidate.getEnclosingElement() == typeElement)
+                        && candidate.getReturnType().getKind() == TypeKind.VOID
+                        && candidate.getParameters().size() == 1
+                        && types.isSameType(candidate.getParameters().get(0).asType(), type))
+                    return true;
+            }
+        }
+        return false;
+    }
+    
     //<editor-fold defaultstate="collapsed" desc="TODO: Copy from org.netbeans.modules.java.hints.errors.Utilities">
     public static final String DEFAULT_NAME = "par"; // NOI18N
     public static String makeNameUnique(CompilationInfo info, Scope s, String name) {
-        return makeNameUnique(info, s, name, Collections.EMPTY_LIST);
+        return makeNameUnique(info, s, name, Collections.EMPTY_LIST, null, null);
     }
+    
     public static String makeNameUnique(CompilationInfo info, Scope s, String name, List<String> definedIds) {
+        return makeNameUnique(info, s, name, definedIds, null, null);
+    }
+    
+    public static String makeNameUnique(CompilationInfo info, Scope s, String name, String prefix, String suffix) {
+        return makeNameUnique(info, s, name, Collections.EMPTY_LIST, prefix, suffix);
+    }
+    
+    public static String makeNameUnique(CompilationInfo info, Scope s, String name, List<String> definedIds, String prefix, String suffix) {
+        boolean cont;
+        String proposedName;
+        name = CodeStyleUtils.addPrefixSuffix(name, prefix, null);
         int counter = 0;
-        boolean cont = true;
-        String proposedName = name;
-        
-        while (cont) {
-            proposedName = (counter != 0 ? name + String.valueOf(counter) : name);
+        do {
+            proposedName = name + (counter != 0 ? String.valueOf(counter) : "") + safeString(suffix);
             
             cont = false;
             
@@ -320,20 +372,20 @@ public final class JavaPluginUtils {
                     }
                 }
                 for (Element e : info.getElementUtilities().getLocalMembersAndVars(s, new VariablesFilter())) {
-                    if (proposedName.equals(e.getSimpleName().toString())) {
-                        counter++;
-                        cont = true;
-                        break;
+                if (proposedName.equals(e.getSimpleName().toString())) {
+                    counter++;
+                    cont = true;
+                    break;
                     }
                 }
             }
-        }
+        } while(cont);
         
         return proposedName;
     }
     
-    public static String getName(Tree et) {
-        return adjustName(getNameRaw(et));
+    private static String safeString(String str) {
+        return str == null ? "" : str;
     }
     
     public static String getName(TypeMirror tm) {
@@ -352,33 +404,40 @@ public final class JavaPluginUtils {
         }
     }
     
+    public static String getName(ExpressionTree et) {
+        return getName((Tree) et);
+    }
+    
+    public static String getName(Tree et) {
+        return adjustName(getNameRaw(et));
+    }
+    
     private static String getNameRaw(Tree et) {
-        if (et == null) {
+        if (et == null)
             return null;
-        }
-        
+
         switch (et.getKind()) {
-            case IDENTIFIER:
-                return ((IdentifierTree) et).getName().toString();
-            case METHOD_INVOCATION:
-                return getName(((MethodInvocationTree) et).getMethodSelect());
-            case MEMBER_SELECT:
-                return ((MemberSelectTree) et).getIdentifier().toString();
-            case NEW_CLASS:
-                return firstToLower(getName(((NewClassTree) et).getIdentifier()));
-            case PARAMETERIZED_TYPE:
-                return firstToLower(getName(((ParameterizedTypeTree) et).getType()));
-            case STRING_LITERAL:
-                String name = guessLiteralName((String) ((LiteralTree) et).getValue());
-                if(name == null) {
-                    return firstToLower(String.class.getSimpleName());
-                } else {
-                    return firstToLower(name);
-                }
-            case VARIABLE:
-                return ((VariableTree) et).getName().toString();
-            default:
-                return null;
+        case IDENTIFIER:
+            return ((IdentifierTree) et).getName().toString();
+        case METHOD_INVOCATION:
+            return getNameRaw(((MethodInvocationTree) et).getMethodSelect());
+        case MEMBER_SELECT:
+            return ((MemberSelectTree) et).getIdentifier().toString();
+        case NEW_CLASS:
+            return firstToLower(getNameRaw(((NewClassTree) et).getIdentifier()));
+        case PARAMETERIZED_TYPE:
+            return firstToLower(getNameRaw(((ParameterizedTypeTree) et).getType()));
+        case STRING_LITERAL:
+            String name = guessLiteralName((String) ((LiteralTree) et).getValue());
+            if(name == null) {
+                return firstToLower(String.class.getSimpleName());
+            } else {
+                return firstToLower(name);
+            }
+        case VARIABLE:
+            return ((VariableTree) et).getName().toString();
+        default:
+            return null;
         }
     }
     
@@ -412,23 +471,23 @@ public final class JavaPluginUtils {
         if (name.length() == 0) {
             return null;
         }
-        
+
         StringBuilder result = new StringBuilder();
         boolean toLower = true;
         char last = Character.toLowerCase(name.charAt(0));
-        
+
         for (int i = 1; i < name.length(); i++) {
-            if (toLower && Character.isUpperCase(name.charAt(i))) {
+            if (toLower && (Character.isUpperCase(name.charAt(i)) || name.charAt(i) == '_')) {
                 result.append(Character.toLowerCase(last));
             } else {
                 result.append(last);
                 toLower = false;
             }
             last = name.charAt(i);
-            
+
         }
-        
-        result.append(last);
+
+        result.append(toLower ? Character.toLowerCase(last) : last);
         
         if (SourceVersion.isKeyword(result)) {
             return "a" + name;
@@ -438,25 +497,20 @@ public final class JavaPluginUtils {
     }
     
     private static String guessLiteralName(String str) {
-        StringBuilder sb = new StringBuilder();
-        if(str.length() == 0) {
+        if(str.isEmpty()) {
             return null;
         }
-        char first = str.charAt(0);
-        if(Character.isJavaIdentifierStart(str.charAt(0))) {
-            sb.append(first);
-        }
         
-        for (int i = 1; i < str.length(); i++) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < str.length(); i++) {
             char ch = str.charAt(i);
             if(ch == ' ') {
                 sb.append('_');
-                continue;
-            }
-            if (Character.isJavaIdentifierPart(ch)) {
+            } else if (sb.length() == 0 ? Character.isJavaIdentifierStart(ch) : Character.isJavaIdentifierPart(ch)) {
                 sb.append(ch);
             }
-            if (i > 40) {
+            if (sb.length() > 40) {
                 break;
             }
         }

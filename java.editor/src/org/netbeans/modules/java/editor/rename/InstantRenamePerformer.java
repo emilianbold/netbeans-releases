@@ -59,9 +59,11 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,6 +73,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.ElementScanner6;
 import javax.swing.Action;
@@ -99,6 +102,7 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
@@ -115,6 +119,7 @@ import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.editor.java.ComputeOffAWT;
 import org.netbeans.modules.editor.java.ComputeOffAWT.Worker;
 import org.netbeans.modules.editor.java.JavaKit;
+import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -380,7 +385,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             el = el.getEnclosingElement();
         }
         
-        if (allowInstantRename(el, info.getElementUtilities())) {
+        if (allowInstantRename(info, el, info.getElementUtilities())) {
             final Set<Token> points = new HashSet<Token>(new FindLocalUsagesQuery(true).findUsages(el, info, doc));
             
             if (el.getKind().isClass()) {
@@ -445,7 +450,32 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         return result;
     }
 
-    private static boolean allowInstantRename(Element e, ElementUtilities eu) {
+    private static boolean allowInstantRename(CompilationInfo info, Element e, ElementUtilities eu) {
+        if(e.getKind() == ElementKind.FIELD) {
+            VariableElement variableElement = (VariableElement) e;
+            TypeElement typeElement = eu.enclosingTypeElement(e);
+            Map<String, List<ExecutableElement>> methods = new HashMap<String, List<ExecutableElement>>();
+            for (ExecutableElement method : ElementFilter.methodsIn(info.getElements().getAllMembers(typeElement))) {
+                List<ExecutableElement> l = methods.get(method.getSimpleName().toString());
+                if (l == null) {
+                    l = new ArrayList<ExecutableElement>();
+                    methods.put(method.getSimpleName().toString(), l);
+                }
+                l.add(method);
+            }
+            
+            boolean isProperty = false;
+            try {
+                CodeStyle codeStyle = CodeStyle.getDefault(info.getDocument());
+                isProperty = GeneratorUtils.hasGetter(info, typeElement, variableElement, methods, codeStyle);
+                isProperty = isProperty || (!variableElement.getModifiers().contains(Modifier.FINAL) &&
+                                    GeneratorUtils.hasSetter(info, typeElement, variableElement, methods, codeStyle));
+            } catch (IOException ex) {
+            }
+            if(isProperty) {
+                return false;
+            }
+        }
         if (org.netbeans.modules.java.editor.semantic.Utilities.isPrivateElement(e)) {
             return true;
         }

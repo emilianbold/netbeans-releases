@@ -43,11 +43,9 @@ package org.netbeans.modules.html.editor.embedding;
 
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.Test;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HtmlLexerPlugin;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -55,7 +53,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -108,7 +105,7 @@ public class JsEmbeddingProviderTest extends CslTestBase {
     }
 
     @MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
-    public static class TestHtmlLexerPlugin implements HtmlLexerPlugin {
+    public static class TestHtmlLexerPlugin extends HtmlLexerPlugin {
 
         @Override
         public String getOpenDelimiter() {
