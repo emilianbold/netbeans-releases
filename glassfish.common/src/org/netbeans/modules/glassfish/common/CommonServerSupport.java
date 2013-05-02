@@ -605,7 +605,7 @@ public class CommonServerSupport
         return ServerAdmin.<ResultString>exec(instance, new CommandRedeploy(
                 name, Util.computeTarget(instance.getProperties()),
                 contextRoot, properties, libraries,
-                url != null && url.contains("ee6wc")), null);
+                url != null && url.contains("ee6wc")), null, stateListener);
     }
 
     @Override
