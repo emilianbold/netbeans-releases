@@ -71,6 +71,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
@@ -283,7 +284,16 @@ public enum JSFVersion {
     }
 
     private static ClassPath getCompileClasspath(WebModule webModule) {
-        Project project = FileOwnerQuery.getOwner(JSFUtils.getFileObject(webModule));
+        FileObject projectFile = JSFUtils.getFileObject(webModule);
+        if (projectFile == null) {
+            return null;
+        }
+
+        Project project = FileOwnerQuery.getOwner(projectFile);
+        if (project == null) {
+            return null;
+        }
+
         ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
         if (webModule.getDocumentBase() != null) {
             return cpp.findClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
