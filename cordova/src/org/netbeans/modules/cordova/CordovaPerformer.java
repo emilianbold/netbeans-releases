@@ -195,8 +195,16 @@ public class CordovaPerformer implements BuildPerformer {
         props.put(PROP_ANDROID_PROJECT_ACTIVITY, activity);//NOI18N
         
         MobilePlatform iosPlatform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
-        props.put(PROP_PROVISIONING_PROFILE, iosPlatform.getProvisioningProfilePath());
-        props.put(PROP_CERTIFICATE_NAME, iosPlatform.getCodeSignIdentity());
+
+        final String provisioningProfilePath = iosPlatform.getProvisioningProfilePath();
+        if (provisioningProfilePath != null) {
+            props.put(PROP_PROVISIONING_PROFILE, provisioningProfilePath);
+        }
+        final String codeSignIdentity = iosPlatform.getCodeSignIdentity();
+
+        if (codeSignIdentity != null) {
+            props.put(PROP_CERTIFICATE_NAME, codeSignIdentity);
+        }
 
         String debug = ClientProjectUtilities.getProperty(p, PROP_DEBUG_ENABLE);//NOI18N
         if (debug == null) {
