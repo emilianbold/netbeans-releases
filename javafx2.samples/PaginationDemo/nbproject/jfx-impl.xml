@@ -1459,7 +1459,7 @@
     </target>
 
     <target name="-warn-insufficient-signing" depends="-check-signing-security" if="is.signing.unsafe">
-        <echo message="Warning: Unsigned and self-signed WebStart applications are deprecated from JDK7u21 onwards due to security reasons.${line.separator}         To ensure future correct functionality please sign WebStart applications using trusted certificate."/>
+        <echo message="Warning: Unsigned and self-signed WebStart Applications and Applets are deprecated from JDK7u21 onwards due to security reasons.${line.separator}         To ensure future correct functionality please sign WebStart Applications and Applets using trusted certificate."/>
     </target>
 
     
