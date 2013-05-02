@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -67,6 +68,7 @@ import org.netbeans.modules.java.project.PackageDisplayUtils;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.actions.FileSystemAction;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -386,6 +388,8 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         /** Non-null only in reduced mode. */
         private final SourceGroup g;
         
+        private Action[] actions;
+        
         public PackageFilterNode(final Node origNode) {
             super (origNode, new PackageFilterChildren (origNode));
             parent = null;
@@ -410,6 +414,35 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
                 }
             }
             return super.getName();
+        }
+        
+        
+        @Override
+        public Action[] getActions( boolean context ) {
+            
+            if ( !context ) {
+                if ( actions == null ) {                
+                    // Copy actions and leave out the PropertiesAction and FileSystemAction.                
+                    Action superActions[] = super.getActions( context );            
+                    List<Action> actionList = new ArrayList<Action>(superActions.length);
+                    
+                    for( int i = 0; i < superActions.length; i++ ) {
+                        if ( superActions[i] instanceof FileSystemAction ) {
+                            actionList.add (null); // insert separator and new action
+                            actionList.addAll((List<Action>) org.openide.util.Utilities.actionsForPath("Projects/package/Actions"));
+                        }
+                        
+                        actionList.add( superActions[i] );                                                  
+                    }
+
+                    actions = new Action[ actionList.size() ];
+                    actionList.toArray( actions );
+                }
+                return actions;
+            }
+            else {
+                return super.getActions( context );
+            }
         }
 
         @Override public String getDisplayName() {
