@@ -522,6 +522,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             onMarkSeen();
         } else if (e.getSource() == panel.removeButton) {
             onRemove();
+        } else if (e.getSource() == panel.refreshConfigurationButton) {
             onRefreshConfiguration();
         } else if (e.getSource() == panel.cloneQueryButton) {
             onCloneQuery();
