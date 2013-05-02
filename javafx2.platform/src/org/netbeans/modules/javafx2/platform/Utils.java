@@ -86,6 +86,9 @@ public final class Utils {
     private static final String JAVAFX_SOURCES_PREFIX = "javafx.src"; // NOI18N
     private static final String JAVAFX_JAVADOC_PREFIX = "javafx.javadoc"; // NOI18N
 
+    private static final String JFXRT_JAR_NAME = "jfxrt.jar"; //NOI18N
+    private static final String JFXRT_JAR_PATH = "jre/lib/" + JFXRT_JAR_NAME;
+
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.javafx2.platform.Utils"); // NOI18N
     
     private Utils() {
@@ -114,6 +117,16 @@ public final class Utils {
      */
     public static void setIsTest(boolean test) {
         isTest = test;
+    }
+
+    @NonNull
+    public static String getJavaFxRuntimeLocation() {
+        return JFXRT_JAR_NAME;
+    }
+
+    @NonNull
+    static String getJavaFxRuntimeArchiveName() {
+        return JFXRT_JAR_NAME;
     }
     
     /**
