@@ -37,10 +37,15 @@
  */
 package org.netbeans.libs.git.jgit;
 
+import com.jcraft.jsch.IdentityRepository;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.ProxyHTTP;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.agentproxy.AgentProxy;
+import com.jcraft.jsch.agentproxy.Buffer;
+import com.jcraft.jsch.agentproxy.Connector;
+import com.jcraft.jsch.agentproxy.Identity;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -51,6 +56,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.jgit.errors.TransportException;
@@ -63,6 +69,7 @@ import org.eclipse.jgit.transport.RemoteSession;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.util.FS;
+import org.netbeans.libs.jsch.agentproxy.ConnectorFactory;
 
 /**
  *
@@ -72,6 +79,7 @@ public class JGitSshSessionFactory extends JschConfigSessionFactory {
 
     private OpenSshConfig sshConfig;
     private static SshSessionFactory INSTANCE;
+    private static final Logger LOG = Logger.getLogger(JGitSshSessionFactory.class.getName());
 
     public static synchronized SshSessionFactory getDefault () {
         if (INSTANCE == null) {
@@ -93,27 +101,26 @@ public class JGitSshSessionFactory extends JschConfigSessionFactory {
 
     @Override
     public synchronized RemoteSession getSession (URIish uri, CredentialsProvider credentialsProvider, FS fs, int tms) throws TransportException {
+        boolean agentUsed = false;
+        String host = uri.getHost();
+        CredentialItem.StringType identityFile = null;
         if (credentialsProvider != null) {
-            String host = uri.getHost();
-            CredentialItem.StringType identityFile = new JGitCredentialsProvider.IdentityFileItem("Identity file for " + host, false);
+            identityFile = new JGitCredentialsProvider.IdentityFileItem("Identity file for " + host, false);
             if (credentialsProvider.isInteractive() && credentialsProvider.get(uri, identityFile) && identityFile.getValue() != null) {
-                if (sshConfig == null) {
-                    sshConfig = OpenSshConfig.get(fs);
-                }
-
-                final OpenSshConfig.Host hc = sshConfig.lookup(host);
-                try {
-                    JSch jsch = getJSch(hc, fs);
-                    // remove all identity files
-                    jsch.removeAllIdentity();
-                    // and add the one specified by CredentialsProvider
-                    jsch.addIdentity(identityFile.getValue());
-                } catch (JSchException ex) {
-                    throw new TransportException(uri, ex.getMessage(), ex);
-                }
+                agentUsed = setupJSch(fs, host, identityFile, uri, true);
             }
         }
-        return super.getSession(uri, credentialsProvider, fs, tms);
+        try {
+            return super.getSession(uri, credentialsProvider, fs, tms);
+        } catch (TransportException ex) {
+            if (agentUsed) {
+                LOG.log(Level.FINE, null, ex);
+                setupJSch(fs, host, identityFile, uri, false);
+                return super.getSession(uri, credentialsProvider, fs, tms);
+            } else {
+                throw ex;
+            }
+        }
     }
 
     @Override
@@ -165,6 +172,133 @@ public class JGitSshSessionFactory extends JschConfigSessionFactory {
             Logger.getLogger(JGitSshSessionFactory.class.getName()).log(Level.INFO, "Invalid URI: " + host + ":" + port, ex);
         }
         return session;
+    }
+
+    private boolean setupJSchIdentityRepository (JSch jsch, String identityFile, boolean preferAgent) throws JSchException {
+        boolean agentUsed = false;
+        if (preferAgent) {
+            Connector con = ConnectorFactory.getInstance().createConnector(ConnectorFactory.ConnectorKind.ANY);
+            if (con != null) {
+                IdentityRepository irepo = new IdentityRepositoryImpl(con);
+                jsch.setIdentityRepository(irepo);
+                agentUsed = true;
+            }
+        }
+        if (!agentUsed) {
+            jsch.setIdentityRepository(null);
+            // remove all identity files
+            jsch.removeAllIdentity();
+            // and add the one specified by CredentialsProvider
+            jsch.addIdentity(identityFile);
+        }
+        return agentUsed;
+    }
+
+    private boolean setupJSch (FS fs, String host, CredentialItem.StringType identityFile, URIish uri, boolean preferAgent) throws TransportException {
+        boolean agentUsed;
+        if (sshConfig == null) {
+            sshConfig = OpenSshConfig.get(fs);
+        }
+        final OpenSshConfig.Host hc = sshConfig.lookup(host);
+        try {
+            JSch jsch = getJSch(hc, fs);
+            agentUsed = setupJSchIdentityRepository(jsch, identityFile.getValue(), preferAgent);
+        } catch (JSchException ex) {
+            throw new TransportException(uri, ex.getMessage(), ex);
+        }
+        return agentUsed;
+    }
+
+    private static class IdentityRepositoryImpl implements IdentityRepository {
+        private final Connector connector;
+        private final AgentProxy proxy;
+
+        public IdentityRepositoryImpl (Connector connector) {
+            this.connector = connector;
+            this.proxy = new AgentProxy(connector);
+        }
+
+        @Override
+        public String getName () {
+            return connector.getName();
+        }
+
+        @Override
+        public int getStatus () {
+            return connector.isAvailable() ? IdentityRepository.RUNNING : IdentityRepository.UNAVAILABLE;
+        }
+
+        @Override
+        public Vector getIdentities () {
+            Identity[] identities = proxy.getIdentities();
+            Vector<com.jcraft.jsch.Identity> result = new Vector<com.jcraft.jsch.Identity>(identities.length);
+            for (final Identity identity : identities) {
+                result.add(new com.jcraft.jsch.Identity() {
+                    private byte[] publicKey;
+
+                    @Override
+                    public boolean setPassphrase (byte[] passphrase) throws JSchException {
+                        return true;
+                    }
+
+                    @Override
+                    public byte[] getPublicKeyBlob () {
+                        if (publicKey == null) {
+                            publicKey = identity.getBlob();
+                        }
+                        return identity.getBlob();
+                    }
+
+                    @Override
+                    public byte[] getSignature (byte[] data) {
+                        return proxy.sign(getPublicKeyBlob(), data);
+                    }
+
+                    @Override
+                    public boolean decrypt () {
+                        return true;
+                    }
+
+                    @Override
+                    public String getAlgName () {
+                        return new String((new Buffer(getPublicKeyBlob())).getString());
+                    }
+
+                    @Override
+                    public String getName () {
+                        return new String(identity.getComment());
+                    }
+
+                    @Override
+                    public boolean isEncrypted () {
+                        return false;
+                    }
+
+                    @Override
+                    public void clear () {
+                        
+                    }
+                });
+            }
+            return result;
+        }
+
+        @Override
+        public boolean add (byte[] bytes) {
+            // not supported now
+            return false;
+        }
+
+        @Override
+        public boolean remove (byte[] bytes) {
+            // not supported now
+            return false;
+        }
+
+        @Override
+        public void removeAll () {
+            // not supported now
+        }
     }
     
 }
