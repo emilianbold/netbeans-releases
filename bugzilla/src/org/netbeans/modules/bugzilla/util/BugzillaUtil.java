@@ -100,14 +100,21 @@ public class BugzillaUtil {
      * @return
      */
     public static ITask getTask (final BugzillaRepository repository, final String id, boolean handleExceptions) {
+        MylynSupport supp = MylynSupport.getInstance();
         try {
-            GetRepositoryTasksCommand cmd = MylynSupport.getInstance().getMylynFactory()
+            GetRepositoryTasksCommand cmd = supp.getMylynFactory()
                     .createGetRepositoryTasksCommand(repository.getTaskRepository(), Collections.<String>singleton(id));
             repository.getExecutor().execute(cmd, handleExceptions);
             if(cmd.hasFailed() && Bugzilla.LOG.isLoggable(Level.FINE)) {
                 Bugzilla.LOG.log(Level.FINE, cmd.getErrorMessage());
             }
-            if (!cmd.getTasks().isEmpty()) {
+            if (cmd.getTasks().isEmpty()) {
+                // fallback on local
+                ITask task = supp.getTask(repository.getTaskRepository().getRepositoryUrl(), id);
+                if (cmd.hasFailed() && task != null) {
+                    return task;
+                }
+            } else {
                 return cmd.getTasks().iterator().next();
             }
         } catch (CoreException ex) {

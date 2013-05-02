@@ -51,7 +51,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -271,10 +270,21 @@ public class BugzillaRepository {
 
     public BugzillaIssue[] getIssues(final String... ids) {
         final List<BugzillaIssue> ret = new LinkedList<BugzillaIssue>();
-        if (ids.length != 0) {
-            try {
-                GetRepositoryTasksCommand cmd = MylynSupport.getInstance().getMylynFactory()
-                        .createGetRepositoryTasksCommand(taskRepository, new HashSet<String>(Arrays.asList(ids)));
+        try {
+            MylynSupport supp = MylynSupport.getInstance();
+            Set<String> unknownTasks = new HashSet<String>(ids.length);
+            for (String id : ids) {
+                BugzillaIssue issue = findIssueForTask(supp.getTask(getTaskRepository().getUrl(), id));
+                if (issue == null) {
+                    // must go online
+                    unknownTasks.add(id);
+                } else {
+                    ret.add(issue);
+                }
+            }
+            if (!unknownTasks.isEmpty()) {
+                GetRepositoryTasksCommand cmd = supp.getMylynFactory()
+                        .createGetRepositoryTasksCommand(taskRepository, unknownTasks);
                 getExecutor().execute(cmd, true);
                 for (ITask task : cmd.getTasks()) {
                     BugzillaIssue issue = findIssueForTask(task);
@@ -282,9 +292,9 @@ public class BugzillaRepository {
                         ret.add(issue);
                     }
                 }
-            } catch (CoreException ex) {
-                Bugzilla.LOG.log(Level.INFO, null, ex);
             }
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.INFO, null, ex);
         }
         return ret.toArray(new BugzillaIssue[ret.size()]);
     }
@@ -344,7 +354,7 @@ public class BugzillaRepository {
             iquery.setUrl(url.toString());
             SimpleQueryCommand cmd = MylynSupport.getInstance().getMylynFactory()
                     .createSimpleQueryCommand(taskRepository, iquery);
-            getExecutor().execute(cmd);
+            getExecutor().execute(cmd, false);
             for (ITask task : cmd.getTasks()) {
                 BugzillaIssue issue = findIssueForTask(task);
                 if (issue != null) {

@@ -109,6 +109,13 @@ public class SimpleQueryCommand extends BugtrackingCommand {
             }
         };
         status = repositoryConnector.performQuery(taskRepository, query, collector, new SynchronizationSession(), monitor);
+        if (status != null && status.getSeverity() == IStatus.ERROR) {
+            if (status.getException() instanceof CoreException) {
+                throw (CoreException) status.getException();
+            } else {
+                throw new CoreException(status);
+            }
+        }
     }
 
     public IStatus getStatus () {
