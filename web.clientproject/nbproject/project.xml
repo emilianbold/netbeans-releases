@@ -263,10 +263,6 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.html.navigator</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.web.inspect</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
