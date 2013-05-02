@@ -47,6 +47,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.javafx2.platform.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
@@ -72,8 +73,7 @@ public enum JavaFxRuntimeInclusion {
      * of platform classpath.
      */
     INCLUDED(true,true);
-
-    private static final String JFXRT_JAR = "jre/lib/jfxrt.jar"; //NOI18N
+    
     private static final String PROP_PLATFORM_ANT_NAME = "platform.ant.name";   //NOI18N
     private static final String PROP_JAVA_HOME = "java.home";    //NOI18N
     private static final String SPEC_J2SE = "j2se"; //NOI18N
@@ -114,7 +114,7 @@ public enum JavaFxRuntimeInclusion {
     public static JavaFxRuntimeInclusion forPlatform(@NonNull final JavaPlatform javaPlatform) {
         Parameters.notNull("javaPlatform", javaPlatform);   //NOI18N
         for (FileObject installFolder : javaPlatform.getInstallFolders()) {
-            final FileObject jfxrtJar = installFolder.getFileObject(JFXRT_JAR);
+            final FileObject jfxrtJar = installFolder.getFileObject(Utils.getJavaFxRuntimeLocation());
             if (jfxrtJar != null  && jfxrtJar.isData()) {
                 final URL jfxrtRoot = FileUtil.getArchiveRoot(jfxrtJar.toURL());
                 for (ClassPath.Entry e : javaPlatform.getBootstrapLibraries().entries()) {
@@ -190,7 +190,7 @@ public enum JavaFxRuntimeInclusion {
         return String.format(
             "${%s}/%s",  //NOI18N
             platformHomeProperty,
-            JFXRT_JAR);
+            Utils.getJavaFxRuntimeLocation());
     }
 
 }
