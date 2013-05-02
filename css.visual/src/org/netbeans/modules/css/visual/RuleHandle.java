@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.css.visual;
 
+import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.css.model.api.SelectorsGroup;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -64,7 +66,12 @@ public class RuleHandle extends Location {
         Lookup lookup = model.getLookup();
         Snapshot snapshot = lookup.lookup(Snapshot.class);
         FileObject file = lookup.lookup(FileObject.class);
-        String img = model.getElementSource(rule.getSelectorsGroup()).toString();
+        //in case of very erroneous rule the selectorgroup node may not be present,
+        //use the rule node itself for getting the rule name.
+        SelectorsGroup selectorsGroup = rule.getSelectorsGroup();
+        Element element = selectorsGroup == null ? rule : selectorsGroup;
+        String img = model.getElementSource(element).toString();
+        
         int offset = snapshot.getOriginalOffset(rule.getStartOffset());
         
         return new RuleHandle(file, rule, offset, img);

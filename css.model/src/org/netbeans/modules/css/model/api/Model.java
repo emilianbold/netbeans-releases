@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
@@ -133,7 +134,8 @@ public final class Model implements PropertyChangeListener {
      * 
      * @return an instance of the Css Source Model
      */
-    public static synchronized Model getModel(CssParserResult parserResult) {
+    @NonNull
+    public static synchronized Model getModel(@NonNull CssParserResult parserResult) {
         Model model = parserResult.getProperty(Model.class);
         if (model == null) {
             model = Model.createModel(parserResult);
@@ -153,7 +155,8 @@ public final class Model implements PropertyChangeListener {
      * @since 1.7
      * @return new instance of the Css Source Model
      */
-    public static Model createModel(CssParserResult parserResult) {
+    @NonNull
+    public static Model createModel(@NonNull CssParserResult parserResult) {
         return new Model(parserResult);
     }
     
@@ -255,6 +258,7 @@ public final class Model implements PropertyChangeListener {
         return modelSerialNumber;
     }
 
+    @NonNull
     public Lookup getLookup() {
         return MODEL_LOOKUP;
     }
@@ -266,7 +270,7 @@ public final class Model implements PropertyChangeListener {
      *
      * @param runnable
      */
-    public void runReadTask(final ModelTask runnable) {
+    public void runReadTask(@NonNull final ModelTask runnable) {
         MODEL_MUTEX.readAccess(new Runnable() {
             @Override
             public void run() {
@@ -283,7 +287,7 @@ public final class Model implements PropertyChangeListener {
      *
      * @param runnable
      */
-    public void runWriteTask(final ModelTask runnable) {
+    public void runWriteTask(@NonNull final ModelTask runnable) {
         if(changesApplied) {
             throw new IllegalStateException("trying to write to already saved model!"); //NOI18N
         }
@@ -296,6 +300,7 @@ public final class Model implements PropertyChangeListener {
         support.firePropertyChange(MODEL_WRITE_TASK_FINISHED, null, null);
     }
     
+    @NonNull
     public CharSequence getOriginalSource() {
         return getLookup().lookup(CharSequence.class);
     }
@@ -303,6 +308,7 @@ public final class Model implements PropertyChangeListener {
     /**
      * Returns the modified source upon changes done to the model.
      */
+    @NonNull
     public CharSequence getModelSource() {
         return getElementSource(getStyleSheet());
     }
@@ -311,13 +317,15 @@ public final class Model implements PropertyChangeListener {
      * Returns the modified piece of source upon changes done to the model
      * corresponding to the scope of the given element.
      */
-    public CharSequence getElementSource(Element element) {
+    @NonNull
+    public CharSequence getElementSource(@NonNull Element element) {
         checkModelAccess();
         StringBuilder b = new StringBuilder();
         getElementSource(element, b);
         return b;
     }
 
+    @NonNull
     public Difference[] getModelSourceDiff() throws IOException {
         DiffProvider diffProvider = Lookup.getDefault().lookup(DiffProvider.class);
 
@@ -416,6 +424,7 @@ public final class Model implements PropertyChangeListener {
     /**
      * Returns an instance of {@link ElementFactory}.
      */
+    @NonNull
     public synchronized ElementFactory getElementFactory() {
         if (ELEMENT_FACTORY == null) {
             ELEMENT_FACTORY = getElementFactoryImpl(this);
@@ -423,11 +432,11 @@ public final class Model implements PropertyChangeListener {
         return ELEMENT_FACTORY;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(@NonNull PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removePropertyChangeListener(@NonNull PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 

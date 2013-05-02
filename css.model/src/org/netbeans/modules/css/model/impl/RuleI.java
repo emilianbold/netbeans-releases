@@ -89,6 +89,16 @@ public class RuleI extends ModelElement implements Rule {
     }
 
     @Override
+    public boolean isValid() {
+        if(!super.isValid()) {
+            return false; //parsing error
+        } else {
+            //no parsing error in the node's scope, but some sub-nodes are missing
+            return getSelectorsGroup() != null && getDeclarations() != null;
+        }
+    }
+    
+    @Override
     public SelectorsGroup getSelectorsGroup() {
         return selectorsGroup;
     }
