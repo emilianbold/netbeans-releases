@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
  */
 public class DashboardOptions extends javax.swing.JPanel implements DocumentListener {
 
-    PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private boolean dataValid;
 
     /**
@@ -239,7 +239,11 @@ public class DashboardOptions extends javax.swing.JPanel implements DocumentList
     private javax.swing.JTextField txtSync;
     // End of variables declaration//GEN-END:variables
 
-    void update() {
+    public PropertyChangeSupport getPropertySupport() {
+        return support;
+    }
+    
+    public void update() {
         txtLimitNumber.getDocument().removeDocumentListener(this);
         txtSync.getDocument().removeDocumentListener(this);
         loadSettings();
@@ -248,7 +252,7 @@ public class DashboardOptions extends javax.swing.JPanel implements DocumentList
         validate(false);
     }
 
-    void applyChanges() {
+    public void applyChanges() {
         final DashboardSettings settings = DashboardSettings.getInstance();
         boolean autoSync = cbSync.isSelected();
         settings.setAutoSync(autoSync, false);
@@ -261,12 +265,16 @@ public class DashboardOptions extends javax.swing.JPanel implements DocumentList
         settings.setTasksLimitQuery(cbLimitQuery.isSelected(), true);
     }
 
-    boolean isDataValid() {
+    public void cancel() {
+        //do nothing
+    }
+
+    public boolean isDataValid() {
         validate(false);
         return dataValid;
     }
 
-    boolean isChanged() {
+    public boolean isChanged() {
         final DashboardSettings settings = DashboardSettings.getInstance();
         return cbSync.isSelected() != settings.isAutoSync()
                 || !txtSync.getText().trim().equals(settings.getAutoSyncValue() + "")
