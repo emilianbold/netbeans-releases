@@ -186,7 +186,6 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
             String properPrefix = getPrefix(latteParserResult, caretOffset, true);
             request.anchorOffset = caretOffset - (properPrefix == null ? 0 : properPrefix.length());
             request.parserResult = latteParserResult;
-            request.context = LatteCompletionContextFinder.find(request.parserResult, caretOffset);
             LatteCompletionContext completionContext = LatteCompletionContextFinder.find(request.parserResult, caretOffset);
             completionContext.complete(completionProposals, request);
         }
