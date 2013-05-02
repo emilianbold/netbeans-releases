@@ -87,7 +87,8 @@ public final class Utils {
     private static final String JAVAFX_JAVADOC_PREFIX = "javafx.javadoc"; // NOI18N
 
     private static final String JFXRT_JAR_NAME = "jfxrt.jar"; //NOI18N
-    private static final String JFXRT_JAR_PATH = "jre/lib/" + JFXRT_JAR_NAME;
+    private static final String[] JFXRT_JAR_PATHS = {"jre/lib/", "jre/lib/ext/"}; //NOI18N
+    private static final String[] JFXRT_OPTIONAL_JARS = {"javaws.jar", "deploy.jar", "plugin.jar"}; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.javafx2.platform.Utils"); // NOI18N
     
@@ -119,14 +120,33 @@ public final class Utils {
         isTest = test;
     }
 
+    /**
+     * Return paths relative to platform installation dir where
+     * FX RT artifacts may be found
+     * @return relative paths
+     */
     @NonNull
-    public static String getJavaFxRuntimeLocation() {
+    public static String[] getJavaFxRuntimeLocations() {
+        return JFXRT_JAR_PATHS;
+    }
+
+    /**
+     * Return file name of FX RT jar
+     * @return file name
+     */
+    @NonNull
+    public static String getJavaFxRuntimeArchiveName() {
         return JFXRT_JAR_NAME;
     }
 
+    /**
+     * Return file names of optional jars than may need to be added to classpath
+     * together with FX RT jar
+     * @return file names
+     */
     @NonNull
-    static String getJavaFxRuntimeArchiveName() {
-        return JFXRT_JAR_NAME;
+    public static String[] getJavaFxRuntimeOptionalNames() {
+        return JFXRT_OPTIONAL_JARS;
     }
     
     /**
