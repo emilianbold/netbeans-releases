@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,78 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.java.j2seprofiles;
+package org.openide.util;
 
 /**
- * Just another copy of Pair.
+ * A type safe pair of two object.
  * @author Tomas Zezula
+ * @since 8.32
  */
-final class Pair<P,K> {
+public final class Pair<First,Second> {
 
-    public final P first;
-    public final K second;
+    private final First first;
+    private final Second second;
 
-    private Pair (P first, K second) {
+
+    private Pair(final First first, final Second second) {
         this.first = first;
         this.second = second;
     }
 
-
-    public static <P,K> Pair<P,K> of (P first, K second) {
-        return new Pair<P,K> (first,second);
+    /**
+     * Returns the first element of the {@link Pair}.
+     * @return the first element.
+     */
+    public First first() {
+        return first;
     }
 
-
-    @Override
-    public int hashCode () {
-        int hashCode  = 0;
-        hashCode ^= first == null ? 0 : first.hashCode();
-        hashCode ^= second == null ? 0: second.hashCode();
-        return hashCode;
-    }
-
-    @Override
-    public boolean equals (final Object other) {
-        if (other instanceof Pair) {
-            Pair<?,?> otherPair = (Pair<?,?>) other;
-            return (this.first == null ? otherPair.first == null : this.first.equals(otherPair.first)) &&
-                   (this.second == null ? otherPair.second == null : this.second.equals(otherPair.second));
-        }
-        return false;
+    /**
+     * Returns the second element of the {@link Pair}.
+     * @return the second element.
+     */
+    public Second second() {
+        return second;
     }
 
     @Override
     public String toString () {
-        return String.format("Pair[%s,%s]", first,second);
+        return String.format("Pair[%s,%s]", first,second);  //NOI18N
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof Pair)) {
+            return false;
+        }
+        final Pair<?,?> otherPair = (Pair<?,?>) other;
+        return (first == null ? otherPair.first == null : first.equals(otherPair.first)) &&
+            (second == null ? otherPair.second == null : second.equals(otherPair.second));
+    }
+
+    @Override
+    public int hashCode() {
+        int res = 17;
+        res = res * 31 + (first == null ? 0 : first.hashCode());
+        res = res * 31 + (second == null ? 0 : second.hashCode());
+        return res;
+    }
+
+
+    /**
+     * Creates a new Pair.
+     * @param <First>   the type of the first element
+     * @param <Second>  the type of the second element
+     * @param first     the first element
+     * @param second    the second element
+     * @return  the new {@link Pair} of the first and second elements.
+     */
+    public static <First,Second> Pair<First,Second> of (final First first, final Second second) {
+        return new Pair<First, Second>(first, second);
     }
 }

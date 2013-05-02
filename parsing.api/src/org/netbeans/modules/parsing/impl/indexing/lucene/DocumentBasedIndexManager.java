@@ -51,12 +51,12 @@ import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.impl.indexing.ClusteredIndexables;
-import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -136,21 +136,21 @@ public final class DocumentBasedIndexManager {
                 throw new IOException(e);
             }
         }
-        return li == null ? null : li.first;
+        return li == null ? null : li.first();
     }
 
    @CheckForNull
    public synchronized DocumentIndexCache getCache(@NonNull final URL root) {
        final Pair<DocumentIndex.Transactional, DocumentIndexCache> entry = indexes.get(root);
-       return entry == null ? null : entry.second;
+       return entry == null ? null : entry.second();
    }
 
    @CheckForNull
    public synchronized DocumentIndex.Transactional getIndex(@NonNull final DocumentIndexCache cache) {
        Parameters.notNull("cache", cache);  //NOI18N
        for (Pair<DocumentIndex.Transactional,DocumentIndexCache> e : indexes.values()) {
-           if (cache.equals(e.second)) {
-               return e.first;
+           if (cache.equals(e.second())) {
+               return e.first();
            }
        }
        return null;
@@ -163,7 +163,7 @@ public final class DocumentBasedIndexManager {
        closed = true;
        for (Pair<DocumentIndex.Transactional, DocumentIndexCache> index : indexes.values()) {
            try {
-            index.first.close();
+            index.first().close();
            } catch (IOException ioe) {
                Exceptions.printStackTrace(ioe);
            }

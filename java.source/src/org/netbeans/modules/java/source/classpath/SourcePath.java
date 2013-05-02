@@ -54,10 +54,10 @@ import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -155,9 +155,9 @@ public class SourcePath implements ClassPathImplementation, PropertyChangeListen
         @Override
         public List<PathResourceImplementation> apply(
                 @NonNull final Pair<Boolean,List<? extends PathResourceImplementation>> resources) {
-            final List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>(resources.second.size());
-            for (PathResourceImplementation pr : resources.second) {
-                res.add(new FR(pr,resources.first));
+            final List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>(resources.second().size());
+            for (PathResourceImplementation pr : resources.second()) {
+                res.add(new FR(pr,resources.first()));
             }
             return res;
         }
@@ -169,8 +169,8 @@ public class SourcePath implements ClassPathImplementation, PropertyChangeListen
 
         @Override
         public List<PathResourceImplementation> apply(Pair<Boolean, List<? extends PathResourceImplementation>> resources) {
-            final List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>(resources.second.size());
-            for (PathResourceImplementation pr : resources.second) {
+            final List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>(resources.second().size());
+            for (PathResourceImplementation pr : resources.second()) {
                 res.add(new FR(pr,true));
             }
             return res;

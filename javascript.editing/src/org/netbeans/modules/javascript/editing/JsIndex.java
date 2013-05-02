@@ -61,6 +61,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  *
@@ -134,7 +135,7 @@ public final class JsIndex {
     @SuppressWarnings("unchecked")
     public Set<IndexedElement> getAllNames(final String name, QuerySupport.Kind kind, JsParseResult context) {
         // TODO - search by the FIELD_CLASS thingy
-        return getUnknownFunctions(name, kind, false, context, true, true).getA();
+        return getUnknownFunctions(name, kind, false, context, true, true).first();
     }
 
     @SuppressWarnings("unchecked")
@@ -351,13 +352,13 @@ public final class JsIndex {
                     elements.add(element);
                     
                     if (elements.size() == MAX_SEARCH_ITEMS) {
-                        return new Pair<Set<IndexedElement>,Boolean>(elements, true);
+                        return Pair.<Set<IndexedElement>,Boolean>of(elements, true);
                     }
                 }
             }
         }
         
-        return new Pair<Set<IndexedElement>,Boolean>(elements, false);
+        return Pair.<Set<IndexedElement>,Boolean>of(elements, false);
     }
     
     private Set<IndexedElement> getByFqn(

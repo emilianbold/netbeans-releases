@@ -66,7 +66,6 @@ import org.netbeans.modules.editor.indent.spi.ReformatTask;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -76,6 +75,7 @@ import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.util.Pair;
 
 /**
  *
@@ -3871,7 +3871,7 @@ public class Reformatter implements ReformatTask {
                             tokenText = javadocTokens.token().text().toString();
                             if (tokenText.endsWith(">")) { //NOI18N
                                 if (P_TAG.equalsIgnoreCase(tokenText)) {
-                                    if (currWSOffset >= 0 && (toAdd == null || toAdd.first < currWSOffset)) {
+                                    if (currWSOffset >= 0 && (toAdd == null || toAdd.first() < currWSOffset)) {
                                         marks.add(Pair.of(currWSOffset, 1));
                                     }
                                     lastAddedNLOffset = javadocTokens.offset() + javadocTokens.token().length() - offset;
@@ -3879,7 +3879,7 @@ public class Reformatter implements ReformatTask {
                                     afterText = false;
                                 } else if (PRE_TAG.equalsIgnoreCase(tokenText)
                                         || CODE_TAG.equalsIgnoreCase(tokenText)) {
-                                    if (currWSOffset >= 0 && state == 0 && (toAdd == null || toAdd.first < currWSOffset)) {
+                                    if (currWSOffset >= 0 && state == 0 && (toAdd == null || toAdd.first() < currWSOffset)) {
                                         marks.add(Pair.of(currWSOffset, 1));
                                     }
                                     marks.add(Pair.of(javadocTokens.offset() - offset, 5));
@@ -3888,7 +3888,7 @@ public class Reformatter implements ReformatTask {
                                     marks.add(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 6));
                                 } else {
                                     if (currWSOffset >= 0 && lastNLOffset >= currWSOffset
-                                            && lastAddedNLOffset < currWSOffset && (toAdd == null || toAdd.first < currWSOffset)) {
+                                            && lastAddedNLOffset < currWSOffset && (toAdd == null || toAdd.first() < currWSOffset)) {
                                         marks.add(Pair.of(currWSOffset, 1));
                                     }
                                     nlAdd = Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 1);
@@ -4005,8 +4005,8 @@ public class Reformatter implements ReformatTask {
             Iterator<Pair<Integer, Integer>> it = marks.iterator();
             if (it.hasNext()) {
                 Pair<Integer, Integer> next = it.next();
-                checkOffset = next.first;
-                actionType = next.second;
+                checkOffset = next.first();
+                actionType = next.second();
             } else {
                 checkOffset = Integer.MAX_VALUE;
                 actionType = -1;
@@ -4093,8 +4093,8 @@ public class Reformatter implements ReformatTask {
                         align = -1;
                         if (it.hasNext()) {
                             Pair<Integer, Integer> next = it.next();
-                            checkOffset = next.first;
-                            actionType = next.second;
+                            checkOffset = next.first();
+                            actionType = next.second();
                         } else {
                             checkOffset = Integer.MAX_VALUE;
                             actionType = -1;
@@ -4166,8 +4166,8 @@ public class Reformatter implements ReformatTask {
                             }
                             if (it.hasNext()) {
                                 Pair<Integer, Integer> next = it.next();
-                                checkOffset = next.first;
-                                actionType = next.second;
+                                checkOffset = next.first();
+                                actionType = next.second();
                             } else {
                                 checkOffset = Integer.MAX_VALUE;
                                 actionType = -1;

@@ -89,6 +89,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -484,12 +485,12 @@ public class ClusteredIndexablesCacheTest extends NbTestCase {
 
         @Override
         public Boolean convert(@NonNull final Pair<URL,String> p) {
-            if (!forIndexer.equals(p.second)) {
+            if (!forIndexer.equals(p.second())) {
                 return null;
             }
             try {
-                final FileObject cacheFolder = CacheFolder.getDataFolder(p.first);
-                final FileObject indexer = cacheFolder.getFileObject(p.second);
+                final FileObject cacheFolder = CacheFolder.getDataFolder(p.first());
+                final FileObject indexer = cacheFolder.getFileObject(p.second());
                 final FileObject indexFolder = indexer.getFileObject("1/1");
                 final DocumentIndexCache cache = DocumentBasedIndexManager.getDefault().getCache(indexFolder.toURL());
                 final Class<?> c = Class.forName("org.netbeans.modules.parsing.impl.indexing.ClusteredIndexables$DocumentIndexCacheImpl");  //NOI18N

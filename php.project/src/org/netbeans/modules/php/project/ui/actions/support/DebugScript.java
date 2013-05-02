@@ -36,7 +36,6 @@ import java.util.concurrent.Callable;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.spi.executable.DebugStarter;
@@ -45,6 +44,7 @@ import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * @author Radek Matous, Tomas Mysik

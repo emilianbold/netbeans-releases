@@ -51,6 +51,21 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="pair">
+        <api name="util"/>
+        <summary>Added a type safe Pair of 2 elements</summary>
+        <version major="8" minor="32"/>
+        <date year="2013" month="5" day="1"/>
+        <author login="tzezula"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+                Added a type safe Pair of 2 elements.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Pair"/>
+        <issue number="228994"/>
+    </change>
     <change id="automatic-uqe">
         <api name="util"/>
         <summary>Automatic support for UserQuestionException</summary>

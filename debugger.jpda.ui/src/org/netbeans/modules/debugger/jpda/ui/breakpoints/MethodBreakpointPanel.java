@@ -60,6 +60,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * @author  Jan Jancura
@@ -126,8 +127,8 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         className = ClassBreakpointPanel.concatClassFilters(cf);
         String tooltipText = NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Field_Breakpoint_Class_Name");
         Pair<JScrollPane, JEditorPane> editorCC = ClassBreakpointPanel.addClassNameEditorCC(JavaClassNbDebugEditorKit.MIME_TYPE, null, className, tooltipText);
-        spClassName = editorCC.get1();
-        epClassName = editorCC.get2();
+        spClassName = editorCC.first();
+        epClassName = editorCC.second();
         epClassName.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MethodBreakpointPanel.class, "ACSN_Method_Breakpoint_ClassName"));
         epClassName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_Method_Breakpoint_ClassName"));
         jLabel3.setLabelFor(spClassName);
@@ -135,8 +136,8 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         panelClassName.add(java.awt.BorderLayout.CENTER, spClassName);
         
         editorCC = ClassBreakpointPanel.addClassNameEditorCC(JavaMethodNbDebugEditorKit.MIME_TYPE, null, className, org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Method_Name"));
-        spMethodName = editorCC.get1();
-        epMethodName = editorCC.get2();
+        spMethodName = editorCC.first();
+        epMethodName = editorCC.second();
         jLabel1.setLabelFor(spMethodName);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

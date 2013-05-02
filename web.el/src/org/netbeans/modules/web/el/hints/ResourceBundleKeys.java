@@ -52,10 +52,10 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.web.el.CompilationContext;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELParserResult;
-import org.netbeans.modules.web.el.Pair;
 import org.netbeans.modules.web.el.ResourceBundles;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * Hint for checking unknown resource bundle keys.
@@ -95,12 +95,12 @@ public final class ResourceBundleKeys extends ELRule {
                 continue;
             }
             for (Pair<AstIdentifier, Node> pair : resourceBundles.collectKeys(each.getNode(), info.context())) {
-                String clearedKey = pair.second.getImage().replace("'", "").replace("\"", "");
-                if (!resourceBundles.isValidKey(pair.first.getImage(), clearedKey)) {
+                String clearedKey = pair.second().getImage().replace("'", "").replace("\"", "");
+                if (!resourceBundles.isValidKey(pair.first().getImage(), clearedKey)) {
                     Hint hint = new Hint(this,
                             NbBundle.getMessage(ResourceBundleKeys.class, "ResourceBundleKeys_Unknown", clearedKey),
                             elResult.getFileObject(),
-                            each.getOriginalOffset(pair.second),
+                            each.getOriginalOffset(pair.second()),
                             Collections.<HintFix>emptyList(), 200);
                     result.add(hint);
                 }
