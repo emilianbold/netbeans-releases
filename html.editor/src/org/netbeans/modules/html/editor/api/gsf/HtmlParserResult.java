@@ -272,7 +272,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
             if(validator == null) {
                 return Collections.emptyList();
             }
-            MaskedAreas maskedAreas = result.getMaskedAreas();
+            MaskedAreas maskedAreas = result.getMaskedAreas(SyntaxAnalyzerResult.FilteredContent.CUSTOM_TAGS);
             CharSequence original = getSnapshot().getText().toString();
             MaskingChSReader masker = new MaskingChSReader(original, maskedAreas.positions(), maskedAreas.lens());
             

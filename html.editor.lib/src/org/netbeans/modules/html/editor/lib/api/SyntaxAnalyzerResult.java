@@ -271,7 +271,7 @@ public class SyntaxAnalyzerResult {
             InstanceContent content = new InstanceContent();
 
             //for html5 parser
-            content.add(getMaskedAreas());
+            content.add(getMaskedAreas(FilteredContent.CUSTOM_TAGS, FilteredContent.DECLARED_FOREIGN_XHTML_CONTENT));
 
             //for SimpleXHTMLParser
             content.add(new ElementsIteratorHandle() {
@@ -448,19 +448,12 @@ public class SyntaxAnalyzerResult {
      * Gets an instance of {@link MaskedAreas} which represents parts of the
      * code which should be masked from the default html parser.
      *
-     * @since 3.13
+     * @since 3.18
      * @return
      */
-    public synchronized MaskedAreas getMaskedAreas() {
-        if (maskedAreas == null) {
-            maskedAreas = findMaskedAreas();
-        }
-        return maskedAreas;
-    }
-
-    private MaskedAreas findMaskedAreas() {
+    public synchronized MaskedAreas getMaskedAreas(FilteredContent... filteredContent) {
         log("findMaskedAreas...");
-        ElementContentFilter filter = new ElementContentFilter();
+        ElementContentFilter filter = new ElementContentFilter(filteredContent);
 
         long start = System.currentTimeMillis();
         try {
@@ -473,6 +466,10 @@ public class SyntaxAnalyzerResult {
             //1. xmlns non default declarations <html xmlns:f="http:/...
             //2. the prefixed tags and attributes <f:if ...
             //3. non prefixed foreign elements and attributes
+            //
+            //It looks like since ValidationContext's "filter.foreign.namespaces" 
+            //feature is implemented it is no more needed to apply rules for #1 and #2 
+            //as the validation will ignore such content.
             List<MaskedArea> ignoredAreas = new ArrayList<>();
 
             Iterator<Element> itr = getElementsIterator();
@@ -669,13 +666,34 @@ public class SyntaxAnalyzerResult {
     private void log(String message) {
         LOG.log(Level.FINE, new StringBuilder().append("HtmlSource(").append(source.hashCode()).append("):").append(message).toString());
     }
+    
+    /**
+     * @since 3.18
+     */
+    public static enum FilteredContent {
+        /**
+         * Filter out custom tags (injected by {@link UndeclaredContentResolver}).
+         * 
+         * Example: AngularJS custom attributes: <div ng-click="..."/>
+         */
+        CUSTOM_TAGS,
+        
+        /**
+         * Filter out declared foreign XHTML content.
+         * 
+         * Example: Facelets tags: <h:panelGroup .../> where h is declared as xmlns:h="http://java.sun.com/jsf/html"
+         */
+        DECLARED_FOREIGN_XHTML_CONTENT
+    }
 
     private class ElementContentFilter {
 
         private Collection<String> prefixes;
+        private Set<FilteredContent> conf;
 
-        public ElementContentFilter() {
+        public ElementContentFilter(FilteredContent... conf) {
             this.prefixes = getNamespacePrefixes();
+            this.conf = EnumSet.of(conf[0], conf);
         }
 
         @NonNull
@@ -715,23 +733,26 @@ public class SyntaxAnalyzerResult {
 
         private boolean shouldBeFiltered(Named named) {
             //1. first check the custom tags, can be with or w/o ns prefix
-            if (resolver.isCustomTag(named)) {
+            if (conf.contains(FilteredContent.CUSTOM_TAGS) && resolver.isCustomTag(named)) {
                 return true;
             }
 
-            if (named.namespacePrefix() == null) {
-                //default namespace, should be html in most cases
+            //2. then if the element is w/o prefix, do not filter it out
+            CharSequence nsPrefix = named.namespacePrefix();
+            if (nsPrefix == null) {
                 return false;
             }
-
-            String prefix = named.namespacePrefix().toString();
-            if (prefixes != null && prefixes.contains(prefix)) {
-                //the prefix is mapped to the html namespace
-                return false;
+            
+            //3. finally when we have element w/ prefix check if the prefix 
+            //is mapped to the default namespace
+            if(conf.contains(FilteredContent.DECLARED_FOREIGN_XHTML_CONTENT)) {
+                if(prefixes == null || !prefixes.contains(nsPrefix.toString())) {
+                    return true;
+                }
             }
 
-            //filter out
-            return true;
+            //do not filter the element
+            return false;
         }
     }
 
