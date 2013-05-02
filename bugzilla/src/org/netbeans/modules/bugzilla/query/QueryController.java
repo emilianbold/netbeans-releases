@@ -396,6 +396,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         final BugzillaConfiguration bc = repository.getConfiguration();
         if(bc == null || !bc.isValid()) {
             // XXX nice errro msg?
+            querySemaphore.release();
             return;
         }
         EventQueue.invokeLater(new Runnable() {
