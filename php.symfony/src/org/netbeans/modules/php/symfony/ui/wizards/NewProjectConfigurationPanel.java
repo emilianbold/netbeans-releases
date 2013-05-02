@@ -64,13 +64,13 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.symfony.SymfonyScript;
 import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
 /**

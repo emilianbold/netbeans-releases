@@ -80,10 +80,10 @@ import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Lines;
-import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -479,7 +479,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
             }
         };
 
-        return new Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>(foundRange, callable);
+        return Pair.<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>of(foundRange, callable);
     }
 
     @Override

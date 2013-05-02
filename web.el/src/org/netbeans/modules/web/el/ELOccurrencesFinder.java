@@ -65,6 +65,7 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  * Occurrences finder for Expression Language.
@@ -175,7 +176,7 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
         // the logic here is a bit strange, maybe should add new methods to ResourceBundles
         // for a more straightforward computation.
         // first, check whether the current EL elements has keys
-        keys.addAll(resourceBundles.collectKeys(target.first.getNode()));
+        keys.addAll(resourceBundles.collectKeys(target.first().getNode()));
         if (keys.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -183,7 +184,7 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
         // second, if yes, check whether it has a key matching to the node under the caret
         boolean found = false;
         for (Pair<AstIdentifier, Node> pair : keys) {
-            if (pair.second.equals(target.second)) {
+            if (pair.second().equals(target.second())) {
                 found = true;
                 break;
             }
@@ -198,8 +199,8 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
                 continue;
             }
             for (Pair<AstIdentifier, Node> candidate : resourceBundles.collectKeys(each.getNode())) {
-                if (candidate.second.equals(target.second)) {
-                    OffsetRange range = each.getOriginalOffset(candidate.second);
+                if (candidate.second().equals(target.second())) {
+                    OffsetRange range = each.getOriginalOffset(candidate.second());
                     result.put(range, ColoringAttributes.MARK_OCCURRENCES);
                 }
             }
@@ -208,16 +209,16 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
     }
 
     private Map<OffsetRange, ColoringAttributes> findMatchingTypes(CompilationContext info, ELParserResult parserResult, Pair<ELElement,Node> target, List<Pair<ELElement,Node>> candidates) {
-        Element targetType = ELTypeUtilities.resolveElement(info, target.first, target.second);
+        Element targetType = ELTypeUtilities.resolveElement(info, target.first(), target.second());
         Map<OffsetRange, ColoringAttributes>  result = new HashMap<OffsetRange, ColoringAttributes>();
 
         for (Pair<ELElement,Node> candidate : candidates) {
             if (checkAndResetCancel()) {
                 return result;
             }
-            Element type = ELTypeUtilities.resolveElement(info, candidate.first, candidate.second);
+            Element type = ELTypeUtilities.resolveElement(info, candidate.first(), candidate.second());
             if (type != null && type.equals(targetType)) {
-                OffsetRange range = candidate.first.getOriginalOffset(candidate.second);
+                OffsetRange range = candidate.first().getOriginalOffset(candidate.second());
                 result.put(range, ColoringAttributes.MARK_OCCURRENCES);
             }
         }

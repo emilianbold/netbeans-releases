@@ -59,9 +59,9 @@ import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
-import org.netbeans.modules.web.common.api.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -180,8 +180,8 @@ public class Utilities {
 
         PropertyCategory category = PropertyCategory.DEFAULT;
         for(Pair<String, String> pair : parseBundle) {
-            String name = pair.getA();
-            String value = pair.getB();
+            String name = pair.first();
+            String value = pair.second();
             
             if(name.startsWith("$")) {
                 //property category

@@ -120,6 +120,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
@@ -471,11 +472,11 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
         }
         for (Pair<String,URL> relURLPair : sourceRelativeURLPairs) {
-            final String ext = FileObjects.getExtension(relURLPair.first);
-            final String withoutExt = FileObjects.stripExtension(relURLPair.first);
+            final String ext = FileObjects.getExtension(relURLPair.first());
+            final String withoutExt = FileObjects.stripExtension(relURLPair.first());
             final boolean dieIfNoRefFile = VirtualSourceProviderQuery.hasVirtualSource(ext);
             if (dieIfNoRefFile) {
-                file = new File(classFolder, relURLPair.first + '.' + FileObjects.RX);
+                file = new File(classFolder, relURLPair.first() + '.' + FileObjects.RX);
             } else {
                 file = new File(classFolder, withoutExt + '.' + FileObjects.RS);
             }
@@ -487,8 +488,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                     for (String className : readRSFile(file)) {
                         File f = new File(classFolder, FileObjects.convertPackage2Folder(className) + '.' + FileObjects.SIG);
                         if (!binaryName.equals(className)) {
-                            if (javaContext.getFQNs().remove(className, relURLPair.second)) {
-                                toDelete.add(Pair.<String, String>of(className, relURLPair.first));
+                            if (javaContext.getFQNs().remove(className, relURLPair.second())) {
+                                toDelete.add(Pair.<String, String>of(className, relURLPair.first()));
                                 removedTypes.add(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, className));
                                 removedFiles.add(f);
                                 fmTx.delete(f);
@@ -504,7 +505,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 fmTx.delete(file);
             }
             if (cont && (file = new File(classFolder, withoutExt + '.' + FileObjects.SIG)).exists()) {
-                if (javaContext.getFQNs().remove(FileObjects.getBinaryName(file, classFolder), relURLPair.second)) {
+                if (javaContext.getFQNs().remove(FileObjects.getBinaryName(file, classFolder), relURLPair.second())) {
                     String fileName = file.getName();
                     fileName = fileName.substring(0, fileName.lastIndexOf('.'));
                     final String[][] patterns = new String[][]{

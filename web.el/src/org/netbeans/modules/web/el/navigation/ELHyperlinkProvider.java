@@ -93,11 +93,11 @@ import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELLanguage;
 import org.netbeans.modules.web.el.ELParserResult;
 import org.netbeans.modules.web.el.ELTypeUtilities;
-import org.netbeans.modules.web.el.Pair;
 import org.netbeans.modules.web.el.ResourceBundles;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * Go to declaration for Expression Language.
@@ -153,7 +153,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
         Pair<Node, ELElement> nodeAndElement = resolveNodeAndElement(doc, offset, new AtomicBoolean());
         if (nodeAndElement != null) {
-            if (nodeAndElement.first instanceof AstString) {
+            if (nodeAndElement.first() instanceof AstString) {
                 // could be a resource bundle key
                 return getTooltipTextForBundleKey(nodeAndElement);
             } else {
@@ -165,7 +165,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
 
     private String getTooltipTextForElement(final Pair<Node, ELElement> pair) {
         final String[] result = new String[1];
-        final FileObject file = pair.second.getSnapshot().getSource().getFileObject();
+        final FileObject file = pair.second().getSnapshot().getSource().getFileObject();
         ClasspathInfo cp = ClasspathInfo.create(file);
         try {
             JavaSource.create(cp, file).runUserActionTask(new Task<CompilationController>() {
@@ -173,7 +173,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
                 @Override
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(JavaSource.Phase.RESOLVED);
-                    final Element resolvedElement = ELTypeUtilities.resolveElement(CompilationContext.create(file, cc), pair.second, pair.first);
+                    final Element resolvedElement = ELTypeUtilities.resolveElement(CompilationContext.create(file, cc), pair.second(), pair.first());
                     if (resolvedElement == null) {
                         return;
                     }
@@ -190,17 +190,17 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
     }
     
     private String getTooltipTextForBundleKey(Pair<Node, ELElement> pair) {
-        FileObject context = pair.second.getSnapshot().getSource().getFileObject();
+        FileObject context = pair.second().getSnapshot().getSource().getFileObject();
         ResourceBundles resourceBundles = ResourceBundles.get(context);
         if (!resourceBundles.canHaveBundles()) {
             return null;
         }
-        for (Pair<AstIdentifier, Node> each : resourceBundles.collectKeys(pair.second.getNode())) {
-            if (each.second.equals(pair.first)) {
+        for (Pair<AstIdentifier, Node> each : resourceBundles.collectKeys(pair.second().getNode())) {
+            if (each.second().equals(pair.first())) {
                 StringBuilder result = new StringBuilder();
-                String key = each.second.getImage();
-                String value = resourceBundles.getValue(each.first.getImage(), each.second.getImage());
-                String bundle = each.first.getImage();
+                String key = each.second().getImage();
+                String value = resourceBundles.getValue(each.first().getImage(), each.second().getImage());
+                String bundle = each.first().getImage();
                 result.append("<html><body>")
                         /* displaying the bundle in the tooltip looks a bit strange,
                           so commented out for now - maybe using a smaller font would
@@ -273,7 +273,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
                 @Override
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(JavaSource.Phase.RESOLVED);
-                    Element javaElement = ELTypeUtilities.resolveElement(CompilationContext.create(file, cc), nodeElem.second, nodeElem.first);
+                    Element javaElement = ELTypeUtilities.resolveElement(CompilationContext.create(file, cc), nodeElem.second(), nodeElem.first());
                     if(javaElement != null) {
                         handleRef.set(ElementHandle.create(javaElement));
                     }

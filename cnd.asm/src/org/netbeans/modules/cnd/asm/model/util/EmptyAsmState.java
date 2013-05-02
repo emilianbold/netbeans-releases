@@ -36,6 +36,7 @@ import org.openide.util.Lookup;
 import org.netbeans.modules.cnd.asm.model.AsmState;
 import org.netbeans.modules.cnd.asm.model.lang.AsmElement;
 import org.netbeans.modules.cnd.asm.model.lang.impl.LeafAsmElement;
+import org.openide.util.Pair;
 
 public class EmptyAsmState implements AsmState,
                               AsmFakeable {

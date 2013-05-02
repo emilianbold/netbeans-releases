@@ -52,7 +52,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
-import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
@@ -60,6 +59,7 @@ import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.Par
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 
 public class ChangeMethodParameters implements ErrorRule<Void> {

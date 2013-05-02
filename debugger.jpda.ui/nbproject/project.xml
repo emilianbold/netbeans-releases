@@ -64,7 +64,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-			<specification-version>2.42</specification-version>
+                        <specification-version>2.42</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -277,7 +277,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.0</specification-version>
+                        <specification-version>8.32</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

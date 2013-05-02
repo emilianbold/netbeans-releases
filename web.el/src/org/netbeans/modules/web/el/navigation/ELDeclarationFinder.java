@@ -75,11 +75,11 @@ import org.netbeans.modules.web.el.AstPath;
 import org.netbeans.modules.web.el.CompilationContext;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELTypeUtilities;
-import org.netbeans.modules.web.el.Pair;
 import org.netbeans.modules.web.el.ResourceBundles;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  * Simple DeclarationFinder based on the ELHyperlinkProvider code.
@@ -109,7 +109,7 @@ public class ELDeclarationFinder implements DeclarationFinder {
                     CompilationContext context = CompilationContext.create(file, cc);
 
                     // resolve beans
-                    Element javaElement = ELTypeUtilities.resolveElement(context, nodeElem.second, nodeElem.first);
+                    Element javaElement = ELTypeUtilities.resolveElement(context, nodeElem.second(), nodeElem.first());
                     if (javaElement != null) {
                         refs.handle = ElementHandle.<Element>create(javaElement);
                         refs.fo = SourceUtils.getFile(refs.handle, cp);
@@ -176,12 +176,12 @@ public class ELDeclarationFinder implements DeclarationFinder {
     }
 
     private static List<ResourceBundles.Location> getBundleLocations(ResourceBundles resourceBundles, Pair<Node, ELElement> nodeElem) {
-        if (nodeElem.first instanceof AstIdentifier) {
-            return resourceBundles.getLocationsForBundleIdent(nodeElem.first.getImage());
+        if (nodeElem.first() instanceof AstIdentifier) {
+            return resourceBundles.getLocationsForBundleIdent(nodeElem.first().getImage());
         } else {
-            AstPath astPath = new AstPath(nodeElem.second.getNode());
+            AstPath astPath = new AstPath(nodeElem.second().getNode());
             for (Node node : astPath.rootToLeaf()) {
-                String image = nodeElem.first.getImage();
+                String image = nodeElem.first().getImage();
                 if (node instanceof AstIdentifier && node.getImage() != null && image != null) {
                     if (image.length() > 2 && (image.startsWith("'") && image.endsWith("'")) //NOI18N
                             || (image.startsWith("\"") && image.endsWith("\""))) { //NOI18N

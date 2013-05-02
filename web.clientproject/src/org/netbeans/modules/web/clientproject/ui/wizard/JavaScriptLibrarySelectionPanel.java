@@ -63,13 +63,13 @@ import org.netbeans.modules.web.clientproject.api.util.JsLibUtilities;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.util.FileUtilities;
-import org.netbeans.modules.web.common.api.Pair;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor> {

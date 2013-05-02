@@ -145,7 +145,6 @@ import org.netbeans.lib.nbjavac.services.PartialReparser;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
@@ -163,6 +162,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.WeakListeners;
 
 /**
@@ -432,8 +432,8 @@ public class JavacParser extends Parser {
                     if (supportsReparse) {
                         final Pair<DocPositionRegion,MethodTree> _changedMethod = changedMethod.getAndSet(null);
                         if (_changedMethod != null && ciImpl != null) {
-                            LOGGER.log(Level.FINE, "\t:trying partial reparse:\n{0}", _changedMethod.first.getText());                           //NOI18N
-                            needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
+                            LOGGER.log(Level.FINE, "\t:trying partial reparse:\n{0}", _changedMethod.first().getText());                           //NOI18N
+                            needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second(), _changedMethod.first().getText());
                             if (!needsFullReparse) {
                                 ciImpl.setChangedMethod(_changedMethod);
                             }
@@ -1243,7 +1243,7 @@ public class JavacParser extends Parser {
                     int end = evt.affectedEndOffset();
                     synchronized (positions) {
                         for (Pair<DocPositionRegion,MethodTree> pe : positions) {
-                            PositionRegion p = pe.first;
+                            PositionRegion p = pe.first();
                             if (start > p.getStartOffset() && end < p.getEndOffset()) {
                                 changedMethod = pe;
                                 break;

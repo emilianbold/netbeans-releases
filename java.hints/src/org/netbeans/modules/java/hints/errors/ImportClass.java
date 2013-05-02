@@ -85,7 +85,6 @@ import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.modules.java.hints.errors.ImportClass.ImportCandidatesHolder;
 import org.netbeans.modules.java.hints.infrastructure.CreatorBasedLazyFixList;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
-import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -100,6 +99,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 
@@ -160,7 +160,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
             Element el = info.getTrees().getElement(new TreePath(new TreePath(new TreePath(info.getCompilationUnit()), it), it.getQualifiedIdentifier()));
 
             if (candidates != null && el != null) {
-                List<Element> a = candidates.getA();
+                List<Element> a = candidates.first();
                 if (a != null && a.contains(el)) {
                     return Collections.<Fix>emptyList();
                 }
@@ -179,8 +179,8 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
             imp = imp.getParentPath();
         }
 
-        List<Element> filtered = candidates.getA();
-        List<Element> unfiltered = candidates.getB();
+        List<Element> filtered = candidates.first();
+        List<Element> unfiltered = candidates.second();
         List<Fix> fixes = new ArrayList<Fix>();
         
         if (unfiltered != null && filtered != null) {
@@ -264,7 +264,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
         
         Pair<Map<String, List<Element>>, Map<String, List<Element>>> result = holder.getCandidates();
         
-        if (result == null || result.getA() == null || result.getB() == null) {
+        if (result == null || result.first() == null || result.second() == null) {
             //compute imports:
             Map<String, List<String>> candidates = new HashMap<String, List<String>>();
             ComputeImports imp = new ComputeImports();
@@ -303,15 +303,15 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                 notFilteredCandidates.put(sn, c);
             }
             
-            result = new Pair<Map<String, List<Element>>, Map<String, List<Element>>>(rawCandidates.a, rawCandidates.b);
+            result = Pair.<Map<String, List<Element>>, Map<String, List<Element>>>of(rawCandidates.a, rawCandidates.b);
             
             holder.setCandidates(result);
         }
         
-        List<Element> candList = result.getA().get(simpleName);
-        List<Element> notFilteredCandList = result.getB().get(simpleName);
+        List<Element> candList = result.first().get(simpleName);
+        List<Element> notFilteredCandList = result.second().get(simpleName);
         
-        return new Pair(candList, notFilteredCandList);
+        return Pair.<List<Element>, List<Element>>of(candList, notFilteredCandList);
     }
     
     public static class ImportCandidatesHolder {

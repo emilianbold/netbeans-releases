@@ -54,8 +54,8 @@ import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
-import org.netbeans.modules.web.common.api.Pair;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Pair;
 
 /**
  * The basic class clients wanting to extend the CSS editor functionality needs

@@ -74,13 +74,13 @@ import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  *

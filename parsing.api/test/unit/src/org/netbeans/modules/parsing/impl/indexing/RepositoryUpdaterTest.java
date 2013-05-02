@@ -150,6 +150,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -1514,15 +1515,15 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1, contextState.size());
         Pair<Boolean,Boolean> state = contextState.get(this.srcRootWithFiles1.getURL());
         assertNotNull(state);
-        assertTrue(state.first);
-        assertFalse(state.second);
+        assertTrue(state.first());
+        assertFalse(state.second());
         contextState = eindexerFactory.indexer.getContextState();
         assertEquals(embeddedFiles.length, contextState.size());
         for (URL url : embeddedFiles) {
             state = contextState.get(url);
             assertNotNull(state);
-            assertTrue(state.first);
-            assertFalse(state.second);
+            assertTrue(state.first());
+            assertFalse(state.second());
         }
 
         //2nd) Clean up - unregister
@@ -1549,8 +1550,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1, contextState.size());
         state = contextState.get(this.srcRootWithFiles1.getURL());
         assertNotNull(state);
-        assertFalse(state.first);
-        assertFalse(state.second);
+        assertFalse(state.first());
+        assertFalse(state.second());
         contextState = eindexerFactory.indexer.getContextState();
         assertEquals(0, contextState.size());
 
@@ -1581,14 +1582,14 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1, contextState.size());
         state = contextState.get(this.srcRootWithFiles1.getURL());
         assertNotNull(state);
-        assertFalse(state.first);
-        assertFalse(state.second);
+        assertFalse(state.first());
+        assertFalse(state.second());
         contextState = eindexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
         state = contextState.get(embeddedFiles[0]);
         assertNotNull(state);
-        assertFalse(state.first);
-        assertFalse(state.second);
+        assertFalse(state.first());
+        assertFalse(state.second());
 
         //6th Do some modification when source are registered (allFiles should be false)
         indexerFactory.indexer.setExpectedFile(new URL[] {customFiles[0]}, new URL[0], new URL[0]);
@@ -1602,14 +1603,14 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1, contextState.size());
         state = contextState.get(this.srcRootWithFiles1.getURL());
         assertNotNull(state);
-        assertFalse(state.first);
-        assertFalse(state.second);
+        assertFalse(state.first());
+        assertFalse(state.second());
         contextState = eindexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
         state = contextState.get(embeddedFiles[0]);
         assertNotNull(state);
-        assertFalse(state.first);
-        assertFalse(state.second);
+        assertFalse(state.first());
+        assertFalse(state.second());
         
         //7th IndexingManager.refreshIndex(root, all_files, fullRescan==true) (allFiles should be true)
         indexerFactory.indexer.setExpectedFile(customFiles, new URL[0], new URL[0]);
@@ -1621,15 +1622,15 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1, contextState.size());
         state = contextState.get(this.srcRootWithFiles1.getURL());
         assertNotNull(state);
-        assertTrue(state.first);
-        assertFalse(state.second);
+        assertTrue(state.first());
+        assertFalse(state.second());
         contextState = eindexerFactory.indexer.getContextState();
         assertEquals(embeddedFiles.length, contextState.size());
         for (URL url : embeddedFiles) {
             state = contextState.get(url);
             assertNotNull(state);
-            assertTrue(state.first);
-            assertFalse(state.second);
+            assertTrue(state.first());
+            assertFalse(state.second());
         }
 
         //8th IndexingManager.refreshIndex(root, specifoc_file, fullRescan==true, checkEditor==true) (allFiles should be false, checkForEditorModifications should be true)
@@ -1642,14 +1643,14 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1, contextState.size());
         state = contextState.get(this.srcRootWithFiles1.getURL());
         assertNotNull(state);
-        assertFalse(state.first);
-        assertTrue(state.second);
+        assertFalse(state.first());
+        assertTrue(state.second());
         contextState = eindexerFactory.indexer.getContextState();
         assertEquals(1, contextState.size());
         state = contextState.get(embeddedFiles[0]);
         assertNotNull(state);
-        assertFalse(state.first);
-        assertTrue(state.second);        
+        assertFalse(state.first());
+        assertTrue(state.second());
     }
 
     public void testVisibilityQueryAmongIDERestarts() throws Exception {

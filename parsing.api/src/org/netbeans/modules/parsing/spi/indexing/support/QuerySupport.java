@@ -72,7 +72,6 @@ import org.netbeans.modules.parsing.impl.RunWhenScanFinishedSupport;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
-import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
@@ -89,6 +88,7 @@ import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -327,7 +327,7 @@ public final class QuerySupport {
                     Iterable<? extends Pair<URL, LayeredDocumentIndex>> indices = indexerQuery.getIndices(roots);
                     // check if there are stale indices
                     for (Pair<URL, LayeredDocumentIndex> pair : indices) {
-                        final LayeredDocumentIndex index = pair.second;
+                        final LayeredDocumentIndex index = pair.second();
                         final Collection<? extends String> staleFiles = index.getDirtyKeys();
                         final boolean scanningThread = RunWhenScanFinishedSupport.isScanningThread();
                         LOG.log(
@@ -339,7 +339,7 @@ public final class QuerySupport {
                                 scanningThread
                             });
                         if (!staleFiles.isEmpty() && !scanningThread) {
-                            final URL root = pair.first;
+                            final URL root = pair.first();
                             LinkedList<URL> list = new LinkedList<URL>();
                             for (String staleFile : staleFiles) {
                                 try {
@@ -358,8 +358,8 @@ public final class QuerySupport {
                     }
                     final List<IndexResult> result = new LinkedList<IndexResult>();
                     for (Pair<URL, LayeredDocumentIndex> pair : indices) {
-                        final DocumentIndex index = pair.second;
-                        final URL root = pair.first;
+                        final DocumentIndex index = pair.second();
+                        final URL root = pair.first();
                         final Collection<? extends org.netbeans.modules.parsing.lucene.support.IndexDocument> pr = index.query(
                                 fieldName,
                                 fieldValue,
@@ -450,7 +450,7 @@ public final class QuerySupport {
             LOG.fine(getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) //NOI18N
                     + "[indexer=" + indexerQuery.getIndexerId() + "]:"); //NOI18N
             for(Pair<URL, LayeredDocumentIndex> pair : indexerQuery.getIndices(this.roots)) {
-                LOG.fine(" " + pair.first + " -> index: " + pair.second); //NOI18N
+                LOG.fine(" " + pair.first() + " -> index: " + pair.second()); //NOI18N
             }
             LOG.fine("----"); //NOI18N
         }

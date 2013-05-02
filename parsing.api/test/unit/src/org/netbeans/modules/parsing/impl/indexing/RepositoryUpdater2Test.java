@@ -95,6 +95,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
@@ -882,9 +883,9 @@ public class RepositoryUpdater2Test extends NbTestCase {
         ruSync.await();
 
         assertEquals("Wrong number of roots", 1, indexer.indexed.size());
-        assertEquals("Expecting nested root", nestedRoot.getURL(), indexer.indexed.get(0).first.getRootURI());
-        assertEquals("Wrong number of files under nestedRoot", 1, indexer.indexed.get(0).second.size());
-        assertEquals("Wring file indexed", file2.getURL(), indexer.indexed.get(0).second.get(0).getURL());
+        assertEquals("Expecting nested root", nestedRoot.getURL(), indexer.indexed.get(0).first().getRootURI());
+        assertEquals("Wrong number of files under nestedRoot", 1, indexer.indexed.get(0).second().size());
+        assertEquals("Wring file indexed", file2.getURL(), indexer.indexed.get(0).second().get(0).getURL());
     }
 
     public void testMarkingIndexesDirty() throws Exception {
@@ -916,7 +917,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         // the indexer does not store any data and so physically there is no lucene index on the disk
         // therefore we have to forcibly create one
-        Context ctx = indexer.indexed.get(0).first;
+        Context ctx = indexer.indexed.get(0).first();
         DocumentIndex ii = SPIAccessor.getInstance().getIndexFactory(ctx).createIndex(ctx);
         ii.markKeyDirty("file1.txt"); // marks index as dirty and adds file1.txt among stale files
         assertEquals("Wrong number of stale files", 1, ii.getDirtyKeys().size());
@@ -928,9 +929,9 @@ public class RepositoryUpdater2Test extends NbTestCase {
         ruSync.await();
 
         assertEquals("Wrong number of roots", 1, indexer.indexed.size());
-        assertEquals("Expecting root", root.getURL(), indexer.indexed.get(0).first.getRootURI());
-        assertEquals("Wrong number of files under root", 1, indexer.indexed.get(0).second.size());
-        assertEquals("Wrong file indexed", file1.getURL(), indexer.indexed.get(0).second.get(0).getURL());
+        assertEquals("Expecting root", root.getURL(), indexer.indexed.get(0).first().getRootURI());
+        assertEquals("Wrong number of files under root", 1, indexer.indexed.get(0).second().size());
+        assertEquals("Wrong file indexed", file1.getURL(), indexer.indexed.get(0).second().get(0).getURL());
         assertEquals("Expecting no stale files", 0, ii.getDirtyKeys().size());
     }
 
