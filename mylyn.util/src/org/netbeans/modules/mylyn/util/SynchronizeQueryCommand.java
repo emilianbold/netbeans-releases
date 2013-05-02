@@ -53,6 +53,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.ITaskListChangeListener;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryModel;
@@ -153,6 +154,14 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
                 cmdList.queryRefreshStarted(Collections.unmodifiableSet(tasksToSynchronize));
             }
             job.run(monitor);
+            IStatus status = query.getStatus();
+            if (status != null && status.getSeverity() == IStatus.ERROR) {
+                if (status.getException() instanceof CoreException) {
+                    throw (CoreException) status.getException();
+                } else {
+                    throw new CoreException(status);
+                }
+            }
             if (!monitor.isCanceled() && !tasksToSynchronize.isEmpty()) {
                 SynchronizeTasksJob syncTasksJob = new SynchronizeTasksJob(taskList,
                     taskDataManager,
