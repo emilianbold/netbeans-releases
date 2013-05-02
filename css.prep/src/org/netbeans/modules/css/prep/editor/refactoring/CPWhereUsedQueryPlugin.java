@@ -54,7 +54,6 @@ import org.netbeans.modules.css.prep.editor.CPCssIndexModel;
 import org.netbeans.modules.css.prep.editor.CPUtils;
 import org.netbeans.modules.css.prep.editor.model.CPElement;
 import org.netbeans.modules.css.prep.editor.model.CPElementHandle;
-import org.netbeans.modules.css.prep.editor.model.CPElementType;
 import org.netbeans.modules.css.prep.editor.model.CPModel;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -94,18 +93,19 @@ public class CPWhereUsedQueryPlugin implements RefactoringPlugin {
             Lookup lookup = refactoring.getRefactoringSource();
             RefactoringElementContext context = lookup.lookup(RefactoringElementContext.class);
             Node element = context.getElement();
+            if(element != null) {
+                switch (element.type()) {
+                    case cp_variable:
+                        findVariables(context, elements);
+                        break;
 
-            switch (element.type()) {
-                case cp_variable:
-                    findVariables(context, elements);
-                    break;
-
-                case cp_mixin_name:
-                    findMixins(context, elements);
-                    break;
+                    case cp_mixin_name:
+                        findMixins(context, elements);
+                        break;
+                }
             }
 
-        } catch (Exception /*IOException, ParseException*/ ex) {
+        } catch (IOException | ParseException ex) {
             Exceptions.printStackTrace(ex);
             String msg = ex.getLocalizedMessage();
             return new Problem(true, msg != null ? msg : ex.toString());
@@ -120,7 +120,7 @@ public class CPWhereUsedQueryPlugin implements RefactoringPlugin {
     }
     
     public static Collection<RefactoringElement> findVariables(RefactoringElementContext context) throws IOException, ParseException {
-        Collection<RefactoringElement> elements = new ArrayList<RefactoringElement>();
+        Collection<RefactoringElement> elements = new ArrayList<>();
         String varName = context.getElementName();
         int offset = context.getCaret();
 
@@ -202,7 +202,7 @@ public class CPWhereUsedQueryPlugin implements RefactoringPlugin {
     }
     
     public static Collection<RefactoringElement> findMixins(RefactoringElementContext context) throws IOException, ParseException {
-        Collection<RefactoringElement> elements = new ArrayList<RefactoringElement>();
+        Collection<RefactoringElement> elements = new ArrayList<>();
         String mixinName = context.getElementName();
 
         //all files linked from the base file with their CP models
