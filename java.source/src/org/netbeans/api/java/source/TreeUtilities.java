@@ -374,15 +374,38 @@ public final class TreeUtilities {
         return path;
     }
     
+    /**Return the deepest DocTreePath at the given position.
+     * 
+     * @param treepath for which the {@code doc} comment was determined
+     * @param doc the documentation comment inside which the search should be performed
+     * @param pos the position to search for
+     * @return the deepest DocTreePath at the given position
+     * @since 0.123
+     */
     public DocTreePath pathFor(TreePath treepath, DocCommentTree doc, int pos) {
-        return pathFor(treepath, new DocTreePath(treepath, doc), pos);
+        return pathFor(new DocTreePath(treepath, doc), pos);
     }
 
-    public DocTreePath pathFor(TreePath treepath, DocTreePath path, int pos) {
-        return pathFor(treepath, path, pos, (DocSourcePositions)info.getTrees().getSourcePositions());
+    /**Return the deepest DocTreePath at the given position.
+     * 
+     * @param path where the search should start
+     * @param pos the position to search for
+     * @return the deepest DocTreePath at the given position
+     * @since 0.123
+     */
+    public DocTreePath pathFor(DocTreePath path, int pos) {
+        return pathFor(path, pos, info.getDocTrees().getSourcePositions());
     }
     
-    public DocTreePath pathFor(TreePath treepath, DocTreePath path, int pos, DocSourcePositions sourcePositions) {
+    /**Return the deepest DocTreePath at the given position.
+     * 
+     * @param path where the search should start
+     * @param pos the position to search for
+     * @param sourcePositions to determine spans of {@link DocTree}s
+     * @return the deepest DocTreePath at the given position
+     * @since 0.123
+     */
+    public DocTreePath pathFor(DocTreePath path, int pos, DocSourcePositions sourcePositions) {
         if (info == null || path == null || sourcePositions == null)
             throw new IllegalArgumentException();
         
@@ -440,7 +463,7 @@ public final class TreeUtilities {
         }
         
         try {
-            new PathFinder(pos, sourcePositions).scan(path, treepath);
+            new PathFinder(pos, sourcePositions).scan(path, path.getTreePath());
         } catch (Result result) {
             path = result.path;
         }
