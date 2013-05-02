@@ -51,6 +51,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -59,6 +60,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
@@ -151,8 +154,12 @@ public class MavenProjectSupport {
     
     private static void setServer(Project project, J2eeModuleProvider moduleProvider, String serverID) {
         if (moduleProvider != null) {
-            if (J2eeModule.Type.WAR.equals(moduleProvider.getJ2eeModule().getType())) {
-                MavenProjectSupport.createDDIfRequired(project, serverID);
+            J2eeModule.Type type = moduleProvider.getJ2eeModule().getType();
+            if (J2eeModule.Type.WAR.equals(type)) {
+                createWebXMLIfRequired(project, serverID);
+            }
+            if (J2eeModule.Type.EAR.equals(type)) {
+                createApplicationXMLIfRequired(project, serverID);
             }
             
             moduleProvider.setServerInstanceID(serverID);
@@ -316,8 +323,8 @@ public class MavenProjectSupport {
         }
     }
     
-    public static void createDDIfRequired(Project project) {
-        createDDIfRequired(project, null);
+    public static void createWebXMLIfRequired(Project project) {
+        createWebXMLIfRequired(project, null);
     }
     
     /**
@@ -327,17 +334,17 @@ public class MavenProjectSupport {
      * @param project project for which should DD be generated
      * @param serverID server ID of given project
      */
-    public static void createDDIfRequired(Project project, String serverID) {
+    public static void createWebXMLIfRequired(Project project, String serverID) {
         if (serverID == null) {
             serverID = readServerID(project);
         }
         // TODO change condition to use ConfigSupportImpl.isDescriptorRequired
         if (serverID != null && serverID.contains("WebLogic")) { //NOI18N
-            createDD(project);
+            createWebXML(project);
         }
     }
     
-    private static void createDD(Project project) {
+    private static void createWebXML(Project project) {
         WebModuleProviderImpl webModule = project.getLookup().lookup(WebModuleProviderImpl.class);
         
         if (webModule != null) {
@@ -363,6 +370,42 @@ public class MavenProjectSupport {
 
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
+    /**
+     * Creates application.xml deployment descriptor if it's required for given project (see #228191)
+     * 
+     * @param project project for which should DD be generated
+     * @param serverID server ID of given project
+     */
+    public static void createApplicationXMLIfRequired(Project project, String serverID) {
+        if (serverID == null) {
+            serverID = readServerID(project);
+        }
+        // TODO change condition to use ConfigSupportImpl.isDescriptorRequired
+        if (serverID != null && serverID.contains("WebLogic")) { //NOI18N
+            createApplicationXML(project);
+        }
+    }
+    
+    private static void createApplicationXML(Project project) {
+        EarModuleProviderImpl earProvider = project.getLookup().lookup(EarModuleProviderImpl.class);
+        
+        if (earProvider != null) {
+            EarImplementation2 earImpl = earProvider.getEarImplementation();
+            
+            FileObject applicationXML = earImpl.getDeploymentDescriptor();
+            FileObject metaInf = earImpl.getMetaInf();
+
+            if (applicationXML == null) {
+                String j2eeVersion = readJ2eeVersion(project);
+                try {
+                    DDHelper.createApplicationXml(Profile.fromPropertiesString(j2eeVersion), metaInf, true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }

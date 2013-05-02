@@ -286,14 +286,6 @@ private void jComboBoxJ2eePlatformActionPerformed(java.awt.event.ActionEvent evt
         sb.append("<html>"); // NOI18N
 
         boolean display = false;
-        if (uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            if (isServerLibraryMessageNeeded(J2eePlatformUiSupport.getServerInstanceID(
-                    uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()), uiProperties)) {
-                sb.append(NbBundle.getMessage(CustomizerRun.class, "MSG_CREATING_LIBRARY"));
-                display = true;
-            }
-        }
-
         boolean changed = !jComboBoxJ2eeSpecVersion.getSelectedItem().equals(initialJ2eeSpecVersion);
         if (changed) {
             if (display) {
@@ -311,20 +303,4 @@ private void jComboBoxJ2eePlatformActionPerformed(java.awt.event.ActionEvent evt
         }
     }
 
-    private boolean isServerLibraryMessageNeeded(String serverInstanceId, EjbJarProjectProperties uiProperties) {
-        UpdateHelper helper = uiProperties.getProject().getUpdateHelper();
-
-        try {
-            if (SharabilityUtility.isLibrarySwitchIntended(serverInstanceId,
-                    oldServerInstanceId, ClassPathUiSupport.getList(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel()), helper)) {
-
-                    AntProjectHelper antHelper = helper.getAntProjectHelper();
-                    Library[] libs = SharabilityUtility.getLibraries(antHelper.resolveFile(antHelper.getLibrariesLocation()), serverInstanceId);
-                    return libs.length <= 0;
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return false;
-    }    
 }

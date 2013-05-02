@@ -336,41 +336,7 @@ private void jComboBoxServerItemStateChanged(java.awt.event.ItemEvent evt) {//GE
     // End of variables declaration//GEN-END:variables
     
     private void setMessages() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html>"); // NOI18N
-
-        boolean display = false;
-        if (uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            if (isServerLibraryMessageNeeded(J2eePlatformUiSupport.getServerInstanceID(
-                    uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()), uiProperties)) {
-                sb.append(NbBundle.getMessage(CustomizerRun.class, "MSG_CREATING_LIBRARY"));
-                display = true;
-            }
-        }
-
-        if (display) {
-            sb.append("</html>"); // NOI18N
-            MessageUtils.setMessage(errorLabel, MessageUtils.MessageType.WARNING, sb.toString());
-        } else {
-            MessageUtils.clear(errorLabel);
-        }
-    }
-    
-    private boolean isServerLibraryMessageNeeded(String serverInstanceId, AppClientProjectProperties uiProperties) {
-        UpdateHelper helper = uiProperties.getProject().getUpdateHelper();
-
-        try {
-            if (SharabilityUtility.isLibrarySwitchIntended(serverInstanceId,
-                    oldServerInstanceId, ClassPathUiSupport.getList(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel()), helper)) {
-
-                    AntProjectHelper antHelper = helper.getAntProjectHelper();
-                    Library[] libs = SharabilityUtility.getLibraries(antHelper.resolveFile(antHelper.getLibrariesLocation()), serverInstanceId);
-                    return libs.length <= 0;
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return false;
+        MessageUtils.clear(errorLabel);
     }
     
     // Innercasses -------------------------------------------------------------

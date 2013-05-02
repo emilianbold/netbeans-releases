@@ -97,7 +97,7 @@ public abstract class BaseWizardIterator implements WizardDescriptor.BackgroundI
         String serverID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
 
         MavenProjectSupport.storeSettingsToPom(project.getProjectDirectory(), MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverID);
-        MavenProjectSupport.createDDIfRequired(project, serverID);
+        MavenProjectSupport.createWebXMLIfRequired(project, serverID);
     }
 
     @Override

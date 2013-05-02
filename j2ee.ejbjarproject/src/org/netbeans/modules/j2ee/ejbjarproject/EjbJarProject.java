@@ -660,12 +660,9 @@ public class EjbJarProject implements Project, FileChangeListener {
                             EditableProperties projectProps = helper.getProperties(
                                     AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-                            if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
-                                    EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                                 Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
                                 String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), roots);
                                 ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
-                            }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                             try {
                                 ProjectManager.getDefault().saveProject(EjbJarProject.this);

@@ -471,15 +471,6 @@ final public class AppClientProjectProperties {
         
         // Encode all paths (this may change the project properties)
         List<ClassPathSupport.Item> javaClasspathList = ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel());
-        if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
-                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
-            final String oldServInstID = project.getAntProjectHelper().getProperties(
-                    AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(J2EE_SERVER_INSTANCE);
-
-            SharabilityUtility.switchServerLibrary(instanceId, oldServInstID, javaClasspathList, updateHelper);
-        }
-        
         String[] javac_cp = cs.encodeToStrings( javaClasspathList, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  );
         String[] javac_pp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );

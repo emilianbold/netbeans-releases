@@ -197,7 +197,6 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         createData.setWebInfFolder(webInf);
         
         createData.setLibrariesDefinition(SharabilityUtility.getLibraryLocation((String)wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES)));
-        createData.setServerLibraryName((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY));
         
         WebProjectUtilities.importProject(createData);       
         handle.progress(2);

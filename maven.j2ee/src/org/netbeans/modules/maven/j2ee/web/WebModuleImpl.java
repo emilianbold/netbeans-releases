@@ -194,12 +194,15 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
                 if (WebApp.VERSION_3_0.equals(waVersion)) {
                     return Profile.JAVA_EE_6_WEB;
                 }
+                if (WebApp.VERSION_3_1.equals(waVersion)) {
+                    return Profile.JAVA_EE_7_WEB;
+                }
             } catch (IOException exc) {
                 ErrorManager.getDefault().notify(exc);
             }
             return null;
         } else {
-            return Profile.JAVA_EE_6_WEB;
+            return Profile.JAVA_EE_7_WEB;
         }
     }
 
@@ -261,7 +264,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
             version = wapp.getVersion();
         }
         if (version == null) {
-            version = WebApp.VERSION_3_0;
+            version = WebApp.VERSION_3_1;
         }
         return version;
     }

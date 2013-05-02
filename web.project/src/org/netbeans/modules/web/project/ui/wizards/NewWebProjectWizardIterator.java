@@ -149,7 +149,6 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         
         createData.setLibrariesDefinition(
                 SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES)));
-        createData.setServerLibraryName((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY));
         createData.setWebXmlRequired(checkFrameworksForWebXml());
         createData.setCDIEnabled((Boolean)wiz.getProperty(ProjectServerWizardPanel.CDI));
         

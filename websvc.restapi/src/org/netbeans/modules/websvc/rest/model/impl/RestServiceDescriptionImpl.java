@@ -210,6 +210,7 @@ public class RestServiceDescriptionImpl extends PersistentObject implements Rest
         return Status.UNMODIFIED;
     }
     
+    @Override
     public FileObject getFile(){
         return SourceUtils.getFile(getTypeElementHandle(), getHelper().getClasspathInfo());
     }

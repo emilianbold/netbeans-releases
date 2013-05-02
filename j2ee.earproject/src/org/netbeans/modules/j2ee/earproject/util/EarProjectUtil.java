@@ -47,13 +47,10 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.EarProject;
-import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -69,50 +66,6 @@ public final class EarProjectUtil {
 
     private EarProjectUtil() {}
 
-    /**
-     * Return <code>true</code> if deployment descriptor is compulsory for given EAR project.
-     * @param earProject EAR project instance, shall include EarImplementation in it's lookup.
-     * @return <code>true</code> if deployment descriptor is compulsory for given EAR project.
-     * @see #isDDCompulsory(String)
-     */
-    public static boolean isDDCompulsory(Project earProject) {
-        assert earProject != null;
-        J2eeModuleProvider provider = earProject.getLookup().lookup(J2eeModuleProvider.class);
-        if (provider != null) {
-            if (provider.getConfigSupport().isDescriptorRequired()) {
-                return true;
-            }
-        }
-        //#118047 avoid using the EarProject instance directly to allow for alternate implementations.
-        EarImplementation impl = earProject.getLookup().lookup(EarImplementation.class);
-        if (impl != null) {
-            return isDDCompulsory(Profile.fromPropertiesString(impl.getJ2eePlatformVersion()));
-        }
-        return isDDCompulsory(Profile.J2EE_14);
-    }
-
-    /**
-     * Return <code>true</code> if deployment descriptor is compulsory for enterprise application
-     * with given Java EE (or J2EE) version (typically applies for J2EE 1.3 or 1.4).
-     * <p>
-     * For possible JAVA EE versions see {@link J2eeModule J2eeModule constants}.
-     * @param j2eeVersion Java EE (or J2EE) version.
-     * @return <code>true</code> if deployment descriptor is compulsory.
-     * @see J2eeModule
-     */
-    public static boolean isDDCompulsory(Profile j2eeVersion) {
-        // #103298
-        if (j2eeVersion == null) {
-            // what should we return?
-            return false;
-        }
-        if (Profile.J2EE_13.equals(j2eeVersion)
-                || Profile.J2EE_14.equals(j2eeVersion)) {
-            return true;
-        }
-        return false;
-    }
-    
     /**
      * Return <code>true</code> if deployment descriptor exists on the filesystem.
      * <p>

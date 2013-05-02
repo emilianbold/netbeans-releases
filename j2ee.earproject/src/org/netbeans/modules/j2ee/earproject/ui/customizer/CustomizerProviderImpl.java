@@ -130,8 +130,7 @@ public class CustomizerProviderImpl implements CustomizerProvider, ProjectSharab
             assert false : "Project "+project+" is already sharable.";
             return;
         }
-        final String serverLibraryName[] = new String[1];
-        CustomizerLibraries.makeSharable(uiProperties, serverLibraryName);
+        CustomizerLibraries.makeSharable(uiProperties);
     }
 
     private static class StoreListener implements ActionListener {
