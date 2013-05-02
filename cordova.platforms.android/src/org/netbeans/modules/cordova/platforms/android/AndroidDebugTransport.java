@@ -75,7 +75,9 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
 
     @Override
     public boolean detach() {
-        webSocket.stop();
+        if (webSocket != null) {
+            webSocket.stop();
+        }
         return true;
     }
 
