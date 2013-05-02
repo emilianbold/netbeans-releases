@@ -49,6 +49,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.actions.FindAction;
@@ -74,9 +75,9 @@ public class RestServicesNode extends AbstractNode { //implements PropertyChange
     static Icon folderIconCache;
     static Icon openedFolderIconCache;
 
-    public RestServicesNode(Project project) {
+    public RestServicesNode(Project project, RestSupport restSupport) {
         //super(new RestServicesChildren(project), createLookup(project));
-        super(Children.create( new RestServiceChildFactory(project), true), 
+        super(Children.create( new RestServiceChildFactory(project, restSupport), true),
                 createLookup(project));
         setDisplayName(NbBundle.getBundle(RestServicesNode.class).getString("LBL_RestServices"));
     }
