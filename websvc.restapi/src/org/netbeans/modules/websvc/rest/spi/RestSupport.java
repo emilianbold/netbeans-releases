@@ -804,25 +804,14 @@ public abstract class RestSupport {
         RestApplicationModel applicationModel = getRestApplicationsModel();
         if (applicationModel != null) {
             try {
-                Future<List<RestApplication>> future = applicationModel.
-                    runReadActionWhenReady(
-                        new MetadataModelAction<RestApplications, List<RestApplication>>()
-                    {
-                            public List<RestApplication> run(RestApplications metadata)
-                                throws IOException
-                            {
-                                return metadata.getRestApplications();
-                            }
-                    });
-                return future.get();
-            }
-            catch (IOException ex) {
-                return Collections.emptyList();
-            }
-            catch (InterruptedException ex) {
-                return Collections.emptyList();
-            }
-            catch (ExecutionException ex) {
+                return applicationModel.runReadAction(
+                        new MetadataModelAction<RestApplications, List<RestApplication>>() {
+                    public List<RestApplication> run(RestApplications metadata)
+                            throws IOException {
+                        return metadata.getRestApplications();
+                    }
+                });
+            } catch (IOException ex) {
                 return Collections.emptyList();
             }
         }
