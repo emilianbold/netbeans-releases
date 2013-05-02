@@ -904,7 +904,8 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             OutputOptions.getDefault().getColorStandard(),
             OutputOptions.getDefault().getColorError(),
             OutputOptions.getDefault().getColorLink(),
-            OutputOptions.getDefault().getColorLinkImportant()
+            OutputOptions.getDefault().getColorLinkImportant(),
+            OutputOptions.getDefault().getColorInput(),
         };
     }
 
@@ -921,11 +922,24 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         if (info != null) {
             int lineLength = length(line);
             if (lineLength > info.getEnd()) {
-                info.addSegment(lineLength, false, null, null, null, false);
+                // This is an input
+                info.addSegment(lineLength, OutputKind.IN, null, null, null, false);
             }
             return info;
         } else {
-            return new LineInfo(this, length(line));
+            // The last line can contain input
+            if (line == getLineCount() - 1) {
+                LineInfo li = new LineInfo(this);
+                try {
+                    li.addSegment(getLine(line).length(), OutputKind.OUT, null, null, null, false);
+                } catch (IOException e) {
+                    LOG.log(Level.INFO, null, e);
+                }
+                li.addSegment(length(line), OutputKind.IN, null, null, null, false);
+                return li;
+            } else {
+                return new LineInfo(this, length(line));
+            }
         }
     }
 
@@ -1071,7 +1085,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         return lineStartList.toString();
     }
 
-    private int addSegment(CharSequence s, int offset, int lineIdx, int pos, OutputListener l, boolean important, boolean err, Color c, Color b) {
+    private int addSegment(CharSequence s, int offset, int lineIdx, int pos, OutputListener l, boolean important, OutputKind outKind, Color c, Color b) {
         int len = length(lineIdx);
         if (len > 0) {
             LineInfo info = (LineInfo) linesToInfos.get(lineIdx);
@@ -1081,7 +1095,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             }
             int curEnd = info.getEnd();
             if (pos > 0 && pos != curEnd) {
-                info.addSegment(pos, false, null, null, null, false);
+                info.addSegment(pos, OutputKind.OUT, null, null, null, false);
                 curEnd = pos;
             }
             if (l != null) {
@@ -1104,15 +1118,15 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                     }
                 }
                 if (leadingCnt > 0) {
-                    info.addSegment(curEnd + leadingCnt, false, null, null, null, false);
+                    info.addSegment(curEnd + leadingCnt, OutputKind.OUT, null, null, null, false);
                 }
-                info.addSegment(endPos - trailingCnt, err, l, c, b, important);
+                info.addSegment(endPos - trailingCnt, outKind, l, c, b, important);
                 if (trailingCnt > 0) {
-                    info.addSegment(endPos, false, null, null, null, false);
+                    info.addSegment(endPos, OutputKind.OUT, null, null, null, false);
                 }
                 registerLineWithListener(lineIdx, info, important);
             } else {
-                info.addSegment(len, err, l, c, b, important);
+                info.addSegment(len, outKind, l, c, b, important);
                 if (important) {
                     importantLines.add(lineIdx);
                 }
@@ -1121,7 +1135,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         return len;
     }
 
-    void updateLinesInfo(CharSequence s, int startLine, int startPos, OutputListener l, boolean important, boolean err, Color c, Color b) {
+    void updateLinesInfo(CharSequence s, int startLine, int startPos, OutputListener l, boolean important, OutputKind outKind, Color c, Color b) {
         int offset = 0;
         /* If it's necessary to translate tabs to spaces, use this.
          * But it seems that it works fine without the translation. Translation breaks character indexes.
@@ -1155,7 +1169,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         synchronized (readLock()) {
             int startLinePos = startPos - getLineStart(startLine);
             for (int i = startLine; i < getLineCount(); i++) {
-                offset += addSegment(s, offset, i, startLinePos, l, important, err, c, b) + 1;
+                offset += addSegment(s, offset, i, startLinePos, l, important, outKind, c, b) + 1;
                 startLinePos = 0;
             }
         }
