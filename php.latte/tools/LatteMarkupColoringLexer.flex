@@ -176,6 +176,12 @@ NUMBER=["+""-"]?[0-9]+(\.[0-9]+)?(e[0-9]+)?
 STRICT_CHAR="::"|"=>"|"as"
 GLOBAL_CHAR=[^\"']
 SYMBOL=[a-zA-Z0-9_]+(\-[a-zA-Z0-9_]+)*
+MACRO="if" | "elseif" | "else" | "ifset" | "elseifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" | "last" | "sep" |
+        "capture" | "cache" | "syntax" | "_" | "block" | "form" | "label" | "snippet" | "continueIf" | "breakIf" | "var" | "default" |
+        "include" | "use" | "l" | "r" | "contentType" | "status" | "define" | "includeblock" | "layout" | "extends" | "link" | "plink" |
+        "control" | "input" | "dump" | "debugbreak"
+END_MACRO="/" ("if" | "ifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" | "last" | "sep" | "capture" | "cache" |
+        "syntax" | "_" | "block" | "form" | "label" | "snippet")
 
 
 %state ST_OTHER
@@ -186,11 +192,11 @@ SYMBOL=[a-zA-Z0-9_]+(\-[a-zA-Z0-9_]+)*
     return LatteMarkupTokenId.T_WHITESPACE;
 }
 <YYINITIAL> {
-    "/"{SYMBOL} {
+    {END_MACRO} {
         pushState(ST_OTHER);
         return LatteMarkupTokenId.T_MACRO_END;
     }
-    {SYMBOL} {
+    {MACRO} {
         pushState(ST_OTHER);
         return LatteMarkupTokenId.T_MACRO_START;
     }
