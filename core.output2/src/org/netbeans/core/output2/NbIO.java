@@ -541,7 +541,7 @@ class NbIO implements InputOutput, Lookup.Provider {
     }
 
     private class IOColorsImpl extends IOColors {
-        Color[] clrs = new Color[4];
+        Color[] clrs = new Color[5];
 
         @Override
         protected Color getColor(OutputType type) {
