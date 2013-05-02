@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.completion.interference;
+package org.netbeans.modules.groovy.editor.completion.inference;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -56,9 +56,9 @@ import org.netbeans.api.annotations.common.NonNull;
  *
  * @author Martin Janicek
  */
-public final class MethodInferenceVisitor {
+public final class MethodInference {
 
-    private MethodInferenceVisitor() {
+    private MethodInference() {
     }
     
     /**

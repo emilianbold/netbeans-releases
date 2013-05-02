@@ -65,7 +65,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
-import org.netbeans.modules.groovy.editor.completion.interference.GroovyTypeAnalyzer;
+import org.netbeans.modules.groovy.editor.completion.inference.GroovyTypeAnalyzer;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.completion.AccessLevel;
