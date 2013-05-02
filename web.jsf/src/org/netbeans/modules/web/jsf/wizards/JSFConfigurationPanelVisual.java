@@ -167,6 +167,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
     /** Libraries excluded from panel's {@link #jsfLibraries}. Libraries offered as registered in the IDE. */
     private static final Set<String> EXCLUDE_FROM_REGISTERED_LIBS = new HashSet<String>(Arrays.asList(
+            "javaee-web-api-7.0", //NOI18N
+            "javaee-api-7.0", //NOI18N
+            "Java-EE-GlassFish-v3", //NOI18N
+            "Java-EE-GlassFish-v3-Prelude", //NOI18N
             "javaee-web-api-6.0", //NOI18N
             "javaee-api-6.0", //NOI18N
             "jsp-compilation", //NOI18N
