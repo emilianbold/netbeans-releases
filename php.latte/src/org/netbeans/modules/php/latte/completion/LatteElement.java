@@ -118,7 +118,7 @@ public interface LatteElement extends ElementHandle {
 
         @Override
         public Set<Modifier> getModifiers() {
-            return Collections.EMPTY_SET;
+            return Collections.<Modifier>emptySet();
         }
 
         @Override
