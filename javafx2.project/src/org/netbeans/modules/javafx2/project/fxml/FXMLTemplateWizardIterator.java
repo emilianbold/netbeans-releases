@@ -402,7 +402,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         }
     }
 
-    static boolean isValidPackageName(String str) {
+    public static boolean isValidPackageName(String str) {
         if (str.length() > 0 && str.charAt(0) == '.') { // NOI18N
             return false;
         }
@@ -419,7 +419,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         return true;
     }
 
-    static boolean isValidPackage(FileObject root, final String path) {
+    public static boolean isValidPackage(FileObject root, final String path) {
         //May be null when nothing selected in the GUI.
         if (root == null || path == null) {
             return false;
@@ -458,7 +458,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         return true;
     }
 
-    static String canUseFileName(File rootFolder, String fileName) {
+    public static String canUseFileName(File rootFolder, String fileName) {
         assert rootFolder != null;
         String relFileName = rootFolder.getPath() + File.separatorChar + fileName;
 
