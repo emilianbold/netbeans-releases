@@ -55,11 +55,14 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
+import org.netbeans.modules.spring.beans.ui.customizer.ConfigFilesUIs.ConfigFileSelectionTableModel;
 import org.netbeans.modules.spring.beans.ui.customizer.ConfigFilesUIs.FileDisplayName;
 import org.netbeans.modules.spring.spi.beans.SpringConfigFileProvider;
 import org.openide.DialogDescriptor;
@@ -75,6 +78,8 @@ import org.openide.util.RequestProcessor.Task;
  * @author Andrei Badea
  */
 public class SelectConfigFilesPanel extends javax.swing.JPanel {
+    
+    private static final long serialVersionUID = 1L;
 
     private final RequestProcessor rp = new RequestProcessor("Spring config file detection thread", 1, true); // NOI18N
     private final Set<File> alreadySelectedFiles;
@@ -124,6 +129,7 @@ public class SelectConfigFilesPanel extends javax.swing.JPanel {
     public boolean open() {
         String title = NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_ConfigFilesTitle");
         descriptor = new DialogDescriptor(this, title, true, new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 cancelDetection();
             }
@@ -155,25 +161,43 @@ public class SelectConfigFilesPanel extends javax.swing.JPanel {
         return ConfigFilesUIs.getSelectedFiles(configFileTable);
     }
 
+    public List<File> getSelectableFiles() {
+        return ConfigFilesUIs.getSelectableFiles(configFileTable);
+    }
+
     private void cancelDetection() {
         if (detectTask != null) {
             detectTask.cancel();
         }
+    }
+    private void updateSelectAllNonButtons() {
+        final int maxSize = getSelectableFiles().size();
+        final int size = getSelectedFiles().size();
+
+        checkAllButton.setEnabled(maxSize > 0 && size < maxSize);
+        uncheckAllButton.setEnabled(maxSize > 0 && size > 0);
     }
 
     private void updateAvailableFiles(List<File> availableFiles) {
         this.availableFiles = availableFiles;
         configFileTable.setEnabled(true);
         ConfigFilesUIs.connectFilesSelectionTable(availableFiles, alreadySelectedFiles, configFileTable);
+        configFileTable.getModel().addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                updateSelectAllNonButtons();
+            }
+        });
         configFileTable.getColumnModel().getColumn(0).setMaxWidth(0);
         // In an attempt to hide the progress bar and label, but force
         // the occupy the same space.
-        String message = (availableFiles.size() == 0) ? NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_NoFilesFound") : " "; // NOI18N
+        String message = (availableFiles.isEmpty()) ? NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_NoFilesFound") : " "; // NOI18N
         messageLabel.setText(message); // NOI18N
         progressBar.setIndeterminate(false);
         progressBar.setBorderPainted(false);
         progressBar.setBackground(getBackground());
         descriptor.setValid(true);
+        updateSelectAllNonButtons();
     }
 
     /** This method is called from within the constructor to
@@ -190,8 +214,10 @@ public class SelectConfigFilesPanel extends javax.swing.JPanel {
         configFileTable = new javax.swing.JTable();
         progressBar = new javax.swing.JProgressBar();
         messageLabel = new javax.swing.JLabel();
+        checkAllButton = new javax.swing.JButton();
+        uncheckAllButton = new javax.swing.JButton();
 
-        detectedFilesLabel.setText(org.openide.util.NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_ConfigFiles")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(detectedFilesLabel, org.openide.util.NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_ConfigFiles")); // NOI18N
 
         configFileTable.setIntercellSpacing(new java.awt.Dimension(0, 0));
         configFileTable.setShowHorizontalLines(false);
@@ -202,19 +228,42 @@ public class SelectConfigFilesPanel extends javax.swing.JPanel {
         progressBar.setString(" "); // NOI18N
         progressBar.setStringPainted(true);
 
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_PleaseWait")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, org.openide.util.NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_PleaseWait")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(checkAllButton, org.openide.util.NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_SelectConfigFilesPanel.btnCheckAll.text")); // NOI18N
+        checkAllButton.setActionCommand(org.openide.util.NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_SelectConfigFilesPanel.btnCheckAll.text")); // NOI18N
+        checkAllButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkAllButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(uncheckAllButton, org.openide.util.NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_SelectConfigFilesPanel.btnUncheckAll.text")); // NOI18N
+        uncheckAllButton.setActionCommand(org.openide.util.NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_SelectConfigFilesPanel.btnUncheckAll.text")); // NOI18N
+        uncheckAllButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                uncheckAllButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(configFileScrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
-                    .addComponent(progressBar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
-                    .addComponent(detectedFilesLabel, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(messageLabel, javax.swing.GroupLayout.Alignment.LEADING))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(configFileScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 704, Short.MAX_VALUE)
+                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(detectedFilesLabel)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(checkAllButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(uncheckAllButton))
+                            .addComponent(messageLabel))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -223,22 +272,43 @@ public class SelectConfigFilesPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(detectedFilesLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(configFileScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                .addComponent(configFileScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(checkAllButton)
+                    .addComponent(uncheckAllButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(messageLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
+
+        checkAllButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_SelectConfigFilesPanel.btnCheckAll.accessibleText")); // NOI18N
+        uncheckAllButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_SelectConfigFilesPanel.btnUncheckAll.accessibleText")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    private void uncheckAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uncheckAllButtonActionPerformed
+        getTableModel().selectNone();
+        configFileTable.repaint();
+    }//GEN-LAST:event_uncheckAllButtonActionPerformed
+
+    private void checkAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkAllButtonActionPerformed
+        getTableModel().selectAll();
+        configFileTable.repaint();
+    }//GEN-LAST:event_checkAllButtonActionPerformed
+
+    private ConfigFileSelectionTableModel getTableModel() {
+        return (ConfigFileSelectionTableModel) configFileTable.getModel();
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton checkAllButton;
     private javax.swing.JScrollPane configFileScrollPane;
     private javax.swing.JTable configFileTable;
     private javax.swing.JLabel detectedFilesLabel;
     private javax.swing.JLabel messageLabel;
     private javax.swing.JProgressBar progressBar;
+    private javax.swing.JButton uncheckAllButton;
     // End of variables declaration//GEN-END:variables
 
     private final class FileDetector implements Runnable {
