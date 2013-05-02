@@ -410,15 +410,21 @@ public class OutputDocument implements Document, Element, ChangeListener {
     }
     
     public Element getElement(int index) {
-        return new ODElement(index);
+        int realIndex = getLines().visibleToRealLine(index);
+        return new ODElement(realIndex);
     }
     
     public int getElementCount() {
-        return Math.max(1, getLines().getLineCount());
+        return Math.max(1, getLines().getVisibleLineCount());
     }
     
     public int getElementIndex(int offset) {
-        return getLines().getLineAt(offset);
+        int realLine = getLines().getLineAt(offset);
+        if (realLine < 0) {
+            return realLine;
+        } else {
+            return getLines().realToVisibleLine(realLine);
+        }
     }
     
     public int getEndOffset() {
@@ -444,6 +450,7 @@ public class OutputDocument implements Document, Element, ChangeListener {
     private volatile DO lastEvent = null;
     private int lastFiredLineCount = 0;
     private int lastFiredLength = 0;
+    private int lastVisibleLineCount = 0;
     public void stateChanged(ChangeEvent changeEvent) {
         assert SwingUtilities.isEventDispatchThread();
 
@@ -460,9 +467,10 @@ public class OutputDocument implements Document, Element, ChangeListener {
             }
 
             int lineCount = lines.getLineCount();
+            int visibleLineCount = lines.getVisibleLineCount();
             int size = lines.getCharCount() + inBuffer.length();
 
-            if (size == lastFiredLength) {
+            if (size == lastFiredLength && visibleLineCount == lastVisibleLineCount) {
                 // nothing changed
                 if (Controller.VERBOSE) Controller.log("Size is same " + size + " - not firing");
                 return;
@@ -476,12 +484,24 @@ public class OutputDocument implements Document, Element, ChangeListener {
                 }
             }
 
-            lastEvent = new DO(lastLineChanged ? lastFiredLineCount - 1 : lastFiredLineCount);
+            if (lastFiredLineCount == lineCount
+                    && lastVisibleLineCount != visibleLineCount) {
+                lastEvent = new DO(0);
+            } else {
+                lastEvent = new DO(
+                        lastLineChanged
+                        ? lastFiredLineCount - 1
+                        : lastFiredLineCount);
+            }
             lastFiredLineCount = lineCount;
+            lastVisibleLineCount = visibleLineCount;
             lastFiredLength = size;
 
             if (Controller.VERBOSE) Controller.log("Firing document event on EQ with start index " + lastEvent.first);
             fireDocumentEvent(lastEvent);
+            if (pane != null) {
+                pane.getFoldingSideBar().repaint();
+            }
         } else {
             if (Controller.VERBOSE) Controller.log("Writer says it is not dirty, firing no change");
         }

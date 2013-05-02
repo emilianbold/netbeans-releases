@@ -39,9 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.tasks;
+package org.netbeans.modules.bugtracking.tasks.dashboard;
 
-import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -53,7 +61,7 @@ import org.openide.util.RequestProcessor.Task;
 public class DashboardRefresher {
 
     private static final RequestProcessor RP = new RequestProcessor(DashboardRefresher.class.getName());
-    private Task refreshDashboard;
+    private final Task refreshDashboard;
     private static DashboardRefresher instance;
     private boolean refreshEnabled;
     private boolean dashboardBusy = false;
@@ -71,7 +79,7 @@ public class DashboardRefresher {
                     return;
                 }
                 try {
-                    DashboardViewer.getInstance().loadData();
+                    refresh();
                 } finally {
                     setupDashboardRefresh();
                 }
@@ -110,6 +118,68 @@ public class DashboardRefresher {
         if (!dashboardBusy && refreshWaiting) {
             refreshWaiting = false;
             refreshDashboard.run();
+        }
+    }
+
+    private void refresh() {
+        List<Repository> repositories = DashboardViewer.getInstance().getRepositories(false);
+        List<Category> categories = DashboardViewer.getInstance().getCategories(false);
+        List<Issue> changedTasks = new ArrayList<Issue>();
+        for (Repository repository : repositories) {
+            for (Query query : repository.getQueries()) {
+                Collection<TaskContainer> oldTasks = getTaskContainers(query.getIssues());
+                query.refresh();
+                Collection<Issue> newTasks = query.getIssues();
+                changedTasks.addAll(getChangedTasks(oldTasks, newTasks));
+            }
+        }
+
+        for (Category category : categories) {
+            Collection<TaskContainer> oldTasks = getTaskContainers(category.getTasks());
+            category.refresh();
+            List<Issue> newTasks = category.getTasks();
+            changedTasks.addAll(getChangedTasks(oldTasks, newTasks));
+        }
+
+    }
+
+    private List<Issue> getChangedTasks(Collection<TaskContainer> oldTasks, Collection<Issue> newTasks) {
+        List<Issue> changedTask = new ArrayList<Issue>();
+        for (Issue newTask : newTasks) {
+            boolean isChanged = true;
+            for (TaskContainer oldTask : oldTasks) {
+                if (newTask.getID().equals(oldTask.id) && newTask.getRepository().getId().equals(oldTask.idRepository)) {
+                    if (newTask.getStatus().equals(oldTask.status)) {
+                        isChanged = false;
+                    }
+                    break;
+                }
+            }
+            if (isChanged) {
+                changedTask.add(newTask);
+            }
+        }
+
+        return changedTask;
+    }
+    
+    private List<TaskContainer> getTaskContainers(Collection<Issue> tasks) {
+        List<TaskContainer> containers = new ArrayList<TaskContainer>(tasks.size());
+        for (Issue task : tasks) {
+            containers.add(new TaskContainer(task));
+        }
+        return containers;
+    }
+
+    private static class TaskContainer {
+        private final String id;
+        private final String idRepository;
+        private final Issue.Status status;
+
+        public TaskContainer(Issue issue) {
+            this.id = issue.getID();
+            this.idRepository = issue.getRepository().getId();
+            this.status = issue.getStatus();
         }
     }
 }

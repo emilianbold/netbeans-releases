@@ -43,9 +43,14 @@ package org.netbeans.modules.bugtracking.tasks;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.beans.PropertyChangeEvent;
 import java.io.CharConversionException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -53,10 +58,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Issue.Status;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.api.Util;
-import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
-import org.netbeans.modules.bugtracking.tasks.QuickSearchPanel;
 import org.netbeans.modules.bugtracking.tasks.cache.DashboardStorage;
+import org.netbeans.modules.bugtracking.tasks.cache.TaskEntry;
 import org.netbeans.modules.bugtracking.tasks.dashboard.CategoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.dashboard.RepositoryNode;
@@ -246,5 +251,46 @@ public class Utils {
     public static boolean isRepositoryOpened(String repositoryId) {
         List<String> closedIds = DashboardStorage.getInstance().readClosedRepositories();
         return !closedIds.contains(repositoryId);
+    }
+
+    public static void loadCategory(Category category) {
+        DashboardStorage storage = DashboardStorage.getInstance();
+        List<TaskEntry> taskEntries = storage.readCategory(category.getName());
+        category.setTasks(loadTasks(taskEntries));
+    }
+
+    private static List<Issue> loadTasks(List<TaskEntry> taskEntries) {
+        List<Issue> tasks = new ArrayList<Issue>(taskEntries.size());
+        Map<String, List<String>> repository2Ids = new HashMap<String, List<String>>();
+
+        for (TaskEntry taskEntry : taskEntries) {
+            List<String> idList = repository2Ids.get(taskEntry.getRepositoryId());
+            if (idList == null) {
+                idList = new LinkedList<String>();
+                repository2Ids.put(taskEntry.getRepositoryId(), idList);
+            }
+            idList.add(taskEntry.getIssueId());
+        }
+        for (Entry<String, List<String>> e : repository2Ids.entrySet()) {
+            Repository repository = getRepository(e.getKey());
+            if (repository != null) {
+                List<String> l = e.getValue();
+                Issue[] issues = repository.getIssues(l.toArray(new String[l.size()]));
+                if (issues != null) {
+                    tasks.addAll(Arrays.asList(issues));
+                }
+            }
+        }
+        return tasks;
+    }
+
+    private static Repository getRepository(String repositoryId) {
+        List<Repository> repositories = new ArrayList<Repository>(RepositoryManager.getInstance().getRepositories());
+        for (Repository repository : repositories) {
+            if (repository.getId().equals(repositoryId)) {
+                return repository;
+            }
+        }
+        return null;
     }
 }
