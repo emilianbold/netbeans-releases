@@ -69,7 +69,7 @@ import org.openide.util.WeakListeners;
  * @author Tomas Zezula
  */
 @org.netbeans.api.annotations.common.SuppressWarnings("DMI_COLLECTION_OF_URLS") // justification="File URLs only"
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class)
+//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class)
 public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation2 {
 
     private static final String[] CLASSPATH_VOLUMES = new String[] {
