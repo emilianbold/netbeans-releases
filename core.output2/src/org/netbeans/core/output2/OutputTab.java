@@ -139,6 +139,8 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     opts.getColorStandard());
             lines.setDefColor(IOColors.OutputType.ERROR,
                     opts.getColorError());
+            lines.setDefColor(IOColors.OutputType.INPUT,
+                    opts.getColorInput());
             lines.setDefColor(IOColors.OutputType.HYPERLINK,
                     opts.getColorLink());
             lines.setDefColor(IOColors.OutputType.HYPERLINK_IMPORTANT,
@@ -155,6 +157,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
      */
     private void setTextViewBackground(JTextComponent textView, Color bg) {
         getOutputPane().getTextView().setBackground(bg);
+        getOutputPane().getFoldingSideBar().setBackground(bg);
         if ("Nimbus".equals(UIManager.getLookAndFeel().getName())) { //NOI18N
             UIDefaults defaults = new UIDefaults();
             defaults.put("EditorPane[Enabled].backgroundPainter", bg);  //NOI18N
@@ -210,14 +213,14 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         return new OutputPane(this);
     }
 
-    protected void inputSent(String txt) {
+    public void inputSent(String txt) {
         if (Controller.LOG) Controller.log("Input sent on OutputTab: " + txt);
         getOutputPane().lockScroll();
         NbIO.IOReader in = io.in();
         if (in != null) {
             if (Controller.LOG) Controller.log("Sending input to " + in);
             in.pushText(txt + "\n");
-            outWriter.println(txt);
+            outWriter.print(txt, null, false, null, null, OutputKind.IN, true);
         }
     }
 
@@ -771,6 +774,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         } else if (OutputOptions.PROP_COLOR_ERROR.equals(pn)) {
             lines.setDefColor(IOColors.OutputType.ERROR,
                     opts.getColorError());
+        } else if (OutputOptions.PROP_COLOR_INPUT.equals(pn)) {
+            lines.setDefColor(IOColors.OutputType.INPUT,
+                    opts.getColorInput());
         } else if (OutputOptions.PROP_COLOR_LINK.equals(pn)) {
             lines.setDefColor(IOColors.OutputType.HYPERLINK,
                     opts.getColorLink());

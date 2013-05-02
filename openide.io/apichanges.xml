@@ -107,6 +107,47 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="coloredInput">
+      <api name="io"/>
+      <summary>Added IOColors.OutputType.INPUT to be able to specify a color of input text.</summary>
+      <version major="1" minor="39"/>
+      <date day="18" month="4" year="2013"/>
+      <author login="mentlicher"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" />
+      <description>
+          <p>
+              Added enum element <code>IOColors.OutputType.INPUT</code>
+              that can be passed to get/setColor methods to set a color of the
+              input text.
+          </p>
+      </description>
+      <class package="org.openide.windows" name="IOColors"/>
+      <issue number="228480" />
+    </change>
+    <change id="Folding">
+      <api name="io"/>
+      <summary>Adding API to have support for folding of lines</summary>
+      <version major="1" minor="38"/>
+      <date day="5" month="4" year="2013"/>
+      <author login="jhavlin"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" />
+      <description>
+          <p>Adding class IOFolding for checking that folding is supported and
+              for creating folds in output window, and class FoldHandle for
+              finishing the folds and creation of nested folds.</p>
+          <p> See
+              <code>
+                  <a href="@TOP@/org/openide/windows/IOFolding.html">
+                      IOFolding</a>,
+                  <a href="@TOP@/org/openide/windows/FoldHandle.html">
+                      FoldHandle</a>.
+              </code>
+          </p>
+      </description>
+      <class package="org.openide.windows" name="IOFolding"/>
+      <class package="org.openide.windows" name="FoldHandle"/>
+      <issue number="228022" />
+    </change>
     <change id="getIO-4-params">
       <api name="io"/>
       <summary>Added IOProvider.getIO variant that takes all 4 possible parameters.</summary>

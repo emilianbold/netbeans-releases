@@ -306,41 +306,27 @@ class StackTraceSupport {
 
     static boolean isAvailable() {
         IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
-        return ideServices != null && ideServices.providesOpenDocument() && ideServices.providesFindFile();
+        return ideServices != null && ideServices.providesOpenDocument();
     }
     
     @NbBundle.Messages({"CTL_ShowHistoryTitle=Show History",
-                        "# {0} - path to be opened",  "MSG_NoHistory=History View not available for file with path\n {0}.",
-                        "# {0} - path to be opened",  "MSG_NoFile=No file found for path\n {0}."})
+                        "# {0} - path to be opened",  "MSG_NoHistory=History View not available for file with path\n {0}."})
     private static void openSearchHistory(final String path, final int line) {
-        final File file = findFile(path);
-        if ( file != null ) {
-            final IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
-            if(ideServices == null || !ideServices.providesSearchHistory(file)) {
-                return;
-            }
-            BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
-                @Override
-                public void run() {
-                    if(!ideServices.searchHistory(file, line)) {
-                        BugtrackingUtil.notifyError(Bundle.CTL_ShowHistoryTitle(), Bundle.MSG_NoHistory(path));
-                    }
+        if(path == null) {
+            return;
+        }
+        final IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        if(ideServices == null || !ideServices.providesOpenHistory()) {
+            return;
+        }
+        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                if(!ideServices.openHistory(path, line)) {
+                    BugtrackingUtil.notifyError(Bundle.CTL_ShowHistoryTitle(), Bundle.MSG_NoHistory(path));
                 }
-            });
-        } else {
-            BugtrackingUtil.notifyError(Bundle.CTL_ShowHistoryTitle(), Bundle.MSG_NoFile(path));            
-        }
-    }
-
-    private static File findFile(String path) {
-        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
-        if(ideServices != null) {
-            FileObject fo = ideServices.findFile(path);
-            if(fo != null) {
-                return FileUtil.toFile(fo);
             }
-        }
-        return null;
+        });
     }
 
     public static void register(final JTextPane textPane) {

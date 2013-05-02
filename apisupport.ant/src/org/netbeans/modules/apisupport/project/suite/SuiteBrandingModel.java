@@ -46,6 +46,7 @@ import org.netbeans.modules.apisupport.project.spi.BrandingSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -72,6 +73,7 @@ public class SuiteBrandingModel extends BrandingModel {
     public SuiteBrandingModel(@NonNull SuiteProperties suiteProps) {
         assert null != suiteProps;
         this.suiteProps = suiteProps;
+        this.locale = Locale.getDefault();
     }
 
     @Override public void init() {
@@ -167,7 +169,7 @@ public class SuiteBrandingModel extends BrandingModel {
         if (brandingPath == null) { // #125160
             brandingPath = "branding"; // NOI18N
         }
-        return new SuiteBrandingSupport(suiteProject, brandingPath);
+        return new SuiteBrandingSupport(suiteProject, brandingPath, this.locale);
     }
 
     @Override public void reloadProperties() {

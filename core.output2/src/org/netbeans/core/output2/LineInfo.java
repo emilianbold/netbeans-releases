@@ -63,23 +63,23 @@ public class LineInfo {
     }
 
     LineInfo(Lines parent, int end) {
-        this(parent, end, false, null, null, null, false);
+        this(parent, end, OutputKind.OUT, null, null, null, false);
     }
 
-    LineInfo(Lines parent, int end, boolean err, OutputListener l, Color c, Color b, boolean important) {
+    LineInfo(Lines parent, int end, OutputKind outKind, OutputListener l, Color c, Color b, boolean important) {
         this.parent = parent;
-        addSegment(end, err, l, c, b, important);
+        addSegment(end, outKind, l, c, b, important);
     }
 
     int getEnd() {
         return segments.isEmpty() ? 0 : segments.get(segments.size() - 1).getEnd();
     }
 
-    void addSegment(int end, boolean err, OutputListener l, Color c, Color b, boolean important) {
+    void addSegment(int end, OutputKind outKind, OutputListener l, Color c, Color b, boolean important) {
         Segment s = null;
         if (!segments.isEmpty()) {
             s = segments.get(segments.size() - 1);
-            if (s.isErr() == err && s.getListener() == l && hasColors(s, c, b)) {
+            if (s.getKind() == outKind && s.getListener() == l && hasColors(s, c, b)) {
                 // the same type of segment, prolong last one
                 s.end = end;
                 return;
@@ -88,10 +88,8 @@ public class LineInfo {
         boolean isColor = c != null || b != null;
         if (l != null) {
             s = isColor ? new ColorListenerSegment(end, l, important, c, b) : new ListenerSegment(end, l, important);
-        } else if (err) {
-            s = isColor ? new ColorErrSegment(end, c, b) : new ErrSegment(end);
         } else {
-            s = isColor ? new ColorSegment(end, c, b) : new Segment(end);
+            s = isColor ? new ColorSegment(end, outKind, c, b) : new Segment(end, outKind);
         }
         segments.add(s);
     }
@@ -191,10 +189,12 @@ public class LineInfo {
 
     public class Segment {
 
-        int end;
+        private int end;
+        private OutputKind outputKind;
 
-        public Segment(int end) {
+        Segment(int end, OutputKind outputKind) {
             this.end = end;
+            this.outputKind = outputKind;
         }
 
         int getEnd() {
@@ -205,12 +205,26 @@ public class LineInfo {
             return null;
         }
 
-        boolean isErr() {
-            return false;
+        OutputKind getKind() {
+            return outputKind;
         }
 
         Color getColor() {
-            return parent.getDefColor(IOColors.OutputType.OUTPUT);
+            IOColors.OutputType type;
+            switch (outputKind) {
+                case OUT:
+                    type = IOColors.OutputType.OUTPUT;
+                    break;
+                case ERR:
+                    type = IOColors.OutputType.ERROR;
+                    break;
+                case IN:
+                    type = IOColors.OutputType.INPUT;
+                    break;
+                default:
+                    type = IOColors.OutputType.OUTPUT;
+            }
+            return parent.getDefColor(type);
         }
 
         Color getCustomColor() {
@@ -227,52 +241,8 @@ public class LineInfo {
         final Color color;
         final Color background;
 
-        public ColorSegment(int end, Color color, Color background) {
-            super(end);
-            this.color = color == null ? super.getColor() : color;
-            this.background = background;
-        }
-
-        @Override
-        Color getColor() {
-            return color;
-        }
-
-        @Override
-        Color getCustomColor() {
-            return color;
-        }
-
-        @Override
-        Color getCustomBackground() {
-            return background;
-        }
-    }
-
-    private class ErrSegment extends Segment {
-
-        public ErrSegment(int end) {
-            super(end);
-        }
-
-        @Override
-        boolean isErr() {
-            return true;
-        }
-
-        @Override
-        Color getColor() {
-            return parent.getDefColor(IOColors.OutputType.ERROR);
-        }
-    }
-
-    private class ColorErrSegment extends ErrSegment {
-
-        final Color color;
-        final Color background;
-
-        public ColorErrSegment(int end, Color color, Color background) {
-            super(end);
+        public ColorSegment(int end, OutputKind outputKind, Color color, Color background) {
+            super(end, outputKind);
             this.color = color == null ? super.getColor() : color;
             this.background = background;
         }
@@ -299,7 +269,7 @@ public class LineInfo {
         final boolean important;
 
         public ListenerSegment(int end, OutputListener l, boolean important) {
-            super(end);
+            super(end, OutputKind.OUT);
             this.listener = l;
             this.important = important;
         }

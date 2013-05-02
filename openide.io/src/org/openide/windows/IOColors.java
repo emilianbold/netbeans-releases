@@ -88,8 +88,9 @@ public abstract class IOColors {
         HYPERLINK,
         /** important hyperlink */
         HYPERLINK_IMPORTANT,
-        /** input, could be supported in future */
-        // INPUT,
+        /** input text
+         * @since 1.39 */
+        INPUT,
     }
 
     /**

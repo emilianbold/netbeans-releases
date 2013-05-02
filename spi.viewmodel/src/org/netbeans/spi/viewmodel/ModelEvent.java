@@ -87,8 +87,25 @@ public class ModelEvent extends EventObject {
      */
     public static class TableValueChanged extends ModelEvent {
         
+        /**
+         * The mask for value change.
+         * @since 1.42
+         */
+        public static final int VALUE_MASK = 1;
+        /**
+         * The mask for HTML value change.
+         * @since 1.42
+         */
+        public static final int HTML_VALUE_MASK = 2;
+        /**
+         * The mask for change of the read only state.
+         * @since 1.42
+         */
+        public static final int IS_READ_ONLY_MASK = 4;
+        
         private Object node;
         private String columnID;
+        private int change;
         
         /**
          * Creates a new instance of TableValueChanged event.
@@ -104,9 +121,28 @@ public class ModelEvent extends EventObject {
             Object node,
             String columnID
         ) {
+            this(source, node, columnID, 0xffffffff);
+        }
+        
+        /**
+         * Creates a new instance of TableValueChanged event.
+         *
+         * @param source a source if event.
+         * @param node a changed node instance
+         * @param columnID a changed column name
+         * @param change one of the *_MASK constants or their aggregation.
+         * @since 1.42
+         */
+        public TableValueChanged (
+            Object source, 
+            Object node,
+            String columnID,
+            int change
+        ) {
             super (source);
             this.node = node;
             this.columnID = columnID;
+            this.change = change;
         }
         
         /**
@@ -129,6 +165,16 @@ public class ModelEvent extends EventObject {
          */
         public String getColumnID () {
             return columnID;
+        }
+        
+        /**
+         * Get the change mask.
+         *
+         * @return the change mask, one of the *_MASK constants or their aggregation.
+         * @since 1.42
+         */
+        public int getChange() {
+            return change;
         }
     }
     

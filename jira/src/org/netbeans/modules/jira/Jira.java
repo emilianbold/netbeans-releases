@@ -45,13 +45,11 @@ package org.netbeans.modules.jira;
 import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
 import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.util.logging.Logger;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
 import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
-import org.netbeans.modules.jira.issue.JiraTaskListProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -85,13 +83,6 @@ public class Jira {
     public static synchronized Jira getInstance() {
         if(instance == null) {
             instance = new Jira();
-            // lazy ping tasklist issue provider to load issues ...
-            instance.getRequestProcessor().post(new Runnable() {
-                @Override
-                public void run() {
-                    JiraTaskListProvider.getInstance();
-                }
-            });
         }
         return instance;
     }
