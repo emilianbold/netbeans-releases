@@ -42,19 +42,19 @@
 
 package org.netbeans.modules.maven.execute.cmd;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.maven.execution.ExecutionEvent;
 import org.json.simple.JSONObject;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.execute.cmd.ExecMojo;
 import org.netbeans.modules.maven.execute.cmd.ExecProject;
 import org.netbeans.modules.maven.execute.cmd.ExecSession;
-import org.openide.filesystems.FileUtil;
+import org.openide.windows.FoldHandle;
+import org.openide.windows.IOFolding;
 import org.openide.windows.IOPosition;
+import org.openide.windows.InputOutput;
 
 /**
  * a stub to be filled with parsed JSON values, vaguely related to ExecutionEventObject in maven codebase.
@@ -120,7 +120,8 @@ public class ExecutionEventObject {
         public final List<ExecutionEventObject.Tree> childrenNodes = new ArrayList<ExecutionEventObject.Tree>();
         private IOPosition.Position startOffset;
         private IOPosition.Position endOffset;
-        
+        private FoldHandle foldHandle;
+        private FoldHandle nestedFoldHandle;
 
         public Tree(ExecutionEventObject current, ExecutionEventObject.Tree parent) {
             this.startEvent = current;
@@ -166,6 +167,57 @@ public class ExecutionEventObject {
             this.parentNode = parent;
         }
         
+        /**
+         * Start fold for the curent tree.
+         *
+         * @param io InputOutput the output is written to.
+         */
+        public void startFold(InputOutput io) {
+            this.foldHandle = IOFolding.startFold(io, true);
+        }
+
+        /**
+         * Finish fold for the current free. If no fold has been created, do
+         * nothing. If a nested fold exists, finish it too.
+         */
+        public void finishFold() {
+            if (foldHandle != null) {
+                finishNestedFold();
+                foldHandle.finish();
+                foldHandle = null;
+            }
+        }
+
+        /**
+         * Create a nested fold in the current tree fold. This is used e.g. for
+         * stacktrace folds in the exec tree. If a nested fold already exists,
+         * it will be finished before starting new fold.
+         */
+        public void startNestedFold() {
+            if (foldHandle != null) {
+                if (nestedFoldHandle != null) {
+                    nestedFoldHandle.finish();
+                }
+                nestedFoldHandle = foldHandle.startFold(true);
+            }
+        }
+
+        /**
+         * Finish current nested fold created with {@link #startNestedFold()}.
+         */
+        public void finishNestedFold() {
+            if (nestedFoldHandle != null) {
+                nestedFoldHandle.finish();
+                nestedFoldHandle = null;
+            }
+        }
+
+        /**
+         * Check whether a nested fold exists.
+         */
+        public boolean hasNestedFold() {
+            return nestedFoldHandle != null;
+        }
     }
     
 }
