@@ -70,7 +70,6 @@ import org.netbeans.modules.bugtracking.tasks.filter.AppliedFilters;
 import org.netbeans.modules.bugtracking.tasks.filter.DashboardFilter;
 import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
-import org.netbeans.modules.bugtracking.tasks.DashboardRefresher;
 import org.netbeans.modules.bugtracking.tasks.Utils;
 import org.netbeans.modules.team.ui.util.treelist.ColorManager;
 import org.netbeans.modules.team.ui.util.treelist.TreeList;
@@ -336,7 +335,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 if (DashboardViewer.getInstance().isTaskNodeActive(taskNode)) {
                     DashboardViewer.getInstance().setActiveTaskNode(toAdd);
                 }
-                toSelect.add(taskNode);
+                toSelect.add(toAdd);
             }
             if (isTaskInFilter && !isCatInFilter) {
                 addCategoryToModel(destCategoryNode);
@@ -828,12 +827,6 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    public void loadCategory(Category category) {
-        DashboardStorage storage = DashboardStorage.getInstance();
-        List<TaskEntry> taskEntries = storage.readCategory(category.getName());
-        category.setTasks(loadTasks(taskEntries));
-    }
-
     private void loadCategories() {
         try {
             DashboardStorage storage = DashboardStorage.getInstance();
@@ -865,40 +858,6 @@ public final class DashboardViewer implements PropertyChangeListener {
             LOG.log(Level.WARNING, "Categories loading failed due to: {0}", ex);
             showCategoriesError();
         }
-    }
-
-    private List<Issue> loadTasks(List<TaskEntry> taskEntries) {
-        List<Issue> tasks = new ArrayList<Issue>(taskEntries.size());
-        Map<String, List<String>> m = new HashMap<String, List<String>>();
-        for (TaskEntry taskEntry : taskEntries) {
-            List<String> l = m.get(taskEntry.getRepositoryId());
-            if (l == null) {
-                l = new LinkedList<String>();
-                m.put(taskEntry.getRepositoryId(), l);
-            }
-            l.add(taskEntry.getIssueId());
-        }
-        for (Entry<String, List<String>> e : m.entrySet()) {
-            Repository repository = getRepository(e.getKey());
-            if (repository != null) {
-                List<String> l = e.getValue();
-                Issue[] issues = repository.getIssues(l.toArray(new String[l.size()]));
-                if (issues != null) {
-                    tasks.addAll(Arrays.asList(issues));
-                }
-            }
-        }
-        return tasks;
-    }
-
-    private Repository getRepository(String repositoryId) {
-        List<Repository> repositories = new ArrayList<Repository>(RepositoryManager.getInstance().getRepositories());
-        for (Repository repository : repositories) {
-            if (repository.getId().equals(repositoryId)) {
-                return repository;
-            }
-        }
-        return null;
     }
 
     private void updateRepositories(Collection<Repository> addedRepositories, Collection<Repository> removedRepositories) {

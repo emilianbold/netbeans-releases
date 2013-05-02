@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.bugtracking.tasks;
 
+import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardRefresher;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
