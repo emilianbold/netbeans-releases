@@ -56,9 +56,9 @@ import org.netbeans.api.annotations.common.NonNull;
  *
  * @author Martin Janicek
  */
-public final class MethodInferenceVisitor {
+public final class MethodInference {
 
-    private MethodInferenceVisitor() {
+    private MethodInference() {
     }
     
     /**

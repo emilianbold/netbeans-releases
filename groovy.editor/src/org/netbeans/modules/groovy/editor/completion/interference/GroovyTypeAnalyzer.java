@@ -78,7 +78,7 @@ public class GroovyTypeAnalyzer {
         }
         
         if (caller instanceof MethodCallExpression) {
-            return Collections.singleton(MethodInferenceVisitor.findCallerType(caller));
+            return Collections.singleton(MethodInference.findCallerType(caller));
         }
         
         return Collections.emptySet();
