@@ -46,6 +46,7 @@ package org.netbeans.api.java.source.gen;
 import java.io.File;
 import java.util.Collections;
 import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -2788,6 +2789,46 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
                 BlockTree block = method.getBody();
                 workingCopy.rewrite(block, make.removeBlockStatement(block, 0));
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test229144() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void m() {\n" +
+            "        System.err.println(java.lang.String.class);\n" +
+            "    }\n" +
+            "}\n");
+
+         String golden =
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void m() {\n" +
+            "        System.err.println(java.lang.CharSequence.class);\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.PARSED);//must be parsed, so that the member selects don't have symbols!
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(0);
+                BlockTree block = method.getBody();
+                List<StatementTree> nueStatements = Arrays.asList(workingCopy.getTreeUtilities().parseStatement("System.err.println(java.lang.CharSequence.class);", new SourcePositions[1]));
+                workingCopy.rewrite(block, make.Block(nueStatements, false));
             }
 
         };
