@@ -58,6 +58,7 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -84,6 +85,7 @@ public class Bugzilla {
 
         brc = new BugzillaRepositoryConnector();
         clientManager = brc.getClientManager();
+        MylynSupport.getInstance().addRepositoryListener(clientManager);
 
         // lazy ping tasklist issue provider to load issues ...
         getRequestProcessor().post(new Runnable() {

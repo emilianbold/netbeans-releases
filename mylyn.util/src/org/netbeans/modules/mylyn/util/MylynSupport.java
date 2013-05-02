@@ -69,6 +69,7 @@ import org.eclipse.mylyn.internal.tasks.core.data.TaskDataState;
 import org.eclipse.mylyn.internal.tasks.core.data.TaskDataStore;
 import org.eclipse.mylyn.internal.tasks.core.externalization.TaskListExternalizer;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.IRepositoryListener;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -130,45 +131,6 @@ public class MylynSupport {
         taskDataManager.setDataPath(storagePath);
         taskListWriter = new TaskListExternalizer(repositoryModel, taskRepositoryManager);
     }
-
-    /**
-     * Register task repository in the mylyn infrastructure. All known
-     * repositories should be registered before tasklist is loaded.
-     *
-     * @param repositoryConnector connector handling the given repository
-     * @param taskRepository task repository to register
-     */
-    public void addTaskRepository (AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository) {
-        if (!taskRepository.getConnectorKind().equals(repositoryConnector.getConnectorKind())) {
-            throw new IllegalArgumentException("The given task repository is not managed by the given repository connector");
-        }
-        taskRepositoryManager.addRepositoryConnector(repositoryConnector);
-        taskRepositoryManager.addRepository(taskRepository);
-        // assert, noone should add two repository instances with the same URL
-        assert taskRepository == taskRepositoryManager.getRepository(repositoryConnector.getConnectorKind(), taskRepository.getUrl());
-    }
-// TODO is this required? The task may be left in the storage indefinitely.
-//    /**
-//     * Removes the repository, its queries and tasks permanently from the mylyn
-//     * infrastructure. The action is irreversible, be careful.
-//     *
-//     * @param taskRepository repository to remove
-//     */
-//    public void deleteTaskRepository (TaskRepository taskRepository) {
-//        // queries to delete
-//        Set<RepositoryQuery> queries = taskList.getRepositoryQueries(taskRepository.getUrl());
-//        // tasks to delete
-//        Set<ITask> tasks = taskList.getTasks(taskRepository.getUrl());
-//        // unsubmitted tasks to delete
-//        tasks.addAll(taskList.getUnsubmittedContainer(taskRepository.getUrl()).getChildren());
-//        for (RepositoryQuery query : queries) {
-//            taskList.deleteQuery(query);
-//        }
-//        for (ITask task : tasks) {
-//            taskList.deleteTask(task);
-//        }
-//        taskRepositoryManager.removeRepository(taskRepository);
-//    }
 
     /**
      * Returns all known tasks from the given repository.
@@ -242,6 +204,10 @@ public class MylynSupport {
 
     public void removeTaskDataListener (ITaskDataManagerListener listener) {
         taskDataManager.removeListener(listener);
+    }
+
+    public void addRepositoryListener (IRepositoryListener listener) {
+        taskRepositoryManager.addListener(listener);
     }
 
     /**
@@ -327,6 +293,39 @@ public class MylynSupport {
         taskDataManager.setTaskRead(task, seen);
     }
 
+    /**
+     * Returns a repository for the given connector and URL.
+     * If such a repository does not yet exist, creates one and registers it in the mylyn infrastructure.
+     *
+     * @param repositoryConnector connector handling the given repository
+     * @param repositoryUrl  task repository URL
+     */
+    public TaskRepository getTaskRepository (AbstractRepositoryConnector repositoryConnector, String repositoryUrl) {
+        TaskRepository repository = taskRepositoryManager.getRepository(repositoryConnector.getConnectorKind(), repositoryUrl);
+        if (repository == null) {
+            repository = new TaskRepository(repositoryConnector.getConnectorKind(), repositoryUrl);
+            addTaskRepository(repositoryConnector, repository);
+        }
+        return repository;
+    }
+
+    public void setRepositoryUrl (TaskRepository repository, String url) throws CoreException {
+        String oldUrl = repository.getRepositoryUrl();
+        if (!url.equals(oldUrl)) {
+            ensureTaskListLoaded();
+            for (ITask task : taskList.getAllTasks()) {
+                if (url.equals(task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL))) {
+                    taskDataManager.refactorRepositoryUrl(task, task.getRepositoryUrl(), url);
+                } else if (oldUrl.equals(task.getRepositoryUrl())) {
+                    taskDataManager.refactorRepositoryUrl(task, url, url);
+                }
+            }
+            taskList.refactorRepositoryUrl(oldUrl, url);
+            repository.setRepositoryUrl(url);
+            taskRepositoryManager.notifyRepositoryUrlChanged(repository, oldUrl);
+        }
+    }
+
     ITask getOrCreateTask (TaskRepository taskRepository, String taskId, boolean addToTaskList) throws CoreException {
         ensureTaskListLoaded();
         ITask task = taskList.getTask(taskRepository.getUrl(), taskId);
@@ -350,6 +349,38 @@ public class MylynSupport {
             return taskRepositoryManager.getRepository(task.getConnectorKind(), task.getRepositoryUrl());
         }
     }
+
+    private void addTaskRepository (AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository) {
+        if (!taskRepository.getConnectorKind().equals(repositoryConnector.getConnectorKind())) {
+            throw new IllegalArgumentException("The given task repository is not managed by the given repository connector");
+        }
+        taskRepositoryManager.addRepositoryConnector(repositoryConnector);
+        taskRepositoryManager.addRepository(taskRepository);
+        // assert, noone should add two repository instances with the same URL
+        assert taskRepository == taskRepositoryManager.getRepository(repositoryConnector.getConnectorKind(), taskRepository.getUrl());
+    }
+// TODO is this required? The task may be left in the storage indefinitely.
+//    /**
+//     * Removes the repository, its queries and tasks permanently from the mylyn
+//     * infrastructure. The action is irreversible, be careful.
+//     *
+//     * @param taskRepository repository to remove
+//     */
+//    public void deleteTaskRepository (TaskRepository taskRepository) {
+//        // queries to delete
+//        Set<RepositoryQuery> queries = taskList.getRepositoryQueries(taskRepository.getUrl());
+//        // tasks to delete
+//        Set<ITask> tasks = taskList.getTasks(taskRepository.getUrl());
+//        // unsubmitted tasks to delete
+//        tasks.addAll(taskList.getUnsubmittedContainer(taskRepository.getUrl()).getChildren());
+//        for (RepositoryQuery query : queries) {
+//            taskList.deleteQuery(query);
+//        }
+//        for (ITask task : tasks) {
+//            taskList.deleteTask(task);
+//        }
+//        taskRepositoryManager.removeRepository(taskRepository);
+//    }
 
     private synchronized void ensureTaskListLoaded () throws CoreException {
         if (!taskListInitialized) {

@@ -149,6 +149,8 @@ public class MylynStorageTest extends NbTestCase {
         suite.addTest(new MylynStorageTest("testCreateUnsubmittedTask"));
         // submit the temporary task to the server and turn it into a full remote task
         suite.addTest(new MylynStorageTest("testSubmitTemporaryTask"));
+        // repository settings modifications should keep the single instance of TR
+        suite.addTest(new MylynStorageTest("testEditRepository"));
         // edit task
         suite.addTest(new MylynStorageTest("testEditTask"));
         // submit task
@@ -257,6 +259,43 @@ public class MylynStorageTest extends NbTestCase {
         assertTrue(model.getChangedAttributes().isEmpty());
         assertTrue(model.getChangedOldAttributes().isEmpty());
         assertEquals(ITask.SynchronizationState.SYNCHRONIZED, task.getSynchronizationState());
+    }
+    
+    public void testEditRepository () throws Exception {
+        MylynSupport supp = MylynSupport.getInstance();
+        Collection<ITask> tasks = supp.getTasks(btr);
+        assertEquals(1, tasks.size());
+        ITask task = tasks.iterator().next();
+        assertNotNull(task);
+        
+        // TR should be singleton
+        BugzillaRepository otherRepository = TestUtil.getRepository("testbugzilla", REPO_URL, REPO_USER, REPO_PASSWD);
+        TaskRepository otherTaskRepository = otherRepository.getTaskRepository();
+        assertSame(btr, otherTaskRepository);
+        assertNotNull(supp.getTaskDataState(task));
+        
+        // now lets change URL, it should propagate to the tasklist and rewrite all tasks
+        Method m = BugzillaRepository.class.getDeclaredMethod("setupTaskRepository",
+                String.class, String.class, String.class, String.class,
+                char[].class, String.class, char[].class,
+                Boolean.TYPE);
+        m.setAccessible(true);
+        m.invoke(otherRepository, "testbugzilla", REPO_URL, REPO_URL + "/OTHER",
+                REPO_USER, REPO_PASSWD.toCharArray(), null, null, false);
+        assertSame(btr, otherTaskRepository);
+        assertEquals(REPO_URL + "/OTHER", otherRepository.getUrl());
+        assertEquals(otherRepository.getUrl(), task.getRepositoryUrl());
+        assertNotNull(supp.getTaskDataState(task));
+        ITask task2 = supp.getTasks(otherTaskRepository).iterator().next();
+        assertSame(task, task2);
+        assertEquals(otherRepository.getUrl(), task2.getRepositoryUrl());
+        assertNotNull(supp.getTaskDataState(task2));
+        
+        // and back to clean
+        m.invoke(otherRepository, "testbugzilla", REPO_URL + "/OTHER", REPO_URL,
+                REPO_USER, REPO_PASSWD.toCharArray(), null, null, false);
+        assertEquals(REPO_URL, otherRepository.getUrl());
+        assertEquals(otherRepository.getUrl(), task.getRepositoryUrl());
     }
     
     public void testEditTask () throws Exception {

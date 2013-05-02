@@ -151,8 +151,7 @@ public class BugzillaRepository {
         }
         String url = info.getUrl();
         boolean shortLoginEnabled = Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN));
-        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
-        MylynSupport.getInstance().addTaskRepository(Bugzilla.getInstance().getRepositoryConnector(), taskRepository);
+        taskRepository = setupTaskRepository(name, null, url, user, password, httpUser, httpPassword, shortLoginEnabled);
         
         BugzillaTaskListProvider.getInstance().notifyRepositoryCreated(this);
     }
@@ -215,6 +214,9 @@ public class BugzillaRepository {
             removeQuery(q);
         }
         resetRepository(true);
+        if (getTaskRepository() != null) {
+            // Maybe it's not needed to remove in mylyn?
+        }
         BugzillaTaskListProvider.getInstance().notifyRepositoryRemoved(this);
     }
 
@@ -232,12 +234,6 @@ public class BugzillaRepository {
     synchronized void resetRepository(boolean keepConfiguration) {
         if(!keepConfiguration) {
             bc = null;
-        }
-        if(getTaskRepository() != null) {
-            Bugzilla.getInstance()
-                    .getRepositoryConnector()
-                    .getClientManager()
-                    .repositoryRemoved(getTaskRepository());
         }
     }
 
@@ -462,23 +458,49 @@ public class BugzillaRepository {
         String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
         AuthenticationCredentials c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.REPOSITORY) : null;
         String oldUser = c != null ? c.getUserName() : "";
-        String oldPassword = c != null ? c.getPassword() : "";
 
-        assert true: "This is not yet supported, must solve mylyn task repository rewrite";
-        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
-        resetRepository(oldUrl.equals(url) && oldUser.equals(user) && oldPassword.equals(new String(password))); // XXX reset the configuration only if the host changed
-                                                                                                     //     on psswd and user change reset only taskrepository
+        taskRepository = setupTaskRepository(name, oldUrl.equals(url) ? null : oldUrl,
+                url, user, password, httpUser, httpPassword, shortLoginEnabled);
+        resetRepository(oldUrl.equals(url) && oldUser.equals(user));
     }
 
-    static TaskRepository createTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean shortLoginEnabled) {
-        TaskRepository repository = MylynUtils.createTaskRepository(
-                Bugzilla.getInstance().getRepositoryConnector().getConnectorKind(),
-                name,
-                url,
-                user, password,
-                httpUser, httpPassword);
-        repository.setProperty(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN, shortLoginEnabled ? "true" : "false"); //NOI18N
+    /**
+     * If oldUrl is not null, gets the repository for the oldUrl and rewrites it
+     * to the new url.
+     */
+    private static TaskRepository setupTaskRepository (String name, String oldUrl, String url, String user,
+            char[] password, String httpUser, char[] httpPassword,
+            boolean shortLoginEnabled) {
+        TaskRepository repository;
+        if (oldUrl == null) {
+            repository = MylynSupport.getInstance().getTaskRepository(Bugzilla.getInstance().getRepositoryConnector(), url);
+        } else {
+            repository = MylynSupport.getInstance().getTaskRepository(Bugzilla.getInstance().getRepositoryConnector(), oldUrl);
+            try {
+                MylynSupport.getInstance().setRepositoryUrl(repository, url);
+            } catch (CoreException ex) {
+                Bugzilla.LOG.log(Level.WARNING, null, ex);
+            }
+        }
+        setupProperties(repository, name, user, password, httpUser, httpPassword, shortLoginEnabled); 
         return repository;
+    }
+
+    static TaskRepository createTemporaryTaskRepository (String name, String url, String user,
+            char[] password, String httpUser, char[] httpPassword,
+            boolean localUserEnabled) {
+        TaskRepository taskRepository = new TaskRepository(
+                Bugzilla.getInstance().getRepositoryConnector().getConnectorKind(), url);
+        setupProperties(taskRepository, name, user, password, httpUser, httpPassword, localUserEnabled);
+        return taskRepository;
+    }
+
+    private static void setupProperties (TaskRepository repository, String displayName,
+            String user, char[] password, String httpUser, char[] httpPassword,
+            boolean shortLoginEnabled) {
+        repository.setRepositoryLabel(displayName);
+        MylynUtils.setCredentials(repository, user, password, httpUser, httpPassword);
+        repository.setProperty(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN, shortLoginEnabled ? "true" : "false"); //NOI18N
     }
 
     public String getUrl() {
