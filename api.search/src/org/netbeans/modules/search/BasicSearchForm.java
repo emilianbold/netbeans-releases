@@ -496,6 +496,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 && cboxFileNamePattern.getComponent().getItemCount() != 0) {
             cboxFileNamePattern.getComponent().setSelectedIndex(0);
         }
+        cboxFileNamePattern.setRegularExpression(memory.isFilePathRegex());
         if (cboxReplacement != null && cboxReplacement.getItemCount() != 0) {
             cboxReplacement.setSelectedIndex(0);
         }
