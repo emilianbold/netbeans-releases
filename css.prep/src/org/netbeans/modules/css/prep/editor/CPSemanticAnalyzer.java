@@ -57,7 +57,7 @@ public class CPSemanticAnalyzer extends SemanticAnalyzer {
     //right now it is used just to ignore the less syntax by the "pure css analyzer"
     @Override
     public SemanticAnalyzerResult analyzeDeclaration(Node declarationNode) {
-        return NodeUtil.getChildrenRecursivelyByType(declarationNode, NodeType.cp_variable) != null
+        return !NodeUtil.getChildrenRecursivelyByType(declarationNode, NodeType.cp_variable).isEmpty()
                 ? SemanticAnalyzerResult.VALID
                 : SemanticAnalyzerResult.UNKNOWN;
     }
