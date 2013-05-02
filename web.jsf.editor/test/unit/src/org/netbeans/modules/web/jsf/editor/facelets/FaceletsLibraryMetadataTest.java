@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsf.editor.facelets;
 
-import java.io.InputStream;
-import java.util.Map;
-import java.util.TreeMap;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
-import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
-import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
-import org.openide.util.Exceptions;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
- *
- * @deprecated use DefaultFaceletLibraries
- *
- * @todo remove this class along with the **.libdefs.* package content
- * since DefaultFaceletLibraries provides basically the same info
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class FaceletsLibraryMetadata {
-    private static Map<String, LibraryMetadata> libMap = new TreeMap<String, LibraryMetadata>();
+public class FaceletsLibraryMetadataTest extends NbTestCase {
 
-    static {
-        loadLib("composite");  //NOI18N
-        loadLib("core");  //NOI18N
-        loadLib("functions");  //NOI18N
-        loadLib("html");  //NOI18N
-        loadLib("ui");  //NOI18N
+    public FaceletsLibraryMetadataTest(String name) {
+        super(name);
     }
 
-    public static LibraryMetadata get(String libraryURL){
-        LibraryMetadata metadata = libMap.get(libraryURL);
-        if (metadata == null) {
-            String legacyNamespace = NamespaceUtils.NS_MAPPING.get(libraryURL);
-            if (legacyNamespace != null) {
-                metadata = libMap.get(legacyNamespace);
-            }
-        }
-        return metadata;
+    public void testObtainingLibraryMetadata() {
+        // JSF2.2 namespace
+        LibraryMetadata metadata = FaceletsLibraryMetadata.get("http://xmlns.jcp.org/jsf/html");
+        assertNotNull(metadata);
+
+        // legacy namespace
+        metadata = FaceletsLibraryMetadata.get("http://java.sun.com/jsf/html");
+        assertNotNull(metadata);
+
+        // third party library
+        metadata = FaceletsLibraryMetadata.get("http://primefaces.org/ui");
+        assertNull(metadata);
     }
 
-    private static void loadLib(String filePath){
-        InputStream is = FaceletsLibraryMetadata.class.getResourceAsStream("libdefs/" + filePath + ".xml"); //NOI18N
-
-        try {
-            LibraryMetadata lib = LibraryMetadata.readFromXML(is);
-            libMap.put(lib.getId(), lib);
-
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
 }
