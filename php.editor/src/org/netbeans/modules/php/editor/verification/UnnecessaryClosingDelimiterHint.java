@@ -74,13 +74,15 @@ public class UnnecessaryClosingDelimiterHint extends HintRule {
             baseDocument = context.doc;
             if (fileObject != null) {
                 TokenHierarchy<?> th = phpParseResult.getSnapshot().getTokenHierarchy();
-                int startOffset = phpParseResult.getProgram().getStartOffset();
-                TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(th, startOffset);
-                if (ts != null) {
-                    ts.move(startOffset);
-                    CloseTagWrapper closeTagWrapper = createCloseTagWrapper(ts);
-                    if (closeTagWrapper.shouldBeRemoved()) {
-                        closeTagWrapper.createHint(result);
+                if (th != null) {
+                    int startOffset = phpParseResult.getProgram().getStartOffset();
+                    TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(th, startOffset);
+                    if (ts != null) {
+                        ts.move(startOffset);
+                        CloseTagWrapper closeTagWrapper = createCloseTagWrapper(ts);
+                        if (closeTagWrapper.shouldBeRemoved()) {
+                            closeTagWrapper.createHint(result);
+                        }
                     }
                 }
             }
