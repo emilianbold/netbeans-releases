@@ -447,9 +447,11 @@ public class JFXProjectGenerator {
         ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, type == WizardType.SWING ? "COMMENT_updatemode_swing" : "COMMENT_updatemode")}, false); // NOI18N
         ep.setProperty(JFXProjectProperties.ALLOW_OFFLINE, "true"); // NOI18N
 
-        ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, JavaFxRuntimeInclusion.getProjectClassPathExtension(JavaFXPlatformUtils.findJavaPlatform(platformName)));
-
-        ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, new String[] {JavaFXPlatformUtils.getClassPathExtensionProperty()}); // NOI18N
+        String[] extensions = JavaFxRuntimeInclusion.getProjectClassPathExtension(JavaFXPlatformUtils.findJavaPlatform(platformName));
+        if(extensions != null) {
+            ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, extensions);
+            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, new String[] {JavaFXPlatformUtils.getClassPathExtensionProperty()}); // NOI18N
+        }
         ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, ""); // NOI18N
 
         ep.setProperty(JFXProjectProperties.RUN_APP_WIDTH, "800"); // NOI18N

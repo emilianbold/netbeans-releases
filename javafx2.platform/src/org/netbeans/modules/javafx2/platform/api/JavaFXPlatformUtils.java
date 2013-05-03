@@ -221,6 +221,25 @@ public final class JavaFXPlatformUtils {
     }
     
     /**
+     * Among existing platforms find such that contains JavaFX RT,
+     * prefer the default platform if possible.
+     * @return platform with JavaFX RT or null if none such exists
+     */
+    public static JavaPlatform findJavaFXPlatform() {
+        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        if(JavaFXPlatformUtils.isJavaFXEnabled(defaultPlatform)) {
+            return defaultPlatform;
+        }
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        for (JavaPlatform javaPlatform : platforms) {
+            if (!javaPlatform.equals(defaultPlatform) && JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
+                return javaPlatform;
+            }
+        }
+        return null;
+    }
+    
+    /**
      * Searches for JavaPlatform of given name
      * @param platformName name of platform to search for
      * @return found JavaPlatform or null if no platform found
