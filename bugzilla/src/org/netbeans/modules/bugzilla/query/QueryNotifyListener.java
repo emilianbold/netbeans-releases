@@ -59,7 +59,13 @@ public interface QueryNotifyListener {
      *
      * @param issue
      */
-    public void notifyData(BugzillaIssue issue);
+    public void notifyDataAdded (BugzillaIssue issue);
+
+    /**
+     *
+     * @param issue
+     */
+    public void notifyDataRemoved (BugzillaIssue issue);
 
     /**
      * Query execution was finished

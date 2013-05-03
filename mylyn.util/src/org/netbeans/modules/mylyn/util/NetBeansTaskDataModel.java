@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,65 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.mylyn.util;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.tasks.core.ITask;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.ITaskDataWorkingCopy;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.data.TaskDataModel;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Ondrej Vrabec
  */
-public abstract class BugtrackingCommand {
-    private boolean failed = false;
-    private String errorMessage;
+public final class NetBeansTaskDataModel extends TaskDataModel {
 
-    public abstract void execute() throws CoreException, IOException, MalformedURLException;
-
-    public boolean hasFailed() {
-        return failed;
+    private final ITaskDataWorkingCopy workingCopy;
+    
+    NetBeansTaskDataModel (TaskRepository taskRepository, ITask task, ITaskDataWorkingCopy workingCopy) {
+        super(taskRepository, task, workingCopy);
+        this.workingCopy = workingCopy;
     }
 
-    public void setFailed(boolean failed) {
-        this.failed = failed;
+    public boolean hasIncomingChanges (TaskAttribute taskAttribute, boolean includeConflicts) {
+        boolean incoming = hasIncomingChanges(taskAttribute);
+        if (includeConflicts && !incoming && hasOutgoingChanges(taskAttribute)) {
+            TaskData lastReadData = workingCopy.getLastReadData();
+            if (lastReadData == null) {
+                    return true;
+            }
+
+            TaskAttribute oldAttribute = lastReadData.getRoot().getMappedAttribute(taskAttribute.getPath());
+            if (oldAttribute == null) {
+                    return true;
+            }
+            
+            TaskData repositoryData = workingCopy.getRepositoryData();
+            if (repositoryData == null) {
+                    return true;
+            }
+
+            taskAttribute = repositoryData.getRoot().getMappedAttribute(taskAttribute.getPath());
+            if (taskAttribute == null) {
+                    return true;
+            }
+
+            return !repositoryData.getAttributeMapper().equals(taskAttribute, oldAttribute);
+        }
+        return incoming;
     }
 
-    public void setErrorMessage(String msg) {
-        this.errorMessage = msg;
+    public TaskData getLastReadTaskData () {
+        return workingCopy.getLastReadData();
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
+    public TaskData getRepositoryTaskData () {
+        return workingCopy.getRepositoryData();
     }
     
-    public void cancel () {
-        
-    }
 }

@@ -53,18 +53,16 @@ import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.ITask;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -393,8 +391,8 @@ public class IssueTest extends NbTestCase implements TestConstants {
 
         BugzillaRepository repository = getRepository();
         BugzillaRepositoryConnector brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));
-        TaskData data = brc.getTaskData(repository.getTaskRepository(), issue.getID(), new NullProgressMonitor());
-        BugzillaIssue modIssue = new BugzillaIssue(data, repository);
+        ITask task = BugzillaUtil.getTask(repository, id, false);
+        BugzillaIssue modIssue = new BugzillaIssue(task, repository);
 
         // add a cc
         assertNotSame(REPO_USER, issue.getFieldValue(IssueField.CC));
@@ -407,8 +405,8 @@ public class IssueTest extends NbTestCase implements TestConstants {
 
         resetStatusValues(issue);
 
-        data = brc.getTaskData(repository.getTaskRepository(), issue.getID(), new NullProgressMonitor());
-        modIssue = new BugzillaIssue(data, repository);
+        task = BugzillaUtil.getTask(repository, issue.getID(), false);
+        modIssue = new BugzillaIssue(task, repository);
 
         // add new cc
         modIssue.setFieldValue(IssueField.NEWCC, REPO_USER2);
@@ -421,8 +419,8 @@ public class IssueTest extends NbTestCase implements TestConstants {
         assertTrue(ccs.contains(REPO_USER2));
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.CC);
 
-        data = brc.getTaskData(repository.getTaskRepository(), issue.getID(), new NullProgressMonitor());
-        modIssue = new BugzillaIssue(data, repository);
+        task = BugzillaUtil.getTask(repository, issue.getID(), false);
+        modIssue = new BugzillaIssue(task, repository);
 
         // add two cc-s at once
         modIssue.setFieldValue(IssueField.NEWCC, REPO_USER3 + ", " + REPO_USER4);
@@ -439,8 +437,8 @@ public class IssueTest extends NbTestCase implements TestConstants {
 
         resetStatusValues(issue);
 
-        data = brc.getTaskData(repository.getTaskRepository(), issue.getID(), new NullProgressMonitor());
-        modIssue = new BugzillaIssue(data, repository);
+        task = BugzillaUtil.getTask(repository, issue.getID(), false);
+        modIssue = new BugzillaIssue(task, repository);
 
         // remove a cc
         ccs = new ArrayList<String>();
@@ -458,8 +456,8 @@ public class IssueTest extends NbTestCase implements TestConstants {
 
         resetStatusValues(issue);
 
-        data = brc.getTaskData(repository.getTaskRepository(), issue.getID(), new NullProgressMonitor());
-        modIssue = new BugzillaIssue(data, repository);
+        task = BugzillaUtil.getTask(repository, issue.getID(), false);
+        modIssue = new BugzillaIssue(task, repository);
 
         // remove all
         ccs = new ArrayList<String>();
@@ -920,7 +918,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
     private void setSeen(BugzillaIssue issue) throws SecurityException, InterruptedException, IOException, IllegalAccessException, IllegalArgumentException, NoSuchMethodException, InvocationTargetException {
         LogHandler lh = new LogHandler("finished storing issue");
         addHandler(lh);
-        issue.setSeen(true);
+        issue.setUpToDate(true);
         while (!lh.done) {
             Thread.sleep(100);
         }
