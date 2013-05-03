@@ -288,6 +288,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.projectimport.eclipse.core</friend>
                 <friend>org.netbeans.modules.projectimport.jbuilder</friend>
                 <package>org.netbeans.modules.java.j2seplatform.api</package>
+                <package>org.netbeans.modules.java.j2seplatform.spi</package>
             </friend-packages>
             <extra-compilation-unit>
                 <package-root>probesrc</package-root>
