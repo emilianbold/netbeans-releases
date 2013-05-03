@@ -239,14 +239,17 @@ final class OnePassCompileWorker extends CompileWorker {
                         public void visitClassDef(JCClassDecl node) {
                             if (node.sym != null) {
                                 Type st = ts.supertype(node.sym.type);
-                                if (st.hasTag(TypeTag.CLASS)) {
+                                boolean envForSuperTypeFound = false;
+                                while (!envForSuperTypeFound && st != null && st.hasTag(TypeTag.CLASS)) {
                                     ClassSymbol c = st.tsym.outermostClass();
                                     Pair<CompilationUnitTree, CompileTuple> u = jfo2units.remove(c.sourcefile);
                                     if (u != null && !finished.contains(u.second().indexable) && !u.second().indexable.equals(activeIndexable)) {
                                         if (dependencies.add(u)) {
                                             scan((JCCompilationUnit)u.first());
                                         }
+                                        envForSuperTypeFound = true;
                                     }
+                                    st = ts.supertype(st);
                                 }
                             }
                             super.visitClassDef(node);
