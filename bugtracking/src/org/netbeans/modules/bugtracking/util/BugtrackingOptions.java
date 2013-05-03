@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.swing.JComponent;
+import org.netbeans.modules.bugtracking.tasks.settings.DashboardOptions;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -71,11 +72,13 @@ public class BugtrackingOptions extends OptionsPanelController {
         private BugtrackingOptionsPanel panel;
         private boolean initialized = false;
         private Map<String, OptionsPanelController> categoryToController = new HashMap<String, OptionsPanelController>();
+        private DashboardOptions tasksPanel;
 
         public BugtrackingOptions() {
             if (initialized) return;
             initialized = true;
-            panel = new BugtrackingOptionsPanel();
+            tasksPanel = new DashboardOptions();
+            panel = new BugtrackingOptionsPanel(tasksPanel);
             
             Lookup lookup = Lookups.forPath("BugtrackingOptionsDialog"); // NOI18N
             Iterator<? extends AdvancedOption> it = lookup.lookup(new Lookup.Template<AdvancedOption> (AdvancedOption.class)).
@@ -99,12 +102,14 @@ public class BugtrackingOptions extends OptionsPanelController {
             for (OptionsPanelController c: categoryToController.values()) {
                 c.removePropertyChangeListener(l);
             }
+            tasksPanel.getPropertySupport().removePropertyChangeListener(l);
         }
         
         public void addPropertyChangeListener(PropertyChangeListener l) {
             for (OptionsPanelController c: categoryToController.values()) {
                 c.addPropertyChangeListener(l);
             }
+            tasksPanel.getPropertySupport().addPropertyChangeListener(l);
         }
         
         public void update() {
@@ -112,6 +117,7 @@ public class BugtrackingOptions extends OptionsPanelController {
             while (it.hasNext()) {
                 it.next().update();
             }
+            tasksPanel.update();
         }
         
         public void applyChanges() {
@@ -119,6 +125,7 @@ public class BugtrackingOptions extends OptionsPanelController {
             while (it.hasNext()) {
                 it.next().applyChanges();
             }
+            tasksPanel.applyChanges();
         }
         
         public void cancel() {
@@ -126,6 +133,7 @@ public class BugtrackingOptions extends OptionsPanelController {
             while (it.hasNext()) {
                 it.next().cancel();
             }
+            tasksPanel.cancel();
         }
         
         public boolean isValid() {
@@ -135,7 +143,7 @@ public class BugtrackingOptions extends OptionsPanelController {
                     return false;
                 }
             }
-            return true;
+            return tasksPanel.isDataValid();
         }
         
         public boolean isChanged() {
@@ -145,7 +153,7 @@ public class BugtrackingOptions extends OptionsPanelController {
                     return true;
                 }
             }
-            return false;
+            return tasksPanel.isChanged();
         }
         
         public HelpCtx getHelpCtx() {

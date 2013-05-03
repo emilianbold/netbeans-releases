@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.ide.spi;
 
+import java.util.concurrent.Callable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -49,7 +50,19 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Stupka
  */
+// XXX try to use URL instead of FileObject
 public interface ProjectServices {
+    
+    /**
+     * 
+     * 
+     * @param <T>
+     * @param operation
+     * @return
+     * @throws Exception 
+     */
+    public <T> T runAfterProjectOpenFinished(final Callable<T> operation) throws Exception;
+   
     /**
      * Return the currently open projects
      * @return the currently open projects
@@ -72,4 +85,10 @@ public interface ProjectServices {
     // XXX to be clarified if lookup (given by a node) is enough 
     // to get the project(s)
     public FileObject[] getProjectDirectories(Lookup lookup);
+    
+    // XXX 
+    // BOS.getOpenFileObject();
+    // FileObject getFileForCurrentSelection();  
+    
+    
 }

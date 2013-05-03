@@ -3901,7 +3901,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return pv;
     }
 
-    private static ReferenceType adjustBoxingType(ReferenceType type, PrimitiveType primitiveType,
+    public static ReferenceType adjustBoxingType(ReferenceType type, PrimitiveType primitiveType,
                                                   EvaluationContext evaluationContext) {
         if (primitiveType instanceof BooleanType) {
             type = getOrLoadClass(type.virtualMachine(), Boolean.class.getName(), evaluationContext);
@@ -4183,11 +4183,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             if (types.size() == 1) {
                 return types.get(0);
             }
-            ClassLoaderReference contextClassLoader = evaluationContext.getFrame().location().declaringType().classLoader();
-            // Return the class which was loaded by the context class loader
-            for (ReferenceType type : types) {
-                if (contextClassLoader.equals(type.classLoader())) {
-                    return type;
+            if (evaluationContext != null) {
+                ClassLoaderReference contextClassLoader = evaluationContext.getFrame().location().declaringType().classLoader();
+                // Return the class which was loaded by the context class loader
+                for (ReferenceType type : types) {
+                    if (contextClassLoader.equals(type.classLoader())) {
+                        return type;
+                    }
                 }
             }
             // No type was loaded by our context classloader, select the preferred one:

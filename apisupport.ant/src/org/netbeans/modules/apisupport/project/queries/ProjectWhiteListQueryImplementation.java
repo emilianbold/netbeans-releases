@@ -100,9 +100,9 @@ public class ProjectWhiteListQueryImplementation implements WhiteListQueryImplem
 
         ProjectXMLManager pxm = new ProjectXMLManager(this.project);
         
-        /*if (System.getProperty("Enable-Whitelist") == null || !System.getProperty("Enable-Whitelist").equals("true")) {
+        if (System.getProperty("Enable-Whitelist") == null || !System.getProperty("Enable-Whitelist").equals("true")) {
             return null;
-        }*/
+        }
         
         TreeSet<String> privatePackages = null;
         

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,82 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.tasks.settings;
+package org.netbeans.spi.viewmodel;
 
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+import java.beans.PropertyEditor;
 
 /**
- *
- * @author jpeska
+ * Use this to provide different property editors for different table cells.
+ * 
+ * @author Martin Entlicher
+ * @since 1.42
+ * @see TablePropertyEditorsModelFilter
  */
-@OptionsPanelController.SubRegistration(
-    id = DashboardOptionsController.OPTIONS_PATH,
-    displayName = "#LBL_Options",
-    keywords = "#KW_Dashboard",
-    keywordsCategory = "Advanced/Dashboard"
-)
-public class DashboardOptionsController extends OptionsPanelController {
-
-    public static final String OPTIONS_PATH = "Dashboard"; // NOI18N
-    private DashboardOptions dashboardOptions;
-
-    @Override
-    public void update() {
-        getOptions().update();
-    }
-
-    @Override
-    public void applyChanges() {
-        if (isChanged()) {
-            getOptions().applyChanges();
-        }
-    }
-
-    @Override
-    public void cancel() {
-        //do nothing
-    }
-
-    @Override
-    public boolean isValid() {
-        return getOptions().isDataValid();
-    }
-
-    @Override
-    public boolean isChanged() {
-        return getOptions().isChanged();
-    }
-
-    @Override
-    public JComponent getComponent(Lookup masterLookup) {
-        return getOptions();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx ("netbeans.optionsDialog.advanced.dashboard");
-    }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        getOptions().support.addPropertyChangeListener(l);
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        getOptions().support.removePropertyChangeListener(l);
-    }
-
-    private DashboardOptions getOptions() {
-        if( null == dashboardOptions ) {
-            dashboardOptions = new DashboardOptions();
-        }
-        return dashboardOptions;
-    }
+public interface TablePropertyEditorsModel extends Model {
+    
+    /**
+     * Get the property editor for the given table cell.
+     * 
+     * @param node an object returned from {@link TreeModel#getChildren(java.lang.Object, int, int) }
+     *             for this row
+     * @param columnID an id of column defined by {@link ColumnModel#getID()}
+     * @return The property editor or <code>null</code> to use the column default one.
+     * @throws UnknownTypeException if there is nothing to be provided for the given
+     *         parameter type
+     */
+    PropertyEditor getPropertyEditor(Object node, String columnID) throws UnknownTypeException;
+    
 }

@@ -76,6 +76,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.libs.djnsswt.gtklinuxx86</friend>
                 <friend>org.netbeans.libs.djnsswt.win32x64</friend>
                 <friend>org.netbeans.libs.djnsswt.win32x86</friend>
+                <friend>org.netbeans.libs.jsch.agentproxy</friend>
                 <friend>org.netbeans.libs.svnClientAdapter.svnkit</friend>
                 <friend>org.netbeans.modules.dlight.nativeexecution</friend>
                 <friend>org.netbeans.modules.extbrowser</friend>
