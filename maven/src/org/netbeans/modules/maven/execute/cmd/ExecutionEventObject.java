@@ -173,7 +173,17 @@ public class ExecutionEventObject {
          * @param io InputOutput the output is written to.
          */
         public void startFold(InputOutput io) {
-            this.foldHandle = IOFolding.startFold(io, true);
+            assert foldHandle == null;
+            ExecutionEventObject.Tree parentProject = findParentNodeOfType(ExecutionEvent.Type.ProjectStarted);
+            if (parentProject == null) {
+                this.foldHandle = IOFolding.startFold(io, true);
+            } else {
+                if (parentProject.foldHandle == null) {
+                    parentProject.startFold(io);
+                }
+                assert parentProject.foldHandle != null;
+                this.foldHandle = parentProject.foldHandle.startFold(true);
+            }
         }
 
         /**
@@ -184,7 +194,7 @@ public class ExecutionEventObject {
             if (foldHandle != null) {
                 finishInnerOutputFold();
                 foldHandle.finish();
-                foldHandle = null;
+//                foldHandle = null;
             }
         }
 

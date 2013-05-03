@@ -198,7 +198,8 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
 
         private final BufferedReader str;
         private boolean skipLF = false;
-        private boolean addFold = false;
+        private boolean addMojoFold = false;
+        private boolean addProjectFold = false;
 
         public Output(InputStream instream) {
             str = new BufferedReader(new InputStreamReader(instream));
@@ -319,9 +320,13 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                             firstFailure = match.group(1);
                         }
                     }
-                    if (addFold && line.startsWith("[INFO] ---")) {     //NOI18N
+                    if (addMojoFold && line.startsWith("[INFO] ---")) {     //NOI18N
                         currentTreeNode.startFold(inputOutput);
-                        addFold = false;
+                        addMojoFold = false;
+                    }
+                    if (addProjectFold && line.startsWith("[INFO] Building")) {
+                        currentTreeNode.startFold(inputOutput);
+                        addProjectFold = false;
                     }
                     line = readLine();
                 }
@@ -365,7 +370,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             
             if (ExecutionEvent.Type.MojoStarted.equals(obj.type)) {
                 growTree(obj);
-                addFold = true;
+                addMojoFold = true;
                 ExecMojo exec = (ExecMojo) obj;
                 String tag = goalPrefixFromArtifactId(exec.plugin.artifactId) + ":" + exec.goal;
                 ExecutionEventObject.Tree prjNode = currentTreeNode.findParentNodeOfType(ExecutionEvent.Type.ProjectStarted);
@@ -390,6 +395,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             }
             else if (ExecutionEvent.Type.ProjectStarted.equals(obj.type)) {
                 growTree(obj);
+                addProjectFold = true;
                 if (contextImpl != null) {
                     ExecProject pr = (ExecProject)obj;
                     Project project = pr.findProject();
@@ -403,10 +409,12 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 //GlobalOutputProcessor currently depens on skipped projects not being added to tree.
             }
             else if (ExecutionEvent.Type.ProjectSucceeded.equals(obj.type)) {
+                currentTreeNode.finishFold();
                 trimTree(obj);
                 CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);                    
             }
             else if (ExecutionEvent.Type.ProjectFailed.equals(obj.type)) {
+                currentTreeNode.finishFold();
                 trimTree(obj);
                 CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);                    
             } else if (ExecutionEvent.Type.ForkStarted.equals(obj.type)) {
