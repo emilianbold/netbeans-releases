@@ -57,7 +57,6 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import static com.sun.source.tree.Tree.*;
 import com.sun.source.util.DocSourcePositions;
-import com.sun.source.util.SourcePositions;
 import com.sun.tools.javac.api.JavacTrees;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
@@ -77,17 +76,15 @@ import com.sun.tools.javac.util.Position;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import static java.util.logging.Level.*;
 
-import javax.swing.text.BadLocationException;
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
 import static com.sun.tools.javac.code.Flags.*;
 
-import org.netbeans.modules.editor.indent.api.IndentUtils;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
+import org.openide.util.Pair;
 
 public class CasualDiff {
 
@@ -3182,7 +3179,7 @@ public class CasualDiff {
         if (sameComments(oldPrecedingComments, newPrecedingComments) && doc == null)
             return localPointer;
         if(doc == null) doc = Pair.of(null, null);
-        return diffCommentLists(oldTreeStartPos, oldPrecedingComments, newPrecedingComments, doc.first, doc.second, false, true, localPointer);
+        return diffCommentLists(oldTreeStartPos, oldPrecedingComments, newPrecedingComments, doc.first(), doc.second(), false, true, localPointer);
     }
 
     protected int diffTrailingComments(JCTree oldT, JCTree newT, int localPointer) {

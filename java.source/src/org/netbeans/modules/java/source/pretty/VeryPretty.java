@@ -88,7 +88,6 @@ import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
 import com.sun.source.doctree.ValueTree;
 import com.sun.source.doctree.VersionTree;
-import com.sun.source.tree.ExpressionTree;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
@@ -131,10 +130,10 @@ import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.DiffContext;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /** Prints out a tree as an indented Java source program.
  */
@@ -2718,15 +2717,15 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 }
             }
             for (Comment c : pc) {
-                if(doc != null && doc.first != null && c == javadoc) {
-                    print((DCTree)doc.second);
+                if(doc != null && doc.first() != null && c == javadoc) {
+                    print((DCTree)doc.second());
                 } else {
                     printComment(c, true, printWhitespace);
                 }
             }
         }
-        if(doc!=null && doc.first == null) {
-            print((DCTree)doc.second);
+        if(doc!=null && doc.first() == null) {
+            print((DCTree)doc.second());
         }
     }
 
