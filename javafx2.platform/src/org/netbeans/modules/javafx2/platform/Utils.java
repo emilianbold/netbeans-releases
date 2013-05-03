@@ -46,9 +46,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -84,7 +82,7 @@ public final class Utils {
     private static final String JAVAFX_SDK_PREFIX = "javafx.sdk.home"; // NOI18N
     private static final String JAVAFX_RUNTIME_PREFIX = "javafx.runtime.home"; // NOI18N    
     private static final String JFXRT_JAR_NAME = "jfxrt.jar"; //NOI18N
-    private static final String[] JFXRT_JAR_JDK_PATHS = {"jre/lib/", "jre/lib/ext/"}; //NOI18N
+    private static final String JDK_JRE_PATH = "jre/"; //NOI18N
     private static final String[] JFXRT_JAR_JRE_PATHS = {"lib/", "lib/ext/"}; //NOI18N
     private static final String[] JFXRT_OPTIONAL_JARS = {"javaws.jar", "deploy.jar", "plugin.jar"}; // NOI18N
 
@@ -119,17 +117,22 @@ public final class Utils {
     }
 
     /**
-     * Return paths relative to platform installation dir where
+     * Return paths relative to FX RT installation dir where
      * FX RT artifacts may be found
-     * @param jp the {@link JavaPlatform} to relativize to
      * @return relative paths
      */
     @NonNull
-    public static String[] getJavaFxRuntimeLocations(@NonNull final JavaPlatform jp) {
-        Parameters.notNull("jp", jp);   //NOI18N
-        return JavaPlatform.getDefault().equals(jp) ?
-                JFXRT_JAR_JRE_PATHS :
-                JFXRT_JAR_JDK_PATHS;
+    public static String[] getJavaFxRuntimeLocations() {
+        return JFXRT_JAR_JRE_PATHS;
+    }
+
+    /**
+     * Return subdirectory in which FX RT resider under JDK
+     * @return relative path
+     */
+    @NonNull
+    public static String getJavaFxRuntimeSubDir() {
+        return JDK_JRE_PATH;
     }
 
     /**

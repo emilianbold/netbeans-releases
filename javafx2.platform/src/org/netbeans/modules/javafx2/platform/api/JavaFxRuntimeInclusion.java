@@ -130,32 +130,33 @@ public class JavaFxRuntimeInclusion {
     @NonNull
     public static JavaFxRuntimeInclusion forPlatform(@NonNull final JavaPlatform javaPlatform) {
         Parameters.notNull("javaPlatform", javaPlatform);   //NOI18N
+        boolean isDefault = JavaPlatform.getDefault().equals(javaPlatform);
         List<String> paths = new ArrayList<String>();
         Support runtimeSupport = Support.MISSING;
         String runtimePath = null;
-        for(String runtimeLocation : Utils.getJavaFxRuntimeLocations(javaPlatform)) {
+        for(String runtimeLocation : Utils.getJavaFxRuntimeLocations()) {
             runtimePath = runtimeLocation + Utils.getJavaFxRuntimeArchiveName();
-            runtimeSupport = forRuntime(javaPlatform, runtimePath);
+            runtimeSupport = forRuntime(javaPlatform, Utils.getJavaFxRuntimeSubDir() + runtimePath);
             if(runtimeSupport != Support.MISSING) {
                 break;
             }
         }
         if(runtimeSupport != Support.MISSING && runtimePath != null) {
             if(runtimeSupport == Support.PRESENT) {
-                paths.add(runtimePath);
+                paths.add((isDefault ? "" : Utils.getJavaFxRuntimeSubDir()) + runtimePath);
             }
             for(String optionalName : Utils.getJavaFxRuntimeOptionalNames()) {
                 Support optionalSupport = Support.MISSING;
                 String optionalPath = null;
-                for(String optionalLocation : Utils.getJavaFxRuntimeLocations(javaPlatform)) {
+                for(String optionalLocation : Utils.getJavaFxRuntimeLocations()) {
                     optionalPath = optionalLocation + optionalName;
-                    optionalSupport = forRuntime(javaPlatform, optionalPath);
+                    optionalSupport = forRuntime(javaPlatform, Utils.getJavaFxRuntimeSubDir() + optionalPath);
                     if(optionalSupport == Support.PRESENT) {
                         break;
                     }
                 }
                 if(optionalSupport == Support.PRESENT && optionalPath != null) {
-                    paths.add(optionalPath);
+                    paths.add((isDefault ? "" : Utils.getJavaFxRuntimeSubDir()) + optionalPath);
                 }
             }
         }

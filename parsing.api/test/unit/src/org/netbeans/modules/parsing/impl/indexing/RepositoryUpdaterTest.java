@@ -606,54 +606,47 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(2, binIndexerFactory.indexer.getCount());
     }
 
-    @RandomlyFails
     public void testBinaryDeletedAdded() throws Exception {
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
         logger.setLevel (Level.FINEST);
         logger.addHandler(handler);
-        
+
         final FileObject jarFile = FileUtil.toFileObject(getDataDir()).getFileObject("JavaApplication1.jar");
         assertNotNull(jarFile);
         assertTrue(FileUtil.isArchiveFile(jarFile));
-        
+
         final FileObject wd = FileUtil.toFileObject(getWorkDir());
         final FileObject[] jar2Delete = new FileObject[] {jarFile.copy(wd, "test", "jar")};
         ClassPath cp = ClassPathSupport.createClassPath(new FileObject[] {FileUtil.getArchiveRoot(jar2Delete[0])});
-        
+
         globalPathRegistry_register(PLATFORM,new ClassPath[] {cp});
         assertTrue(handler.await());
         assertEquals(1, handler.getBinaries().size());
-        
-        handler.reset();
-        
+
+        handler.reset(TestHandler.Type.BINARY);
+
         final long timeStamp = jar2Delete[0].lastModified().getTime();
-        File jar2DeleteFile = FileUtil.toFile(jar2Delete[0]);
-        
-        IndexingManager.getDefault().runProtected(new Callable<Void>() {
-            @Override public Void call() throws Exception {
-                jar2Delete[0].delete();
-                return null;
-            }
-        });
-        
-        IndexingManager.getDefault().refreshAllIndices(false, true, jar2DeleteFile);
-        
+
+        jar2Delete[0].delete();
+        handler.await();       
+
         binIndexerFactory.indexer.indexedAllFilesIndexing.clear();
-        handler.reset();
-        
-        IndexingManager.getDefault().runProtected(new Callable<Void>() {
-            @Override public Void call() throws Exception {
-                jar2Delete[0] = jarFile.copy(wd, "test", "jar");
-                FileUtil.toFile(jar2Delete[0]).setLastModified(timeStamp);
-                return null;
+        handler.reset(TestHandler.Type.BINARY);
+        FileUtil.runAtomicAction(new Runnable(){
+            @Override
+            public void run() {
+                try {
+                    jar2Delete[0] = jarFile.copy(wd, "test", "jar");
+                    FileUtil.toFile(jar2Delete[0]).setLastModified(timeStamp);
+                } catch (IOException ioe) {
+                    throw new RuntimeException(ioe);
+                }
             }
         });
-        
-        IndexingManager.getDefault().refreshAllIndices(false, true, jar2Delete);
-        
         assertTrue(handler.await());
         assertTrue(binIndexerFactory.indexer.indexedAllFilesIndexing.toString(), binIndexerFactory.indexer.indexedAllFilesIndexing.contains(FileUtil.getArchiveRoot(jar2Delete[0]).toURL()));
+
     }
 
     @RandomlyFails
@@ -2515,7 +2508,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     // <editor-fold defaultstate="collapsed" desc="Mock Services">
     public static class TestHandler extends Handler {
 
-        public static enum Type {BATCH, DELETE, FILELIST, ROOTS_WORK_FINISHED};
+        public static enum Type {BATCH, DELETE, FILELIST, ROOTS_WORK_FINISHED, BINARY};
 
         private Type type;
         private CountDownLatch latch;
@@ -2591,6 +2584,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 }
             } else if (type == Type.ROOTS_WORK_FINISHED) {
                 if ("RootsWork-finished".equals(msg)) { //NOI18N
+                    latch.countDown();
+                }
+            } else if (type == Type.BINARY) {
+                if ("binary".equals(msg)) { //NOI18N
                     latch.countDown();
                 }
             }

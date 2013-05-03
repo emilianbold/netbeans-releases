@@ -1195,6 +1195,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case STATIC:
                         m.add(STATIC);
                         break;
+                    case DEFAULT:
+                        m.add(DEFAULT);
+                        break;
                     case ABSTRACT:
                         m.add(ABSTRACT);
                         break;
@@ -4093,17 +4096,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
                 if (env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0
                         && Utilities.getPathElementOfKind(Tree.Kind.INTERFACE, env.getPath()) != null
-                        && !modifiers.contains(STATIC) && !modifiers.contains(ABSTRACT) /*TODO: && !modifiers.contains(DEFAULT)*/) {
+                        && !modifiers.contains(STATIC) && !modifiers.contains(ABSTRACT) && !modifiers.contains(DEFAULT)) {
                         kws.add(DEFAULT_KEYWORD);
                 }
                 if (!modifiers.contains(FINAL) && !modifiers.contains(ABSTRACT) && !modifiers.contains(VOLATILE)) {
                     kws.add(FINAL_KEYWORD);
                 }
-                if (!modifiers.contains(FINAL) && !modifiers.contains(ABSTRACT) /*TODO: && !modifiers.contains(DEFAULT)*/
+                if (!modifiers.contains(FINAL) && !modifiers.contains(ABSTRACT) && !modifiers.contains(DEFAULT)
                         && !modifiers.contains(NATIVE) && !modifiers.contains(SYNCHRONIZED)) {
                     kws.add(ABSTRACT_KEYWORD);
                 }
-                if (!modifiers.contains(STATIC) /*TODO: && !modifiers.contains(DEFAULT)*/) {
+                if (!modifiers.contains(STATIC) && !modifiers.contains(DEFAULT)) {
                     kws.add(STATIC_KEYWORD);
                 }
                 if (!modifiers.contains(ABSTRACT) && !modifiers.contains(NATIVE)) {
