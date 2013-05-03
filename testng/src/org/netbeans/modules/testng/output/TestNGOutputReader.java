@@ -190,6 +190,17 @@ final class TestNGOutputReader {
     }
     private boolean suiteSummary = false;
     private long elapsedTime = 0;
+    // TestNG version > 6.5.2 does not by default add the org.testng.reporters.VerboseReporter listener to the testng task,
+    // see https://github.com/cbeust/testng/commit/6fc192911c8c58f38583a657c1edac20e6508004
+    // This brakes the "Test" project action as the TestNGAntLogger does not get notified about any output. This leads to
+    // waiting to read the results from the build/test/results/testng-results.xml file, which leads to no on-line results 
+    // visualization in the Test Results Window. So, the org.testng.reporters.VerboseReporter listener is added to build-impl.xsl
+    // file for all project types. This fixes the "Test" project action for TestNG version > 6.5.2 but produces dublicate output
+    // for version <= 6.5.2 that need to be escaped. This will happen if old project uses "Dedicated Folder for Storing Libraries",
+    // which means that the testng dependency for that project will not be automatically updated while the build-impl.xml file will.
+    // These two new variables come to the rescue.
+    private String lastMessageLogged = "";
+    private boolean suiteFinished = false;
 
     private class SuiteStats {
 
@@ -221,6 +232,10 @@ final class TestNGOutputReader {
      */
     synchronized void verboseMessageLogged(String msg) {
         String in = getMessage(msg);
+	if(in.equals(lastMessageLogged)) {
+	    return;
+	}
+	lastMessageLogged = in;
         if(descriptionInPassedWithErrors) {
             Matcher m = Pattern.compile(RegexpUtils.TEST_REGEX_3).matcher(in);
             if(m.matches()) {
@@ -248,6 +263,7 @@ final class TestNGOutputReader {
             failedInBeforeMethod = false;
             failedInConfigurationMethod = false;
             canAddToStackTrace = true;
+	    suiteFinished = false;
             Matcher m = Pattern.compile(RegexpUtils.RUNNING_SUITE_REGEX).matcher(in);
             if (m.matches()) {
                 suiteStarted(m.group(1), Integer.valueOf(m.group(2)), m.group(3));
@@ -258,6 +274,9 @@ final class TestNGOutputReader {
         }
         //suite finishing
         if (in.equals("===============================================")) {
+	    if(suiteFinished) {
+		return;
+	    }
             suiteSummary = !suiteSummary;
 
             if(txt.size() > 0 && failedInAfterClass) {
@@ -271,6 +290,8 @@ final class TestNGOutputReader {
             } else {
                 suiteFinished(suiteStat);
                 suiteStat = null;
+		suiteFinished = true;
+		lastMessageLogged = "";
             }
             if(txt.size() > 0) {
                 addStackTrace(txt);
